@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>No Man's Sky Black Hole Suns</title>
+    <meta name="description" content="No Man's Sky Black Hole Suns">
+    <meta name="keywords" content="no man's sky,map,black hole">
+    <meta name="author" content="Stephen Piper">
+    <meta name="application-name" content="NMS-Black Hole Suns">
+
+    <script src="env.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-4"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', GOOGLEANALYTICS_ID);
+    </script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.12/css/all.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-firestore.js"></script>
+
+    <script src="common.js"></script>
+    <script src="index.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="local.css">
+</head>
+
+<body>
+    <div id="navbar"></div>
+
+    <div id="javascript">
+        <nav class="navbar navbar-expand-sm bkg-light-green">
+            <a class="navbar-brand" href="index.html">
+                <span class=" clr-dark-green h2">
+                    <i class="fa fa-home"></i>
+                    NMS-Black Hole Suns Project
+                </span>
+            </a>
+
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link clr-dark-green h6" href="about.html">
+                        About
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!--googleoff:all-->
+        <div style="color: rgb(0, 78, 0);">
+            Unfortunately, this page cannot function without javasript. Please add this site to your "allowed" sites.
+            For chrome it's located&nbsp;
+            <a href="chrome://settings/content/javascript">here</a>
+        </div>
+        <!--googleon:all-->
+
+        <br>
+    </div>
+
+    <div id="jssite" class="card card-body bkg-light-green pad-bottom" style="display: none">
+        <div class="card card-body pad-bottom">
+            <div id="loggedout" class="row clr-dark-green bkg-light-green">
+                <h4>This is the data entry page for the No Man's Sky Black Hole 
+                    Suns project. Please login to enter data.
+                </h4>
+            </div>
+
+            <div id="panels" style="display: none">
+            
+            Platform (menu)
+
+            Galaxy (menu)
+
+            Black Hole Galaxy Address (format 000:000:000:007d, error check)
+                System Name
+                Region Name (dup check region + system)
+                Race (menu)
+                Economy (menu)
+            
+            Exit System Galaxy Address (format 000:000:000:0000, error check) dead zone ck box
+                System Name 
+                Region Name  (dup check region + system)
+                Race (menu)
+                Economy (menu)
+
+            <div id="entrybuttons" class="row">
+                <button id="save" type="button" class="btn border btn-sm btn-green disabled"
+                    disabled>Save</button>&nbsp;
+                    <button id="cancel" type="button" class="btn border btn-sm btn-green disabled" disabled>Cancel</button>
+                    <button id="clear" type="button" class="btn border btn-sm btn-green disabled" disabled>Clear</button>
+                </div>
+
+            User's Entry List   Total reported (show collapse arrow, local storage, sort by)
+                Time BH Address System Name Region Name Race Economy  (calc) quadrant 
+                    Exit Address System Name Region Name Race Economy (calc) quadrant
+                        distance traveled distance towards center
+
+            <div id="editbuttons" class="row">
+                <button id="edit" type="button" class="btn border btn-sm btn-green disabled"
+                    disabled>Save</button>&nbsp;
+                <button id="delete" type="button" class="btn border btn-sm btn-green disabled" disabled>Cancel</button>
+            </div>
+ 
+                User's Mapped Data (show collapse arrow, show generation, local storage)
+                    blue entry red Exit connect clear green line (optional)
+
+            Overall Statistics (show collapse arrow)
+                                    PC PS4, xbox
+                Galaxy entries
+                    (list)
+                Total 
+                Grand Total
+            </div>
+            <br>
+
+        </div>
+    </div>
+
+    <div id="footer"></div>
+    <br>
+
+</body>
+
+</html>
