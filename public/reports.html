@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Lightning Pain Diary</title>
+    <script src="env.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-4"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', GOOGLEANALYTICS_ID);
+    </script>
+
+    <meta name="description" content="Web based pain diary">
+    <meta name="keywords" content="migraine,pain,diary">
+    <meta name="author" content="Stephen Piper">
+    <meta name="application-name" content="Lightning Pain Diary">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.12/css/all.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-firestore.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+
+    <script src="common.js"></script>
+    <script src="reports.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
+    <link rel="stylesheet" type="text/css" href="local.css">
+</head>
+
+<body>
+    <div id="navbar" class="noprint"></div>
+
+    <div id="javascript" class="">
+        <nav class="navbar navbar-expand-sm bkg-light-green">
+            <a class="navbar-brand" href="index.html">
+                <span class=" clr-dark-green h2">
+                    <i class="fa fa-home"></i>
+                    Lightning Pain Diary
+                </span>
+            </a>
+
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link clr-dark-green h6" href="about.html">
+                        About
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!--googleoff:all-->
+        <div style="color: rgb(0, 78, 0);">
+            Unfortunately, this page cannot function without javasript. Please add this site to your"allowed" sites. For chrome it's
+            located&nbsp;
+            <a href="chrome://settings/content/javascript">here</a>
+        </div>
+        <!--googleon:all-->
+        <br>
+    </div>
+
+    <div id="jssite" style="display: none">
+        <div class="card card-body bkg-light-green">
+            <div id="reportcard" class="card card-body border pad-bottom bkg-light-green">
+                <div id="loggedout" class="row clr-dark-green bkg-light-green">
+                    <h4>This is a completely configurable pain diary. The initial diary inputs are for migraine headaches and
+                        has a large number of inputs as examples. These can be easily changed under the "Trackers" tab on
+                        the
+                        <a href="settings.html">Settings</a>
+                        page.
+                    </h4>
+                </div>
+
+                <div id="report-header" class="row border-bottom noprint bkg-white">
+                    <h2 class="clr-dark-green col-lg-4 col-md-4 col-sm-5 col-12">Report Generator</h2>
+
+                    <label class="col-sm-4 col-6">
+                        <input id="show-select" type="checkbox"> Open Selectors
+                    </label>
+
+                    <label class="col-sm-4 col-6">
+                        <input id="show-filter" type="checkbox"> Open Filters
+                    </label>
+                </div>
+
+                <div id="select" class="card card-body noprint bkg-white" style="display: none">
+                    <h5 class="clr-dark-green">Show selected fields</h5>
+
+                    <div id="fields"></div>
+                </div>
+
+                <div id="filter" class="card card-body noprint pad-bottom bkg-white" style="display: none">
+                    <h5 class="clr-dark-green">Show entries with matching selections</h5>
+
+                    <div id="fields"></div>
+                </div>
+
+                <div id="report-save" class="card card-body noprint pad-bottom bkg-white" style="display: none">
+                    <div class=" row">
+                        <div id="menu" class="col-lg-3 col-md-3 col-sm-3 col-6 dropdown">
+                            <button id="report-btn" class="btn border btn-sm btn-green dropdown-toggle" type="button" data-toggle="dropdown">
+                                all on
+                            </button>
+                            <div id="list" class="dropdown-menu"></div>
+                        </div>
+
+                        <input id="name" class="rounded col-lg-3 col-md-3 col-sm-4 col-6" type="text" placeholder="report name">&nbsp;
+                        <button id="save-btn" type="button" class="btn border btn-sm btn-green col-lg-2 col-md-2 col-sm-2 col-3">Save</button>&nbsp;
+                        <button id="delete-btn" type="button" class="btn border btn-sm btn-green col-lg-2 col-md-2 col-sm-2 col-3">Delete</button>&nbsp;
+                        <button id="cancel-btn" type="button" class="btn border btn-sm btn-green col-lg-2 col-md-2 col-sm-2 col-3">Cancel</button>&nbsp;
+                        <button id="clear-btn" type="button" class="btn border btn-sm btn-green col-lg-2 col-md-2 col-sm-2 col-3">Clear</button>
+                    </div>
+                </div>
+                <br>
+
+                <div id="tab-row" class="row noprint">
+                    <button id="table-btn" type="button" class="btn border-bottom btn-sm btn-green col-lg-2 col-md-2 col-sm-2 col-3">Table</button>&nbsp;
+                    <button id="calendar-btn" type="button" class="btn border-left border-top border-right btn-sm btn-green col-lg-2 col-md-2 col-sm-2 col-3">Calendar</button>&nbsp;
+                    <button id="chart-btn" type="button" class="btn border-left border-top border-right btn-sm btn-green col-lg-2 col-md-2 col-sm-2 col-3">Chart</button>&nbsp;
+                </div>
+
+                <div id="edit-row" class="row noprints">
+                    <button id="edit" type="button" class="btn border btn-sm btn-green disabled col-lg-2 col-md-2 col-sm-2 col-3" disabled>Edit</button>&nbsp;
+                    <button id="delete" type="button" class="btn border btn-sm btn-green disabled col-lg-2 col-md-2 col-sm-2 col-3" disabled>Delete</button>&nbsp;
+                </div>
+
+                <br>
+                <div id="table" class="border-top bkg-white"></div>
+                <div id="calendar" class="border-top bkg-white" style="display: none"></div>
+                <div id="chart" class="border-top bkg-white" style="display: none; height:460; width:800">
+                    <canvas id="panel"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer" class="noprint"></div>
+
+    <div class="alignleft noprint">
+        <script>
+            amzn_assoc_ad_type = "banner";
+            amzn_assoc_marketplace = "amazon";
+            amzn_assoc_region = "US";
+            amzn_assoc_placement = "assoc_banner_placement_default";
+            amzn_assoc_campaigns = "health";
+            amzn_assoc_banner_type = "category";
+            amzn_assoc_p = "48";
+            amzn_assoc_isresponsive = "false";
+            amzn_assoc_banner_id = "1B0WEVWZYBMGB633AC82";
+            amzn_assoc_width = "820";
+            amzn_assoc_height = "90";
+            amzn_assoc_tracking_id = "lightningmade-20";
+            amzn_assoc_linkid = "6bfd315fec0b8341a71b578169625780";
+        </script>
+        <script src="//z-na.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&Operation=GetScript&ID=OneJS&WS=1"></script>
+    </div>
+
+</body>
+
+</html>

@@ -77,60 +77,75 @@
     <div id="jssite" class="card card-body bkg-light-green pad-bottom" style="display: none">
         <div class="card card-body pad-bottom">
             <div id="loggedout" class="row clr-dark-green bkg-light-green">
-                <h4>This is the data entry page for the No Man's Sky Black Hole 
+                <h4>This is the data entry page for the No Man's Sky Black Hole
                     Suns project. Please login to enter data.
                 </h4>
             </div>
 
             <div id="panels" style="display: none">
-            
-            Platform (menu)
+                <div id="input" class="card card-body pad-bottom bkg-white" style="display: none">
 
-            Galaxy (menu)
+                    Platform <button id="platform" class="dropdown-item" type="button"
+                        style="cursor: pointer">ttype</button>
 
-            Black Hole Galaxy Address (format 000:000:000:007d, error check)
-                System Name
-                Region Name (dup check region + system)
-                Race (menu)
-                Economy (menu)
-            
-            Exit System Galaxy Address (format 000:000:000:0000, error check) dead zone ck box
-                System Name 
-                Region Name  (dup check region + system)
-                Race (menu)
-                Economy (menu)
+                    Galaxy <button id="galaxy" class="dropdown-item" type="button"
+                        style="cursor: pointer">ttype</button>
 
-            <div id="entrybuttons" class="row">
-                <button id="save" type="button" class="btn border btn-sm btn-green disabled"
-                    disabled>Save</button>&nbsp;
-                    <button id="cancel" type="button" class="btn border btn-sm btn-green disabled" disabled>Cancel</button>
-                    <button id="clear" type="button" class="btn border btn-sm btn-green disabled" disabled>Clear</button>
+                    Black Hole Galaxy Address (format 000:000:000:007d, error check)
+                    System Name
+                    Region Name (dup check region + system)
+                    Race <button id="race" class="dropdown-item" type="button" style="cursor: pointer">ttype</button>
+                    Economy <button id="economy" class="dropdown-item" type="button"
+                        style="cursor: pointer">ttype</button>
+
+                    Exit System Galaxy Address (format 000:000:000:0000, error check) dead zone ck box
+                    System Name
+                    Region Name (dup check region + system)
+                    Race <button id="race" class="dropdown-item" type="button" style="cursor: pointer">ttype</button>
+                    Economy <button id="economy" class="dropdown-item" type="button"
+                        style="cursor: pointer">ttype</button>
                 </div>
 
-            User's Entry List   Total reported (show collapse arrow, local storage, sort by)
-                Time BH Address System Name Region Name Race Economy  (calc) quadrant 
+                <div id="entrybuttons" class="row">
+                    <button id="save" type="button" class="btn border btn-sm btn-green disabled"
+                        disabled>Save</button>&nbsp;
+                    <button id="cancel" type="button" class="btn border btn-sm btn-green disabled"
+                        disabled>Cancel</button>
+                    <button id="clear" type="button" class="btn border btn-sm btn-green disabled"
+                        disabled>Clear</button>
+                </div>
+
+                <div id="input" class="card card-body pad-bottom bkg-white" style="display: none">
+                    User's Entry List Total reported (show collapse arrow, local storage, sort by)
+                    Time BH Address System Name Region Name Race Economy (calc) quadrant
                     Exit Address System Name Region Name Race Economy (calc) quadrant
-                        distance traveled distance towards center
+                    distance traveled distance towards center
 
-            <div id="editbuttons" class="row">
-                <button id="edit" type="button" class="btn border btn-sm btn-green disabled"
-                    disabled>Save</button>&nbsp;
-                <button id="delete" type="button" class="btn border btn-sm btn-green disabled" disabled>Cancel</button>
+                    <div id="editbuttons" class="row">
+                        <button id="edit" type="button" class="btn border btn-sm btn-green disabled"
+                            disabled>Save</button>&nbsp;
+                        <button id="delete" type="button" class="btn border btn-sm btn-green disabled"
+                            disabled>Cancel</button>
+                    </div>
+                </div>
             </div>
- 
-                User's Mapped Data (show collapse arrow, show generation, local storage)
-                    blue entry red Exit connect clear green line (optional)
 
-            Overall Statistics (show collapse arrow)
-                                    PC PS4, xbox
+            <div id="input" class="card card-body pad-bottom bkg-white" style="display: none">
+                User's Mapped Data (show collapse arrow, show generation, local storage)
+                blue entry red Exit connect clear green line (optional)
+            </div>
+
+            <div id="input" class="card card-body pad-bottom bkg-white" style="display: none">
+                Overall Statistics (show collapse arrow)
+                PC PS4, xbox
                 Galaxy entries
-                    (list)
-                Total 
+                (list)
+                Total
                 Grand Total
             </div>
-            <br>
 
         </div>
+        <br>
     </div>
 
     <div id="footer"></div>
