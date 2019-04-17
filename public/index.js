@@ -2,147 +2,244 @@
 
 $(document).ready(function () {
     startUp();
+    /*
+        $("#save").click(function () {
+            bhs.updateEntry();
+        });
 
-    $("#save").click(function () {
-        lpd.updateEntry();
-    });
+        $("#clear").click(function () {
+            bhs.clearEntry();
+        });
 
-    $("#cancel").click(function () {
-        if (lpd.lastvalue)
-            lpd.doDiaryDisplay(lpd.lastvalue);
-    });
+        $("#edit").click(function () {
+            bhs.editEntry();
+        });
+
+        $("#delete").click(function () {
+            bhs.deleteEntry();
+        });
+    */
+
+    let loc = $("#userinfo");
+    bhs.buildMenu(loc, "platform", platformList);
+    bhs.buildMenu(loc, "galaxy", galaxyList, true);
+
+    bhs.buildPanel("Black Hole System");
+    bhs.buildPanel("Exit System");
+
 });
 
-lightningPainDiary.prototype.doLoggedout = function () {
-    lpd.doTrackerDisplay();
+blackHoleSuns.prototype.buildPanel = function (name) {
+    let panel = `
+        <div id="pnl-name" class="card pad-bottom">
+            <div class="h4 clr-dark-green">heading</div>
+            <div class="row border_bottom">
+                <label class="col-lg-4 col-md-4 col-sm-4 col-12 h6 clr-dark-green">Address&nbsp;
+                    <input id="id-add" class="rounded col-6"></input>
+                </label>
+                <label class="col-lg-4 col-md-4 col-sm-4 col-12 h6 clr-dark-green">System Name&nbsp;
+                    <input id="id-sys" class="rounded col-6"></input>
+                </label>
+                <label class="col-lg-4 col-md-4 col-sm-4 col-12 h6 clr-dark-green">Region Name&nbsp;
+                    <input id="id-reg" class="rounded col-6"></input>
+                </label>
+            </div>
+            <div class="row">
+                <!--label class="col-lg-4 col-md-4 col-sm-4 col-6 h6 clr-dark-green">Star Type&nbsp;
+                    <input id="id-star" class="rounded col-3"></input>
+                </label-->
+                <div class="col-lg-1 col-md-2 col-sm-2 col-4 h6 clr-dark-green">Lifeform&nbsp;</div>
+                <div id="menu-life" class="col-lg-1 col-md-2 col-sm-2 col-8 dropdown"></div>
+                <div class="col-lg-1 col-md-2 col-sm-2 col-4 h6 clr-dark-green">Economy&nbsp;</div>
+                <!--div id="menu-type" class="col-lg-1 col-md-2 col-sm-2 col-4 dropdown"></div-->
+                <div id="menu-econ" class="col-lg-1 col-md-3 col-sm-2 col-8 dropdown"></div>
+                <!--div class="col-lg-1 col-md-2 col-sm-2 col-4 h6 clr-dark-green">Conflit&nbsp;</div-->
+                <!--div id="menu-conf" class="col-lg-1 col-md-2 col-sm-2 col-4 dropdown"></div-->
+            </div>
+        </div>
+        <br>`;
 
+    let id = name.nameToId();
+    $("#panels").append(panel.replace(/name/g, id).replace(/heading/g, name));
+
+    let loc = $("#pnl-"+id);
+
+    bhs.buildMenu(loc, "life", lifeformList);
+    bhs.buildMenu(loc, "econ", economyList);
+//    bhs.buildMenu(loc, "type", typeList);
+//    bhs.buildMenu(loc, "conf", conflictList);
+}
+
+blackHoleSuns.prototype.buildMenu = function (loc, label, list, makelist) {
+    let item = ``;
+    let hdr = `
+        <button id="button" class="btn border btn-sm btn-green dropdown-toggle" type="button" data-toggle="dropdown">
+            default
+        </button>`;
+
+    if (makelist) {
+        item = `<li id="item-idname" class="dropdown-item" type="button" style="cursor: pointer">iname</li>`;
+        hdr += `<ul id="list" class="dropdown-menu scrollable-menu btn-green" role="menu"></ul>`;
+    }
+    else {
+        item = `<button id="item-idname" class="dropdown-item border-bottom" type="button" style="cursor: pointer">iname</button>`;
+        hdr += `<div id="list" class="dropdown-menu btn-green"></div>`;
+    }
+    
+    let menu = loc.find("#menu-" + label);
+
+    menu.append(hdr.replace(/default/g, list[0].name));
+
+    let mlist = menu.find("#list");
+
+    for (let i = 0; i < list.length; ++i) {
+        let name = list[i].name.nameToId();
+        mlist.append(item.replace(/idname/g, name).replace(/iname/g, list[i].name));
+
+        mlist.find("#item-" + name).click(function () {
+            let name = $(this).text();
+            menu.find("#button").text(name);
+
+            // update user data
+        });
+    }
+}
+
+/*
+blackHoleSuns.prototype.doLoggedout = function () {
     $("#save").addClass("disabled");
     $("#save").prop("disabled", true);
-    $("#cancel").addClass("disabled");
-    $("#cancel").prop("disabled", true);
+    $("#clear").addClass("disabled");
+    $("#clear").prop("disabled", true);
+
+    $("#map").hide();
+    $("#list").hide();
 }
 
-lightningPainDiary.prototype.doLoggedin = function () {
+blackHoleSuns.prototype.doLoggedin = function () {
     $("#save").removeClass("disabled");
     $("#save").removeAttr("disabled");
-    $("#cancel").removeClass("disabled");
-    $("#cancel").removeAttr("disabled");
+    $("#clear").removeClass("disabled");
+    $("#clear").removeAttr("disabled");
+
+    $("#map").show();
+    $("#list").show();
 }
 
-lightningPainDiary.prototype.updateEntry = function () {
+blackHoleSuns.prototype.updateEntry = function () {
     let value = {};
 
-    for (let i = 0; i < lpd.trackerlist.length; ++i) {
-        let entry = lpd.trackerlist[i];
+    for (let i = 0; i < bhs.trackerlist.length; ++i) {
+        let entry = bhs.trackerlist[i];
 
         switch (entry.type) {
             case "blood pressure":
-                value[entry.name] = lpd.extractBPInput(entry);
+                value[entry.name] = bhs.extractBPInput(entry);
                 break;
             case "date":
-                value[entry.name] = lpd.extractDateInput(entry);
+                value[entry.name] = bhs.extractDateInput(entry);
                 break;
             case "list":
-                value[entry.name] = lpd.extractCheckboxList(entry);
+                value[entry.name] = bhs.extractCheckboxList(entry);
                 break;
             case "number":
-                value[entry.name] = lpd.extractNumInput(entry);
+                value[entry.name] = bhs.extractNumInput(entry);
                 break;
             case "range":
-                value[entry.name] = lpd.extractRange(entry);
+                value[entry.name] = bhs.extractRange(entry);
                 break;
             case "text":
-                value[entry.name] = lpd.extractTextInput(entry);
+                value[entry.name] = bhs.extractTextInput(entry);
                 break;
             case "time":
-                value[entry.name] = lpd.extractTimeInput(entry);
+                value[entry.name] = bhs.extractTimeInput(entry);
                 break;
             case "true false":
-                value[entry.name] = lpd.extractBoolInput(entry);
+                value[entry.name] = bhs.extractBoolInput(entry);
                 break;
             case "weather":
-                value[entry.name] = lpd.extractWeatherInput(entry);
+                value[entry.name] = bhs.extractWeatherInput(entry);
                 break;
         }
     }
 
-    lpd.lastvalue = value;
-    lpd.doDiaryEntryWrite(value);
+    bhs.lastvalue = value;
+    bhs.doEntryWrite(value);
 }
 
-lightningPainDiary.prototype.doDiaryDisplay = function (value) {
-    lpd.lastvalue = value;
+blackHoleSuns.prototype.doDiaryDisplay = function (value) {
+    bhs.lastvalue = value;
 
-    for (let i = 0; i < lpd.trackerlist.length; ++i) {
-        let entry = lpd.trackerlist[i];
+    for (let i = 0; i < bhs.trackerlist.length; ++i) {
+        let entry = bhs.trackerlist[i];
 
         if (value[entry.name]) {
             switch (entry.type) {
                 case "blood pressure":
-                    lpd.setBPInput(entry.name, value[entry.name]);
+                    bhs.setBPInput(entry.name, value[entry.name]);
                     break;
                 case "date":
-                    lpd.setDateInput(entry.name, value[entry.name]);
+                    bhs.setDateInput(entry.name, value[entry.name]);
                     break;
                 case "list":
-                    lpd.setCheckboxList(entry.name, value[entry.name]);
+                    bhs.setCheckboxList(entry.name, value[entry.name]);
                     break;
                 case "number":
-                    lpd.setNumInput(entry.name, value[entry.name]);
+                    bhs.setNumInput(entry.name, value[entry.name]);
                     break;
                 case "range":
-                    lpd.setRange(entry.name, value[entry.name]);
+                    bhs.setRange(entry.name, value[entry.name]);
                     break;
                 case "text":
-                    lpd.setTextInput(entry.name, value[entry.name]);
+                    bhs.setTextInput(entry.name, value[entry.name]);
                     break;
                 case "time":
-                    lpd.setTimeInput(entry.name, value[entry.name]);
+                    bhs.setTimeInput(entry.name, value[entry.name]);
                     break;
                 case "true false":
-                    lpd.setBoolInput(entry.name, value[entry.name]);
+                    bhs.setBoolInput(entry.name, value[entry.name]);
                     break;
                 case "weather":
-                    lpd.setWeatherInput(entry.name, value[entry.name]);
+                    bhs.setWeatherInput(entry.name, value[entry.name]);
                     break;
             }
         }
     }
 }
 
-lightningPainDiary.prototype.doTrackerDisplay = function () {
+blackHoleSuns.prototype.doTrackerDisplay = function () {
     $("#panels").empty();
 
-    for (let i = 0; i < lpd.trackerlist.length; ++i) {
-        let entry = lpd.trackerlist[i];
+    for (let i = 0; i < bhs.trackerlist.length; ++i) {
+        let entry = bhs.trackerlist[i];
 
         switch (entry.type) {
             case "blood pressure":
-                lpd.buildBPInput(entry);
+                bhs.buildBPInput(entry);
                 break;
             case "date":
-                lpd.buildDateInput(entry);
+                bhs.buildDateInput(entry);
                 break;
             case "list":
-                lpd.buildCheckboxList(entry);
+                bhs.buildCheckboxList(entry);
                 break;
             case "number":
-                lpd.buildNumInput(entry);
+                bhs.buildNumInput(entry);
                 break;
             case "range":
-                lpd.buildRange(entry);
+                bhs.buildRange(entry);
                 break;
             case "text":
-                lpd.buildTextInput(entry);
+                bhs.buildTextInput(entry);
                 break;
             case "time":
-                lpd.buildTimeInput(entry);
+                bhs.buildTimeInput(entry);
                 break;
             case "true false":
-                lpd.buildBoolInput(entry);
+                bhs.buildBoolInput(entry);
                 break;
             case "weather":
-                lpd.buildWeatherInput(entry);
+                bhs.buildWeatherInput(entry);
                 break;
         }
     }
@@ -150,16 +247,16 @@ lightningPainDiary.prototype.doTrackerDisplay = function () {
     $("#panels").show();
 
     $("#panels button").click(function () {
-        lpd.procRange(this);
+        bhs.procRange(this);
     });
 
-    if (lpd.account.lastdiaryupdate) {
-        lpd.doDiaryEntryRead(lpd.account.lastdiaryupdate, lpd.doDiaryDisplay);
+    if (bhs.account.lastdiaryupdate) {
+        bhs.doDiaryEntryRead(bhs.account.lastdiaryupdate, bhs.doDiaryDisplay);
         $("#entrybuttons #save").text("Update");
     }
 }
 
-lightningPainDiary.prototype.buildRange = function (entry) {
+blackHoleSuns.prototype.buildRange = function (entry) {
     const panel =
         `
         <div id="pnl-idname" class="row border-bottom">
@@ -170,10 +267,10 @@ lightningPainDiary.prototype.buildRange = function (entry) {
 
     const item = `<button id="btn-ttitle" type="button" class="btn btn-sm" style="background-color: colors; width:10%">ttitle</button>`;
 
-    let id = entry.name.spaceToDash();
+    let id = entry.name.nameToId();
 
-    let container = panel.symbolReplace(/idname/g, id);
-    container = container.symbolReplace(/ttitle/g, entry.name);
+    let container = panel.replace(/idname/g, id);
+    container = container.replace(/ttitle/g, entry.name);
 
     $("#panels").append(container);
 
@@ -182,7 +279,7 @@ lightningPainDiary.prototype.buildRange = function (entry) {
     if (entry.start < entry.end) {
         for (let i = entry.start; i <= entry.end; i++) {
             let c = 120 - (i - entry.start) / (entry.end - entry.start) * 120;
-            let h = item.symbolReplace(/ttitle/g, i);
+            let h = item.replace(/ttitle/g, i);
             h = h.replace("colors", "hsl(" + c + ",100%,50%)");
 
             pnl.find("#entry").append(h);
@@ -191,7 +288,7 @@ lightningPainDiary.prototype.buildRange = function (entry) {
         for (let i = entry.start; i >= entry.end; i--) {
             let c = (i - entry.end) / (entry.start - entry.end) * 120;
 
-            let h = item.symbolReplace(/ttitle/g, i);
+            let h = item.replace(/ttitle/g, i);
             h = h.replace("colors", "hsl(" + c + ",100%,50%)");
 
             pnl.find("#entry").append(h);
@@ -199,24 +296,24 @@ lightningPainDiary.prototype.buildRange = function (entry) {
     }
 }
 
-lightningPainDiary.prototype.extractRange = function (entry) {
-    let id = entry.name.spaceToDash();
+blackHoleSuns.prototype.extractRange = function (entry) {
+    let id = entry.name.nameToId();
     let btn = $("#pnl-" + id + " .btn-green").prop("id");
     return (btn ? btn.replace(/btn-(\d+)/g, "$1") : "");
 }
 
-lightningPainDiary.prototype.setRange = function (name, val) {
-    let id = name.spaceToDash();
+blackHoleSuns.prototype.setRange = function (name, val) {
+    let id = name.nameToId();
     $("#pnl-" + id).removeClass("btn-green");
     $("#pnl-" + id + " #btn-" + val).addClass("btn-green");
 }
 
-lightningPainDiary.prototype.procRange = function (evt) {
+blackHoleSuns.prototype.procRange = function (evt) {
     $(evt).parent().find("button").removeClass("btn-green");
     $(evt).addClass("btn-green");
 }
 
-lightningPainDiary.prototype.buildTextInput = function (entry) {
+blackHoleSuns.prototype.buildTextInput = function (entry) {
     const panel =
         `
         <div id="pnl-idname" class="row border-bottom">
@@ -225,25 +322,25 @@ lightningPainDiary.prototype.buildTextInput = function (entry) {
             </div>
         `;
 
-    let id = entry.name.spaceToDash();
+    let id = entry.name.nameToId();
 
-    let container = panel.symbolReplace(/idname/g, id);
-    container = container.symbolReplace(/ttitle/g, entry.name);
+    let container = panel.replace(/idname/g, id);
+    container = container.replace(/ttitle/g, entry.name);
 
     $("#panels").append(container);
 }
 
-lightningPainDiary.prototype.extractTextInput = function (entry) {
-    let id = entry.name.spaceToDash();
+blackHoleSuns.prototype.extractTextInput = function (entry) {
+    let id = entry.name.nameToId();
     return ($("#pnl-" + id + " #txt").val());
 }
 
-lightningPainDiary.prototype.setTextInput = function (name, val) {
-    let id = name.spaceToDash();
+blackHoleSuns.prototype.setTextInput = function (name, val) {
+    let id = name.nameToId();
     $("#pnl-" + id + " #txt").val(val);
 }
 
-lightningPainDiary.prototype.buildNumInput = function (entry) {
+blackHoleSuns.prototype.buildNumInput = function (entry) {
     const panel =
         `
         <div id="pnl-idname" class="row border-bottom">
@@ -254,25 +351,25 @@ lightningPainDiary.prototype.buildNumInput = function (entry) {
         </div>
         `;
 
-    let id = entry.name.spaceToDash();
+    let id = entry.name.nameToId();
 
-    let container = panel.symbolReplace(/idname/g, id);
-    container = container.symbolReplace(/ttitle/g, entry.name);
+    let container = panel.replace(/idname/g, id);
+    container = container.replace(/ttitle/g, entry.name);
 
     $("#panels").append(container);
 }
 
-lightningPainDiary.prototype.extractNumInput = function (entry) {
-    let id = entry.name.spaceToDash();
+blackHoleSuns.prototype.extractNumInput = function (entry) {
+    let id = entry.name.nameToId();
     return (Number($("#pnl-" + id + " #num").val()));
 }
 
-lightningPainDiary.prototype.setNumInput = function (name, val) {
-    let id = name.spaceToDash();
+blackHoleSuns.prototype.setNumInput = function (name, val) {
+    let id = name.nameToId();
     $("#pnl-" + id + " #num").val(val);
 }
 
-lightningPainDiary.prototype.buildDateInput = function (entry, diary) {
+blackHoleSuns.prototype.buildDateInput = function (entry, diary) {
     const panel =
         `
         <div id="pnl-idname" class="row border-bottom">
@@ -281,25 +378,25 @@ lightningPainDiary.prototype.buildDateInput = function (entry, diary) {
         </div>
         `;
 
-    let id = entry.name.spaceToDash();
+    let id = entry.name.nameToId();
 
-    let container = panel.symbolReplace(/idname/g, id);
-    container = container.symbolReplace(/ttitle/g, entry.name);
+    let container = panel.replace(/idname/g, id);
+    container = container.replace(/ttitle/g, entry.name);
 
     $("#panels").append(container);
 }
 
-lightningPainDiary.prototype.extractDateInput = function (entry) {
-    let id = entry.name.spaceToDash();
+blackHoleSuns.prototype.extractDateInput = function (entry) {
+    let id = entry.name.nameToId();
     return ($("#pnl-" + id + " #date").val());
 }
 
-lightningPainDiary.prototype.setDateInput = function (name, val) {
-    let id = name.spaceToDash();
+blackHoleSuns.prototype.setDateInput = function (name, val) {
+    let id = name.nameToId();
     $("#pnl-" + id + " #date").val(val);
 }
 
-lightningPainDiary.prototype.buildTimeInput = function (entry, diary) {
+blackHoleSuns.prototype.buildTimeInput = function (entry, diary) {
     const panel =
         `
         <div id="pnl-idname" class="row border-bottom">
@@ -309,10 +406,10 @@ lightningPainDiary.prototype.buildTimeInput = function (entry, diary) {
         </div>
         `;
 
-    let id = entry.name.spaceToDash();
+    let id = entry.name.nameToId();
 
-    let container = panel.symbolReplace(/idname/g, id);
-    container = container.symbolReplace(/ttitle/g, entry.name);
+    let container = panel.replace(/idname/g, id);
+    container = container.replace(/ttitle/g, entry.name);
 
     $("#panels").append(container);
 
@@ -324,17 +421,17 @@ lightningPainDiary.prototype.buildTimeInput = function (entry, diary) {
     });
 }
 
-lightningPainDiary.prototype.extractTimeInput = function (entry) {
-    let id = entry.name.spaceToDash();
+blackHoleSuns.prototype.extractTimeInput = function (entry) {
+    let id = entry.name.nameToId();
     return ($("#pnl-" + id + " #time").val());
 }
 
-lightningPainDiary.prototype.setTimeInput = function (name, val) {
-    let id = name.spaceToDash();
+blackHoleSuns.prototype.setTimeInput = function (name, val) {
+    let id = name.nameToId();
     $("#pnl-" + id + " #time").val(val);
 }
 
-lightningPainDiary.prototype.buildBoolInput = function (entry, diary) {
+blackHoleSuns.prototype.buildBoolInput = function (entry, diary) {
     const panel =
         `
         <div id="pnl-idname" class="row border-bottom">
@@ -344,26 +441,26 @@ lightningPainDiary.prototype.buildBoolInput = function (entry, diary) {
         </div>
         `;
 
-    let id = entry.name.spaceToDash();
+    let id = entry.name.nameToId();
 
-    let container = panel.symbolReplace(/idname/g, id);
-    container = container.symbolReplace(/ttitle/g, entry.name);
+    let container = panel.replace(/idname/g, id);
+    container = container.replace(/ttitle/g, entry.name);
 
     $("#panels").append(container);
 }
 
-lightningPainDiary.prototype.extractBoolInput = function (entry) {
-    let id = entry.name.spaceToDash();
+blackHoleSuns.prototype.extractBoolInput = function (entry) {
+    let id = entry.name.nameToId();
     return ($("#pnl-" + id + " :checked").prop("id") === "yes");
 }
 
-lightningPainDiary.prototype.setBoolInput = function (name, val) {
-    let id = name.spaceToDash();
+blackHoleSuns.prototype.setBoolInput = function (name, val) {
+    let id = name.nameToId();
     $("#pnl-" + id).prop("checked", false);
     $("#pnl-" + id + val === "yes" ? " yes" : " no").prop("checked", true);
 }
 
-lightningPainDiary.prototype.buildBPInput = function (entry) {
+blackHoleSuns.prototype.buildBPInput = function (entry) {
     const panel =
         `
         <div id="pnl-idname" class="row border-bottom">
@@ -378,16 +475,16 @@ lightningPainDiary.prototype.buildBPInput = function (entry) {
         </div>
         `;
 
-    let id = entry.name.spaceToDash();
+    let id = entry.name.nameToId();
 
-    let container = panel.symbolReplace(/idname/g, id);
-    container = container.symbolReplace(/ttitle/g, entry.name);
+    let container = panel.replace(/idname/g, id);
+    container = container.replace(/ttitle/g, entry.name);
 
     $("#panels").append(container);
 }
 
-lightningPainDiary.prototype.extractBPInput = function (entry) {
-    let id = entry.name.spaceToDash();
+blackHoleSuns.prototype.extractBPInput = function (entry) {
+    let id = entry.name.nameToId();
     let value = {
         high: Number($("#pnl-" + id + " #high").val()),
         low: Number($("#pnl-" + id + " #low").val()),
@@ -397,14 +494,14 @@ lightningPainDiary.prototype.extractBPInput = function (entry) {
     return (value);
 }
 
-lightningPainDiary.prototype.setBPInput = function (name, val) {
-    let id = name.spaceToDash();
+blackHoleSuns.prototype.setBPInput = function (name, val) {
+    let id = name.nameToId();
     $("#pnl-" + id + " #high").val(val.high);
     $("#pnl-" + id + " #low").val(val.low);
     $("#pnl-" + id + " #pulse").val(val.pulse);
 }
 
-lightningPainDiary.prototype.buildCheckboxList = function (entry) {
+blackHoleSuns.prototype.buildCheckboxList = function (entry) {
     const panel =
         `
         <div id="pnl-idname" class="row border-bottom">
@@ -423,30 +520,30 @@ lightningPainDiary.prototype.buildCheckboxList = function (entry) {
 
     const add = `<input id="add-idname" class="rounded col-lg-3 col-md-3 col-sm-3 col-6" placeholder="ttitle">`;
 
-    let id = entry.name.spaceToDash();
+    let id = entry.name.nameToId();
 
-    let container = panel.symbolReplace(/idname/g, id);
-    container = container.symbolReplace(/ttitle/g, entry.name);
+    let container = panel.replace(/idname/g, id);
+    container = container.replace(/ttitle/g, entry.name);
 
     $("#panels").append(container);
     let pnl = $("#pnl-" + id);
 
     for (let i = 0; i < entry.list.length; ++i) {
-        let id = entry.list[i].spaceToDash();
-        let h = items.symbolReplace(/idname/g, id);
-        h = h.symbolReplace(/ttitle/g, entry.list[i]);
+        let id = entry.list[i].nameToId();
+        let h = items.replace(/idname/g, id);
+        h = h.replace(/ttitle/g, entry.list[i]);
 
         pnl.find("#entry").append(h);
     }
 
-    let h = add.symbolReplace(/idname/g, id);
-    h = h.symbolReplace(/ttitle/g, "notes");
+    let h = add.replace(/idname/g, id);
+    h = h.replace(/ttitle/g, "notes");
     pnl.find("#entry").append(h);
 }
 
-lightningPainDiary.prototype.extractCheckboxList = function (entry) {
+blackHoleSuns.prototype.extractCheckboxList = function (entry) {
     let set = [];
-    let id = entry.name.spaceToDash();
+    let id = entry.name.nameToId();
 
     $("#pnl-" + id + " :checked").each(function () {
         set.push($(this).prop("id"));
@@ -459,12 +556,12 @@ lightningPainDiary.prototype.extractCheckboxList = function (entry) {
     return (set);
 }
 
-lightningPainDiary.prototype.setCheckboxList = function (name, val) {
-    let id = name.spaceToDash();
+blackHoleSuns.prototype.setCheckboxList = function (name, val) {
+    let id = name.nameToId();
     $("#pnl-" + id).prop("checked", false);
 
     for (let i = 0; val && i < val.length; ++i) {
-        let iid = val[i].spaceToDash();
+        let iid = val[i].nameToId();
         let ent = $("#pnl-" + id + " #" + iid);
         if (ent)
             ent.prop("checked", true);
@@ -472,3 +569,5 @@ lightningPainDiary.prototype.setCheckboxList = function (name, val) {
             $("#pnl-" + id + " [id|='add']").val(val[i]);
     }
 }
+
+*/

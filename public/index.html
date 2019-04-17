@@ -33,8 +33,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
 
-    <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.9.4/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.9.4/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.9.4/firebase-database.js"></script>
 
     <script src="common.js"></script>
     <script src="index.js"></script>
@@ -50,13 +51,13 @@
             <a class="navbar-brand" href="index.html">
                 <span class=" clr-dark-green h2">
                     <i class="fa fa-home"></i>
-                    NMS-Black Hole Suns Project
+                    NMS-Black Hole Suns
                 </span>
             </a>
 
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link clr-dark-green h6" href="about.html">
+                    <a class="nav-link clr-dark-green h4" href="about.html">
                         About
                     </a>
                 </li>
@@ -74,7 +75,7 @@
         <br>
     </div>
 
-    <div id="jssite" class="card card-body bkg-light-green pad-bottom" style="display: none">
+    <div id="jssite" class="card card-body bkg-light-green pad-bottom">
         <div class="card card-body pad-bottom">
             <div id="loggedout" class="row clr-dark-green bkg-light-green">
                 <h4>This is the data entry page for the No Man's Sky Black Hole
@@ -82,74 +83,59 @@
                 </h4>
             </div>
 
-            <div id="panels" style="display: none">
-                <div id="input" class="card card-body pad-bottom bkg-white" style="display: none">
+            <div id="input" class="card card-body pad-bottom bkg-white">
+                <div id = "userinfo" class="row">
+                    Player Name&nbsp;
+                    <input id="player" class="rounded col-lg-5 col-md-5 col-sm-5 col-8" type="text">&nbsp;
 
-                    Platform <button id="platform" class="dropdown-item" type="button"
-                        style="cursor: pointer">ttype</button>
+                    Platform&nbsp;
+                    <div id="menu-platform" class="col-lg-2 col-md-2 col-sm-2 col-3 dropdown"></div>
 
-                    Galaxy <button id="galaxy" class="dropdown-item" type="button"
-                        style="cursor: pointer">ttype</button>
-
-                    Black Hole Galaxy Address (format 000:000:000:007d, error check)
-                    System Name
-                    Region Name (dup check region + system)
-                    Race <button id="race" class="dropdown-item" type="button" style="cursor: pointer">ttype</button>
-                    Economy <button id="economy" class="dropdown-item" type="button"
-                        style="cursor: pointer">ttype</button>
-
-                    Exit System Galaxy Address (format 000:000:000:0000, error check) dead zone ck box
-                    System Name
-                    Region Name (dup check region + system)
-                    Race <button id="race" class="dropdown-item" type="button" style="cursor: pointer">ttype</button>
-                    Economy <button id="economy" class="dropdown-item" type="button"
-                        style="cursor: pointer">ttype</button>
+                    Galaxy&nbsp;
+                    <div id="menu-galaxy" class="col-lg-2 col-md-2 col-sm-2 col-3 dropdown"></div>
                 </div>
-
+                <br>
+                <div id="panels"></div>
+                
                 <div id="entrybuttons" class="row">
+                    <!-- dup address, check region + system -->
                     <button id="save" type="button" class="btn border btn-sm btn-green disabled"
                         disabled>Save</button>&nbsp;
-                    <button id="cancel" type="button" class="btn border btn-sm btn-green disabled"
-                        disabled>Cancel</button>
                     <button id="clear" type="button" class="btn border btn-sm btn-green disabled"
                         disabled>Clear</button>
                 </div>
-
-                <div id="input" class="card card-body pad-bottom bkg-white" style="display: none">
-                    User's Entry List Total reported (show collapse arrow, local storage, sort by)
-                    Time BH Address System Name Region Name Race Economy (calc) quadrant
-                    Exit Address System Name Region Name Race Economy (calc) quadrant
-                    distance traveled distance towards center
-
-                    <div id="editbuttons" class="row">
-                        <button id="edit" type="button" class="btn border btn-sm btn-green disabled"
-                            disabled>Save</button>&nbsp;
-                        <button id="delete" type="button" class="btn border btn-sm btn-green disabled"
-                            disabled>Cancel</button>
-                    </div>
-                </div>
             </div>
 
-            <div id="input" class="card card-body pad-bottom bkg-white" style="display: none">
-                User's Mapped Data (show collapse arrow, show generation, local storage)
-                blue entry red Exit connect clear green line (optional)
-            </div>
+            <div id="id-list" class="card card-body pad-bottom bkg-white"></div>
+            User's Entry List Total reported (show collapse arrow, local storage, sort by)
+            Time BH Address System Name Region Name Race Economy (calc) quadrant
+            Exit Address System Name Region Name Race Economy (calc) quadrant
+            distance traveled distance towards center
 
-            <div id="input" class="card card-body pad-bottom bkg-white" style="display: none">
-                Overall Statistics (show collapse arrow)
-                PC PS4, xbox
-                Galaxy entries
-                (list)
-                Total
-                Grand Total
+            <div id="editbuttons" class="row">
+                <button id="edit" type="button" class="btn border btn-sm btn-green" disabled>Edit</button>&nbsp;
+                <button id="savelist" type="button" class="btn border btn-sm btn-green" disabled>Save</button>&nbsp;
+                <button id="delete" type="button" class="btn border btn-sm btn-green" disabled>Delete</button>
             </div>
-
         </div>
-        <br>
+
+        <div id="map" class="card card-body pad-bottom bkg-white">
+            User's Mapped Data (show collapse arrow, show generation, local storage)
+            blue entry red Exit connect clear green line (optional)
+        </div>
+
+        <div id="stats" class="card card-body pad-bottom bkg-white">
+            Overall Statistics (show collapse arrow)
+            PC PS4, xbox
+            Galaxy entries
+            (list)
+            Total
+            Grand Total
+        </div>
     </div>
+    <br>
 
     <div id="footer"></div>
-    <br>
 
 </body>
 
