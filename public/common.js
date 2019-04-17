@@ -1,7 +1,7 @@
 'use strict';
 
 var bhs;
-/*
+
 ui.start('#firebaseui-auth-container', {
     signInOptions: [
         // List of OAuth providers supported.
@@ -12,42 +12,42 @@ ui.start('#firebaseui-auth-container', {
         firebase.auth.GithubAuthProvider.PROVIDER_ID
     ],
 });
-*/
+
+const fbconfig = {
+    apiKey: FIREBASE_API,
+    authDomain: "nms-bhs.firebaseapp.com",
+    databaseURL: "https://nms-bhs.firebaseio.com",
+    projectId: "nms-bhs",
+    storageBucket: "nms-bhs.appspot.com",
+    messagingSenderId: FIREBASE_MSGID
+};
 
 function startUp() {
     $("#javascript").empty();
     $("#jssite").show();
 
-//    loadHtml("https://blackHoleSuns.firebaseapp.com/navbar.html", "http://raw.githubusercontent.com/spip01/blackHoleSuns/public/navbar.html", "#navbar");
-//    loadHtml("https://blackHoleSuns.firebaseapp.com/footer.html", "http://raw.githubusercontent.com/spip01/blackHoleSuns/public/footer.html", "#footer");
+    loadHtml("https://blackHoleSuns.firebaseapp.com/navbar.html", "http://raw.githubusercontent.com/spip01/blackHoleSuns/public/navbar.html", "#navbar");
+    loadHtml("https://blackHoleSuns.firebaseapp.com/footer.html", "http://raw.githubusercontent.com/spip01/blackHoleSuns/public/footer.html", "#footer");
 
     bhs = new blackHoleSuns();
 
-//    bhs.init();
-//    bhs.initFirebase();
+        bhs.init();
+       bhs.initFirebase();
 }
 
 
 function blackHoleSuns() {
-//    this.account = {};
+       this.account = {};
 
-//    this.fbauth = null;
-//    this.fbdatabase = null;
- //   this.fbstorage = null;
+        this.fbauth = null;
+        this.fbdatabase = null;
+       this.fbstorage = null;
 }
 
-/*
+
 // Sets up shortcuts to Firebase features and initiate firebase auth.
 blackHoleSuns.prototype.initFirebase = function () {
-    var config = {
-        apiKey: FIREBASE_API,
-        authDomain: "nms-bhs.firebaseapp.com",
-        databaseURL: "https://nms-bhs.firebaseio.com",
-        projectId: "nms-bhs",
-        storageBucket: "nms-bhs.appspot.com",
-        messagingSenderId: "957357186275"
-    };
-    firebase.initializeApp(config);
+    firebase.initializeApp(fbconfig);
 
     bhs.fbauth = firebase.auth();
     bhs.fbdatabase = firebase.database();
@@ -125,7 +125,7 @@ blackHoleSuns.prototype.checkLoggedInWithMessage = function () {
 
     return false;
 }
-
+/*
 blackHoleSuns.prototype.doTrackerlistRead = function (finishfcn) {
     var ref = firebase.database().ref("users/" + bhs.uid + '/Trackers');
     ref.once("value")
@@ -350,7 +350,7 @@ blackHoleSuns.prototype.init = function () {
     bhs.account.lastreport = "all on";
     bhs.account.lastdiaryupdate = null;
 }
-
+*/
 function loadHtml(url, alturl, selector) {
     loadFile(url, alturl, function (data) {
         let html = data.substring(data.indexOf("<body>") + 6, data.indexOf("</body>"));
@@ -370,7 +370,7 @@ function loadHtml(url, alturl, selector) {
         }
     });
 }
-
+/*
 Date.prototype.toDateLocalTimeString = function () {
     let date = this;
     return date.getFullYear() +
@@ -429,14 +429,14 @@ String.prototype.stripID = function () {
 }
 */
 
-String.prototype.nameToId = function(){
+String.prototype.nameToId = function () {
     return this.replace(" ", "-").replace("'", "_");
 }
 
-String.prototype.IdToName = function(){
+String.prototype.IdToName = function () {
     return this.replace("-", " ").replace("_", "'");
 }
- 
+
 /*
 function monthDays(year, month) {
     const days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -512,16 +512,26 @@ function getLocation(fcn) {
 */
 
 
-const lifeformList = [
-    {name:"Vy'keen"},
-    {name:"Gek"},
-    {name:"Kovax"}
+const lifeformList = [{
+        name: "Vy'keen"
+    },
+    {
+        name: "Gek"
+    },
+    {
+        name: "Kovax"
+    }
 ];
 
-const platformList = [
-    {name:"PC"},
-    {name:"PS4"},
-    {name:"XBox"}
+const platformList = [{
+        name: "PC"
+    },
+    {
+        name: "PS4"
+    },
+    {
+        name: "XBox"
+    }
 ];
 
 const economyList = [{

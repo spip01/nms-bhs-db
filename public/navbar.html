@@ -4,53 +4,42 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.12/css/all.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
 
     <link rel="stylesheet" type="text/css" href="local.css">
 </head>
 
 <body>
-    <div id="imported-navbar" class="bkg-light-green fixed-top clr-dark-green container-fluid">
+    <div id="imported-navbar" class="bkg-light-green fixed-top clr-dark-green container-fluid noprint">
         <div class="row">
-            <a class="clr-dark-green col-md-5 col-sm-6 col-12" href="index.html">
+            <a class="clr-dark-green col-lg-4 col-md-4 col-sm-4 col-12" href="index.html">
                 <h3>
                     <i class="fa fa-home"></i>
                     NMS Black Hole Suns Data Entry
                 </h3>
             </a>
 
-            <a id="about" class="h5 nav-text col-sm-2 col-3 noprint" href="about.html" style="display: none">
+            <a id="about" class="h5 nav-text col-2" href="about.html">
                 Help/About
             </a>
 
-            <div class="container col-sm-4 col-9">
-                <button id="login" type="button" class="nav-text no-border">
-                    <h5>Login</h5>
-                </button>
+            <button id="login" type="button" class=" col-2 nav-text no-border">
+                <h5>Login</h5>
+            </button>
 
-                <div id="usermenu" class="dropdown" style="display: none">
-                    <button type="button" class="row nav-text no-border dropdown-toggle" data-toggle="dropdown">
-                        <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
+            <button id="loggedin" type="button" class="col-4 nav-text no-border" style="display: none">
+                <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
 
-                        <h5 id="username">
-                            User
-                        </h5>
-                    </button>
+                <h5 id="username">
+                    User
+                </h5>
+            </button>
 
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item h5 bkg-light-green clr-dark-green" href="settings.html">
-                            <i class="fas fa-user-cog"></i>&nbsp;
-                            <h5>Settings</h5>
-                        </a>
 
-                        <button id="logout" type="button" class="no-border dripdown-item bkg-light-green clr-dark-green">
-                            <h5>Logout</h5>
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <button id="logout" type="button" class="col-2 no-border bkg-light-green clr-dark-green"
+                style="display: none">
+                <h5>Logout</h5>
+            </button>
         </div>
     </div>
     <br>
