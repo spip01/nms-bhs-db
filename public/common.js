@@ -1,7 +1,7 @@
 'use strict';
 
 var bhs;
-
+/*
 ui.start('#firebaseui-auth-container', {
     signInOptions: [
         // List of OAuth providers supported.
@@ -12,7 +12,7 @@ ui.start('#firebaseui-auth-container', {
         firebase.auth.GithubAuthProvider.PROVIDER_ID
     ],
 });
-
+*/
 const fbconfig = {
     apiKey: FIREBASE_API,
     authDomain: "nms-bhs.firebaseapp.com",
@@ -26,22 +26,22 @@ function startUp() {
     $("#javascript").empty();
     $("#jssite").show();
 
-    loadHtml("https://blackHoleSuns.firebaseapp.com/navbar.html", "http://raw.githubusercontent.com/spip01/blackHoleSuns/public/navbar.html", "#navbar");
-    loadHtml("https://blackHoleSuns.firebaseapp.com/footer.html", "http://raw.githubusercontent.com/spip01/blackHoleSuns/public/footer.html", "#footer");
+    loadHtml("https://nms-bhs.firebaseapp.com/navbar.html", "https://raw.githubusercontent.com/spip01/nms-bhs-db/master/public/navbar.html", "#navbar");
+    loadHtml("https://nms-bhs.firebaseapp.com/footer.html", "https://raw.githubusercontent.com/spip01/nms-bhs-db/master/public/footer.html", "#footer");
 
     bhs = new blackHoleSuns();
 
-        bhs.init();
-       bhs.initFirebase();
+    bhs.init();
+    bhs.initFirebase();
 }
 
 
 function blackHoleSuns() {
-       this.account = {};
+    this.account = {};
 
-        this.fbauth = null;
-        this.fbdatabase = null;
-       this.fbstorage = null;
+    this.fbauth = null;
+    this.fbdatabase = null;
+    this.fbstorage = null;
 }
 
 
@@ -326,31 +326,13 @@ blackHoleSuns.prototype.doReportDelete = function (namekey) {
         firebase.database().ref('users/' + bhs.uid + '/Reports/' + namekey).remove();
     }
 }
-
-blackHoleSuns.prototype.init = function () {
-    bhs.trackerlist = [];
-
-    for (let i = 0; i < demotrackerlist.length; ++i)
-        bhs.trackerlist.push(demotrackerlist[i]);
-
-    if (bhs.initReport)
-        bhs.initReport();
-
-    bhs.account.city = "";
-    bhs.account.state = "";
-    bhs.account.country = "";
-    bhs.account.ifmetric = false;
-    bhs.account.ifnotify = false;
-    bhs.account.notifytime = "20:00:00";
-    bhs.account.ifemail = false;
-    bhs.account.email = "";
-    bhs.account.ifsms = false;
-    bhs.account.phone = "";
-
-    bhs.account.lastreport = "all on";
-    bhs.account.lastdiaryupdate = null;
-}
 */
+blackHoleSuns.prototype.init = function () {
+    bhs.account.playerName = "";
+    bhs.account.platform = "PC";
+    bhs.account.galaxy = "Eculid";
+}
+
 function loadHtml(url, alturl, selector) {
     loadFile(url, alturl, function (data) {
         let html = data.substring(data.indexOf("<body>") + 6, data.indexOf("</body>"));
@@ -369,6 +351,34 @@ function loadHtml(url, alturl, selector) {
             });
         }
     });
+}
+
+function loadFile(url, alturl, fctn) {
+    $.ajax({
+        url: url,
+        method: 'GET',
+        success: function (data) {
+            fctn(data);
+        },
+        error: function (data) {
+            if (alturl)
+                loadFile(alturl, null, fctn);
+        }
+    });
+
+    /***************
+    let xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+        if (this.readyState == 4) {
+            if (this.status == 200)
+                fctn(this.responseText);
+            else if (alturl)
+                loadFile(alturl, null, fctn);
+        }
+    }
+    xhttp.open("GET", url, true);
+    xhttp.send();
+    *************/
 }
 /*
 Date.prototype.toDateLocalTimeString = function () {

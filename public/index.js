@@ -2,6 +2,7 @@
 
 $(document).ready(function () {
     startUp();
+    
     /*
         $("#save").click(function () {
             bhs.updateEntry();
