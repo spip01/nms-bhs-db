@@ -35,22 +35,26 @@ function startUp() {
     bhs.initFirebase();
 }
 
-
 function blackHoleSuns() {
     this.account = {};
 
+    this.uid = null;
     this.fbauth = null;
-    this.fbdatabase = null;
+    this.fbfs = null;
     this.fbstorage = null;
 }
 
-
 // Sets up shortcuts to Firebase features and initiate firebase auth.
 blackHoleSuns.prototype.initFirebase = function () {
-    firebase.initializeApp(fbconfig);
+    try {
+        firebase.initializeApp(fbconfig);
+    } catch (err) {
+        if (!/already exists/.test(err.message))
+            console.error("Firebase initialization error raised", err.stack)
+    }
 
     bhs.fbauth = firebase.auth();
-    bhs.fbdatabase = firebase.database();
+    bhs.fbfs = firebase.firestore();
 
     bhs.fbauth.onAuthStateChanged(bhs.onAuthStateChanged.bind(bhs));
 }
@@ -74,38 +78,38 @@ blackHoleSuns.prototype.onAuthStateChanged = function (user) {
 
         $("#login").hide();
         $("#usermenu").show();
-        $("#loggedout").hide();
-
-        if (bhs.doLoggedin)
-            bhs.doLoggedin();
 
         bhs.uid = user.uid;
-        bhs.account.email = user.email;
 
-        var ref = firebase.database().ref("users/" + bhs.uid + '/Account');
-        ref.once("value", function (snapshot) {
-            if (snapshot.exists()) {
-                bhs.account = snapshot.val();
+        var ref = bhs.fbfs.doc('users/' + bhs.uid);
 
-                bhs.doTrackerlistRead(bhs.doTrackerDisplay);
-
-                //bhs.doDBUpdate();
+        ref.get().then(function (doc) {
+            if (doc.exists) {
+                bhs.account = doc.data();
+                if (bhs.account.email != user.email) {
+                    bhs.account.email = user.email;
+                    bhs.doUserWrite(ref);
+                }
             } else {
-                bhs.doAccountWrite();
-                bhs.doTrackerlistWrite();
+                bhs.userInit();
+                bhs.doUserWrite(ref);
             }
 
-            if (bhs.doAccountDisplay)
-                bhs.doAccountDisplay();
+            if (bhs.doLoggedin)
+                bhs.doLoggedin();
+
+            $("#userpic").show();
+            $("#username").show();
+            $("#logout").show();
+            $("#login").hide();
         });
     } else {
-        bhs.uid = null;
-
-        $("#usermenu").hide();
+        $("#userpic").hide();
+        $("#username").hide();
+        $("#logout").hide();
         $("#login").show();
-        $("#loggedout").show();
 
-        bhs.init();
+        bhs.userInit();
 
         if (bhs.doLoggedout)
             bhs.doLoggedout()
@@ -125,210 +129,20 @@ blackHoleSuns.prototype.checkLoggedInWithMessage = function () {
 
     return false;
 }
-/*
-blackHoleSuns.prototype.doTrackerlistRead = function (finishfcn) {
-    var ref = firebase.database().ref("users/" + bhs.uid + '/Trackers');
-    ref.once("value")
-        .then(function (snapshot) {
-            bhs.trackerlist = snapshot.val();
 
-            if (finishfcn)
-                finishfcn();
-        });
-}
-
-blackHoleSuns.prototype.doAccountWrite = function (key) {
-    if (bhs.checkLoggedInWithMessage()) {
-        if (key)
-            firebase.database().ref('users/' + bhs.uid + '/Account/' + key).set(bhs.account[key]);
-        else
-            firebase.database().ref('users/' + bhs.uid + '/Account').set(bhs.account);
-    }
-}
-
-blackHoleSuns.prototype.doTrackerlistWrite = function () {
+blackHoleSuns.prototype.doUserWrite = function (ref) {
     if (bhs.checkLoggedInWithMessage())
-        firebase.database().ref('users/' + bhs.uid + '/Trackers/').set(bhs.trackerlist);
+        ref.set(bhs.account);
 }
 
-blackHoleSuns.prototype.doTrackerWrite = function (entry, idx) {
-    if (bhs.checkLoggedInWithMessage())
-        firebase.database().ref('users/' + bhs.uid + '/Trackers/' + idx).set(entry);
-}
-
-blackHoleSuns.prototype.getDiaryKey = function (date, time) {
-    let datekey = date;
-    if (time)
-        datekey += "T" + time;
-    datekey = datekey.replace(/:/g, "");
-    datekey = datekey.replace(/-/g, "");
-
-    return (datekey);
-}
-
-blackHoleSuns.prototype.doDBUpdate = function () {
-    debugger;
-    var ref = firebase.database().ref("users/" + bhs.uid + '/Diary/');
-    ref.once("value", function (snapshot) {
-        snapshot.forEach(function (data) {
-            if (data.key.length === 15) {
-                //bhs.doDiaryEntryWrite(data.val());
-                //bhs.doDiaryEntryDelete(data.key);
-            }
-        });
-    });
-}
-
-blackHoleSuns.prototype.doDiaryRead = function (start, end, entryfcn, finishfcn) {
-    //ref.child("userFavorites").queryOrderedByKey().queryEqual(toValue: user.uid).observe(...)
-
-    var ref = firebase.database().ref("users/" + bhs.uid + '/Diary/');
-    ref.orderByChild("Date");
-    if (start)
-        ref.startAt(start);
-    if (end)
-        ref.endAt(end);
-    ref.once("value", function (snapshot) {
-        bhs.snapshot = snapshot;
-
-        snapshot.forEach(function (data) {
-            if (entryfcn)
-                entryfcn(data.val());
-        });
-
-        if (finishfcn)
-            finishfcn();
-    });
-}
-
-blackHoleSuns.prototype.doDiaryTrackerRename = function (oldname, newname) {
-    //ref.child("userFavorites").queryOrderedByKey().queryEqual(toValue: user.uid).observe(...)
-
-    var ref = firebase.database().ref("users/" + bhs.uid + '/Diary/');
-    ref.once("value", function (snapshot) {
-        bhs.snapshot = snapshot;
-
-        snapshot.forEach(function (diary) {
-            let entry = diary.val();
-
-            if (entry[oldname]) {
-                entry[newname] = entry[oldname];
-                delete entry[oldname];
-            }
-
-            bhs.doDiaryEntryWrite(entry);
-        });
-
-    });
-}
-
-blackHoleSuns.prototype.doDiaryUpdate = function () {
-    var ref = firebase.database().ref("users/" + bhs.uid + '/Diary/');
-    ref.once("value", function (snapshot) {
-        snapshot.forEach(function (diary) {
-            let entry = diary.val();
-            for (let [name, val] of Object.entries(entry)) {
-                if (val.constructor === Array) {
-                    let i = val.indexOf("");
-                    if (1 !== -1)
-                        val.splice(val, 1);
-                }
-            }
-
-            let key = bhs.getDiaryKey(entry.Date, entry.Time);
-            firebase.database().ref('users/' + bhs.uid + '/Diary/' + diary.key).remove();
-            firebase.database().ref('users/' + bhs.uid + '/Diary/' + key).set(entry);
-        });
-    });
-}
-
-blackHoleSuns.prototype.doDiaryEntryRead = function (datekey, finishfcn) {
-    if (bhs.checkLoggedInWithMessage()) {
-        var ref = firebase.database().ref("users/" + bhs.uid + '/Diary/' + datekey);
-        ref.once("value").then(function (snapshot) {
-            if (snapshot.exists()) {
-                finishfcn(snapshot.val());
-
-                if (bhs.account.lastdiaryupdate !== datekey) {
-                    bhs.account.lastdiaryupdate = datekey;
-                    bhs.doAccountWrite("lastdiaryupdate");
-                }
-            }
-        });
-    }
-}
-
-blackHoleSuns.prototype.doDiaryEntryWrite = function (value) {
-    if (bhs.checkLoggedInWithMessage()) {
-        let datekey = bhs.getDiaryKey(value.Date, value.Time);
-        firebase.database().ref('users/' + bhs.uid + '/Diary/' + datekey).set(value);
-
-        if (bhs.account.lastdiaryupdate !== datekey) {
-            bhs.account.lastdiaryupdate = datekey;
-            bhs.doAccountWrite("lastdiaryupdate");
-        }
-    }
-}
-
-blackHoleSuns.prototype.doDiaryEntryDelete = function (datekey) {
-    if (bhs.checkLoggedInWithMessage()) {
-        firebase.database().ref('users/' + bhs.uid + '/Diary/' + datekey).remove();
-    }
-}
-
-blackHoleSuns.prototype.doReportlistRead = function (finishfcn) {
-    bhs.reportlist = [];
-
-    var ref = firebase.database().ref("users/" + bhs.uid + '/Reports/');
-    ref.once("value", function (snapshot) {
-        snapshot.forEach(function (data) {
-            bhs.reportlist.push(data.key);
-        });
-
-        if (finishfcn)
-            finishfcn();
-    });
-}
-
-blackHoleSuns.prototype.doReportRead = function (namekey, finishfcn) {
-    if (bhs.checkLoggedInWithMessage()) {
-        var ref = firebase.database().ref("users/" + bhs.uid + '/Reports/' + namekey);
-        ref.once("value", function (snapshot) {
-            if (snapshot.exists()) {
-                bhs.report = snapshot.val();
-
-            } else if (bhs.initReport)
-                bhs.initReport();
-
-            if (bhs.account.lastreport !== namekey) {
-                bhs.account.lastreport = namekey;
-                bhs.doAccountWrite("lastreport");
-            }
-
-            finishfcn();
-        });
-    }
-}
-
-blackHoleSuns.prototype.doReportWrite = function (namekey) {
-    if (bhs.checkLoggedInWithMessage()) {
-        firebase.database().ref('users/' + bhs.uid + '/Reports/' + namekey).set(bhs.report);
-
-        if (bhs.account.lastreport !== namekey) {
-            bhs.account.lastreport = namekey;
-            bhs.doAccountWrite("lastreport");
-        }
-    }
-}
-
-blackHoleSuns.prototype.doReportDelete = function (namekey) {
-    if (bhs.checkLoggedInWithMessage()) {
-        firebase.database().ref('users/' + bhs.uid + '/Reports/' + namekey).remove();
-    }
-}
-*/
 blackHoleSuns.prototype.init = function () {
+    bhs.userInit();
+}
+
+blackHoleSuns.prototype.userInit = function () {
+    bhs.uid = null;
     bhs.account.playerName = "";
+    bhs.account.email = "";
     bhs.account.platform = "PC";
     bhs.account.galaxy = "Eculid";
 }
@@ -380,6 +194,21 @@ function loadFile(url, alturl, fctn) {
     xhttp.send();
     *************/
 }
+
+String.prototype.IdToName = function () {
+    let name = /-/g [Symbol.replace](this, " ");
+    name = /_/g [Symbol.replace](name, "'");
+
+    return name;
+}
+
+String.prototype.nameToId = function () {
+    let id = / /g [Symbol.replace](this, "-");
+    id = /'/g [Symbol.replace](id, "_");
+
+    return id;
+}
+
 /*
 Date.prototype.toDateLocalTimeString = function () {
     let date = this;
@@ -430,24 +259,6 @@ String.prototype.getMonthString = function () {
     return months[this - 1];
 }
 
-String.prototype.idToName = function () {
-    return this.stripID().dashToSpace();
-}
-
-String.prototype.stripID = function () {
-    return this.replace(/^.*?-(.*)/g, "$1");
-}
-*/
-
-String.prototype.nameToId = function () {
-    return this.replace(" ", "-").replace("'", "_");
-}
-
-String.prototype.IdToName = function () {
-    return this.replace("-", " ").replace("_", "'");
-}
-
-/*
 function monthDays(year, month) {
     const days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     let leap = month === 2 ? (year % 100 === 0 ? (year % 400 === 0 ? 1 : 0) : (year % 4 === 0 ? 1 : 0)) : 0;

@@ -2,7 +2,7 @@
 
 $(document).ready(function () {
     startUp();
-    
+
     /*
         $("#save").click(function () {
             bhs.updateEntry();
@@ -22,8 +22,8 @@ $(document).ready(function () {
     */
 
     let loc = $("#userinfo");
-    bhs.buildMenu(loc, "platform", platformList);
-    bhs.buildMenu(loc, "galaxy", galaxyList, true);
+    bhs.buildMenu(loc, "platform", platformList, true);
+    bhs.buildMenu(loc, "galaxy", galaxyList, true, true);
 
     bhs.buildPanel("Black Hole System");
     bhs.buildPanel("Exit System");
@@ -34,16 +34,17 @@ blackHoleSuns.prototype.buildPanel = function (name) {
     let panel = `
         <div id="pnl-name" class="card pad-bottom">
             <div class="h4 clr-dark-green">heading</div>
-            <div class="row border_bottom">
-                <label class="col-lg-4 col-md-4 col-sm-4 col-12 h6 clr-dark-green">Address&nbsp;
-                    <input id="id-add" class="rounded col-6"></input>
-                </label>
-                <label class="col-lg-4 col-md-4 col-sm-4 col-12 h6 clr-dark-green">System Name&nbsp;
-                    <input id="id-sys" class="rounded col-6"></input>
-                </label>
-                <label class="col-lg-4 col-md-4 col-sm-4 col-12 h6 clr-dark-green">Region Name&nbsp;
-                    <input id="id-reg" class="rounded col-6"></input>
-                </label>
+            <div class="row">
+                <div class="col-lg-2 col-md-2 col-sm-2 col-5 h6 clr-dark-green">Address&nbsp;</div>
+                <input id="id-add" class="rounded col-6"></input>
+            </div>
+            <div class="row">
+                <div class="col-lg-2 col-md-2 col-sm-2 col-5 h6 clr-dark-green">System Name&nbsp;</div>
+                <input id="id-sys" class="rounded col-6"></input>
+            </div>
+            <div class="row">
+                <div class="col-lg-2 col-md-2 col-sm-2 col-5 h6 clr-dark-green">Region Name&nbsp;</div>
+                <input id="id-reg" class="rounded col-6"></input>
             </div>
             <div class="row">
                 <!--label class="col-lg-4 col-md-4 col-sm-4 col-6 h6 clr-dark-green">Star Type&nbsp;
@@ -61,17 +62,20 @@ blackHoleSuns.prototype.buildPanel = function (name) {
         <br>`;
 
     let id = name.nameToId();
-    $("#panels").append(panel.replace(/name/g, id).replace(/heading/g, name));
+    let h = /name/g [Symbol.replace](panel, id);
+    h = /heading/g [Symbol.replace](h, name);
 
-    let loc = $("#pnl-"+id);
+    $("#panels").append(h);
+
+    let loc = $("#pnl-" + id);
 
     bhs.buildMenu(loc, "life", lifeformList);
     bhs.buildMenu(loc, "econ", economyList);
-//    bhs.buildMenu(loc, "type", typeList);
-//    bhs.buildMenu(loc, "conf", conflictList);
+    //    bhs.buildMenu(loc, "type", typeList);
+    //    bhs.buildMenu(loc, "conf", conflictList);
 }
 
-blackHoleSuns.prototype.buildMenu = function (loc, label, list, makelist) {
+blackHoleSuns.prototype.buildMenu = function (loc, label, list, updateuser, makelist) {
     let item = ``;
     let hdr = `
         <button id="button" class="btn border btn-sm btn-green dropdown-toggle" type="button" data-toggle="dropdown">
@@ -81,32 +85,34 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, makelist) {
     if (makelist) {
         item = `<li id="item-idname" class="dropdown-item" type="button" style="cursor: pointer">iname</li>`;
         hdr += `<ul id="list" class="dropdown-menu scrollable-menu btn-green" role="menu"></ul>`;
-    }
-    else {
+    } else {
         item = `<button id="item-idname" class="dropdown-item border-bottom" type="button" style="cursor: pointer">iname</button>`;
         hdr += `<div id="list" class="dropdown-menu btn-green"></div>`;
     }
-    
-    let menu = loc.find("#menu-" + label);
 
-    menu.append(hdr.replace(/default/g, list[0].name));
+    let menu = loc.find("#menu-" + label);
+    let h = /default/g [Symbol.replace](hdr, list[0].name);
+
+    menu.append(h);
 
     let mlist = menu.find("#list");
 
     for (let i = 0; i < list.length; ++i) {
-        let name = list[i].name.nameToId();
-        mlist.append(item.replace(/idname/g, name).replace(/iname/g, list[i].name));
+        let id = list[i].name.nameToId();
+        let h = /idname/g [Symbol.replace](item, id);
+        h = /iname/g [Symbol.replace](h, list[i].name);
 
-        mlist.find("#item-" + name).click(function () {
+        mlist.append(h);
+
+        mlist.find("#item-" + id).click(function () {
             let name = $(this).text();
             menu.find("#button").text(name);
 
-            // update user data
+            if (updateuser) {}
         });
     }
 }
 
-/*
 blackHoleSuns.prototype.doLoggedout = function () {
     $("#save").addClass("disabled");
     $("#save").prop("disabled", true);
@@ -126,7 +132,7 @@ blackHoleSuns.prototype.doLoggedin = function () {
     $("#map").show();
     $("#list").show();
 }
-
+/*
 blackHoleSuns.prototype.updateEntry = function () {
     let value = {};
 
@@ -270,8 +276,8 @@ blackHoleSuns.prototype.buildRange = function (entry) {
 
     let id = entry.name.nameToId();
 
-    let container = panel.replace(/idname/g, id);
-    container = container.replace(/ttitle/g, entry.name);
+    let container = /idname/g [Symbol.replace](panel, id);
+    container = /ttitle/g [Symbol.replace](container, entry.name);
 
     $("#panels").append(container);
 
@@ -280,7 +286,7 @@ blackHoleSuns.prototype.buildRange = function (entry) {
     if (entry.start < entry.end) {
         for (let i = entry.start; i <= entry.end; i++) {
             let c = 120 - (i - entry.start) / (entry.end - entry.start) * 120;
-            let h = item.replace(/ttitle/g, i);
+            let h = /ttitle/g [Symbol.replace](item, i);
             h = h.replace("colors", "hsl(" + c + ",100%,50%)");
 
             pnl.find("#entry").append(h);
@@ -289,7 +295,7 @@ blackHoleSuns.prototype.buildRange = function (entry) {
         for (let i = entry.start; i >= entry.end; i--) {
             let c = (i - entry.end) / (entry.start - entry.end) * 120;
 
-            let h = item.replace(/ttitle/g, i);
+            let h = /ttitle/g [Symbol.replace](item, i);
             h = h.replace("colors", "hsl(" + c + ",100%,50%)");
 
             pnl.find("#entry").append(h);
@@ -300,7 +306,7 @@ blackHoleSuns.prototype.buildRange = function (entry) {
 blackHoleSuns.prototype.extractRange = function (entry) {
     let id = entry.name.nameToId();
     let btn = $("#pnl-" + id + " .btn-green").prop("id");
-    return (btn ? btn.replace(/btn-(\d+)/g, "$1") : "");
+    return (btn ? /btn-(\d+)/g [Symbol.replace](btn, "$1") : "");
 }
 
 blackHoleSuns.prototype.setRange = function (name, val) {
@@ -325,8 +331,8 @@ blackHoleSuns.prototype.buildTextInput = function (entry) {
 
     let id = entry.name.nameToId();
 
-    let container = panel.replace(/idname/g, id);
-    container = container.replace(/ttitle/g, entry.name);
+    let container = /idname/g [Symbol.replace](panel, id);
+    container = /ttitle/g [Symbol.replace](container, entry.name);
 
     $("#panels").append(container);
 }
@@ -354,8 +360,8 @@ blackHoleSuns.prototype.buildNumInput = function (entry) {
 
     let id = entry.name.nameToId();
 
-    let container = panel.replace(/idname/g, id);
-    container = container.replace(/ttitle/g, entry.name);
+    let container = /idname/g [Symbol.replace](panel, id);
+    container = /ttitle/g [Symbol.replace](container, entry.name);
 
     $("#panels").append(container);
 }
@@ -381,8 +387,8 @@ blackHoleSuns.prototype.buildDateInput = function (entry, diary) {
 
     let id = entry.name.nameToId();
 
-    let container = panel.replace(/idname/g, id);
-    container = container.replace(/ttitle/g, entry.name);
+    let container = /idname/g [Symbol.replace](panel, id);
+    container = /ttitle/g [Symbol.replace](container, entry.name);
 
     $("#panels").append(container);
 }
@@ -409,8 +415,8 @@ blackHoleSuns.prototype.buildTimeInput = function (entry, diary) {
 
     let id = entry.name.nameToId();
 
-    let container = panel.replace(/idname/g, id);
-    container = container.replace(/ttitle/g, entry.name);
+    let container = /idname/g [Symbol.replace](panel, id);
+    container = /ttitle/g [Symbol.replace](container, entry.name);
 
     $("#panels").append(container);
 
@@ -444,8 +450,8 @@ blackHoleSuns.prototype.buildBoolInput = function (entry, diary) {
 
     let id = entry.name.nameToId();
 
-    let container = panel.replace(/idname/g, id);
-    container = container.replace(/ttitle/g, entry.name);
+    let container = /idname/g [Symbol.replace](panel, id);
+    container = /ttitle/g [Symbol.replace](container, entry.name);
 
     $("#panels").append(container);
 }
@@ -478,8 +484,8 @@ blackHoleSuns.prototype.buildBPInput = function (entry) {
 
     let id = entry.name.nameToId();
 
-    let container = panel.replace(/idname/g, id);
-    container = container.replace(/ttitle/g, entry.name);
+    let container = /idname/g [Symbol.replace](panel, id);
+    container = /ttitle/g [Symbol.replace](container, entry.name);
 
     $("#panels").append(container);
 }
@@ -523,22 +529,22 @@ blackHoleSuns.prototype.buildCheckboxList = function (entry) {
 
     let id = entry.name.nameToId();
 
-    let container = panel.replace(/idname/g, id);
-    container = container.replace(/ttitle/g, entry.name);
+    let container = /idname/g [Symbol.replace](panel, id);
+    container = /ttitle/g [Symbol.replace](container, entry.name);
 
     $("#panels").append(container);
     let pnl = $("#pnl-" + id);
 
     for (let i = 0; i < entry.list.length; ++i) {
         let id = entry.list[i].nameToId();
-        let h = items.replace(/idname/g, id);
-        h = h.replace(/ttitle/g, entry.list[i]);
+        let h = /idname/g[Symbol.replace](items,id);;
+        h = /ttitle/g [Symbol.replace](h, entry.list[i]);
 
         pnl.find("#entry").append(h);
     }
 
-    let h = add.replace(/idname/g, id);
-    h = h.replace(/ttitle/g, "notes");
+    let h = /idname/g [Symbol.replace](add, id);
+    h = /ttitle/g [Symbol.replace](h, "notes");
     pnl.find("#entry").append(h);
 }
 
