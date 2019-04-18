@@ -220,6 +220,12 @@ body {
 
 .scrollable-menu {
     height: auto;
-    max-height: 200px;
+    max-height: 300px;
     overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+.dropdown-menu {
+    right: 0 !important;
+    left: auto !important;
 }

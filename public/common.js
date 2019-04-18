@@ -36,7 +36,7 @@ function startUp() {
 }
 
 function blackHoleSuns() {
-    this.account = {};
+    this.user = {};
 
     this.uid = null;
     this.fbauth = null;
@@ -70,6 +70,8 @@ blackHoleSuns.prototype.logOut = function () {
 
 blackHoleSuns.prototype.onAuthStateChanged = function (user) {
     if (user) {
+        bhs.userInit();
+
         let profilePicUrl = user.photoURL;
         let userName = user.displayName;
 
@@ -85,14 +87,14 @@ blackHoleSuns.prototype.onAuthStateChanged = function (user) {
 
         ref.get().then(function (doc) {
             if (doc.exists) {
-                bhs.account = doc.data();
-                if (bhs.account.email != user.email) {
-                    bhs.account.email = user.email;
-                    bhs.doUserWrite(ref);
+                bhs.user = doc.data();
+                if (bhs.user.email != user.email) {
+                    bhs.user.email = user.email;
+                    bhs.updateUser();
                 }
             } else {
-                bhs.userInit();
-                bhs.doUserWrite(ref);
+                bhs.user.email = user.email;
+                bhs.updateUser();
             }
 
             if (bhs.doLoggedin)
@@ -130,9 +132,17 @@ blackHoleSuns.prototype.checkLoggedInWithMessage = function () {
     return false;
 }
 
-blackHoleSuns.prototype.doUserWrite = function (ref) {
+blackHoleSuns.prototype.updateUser = function () {
     if (bhs.checkLoggedInWithMessage())
-        ref.set(bhs.account);
+        bhs.fbfs.doc('users/' + bhs.uid).set(bhs.user);
+}
+
+blackHoleSuns.prototype.updateEntry = function (entry) {
+    if (bhs.checkLoggedInWithMessage()) {
+        let date = new Date;
+        entry.time = date.toDateLocalTimeString();
+        bhs.fbfs.doc('blackholes/' + bhs.entry["Black Hole System"].add).set(entry);
+    }
 }
 
 blackHoleSuns.prototype.init = function () {
@@ -141,10 +151,11 @@ blackHoleSuns.prototype.init = function () {
 
 blackHoleSuns.prototype.userInit = function () {
     bhs.uid = null;
-    bhs.account.playerName = "";
-    bhs.account.email = "";
-    bhs.account.platform = "PC";
-    bhs.account.galaxy = "Eculid";
+    bhs.user = {};
+    bhs.user.playerName = "";
+    bhs.user.email = "";
+    bhs.user.platform = "PC/Xbox";
+    bhs.user.galaxy = "Eculid";
 }
 
 function loadHtml(url, alturl, selector) {
@@ -195,21 +206,24 @@ function loadFile(url, alturl, fctn) {
     *************/
 }
 
-String.prototype.IdToName = function () {
-    let name = /-/g [Symbol.replace](this, " ");
-    name = /_/g [Symbol.replace](name, "'");
+String.prototype.idToName = function () {
+    let name = /---/g [Symbol.replace](this, "\/");
+    name = /--/g [Symbol.replace](name, "'");
+    name = /-/g [Symbol.replace](name, " ");
 
     return name;
 }
 
 String.prototype.nameToId = function () {
-    let id = / /g [Symbol.replace](this, "-");
-    id = /'/g [Symbol.replace](id, "_");
+    let id = /\//g [Symbol.replace](this, "---");
+    id = /'/g [Symbol.replace](id, "--");
+    id = / /g [Symbol.replace](id, "-");
 
     return id;
 }
 
-/*
+
+
 Date.prototype.toDateLocalTimeString = function () {
     let date = this;
     return date.getFullYear() +
@@ -218,7 +232,7 @@ Date.prototype.toDateLocalTimeString = function () {
         "T" + ten(date.getHours()) +
         ":" + ten(date.getMinutes());
 }
-
+/*
 Date.prototype.toLocalTimeString = function () {
     let date = this;
     return ten(date.getHours()) +
@@ -264,11 +278,11 @@ function monthDays(year, month) {
     let leap = month === 2 ? (year % 100 === 0 ? (year % 400 === 0 ? 1 : 0) : (year % 4 === 0 ? 1 : 0)) : 0;
     return (days[month - 1] + leap);
 }
-
+*/
 function ten(i) {
     return i < 10 ? '0' + i : i;
 }
-
+/*
 // from http://www.niwa.nu/2013/05/math-behind-colorspace-conversions-rgb-hsl/
 function hslToRgb(h, s, l) {
     let r, g, b;
@@ -332,6 +346,58 @@ function getLocation(fcn) {
 }
 */
 
+/*
+var date = document.getElementById('date');
+
+function checkValue(str, max) {
+  if (str.charAt(0) !== '0' || str == '00') {
+    var num = parseInt(str);
+    if (isNaN(num) || num <= 0 || num > max) num = 1;
+    str = num > parseInt(max.toString().charAt(0)) && num.toString().length == 1 ? '0' + num : num.toString();
+  };
+  return str;
+};
+
+date.addEventListener('input', function(e) {
+  this.type = 'text';
+  var input = this.value;
+  if (/\D\/$/.test(input)) input = input.substr(0, input.length - 3);
+  var values = input.split('/').map(function(v) {
+    return v.replace(/\D/g, '')
+  });
+  if (values[0]) values[0] = checkValue(values[0], 12);
+  if (values[1]) values[1] = checkValue(values[1], 31);
+  var output = values.map(function(v, i) {
+    return v.length == 2 && i < 2 ? v + ' / ' : v;
+  });
+  this.value = output.join('').substr(0, 14);
+});
+
+date.addEventListener('blur', function(e) {
+  this.type = 'text';
+  var input = this.value;
+  var values = input.split('/').map(function(v, i) {
+    return v.replace(/\D/g, '')
+  });
+  var output = '';
+  
+  if (values.length == 3) {
+    var year = values[2].length !== 4 ? parseInt(values[2]) + 2000 : parseInt(values[2]);
+    var month = parseInt(values[0]) - 1;
+    var day = parseInt(values[1]);
+    var d = new Date(year, month, day);
+    if (!isNaN(d)) {
+      document.getElementById('result').innerText = d.toString();
+      var dates = [d.getMonth() + 1, d.getDate(), d.getFullYear()];
+      output = dates.map(function(v) {
+        v = v.toString();
+        return v.length == 1 ? '0' + v : v;
+      }).join(' / ');
+    };
+  };
+  this.value = output;
+});
+*/
 
 const lifeformList = [{
         name: "Vy'keen"
@@ -345,13 +411,10 @@ const lifeformList = [{
 ];
 
 const platformList = [{
-        name: "PC"
+        name: "PC/Xbox"
     },
     {
         name: "PS4"
-    },
-    {
-        name: "XBox"
     }
 ];
 
@@ -449,6 +512,136 @@ const economyList = [{
     },
     {
         name: "Wealthy",
+        level: 3
+    }
+];
+
+const conflictList = [{
+        name: "Gentle",
+        level: 1
+    },
+    {
+        name: "Low",
+        level: 1
+    },
+    {
+        name: "Mild",
+        level: 1
+    },
+    {
+        name: "Peaceful",
+        level: 1
+    },
+    {
+        name: "Relaxed",
+        level: 1
+    },
+    {
+        name: "Stable",
+        level: 1
+    },
+    {
+        name: "Tranquil",
+        level: 1
+    },
+    {
+        name: "Trivial",
+        level: 1
+    },
+    {
+        name: "Unthreatening",
+        level: 1
+    },
+    {
+        name: "Untroubled",
+        level: 1
+    },
+    {
+        name: "Medium",
+        level: 2
+    },
+    {
+        name: "Belligerent",
+        level: 2
+    },
+    {
+        name: "Boisterous",
+        level: 2
+    },
+    {
+        name: "Fractious",
+        level: 2
+    },
+    {
+        name: "Intermittent",
+        level: 2
+    },
+    {
+        name: "Medium",
+        level: 2
+    },
+    {
+        name: "Rowdy",
+        level: 2
+    },
+    {
+        name: "Sporadic",
+        level: 2
+    },
+    {
+        name: "Testy",
+        level: 2
+    },
+    {
+        name: "Unruly",
+        level: 2
+    },
+    {
+        name: "Unstable",
+        level: 2
+    },
+    {
+        name: "High",
+        level: 3
+    },
+    {
+        name: "Aggressive",
+        level: 3
+    },
+    {
+        name: "Alarming",
+        level: 3
+    },
+    {
+        name: "At War",
+        level: 3
+    },
+    {
+        name: "Critical",
+        level: 3
+    },
+    {
+        name: "Dangerous",
+        level: 3
+    },
+    {
+        name: "Destructive",
+        level: 3
+    },
+    {
+        name: "Formidable",
+        level: 3
+    },
+    {
+        name: "High",
+        level: 3
+    },
+    {
+        name: "Lawless",
+        level: 3
+    },
+    {
+        name: "Perilous",
         level: 3
     }
 ];
