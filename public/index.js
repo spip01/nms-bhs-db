@@ -11,8 +11,10 @@ $(document).ready(function () {
     bhs.buildPanel("Exit System");
 
     $("#save").click(function () {
-        bhs.entry = bhs.extractEntry();
-        bhs.updateEntry(bhs.entry);
+        if (bhs.entry = bhs.extractEntry())
+            bhs.updateEntry(bhs.entry);
+        else
+            $("#status").text("empty fields required!")
     });
 
     $("#clear").click(function () {
@@ -34,8 +36,10 @@ $(document).ready(function () {
     */
 
     $("#saveUser").click(function () {
-        bhs.user = bhs.extractPanel("pnl-user");
-        bhs.updateUser(bhs.user);
+        if (bhs.user = bhs.extractPanel("pnl-user"))
+            bhs.updateUser(bhs.user);
+        else
+            $("#status").text("empty fields required!")
     });
 
     $("#cancelUser").click(function () {
@@ -164,6 +168,10 @@ blackHoleSuns.prototype.extractEntry = function () {
         let id = $(this).prop("id");
         let name = id.slice(4).idToName();
         entry[name] = bhs.extractPanel(id)
+        if(!entry[name]) {
+            entry = null;
+            return false;
+        }
     });
 
     return entry;
@@ -187,7 +195,12 @@ blackHoleSuns.prototype.extractPanel = function (pnl) {
         $(this).find("[id|='inp'").each(function () {
             let name = $(this).prop("id").slice(4).idToName();
             entry[name] = $(this).val();
+            if (entry[name] == "") {
+                entry = null;
+                return false;
+            }
         });
+        if(entry)
         $(this).find("[id|='btn']").each(function () {
             let name = $(this).prop("id").slice(4).idToName();
             name = name.idToName();

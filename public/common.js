@@ -133,8 +133,13 @@ blackHoleSuns.prototype.checkLoggedInWithMessage = function () {
 }
 
 blackHoleSuns.prototype.updateUser = function () {
-    if (bhs.checkLoggedInWithMessage())
+    if (bhs.checkLoggedInWithMessage()) {
         bhs.fbfs.doc('users/' + bhs.uid).set(bhs.user);
+        $("#status").text("Changes saved.");
+    }
+    else
+        $("#status").text("Please login before saving changes!");
+
 }
 
 blackHoleSuns.prototype.updateEntry = function (entry) {
@@ -142,8 +147,20 @@ blackHoleSuns.prototype.updateEntry = function (entry) {
         let date = new Date;
         entry.time = date.toDateLocalTimeString();
         entry.uid = bhs.uid;
-        bhs.fbfs.doc('blackholes/' + bhs.entry["Black Hole System"].add).set(entry);
+
+        var ref = bhs.fbfs.doc('blackholes/' + bhs.entry["Black Hole System"].addr);
+
+        ref.get().then(function (doc) {
+            if (doc.exists)
+                $("#status").text("Error: duplicate entry! Changes not saved!");
+            else {
+                ref.set(entry);
+                $("#status").text("Changes saved.");
+            }
+        });
     }
+    else
+        $("#status").text("Please login before saving changes!");
 }
 
 blackHoleSuns.prototype.init = function () {
@@ -231,125 +248,16 @@ Date.prototype.toDateLocalTimeString = function () {
         "T" + ten(date.getHours()) +
         ":" + ten(date.getMinutes());
 }
-/*
-Date.prototype.toLocalTimeString = function () {
-    let date = this;
-    return ten(date.getHours()) +
-        ":" + ten(date.getMinutes());
-}
 
-Date.prototype.toDateString = function () {
-    let date = this;
-    return date.getFullYear() +
-        "-" + ten(date.getMonth() + 1) +
-        "-" + ten(date.getDate());
-}
-
-Date.prototype.toDateShortString = function () {
-    let date = this;
-    return date.getFullYear() +
-        ten(date.getMonth() + 1) +
-        ten(date.getDate());
-}
-
-const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const days = ["Sunday", "Monday", "Tuesday", "Wednessday", "Thursday", "Friday", "Saturday"];
-const daysabbrev = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-Date.prototype.getMonthString = function () {
-    return months[this.getMonth()];
-}
-
-Date.prototype.getDayString = function (abbrev) {
-    return abbrev ? daysabbrev[this.getDay()] : days[this.getDay()];
-}
-
-Number.prototype.getDayString = function (abbrev) {
-    return abbrev ? daysabbrev[this] : days[this];
-}
-
-String.prototype.getMonthString = function () {
-    return months[this - 1];
-}
-
-function monthDays(year, month) {
-    const days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    let leap = month === 2 ? (year % 100 === 0 ? (year % 400 === 0 ? 1 : 0) : (year % 4 === 0 ? 1 : 0)) : 0;
-    return (days[month - 1] + leap);
-}
-*/
 function ten(i) {
     return i < 10 ? '0' + i : i;
 }
-/*
-// from http://www.niwa.nu/2013/05/math-behind-colorspace-conversions-rgb-hsl/
-function hslToRgb(h, s, l) {
-    let r, g, b;
-    h /= 360;
-    s /= 100;
-    l /= 100;
-
-    if (s === 0)
-        r = g = b = l * 255;
-    else {
-        let t1 = l < 50 ? l * (1.0 + s) : l + s - l * s;
-        let t2 = 2 * l - t1;
-
-        let range = function (x) {
-            return (x <= 0 ? x + 1 : x >= 1 ? x - 1 : x);
-        }
-
-        let tr = range(h + 0.333);
-        let tg = range(h);
-        let tb = range(h - 0.333);
-
-        let color = function (t1, t2, tc) {
-            let c;
-
-            if (6 * tc < 1)
-                c = t2 + (t1 - t2) * 6 * tc;
-            else if (2 * tc < 1)
-                c = t1;
-            else if (3 * tc < 2)
-                c = t2 + (t1 - t2) * 6 * (0.666 - tc);
-            else
-                c = t2;
-
-            return (c);
-        }
-
-        r = Math.round(color(t1, t2, tr) * 255);
-        g = Math.round(color(t1, t2, tg) * 255);
-        b = Math.round(color(t1, t2, tb) * 255);
-    }
-
-    return {
-        r: r,
-        g: g,
-        b: b
-    };
-}
-
-function toHex(n) {
-    var hex = n.toString(16);
-    if (hex.length % 2 === 1)
-        hex = "0" + hex;
-    return hex;
-}
-
-function getLocation(fcn) {
-    if (navigator.geolocation)
-        navigator.geolocation.getCurrentPosition(fcn);
-
-    return navigator.geolocation;
-}
-*/
 
 function formatAddress(field) {
     let str = $(field).val();
     let c = str[str.length - 1];
     let s = "";
-        let quad = str.length/4;
+    let quad = str.length / 4;
 
     if (/[0-9a-fA-F]/.test(c)) {
         str = /:/g [Symbol.replace](str, "");
@@ -369,8 +277,8 @@ function formatAddress(field) {
                 s += str.substring(i * 4, i * 4 + 4);
                 s += ":";
                 break;
-            } else 
-                s += str.substring(i * 4, i * 4 + 4)+":";
+            } else
+                s += str.substring(i * 4, i * 4 + 4) + ":";
         }
         str = s;
 
@@ -386,15 +294,15 @@ function validateAddress(field) {
     let c = str[str.length - 1];
     let s = "";
 
-        str = /:/g [Symbol.replace](str, "");
-        while (str.length < 16)
-            str += 0;
+    str = /:/g [Symbol.replace](str, "");
+    while (str.length < 16)
+        str += 0;
 
-        for (let i = 0; i < 4;) {
-            s += str.substring(i * 4, i * 4 + 4);
-            if (++i < 4)
-                s += ':';
-        }
+    for (let i = 0; i < 4;) {
+        s += str.substring(i * 4, i * 4 + 4);
+        if (++i < 4)
+            s += ':';
+    }
 
     $(field).val(s);
 }
