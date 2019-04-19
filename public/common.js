@@ -123,7 +123,7 @@ blackHoleSuns.prototype.checkLoggedInWithMessage = function () {
         return true;
 
     var data = {
-        message: 'You must Login first',
+        message: 'Please, Login first',
         timeout: 2000
     };
 
@@ -141,6 +141,7 @@ blackHoleSuns.prototype.updateEntry = function (entry) {
     if (bhs.checkLoggedInWithMessage()) {
         let date = new Date;
         entry.time = date.toDateLocalTimeString();
+        entry.uid = bhs.uid;
         bhs.fbfs.doc('blackholes/' + bhs.entry["Black Hole System"].add).set(entry);
     }
 }
@@ -221,8 +222,6 @@ String.prototype.nameToId = function () {
 
     return id;
 }
-
-
 
 Date.prototype.toDateLocalTimeString = function () {
     let date = this;
@@ -346,58 +345,60 @@ function getLocation(fcn) {
 }
 */
 
-/*
-var date = document.getElementById('date');
+function formatAddress(field) {
+    let str = $(field).val();
+    let c = str[str.length - 1];
+    let s = "";
+        let quad = str.length/4;
 
-function checkValue(str, max) {
-  if (str.charAt(0) !== '0' || str == '00') {
-    var num = parseInt(str);
-    if (isNaN(num) || num <= 0 || num > max) num = 1;
-    str = num > parseInt(max.toString().charAt(0)) && num.toString().length == 1 ? '0' + num : num.toString();
-  };
-  return str;
-};
+    if (/[0-9a-fA-F]/.test(c)) {
+        str = /:/g [Symbol.replace](str, "");
+        for (let i = 0; i < quad;) {
+            s += str.substring(i * 4, i * 4 + 4);
+            if (++i < quad)
+                s += ':';
+        }
+        str = s;
+    } else if (/[:;,.\\\/ ]/.test(c)) {
+        str = /:/g [Symbol.replace](str, "");
+        str = str.substring(0, str.length - 1);
+        for (let i = 0; i < quad; ++i) {
+            if (i + 1 > quad) {
+                for (let j = 0; j < 4 - str.length % 4; ++j)
+                    s += "0";
+                s += str.substring(i * 4, i * 4 + 4);
+                s += ":";
+                break;
+            } else 
+                s += str.substring(i * 4, i * 4 + 4)+":";
+        }
+        str = s;
 
-date.addEventListener('input', function(e) {
-  this.type = 'text';
-  var input = this.value;
-  if (/\D\/$/.test(input)) input = input.substr(0, input.length - 3);
-  var values = input.split('/').map(function(v) {
-    return v.replace(/\D/g, '')
-  });
-  if (values[0]) values[0] = checkValue(values[0], 12);
-  if (values[1]) values[1] = checkValue(values[1], 31);
-  var output = values.map(function(v, i) {
-    return v.length == 2 && i < 2 ? v + ' / ' : v;
-  });
-  this.value = output.join('').substr(0, 14);
-});
+    } else
+        str = str.substring(0, str.length - 1);
 
-date.addEventListener('blur', function(e) {
-  this.type = 'text';
-  var input = this.value;
-  var values = input.split('/').map(function(v, i) {
-    return v.replace(/\D/g, '')
-  });
-  var output = '';
-  
-  if (values.length == 3) {
-    var year = values[2].length !== 4 ? parseInt(values[2]) + 2000 : parseInt(values[2]);
-    var month = parseInt(values[0]) - 1;
-    var day = parseInt(values[1]);
-    var d = new Date(year, month, day);
-    if (!isNaN(d)) {
-      document.getElementById('result').innerText = d.toString();
-      var dates = [d.getMonth() + 1, d.getDate(), d.getFullYear()];
-      output = dates.map(function(v) {
-        v = v.toString();
-        return v.length == 1 ? '0' + v : v;
-      }).join(' / ');
-    };
-  };
-  this.value = output;
-});
-*/
+    str = str.substring(0, 19);
+    $(field).val(str);
+}
+
+function validateAddress(field) {
+    let str = $(field).val();
+    let c = str[str.length - 1];
+    let s = "";
+
+        str = /:/g [Symbol.replace](str, "");
+        while (str.length < 16)
+            str += 0;
+
+        for (let i = 0; i < 4;) {
+            s += str.substring(i * 4, i * 4 + 4);
+            if (++i < 4)
+                s += ':';
+        }
+
+    $(field).val(s);
+}
+
 
 const lifeformList = [{
         name: "Vy'keen"
@@ -1703,3 +1704,110 @@ const galaxyList = [{
         number: 0
     }
 ];
+
+const starClassList = [{
+        name: "O",
+        temp: "≥ 30,000K",
+        color: "blue"
+    },
+    {
+        name: "B",
+        temp: "10,000-30,000K",
+        color: "blue white"
+    },
+    {
+        name: "A",
+        temp: "7,500-10,000K",
+        color: "white"
+    },
+    {
+        name: "F",
+        temp: "6,000-7,500K",
+        color: "yellow white"
+    },
+    {
+        name: "G",
+        temp: "5,200-6,000K",
+        color: "yellow"
+    },
+    {
+        name: "K",
+        temp: "3,700-5,200K",
+        color: "orange"
+    },
+    {
+        name: "M",
+        temp: "2,400-3,700K",
+        color: "red"
+    },
+    {
+        name: "L",
+        temp: "1,300-2,400K",
+        color: "red brown"
+    },
+    {
+        name: "T",
+        temp: "500-1,300K",
+        color: "brown"
+    },
+    {
+        name: "Y",
+        temp: "≤ 500K",
+        color: "dark brown"
+    },
+    {
+        name: "E",
+        temp: "unknown",
+        color: "green"
+    }
+];
+
+const starClassPossible = "OBAFGKMLTYE"
+
+const starOdditiesList = [{
+        name: "e",
+        type: "Emission lines present"
+    },
+    {
+        name: "f",
+        type: "N III and He II emission"
+    },
+    {
+        name: "h",
+        type: "WR stars with emission lines due to hydrogen"
+    },
+    {
+        name: "k",
+        type: "Spectra with interstellar absorption features"
+    },
+    {
+        name: "m",
+        type: "Enhanced metal features"
+    },
+    {
+        name: "n",
+        type: "Broad ('nebulous') absorption due to spinning"
+    },
+    {
+        name: "p",
+        type: "Unspecified peculiarity"
+    },
+    {
+        name: "q",
+        type: "Red & blue shifts line present"
+    },
+    {
+        name: "s",
+        type: "Narrowly sharp absorption lines"
+    },
+    {
+        name: "v",
+        type: "Variable spectral feature"
+    },
+    {
+        name: "w",
+        type: "Weak lines"
+    }
+];
+
+const starOdditiesPossible = "efhkmnpqsvw";

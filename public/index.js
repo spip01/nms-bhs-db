@@ -49,7 +49,7 @@ blackHoleSuns.prototype.buildPanel = function (name) {
             <div class="h4 clr-dark-green">heading</div>
             <div class="row">
                 <div class="col-lg-2 col-md-2 col-sm-2 col-5 h6 clr-dark-green">Address&nbsp;</div>
-                <input id="inp-add" class="rounded col-6" placeholder="0000:0000:0000:0000"></input>
+                <input id="inp-addr" class="rounded col-6" placeholder="0000:0000:0000:0000"></input>
             </div>
             <div class="row">
                 <div class="col-lg-2 col-md-2 col-sm-2 col-5 h6 clr-dark-green">System Name&nbsp;</div>
@@ -82,6 +82,13 @@ blackHoleSuns.prototype.buildPanel = function (name) {
     bhs.buildMenu(loc, "Economy", economyList);
     //    bhs.buildMenu(loc, "", typeList);
     //    bhs.buildMenu(loc, "Lifeform", conflictList);
+
+    loc.find("#inp-addr").keyup(function () {
+        formatAddress(this);
+    });
+    loc.find("#inp-addr").blur(function () {
+        validateAddress(this);
+    });
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list) {
