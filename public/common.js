@@ -123,7 +123,7 @@ blackHoleSuns.prototype.checkLoggedInWithMessage = function () {
         return true;
 
     var data = {
-        message: 'Please, Login first',
+        message: 'Please login before saving changes!',
         timeout: 2000
     };
 
@@ -137,9 +137,6 @@ blackHoleSuns.prototype.updateUser = function () {
         bhs.fbfs.doc('users/' + bhs.uid).set(bhs.user);
         $("#status").text("Changes saved.");
     }
-    else
-        $("#status").text("Please login before saving changes!");
-
 }
 
 blackHoleSuns.prototype.updateEntry = function (entry) {
@@ -147,6 +144,11 @@ blackHoleSuns.prototype.updateEntry = function (entry) {
         let date = new Date;
         entry.time = date.toDateLocalTimeString();
         entry.uid = bhs.uid;
+
+        if (entry["Black Hole System"].addr.slice(15) != "0079") {
+            $("#status").text("Error: Black Hole System address must end with '0079'!");
+            return;
+        }
 
         var ref = bhs.fbfs.doc('blackholes/' + bhs.entry["Black Hole System"].addr);
 
@@ -159,8 +161,6 @@ blackHoleSuns.prototype.updateEntry = function (entry) {
             }
         });
     }
-    else
-        $("#status").text("Please login before saving changes!");
 }
 
 blackHoleSuns.prototype.init = function () {
@@ -172,8 +172,8 @@ blackHoleSuns.prototype.userInit = function () {
     bhs.user = {};
     bhs.user.playerName = "";
     bhs.user.email = "";
-    bhs.user.platform = "PC/Xbox";
-    bhs.user.galaxy = "Eculid";
+    bhs.user.platform = platformList[0];
+    bhs.user.galaxy = galaxyList[0];
 }
 
 function loadHtml(url, alturl, selector) {
@@ -259,7 +259,7 @@ function formatAddress(field) {
     let s = "";
     let quad = str.length / 4;
 
-    if (/[0-9a-fA-F]/.test(c)) {
+    if (/[0-9a-f]/i.test(c)) {
         str = /:/g [Symbol.replace](str, "");
         for (let i = 0; i < quad;) {
             s += str.substring(i * 4, i * 4 + 4);
@@ -306,7 +306,6 @@ function validateAddress(field) {
 
     $(field).val(s);
 }
-
 
 const lifeformList = [{
         name: "Vy'keen"
@@ -1670,8 +1669,6 @@ const starClassList = [{
     }
 ];
 
-const starClassPossible = "OBAFGKMLTYE"
-
 const starOdditiesList = [{
         name: "e",
         type: "Emission lines present"
@@ -1718,4 +1715,6 @@ const starOdditiesList = [{
     }
 ];
 
+const starClassPossible = "OBAFGKMLTYE"
 const starOdditiesPossible = "efhkmnpqsvw";
+const starTypeRegex = /[OBAFGKMLTYE][0-9][efhkmnpqsvw]/i;
