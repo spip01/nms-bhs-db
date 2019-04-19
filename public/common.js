@@ -149,7 +149,7 @@ blackHoleSuns.prototype.updateUser = function () {
 blackHoleSuns.prototype.updateEntry = function (entry) {
     if (bhs.checkLoggedInWithMessage()) {
         let date = new Date;
-        entry.time = date.toDateLocalTimeString();
+        entry.created = date.toDateLocalTimeString();
 
         if (!entry.addr || !entry.sys || !entry.reg) {
             $("#status").text("Error: Missing input. Changes not saved.");
