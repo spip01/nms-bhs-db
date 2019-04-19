@@ -10,11 +10,21 @@ $(document).ready(function () {
     bhs.buildPanel("Black Hole System");
     bhs.buildPanel("Exit System");
 
+    bhs.buildUserTable();
+    bhs.buildStatistics();
+
+    bhs.getStatistics(bhs.displayStatistics);
+
     $("#save").click(function () {
-        if (bhs.entry = bhs.extractEntry())
-            bhs.updateEntry(bhs.entry);
-        else
-            $("#status").text("empty fields required!")
+        if (!bhs.user) {
+            bhs.user = bhs.extractUser();
+            bhs.updateUser(bhs.user);
+        }
+
+        bhs.entry = bhs.extractBH(bhs.user);
+        bhs.updateEntry(bhs.entry);
+        bhs.entry = bhs.extractExit(bhs.user);
+        bhs.updateEntry(bhs.entry);
     });
 
     $("#clear").click(function () {
@@ -36,10 +46,8 @@ $(document).ready(function () {
     */
 
     $("#saveUser").click(function () {
-        if (bhs.user = bhs.extractPanel("pnl-user"))
-            bhs.updateUser(bhs.user);
-        else
-            $("#status").text("empty fields required!")
+        bhs.user = bhs.extractUser();
+        bhs.updateUser(bhs.user);
     });
 
     $("#cancelUser").click(function () {
@@ -142,39 +150,74 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list) {
     }
 }
 
+const tableLine = `
+    <div class="col-sm-1 col-2 font-weight-bold">type</div>
+    <div class="col-sm-3 col-6 text-uppercase">Address</div>
+    <div class="col-sm-2 col-4">System</div>
+    <div class="col-sm-2 col-4">Region</div>
+    <div class="col-sm-2 col-4">Lifeform</div>
+    <div class="col-sm-2 col-4">Economy</div>`;
+
+blackHoleSuns.prototype.buildUserTable = function () {
+    const table = `<div id="theader" class="row border-bottom"></div>`;
+
+    let pos = $("#userItems");
+    pos.empty();
+    pos.append(table);
+
+    pos = pos.find("#theader");
+
+    let h = /type/ [Symbol.replace](tableLine, "");
+    pos.append(h);
+}
+
+blackHoleSuns.prototype.displayUserEntry = function (entry, link) {
+    const table = `<div id="addr" class="row border-bottom"></div>`;
+
+    let addr = /:/g [Symbol.replace](link ? link : entry.addr, "");
+    let h = /addr/ [Symbol.replace](table, addr);
+
+    let pos = $("#userItems");
+    pos.append(h);
+
+    pos = pos.find("#" + addr);
+
+    h = /type/ [Symbol.replace](tableLine, link ? "Exit" : "BH");
+    h = /Address/ [Symbol.replace](h, entry.addr);
+    h = /System/ [Symbol.replace](h, entry.sys);
+    h = /Region/ [Symbol.replace](h, entry.reg);
+    h = /Lifeform/ [Symbol.replace](h, entry.life);
+    h = /Economy/ [Symbol.replace](h, entry.econ);
+
+    pos.append(h);
+}
+
+blackHoleSuns.prototype.buildStatistics = function () {
+
+}
+
+blackHoleSuns.prototype.displayStatistics = function () {
+
+}
+
 blackHoleSuns.prototype.doLoggedout = function () {
     $("#loggedout").show();
-    $("#input").hide();
     $("#map").hide();
-    $("#list").hide();
+    $("#userTable").hide();
 }
 
 blackHoleSuns.prototype.doLoggedin = function () {
     let player = $("#pnl-user");
+
     player.find("#inp-playerName").val(bhs.user.playerName);
     player.find("#btn-Platform").text(bhs.user.Platform);
     player.find("#btn-Galaxy").text(bhs.user.Galaxy);
 
+    bhs.getUserEntries(bhs.displayUserEntry);
+
     $("#loggedout").hide();
-    $("#input").show();
-    $("#map").show();
-    $("#usersList").show();
-}
-
-blackHoleSuns.prototype.extractEntry = function () {
-    let entry = {};
-
-    $("[id|='pnl'").each(function () {
-        let id = $(this).prop("id");
-        let name = id.slice(4).idToName();
-        entry[name] = bhs.extractPanel(id)
-        if(!entry[name]) {
-            entry = null;
-            return false;
-        }
-    });
-
-    return entry;
+    //$("#map").show();
+    $("#userTable").show();
 }
 
 blackHoleSuns.prototype.clearPanel = function (pnl) {
@@ -188,25 +231,54 @@ blackHoleSuns.prototype.clearPanel = function (pnl) {
     });
 }
 
-blackHoleSuns.prototype.extractPanel = function (pnl) {
+blackHoleSuns.prototype.extractUser = function () {
     let entry = {};
 
-    $("#" + pnl).each(function () {
-        $(this).find("[id|='inp'").each(function () {
-            let name = $(this).prop("id").slice(4).idToName();
-            entry[name] = $(this).val();
-            if (entry[name] == "") {
-                entry = null;
-                return false;
-            }
-        });
-        if(entry)
-        $(this).find("[id|='btn']").each(function () {
-            let name = $(this).prop("id").slice(4).idToName();
-            name = name.idToName();
-            entry[name] = $(this).text();
-        });
-    });
+    let loc = $("#id-user");
+    entry.playerName = loc.find("#inp-playerName").val();
+    entry.platform = loc.find("#btn-Platform").text();
+    entry.galaxy = loc.find("#btn-Galaxy").text();
+
+    entry.uid = bhs.uid;
+
+    return entry;
+}
+
+blackHoleSuns.prototype.extractBH = function (player) {
+    let entry = {};
+
+    entry.platform = player.platform;
+    entry.galaxy = player.galaxy;
+    entry.uid = bhs.uid;
+
+    let loc = $("#pnl-Black-Hole-System");
+    entry.addr = loc.find("#inp-addr").val();
+    entry.sys = loc.find("#inp-sys").val();
+    entry.reg = loc.find("#inp-reg").val();
+    entry.life = loc.find("#btn-Lifeform").text();
+    entry.econ = loc.find("#btn-Economy").text();
+
+    entry.blackhole = true;
+
+    loc = $("#pnl-Exit-System");
+    entry.connection = loc.find("#inp-addr").val();
+
+    return entry;
+}
+
+blackHoleSuns.prototype.extractExit = function (player) {
+    let entry = {};
+
+    entry.platform = player.platform;
+    entry.galaxy = player.galaxy;
+    entry.uid = bhs.uid;
+
+    let loc = $("#pnl-Exit-System");
+    entry.addr = loc.find("#inp-addr").val();
+    entry.sys = loc.find("#inp-sys").val();
+    entry.reg = loc.find("#inp-reg").val();
+    entry.life = loc.find("#btn-Lifeform").text();
+    entry.econ = loc.find("#btn-Economy").text();
 
     return entry;
 }

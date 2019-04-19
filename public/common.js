@@ -56,6 +56,9 @@ blackHoleSuns.prototype.initFirebase = function () {
     bhs.fbauth = firebase.auth();
     bhs.fbfs = firebase.firestore();
 
+    //bhs.rewriteData();
+    //bhs.rewriteUserData();
+
     bhs.fbauth.onAuthStateChanged(bhs.onAuthStateChanged.bind(bhs));
 }
 
@@ -134,8 +137,12 @@ blackHoleSuns.prototype.checkLoggedInWithMessage = function () {
 
 blackHoleSuns.prototype.updateUser = function () {
     if (bhs.checkLoggedInWithMessage()) {
-        bhs.fbfs.doc('users/' + bhs.uid).set(bhs.user);
-        $("#status").text("Changes saved.");
+        if (user.playerName && user.galaxy && user.platform) {
+            user.uid = bhs.uid;
+            bhs.fbfs.doc('users/' + bhs.uid).set(user);
+            $("#status").text("Changes saved.");
+        } else
+            $("#status").text("Error: Empty inputs. Not Saved.");
     }
 }
 
@@ -143,18 +150,21 @@ blackHoleSuns.prototype.updateEntry = function (entry) {
     if (bhs.checkLoggedInWithMessage()) {
         let date = new Date;
         entry.time = date.toDateLocalTimeString();
-        entry.uid = bhs.uid;
 
-        if (entry["Black Hole System"].addr.slice(15) != "0079") {
-            $("#status").text("Error: Black Hole System address must end with '0079'!");
+        if (!entry.addr || !entry.sys || !entry.reg) {
+            $("#status").text("Error: Missing input. Changes not saved.");
             return;
         }
 
-        var ref = bhs.fbfs.doc('blackholes/' + bhs.entry["Black Hole System"].addr);
+        if (entry.blackhole && entry.addr.slice(15) != "0079") {
+            $("#status").text("Error: Black Hole System address must end with '0079'. Changes not saved.");
+            return;
+        }
 
+        var ref = bhs.fbfs.doc('stars/' + entry.addr);
         ref.get().then(function (doc) {
             if (doc.exists)
-                $("#status").text("Error: duplicate entry! Changes not saved!");
+                $("#status").text("Error: Duplicate entry. Changes not saved!");
             else {
                 ref.set(entry);
                 $("#status").text("Changes saved.");
@@ -163,6 +173,97 @@ blackHoleSuns.prototype.updateEntry = function (entry) {
     }
 }
 
+blackHoleSuns.prototype.getUserEntries = function (displayFcn) {
+    let ref = bhs.fbfs.collection("stars").where("uid", "==", bhs.uid);
+    ref = ref.where("galaxy", "==", bhs.user.galaxy).where("platform", "==", bhs.user.platform);
+    ref = ref.where("blackhole", "==", true).orderBy("created", "desc");
+
+    ref.onSnapshot(function (querySnapshot) {
+        querySnapshot.forEach(function (doc) {
+            let d = doc.data();
+            displayFcn(d);
+
+            var ref = bhs.fbfs.doc('stars/' + d.connection);
+
+            ref.get().then(function (doc) {
+                displayFcn(doc.data(), d.addr);
+            });
+        });
+    });
+}
+
+blackHoleSuns.prototype.getStatistics = function (displayFcn) {
+
+}
+/*
+blackHoleSuns.prototype.rewriteData = function () {
+    let ref = bhs.fbfs.collection("blackholes");
+    ref.get()
+        .then(function (querySnapshot) {
+            querySnapshot.forEach(function (doc) {
+                let d = doc.data();
+
+                let bh = d["Black Hole System"];
+                let ex = d["Exit System"];
+
+                let star = {};
+                star.addr = bh.addr;
+                star.sys = bh.sys;
+                star.reg = bh.reg;
+                star.life = bh.Lifeform;
+                star.econ = bh.Economy;
+                star.blackhole = true;
+                star.connection = ex.addr;
+
+                star.galaxy = d.user.Galaxy;
+                star.platform = d.user.Platform;
+
+                star.uid = d.uid;
+                star.created = d.time;
+
+                bhs.fbfs.doc('stars/' + star.addr).set(star);
+
+                star = {};
+                star.addr = ex.addr;
+                star.sys = ex.sys;
+                star.reg = ex.reg;
+                star.life = ex.Lifeform;
+                star.econ = ex.Economy;
+
+                star.galaxy = d.user.Galaxy;
+                star.platform = d.user.Platform;
+
+                star.uid = d.uid;
+                star.created = d.time;
+
+                bhs.fbfs.doc('stars/' + star.addr).set(star);
+            });
+        });
+}
+
+blackHoleSuns.prototype.rewriteUserData = function () {
+    let ref = bhs.fbfs.collection("users");
+    ref.get()
+        .then(function (querySnapshot) {
+            querySnapshot.forEach(function (doc) {
+                let d = doc.data();
+
+                let player = {};
+                player.galaxy = d.Galaxy;
+                player.platform = d.Platform;
+                player.playerName = d.playerName;
+                player.email = d.email;
+
+                if (player.email == "sp@farpoint.us")
+                    player.uid = "zzG3HwcIWLRZNEuEi4xEkhUhLeB3";
+                else
+                    player.uid = "TIGLMws4YDdAYiS5o56y8xmdMPb2";
+
+                bhs.fbfs.doc('users/' + player.uid).set(player);
+            })
+        });
+}
+*/
 blackHoleSuns.prototype.init = function () {
     bhs.userInit();
 }
@@ -553,6 +654,10 @@ const conflictList = [{
         level: 3
     }
 ];
+
+const starClassPossible = "OBAFGKMLTYE"
+const starOdditiesPossible = "efhkmnpqsvw";
+const starTypeRegex = /[OBAFGKMLTYE][0-9][efhkmnpqsvw]*/i;
 
 const galaxyList = [{
         name: "Euclid",
@@ -1714,7 +1819,3 @@ const starOdditiesList = [{
         type: "Weak lines"
     }
 ];
-
-const starClassPossible = "OBAFGKMLTYE"
-const starOdditiesPossible = "efhkmnpqsvw";
-const starTypeRegex = /[OBAFGKMLTYE][0-9][efhkmnpqsvw]/i;

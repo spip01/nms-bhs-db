@@ -117,34 +117,23 @@
 
                 <br>
                 <div id="entrybuttons" class="row">
-                    <!-- dup address, check region + system -->
-                    <div class="col-7"></div>
+                    <div id="status" class="col-7 text-danger"></div>
                     <button id="save" type="button" class="btn border btn-sm btn-green">Save</button>&nbsp;
                     <button id="clear" type="button" class="btn border btn-sm btn-green">Clear</button>&nbsp;
                 </div>
-
-                <div id="status" class="row text-danger"></div>
             </div>
-
-            <div id="usersList" class="card card-body pad-bottom bkg-white"></div>
-            User's Entry List Total reported (show collapse arrow, local storage, sort by)
-            Time BH Address System Name Region Name Race Economy (calc) quadrant
-            Exit Address System Name Region Name Race Economy (calc) quadrant
-            distance traveled distance towards center
-
-            <!--div id="editbuttons" class="row">
-                <button id="edit" type="button" class="btn border btn-sm btn-green" disabled>Edit</button>&nbsp;
-                <button id="savelist" type="button" class="btn border btn-sm btn-green" disabled>Save</button>&nbsp;
-                <button id="delete" type="button" class="btn border btn-sm btn-green" disabled>Delete</button>
-            </div-->
         </div>
 
-        <div id="map" class="card card-body pad-bottom bkg-white">
+        <div id="userTable" class="card pad-bottom bordered-black">
+            <div id="userItems" class="card-body"></div>
+        </div>
+
+        <div id="map" class="card card-body pad-bottom">
             User's Mapped Data (show collapse arrow, show generation, local storage)
             blue entry red Exit connect clear green line (optional)
         </div>
 
-        <div id="stats" class="card card-body pad-bottom bkg-white">
+        <div id="statistics" class="card card-body pad-bottom">
             Overall Statistics (show collapse arrow)
             PC PS4, xbox
             Galaxy entries
