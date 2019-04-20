@@ -60,16 +60,16 @@ blackHoleSuns.prototype.buildPanel = function (name) {
         <div id="pnl-name" class="card pad-bottom">
             <div class="h4 clr-dark-green">heading</div>
             <div class="row">
-                <div class="col-lg-2 col-md-2 col-sm-2 col-5 h6 clr-dark-green">Address&nbsp;</div>
-                <input id="inp-addr" class="rounded col-6" placeholder="0000:0000:0000:0000"></input>
+                <div class="col-sm-3 col-5 h7 clr-dark-green">Address&nbsp;</div>
+                <input id="inp-addr" class="rounded col-4" placeholder="0000:0000:0000:0000"></input>
             </div>
             <div class="row">
-                <div class="col-lg-2 col-md-2 col-sm-2 col-5 h6 clr-dark-green">System Name&nbsp;</div>
-                <input id="inp-sys" class="rounded col-6"></input>
+                <div class="col-sm-3 col-5 h7 clr-dark-green">System Name&nbsp;</div>
+                <input id="inp-sys" class="rounded col-4"></input>
             </div>
             <div class="row">
-                <div class="col-lg-2 col-md-2 col-sm-2 col-5 h6 clr-dark-green">Region Name&nbsp;</div>
-                <input id="inp-reg" class="rounded col-6"></input>
+                <div class="col-sm-3 col-5 h7 clr-dark-green">Region Name&nbsp;</div>
+                <input id="inp-reg" class="rounded col-4"></input>
             </div>
             <div class="row">
                 <!--label class="col-lg-4 col-md-4 col-sm-4 col-6 h6 clr-dark-green">Star Type&nbsp;
@@ -108,9 +108,9 @@ blackHoleSuns.prototype.buildPanel = function (name) {
 blackHoleSuns.prototype.buildMenu = function (loc, label, list) {
     let title = `        
         <div class="row">
-            <div class="col-5 h6 clr-dark-green">label</div>`;
+            <div class="col-5 h7 clr-dark-green">label</div>`;
     let block = `
-            <div id="menu-idname" class="col-7 dropdown">
+            <div id="menu-idname" class="col-6 dropdown">
                 <button id="btn-idname" class="btn border btn-sm btn-green dropdown-toggle" type="button" data-toggle="dropdown">
                     default
                 </button>
@@ -203,7 +203,6 @@ blackHoleSuns.prototype.displayStatistics = function () {
 }
 
 blackHoleSuns.prototype.doLoggedout = function () {
-    $("#loggedout").show();
     $("#map").hide();
     $("#userTable").hide();
 }
@@ -217,7 +216,6 @@ blackHoleSuns.prototype.doLoggedin = function () {
 
     bhs.getUserEntries(bhs.displayUserEntry);
 
-    $("#loggedout").hide();
     //$("#map").show();
     $("#userTable").show();
 }

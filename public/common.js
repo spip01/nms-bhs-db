@@ -102,16 +102,9 @@ blackHoleSuns.prototype.onAuthStateChanged = function (user) {
 
             if (bhs.doLoggedin)
                 bhs.doLoggedin();
-
-            $("#userpic").show();
-            $("#username").show();
-            $("#logout").show();
-            $("#login").hide();
         });
     } else {
-        $("#userpic").hide();
-        $("#username").hide();
-        $("#logout").hide();
+        $("#usermenu").hide();
         $("#login").show();
 
         bhs.userInit();

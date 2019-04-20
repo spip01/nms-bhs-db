@@ -21,19 +21,32 @@
                 Help/About
             </a>
 
-            <button id="login" type="button" class="col-3 nav-text no-border h5">Login</button>
-
-            <div id="loggedin" class="col-6 dropdown" style="display:none">
-                <button id="btn-Platform" class="btn border btn-sm btn-green dropdown-toggle" type="button"
-                    data-toggle="dropdown">
-                    <img id="userpic" style="width:32px; height:32px; border-radius: 50%;display:none">&nbsp;
-                    <div id="username" class="nav-text h5" style="display:none">User</div>
+            <div class="container col-sm-4 col-9">
+                <button id="login" type="button" class="nav-text no-border">
+                    <h5>Login</h5>
                 </button>
-                <div class="dropdown-menu btn-green">
-                    <a class="dropdown-item border-bottom" style="cursor:pointer" href="settings.html">Settings</a>
-                    <a id="admin" class="dropdown-item border-bottom" style="cursor:pointer" href="admin.html">Admin</a>
-                    <button id="logout" class="dropdown-item border-bottom" type="button"
-                        style="cursor: pointer">Logout</button>
+
+                <div id="usermenu" class="dropdown" style="display: none">
+                    <button type="button" class="row nav-text no-border dropdown-toggle" data-toggle="dropdown">
+                        <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
+                        <h5 id="username">
+                            User
+                        </h5>
+                    </button>
+
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item h5 bkg-light-green clr-dark-green" href="settings.html">
+                            <i class="fas fa-user-cog"></i>&nbsp;
+                            <h5>Settings</h5>
+                        </a>
+                        <a id="admin" class="dropdown-item h5 bkg-light-green clr-dark-green" href="admin.html" style="display:none">
+                            <h5>Admin</h5>
+                        </a>
+
+                        <button id="logout" type="button" class="no-border dripdown-item bkg-light-green clr-dark-green">
+                            <h5>Logout</h5>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
