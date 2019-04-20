@@ -153,21 +153,23 @@ blackHoleSuns.prototype.updateEntry = function (entry) {
 
         if (!entry.addr || !entry.sys || !entry.reg) {
             $("#status").text("Error: Missing input. Changes not saved.");
-            return;
+            return false;
         }
 
         if (entry.blackhole && entry.addr.slice(15) != "0079") {
             $("#status").text("Error: Black Hole System address must end with '0079'. Changes not saved.");
-            return;
+            return false;
         }
 
         var ref = bhs.fbfs.doc('stars/' + entry.addr);
         ref.get().then(function (doc) {
-            if (doc.exists)
+            if (doc.exists) {
                 $("#status").text("Error: Duplicate entry. Changes not saved!");
-            else {
+                return false;
+            } else {
                 ref.set(entry);
                 $("#status").text("Changes saved.");
+                return true;
             }
         });
     }
@@ -179,15 +181,17 @@ blackHoleSuns.prototype.getUserEntries = function (displayFcn) {
     ref = ref.where("blackhole", "==", true).orderBy("created", "desc");
 
     ref.onSnapshot(function (querySnapshot) {
-        querySnapshot.forEach(function (doc) {
-            let d = doc.data();
-            displayFcn(d);
+        querySnapshot.docChanges().forEach(function (change) {
+            if (change.type === "added") {
+                let d = change.doc.data();
+                displayFcn(d);
 
-            var ref = bhs.fbfs.doc('stars/' + d.connection);
+                var ref = bhs.fbfs.doc('stars/' + d.connection);
 
-            ref.get().then(function (doc) {
-                displayFcn(doc.data(), d.addr);
-            });
+                ref.get().then(function (doc) {
+                    displayFcn(doc.data(), d.addr);
+                });
+            }
         });
     });
 }

@@ -22,9 +22,13 @@ $(document).ready(function () {
         }
 
         bhs.entry = bhs.extractBH(bhs.user);
-        bhs.updateEntry(bhs.entry);
+        let ok = bhs.updateEntry(bhs.entry);
         bhs.entry = bhs.extractExit(bhs.user);
-        bhs.updateEntry(bhs.entry);
+        ok = ok && bhs.updateEntry(bhs.entry);
+        if (ok) {
+            bhs.clearPanel("pnl-Black-Hole-System");
+            bhs.clearPanel("pnl-Exit-System");
+        }
     });
 
     $("#clear").click(function () {
