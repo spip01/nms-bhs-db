@@ -146,23 +146,34 @@ blackHoleSuns.prototype.updateUser = function () {
     }
 }
 
+blackHoleSuns.prototype.validateEntry = function (entry) {
+    let ok = true;
+    if (!entry.addr || !entry.sys || !entry.reg) {
+        $("#status").text("Error: Missing input. Changes not saved.");
+        ok = false;
+    }
+
+    if (ok && !entry.addr.validateAddress()) {
+        $("#status").text("Error: Invalid address. Changes not saved.");
+        ok = false;
+    }
+
+    if (ok && entry.blackhole && entry.addr.slice(15) != "0079") {
+        $("#status").text("Error: Black Hole System address must end with '0079'. Changes not saved.");
+        ok = false;
+    }
+
+    return ok;
+}
+
 blackHoleSuns.prototype.updateEntry = function (entry) {
+    let ok = false;
+
     if (bhs.checkLoggedInWithMessage()) {
-        let date = new Date;
-        entry.created = date.toDateLocalTimeString();
-
-        if (!entry.addr || !entry.sys || !entry.reg) {
-            $("#status").text("Error: Missing input. Changes not saved.");
-            return false;
-        }
-
-        if (entry.blackhole && entry.addr.slice(15) != "0079") {
-            $("#status").text("Error: Black Hole System address must end with '0079'. Changes not saved.");
-            return false;
-        }
+        entry.time = firebase.firestore.Timestamp.fromDate(new Date());
 
         var ref = bhs.fbfs.doc('stars/' + entry.addr);
-        ref.get().then(function (doc) {
+        ok = ref.get().then(function (doc) {
             if (doc.exists) {
                 $("#status").text("Error: Duplicate entry. Changes not saved!");
                 return false;
@@ -173,24 +184,20 @@ blackHoleSuns.prototype.updateEntry = function (entry) {
             }
         });
     }
+
+    return ok;
 }
 
 blackHoleSuns.prototype.getUserEntries = function (displayFcn) {
     let ref = bhs.fbfs.collection("stars").where("uid", "==", bhs.uid);
     ref = ref.where("galaxy", "==", bhs.user.galaxy).where("platform", "==", bhs.user.platform);
-    ref = ref.where("blackhole", "==", true).orderBy("created", "desc");
+    ref = ref.orderBy("time");
 
     ref.onSnapshot(function (querySnapshot) {
         querySnapshot.docChanges().forEach(function (change) {
             if (change.type === "added") {
                 let d = change.doc.data();
                 displayFcn(d);
-
-                var ref = bhs.fbfs.doc('stars/' + d.connection);
-
-                ref.get().then(function (doc) {
-                    displayFcn(doc.data(), d.addr);
-                });
             }
         });
     });
@@ -201,50 +208,19 @@ blackHoleSuns.prototype.getStatistics = function (displayFcn) {
 }
 /*
 blackHoleSuns.prototype.rewriteData = function () {
-    let ref = bhs.fbfs.collection("blackholes");
+    let ref = bhs.fbfs.collection("stars");
     ref.get()
         .then(function (querySnapshot) {
             querySnapshot.forEach(function (doc) {
                 let d = doc.data();
 
-                let bh = d["Black Hole System"];
-                let ex = d["Exit System"];
-
-                let star = {};
-                star.addr = bh.addr;
-                star.sys = bh.sys;
-                star.reg = bh.reg;
-                star.life = bh.Lifeform;
-                star.econ = bh.Economy;
-                star.blackhole = true;
-                star.connection = ex.addr;
-
-                star.galaxy = d.user.Galaxy;
-                star.platform = d.user.Platform;
-
-                star.uid = d.uid;
-                star.created = d.time;
-
-                bhs.fbfs.doc('stars/' + star.addr).set(star);
-
-                star = {};
-                star.addr = ex.addr;
-                star.sys = ex.sys;
-                star.reg = ex.reg;
-                star.life = ex.Lifeform;
-                star.econ = ex.Economy;
-
-                star.galaxy = d.user.Galaxy;
-                star.platform = d.user.Platform;
-
-                star.uid = d.uid;
-                star.created = d.time;
-
-                bhs.fbfs.doc('stars/' + star.addr).set(star);
+                d.time = firebase.firestore.Timestamp.fromDate(new Date(d.created));
+                bhs.fbfs.doc('stars/' + d.addr).set(d);
             });
         });
 }
-
+*/
+/*
 blackHoleSuns.prototype.rewriteUserData = function () {
     let ref = bhs.fbfs.collection("users");
     ref.get()
@@ -345,71 +321,66 @@ String.prototype.nameToId = function () {
     return id;
 }
 
-Date.prototype.toDateLocalTimeString = function () {
-    let date = this;
-    return date.getFullYear() +
-        "-" + ten(date.getMonth() + 1) +
-        "-" + ten(date.getDate()) +
-        "T" + ten(date.getHours()) +
-        ":" + ten(date.getMinutes());
-}
-
-function ten(i) {
-    return i < 10 ? '0' + i : i;
-}
-
-function formatAddress(field) {
+function formatAddress(field, event) {
     let str = $(field).val();
-    let c = str[str.length - 1];
-    let s = "";
-    let quad = str.length / 4;
+    let len = str.length;
+    let key = event.key;
 
-    if (/[0-9a-f]/i.test(c)) {
-        str = /:/g [Symbol.replace](str, "");
-        for (let i = 0; i < quad;) {
-            s += str.substring(i * 4, i * 4 + 4);
-            if (++i < quad)
-                s += ':';
-        }
-        str = s;
-    } else if (/[:;,.\\\/ ]/.test(c)) {
-        str = /:/g [Symbol.replace](str, "");
-        str = str.substring(0, str.length - 1);
-        for (let i = 0; i < quad; ++i) {
-            if (i + 1 > quad) {
-                for (let j = 0; j < 4 - str.length % 4; ++j)
-                    s += "0";
-                s += str.substring(i * 4, i * 4 + 4);
-                s += ":";
-                break;
-            } else
-                s += str.substring(i * 4, i * 4 + 4) + ":";
-        }
-        str = s;
-
-    } else
-        str = str.substring(0, str.length - 1);
-
-    str = str.substring(0, 19);
-    $(field).val(str);
-}
-
-function validateAddress(field) {
-    let str = $(field).val();
-    let c = str[str.length - 1];
-    let s = "";
-
-    str = /:/g [Symbol.replace](str, "");
-    while (str.length < 16)
-        str += 0;
-
-    for (let i = 0; i < 4;) {
-        s += str.substring(i * 4, i * 4 + 4);
-        if (++i < 4)
-            s += ':';
+    if (key.length > 1)
+        return;
+        
+    if (/[g-z]/i.test(key)) {
+        event.preventDefault();
+        return;
     }
 
-    $(field).val(s);
+    if (/[0-9a-f]/i.test(key)) {
+        if (len == 4 || len == 9 || len == 14) {
+            $(field).val(str + ":" + key);
+            event.preventDefault();
+            return;
+        }
+
+        if (len > 18)
+            event.preventDefault();
+
+        return;
+    }
+
+    if (/[:.,;]/.test(key)) {
+        if (len > 18) {
+            event.preventDefault();
+            return;
+        }
+
+        let loc = str.lastIndexOf(":");
+        let out = loc > 0 ? str.slice(0, loc+1) : "";
+        let rem = str.slice(loc + 1);
+
+        if (rem.length < 4) {
+            out += "0000".slice(0, 4 - rem.length) + rem;
+            out += out.length < 15 ? ":" : "";
+        }
+
+        $(field).val(out);
+
+        event.preventDefault();
+        return;
+    }
+}
+
+function reformatAddress(field) {
+    let str = $(field).val().toUpperCase().replace(/[^0-9A-F]/g, "");
+
+    $(field).val(str.slice(0, 4) + ":" + str.slice(4, 8) + ":" + str.slice(8, 12) + ":" + str.slice(12, 16));
+}
+
+function validateAddress(addr) {
+    return /?:([0-9a-f]{4}):){3}[0-9a-f]{4}/.test(addr.toUpperCase());
+}
+
+String.prototype.stripID = function () {
+    return this.replace(/^.*?-(.*)/g, "$1");
 }
 
 const lifeformList = [{

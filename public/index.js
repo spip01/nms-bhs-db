@@ -16,19 +16,15 @@ $(document).ready(function () {
     bhs.getStatistics(bhs.displayStatistics);
 
     $("#save").click(function () {
-        if (!bhs.user) {
-            bhs.user = bhs.extractUser();
-            bhs.updateUser(bhs.user);
-        }
+        bhs.user = bhs.extractUser();
+        let bh = bhs.extractBH(bhs.user);
+        let exit = bhs.extractExit(bhs.user);
 
-        bhs.entry = bhs.extractBH(bhs.user);
-        let ok = bhs.updateEntry(bhs.entry);
-        bhs.entry = bhs.extractExit(bhs.user);
-        ok = ok && bhs.updateEntry(bhs.entry);
-        if (ok) {
-            bhs.clearPanel("pnl-Black-Hole-System");
-            bhs.clearPanel("pnl-Exit-System");
-        }
+        if (bhs.validateEntry(bh) && bhs.validateEntry(exit))
+            if (bhs.updateEntry(bh) && bhs.updateEntry(exit)) {
+                bhs.clearPanel("pnl-Black-Hole-System");
+                bhs.clearPanel("pnl-Exit-System");
+            }
     });
 
     $("#clear").click(function () {
@@ -99,12 +95,14 @@ blackHoleSuns.prototype.buildPanel = function (name) {
     //    bhs.buildMenu(loc, "", typeList);
     //    bhs.buildMenu(loc, "Lifeform", conflictList);
 
-    loc.find("#inp-addr").keyup(function () {
-        formatAddress(this);
+    loc.find("#inp-addr").keydown(function (event) {
+        console.log(event);
+        formatAddress(this, event);
     });
-    loc.find("#inp-addr").blur(function () {
-        validateAddress(this);
-    });
+
+       loc.find("#inp-addr").blur(function () {
+           reformatAddress(this);
+      });
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list) {
