@@ -4,8 +4,8 @@ $(document).ready(function () {
     startUp();
 
     let loc = $("#pnl-user");
-    bhs.buildMenu(loc, "Platform", platformList);
-    bhs.buildMenu(loc, "Galaxy", galaxyList);
+    bhs.buildMenu(loc, "Platform", platformList, true);
+    bhs.buildMenu(loc, "Galaxy", galaxyList, true);
 
     bhs.buildPanel("Black Hole System");
     bhs.buildPanel("Exit System");
@@ -16,20 +16,15 @@ $(document).ready(function () {
     bhs.getStatistics(bhs.displayStatistics);
 
     $("#save").click(function () {
-        bhs.user = bhs.extractUser();
-        let bh = bhs.extractBH(bhs.user);
-        let exit = bhs.extractExit(bhs.user);
-
-        if (bhs.validateEntry(bh) && bhs.validateEntry(exit))
-            if (bhs.updateEntry(bh) && bhs.updateEntry(exit)) {
-                bhs.clearPanel("pnl-Black-Hole-System");
-                bhs.clearPanel("pnl-Exit-System");
-            }
+        bhs.save();
     });
 
     $("#clear").click(function () {
-        bhs.clearPanel("pnl-Black-Hole-System");
-        bhs.clearPanel("pnl-Exit-System");
+        let bhloc = $("#pnl-" + "Black Hole System".nameToId());
+        let xitloc = $("#pnl-" + "Exit System".nameToId());
+
+        bhs.clearPanel(bhloc);
+        bhs.clearPanel(xitloc);
     });
     /*
             $("#edit").click(function () {
@@ -44,43 +39,52 @@ $(document).ready(function () {
                 bhs.deleteEntry();
             });
     */
-
-    $("#saveUser").click(function () {
-        bhs.user = bhs.extractUser();
-        bhs.updateUser(bhs.user);
-    });
-
-    $("#cancelUser").click(function () {
-        bhs.doLoggedin();
-    });
 });
+
 
 blackHoleSuns.prototype.buildPanel = function (name) {
     let panel = `
         <div id="pnl-name" class="card pad-bottom">
             <div class="h4 clr-dark-green">heading</div>
             <div class="row">
-                <div class="col-sm-3 col-5 h7 clr-dark-green">Address&nbsp;</div>
-                <input id="inp-addr" class="rounded col-4" placeholder="0000:0000:0000:0000"></input>
+                <div class="col-sm-10 col-8">
+                    <div class="card card-body no-border">
+                        <div class="row">
+                            <div class="col-sm-5 col-13">
+                                <div class="row">
+                                    <div class="col-sm-14 col-7 h6 clr-dark-green">Address</div>&nbsp;
+                                    <input id="inp-addr" class="rounded col-sm-14 col-6" placeholder="0000:0000:0000:0000"></input>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4 col-13">
+                                <div class="row">
+                                    <div class="col-sm-14 col-7 h6 clr-dark-green">System Name</div>&nbsp;
+                                    <input id="inp-sys" class="rounded col-sm-14 col-6"></input>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-5 col-13">
+                                <div class="row">
+                                    <div class="col-sm-14 col-7 h6 clr-dark-green">Region Name</div>&nbsp;
+                                    <input id="inp-reg" class="rounded col-sm-14 col-6"></input>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-4 col-6">
+                    <div class="card card-body no-border">
+                        <div class="row">
+                            <div id="id-Lifeform" class="col-sm-7 col-14"></div>
+                            <div id="id-Economy" class="col-sm-7 col-14"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="row">
-                <div class="col-sm-3 col-5 h7 clr-dark-green">System Name&nbsp;</div>
-                <input id="inp-sys" class="rounded col-4"></input>
-            </div>
-            <div class="row">
-                <div class="col-sm-3 col-5 h7 clr-dark-green">Region Name&nbsp;</div>
-                <input id="inp-reg" class="rounded col-4"></input>
-            </div>
-            <div class="row">
-                <!--label class="col-lg-4 col-md-4 col-sm-4 col-6 h6 clr-dark-green">Star Type&nbsp;
-                    <input id="id-star" class="rounded col-3"></input>
-                </label-->
-                <div id="id-Lifeform" class="col-sm-5 col-12"></div>
-                <div  id="id-Economy" class="col-sm-7 col-12"></div>
-                <!---div  id="id-Type" class="col-sm-4 col-12"></div--->
-                <!--div  id="id-Conflict" class="col-sm-4 col-12"></div-->
-            </div>
-            <br>`;
+            <br>
+        </div>`;
 
     let id = name.nameToId();
     let h = /name/g [Symbol.replace](panel, id);
@@ -97,20 +101,20 @@ blackHoleSuns.prototype.buildPanel = function (name) {
 
     loc.find("#inp-addr").keydown(function (event) {
         console.log(event);
-        formatAddress(this, event);
+        bhs.formatAddress(this, event);
     });
 
-       loc.find("#inp-addr").blur(function () {
-           reformatAddress(this);
-      });
+    loc.find("#inp-addr").blur(function () {
+        bhs.reformatAddress(this);
+    });
 }
 
-blackHoleSuns.prototype.buildMenu = function (loc, label, list) {
+blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
     let title = `        
         <div class="row">
-            <div class="col-5 h7 clr-dark-green">label</div>`;
+            <div class="col-sm-14 col-width h6 clr-dark-green">label</div>`;
     let block = `
-            <div id="menu-idname" class="col-6 dropdown">
+            <div id="menu-idname" class="col-sm-14 col-width dropdown">
                 <button id="btn-idname" class="btn border btn-sm btn-green dropdown-toggle" type="button" data-toggle="dropdown">
                     default
                 </button>
@@ -130,6 +134,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list) {
     let id = label.nameToId();
     let h = /label/g [Symbol.replace](title, label);
     h += /idname/g [Symbol.replace](block, id);
+    h = /width/g [Symbol.replace](h, vertical ? 13 : 7);
     h = /default/g [Symbol.replace](h, list[0].name);
     loc.find("#id-" + id).append(h);
 
@@ -146,7 +151,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list) {
         mlist.append(h);
 
         mlist.find("#item-" + lid).click(function () {
-            let name = $(this).text();
+            let name = $(this).text().stripMarginWS();
             menu.find("#btn-" + id).text(name);
         });
     }
@@ -154,16 +159,17 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list) {
 
 const tableLine = `
     <div class="col-sm-1 col-2 font-weight-bold">type</div>
-    <div class="col-sm-3 col-6 text-uppercase">Address</div>
+    <div class="col-sm-3 col-4 text-uppercase">Address</div>
     <div class="col-sm-2 col-4">System</div>
     <div class="col-sm-2 col-4">Region</div>
+    <div class="col-sm-1 col-6"></div>
     <div class="col-sm-2 col-4">Lifeform</div>
     <div class="col-sm-2 col-4">Economy</div>`;
 
 blackHoleSuns.prototype.buildUserTable = function () {
     const table = `<div id="theader" class="row border-bottom"></div>`;
 
-    let pos = $("#userItems");
+    let pos = $("#userHeader");
     pos.empty();
     pos.append(table);
 
@@ -173,18 +179,33 @@ blackHoleSuns.prototype.buildUserTable = function () {
     pos.append(h);
 }
 
-blackHoleSuns.prototype.displayUserEntry = function (entry, link) {
-    const table = `<div id="addr" class="row border-bottom"></div>`;
+blackHoleSuns.prototype.displayUserEntry = function (entry) {
+    const table = `
+        <div id="BH-addr" class="row"></div>
+        <div id="Exit-addr" class="row border-bottom"></div>`;
 
-    let addr = /:/g [Symbol.replace](link ? link : entry.addr, "");
-    let h = /addr/ [Symbol.replace](table, addr);
+    let addr = "";
+    let id = "";
 
-    let pos = $("#userItems");
-    pos.append(h);
+    if (entry.blackhole) {
+        addr = /:/g [Symbol.replace](entry.connection, "");
+        id = "BH";
+    } else {
+        addr = /:/g [Symbol.replace](entry.addr, "");
+        id = "Exit"
+    }
 
-    pos = pos.find("#" + addr);
+    let h = /addr/g [Symbol.replace](table, addr);
 
-    h = /type/ [Symbol.replace](tableLine, link ? "Exit" : "BH");
+    let ui = $("#userItems");
+    let pos = ui.find("#" + id + "-" + addr);
+
+    if (pos.length == 0) {
+        ui.prepend(h);
+        pos = ui.find("#" + id + "-" + addr);
+    }
+
+    h = /type/ [Symbol.replace](tableLine, id);
     h = /Address/ [Symbol.replace](h, entry.addr);
     h = /System/ [Symbol.replace](h, entry.sys);
     h = /Region/ [Symbol.replace](h, entry.reg);
@@ -205,28 +226,30 @@ blackHoleSuns.prototype.displayStatistics = function () {
 blackHoleSuns.prototype.doLoggedout = function () {
     $("#map").hide();
     $("#userTable").hide();
+    $("#loggedout").show();
 }
 
 blackHoleSuns.prototype.doLoggedin = function () {
     let player = $("#pnl-user");
 
     player.find("#inp-playerName").val(bhs.user.playerName);
-    player.find("#btn-Platform").text(bhs.user.Platform);
-    player.find("#btn-Galaxy").text(bhs.user.Galaxy);
+    player.find("#btn-Platform").text(bhs.user.platform);
+    player.find("#btn-Galaxy").text(bhs.user.galaxy);
 
     bhs.getUserEntries(bhs.displayUserEntry);
 
     //$("#map").show();
     $("#userTable").show();
+    $("#loggedout").hide();
 }
 
 blackHoleSuns.prototype.clearPanel = function (pnl) {
-    $("#" + pnl).each(function () {
+    pnl.each(function () {
         $(this).find("[id|='inp'").each(function () {
             $(this).val("");
         });
         $(this).find("[id|='menu']").each(function () {
-            $(this).find("[id|='btn']").text($(this).find("#list :first").text())
+            $(this).find("[id|='btn']").text($(this).find("#list :first").text().stripMarginWS())
         });
     });
 }
@@ -234,51 +257,77 @@ blackHoleSuns.prototype.clearPanel = function (pnl) {
 blackHoleSuns.prototype.extractUser = function () {
     let entry = {};
 
-    let loc = $("#id-user");
+    let loc = $("#pnl-user");
     entry.playerName = loc.find("#inp-playerName").val();
-    entry.platform = loc.find("#btn-Platform").text();
-    entry.galaxy = loc.find("#btn-Galaxy").text();
+    entry.platform = loc.find("#btn-Platform").text().stripMarginWS();
+    entry.galaxy = loc.find("#btn-Galaxy").text().stripMarginWS();
 
     entry.uid = bhs.uid;
 
     return entry;
 }
 
-blackHoleSuns.prototype.extractBH = function (player) {
+blackHoleSuns.prototype.extractEntry = function (name) {
     let entry = {};
 
-    entry.platform = player.platform;
-    entry.galaxy = player.galaxy;
-    entry.uid = bhs.uid;
+    let pnl = $("#panels");
 
-    let loc = $("#pnl-Black-Hole-System");
+    let loc = pnl.find("#pnl-" + name.nameToId());
     entry.addr = loc.find("#inp-addr").val();
     entry.sys = loc.find("#inp-sys").val();
     entry.reg = loc.find("#inp-reg").val();
-    entry.life = loc.find("#btn-Lifeform").text();
-    entry.econ = loc.find("#btn-Economy").text();
+    entry.life = loc.find("#btn-Lifeform").text().stripMarginWS();
+    entry.econ = loc.find("#btn-Economy").text().stripMarginWS();
 
-    entry.blackhole = true;
+    if (name == "Black Hole System") {
+        entry.blackhole = true;
 
-    loc = $("#pnl-Exit-System");
-    entry.connection = loc.find("#inp-addr").val();
+        loc = pnl.find("#pnl-Exit-System");
+        entry.connection = loc.find("#inp-addr").val();
+    }
+    else 
+        entry.blackhole = false;
 
     return entry;
 }
 
-blackHoleSuns.prototype.extractExit = function (player) {
-    let entry = {};
+blackHoleSuns.prototype.save = function () {
+    let update = false;
+    let bh = {};
+    let exit = {};
 
-    entry.platform = player.platform;
-    entry.galaxy = player.galaxy;
-    entry.uid = bhs.uid;
+    $("#status").empty();
 
-    let loc = $("#pnl-Exit-System");
-    entry.addr = loc.find("#inp-addr").val();
-    entry.sys = loc.find("#inp-sys").val();
-    entry.reg = loc.find("#inp-reg").val();
-    entry.life = loc.find("#btn-Lifeform").text();
-    entry.econ = loc.find("#btn-Economy").text();
+    let user = bhs.extractUser();
+    let ok = bhs.validateUser(user);
 
-    return entry;
+    if (ok) {
+        bhs.user = user;
+        bhs.updateUser(user);
+
+        bh = bhs.extractEntry("Black Hole System");
+        ok = bhs.validateEntry(bh);
+    }
+
+    if (ok) {
+        exit = bhs.extractEntry("Exit System");
+        ok = bhs.validateEntry(exit);
+    }
+
+    //if (ok) 
+    //    ok = bhs.validateMap(bh);
+
+    if (ok) {
+        bhs.updateEntry(user, bh);
+        bhs.updateEntry(user, exit);
+
+        let bhloc = $("#pnl-" + "Black Hole System".nameToId());
+        let xitloc = $("#pnl-" + "Exit System".nameToId());
+
+        bhs.clearPanel(bhloc);
+        bhs.clearPanel(xitloc);
+
+        bhloc.find("#inp-addr").val(bhs.makeBHAddress(exit.addr));
+        bhloc.find("#inp-reg").val(exit.reg);
+    }
 }

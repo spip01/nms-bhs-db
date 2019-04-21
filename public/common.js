@@ -56,6 +56,7 @@ blackHoleSuns.prototype.initFirebase = function () {
     bhs.fbauth = firebase.auth();
     bhs.fbfs = firebase.firestore();
 
+    bhs.calcStats();
     //bhs.rewriteData();
     //bhs.rewriteUserData();
 
@@ -93,11 +94,11 @@ blackHoleSuns.prototype.onAuthStateChanged = function (user) {
                 bhs.user = doc.data();
                 if (bhs.user.email != user.email) {
                     bhs.user.email = user.email;
-                    bhs.updateUser();
+                    bhs.updateUser(bhs.user);
                 }
             } else {
                 bhs.user.email = user.email;
-                bhs.updateUser();
+                bhs.updateUser(bhs.user);
             }
 
             if (bhs.doLoggedin)
@@ -128,63 +129,86 @@ blackHoleSuns.prototype.checkLoggedInWithMessage = function () {
     return false;
 }
 
-blackHoleSuns.prototype.updateUser = function () {
-    if (bhs.checkLoggedInWithMessage()) {
-        if (user.playerName && user.galaxy && user.platform) {
-            user.uid = bhs.uid;
-            bhs.fbfs.doc('users/' + bhs.uid).set(user);
-            $("#status").text("Changes saved.");
-        } else
-            $("#status").text("Error: Empty inputs. Not Saved.");
-    }
-}
-
-blackHoleSuns.prototype.validateEntry = function (entry) {
+blackHoleSuns.prototype.validateUser = function (user) {
     let ok = true;
-    if (!entry.addr || !entry.sys || !entry.reg) {
-        $("#status").text("Error: Missing input. Changes not saved.");
+
+    if (!user.playerName) {
+        $("#status").text("Error: Missing player name. Changes not saved.");
         ok = false;
     }
 
-    if (ok && !entry.addr.validateAddress()) {
-        $("#status").text("Error: Invalid address. Changes not saved.");
+    if (ok && !user.galaxy) {
+        $("#status").text("Error: Missing galaxy. Changes not saved.");
+        ok = false;
+    }
+
+    if (ok && !user.platform) {
+        $("#status").text("Error: Missing platform. Changes not saved.");
+        ok = false;
+    }
+
+    return ok;
+}
+blackHoleSuns.prototype.validateEntry = function (entry) {
+    let ok = true;
+    let sys = entry.blackhole ? "Black Hole" : "Exit"
+
+    if (!entry.addr) {
+        $("#status").text("Error: Missing " + sys + " address. Changes not saved.");
+        ok = false;
+    }
+
+    if (ok && !entry.sys) {
+        $("#status").text("Error: Missing " + sys + " system name. Changes not saved.");
+        ok = false;
+    }
+
+    if (ok && !entry.reg) {
+        $("#status").text("Error: Missing " + sys + " region name. Changes not saved.");
+        ok = false;
+    }
+
+    if (ok && !bhs.validateAddress(entry.addr)) {
+        $("#status").text("Error: Invalid " + sys + " address. Changes not saved.");
         ok = false;
     }
 
     if (ok && entry.blackhole && entry.addr.slice(15) != "0079") {
-        $("#status").text("Error: Black Hole System address must end with '0079'. Changes not saved.");
+        $("#status").text("Error: Black Hole address must end with '0079'. Changes not saved.");
         ok = false;
     }
 
     return ok;
 }
 
-blackHoleSuns.prototype.updateEntry = function (entry) {
-    let ok = false;
+blackHoleSuns.prototype.updateUser = function (user) {
+    if (bhs.checkLoggedInWithMessage()) {
+        user.uid = bhs.uid;
+        bhs.fbfs.doc('users/' + bhs.uid).set(user);
+    }
+}
 
+blackHoleSuns.prototype.updateEntry = function (player, entry) {
     if (bhs.checkLoggedInWithMessage()) {
         entry.time = firebase.firestore.Timestamp.fromDate(new Date());
+        entry.uid = bhs.uid;
 
-        var ref = bhs.fbfs.doc('stars/' + entry.addr);
-        ok = ref.get().then(function (doc) {
+        var ref = bhs.fbfs.doc('stars/' + player.platform + "/" + player.galaxy + "/" + entry.addr);
+        ref.get().then(function (doc) {
             if (doc.exists) {
-                $("#status").text("Error: Duplicate entry. Changes not saved!");
-                return false;
+                if (!bhs.compareEntry(out, doc.data()))
+                    $("#status").text("Error: Duplicate entry: " + entry.addr);
             } else {
                 ref.set(entry);
                 $("#status").text("Changes saved.");
-                return true;
             }
         });
     }
-
-    return ok;
 }
 
 blackHoleSuns.prototype.getUserEntries = function (displayFcn) {
-    let ref = bhs.fbfs.collection("stars").where("uid", "==", bhs.uid);
-    ref = ref.where("galaxy", "==", bhs.user.galaxy).where("platform", "==", bhs.user.platform);
-    ref = ref.orderBy("time");
+    var ref = bhs.fbfs.collection('stars').doc(bhs.user.platform).collection(bhs.user.galaxy);
+    ref = ref.where("uid", "==", bhs.uid).orderBy("time");
 
     ref.onSnapshot(function (querySnapshot) {
         querySnapshot.docChanges().forEach(function (change) {
@@ -194,6 +218,24 @@ blackHoleSuns.prototype.getUserEntries = function (displayFcn) {
             }
         });
     });
+}
+
+blackHoleSuns.prototype.calcStats = function(){
+    blackHoleSuns.prototype.getUserEntries = function (displayFcn) {
+        var ref = bhs.fbfs.collection('stars').doc(bhs.user.platform).collection(bhs.user.galaxy);
+        ref = ref.query("blackhole", "==", true);
+
+        ref.onSnapshot(function (querySnapshot) {
+            querySnapshot.docChanges().forEach(function (change) {
+                if (change.type === "added") {
+                    ++bhs.count[bhs.user.platform][bhs.user.galaxy];
+                    ++bhs.count.total;
+                }
+            });
+
+            ref = bhs.fbfs.collection("statistics").set(bhs.count);
+        });
+    }
 }
 
 blackHoleSuns.prototype.getStatistics = function (displayFcn) {
@@ -207,8 +249,27 @@ blackHoleSuns.prototype.rewriteData = function () {
             querySnapshot.forEach(function (doc) {
                 let d = doc.data();
 
-                d.time = firebase.firestore.Timestamp.fromDate(new Date(d.created));
-                bhs.fbfs.doc('stars/' + d.addr).set(d);
+                if (d.platform == "PC/Xbox")
+                    d.platform = "PC-XBox"
+
+                let out = {}
+                out.time = d.time;
+                out.addr = d.addr.toUpperCase();
+                out.econ = d.econ;
+                out.life = d.life;
+                out.reg = d.reg;
+                out.sys = d.sys;
+                out.uid = d.uid;
+
+                if (d.blackhole) {
+                    out.blackhole = d.blackhole;
+                    out.connection = d.connection;
+                }
+
+                d.galaxy = d.galaxy.stripMarginWS();
+
+                let ref = bhs.fbfs.collection(d.platform + "-" + d.galaxy);
+                ref.doc(out.addr).set(out);
             });
         });
 }
@@ -246,8 +307,8 @@ blackHoleSuns.prototype.userInit = function () {
     bhs.user = {};
     bhs.user.playerName = "";
     bhs.user.email = "";
-    bhs.user.platform = platformList[0];
-    bhs.user.galaxy = galaxyList[0];
+    bhs.user.platform = platformList[0].name;
+    bhs.user.galaxy = galaxyList[0].name;
 }
 
 function loadHtml(url, alturl, selector) {
@@ -299,29 +360,34 @@ function loadFile(url, alturl, fctn) {
 }
 
 String.prototype.idToName = function () {
-    let name = /---/g [Symbol.replace](this, "\/");
-    name = /--/g [Symbol.replace](name, "'");
+    let name = /--/g [Symbol.replace](this, "'");
     name = /-/g [Symbol.replace](name, " ");
 
     return name;
 }
 
 String.prototype.nameToId = function () {
-    let id = /\//g [Symbol.replace](this, "---");
-    id = /'/g [Symbol.replace](id, "--");
+    let id = /'/g [Symbol.replace](this, "--");
     id = / /g [Symbol.replace](id, "-");
 
     return id;
 }
 
-function formatAddress(field, event) {
+blackHoleSuns.prototype.compareEntry = function (ent1, ent2) {
+    return out.econ == d.econ &&
+        out.life == d.life &&
+        out.reg == d.reg &&
+        out.sys == d.sys;
+}
+
+blackHoleSuns.prototype.formatAddress = function (field, event) {
     let str = $(field).val();
     let len = str.length;
     let key = event.key;
 
     if (key.length > 1)
         return;
-        
+
     if (/[g-z]/i.test(key)) {
         event.preventDefault();
         return;
@@ -340,14 +406,14 @@ function formatAddress(field, event) {
         return;
     }
 
-    if (/[:.,;]/.test(key)) {
+    if (/[:.,; ]/.test(key)) {
         if (len > 18) {
             event.preventDefault();
             return;
         }
 
         let loc = str.lastIndexOf(":");
-        let out = loc > 0 ? str.slice(0, loc+1) : "";
+        let out = loc > 0 ? str.slice(0, loc + 1) : "";
         let rem = str.slice(loc + 1);
 
         if (rem.length < 4) {
@@ -362,22 +428,39 @@ function formatAddress(field, event) {
     }
 }
 
-function reformatAddress(field) {
+blackHoleSuns.prototype.reformatAddress = function (field) {
     let str = $(field).val().toUpperCase().replace(/[^0-9A-F]/g, "");
+    let out = "";
 
-    $(field).val(str.slice(0, 4) + ":" + str.slice(4, 8) + ":" + str.slice(8, 12) + ":" + str.slice(12, 16));
+    if (str.length > 0) {
+        for (let i = 0; i < 16; i += 4) {
+            let sl = str.slice(i, i + 4);
+            if (sl.length < 4) {
+                out += "0000".slice(0, 4 - sl.length);
+            }
+
+            out += sl + (out.length < 15 ? ":" : "");
+        }
+
+        $(field).val(out);
+    }
 }
 
-function validateAddress(addr) {
-    return /?:([0-9a-f]{4}):){3}[0-9a-f]{4}/.test(addr.toUpperCase());
+blackHoleSuns.prototype.validateAddress = function (addr) {
+    return /([0-9a-f]{4}:){3}[0-9a-f]{4}/i.test(addr.toUpperCase());
 }
 
-function makeBHAddress(addr) {
-    return /((?:(?:[0-9a-f]{4}):){3}))/.replace(addr.toUpperCase(), "$1")+"0079";
+blackHoleSuns.prototype.makeBHAddress = function (addr) {
+    return addr.toUpperCase().replace(/((?:[0-9a-f]{4}:){3}:)/i, "$1") + "0079";
 }
 
 String.prototype.stripID = function () {
-    return this.replace(/^.*?-(.*)/g, "$1");
+    return this.replace(/^.*?-(.*)/, "$1");
+}
+
+String.prototype.stripMarginWS = function () {
+    return this.replace(/\s*(.*?)\s*/, "$1");
+
 }
 
 const lifeformList = [{
@@ -392,7 +475,7 @@ const lifeformList = [{
 ];
 
 const platformList = [{
-        name: "PC/Xbox"
+        name: "PC-XBox"
     },
     {
         name: "PS4"
