@@ -372,6 +372,10 @@ function validateAddress(addr) {
     return /?:([0-9a-f]{4}):){3}[0-9a-f]{4}/.test(addr.toUpperCase());
 }
 
+function makeBHAddress(addr) {
+    return /((?:(?:[0-9a-f]{4}):){3}))/.replace(addr.toUpperCase(), "$1")+"0079";
+}
+
 String.prototype.stripID = function () {
     return this.replace(/^.*?-(.*)/g, "$1");
 }
