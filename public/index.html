@@ -109,36 +109,50 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="row">
+                            <label class="col-14">
+                                <input id="id-createBase" type="checkbox">Input Base
+                            </label>
+                        </div>
                     </div>
-                    <br>
                 </div>
 
                 <br>
                 <div id="entrybuttons" class="row">
-                    <div id="status" class="col-9 text-danger"></div>
+                    <div id="status" class="col-7 text-danger"></div>
                     <button id="save" type="button" class="col-2 btn border btn-sm btn-green">Save</button>&nbsp;&nbsp;
+                    <button id="delete" type="button" class="col-2 btn border btn-sm btn-green"
+                        style="display:none">Delete</button>&nbsp;&nbsp;
                     <button id="clear" type="button" class="col-2 btn border btn-sm btn-green">Clear</button>
+                </div>
+                <div id="basedelete" class="row" style="display:none">
+                    <div class="col-7"></div>
+                    <div class="text-danger">Deleting a base does not delete the star system</div>
                 </div>
             </div>
         </div>
+        <br>
 
-        <div id="userTable" class="card pad-bottom bordered-black">
-                <div id="userHeader" class="card-header"></div>
-                <div id="userItems" class="card-body"></div>
-            </div>
+        <div class="card card-body bordered-black">
+            <table id="userTable" class="table table-hover table-sm">
+                <thead id="userHeader"></thead>
+                <tbody id="userItems"></tbody>
+            </table>
+        </div>
+        <br>
 
         <div id="map" class="card card-body pad-bottom">
             User's Mapped Data (show collapse arrow, show generation, local storage)
             blue entry red Exit connect clear green line (optional)
         </div>
+        <br>
 
-        <div id="statistics" class="card card-body pad-bottom">
-            Overall Statistics (show collapse arrow)
-            PC PS4, xbox
-            Galaxy entries
-            (list)
-            Total
-            Grand Total
+        <div class="card card-body bordered-black">
+            <table id="stats" class="table table-sm">
+                <thead id="statsHeader"></thead>
+                <tbody id="statsItems"></tbody>
+            </table>
         </div>
     </div>
     <br>
