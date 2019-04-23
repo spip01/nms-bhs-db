@@ -158,7 +158,8 @@ blackHoleSuns.prototype.updateEntry = function (player, entry, save) {
     if (bhs.checkLoggedInWithMessage()) {
         entry.time = firebase.firestore.Timestamp.fromDate(new Date());
         entry.uid = bhs.uid;
-
+        entry.player = player.name;
+        
         var ref = bhs.fbfs.doc('stars/' + player.platform + "/" + player.galaxy + "/" + entry.addr);
         ref.get().then(function (doc) {
             if (doc.exists && save) {
@@ -472,31 +473,31 @@ blackHoleSuns.prototype.formatAddress = function (field, event) {
     let len = str.length;
     let key = event.key;
 
-    if (key.length > 1)
-        return;
+    if (event.metaKey || event.ctrlKey || event.keyCode < 0x20)
+        return true;
 
     if (/[g-z]/i.test(key)) {
         event.preventDefault();
-        return;
+        return false;
     }
 
     if (/[0-9a-f]/i.test(key)) {
         if (len == 4 || len == 9 || len == 14) {
             $(field).val(str + ":" + key);
             event.preventDefault();
-            return;
+            return false;
         }
 
         if (len > 18)
             event.preventDefault();
 
-        return;
+        return true;
     }
 
     if (/[:.,; ]/.test(key)) {
         if (len > 18) {
             event.preventDefault();
-            return;
+            return false;
         }
 
         let loc = str.lastIndexOf(":");
@@ -511,26 +512,24 @@ blackHoleSuns.prototype.formatAddress = function (field, event) {
         $(field).val(out);
 
         event.preventDefault();
-        return;
+        return false;
     }
 }
 
 blackHoleSuns.prototype.reformatAddress = function (field) {
-    let str = $(field).val().toUpperCase().replace(/[^0-9A-F]/g, "");
+    let str = /[^0-9A-F]+/g [Symbol.replace]($(field).val().toUpperCase(), ":");
+    str = str[0] == ":" ? str.slice(1) : str;
     let out = "";
 
-    if (str.length > 0) {
-        for (let i = 0; i < 16; i += 4) {
-            let sl = str.slice(i, i + 4);
-            if (sl.length < 4) {
-                out += "0000".slice(0, 4 - sl.length);
-            }
-
-            out += sl + (out.length < 15 ? ":" : "");
-        }
-
-        $(field).val(out);
+    for (let i = 0; i < 4; ++i) {
+        let idx = str.indexOf(":");
+        let end = idx > 4 || idx == -1 ? 4 : idx;
+        let s = str.slice(0, end);
+        str = str.slice(end + (idx <= 4 ? 1 : 0));
+        out += "0000".slice(0, 4 - s.length) + s + (i < 3 ? ":" : "");
     }
+
+    $(field).val(out);
 
     return out;
 }

@@ -113,9 +113,9 @@ blackHoleSuns.prototype.buildPanel = function (name) {
     bhs.buildMenu(loc, "Lifeform", lifeformList);
     bhs.buildMenu(loc, "Economy", economyList);
 
-    loc.find("#inp-addr").keydown(function (event) {
-        bhs.formatAddress(this, event);
-    });
+    //loc.find("#inp-addr").keydown(function (event) {
+    //    return bhs.formatAddress(this, event);
+    //});
 
     loc.find("#inp-addr").blur(function () {
         let addr = bhs.reformatAddress(this);
@@ -448,7 +448,7 @@ blackHoleSuns.prototype.save = function (save) {
     let ok = bhs.validateUser(user);
     bhs.user = user;
 
-    fbase = $("#id-createBase").attr('checked');
+    let fbase = $("#id-createBase").attr('checked');
 
     if (fbase) {
         base = bhs.extractEntry("Black Hole System");
