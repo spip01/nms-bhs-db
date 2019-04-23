@@ -69,22 +69,22 @@ blackHoleSuns.prototype.buildPanel = function (name) {
                         <div class="row">
                             <div class="col-md-5 col-13">
                                 <div class="row">
-                                    <div class="col-md-14 col-7 h6 clr-dark-green">Address</div>&nbsp;
-                                    <input id="inp-addr" class="rounded col-md-14 col-6" placeholder="0000:0000:0000:0000"></input>
+                                    <div class="col-md-14 col-4 h6 clr-dark-green">Address</div>&nbsp;
+                                    <input id="inp-addr" class="rounded col-md-14 col-9" placeholder="0000:0000:0000:0000"></input>
                                 </div>
                             </div>
 
                             <div class="col-md-4 col-13">
                                 <div class="row">
-                                    <div class="col-md-14 col-7 h6 clr-dark-green">System Name</div>&nbsp;
-                                    <input id="inp-sys" class="rounded col-md-14 col-6"></input>
+                                    <div class="col-md-14 col-4 h6 clr-dark-green">System Name</div>&nbsp;
+                                    <input id="inp-sys" class="rounded col-md-14 col-9"></input>
                                 </div>
                             </div>
 
                             <div class="col-md-5 col-13">
                                 <div class="row">
-                                    <div class="col-md-14 col-7 h6 clr-dark-green">Region Name</div>&nbsp;
-                                    <input id="inp-reg" class="rounded col-md-14 col-6"></input>
+                                    <div class="col-md-14 col-4 h6 clr-dark-green">Region Name</div>&nbsp;
+                                    <input id="inp-reg" class="rounded col-md-14 col-9"></input>
                                 </div>
                             </div>
                         </div>
@@ -403,11 +403,17 @@ blackHoleSuns.prototype.extractEntry = function (name) {
 
     if (name == "Black Hole System") {
         entry.blackhole = true;
+        entry.exit = false;
 
-        loc = pnl.find("#pnl-Exit-System");
+        loc = pnl.find("#pnl-"+"Exit System".nameToId());
         entry.connection = loc.find("#inp-addr").val();
-    } else
+    } else {
         entry.blackhole = false;
+        entry.exit = true;
+
+        loc = pnl.find("#pnl-"+"Black Hole System".nameToId());
+        entry.connection = loc.find("#inp-addr").val();
+    }
 
     return entry;
 }
@@ -476,13 +482,13 @@ blackHoleSuns.prototype.save = function (save) {
             bhs.updateEntry(user, bh, save);
             bhs.updateEntry(user, exit, save);
 
-            bhs.clearPanel("Black Hole System");
-            bhs.clearPanel("Exit System");
+            //bhs.clearPanel("Black Hole System");
+            //bhs.clearPanel("Exit System");
 
-            let bhloc = $("#pnl-" + "Black Hole System".nameToId());
+            //let bhloc = $("#pnl-" + "Black Hole System".nameToId());
 
-            bhloc.find("#inp-addr").val(bhs.makeBHAddress(exit.addr));
-            bhloc.find("#inp-reg").val(exit.reg);
+            //bhloc.find("#inp-addr").val(bhs.makeBHAddress(exit.addr));
+            //bhloc.find("#inp-reg").val(exit.reg);
         }
     }
 }

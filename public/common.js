@@ -102,7 +102,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (user) {
                 bhs.doLoggedin();
 
             //bhs.calcStats();
-            //bhs.rewriteData();
+            //bhs.rewriteData();  add playername to stars2
             //bhs.rewriteUserData();
         });
     } else {
@@ -146,7 +146,7 @@ blackHoleSuns.prototype.updateUser = function (user) {
 
 blackHoleSuns.prototype.getEntry = function (addr, player, displayfcn, loc) {
     if (bhs.checkLoggedInWithMessage()) {
-        var ref = bhs.fbfs.doc('stars/' + player.platform + "/" + player.galaxy + "/" + addr);
+        var ref = bhs.fbfs.doc('stars2/' + player.platform + "/" + player.galaxy + "/" + addr);
         ref.get().then(function (doc) {
             if (doc.exists)
                 displayfcn(loc, doc.data());
@@ -158,14 +158,15 @@ blackHoleSuns.prototype.updateEntry = function (player, entry, save) {
     if (bhs.checkLoggedInWithMessage()) {
         entry.time = firebase.firestore.Timestamp.fromDate(new Date());
         entry.uid = bhs.uid;
-        entry.player = player.name;
-        
-        var ref = bhs.fbfs.doc('stars/' + player.platform + "/" + player.galaxy + "/" + entry.addr);
+        entry.player = player.playerName;
+
+        let ref = bhs.fbfs.doc('stars2/' + player.platform + "/" + player.galaxy + "/" + entry.addr);
         ref.get().then(function (doc) {
             if (doc.exists && save) {
                 if (!bhs.compareEntry(out, doc.data()))
                     $("#status").text("Error: Duplicate entry: " + entry.addr);
             } else {
+                let ref = bhs.fbfs.doc('stars2/' + player.platform + "/" + player.galaxy + "/" + entry.addr);
                 ref.set(entry);
                 $("#status").text("Changes saved.");
             }
@@ -222,7 +223,7 @@ blackHoleSuns.prototype.initTotals = function (p, d) {
 }
 
 blackHoleSuns.prototype.getUserEntries = function (displayFcn) {
-    var ref = bhs.fbfs.collection('stars').doc(bhs.user.platform).collection(bhs.user.galaxy);
+    var ref = bhs.fbfs.collection('stars2').doc(bhs.user.platform).collection(bhs.user.galaxy);
     ref = ref.where("uid", "==", bhs.uid).orderBy("time");
 
     ref.onSnapshot(function (querySnapshot) {
@@ -344,35 +345,35 @@ blackHoleSuns.prototype.calcStats = function () {
 */
 /*
 blackHoleSuns.prototype.rewriteData = function () {
-    let ref = bhs.fbfs.collection("stars");
-    ref.get()
-        .then(function (querySnapshot) {
-            querySnapshot.forEach(function (doc) {
-                let d = doc.data();
+    let xref = bhs.fbfs.collection("stars/PC-XBox/Euclid");
+    let ref = xref.where("blackhole", "==", true);
+    ref.get().then(function (querySnapshot) {
+        querySnapshot.forEach(function (doc) {
+            let d = doc.data();
 
-                if (d.platform == "PC/Xbox")
-                    d.platform = "PC-XBox"
+            d.life = d.life == "Kovax" ? "Korvax" : d.life;
+            d.exit = false;
 
-                let out = {}
-                out.time = d.time;
-                out.addr = d.addr.toUpperCase();
-                out.econ = d.econ;
-                out.life = d.life;
-                out.reg = d.reg;
-                out.sys = d.sys;
-                out.uid = d.uid;
+            let dref = bhs.fbfs.collection("stars2/PC-XBox/Euclid");
+            dref.doc(d.addr).set(d).then(function () {
+                console.log(d.addr + " bh");
+            });
 
-                if (d.blackhole) {
-                    out.blackhole = d.blackhole;
-                    out.connection = d.connection;
-                }
+            xref.doc(d.connection).get().then(function (doc) {
+                let x = doc.data();
 
-                d.galaxy = d.galaxy.stripMarginWS();
+                x.life = x.life == "Kovax" ? "Korvax" : x.life;
+                x.blackhole = false;
+                x.exit = true;
+                x.connection = d.addr;
 
-                let ref = bhs.fbfs.collection(d.platform + "-" + d.galaxy);
-                ref.doc(out.addr).set(out);
+                let xref = bhs.fbfs.collection("stars2/PC-XBox/Euclid");
+                xref.doc(x.addr).set(x).then(function () {
+                    console.log(x.addr + " exit");
+                });
             });
         });
+    });
 }
 */
 /*
@@ -605,7 +606,7 @@ const lifeformList = [{
 }, {
     name: "Gek"
 }, {
-    name: "Kovax"
+    name: "Korvax"
 }];
 
 const platformList = [{
