@@ -17,80 +17,100 @@ h7 {
 }
 
 @media only screen and (max-width: 767px) {
+
     .h1,
     h1 {
         font-size: 2rem
     }
+
     .h2,
     h2 {
         font-size: 1.75rem
     }
+
     .h3,
     h3 {
         font-size: 1.5rem
     }
+
     .h4,
     h4 {
         font-size: 1.25rem
     }
+
     .h5,
     h5 {
         font-size: 1rem
     }
+
     .h6,
     h6 {
         font-size: 0.75rem
     }
+
     .h7,
     h7 {
         font-size: 0.5rem;
     }
+
     .sticky {
         width: 87%;
     }
+
     .hide-sm {
         display: none;
     }
+
     .small {
         font-size: 70%;
     }
+
     body {
         font-size: .7rem;
     }
 }
 
 @media only screen and (min-width: 768px) {
+
     .h1,
     h1 {
         font-size: 2rem
     }
+
     .h2,
     h2 {
         font-size: 1.75rem
     }
+
     .h3,
     h3 {
         font-size: 1.5rem
     }
+
     .h4,
     h4 {
         font-size: 1.25rem
     }
+
     .h5,
     h5 {
         font-size: 1rem
     }
+
     .h6,
     h6 {
         font-size: 0.75rem
     }
+
     .h7,
     h7 {
         font-size: 0.5rem;
     }
+
     .sticky {
         width: 93%;
     }
+
     .hide-sm {
         display: none;
     }
@@ -112,9 +132,11 @@ h7 {
     .noprint {
         display: none !important;
     }
+
     .row-header {
         display: table-header-group !important;
     }
+
     [id|='row-'] {
         font-size: 0.5rem !important;
     }
@@ -198,10 +220,20 @@ body {
     animation: pulse .25s 1;
 }
 
+.button {
+    cursor: pointer;
+}
+
+.hanging-indent {
+    padding-left: 40px;
+    text-indent: -40px;
+}
+
 @-webkit-keyframes pulse {
     from {
         background-color: #008000;
     }
+
     to {
         background-color: #e8ffe8;
     }
@@ -213,6 +245,7 @@ body {
     from {
         background-color: #008000;
     }
+
     to {
         background-color: #e8ffe8;
     }
