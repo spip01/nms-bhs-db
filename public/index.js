@@ -64,38 +64,38 @@ blackHoleSuns.prototype.buildPanel = function (name) {
         <div id="pnl-name" class="card pad-bottom">
             <div class="h4 clr-dark-green">heading</div>
             <div class="row">
-                <div class="col-sm-9 col-8">
+                <div class="col-md-9 col-14">
                     <div class="card card-body no-border">
                         <div class="row">
-                            <div class="col-sm-5 col-13">
+                            <div class="col-md-5 col-13">
                                 <div class="row">
-                                    <div class="col-sm-14 col-7 h6 clr-dark-green">Address</div>&nbsp;
-                                    <input id="inp-addr" class="rounded col-sm-14 col-6" placeholder="0000:0000:0000:0000"></input>
+                                    <div class="col-md-14 col-7 h6 clr-dark-green">Address</div>&nbsp;
+                                    <input id="inp-addr" class="rounded col-md-14 col-6" placeholder="0000:0000:0000:0000"></input>
                                 </div>
                             </div>
 
-                            <div class="col-sm-4 col-13">
+                            <div class="col-md-4 col-13">
                                 <div class="row">
-                                    <div class="col-sm-14 col-7 h6 clr-dark-green">System Name</div>&nbsp;
-                                    <input id="inp-sys" class="rounded col-sm-14 col-6"></input>
+                                    <div class="col-md-14 col-7 h6 clr-dark-green">System Name</div>&nbsp;
+                                    <input id="inp-sys" class="rounded col-md-14 col-6"></input>
                                 </div>
                             </div>
 
-                            <div class="col-sm-5 col-13">
+                            <div class="col-md-5 col-13">
                                 <div class="row">
-                                    <div class="col-sm-14 col-7 h6 clr-dark-green">Region Name</div>&nbsp;
-                                    <input id="inp-reg" class="rounded col-sm-14 col-6"></input>
+                                    <div class="col-md-14 col-7 h6 clr-dark-green">Region Name</div>&nbsp;
+                                    <input id="inp-reg" class="rounded col-md-14 col-6"></input>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-sm-5 col-6">
+                <div class="col-md-5 col-14">
                     <div class="card card-body no-border">
                         <div class="row">
-                            <div id="id-Lifeform" class="col-sm-7 col-14"></div>
-                            <div id="id-Economy" class="col-sm-7 col-14"></div>
+                            <div id="id-Lifeform" class="col-md-7 col-14"></div>
+                            <div id="id-Economy" class="col-md-7 col-14"></div>
                         </div>
                     </div>
                 </div>
@@ -128,9 +128,9 @@ blackHoleSuns.prototype.buildPanel = function (name) {
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
     let title = `        
         <div class="row">
-            <div class="col-sm-14 col-width h6 clr-dark-green">label</div>`;
+            <div class="col-md-14 col-width h6 clr-dark-green">label</div>`;
     let block = `
-            <div id="menu-idname" class="col-sm-14 col-width dropdown">
+            <div id="menu-idname" class="col-md-14 col-width dropdown">
                 <button id="btn-idname" class="btn border btn-sm btn-green dropdown-toggle" type="button" data-toggle="dropdown">
                     default
                 </button>
