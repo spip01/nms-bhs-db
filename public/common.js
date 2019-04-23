@@ -102,7 +102,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (user) {
                 bhs.doLoggedin();
 
             //bhs.calcStats();
-            //bhs.rewriteData();  add playername to stars2
+            //bhs.rewriteData();
             //bhs.rewriteUserData();
         });
     } else {
@@ -158,7 +158,7 @@ blackHoleSuns.prototype.updateEntry = function (player, entry, save) {
     if (bhs.checkLoggedInWithMessage()) {
         entry.time = firebase.firestore.Timestamp.fromDate(new Date());
         entry.uid = bhs.uid;
-        entry.player = player.playerName;
+        entry.playerName = player.playerName;
 
         let ref = bhs.fbfs.doc('stars2/' + player.platform + "/" + player.galaxy + "/" + entry.addr);
         ref.get().then(function (doc) {
@@ -178,7 +178,7 @@ blackHoleSuns.prototype.updateEntry = function (player, entry, save) {
                     stat.set(bhs.incTotals(bhs.totals, player, entry.blackhole));
                 });
 
-                bhs.updateUser(bhs.incTotals(player, player, entry.blackhole));
+                bhs.updateUser(bhs.incTotals(player.totals, player, entry.blackhole));
             }
         });
     }
@@ -321,58 +321,56 @@ blackHoleSuns.prototype.validateEntry = function (entry) {
 
     return ok;
 }
-/*
+/* warning: this needs to be run without reading in the current values elsewhere
 blackHoleSuns.prototype.calcStats = function () {
-    //bhs.totals = bhs.initTotals(bhs.user);
+    bhs.totals = bhs.initTotals(bhs.user);
     bhs.user.totals = bhs.initTotals(bhs.user)
 
-    let ref = bhs.fbfs.collection("stars/" + bhs.user.platform + "/" + bhs.user.galaxy);
-
+    let ref = bhs.fbfs.collection("stars2/" + bhs.user.platform + "/" + bhs.user.galaxy);
     ref.onSnapshot(function (querySnapshot) {
-        querySnapshot.docChanges().forEach(function (change) {
+        querySnapshot.docChanges().forEach(function (change) { // querySnapshot.size
             let d = change.doc.data();
-            //bhs.incTotals(bhs.totals, bhs.user, d.blackhole);
+            bhs.totals = bhs.incTotals(bhs.totals, bhs.user, d.blackhole);
             bhs.user.totals = bhs.incTotals(bhs.user.totals, bhs.user, d.blackhole);
+
+            let stats = bhs.fbfs.doc("statistics/totals");
+            let user = bhs.fbfs.doc("users/" + bhs.uid);
+
+            stats.set(bhs.totals);
+            user.set(bhs.user);
         });
 
-        //let stats = bhs.fbfs.doc("statistics/totals");
-        let user = bhs.fbfs.doc("users/" + bhs.uid);
-
-        //stats.set(bhs.totals);
-        user.set(bhs.user);
     });
 }
 */
 /*
 blackHoleSuns.prototype.rewriteData = function () {
-    let xref = bhs.fbfs.collection("stars/PC-XBox/Euclid");
-    let ref = xref.where("blackhole", "==", true);
+    let ref = bhs.fbfs.collection("stars2/PC-XBox/Euclid");
     ref.get().then(function (querySnapshot) {
         querySnapshot.forEach(function (doc) {
             let d = doc.data();
 
-            d.life = d.life == "Kovax" ? "Korvax" : d.life;
-            d.exit = false;
+            if (d.user != bhs.uid) {
+                let uref = bhs.fbfs.collection("users");
+                uref.doc(d.connection).get().then(function (doc) {
+                    let x = doc.data();
 
-            let dref = bhs.fbfs.collection("stars2/PC-XBox/Euclid");
-            dref.doc(d.addr).set(d).then(function () {
-                console.log(d.addr + " bh");
-            });
+                    d.playerName = x.playerName;
 
-            xref.doc(d.connection).get().then(function (doc) {
-                let x = doc.data();
-
-                x.life = x.life == "Kovax" ? "Korvax" : x.life;
-                x.blackhole = false;
-                x.exit = true;
-                x.connection = d.addr;
-
-                let xref = bhs.fbfs.collection("stars2/PC-XBox/Euclid");
-                xref.doc(x.addr).set(x).then(function () {
-                    console.log(x.addr + " exit");
+                    let dref = bhs.fbfs.collection("stars2/PC-XBox/Euclid");
+                        dref.doc(d.addr).set(d).then(function () {
+                        console.log(d.addr + "   write1");
+                    });
                 });
-            });
-        });
+            }else {
+                d.playerName = bhs.user.playerName;
+
+                let dref = bhs.fbfs.collection("stars2/PC-XBox/Euclid");
+                dref.doc(d.addr).set(d).then(function () {
+                    console.log(d.addr + "   write2");
+                });
+            }
+    });
     });
 }
 */

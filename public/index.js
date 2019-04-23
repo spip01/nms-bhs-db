@@ -293,9 +293,7 @@ blackHoleSuns.prototype.buildStats = function () {
     let h = trStart;
     h += /label/ [Symbol.replace](thLine, "");
     h += /label/ [Symbol.replace](thLine, "User BH");
-    h += /label/ [Symbol.replace](thLine, "User Stars");
     h += /label/ [Symbol.replace](thLine, "All Users BH");
-    h += /label/ [Symbol.replace](thLine, "All Users Stars");
     h += trEnd;
 
     let pos = $("#statsHeader");
@@ -314,25 +312,19 @@ blackHoleSuns.prototype.displayStats = function () {
     let h = trStart;
     h += /label/ [Symbol.replace](thLine, "Total [" + p + "]");
     h += /label/ [Symbol.replace](thLine, bhs.user.totals[p].totalBH);
-    h += /label/ [Symbol.replace](thLine, bhs.user.totals[p].totalStars);
     h += /label/ [Symbol.replace](thLine, bhs.totals[p].totalBH);
-    h += /label/ [Symbol.replace](thLine, bhs.totals[p].totalStars);
     h += trEnd;
 
     h += trStart;
     h += /label/ [Symbol.replace](thLine, "Total [" + p + "][" + g + "]");
     h += /label/ [Symbol.replace](thLine, bhs.user.totals[p][g].totalBH);
-    h += /label/ [Symbol.replace](thLine, bhs.user.totals[p][g].totalStars);
     h += /label/ [Symbol.replace](thLine, bhs.totals[p][g].totalBH);
-    h += /label/ [Symbol.replace](thLine, bhs.totals[p][g].totalStars);
     h += trEnd;
 
     h += trStart;
     h += /label/ [Symbol.replace](thLine, "Grand Total");
     h += /label/ [Symbol.replace](thLine, bhs.user.totals.totalBH);
-    h += /label/ [Symbol.replace](thLine, bhs.user.totals.totalStars);
     h += /label/ [Symbol.replace](thLine, bhs.totals.totalBH);
-    h += /label/ [Symbol.replace](thLine, bhs.totals.totalStars);
     h += trEnd;
 
     h = /col/g [Symbol.replace](h, "row");
