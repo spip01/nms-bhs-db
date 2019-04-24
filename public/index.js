@@ -37,11 +37,6 @@ $(document).ready(function () {
         bhs.save($(this).text() == "Save");
         $("#save").text("Save");
         $("#delete").hide();
-
-        $("#pnl-" + "Black Hole System".nameToId() + " #inp-addr").removeClass("disabled");
-        $("#pnl-" + "Black Hole System".nameToId() + " #inp-addr").removeAttr("disabled");
-        $("#pnl-" + "Exit System".nameToId() + " #inp-addr").removeClass("disabled");
-        $("#pnl-" + "Exit System".nameToId() + " #inp-addr").removeAttr("disabled");
     });
 
     $("#clear").click(function () {
@@ -51,11 +46,6 @@ $(document).ready(function () {
 
         $("#save").text("Save");
         $("#delete").hide();
-
-        $("#pnl-" + "Black Hole System".nameToId() + " #inp-addr").removeClass("disabled");
-        $("#pnl-" + "Black Hole System".nameToId() + " #inp-addr").removeAttr("disabled");
-        $("#pnl-" + "Exit System".nameToId() + " #inp-addr").removeClass("disabled");
-        $("#pnl-" + "Exit System".nameToId() + " #inp-addr").removeAttr("disabled");
     });
 })
 
@@ -140,20 +130,21 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
     let item = ``;
     let hdr = ``;
     if (list.length > 8) {
-        hdr = `<ul id="list" class="dropdown-menu scrollable-menu btn-green" role="menu"></ul>`;
-        item = `<li id="item-idname" class="dropdown-item" type="button" style="cursor: pointer">iname</li>`;
+        hdr = `<ul id="list" class="dropdown-menu scrollable-menu" style="rgbcolor" role="menu"></ul>`;
+        item = `<li id="item-idname" class="dropdown-item" type="button" style="rgbcolor cursor: pointer">iname</li>`;
     } else {
-        hdr = `<div id="list" class="dropdown-menu btn-green"></div>`;
-        item = `<button id="item-idname" class="dropdown-item border-bottom" type="button" style="cursor: pointer">iname</button>`;
+        hdr = `<div id="list" class="dropdown-menu" style="rgbcolor"></div>`;
+        item = `<button id="item-idname" class="dropdown-item border-bottom" type="button" style="rgbcolor cursor: pointer">iname</button>`;
     }
 
     let id = label.nameToId();
-    let h = /label/g [Symbol.replace](title, label);
-    h += /idname/g [Symbol.replace](block, id);
-    h = /width/g [Symbol.replace](h, vertical ? 13 : 7);
-    h = /default/g [Symbol.replace](h, list[0].name);
+    let h = /label/ [Symbol.replace](title, label);
+    h += /idname/ [Symbol.replace](block, id);
+    h = /width/ [Symbol.replace](h, vertical ? 13 : 7);
+    h = /default/ [Symbol.replace](h, list[0].name);
     loc.find("#id-" + id).append(h);
 
+    h = /rgbcolor/ [Symbol.replace](hdr, "background-color: " + rygColorList[label == "Galaxy" ? 0 : list[0].level]);
     let menu = loc.find("#menu-" + id);
     menu.append(hdr);
 
@@ -161,14 +152,32 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
 
     for (let i = 0; i < list.length; ++i) {
         let lid = list[i].name.nameToId();
-        h = /idname/g [Symbol.replace](item, lid);
-        h = /iname/g [Symbol.replace](h, list[i].name);
+        h = /idname/ [Symbol.replace](item, lid);
+
+        if (typeof list[i].level != "undefined")
+            h = /iname/ [Symbol.replace](h, list[i].level + " " + list[i].name);
+        else
+            h = /iname/ [Symbol.replace](h, list[i].name);
+
+        if (label != "Galaxy") {
+            h = /rgbcolor/ [Symbol.replace](h, "background-color: " + rygColorList[list[i].level]);
+        } else {
+            if (list[i].level == 0)
+                h = /rgbcolor/ [Symbol.replace](h, "background-color: " + rygColorList[0]);
+            else {
+                let c = 255 - list[0].level;
+
+                h = /rgbcolor/ [Symbol.replace](h, "background-color: " + "hsl(" + c + ",100%,50%)");
+            }
+        }
 
         mlist.append(h);
 
         mlist.find("#item-" + lid).click(function () {
             let name = $(this).text().stripMarginWS();
-            menu.find("#btn-" + id).text(name);
+            let btn = menu.find("#btn-" + id);
+            btn.text(name);
+            btn.css($(this).css());
         });
     }
 }
@@ -198,6 +207,9 @@ blackHoleSuns.prototype.buildUserTable = function () {
     l = /idname/ [Symbol.replace](thLine, "econ");
     h += /label/ [Symbol.replace](l, "Economy");
 
+    l = /idname/ [Symbol.replace](thLine, "platform");
+    h += /label/ [Symbol.replace](l, "platform");
+
     h += trEnd;
 
     let pos = $("#userHeader");
@@ -206,7 +218,7 @@ blackHoleSuns.prototype.buildUserTable = function () {
 }
 
 blackHoleSuns.prototype.displaySingle = function (loc, entry) {
-    let bh = loc.prop("id") == "pnl-"+"Black Hole System".nameToId();
+    let bh = loc.prop("id") == "pnl-" + "Black Hole System".nameToId();
     if (bh && entry.addr.slice(15) != "0079")
         return;
 
@@ -219,7 +231,7 @@ blackHoleSuns.prototype.displaySingle = function (loc, entry) {
     $("#save").text("Update");
 
     if (bh) {
-        let pnl = $("#pnl-"+"Exit System".nameToId());
+        let pnl = $("#pnl-" + "Exit System".nameToId());
         bhs.getEntry(entry.connection, bhs.user, bhs.displaySingle, pnl);
     }
 }
@@ -246,7 +258,7 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
         h += /idname/ [Symbol.replace](trStart, "Exit-" + addr) + trEnd;
         ui.prepend(h);
 
-        if(last = !last) {
+        if (last = !last) {
             ui.find("#id-BH-" + addr).addClass("bkg-vlight-gray");
             ui.find("#id-Exit-" + addr).addClass("bkg-vlight-gray");
         }
@@ -272,6 +284,9 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
     l = /idname/ [Symbol.replace](thLine, "econ");
     h += /label/ [Symbol.replace](l, entry.econ);
 
+    l = /idname/ [Symbol.replace](thLine, "platform");
+    h += /label/ [Symbol.replace](l, entry.platform);
+
     h = /col/g [Symbol.replace](h, "row");
 
     pos.append(h);
@@ -281,11 +296,6 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
 
         $("#save").text("Update");
         $("#delete").show();
-
-        $("#pnl-" + "Black Hole System".nameToId() + " #inp-addr").addClass("disabled");
-        $("#pnl-" + "Black Hole System".nameToId() + " #inp-addr").prop("disabled", true);
-        $("#pnl-" + "Exit System".nameToId() + " #inp-addr").addClass("disabled");
-        $("#pnl-" + "Exit System".nameToId() + " #inp-addr").prop("disabled", true);
     });
 }
 
@@ -299,7 +309,6 @@ blackHoleSuns.prototype.buildStats = function () {
     let pos = $("#statsHeader");
     pos.empty();
     pos.append(h);
-
 }
 
 blackHoleSuns.prototype.displayStats = function () {
@@ -397,13 +406,13 @@ blackHoleSuns.prototype.extractEntry = function (name) {
         entry.blackhole = true;
         entry.exit = false;
 
-        loc = pnl.find("#pnl-"+"Exit System".nameToId());
+        loc = pnl.find("#pnl-" + "Exit System".nameToId());
         entry.connection = loc.find("#inp-addr").val();
     } else {
         entry.blackhole = false;
         entry.exit = true;
 
-        loc = pnl.find("#pnl-"+"Black Hole System".nameToId());
+        loc = pnl.find("#pnl-" + "Black Hole System".nameToId());
         entry.connection = loc.find("#inp-addr").val();
     }
 
@@ -473,14 +482,6 @@ blackHoleSuns.prototype.save = function (save) {
         } else {
             bhs.updateEntry(user, bh, save);
             bhs.updateEntry(user, exit, save);
-
-            //bhs.clearPanel("Black Hole System");
-            //bhs.clearPanel("Exit System");
-
-            //let bhloc = $("#pnl-" + "Black Hole System".nameToId());
-
-            //bhloc.find("#inp-addr").val(bhs.makeBHAddress(exit.addr));
-            //bhloc.find("#inp-reg").val(exit.reg);
         }
     }
 }

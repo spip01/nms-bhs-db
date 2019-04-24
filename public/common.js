@@ -22,6 +22,10 @@ const fbconfig = {
     messagingSenderId: FIREBASE_MSGID
 };
 
+const starsCol = "stars";
+const usersCol = "users";
+const statsCol = "statistics";
+
 function startUp() {
     $("#javascript").empty();
     $("#jssite").show();
@@ -83,7 +87,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (user) {
 
         bhs.uid = user.uid;
 
-        var ref = bhs.fbfs.doc('users/' + bhs.uid);
+        let ref = bhs.fbfs.doc(usersCol + '/' + bhs.uid);
 
         ref.get().then(function (doc) {
             if (doc.exists) {
@@ -99,7 +103,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (user) {
             }
 
             if (bhs.doLoggedin)
-                bhs.doLoggedin();
+                bhs.doLoggedin(); // comment out to rewrite any data to prevent data load
 
             //bhs.calcStats();
             //bhs.rewriteData();
@@ -140,16 +144,17 @@ blackHoleSuns.prototype.userInit = function () {
 blackHoleSuns.prototype.updateUser = function (user) {
     if (bhs.checkLoggedInWithMessage()) {
         user.uid = bhs.uid;
-        bhs.fbfs.doc('users/' + bhs.uid).set(user);
+        bhs.fbfs.doc(userCol + '/' + user.uid).set(user);
     }
 }
 
 blackHoleSuns.prototype.getEntry = function (addr, player, displayfcn, loc) {
     if (bhs.checkLoggedInWithMessage()) {
-        var ref = bhs.fbfs.doc('stars2/' + player.platform + "/" + player.galaxy + "/" + addr);
-        ref.get().then(function (doc) {
-            if (doc.exists)
+        let ref = bhs.fbfs.collection(starsCol + "/" + player.galaxy + "/" + addr);
+        ref.get().then(function (querySnapshot) {
+            querySnapshot.forEach(function (doc) {
                 displayfcn(loc, doc.data());
+            });
         });
     }
 }
@@ -160,13 +165,13 @@ blackHoleSuns.prototype.updateEntry = function (player, entry, save) {
         entry.uid = bhs.uid;
         entry.playerName = player.playerName;
 
-        let ref = bhs.fbfs.doc('stars2/' + player.platform + "/" + player.galaxy + "/" + entry.addr);
+        let ref = bhs.fbfs.doc(starsCol + "/" + player.galaxy + "/" + entry.addr + "/" + player.platform);
         ref.get().then(function (doc) {
             if (doc.exists && save) {
                 if (!bhs.compareEntry(out, doc.data()))
-                    $("#status").text("Error: Duplicate entry: " + entry.addr);
+                ; //ask for confirmation
             } else {
-                let ref = bhs.fbfs.doc('stars2/' + player.platform + "/" + player.galaxy + "/" + entry.addr);
+                let ref = bhs.fbfs.doc(starsCol + "/" + player.galaxy + "/" + entry.addr + "/" + player.platform);
                 ref.set(entry);
                 $("#status").text("Changes saved.");
             }
@@ -185,8 +190,6 @@ blackHoleSuns.prototype.updateEntry = function (player, entry, save) {
 }
 
 blackHoleSuns.prototype.incTotals = function (d, p, bh) {
-    d = bhs.initTotals(p, d);
-
     if (bh) {
         ++d.totalBH;
         ++d[p.platform].totalBH;
@@ -222,36 +225,39 @@ blackHoleSuns.prototype.initTotals = function (p, d) {
     return d;
 }
 
-blackHoleSuns.prototype.getUserEntries = function (displayFcn) {
-    var ref = bhs.fbfs.collection('stars2').doc(bhs.user.platform).collection(bhs.user.galaxy);
-    ref = ref.where("uid", "==", bhs.uid).orderBy("time");
+blackHoleSuns.prototype.getUserEntries = function (addDisplayFcn, modDisplayFcn) {
+    let ref = bhs.fbfs.collection(starsCol).doc(bhs.user.galaxy);
 
     ref.onSnapshot(function (querySnapshot) {
         querySnapshot.docChanges().forEach(function (change) {
             if (change.type === "added") {
                 let d = change.doc.data();
-                displayFcn(d);
+                addDisplayFcn(d);
             }
 
             if (change.type === "modified") {
                 let d = change.doc.data();
-                displayFcn(d);
+                modDisplayFcn(d);
             }
         });
     });
 }
 
 blackHoleSuns.prototype.getStats = function (displayFcn) {
-    var ref = bhs.fbfs.doc('statistics/totals');
-    ref.onSnapshot(function (doc) {
-        bhs.totals = doc.data();
-        displayFcn();
+    let ref = bhs.fbfs.doc(statsCol + "/totals");
+    ref.onSnapshot(function (snapshot) {
+        snapshot.docChanges().forEach(function (chanage) {
+            bhs.totals = change.doc.data();
+            displayFcn();
+        });
     });
 
-    ref = bhs.fbfs.doc('users/' + bhs.uid);
-    ref.onSnapshot(function (doc) {
-        bhs.user = doc.data();
-        displayFcn();
+    ref = bhs.fbfs.doc(usersCol + "/" + bhs.uid);
+    ref.onSnapshot(function (snapshot) {
+        snapshot.docChanges().forEach(function (chanage) {
+            bhs.user = change.doc.data();
+            displayFcn();
+        });
     });
 }
 
@@ -259,7 +265,7 @@ blackHoleSuns.prototype.checkLoggedInWithMessage = function () {
     if (bhs.fbauth.currentUser)
         return true;
 
-    var data = {
+    let data = {
         message: 'Please login before saving changes!',
         timeout: 2000
     };
@@ -350,27 +356,25 @@ blackHoleSuns.prototype.rewriteData = function () {
         querySnapshot.forEach(function (doc) {
             let d = doc.data();
 
-            if (d.user != bhs.uid) {
-                let uref = bhs.fbfs.collection("users");
-                uref.doc(d.connection).get().then(function (doc) {
-                    let x = doc.data();
+            let x = {};
+            x.addr = d.addr;
+            x.blackhole = d.blackhole;
+            x.exit = d.exit;
+            x.reg = d.reg;
+            x.life = d.life.stripMarginWS();
+            x.econ = d.econ.stripMarginWS();
+            x.connection = d.connection;
+            x.sys = d.sys;
 
-                    d.playerName = x.playerName;
+            x.time = d.time;
+            x.uid = d.uid;
+            x.playerName = d.playerName;
 
-                    let dref = bhs.fbfs.collection("stars2/PC-XBox/Euclid");
-                        dref.doc(d.addr).set(d).then(function () {
-                        console.log(d.addr + "   write1");
-                    });
-                });
-            }else {
-                d.playerName = bhs.user.playerName;
-
-                let dref = bhs.fbfs.collection("stars2/PC-XBox/Euclid");
-                dref.doc(d.addr).set(d).then(function () {
-                    console.log(d.addr + "   write2");
-                });
-            }
-    });
+            let xref = bhs.fbfs.doc("stars/Euclid");
+            xref.collection(x.addr).doc("PC-XBox").set(x).then(function () {
+                console.log(x.addr + "   write");
+            });
+        });
     });
 }
 */
@@ -538,7 +542,7 @@ blackHoleSuns.prototype.validateAddress = function (addr) {
 }
 
 blackHoleSuns.prototype.makeBHAddress = function (addr) {
-    return addr.toUpperCase().replace(/((?:[0-9a-f]{4}:){3}:)/i, "$1") + "0079";
+    return addr.toUpperCase().slice(0, 16) + "0079";
 }
 
 String.prototype.stripID = function () {
@@ -546,9 +550,9 @@ String.prototype.stripID = function () {
 }
 
 String.prototype.stripMarginWS = function () {
-    return this.replace(/\s*(.*?)\s*/, "$1");
-
+    return this.replace(/\s*([.*]?)\s*/, "$1");
 }
+
 /*
 const playerList = [{
     name: "Player Name",
@@ -608,83 +612,112 @@ const lifeformList = [{
 }];
 
 const platformList = [{
-    name: "PC-XBox"
+    name: "PC-XBox",
+
 }, {
     name: "PS4"
+
 }];
+
+const levelRgb = ["#000000", "#ffc0c0", "#ffff00", "#c0ffc0"];
 
 const economyList = [{
     name: "Declining",
     level: 1
+
+
 }, {
     name: "Destitute",
     level: 1
+
 }, {
     name: "Failing",
     level: 1
+
 }, {
     name: "Fledgling",
     level: 1
+
 }, {
     name: "Low supply",
     level: 1
+
 }, {
     name: "Struggling",
     level: 1
+
 }, {
     name: "Unpromising",
     level: 1
+
 }, {
     name: "Unsuccessful",
     level: 1
+
 }, {
     name: "Adequate",
     level: 2
+
 }, {
     name: "Balanced",
     level: 2
+
 }, {
     name: "Comfortable",
     level: 2
+
 }, {
     name: "Developing",
     level: 2
+
 }, {
     name: "Medium Supply",
     level: 2
+
 }, {
     name: "Promising",
     level: 2
+
 }, {
     name: "Satisfactory",
     level: 2
+
 }, {
     name: "Sustainable",
     level: 2
+
 }, {
     name: "Advanced",
     level: 3
+
 }, {
     name: "Affluent",
     level: 3
+
 }, {
     name: "Booming",
     level: 3
+
 }, {
     name: "Flourishing",
     level: 3
+
 }, {
     name: "High Supply",
     level: 3
+
 }, {
     name: "Opulent",
     level: 3
+
 }, {
     name: "Prosperous",
     level: 3
+
 }, {
     name: "Wealthy",
     level: 3
+
 }];
 
 const conflictList = [{
@@ -791,7 +824,7 @@ const starTypeRegex = /[OBAFGKMLTYE][0-9][efhkmnpqsvw]*/i;
 
 const galaxyList = [{
     name: "Euclid",
-    number: 1
+    number: 1,
 }, {
     name: "Hilbert Dimension",
     number: 2
