@@ -171,6 +171,10 @@ body {
     color: #e8ffe8;
 }
 
+.bkg-white {
+    background-color: #ffffff;
+}
+
 .bkg-light-green {
     background-color: #f0fff0;
 }

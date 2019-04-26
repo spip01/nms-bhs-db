@@ -84,24 +84,55 @@
     </div>
 
     <div id="jssite" class="card card-body bkg-light-green pad-bottom" style="display:none">
-        <div class="card card-body pad-bottom">
-            <div id="loggedout" class="row clr-dark-green bkg-light-green">
-                <h4>This is the admin page for the No Man's Sky Black Hole
-                    Suns project. Please login to enter data.
-                </h4>
-            </div>
+        <div id="loggedout" class="row clr-dark-green bkg-light-green">
+            <h4>This is the admin page for the No Man's Sky Black Hole
+                Suns project. Please login to enter data.
+            </h4>
+        </div>
 
-            <div class="container">
-                <div class="row">
-                    <label class="control-label col-md-2 text-right" for="filename"><span>File</span></label>
-                    <div class="col-md-10">
-                        <div class="input-group">
-                            <input type="hidden" id="filename" name="filename" value="">
-                            <input type="file" id="uploadedFile" name="uploadedFile"
-                                class="form-control form-control-sm" accept=".csv">
-                            <div class="input-group-btn">
-                                <input id="submit" type="button" value="Upload" class="rounded-0 btn btn-primary">
-                            </div>
+        <div id="pnl-user">
+            <div class="row">
+                <div id="id-playerName" class="col-6"></div>
+                <div id="id-Platform" class="col-4"></div>
+                <div id="id-Galaxy" class="col-4"></div>
+            </div>
+        </div>
+
+        <div class="container border">
+            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                <div class="panel panel-default">
+                    <div class="panel-heading" role="tab" id="headingOne">
+                        <h4 class="panel-title">
+                            <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne"
+                                aria-expanded="false" aria-controls="collapseOne">
+                                All User Data
+                            </a>
+                        </h4>
+                    </div>
+                    <div id="collapseOne" class="panel-collapse collapse in bkg-white border" role="tabpanel"
+                        aria-labelledby="headingOne">
+                        <div class="panel-body">
+                            <table id="userTable" class="table table-hover table-sm">
+                                <thead id="userHeader"></thead>
+                                <tbody id="userItems"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+
+        <div class="container border">
+            <div class="row">
+                <label class="control-label col-md-2 text-right" for="filename"><span>File</span></label>
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <input type="hidden" id="filename" name="filename" value="">
+                        <input type="file" id="uploadedFile" name="uploadedFile" class="form-control form-control-sm"
+                            accept=".csv">
+                        <div class="input-group-btn">
+                            <input id="submit" type="button" value="Upload" class="rounded-0 btn btn-primary">
                         </div>
                     </div>
                 </div>

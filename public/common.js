@@ -106,6 +106,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (user) {
 
                 if (bhs.doLoggedin)
                     bhs.doLoggedin();
+                bhs.navLoggedin();
             }
         });
     } else {
@@ -115,7 +116,8 @@ blackHoleSuns.prototype.onAuthStateChanged = function (user) {
         bhs.userInit();
 
         if (bhs.doLoggedout)
-            bhs.doLoggedout()
+            bhs.doLoggedout();
+        bhs.navLoggedout();
     }
 }
 
@@ -141,6 +143,17 @@ blackHoleSuns.prototype.userInit = function () {
 
     bhs.user.bases = [];
     bhs.user.ships = [];
+}
+
+
+blackHoleSuns.prototype.navLoggedin = function () {
+    $("#loggedout").hide();
+    $("#loggedin").show();
+}
+
+blackHoleSuns.prototype.navLoggedout = function () {
+    $("#loggedout").show();
+    $("#loggedin").hide();
 }
 
 blackHoleSuns.prototype.updateUser = function () {
@@ -253,8 +266,11 @@ blackHoleSuns.prototype.initTotals = function (d) {
     return d;
 }
 
-blackHoleSuns.prototype.getUserEntries = function (displayFcn) {
-    let ref = bhs.fbfs.collection(starsDoc + bhs.user.galaxy).where(bhs.user.platform + ".uid", "==", bhs.uid);
+blackHoleSuns.prototype.getUserEntries = function (user, platform, galaxy, qty, displayFcn) {
+    let ref = bhs.fbfs.collection(starsDoc + galaxy);
+
+    if (user) 
+        ref=ref.where(platform + ".uid", "==", bhs.uid);
 
     ref.onSnapshot(function (querySnapshot) {
         querySnapshot.docChanges().forEach(function (change) {
@@ -620,7 +636,7 @@ blackHoleSuns.prototype.reformatAddress = function (field) {
 }
 
 String.prototype.stripColons = function () {
-    return /:/g[Symbol.replace](this, "");
+    return /:/g [Symbol.replace](this, "");
 }
 
 blackHoleSuns.prototype.validateAddress = function (addr) {

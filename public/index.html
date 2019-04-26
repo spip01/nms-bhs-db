@@ -112,13 +112,13 @@
                     <div class="row">
                         <label class="col-14">
                             <input id="ck-singleSystem" type="checkbox">
-                            Input single systems (optional, see the 
+                            Input single systems (optional, see the
                             <a href="about.html">about</a> page.
                         </label>
                     </div>
                 </div>
             </div>
-        
+
             <br>
             <div id="entrybuttons" class="row">
                 <div id="status" class="col-7 text-danger"></div>
@@ -130,11 +130,37 @@
         </div>
         <br>
 
-        <div class="card card-body">
-            <table id="userTable" class="table table-hover table-sm">
-                <thead id="userHeader"></thead>
-                <tbody id="userItems"></tbody>
-            </table>
+        <div class="panel-group border" id="accordion" role="tablist" aria-multiselectable="true">
+            <div class="panel panel-default">
+                <div class="panel-heading row" role="tab" id="headingOne">
+                    <h4 class="panel-title">
+                        <a role="button" class="col-4" data-toggle="collapse" data-parent="#accordion"
+                            href="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                            <i id="arrow" class="fas fa-angle-down"></i>
+                            User Data
+                        </a>
+
+                    </h4>
+                    <h7 class="col-4">&nbsp;Save us some data charges and don&#39;t open this panel unless you need to.
+                    </h7>
+                    <div class="col-6 float-right">
+                        <div class="row">
+                            <div class="col-7 h6 clr-dark-green text-right">Display Max&nbsp;</div>
+                            <input id="inp-displalyqty" class="col-4 rounded h5" type="text" value="20">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="collapseOne" class="panel-collapse collapse in bkg-white border" role="tabpanel"
+                    aria-labelledby="headingOne">
+                    <div class="panel-body">
+                        <table id="userTable" class="table table-hover table-sm">
+                            <thead id="userHeader"></thead>
+                            <tbody id="userItems"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
         <br>
 

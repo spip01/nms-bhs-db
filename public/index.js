@@ -21,9 +21,9 @@ $(document).ready(function () {
     bhs.buildStats();
 
     $('#pnl-user #ck-singleSystem').change(function () {
-        if (this.checked) 
+        if (this.checked)
             bhs.activatePanelGroup(1);
-         else 
+        else
             bhs.activatePanelGroup(0);
     });
 
@@ -44,6 +44,20 @@ $(document).ready(function () {
 
     $("#clear").click(function () {
         bhs.clearPanels();
+    });
+
+    $('.panel-collapse').on('show.bs.collapse', function () {
+        $(this).siblings('.panel-heading').addClass('active');
+        $("#arrow").removeClass("fa-angle-down");
+        $("#arrow").addClass("fa-angle-up");
+        if ($("#userItems").children().length == 0)
+            bhs.getUserEntries(bhs.user.uid, bhs.user.platform, bhs.user.galaxy, 20, bhs.displayUserEntry);
+    });
+
+    $('.panel-collapse').on('hide.bs.collapse', function () {
+        $(this).siblings('.panel-heading').removeClass('active');
+        $("#arrow").removeClass("fa-angle-up");
+        $("#arrow").addClass("fa-angle-down");
     });
 })
 
@@ -484,7 +498,6 @@ blackHoleSuns.prototype.displayStats = function () {
 blackHoleSuns.prototype.doLoggedout = function () {
     $("#map").hide();
     $("#userTable").hide();
-    $("#loggedout").show();
 }
 
 blackHoleSuns.prototype.doLoggedin = function () {
@@ -498,12 +511,10 @@ blackHoleSuns.prototype.doLoggedin = function () {
     let i = bhs.getNameIndex(galaxyList, bhs.user.galaxy);
     player.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[galaxyList[i].number].color + ";");
 
-    bhs.getUserEntries(bhs.displayUserEntry);
     bhs.getStats(bhs.displayStats);
 
     //$("#map").show();
     $("#userTable").show();
-    $("#loggedout").hide();
 }
 
 blackHoleSuns.prototype.clearPanels = function () {
