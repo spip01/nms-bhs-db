@@ -51,7 +51,7 @@ $(document).ready(function () {
         $("#arrow").removeClass("fa-angle-down");
         $("#arrow").addClass("fa-angle-up");
         if ($("#userItems").children().length == 0)
-            bhs.getUserEntries(bhs.user.uid, bhs.user.platform, bhs.user.galaxy, 20, bhs.displayUserEntry);
+            bhs.getUserEntries(bhs.user.uid, bhs.user.platform, bhs.user.galaxy, 20, bhs.displayUserEntries);
     });
 
     $('.panel-collapse').on('hide.bs.collapse', function () {
@@ -61,19 +61,26 @@ $(document).ready(function () {
     });
 })
 
+const pnlBHIndex = 0;
+const pnlExitIndex = 1;
+const pnlSingleIndex = 2;
+
 const panels = [{
     name: "Black Hole System",
-    id: "pnl-BHS",
+    id: "pnl-BH",
+    listid: "lst-BH",
     calc: true,
     group: 0
 }, {
     name: "Exit System",
     id: "pnl-XS",
+    listid: "lst-XS",
     calc: true,
     group: 0
 }, {
     name: "Single System",
     id: "pnl-SS",
+    listid: "lst-SS",
     calc: false,
     group: 1
 }];
@@ -181,8 +188,8 @@ blackHoleSuns.prototype.buildPanel = function (name, id) {
         if (pnl.find("#id-sys").val() != "" && pnl.find("#id-reg").val() != "")
             bhs.getEntry(addr, bhs.displaySingle, pnl);
 
-        if (panels[bhs.getIdIndex(panels, pnl.prop("id"))].calc)
-            bhs.displalyCalc();
+        if (panels[bhs.getIndex(panels, "id", pnl.prop("id"))].calc)
+            bhs.displayCalc();
     });
 
     loc.find('#ck-hasbase').change(function () {
@@ -201,19 +208,19 @@ blackHoleSuns.prototype.displayCalc = function () {
     Object.keys(panels).forEach(i => {
         let x = panels[i];
         if (x.calc) {
-            let loc = $("#" + x.id + "\"");
-            dist[x.id] = bhs.calcDist($("#" + x.id + " #id-addr").val());
+            let loc = $("#" + x.id);
+            dist[x.id] = bhs.calcDist(loc.find("#id-addr").val());
             if (typeof dist[x.id] != "undefined") {
                 loc.find("#fmcenter").text(dist[x.id]);
                 loc.find("#id-fmcenter").show();
             } else
                 loc.find("#id-fmcenter").hide();
 
-            if (x.id == "pnl-XS" &&
-                typeof dist["pnl-XS"] != "undefined" &&
-                typeof dist["pnl-BHS"] != "undefined") {
+            if (x.id == panels[pnlExitIndex].id &&
+                typeof dist[panels[pnlBHIndex].id] != "undefined" &&
+                typeof dist[panels[pnlExitIndex].id] != "undefined") {
 
-                let t = dist["pnl-BHS"] - dist["pnl-XS"];
+                let t = dist[panels[pnlBHIndex].id] - dist[panels[pnlExitIndex].id];
                 loc.find("#tocenter").text(t);
                 loc.find("#id-tocenter").show();
             } else
@@ -292,8 +299,8 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
     }
 }
 
-const trStart = `   <tr id="id-idname">`;
-const thLine = `        <th scope="col" id="id-idname">label</th>`;
+const trStart = `   <tr id="idname">`;
+const thLine = `        <th scope="col" id="idname">label</th>`;
 const trEnd = `     </tr>`;
 
 blackHoleSuns.prototype.buildUserTable = function () {
@@ -331,81 +338,81 @@ blackHoleSuns.prototype.buildUserTable = function () {
 }
 
 blackHoleSuns.prototype.displaySingle = function (loc, entry) {
-    let bh = loc.prop("id") == "pnl-" + "Black Hole System".nameToId();
-    let xit = loc.prop("id") == "pnl-" + "Exit System".nameToId();
-
     loc.find("#inp-addr").val(entry.addr);
     loc.find("#inp-sys").val(entry[bhs.user.platform].sys);
     loc.find("#inp-reg").val(entry.reg);
     loc.find("#btn-Lifeform").text(entry.life);
 
-    let l = economyList[bhs.getNameIndex(economyList, entry.econ)].level;
+    let l = economyList[bhs.getIndex(economyList, "name", entry.econ)].level;
     loc.find("#btn-Economy").text(l + " " + entry.econ);
     loc.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";");
 
     $("#delete").removeClass("disabled");
     $("#delete").removeAttr("disabled");
-
-    //if (bh) {
-    //    let pnl = $("#pnl-" + "Exit System".nameToId());
-    //    bhs.getEntry(entry.connection, bhs.user, bhs.displaySingle, pnl);
-    //}
 }
 
 var last = false;
 
-blackHoleSuns.prototype.displayUserEntry = function (entry) {
-    let id = "";
+blackHoleSuns.prototype.displayUserEntries = function (entry) {
+    let addr = entry.addr.stripColons();
+    let disp = {};
+    if (entry.blackhole || entry[bhs.user.platform].exit) {
+        let con = entry[bhs.user.platform].connection.stripColons();
+        if (entry.blackhole) {
+            disp.bhaddr = addr;
+            disp.xaddr = con;
+            disp.idx = pnlBHIndex;
+            disp.name = "BH";
+        } else {
+            disp.bhaddr = con;
+            disp.xaddr = addr;
+            disp.idx = pnlExitIndex;
+            disp.name = "XS";
+        }
 
-    let addr = /:/g [Symbol.replace](entry.addr, "");
-    let con = /:/g [Symbol.replace](entry[bhs.user.platform].connection, "");
+        disp.bhid = panels[pnlBHIndex].listid + "-" + disp.bhaddr;
+        disp.xid = panels[pnlExitIndex].listid + "-" + disp.xaddr;
+    } else {
+        disp.idx = pnlSingleIndex;
+        disp.name = "SS";
+    }
 
-    let bhaddr = "";
-    let xaddr = "";
-
-    if (entry.blackhole) {
-        id = "BH";
-        bhaddr = addr;
-        xaddr = con;
-    } else if (entry[bhs.user.platform].exit) {
-        id = "Exit";
-        bhaddr = con;
-        xaddr = addr;
-    } else
-        id = "Single";
+    disp.id = panels[disp.idx].listid + "-" + addr;
 
     let ui = $("#userItems");
-    let pos = ui.find("#id-" + id + "-" + addr);
+    let pos = ui.find("#" + disp.id);
 
     if (pos.length == 0) {
         let h = "";
-        if (id == "Single")
-            h = /idname/ [Symbol.replace](trStart, "Single-" + addr) + trEnd;
+
+        if (disp.idx == pnlSingleIndex)
+            h = /idname/ [Symbol.replace](trStart, disp.id) + trEnd;
         else {
-            h = /idname/ [Symbol.replace](trStart, "BH-" + bhaddr) + trEnd;
-            h += /idname/ [Symbol.replace](trStart, "Exit-" + xaddr) + trEnd;
+            h = /idname/ [Symbol.replace](trStart, disp.bhid) + trEnd;
+            h += /idname/ [Symbol.replace](trStart, disp.xid) + trEnd;
         }
+
         ui.prepend(h);
 
         if (last = !last) {
-            if (id == "Single")
-                ui.find("#id-Single-" + addr).addClass("bkg-vlight-gray");
+            if (disp.idx == pnlSingleIndex)
+                ui.find("#" + disp.id).addClass("bkg-vlight-gray");
             else {
-                ui.find("#id-BH-" + bhaddr).addClass("bkg-vlight-gray");
-                ui.find("#id-Exit-" + xaddr).addClass("bkg-vlight-gray");
+                ui.find("#" + disp.bhid).addClass("bkg-vlight-gray");
+                ui.find("#" + disp.xid).addClass("bkg-vlight-gray");
             }
         }
 
-        if (id != "Single") {
-            ui.find("#id-BH-" + bhaddr).data("con", xaddr);
-            ui.find("#id-Exit-" + xaddr).data("con", bhaddr);
+        if (disp.idx != pnlSingleIndex) {
+            ui.find("#" + disp.bhid).data("con", disp.xaddr);
+            ui.find("#" + disp.xid).data("con", disp.bhaddr);
         }
 
-        pos = ui.find("#id-" + id + "-" + addr);
+        pos = ui.find("#" + disp.id);
     }
 
-    let l = /idname/ [Symbol.replace](thLine, id);
-    let h = /label/ [Symbol.replace](l, id);
+    let l = /idname/ [Symbol.replace](thLine, disp.name);
+    let h = /label/ [Symbol.replace](l, disp.name);
 
     l = /idname/ [Symbol.replace](thLine, "addr");
     h += /label/ [Symbol.replace](l, entry.addr);
@@ -420,8 +427,8 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
     h += /label/ [Symbol.replace](l, entry.life);
 
     l = /idname/ [Symbol.replace](thLine, "dist");
-    if (id == "Exit") {
-        let d = bhs.calcDist(bhaddr) - bhs.calcDist(xaddr);
+    if (disp.idx = pnlExitIndex) {
+        let d = bhs.calcDist(disp.bhaddr) - bhs.calcDist(disp.xaddr);
         h += /label/ [Symbol.replace](l, d);
     } else
         h += /label/ [Symbol.replace](l, "");
@@ -506,9 +513,9 @@ blackHoleSuns.prototype.doLoggedin = function () {
     player.find("#inp-playerName").val(bhs.user.playerName);
     player.find("#btn-Platform").text(bhs.user.platform);
 
-    let l = galaxyList[bhs.getNameIndex(galaxyList, bhs.user.galaxy)].number;
+    let l = galaxyList[bhs.getIndex(galaxyList, "name", bhs.user.galaxy)].number;
     player.find("#btn-Galaxy").text(l + " " + bhs.user.galaxy);
-    let i = bhs.getNameIndex(galaxyList, bhs.user.galaxy);
+    let i = bhs.getIndex(galaxyList, "name", bhs.user.galaxy);
     player.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[galaxyList[i].number].color + ";");
 
     bhs.getStats(bhs.displayStats);
@@ -518,16 +525,17 @@ blackHoleSuns.prototype.doLoggedin = function () {
 }
 
 blackHoleSuns.prototype.clearPanels = function () {
-    bhs.clearPanel("Black Hole System");
-    bhs.clearPanel("Exit System");
-    bhs.clearPanel("Single System");
+    Object.keys(panels).forEach(i => {
+        let x = panels[i];
+        bhs.clearPanel(x.id);
+    });
 
     $("#delete").addClass("disabled");
     $("#delete").prop("disabled", true);
 }
 
-blackHoleSuns.prototype.clearPanel = function (name) {
-    let pnl = $("#pnl-" + name.nameToId());
+blackHoleSuns.prototype.clearPanel = function (id) {
+    let pnl = $("#" + id);
 
     pnl.each(function () {
         $(this).find("[id|='inp'").each(function () {
@@ -540,20 +548,20 @@ blackHoleSuns.prototype.clearPanel = function (name) {
 }
 
 blackHoleSuns.prototype.extractUser = function () {
-
     let loc = $("#pnl-user");
+
     bhs.user.playerName = loc.find("#inp-playerName").val();
     bhs.user.platform = loc.find("#btn-Platform").text().stripMarginWS();
     bhs.user.galaxy = loc.find("#btn-Galaxy").text().stripNumber();
 }
 
-blackHoleSuns.prototype.extractEntry = function (name) {
-    let entry = {};
-
+blackHoleSuns.prototype.extractEntry = function (idx) {
     let pnl = $("#panels");
+    let loc = pnl.find("#" + panels[idx].id);
 
-    let loc = pnl.find("#pnl-" + name.nameToId());
+    let entry = {};
     entry.addr = loc.find("#inp-addr").val();
+
     if (typeof entry[bhs.user.platform] == "undefined")
         entry[bhs.user.platform] = {};
     entry[bhs.user.platform].sys = loc.find("#inp-sys").val();
@@ -564,17 +572,15 @@ blackHoleSuns.prototype.extractEntry = function (name) {
     if (entry.hasBase)
         entry.baseName = loc.find("#inp-basename").val();
 
-    if (name == "Black Hole System") {
-        entry.blackhole = true;
-        entry[bhs.user.platform].exit = false;
+    entry.blackhole = idx == pnlBHIndex;
+    entry[bhs.user.platform].exit = idx == pnlExitIndex;
 
-        loc = pnl.find("#pnl-" + "Exit System".nameToId());
-        entry[bhs.user.platform].connection = loc.find("#inp-addr").val();
-    } else {
-        entry.blackhole = false;
-        entry[bhs.user.platform].exit = true;
+    if (panels[idx].group == 0) {
+        if (idx == pnlBHIndex)
+            loc = pnl.find("#" + panels[pnlExitIndex].id);
+        else
+            loc = pnl.find("#" + panels[pnlBHIndex].id);
 
-        loc = pnl.find("#pnl-" + "Black Hole System".nameToId());
         entry[bhs.user.platform].connection = loc.find("#inp-addr").val();
     }
 
@@ -582,87 +588,68 @@ blackHoleSuns.prototype.extractEntry = function (name) {
 }
 
 blackHoleSuns.prototype.setEntries = function (sel) {
-    let id = $(sel).prop("id");
+    let id = $(sel).prop("id").replace(/(.*?-.*?)-.*/, "$1");
 
-    if (id.slice(3, 5) == "BH") {
-        bhs.setEntry(sel, "Black Hole System");
-        bhs.setEntry($("#userItems #id-Exit-" + $(sel).data("con")), "Exit System");
+    let x = bhs.getIndex(panels, "listid", id);
+    let panel = panels[x];
+
+    bhs.setEntry(sel, panel.id);
+
+    if (panel.group == 0) {
+        x = (x + 1) % 2;
+        panel = panels[x];
+
+        let id = panel.listid + "-" + $(sel).data("con");
+
+        bhs.setEntry($("#" + id), panel.id);
+
         $("#ck-singleSystem").prop('checked', false);
-
-        $("pnl-" + "Single System".nameToId()).hide();
-        $("pnl-" + "Black Hole System".nameToId()).show();
-        $("pnl-" + "Exit System".nameToId()).show();
-    } else if (id.slice(3, 7) == "Exit") {
-        bhs.setEntry(sel, "Exit System");
-        bhs.setEntry($("#userItems #id-BH-" + $(sel).data("con")), "Black Hole System");
-        $("#ck-singleSystem").prop('checked', false);
-
-        $("pnl-" + "Single System".nameToId()).hide();
-        $("pnl-" + "Black Hole System".nameToId()).show();
-        $("pnl-" + "Exit System".nameToId()).show();
-    } else {
-        bhs.setEntry(sel, "Single System");
+    } else
         $("#ck-singleSystem").prop('checked', true);
 
-        $("pnl-" + "Single System".nameToId()).show();
-        $("pnl-" + "Black Hole System".nameToId()).hide();
-        $("pnl-" + "Exit System".nameToId()).hide();
-    }
+    bhs.activatePanelGroup(panel.group);
 }
 
-blackHoleSuns.prototype.setEntry = function (sel, name) {
+blackHoleSuns.prototype.setEntry = function (sel, pnlid) {
     let loc = $(sel);
-    let pnl = $("#pnl-" + name.nameToId());
+    let pnl = $("#" + pnlid);
 
-    pnl.find("#inp-addr").val(loc.find("#id-addr").text());
-    pnl.find("#inp-sys").val(loc.find("#id-sys").text());
-    pnl.find("#inp-reg").val(loc.find("#id-reg").text());
-    pnl.find("#btn-Lifeform").text(loc.find("#id-life").text());
+    pnl.find("#inp-addr").val(loc.find("#addr").text());
+    pnl.find("#inp-sys").val(loc.find("#sys").text());
+    pnl.find("#inp-reg").val(loc.find("#reg").text());
+    pnl.find("#btn-Lifeform").text(loc.find("#life").text());
 
-    let t = loc.find("#id-econ").text();
-    let l = economyList[bhs.getNameIndex(economyList, t)].level;
+    let t = loc.find("#econ").text();
+    let l = economyList[bhs.getIndex(economyList, "name", t)].level;
     pnl.find("#btn-Economy").text(l + " " + t);
     pnl.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";");
 
-    pnl.find("#id-isbase").prop('checked', loc.find("#id-base").text() != "");
+    pnl.find("#id-isbase").prop('checked', loc.find("#base").text() != "");
 }
 
 blackHoleSuns.prototype.save = function () {
-    let bh = {};
-    let exit = {};
-    let single = {};
-
+    let entry = [];
+    
     $("#status").empty();
 
     bhs.extractUser();
     let ok = bhs.validateUser();
 
-    let fSingle = $("#ck-singleSystem").prop('checked');
+    let group = $("#ck-singleSystem").prop('checked') ? 1 : 0;
 
-    if (fSingle) {
-        single = bhs.extractEntry("Single System");
-        ok = bhs.validateEntry(single);
-    } else {
-        if (ok) {
-            bh = bhs.extractEntry("Black Hole System");
-            ok = bhs.validateEntry(bh);
+    Object.keys(panels).forEach(i => {
+        let x = panels[i];
+
+        if (ok && x.group == group) {
+            entry[i] = bhs.extractEntry(i);
+            ok = bhs.validateEntry(entry[i]);
         }
+    });
 
-        if (ok) {
-            exit = bhs.extractEntry("Exit System");
-            ok = bhs.validateEntry(exit);
-        }
+    Object.keys(panels).forEach(i => {
+        let x = panels[i];
 
-        //if (ok) 
-        //    ok = bhs.validateMap(bh);
-    }
-
-    if (ok) {
-        if (fSingle) {
-            bhs.updateEntry(single, "Single System");
-        } else {
-            bhs.updateEntry(bh, "Black Hole System");
-            bhs.updateEntry(exit, "Exit System");
-        }
-    }
+        if (ok && x.group == group) 
+            bhs.updateEntry(entry[i], panels[i].id);
+    });
 }

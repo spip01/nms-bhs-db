@@ -315,20 +315,20 @@ blackHoleSuns.prototype.checkLoggedInWithMessage = function () {
     return false;
 }
 
-blackHoleSuns.prototype.validateUser = function (user) {
+blackHoleSuns.prototype.validateUser = function () {
     let ok = true;
 
-    if (!user.playerName) {
+    if (!bhs.user.playerName) {
         $("#status").text("Error: Missing player name. Changes not saved.");
         ok = false;
     }
 
-    if (ok && !user.galaxy) {
+    if (ok && !bhs.user.galaxy) {
         $("#status").text("Error: Missing galaxy. Changes not saved.");
         ok = false;
     }
 
-    if (ok && !user.platform) {
+    if (ok && !bhs.user.platform) {
         $("#status").text("Error: Missing platform. Changes not saved.");
         ok = false;
     }
@@ -659,15 +659,9 @@ String.prototype.stripNumber = function () {
     return this.replace(/\s*\d*\s*([.*]?)\s*/, "$1");
 }
 
-blackHoleSuns.prototype.getNameIndex = function (list, name) {
+blackHoleSuns.prototype.getIndex = function (list, field, id) {
     return list.map(function (x) {
-        return x.name;
-    }).indexOf(name);
-}
-
-blackHoleSuns.prototype.getIdIndex = function (list, id) {
-    return list.map(function (x) {
-        return x.id;
+        return x[field];
     }).indexOf(id);
 }
 
@@ -702,7 +696,7 @@ blackHoleSuns.prototype.addressToXYZ = function (addr) {
 blackHoleSuns.prototype.calcDist = function (addr, addr2) {
     if (!addr)
         return;
-        
+
     let cord = bhs.addressToXYZ(addr);
     let cord2 = typeof addr2 != "undefined" ? bhs.addressToXYZ(addr2) : {
         x: 2047,
