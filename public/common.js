@@ -267,7 +267,7 @@ blackHoleSuns.prototype.initTotals = function (d) {
 }
 
 blackHoleSuns.prototype.getUserEntries = function (user, platform, galaxy, limit, displayFcn) {
-    let ref = bhs.fbfs.doc(starsDoc+ galaxy);
+    let ref = bhs.fbfs.collection(starsDoc+ galaxy);
 
     if (user)
         ref = ref.where(platform + ".uid", "==", bhs.uid).orderBy(platform + ".time", "desc").limit(parseInt(limit));
