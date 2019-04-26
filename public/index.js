@@ -339,7 +339,7 @@ blackHoleSuns.prototype.displaySingle = function (loc, entry) {
     loc.find("#inp-reg").val(entry.reg);
     loc.find("#btn-Lifeform").text(entry.life);
 
-    let l = economyList[bhs.getIndex(economyList, entry.econ)].level;
+    let l = economyList[bhs.getNameIndex(economyList, entry.econ)].level;
     loc.find("#btn-Economy").text(l + " " + entry.econ);
     loc.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";");
 
