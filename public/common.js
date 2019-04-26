@@ -700,6 +700,9 @@ blackHoleSuns.prototype.addressToXYZ = function (addr) {
 }
 
 blackHoleSuns.prototype.calcDist = function (addr, addr2) {
+    if (!addr)
+        return;
+        
     let cord = bhs.addressToXYZ(addr);
     let cord2 = typeof addr2 != "undefined" ? bhs.addressToXYZ(addr2) : {
         x: 2047,
