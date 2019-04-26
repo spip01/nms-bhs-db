@@ -7,151 +7,206 @@ $(document).ready(function () {
 
     bhs.buildGalaxyInfo();
 
-    bhs.buildMenu(loc, "Platform", platformList, true);
-    bhs.buildMenu(loc, "Galaxy", galaxyList, true);
+    bhs.buildPlayerPanel();
 
-    Object.keys(panels).forEach(i => {
-        let x = panels[i];
-        bhs.buildPanel(x.name, x.id);
-    });
+    for (let i = 0; i < mainPanels.length; ++i)
+        bhs.buildGroup(i);
 
-    bhs.activatePanelGroup(0);
+    bhs.activateGroup(0);
 
     bhs.buildUserTable();
+    //bhs.buildMap();
     bhs.buildStats();
 
-    $('#pnl-user #ck-singleSystem').change(function () {
-        if (this.checked) 
-            bhs.activatePanelGroup(1);
-         else 
-            bhs.activatePanelGroup(0);
-    });
-
     $("#save").click(function () {
-        bhs.save();
+        let group = $("#id-iss").prop("checked") ? 1 : 0;
+        bhs.saveGroup(group);
     });
 
     $("#delete").click(function () {
-        if (("#ck-singleSystem").checked) {
-            bhs.deleteEntry($("#pnl-" + "Single System".nameToId()).addr, bhs.user);
-        } else {
-            bhs.deleteEntry($("#pnl-" + "Black Hole System".nameToId()).addr, bhs.user);
-            bhs.deleteEntry($("#pnl-" + "Exit System".nameToId()).addr, bhs.user);
-        }
-
-        bhs.clearPanels();
+        let group = $("#id-iss").prop("checked") ? 1 : 0;
+        bhs.deleteGroup(group);
+        bhs.clearGroup(group);
     });
 
     $("#clear").click(function () {
-        bhs.clearPanels();
+        let group = $("#id-iss").prop("checked") ? 1 : 0;
+        bhs.clearGroup(group);
     });
 })
 
-const panels = [{
-    name: "Black Hole System",
-    id: "pnl-BHS",
-    calc: true,
-    group: 0
-}, {
-    name: "Exit System",
-    id: "pnl-XS",
-    calc: true,
-    group: 0
-}, {
-    name: "Single System",
-    id: "pnl-SS",
-    calc: false,
-    group: 1
-}];
+const userPanel = [
+    [{
+        name: "Player Name",
+        field: "player",
+        type: "input",
+    }],
+    [{
+        name: "Platform",
+        field: "platform",
+        type: "vertmenu",
+        list: platformList
+    }, {
+        name: "Galaxy",
+        field: "galaxy",
+        type: "vertmenu",
+        list: galaxyList
+    }],
+    [{
+        name: "Input Single System",
+        id: "iss",
+        type: "checkbox",
+        fcn: bhs.activateGroup
+    }]
+];
 
-blackHoleSuns.prototype.activatePanelGroup = function (group) {
-    Object.keys(panels).forEach(i => {
-        let x = panels[i];
-        if (x.group == group)
-            $("#" + x.id).show();
-        else
-            $("#" + x.id).hide();
-    });
+blackHoleSuns.prototype.buildPlayerPanel = function () {
+    const panel = `
+    <div id="pnl-player">
+        <div id="playerinsert" class="row">
+        </div>
+    </div>`;
+
+    const rowSec = `   
+    <div class="col-7">
+        <div class="row">
+        </div>
+    </div>`;
+
+    const inputSec = `
+    <div class="col-14 h6 clr-dark-green">title</div>
+    <input id="id-idname" class="rounded col-13 h5" type="text">&nbsp;`;
+
+    const menuSec = `<div id="id-idname" class="col-7"></div>`
+
+    const checkSec = `
+    <label class="col-14">
+        <input id="id-idname" type="checkbox">
+        title
+    </label>`;
+
 }
 
-blackHoleSuns.prototype.buildPanel = function (name, id) {
-    const panel = `
-        <div id="idname" class="card pad-bottom">
+const mainPanels = [{
+    name: "Black Hole System",
+    group: 0,
+    id: "BHS"
+}, {
+    name: "Exit System",
+    group: 0,
+    id: "XS"
+}, {
+    name: "Single System",
+    group: 1,
+    id: "SS"
+}];
+
+blackHoleSuns.prototype.activateGroup = function (group) {
+    for (let i = 0; i < mainPanels.length; ++i)
+        if (mainPanels[i].group == group)
+            $("#pnl-" + mainPanels[i].id).show();
+        else
+            $("#pnl-" + mainPanels[i].id).hide();
+}
+
+const inputs = [
+    [{
+        name: "Address",
+        placehldr: "0000:0000:0000:0000",
+        type: "input",
+        field: "addr"
+    }, {
+        name: "System Name",
+        type: "input",
+        field: "platform",
+        subfield: "sys"
+    }, {
+        name: "Region Name",
+        type: "input",
+        field: "reg"
+    }],
+    [{
+        name: "Lifeform",
+        type: "menu",
+        list: lifeformList,
+        field: "life",
+    }, {
+        name: "Economy",
+        type: "menu",
+        list: EconomyList,
+        field: "econ",
+    }],
+    [{
+        name: "Has Base",
+        type: "checkbox",
+        field: "hasbase"
+    }, {
+        name: "Name",
+        type: "input",
+        field: "basename"
+    }],
+    [{
+        name: "Distance to center",
+        type: "text",
+        field: "distctr",
+        panel: ["BHS"]
+    }, {
+        name: "Closer to center",
+        type: "text",
+        field: "closectr",
+        panel: ["SS", "BHS"]
+    }]
+];
+
+blackHoleSuns.prototype.buildPanel = function (name) {
+    const panelHdr = `
+        <div id="pnl-name" class="card pad-bottom">
             <div class="h4 clr-dark-green card-header">heading</div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-9 col-14">
-                        <div class="card card-body no-border">
-                            <div class="row">
-                                <div class="col-md-5 col-13">
-                                    <div class="row">
-                                        <div class="col-md-14 col-4 h6 clr-dark-green">Address</div>&nbsp;
-                                        <input id="inp-addr" class="rounded col-md-14 col-9" placeholder="0000:0000:0000:0000">
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4 col-13">
-                                    <div class="row">
-                                        <div class="col-md-14 col-4 h6 clr-dark-green">System Name</div>&nbsp;
-                                        <input id="inp-sys" class="rounded col-md-14 col-9">
-                                    </div>
-                                </div>
-
-                                <div class="col-md-5 col-13">
-                                    <div class="row">
-                                        <div class="col-md-14 col-4 h6 clr-dark-green">Region Name</div>&nbsp;
-                                        <input id="inp-reg" class="rounded col-md-14 col-9">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-5 col-14">
-                        <div class="card card-body no-border">
-                            <div class="row">
-                                <div id="id-Lifeform" class="col-md-4 col-14"></div>
-                                <div id="id-Economy" class="col-md-4 col-14"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row container">
-                    <label class="col-3 h6 clr-dark-green">
-                        <input id="ck-hasbase" type="checkbox">
-                        Has Base
-                    </label>
-
-                    <div class="col-10">
-                        <div id="id-isbase" class="row" style="display:none">
-                            <div class="col-2 h6 clr-dark-green">Name</div>&nbsp;
-                            <input id="inp-basename" class="rounded col-6">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div id="id-fmcenter" class="col-7 h6 clr-dark-green" style="display:none">
-                        Distance: From Center&nbsp;
-                        <div id="fmcenter"></div>&nbsp;ly
-                    </div>
-                        
-                    <div id="id-tocenter" class="col-7 h6 clr-dark-green" style="display:none">
-                        Towards Center&nbsp;
-                        <div id="tocenter"></div>&nbsp;ly
-                    </div>
+                <div id="sectioninsert" class="row">
                 </div>
             </div>
         </div>`;
 
-    let h = /idname/g [Symbol.replace](panel, id);
+    const cardSec = `            
+        <div class="col-md-9 col-14">
+            <div class="card card-body no-border">
+                <div id="cardinsert" class="row">
+                </div>
+            </div>
+        </div>`;
+
+    const inputInsert = `         
+        <div class="col-md-5 col-13">
+            <div class="row">
+                <div class="col-md-14 col-4 h6 clr-dark-green">Address</div>&nbsp;
+                <input id="id-name" class="rounded col-md-14 col-9" >
+            </div>
+        </div>`;
+
+    const menuInsert = `<div id="id-idname" class="col-md-4 col-14"></div>`;
+
+    const checkInsert = `
+        <label class="col-3 h6 clr-dark-green">
+            <input id="id-idname" type="checkbox">
+            title
+        </label>`;
+
+    const textInsert = `
+        <div class="col-7 h6 clr-dark-green">
+            <div class="row">
+                <div class="col-8">title</div>
+                <div id="id-idname" class="col-6"></div>
+            </div>
+        </div>`;
+
+    let id = name.nameToId();
+    let h = /name/g [Symbol.replace](panel, id);
     h = /heading/g [Symbol.replace](h, name);
 
     $("#panels").append(h);
 
-    let loc = $("#" + id);
+    let loc = $("#pnl-" + id);
 
     bhs.buildMenu(loc, "Lifeform", lifeformList);
     bhs.buildMenu(loc, "Economy", economyList);
@@ -164,11 +219,21 @@ blackHoleSuns.prototype.buildPanel = function (name, id) {
         let addr = bhs.reformatAddress(this);
 
         let pnl = $(this).closest("[id|='pnl'");
-        if (pnl.find("#id-sys").val() != "" && pnl.find("#id-reg").val() != "")
-            bhs.getEntry(addr, bhs.displaySingle, pnl);
+        bhs.getEntry(addr, bhs.user, bhs.displaySingle, pnl);
 
-        if (panels[bhs.getIdIndex(panels, pnl.prop("id"))].calc)
-            bhs.displalyCalc();
+        let which = pnl.prop("id").slice(4);
+
+        pnl.find("#id-tocenter").hide();
+        pnl.find("#id-towardsctr").hide();
+
+        if (which == "Black Hole System".nameToId()) {
+            let opnl = $("#pnl-" + "Exit System".nameToId());
+            bhs.displalCalc(pnl, opnl);
+        }
+        if (which == "Exit System".nameToId()) {
+            let opnl = $("#pnl-" + "Black Hole System".nameToId())
+            bhs.displalCalc(opnl, pnl);
+        }
     });
 
     loc.find('#ck-hasbase').change(function () {
@@ -181,38 +246,37 @@ blackHoleSuns.prototype.buildPanel = function (name, id) {
     });
 }
 
-blackHoleSuns.prototype.displayCalc = function () {
-    let dist = {};
+blackHoleSuns.prototype.displalCalc = function (bhpnl, xpnl) {
+    let bhaddr = bhpnl.find("#inp-addr").val();
+    let xaddr = xpnl.find("#inp-addr").val();
+    let bhdist = 0;
+    let xdist = 0;
 
-    Object.keys(panels).forEach(i => {
-        let x = panels[i];
-        if (x.calc) {
-            let loc = $("#" + x.id + "\"");
-            dist[x.id] = bhs.calcDist($("#" + x.id + " #id-addr").val());
-            if (typeof dist[x.id] != "undefined") {
-                loc.find("#fmcenter").text(dist[x.id]);
-                loc.find("#id-fmcenter").show();
-            } else
-                loc.find("#id-fmcenter").hide();
+    if (bhaddr != "") {
+        bhdist = bhs.calcDist(bhaddr);
+        bhpnl.find("#tocenter").text(bhdist + " ly");
+        bhpnl.find("#id-tocenter").show();
+    } else
+        bhpnl.find("#id-tocenter").hide();
 
-            if (x.id == "pnl-XS" &&
-                typeof dist["pnl-XS"] != "undefined" &&
-                typeof dist["pnl-BHS"] != "undefined") {
+    if (xaddr != "") {
+        xdist = bhs.calcDist(xaddr);
+        xpnl.find("#tocenter").text(xdist + " ly");
+        xpnl.find("#id-tocenter").show();
+    } else
+        xpnl.find("#id-tocenter").hide();
 
-                let t = dist["pnl-BHS"] - dist["pnl-XS"];
-                loc.find("#tocenter").text(t);
-                loc.find("#id-tocenter").show();
-            } else
-                loc.find("#id-tocenter").hide();
-        }
-    });
+    if (bhdist && xdist) {
+        xpnl.find("#towardsctr").text((bhdist - xdist) + " ly");
+        xpnl.find("#id-towardsctr").show();
+    } else
+        xpnl.find("#id-towardsctr").show();
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
-    let title = `        
+    const title = `        
         <div class="row">
-            <div class="col-md-14 col-width h6 clr-dark-green">label</div>`;
-    let block = `
+            <div class="col-md-14 col-width h6 clr-dark-green">label</div>
             <div id="menu-idname" class="col-md-14 col-width dropdown">
                 <button id="btn-idname" class="btn border btn-sm dropdown-toggle" style="rgbcolor" type="button" data-toggle="dropdown"></button>
             </div>
@@ -220,6 +284,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
 
     let item = ``;
     let hdr = ``;
+
     if (list.length > 8) {
         hdr = `<ul id="list" class="dropdown-menu scrollable-menu" role="menu"></ul>`;
         item = `<li id="item-idname" class="dropdown-item" type="button" style="rgbcolor cursor: pointer">iname</li>`;
@@ -278,9 +343,36 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
     }
 }
 
-const trStart = `   <tr id="id-idname">`;
-const thLine = `        <th scope="col" id="id-idname">label</th>`;
-const trEnd = `     </tr>`;
+const tableLayout = [{
+    name: "",
+    gen: "type"
+}, {
+    name: "Address",
+    field: "addr"
+}, {
+    name: "System",
+    field: "platform",
+    subfield: "sys"
+}, {
+    name: "Region",
+    type: "reg"
+}, {
+    name: "Lifeform",
+    type: "life"
+}, {
+    name: "Economy",
+    type: "econ"
+}, {
+    name: "Base",
+    gen: "base"
+}, {
+    name: "Distance",
+    gen: "dist"
+}];
+
+const table = `<tr id="id-idname"></tr>`;
+const insHdr = `<th scope="col" id="id-idname">label</th>`;
+const insLine = `<th scope="row" id="id-idname">label</th>`;
 
 blackHoleSuns.prototype.buildUserTable = function () {
     let h = /idname/ [Symbol.replace](trStart, "header");
@@ -299,9 +391,6 @@ blackHoleSuns.prototype.buildUserTable = function () {
 
     l = /idname/ [Symbol.replace](thLine, "life");
     h += /label/ [Symbol.replace](l, "Lifeform");
-
-    l = /idname/ [Symbol.replace](thLine, "dist");
-    h += /label/ [Symbol.replace](l, "LY to Center");
 
     l = /idname/ [Symbol.replace](thLine, "econ");
     h += /label/ [Symbol.replace](l, "Economy");
@@ -336,6 +425,27 @@ blackHoleSuns.prototype.displaySingle = function (loc, entry) {
     //    let pnl = $("#pnl-" + "Exit System".nameToId());
     //    bhs.getEntry(entry.connection, bhs.user, bhs.displaySingle, pnl);
     //}
+}
+
+blackHoleSuns.prototype.calcDist = function (addr, addr2) {
+    let cord = bhs.addressToXYZ(addr);
+    let cord2 = typeof addr2 != "undefined" ? bhs.addressToXYZ(addr2) : {
+        x: 2047,
+        y: 127,
+        z: 2047
+    };
+    return parseInt(Math.sqrt(Math.pow(cord2.x - cord.x, 2) + Math.pow(cord2.y - cord.y, 2) + Math.pow(cord2.z - cord.z, 2)) * 400);
+}
+
+blackHoleSuns.prototype.addressToXYZ = function (addr) {
+    let out = {};
+
+    out.x = parseInt(addr.slice(0, 4), 16);
+    out.y = parseInt(addr.slice(5, 9), 16);
+    out.z = parseInt(addr.slice(10, 14), 16);
+    out.s = parseInt(addr.slice(15), 16);
+
+    return out;
 }
 
 var last = false;
@@ -379,6 +489,7 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
             else {
                 ui.find("#id-BH-" + bhaddr).addClass("bkg-vlight-gray");
                 ui.find("#id-Exit-" + xaddr).addClass("bkg-vlight-gray");
+
             }
         }
 
@@ -405,13 +516,6 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
     l = /idname/ [Symbol.replace](thLine, "life");
     h += /label/ [Symbol.replace](l, entry.life);
 
-    l = /idname/ [Symbol.replace](thLine, "dist");
-    if (id == "Exit") {
-        let d = bhs.calcDist(bhaddr) - bhs.calcDist(xaddr);
-        h += /label/ [Symbol.replace](l, d);
-    } else
-        h += /label/ [Symbol.replace](l, "");
-
     l = /idname/ [Symbol.replace](thLine, "econ");
     h += /label/ [Symbol.replace](l, entry.econ);
 
@@ -425,7 +529,6 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
 
     pos.dblclick(function () {
         bhs.setEntries(this);
-        bhs.displayCalc();
 
         $('html, body').animate({
             scrollTop: ($('#panels').offset().top)
@@ -493,10 +596,9 @@ blackHoleSuns.prototype.doLoggedin = function () {
     player.find("#inp-playerName").val(bhs.user.playerName);
     player.find("#btn-Platform").text(bhs.user.platform);
 
-    let l = galaxyList[bhs.getNameIndex(galaxyList, bhs.user.galaxy)].number;
+    let l = galaxyList[bhs.getIndex(galaxyList, bhs.user.galaxy)].number;
     player.find("#btn-Galaxy").text(l + " " + bhs.user.galaxy);
-    let i = bhs.getNameIndex(galaxyList, bhs.user.galaxy);
-    player.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[galaxyList[i].number].color + ";");
+    player.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[1].color + ";");
 
     bhs.getUserEntries(bhs.displayUserEntry);
     bhs.getStats(bhs.displayStats);
@@ -624,7 +726,7 @@ blackHoleSuns.prototype.save = function () {
     $("#status").empty();
 
     bhs.extractUser();
-    let ok = bhs.validateUser();
+    let ok = bhs.validateUser(bhs.user);
 
     let fSingle = $("#ck-singleSystem").prop('checked');
 
@@ -648,10 +750,10 @@ blackHoleSuns.prototype.save = function () {
 
     if (ok) {
         if (fSingle) {
-            bhs.updateEntry(single, "Single System");
+            bhs.updateEntry(bhs.user, single, "Single System");
         } else {
-            bhs.updateEntry(bh, "Black Hole System");
-            bhs.updateEntry(exit, "Exit System");
+            bhs.updateEntry(bhs.user, bh, "Black Hole System");
+            bhs.updateEntry(bhs.user, exit, "Exit System");
         }
     }
 }
