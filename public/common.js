@@ -266,11 +266,11 @@ blackHoleSuns.prototype.initTotals = function (d) {
     return d;
 }
 
-blackHoleSuns.prototype.getUserEntries = function (user, platform, galaxy, qty, displayFcn) {
-    let ref = bhs.fbfs.collection(starsDoc + galaxy);
+blackHoleSuns.prototype.getUserEntries = function (user, platform, galaxy, limit, displayFcn) {
+    let ref = bhs.fbfs.doc(starsDoc+ galaxy);
 
-    if (user) 
-        ref=ref.where(platform + ".uid", "==", bhs.uid);
+    if (user)
+        ref = ref.where(platform + ".uid", "==", bhs.uid).orderBy(platform + ".time", "desc").limit(parseInt(limit));
 
     ref.onSnapshot(function (querySnapshot) {
         querySnapshot.docChanges().forEach(function (change) {

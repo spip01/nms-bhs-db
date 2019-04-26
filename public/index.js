@@ -50,8 +50,9 @@ $(document).ready(function () {
         $(this).siblings('.panel-heading').addClass('active');
         $("#arrow").removeClass("fa-angle-down");
         $("#arrow").addClass("fa-angle-up");
+        let limit = $("#id-displalyqty").val()
         if ($("#userItems").children().length == 0)
-            bhs.getUserEntries(bhs.user.uid, bhs.user.platform, bhs.user.galaxy, 20, bhs.displayUserEntries);
+            bhs.getUserEntries(bhs.user.uid, bhs.user.platform, bhs.user.galaxy, limit, bhs.displayUserEntries);
     });
 
     $('.panel-collapse').on('hide.bs.collapse', function () {
@@ -107,21 +108,21 @@ blackHoleSuns.prototype.buildPanel = function (name, id) {
                                 <div class="col-md-5 col-13">
                                     <div class="row">
                                         <div class="col-md-14 col-4 h6 clr-dark-green">Address</div>&nbsp;
-                                        <input id="inp-addr" class="rounded col-md-14 col-9" placeholder="0000:0000:0000:0000">
+                                        <input id="id-addr" class="rounded col-md-14 col-9" placeholder="0000:0000:0000:0000">
                                     </div>
                                 </div>
 
                                 <div class="col-md-4 col-13">
                                     <div class="row">
                                         <div class="col-md-14 col-4 h6 clr-dark-green">System Name</div>&nbsp;
-                                        <input id="inp-sys" class="rounded col-md-14 col-9">
+                                        <input id="id-sys" class="rounded col-md-14 col-9">
                                     </div>
                                 </div>
 
                                 <div class="col-md-5 col-13">
                                     <div class="row">
                                         <div class="col-md-14 col-4 h6 clr-dark-green">Region Name</div>&nbsp;
-                                        <input id="inp-reg" class="rounded col-md-14 col-9">
+                                        <input id="id-reg" class="rounded col-md-14 col-9">
                                     </div>
                                 </div>
                             </div>
@@ -146,22 +147,26 @@ blackHoleSuns.prototype.buildPanel = function (name, id) {
 
                     <div class="col-10">
                         <div id="id-isbase" class="row" style="display:none">
-                            <div class="col-2 h6 clr-dark-green">Name</div>&nbsp;
-                            <input id="inp-basename" class="rounded col-6">
+                            <div class="col-4 h6 clr-dark-green">Name</div>&nbsp;
+                            <input id="id-basename" class="rounded col-6">
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="row">
-                    <div id="id-fmcenter" class="col-7 h6 clr-dark-green" style="display:none">
-                        Distance: From Center&nbsp;
-                        <div id="fmcenter"></div>&nbsp;ly
+                    <div id="id-fmcenter" class="col-8 clr-dark-green" style="display:none">
+                        <div class="row">
+                            <div class="col-9 text-right">Distance (ly): From Center&nbsp;</div>
+                            <div id="fmcenter" class="col-5 text-left h6"></div>
+                        </div>
                     </div>
                         
-                    <div id="id-tocenter" class="col-7 h6 clr-dark-green" style="display:none">
-                        Towards Center&nbsp;
-                        <div id="tocenter"></div>&nbsp;ly
+                    <div id="id-tocenter" class="col-6 clr-dark-green" style="display:none">
+                        <div class="row">
+                            <div class="col-9 text-right"> Towards Center&nbsp;</div>
+                            <div id="tocenter" class="col-5 text-left h6"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -177,11 +182,11 @@ blackHoleSuns.prototype.buildPanel = function (name, id) {
     bhs.buildMenu(loc, "Lifeform", lifeformList);
     bhs.buildMenu(loc, "Economy", economyList);
 
-    //loc.find("#inp-addr").keydown(function (event) {
+    //loc.find("#id-addr").keydown(function (event) {
     //    return bhs.formatAddress(this, event);
     //});
 
-    loc.find("#inp-addr").blur(function () {
+    loc.find("#id-addr").blur(function () {
         let addr = bhs.reformatAddress(this);
 
         let pnl = $(this).closest("[id|='pnl'");
@@ -338,9 +343,9 @@ blackHoleSuns.prototype.buildUserTable = function () {
 }
 
 blackHoleSuns.prototype.displaySingle = function (loc, entry) {
-    loc.find("#inp-addr").val(entry.addr);
-    loc.find("#inp-sys").val(entry[bhs.user.platform].sys);
-    loc.find("#inp-reg").val(entry.reg);
+    loc.find("#id-addr").val(entry.addr);
+    loc.find("#id-sys").val(entry[bhs.user.platform].sys);
+    loc.find("#id-reg").val(entry.reg);
     loc.find("#btn-Lifeform").text(entry.life);
 
     let l = economyList[bhs.getIndex(economyList, "name", entry.econ)].level;
@@ -510,7 +515,7 @@ blackHoleSuns.prototype.doLoggedout = function () {
 blackHoleSuns.prototype.doLoggedin = function () {
     let player = $("#pnl-user");
 
-    player.find("#inp-playerName").val(bhs.user.playerName);
+    player.find("#id-playerName").val(bhs.user.playerName);
     player.find("#btn-Platform").text(bhs.user.platform);
 
     let l = galaxyList[bhs.getIndex(galaxyList, "name", bhs.user.galaxy)].number;
@@ -550,7 +555,7 @@ blackHoleSuns.prototype.clearPanel = function (id) {
 blackHoleSuns.prototype.extractUser = function () {
     let loc = $("#pnl-user");
 
-    bhs.user.playerName = loc.find("#inp-playerName").val();
+    bhs.user.playerName = loc.find("#id-playerName").val();
     bhs.user.platform = loc.find("#btn-Platform").text().stripMarginWS();
     bhs.user.galaxy = loc.find("#btn-Galaxy").text().stripNumber();
 }
@@ -560,17 +565,17 @@ blackHoleSuns.prototype.extractEntry = function (idx) {
     let loc = pnl.find("#" + panels[idx].id);
 
     let entry = {};
-    entry.addr = loc.find("#inp-addr").val();
+    entry.addr = loc.find("#id-addr").val();
 
     if (typeof entry[bhs.user.platform] == "undefined")
         entry[bhs.user.platform] = {};
-    entry[bhs.user.platform].sys = loc.find("#inp-sys").val();
-    entry.reg = loc.find("#inp-reg").val();
+    entry[bhs.user.platform].sys = loc.find("#id-sys").val();
+    entry.reg = loc.find("#id-reg").val();
     entry.life = loc.find("#btn-Lifeform").text().stripNumber();
     entry.econ = loc.find("#btn-Economy").text().stripNumber();
     entry.hasBase = loc.find("#ck-hasbase").prop('checked');
     if (entry.hasBase)
-        entry.baseName = loc.find("#inp-basename").val();
+        entry.baseName = loc.find("#id-basename").val();
 
     entry.blackhole = idx == pnlBHIndex;
     entry[bhs.user.platform].exit = idx == pnlExitIndex;
@@ -581,7 +586,7 @@ blackHoleSuns.prototype.extractEntry = function (idx) {
         else
             loc = pnl.find("#" + panels[pnlBHIndex].id);
 
-        entry[bhs.user.platform].connection = loc.find("#inp-addr").val();
+        entry[bhs.user.platform].connection = loc.find("#id-addr").val();
     }
 
     return entry;
@@ -614,9 +619,9 @@ blackHoleSuns.prototype.setEntry = function (sel, pnlid) {
     let loc = $(sel);
     let pnl = $("#" + pnlid);
 
-    pnl.find("#inp-addr").val(loc.find("#addr").text());
-    pnl.find("#inp-sys").val(loc.find("#sys").text());
-    pnl.find("#inp-reg").val(loc.find("#reg").text());
+    pnl.find("#id-addr").val(loc.find("#addr").text());
+    pnl.find("#id-sys").val(loc.find("#sys").text());
+    pnl.find("#id-reg").val(loc.find("#reg").text());
     pnl.find("#btn-Lifeform").text(loc.find("#life").text());
 
     let t = loc.find("#econ").text();
