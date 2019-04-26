@@ -551,7 +551,8 @@ blackHoleSuns.prototype.extractEntry = function (name) {
     entry.life = loc.find("#btn-Lifeform").text().stripNumber();
     entry.econ = loc.find("#btn-Economy").text().stripNumber();
     entry.hasBase = loc.find("#ck-hasbase").prop('checked');
-    entry.baseName = "";//loc.find("#inp-basename").val();
+    if (entry.hasBase)
+        entry.baseName = loc.find("#inp-basename").val();
 
     if (name == "Black Hole System") {
         entry.blackhole = true;
