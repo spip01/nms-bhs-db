@@ -620,7 +620,7 @@ blackHoleSuns.prototype.setEntry = function (sel, name) {
     pnl.find("#btn-Lifeform").text(loc.find("#id-life").text());
 
     let t = loc.find("#id-econ").text();
-    let l = economyList[bhs.getIndex(economyList, t)].level;
+    let l = economyList[bhs.getNameIndex(economyList, t)].level;
     pnl.find("#btn-Economy").text(l + " " + t);
     pnl.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";");
 
