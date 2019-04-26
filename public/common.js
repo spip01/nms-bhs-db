@@ -181,7 +181,7 @@ blackHoleSuns.prototype.updateEntry = function (player, entry, panel) {
                 add = bhs.mergeEntries(entry, doc.data())
 
             if (add != "nochange") {
-                if (add == "ADDR" ){
+                if (add == "ADDR") {
                     let ref = bhs.fbfs.doc(starsDoc + player.galaxy + "/" + doc.data().addr);
                     ref.delete();
                 }
@@ -193,7 +193,8 @@ blackHoleSuns.prototype.updateEntry = function (player, entry, panel) {
 
                     if (add == "add") {
                         let stat = bhs.fbfs.doc("statistics/totals");
-                        stat.set(bhs.incTotals(bhs.totals, player, entry.blackhole));
+                        bhs.incTotals(bhs.totals, player, entry.blackhole);
+                        stat.set(bhs.totals);
 
                         bhs.incTotals(player.totals, player, entry.blackhole);
                         bhs.updateUser(player);
@@ -205,7 +206,7 @@ blackHoleSuns.prototype.updateEntry = function (player, entry, panel) {
     }
 }
 
-blackHoleSuns.prototype.deleteEntry = function(addr, player) {
+blackHoleSuns.prototype.deleteEntry = function (addr, player) {
     if (bhs.checkLoggedInWithMessage()) {
         let ref = bhs.fbfs.doc(starsDoc + player.galaxy + "/" + addr);
         ref.delete();
@@ -213,6 +214,8 @@ blackHoleSuns.prototype.deleteEntry = function(addr, player) {
 }
 
 blackHoleSuns.prototype.incTotals = function (d, p, bh) {
+    d = bhs.initTotals(p, d);
+
     if (bh) {
         ++d.totalBH;
         ++d[p.platform].totalBH;
@@ -654,6 +657,25 @@ blackHoleSuns.prototype.buildGalaxyInfo = function () {
             j += step++ % 2 ? galaxyRaw[i].step1 : galaxyRaw[i].step2;
         }
     }
+}
+
+blackHoleSuns.prototype.readcsv = function (file) {
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+        const file = event.target.result;
+        const allLines = file.split(/\r\n|\n/);
+        // Reading line by line
+        allLines.forEach((line) => {
+            console.log(line);
+        });
+    };
+
+    reader.onerror = (event) => {
+        alert(event.target.error.name);
+    };
+
+    reader.readAsText(file);
 }
 
 /*
