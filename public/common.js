@@ -178,14 +178,8 @@ blackHoleSuns.prototype.updateEntry = function (entry, panel) {
         entry[bhs.user.platform].uid = bhs.uid;
         entry[bhs.user.platform].playerName = bhs.user.playerName;
 
-        if (entry.hasBase) {
-            if (typeof bhs.user.bases == "undefined")
-                bhs.user.base = [];
-            if (!bhs.user.bases.includes(entry.addr)) {
-                bhs.user.base.push(entry.addr);
-                bhs.updateUser(bhs.user);
-            }
-        }
+        //if (entry.hasBase && bhs.createBase(entry)) 
+        //    bhs.updateUser(bhs.user);
 
         let ref = bhs.fbfs.doc(starsDoc + bhs.user.galaxy + "/" + entry.addr);
         ref.get().then(function (doc) {
@@ -266,11 +260,44 @@ blackHoleSuns.prototype.initTotals = function (d) {
     return d;
 }
 
-blackHoleSuns.prototype.getUserEntries = function (user, platform, galaxy, limit, displayFcn) {
-    let ref = bhs.fbfs.collection(starsDoc+ galaxy);
+blackHoleSuns.prototype.createBase = function (entry) {
+    let changed = false;
+    let p = bhs.user;
+    let d = bhs.user.bases;
+    let b = {};
 
-    if (user)
-        ref = ref.where(platform + ".uid", "==", bhs.uid).orderBy(platform + ".time", "desc").limit(parseInt(limit));
+    if (typeof d === 'undefined')
+        d = [];
+
+    if (typeof d[p.platform] === 'undefined')
+        d[p.platform] = [];
+
+
+    if (typeof d[p.platform][p.galaxy] === 'undefined')
+        d[p.platform][p.galaxy] = [];
+
+
+    let i = bhs.getIndex(d[p.platform][p.galaxy], "addr", entry.addr);
+    if (i == -1) {
+        b.addr = entry.addr;
+        b.name = entry.basename;
+
+        d[p.platform][p.galaxy].push(b);
+        changed = true;
+
+    } else if (d[p.platform][p.galaxy].name != entry.basename) {
+        d[p.platform][p.galaxy].name = entry.basename;
+        changed = true;
+    }
+
+    bhs.user.bases = d;
+
+    return changed;
+}
+
+blackHoleSuns.prototype.getUserEntries = function (limit, displayFcn) {
+    let ref = bhs.fbfs.collection(starsDoc + bhs.user.galaxy);
+    ref = ref.where(bhs.user.platform + ".uid", "==", bhs.uid).orderBy(bhs.user.platform + ".time", "desc").limit(parseInt(limit));
 
     ref.onSnapshot(function (querySnapshot) {
         querySnapshot.docChanges().forEach(function (change) {

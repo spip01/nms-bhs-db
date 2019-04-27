@@ -51,8 +51,16 @@ $(document).ready(function () {
         $("#arrow").removeClass("fa-angle-down");
         $("#arrow").addClass("fa-angle-up");
         let limit = $("#id-displalyqty").val()
-        if ($("#userItems").children().length == 0)
-            bhs.getUserEntries(bhs.user.uid, bhs.user.platform, bhs.user.galaxy, limit, bhs.displayUserEntries);
+
+        let platform = loc.find("#btn-Platform").text().stripMarginWS();
+        let galaxy = loc.find("#btn-Galaxy").text().stripNumber();
+    
+
+        if ($("#userItems").children().length == 0 || bhs.user.platform != platform || bhs.user.galaxy != galaxy) {
+            bhs.extractUser();
+            $("#userItems").empty();
+            bhs.getUserEntries(limit, bhs.displayUserEntries);
+        }
     });
 
     $('.panel-collapse').on('hide.bs.collapse', function () {
@@ -510,6 +518,7 @@ blackHoleSuns.prototype.displayStats = function () {
 blackHoleSuns.prototype.doLoggedout = function () {
     $("#map").hide();
     $("#userTable").hide();
+    $("#userItems").empty();
 }
 
 blackHoleSuns.prototype.doLoggedin = function () {
@@ -573,9 +582,9 @@ blackHoleSuns.prototype.extractEntry = function (idx) {
     entry.reg = loc.find("#id-reg").val();
     entry.life = loc.find("#btn-Lifeform").text().stripNumber();
     entry.econ = loc.find("#btn-Economy").text().stripNumber();
-    entry.hasBase = loc.find("#ck-hasbase").prop('checked');
-    if (entry.hasBase)
-        entry.baseName = loc.find("#id-basename").val();
+//    entry.hasBase = loc.find("#ck-hasbase").prop('checked');
+//    if (entry.hasBase)
+//        entry.basename = loc.find("#id-basename").val();
 
     entry.blackhole = idx == pnlBHIndex;
     entry[bhs.user.platform].exit = idx == pnlExitIndex;
@@ -625,16 +634,18 @@ blackHoleSuns.prototype.setEntry = function (sel, pnlid) {
     pnl.find("#btn-Lifeform").text(loc.find("#life").text());
 
     let t = loc.find("#econ").text();
-    let l = economyList[bhs.getIndex(economyList, "name", t)].level;
-    pnl.find("#btn-Economy").text(l + " " + t);
-    pnl.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";");
+    if (t != "") {
+        let l = economyList[bhs.getIndex(economyList, "name", t)].level;
+        pnl.find("#btn-Economy").text(l + " " + t);
+        pnl.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";");
+    } else pnl.find("#btn-Economy").text(t);
 
     pnl.find("#id-isbase").prop('checked', loc.find("#base").text() != "");
 }
 
 blackHoleSuns.prototype.save = function () {
     let entry = [];
-    
+
     $("#status").empty();
 
     bhs.extractUser();
@@ -654,7 +665,7 @@ blackHoleSuns.prototype.save = function () {
     Object.keys(panels).forEach(i => {
         let x = panels[i];
 
-        if (ok && x.group == group) 
+        if (ok && x.group == group)
             bhs.updateEntry(entry[i], panels[i].id);
     });
 }
