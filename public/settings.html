@@ -98,25 +98,31 @@
             </div>
         </div>
 
-        <div class="container border">
-            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-                <div class="panel panel-default">
-                    <div class="panel-heading" role="tab" id="headingOne">
-                        <h4 class="panel-title">
-                            <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne"
-                                aria-expanded="false" aria-controls="collapseOne">
-                                All User Data
-                            </a>
-                        </h4>
-                    </div>
-                    <div id="collapseOne" class="panel-collapse collapse in bkg-white border" role="tabpanel"
-                        aria-labelledby="headingOne">
-                        <div class="panel-body">
-                            <table id="userTable" class="table table-hover table-sm">
-                                <thead id="userHeader"></thead>
-                                <tbody id="userItems"></tbody>
-                            </table>
+        <div class="panel-group border" id="accordion" role="tablist" aria-multiselectable="true">
+            <div class="panel panel-default">
+                <div class="panel-heading row" role="tab" id="headingOne">
+                    <h4 class="panel-title">
+                        <a role="button" class="col-6" data-toggle="collapse" data-parent="#accordion"
+                            href="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                            <i id="arrow" class="fas fa-angle-down"></i>
+                            User Data
+                        </a>
+                    </h4>
+                    <div class="col-7 float-right">
+                        <div class="row">
+                            <div class="col-7 h6 clr-dark-green text-right">Display Qty&nbsp;</div>
+                            <input id="id-displalyqty" class="col-4 rounded h5" type="text" value="10">
                         </div>
+                    </div>
+                </div>
+
+                <div id="collapseOne" class="panel-collapse collapse in bkg-white border" role="tabpanel"
+                    aria-labelledby="headingOne">
+                    <div class="panel-body">
+                        <table id="userTable" class="table table-hover table-sm">
+                            <thead id="userHeader"></thead>
+                            <tbody id="userItems"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>

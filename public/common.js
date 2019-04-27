@@ -95,12 +95,12 @@ blackHoleSuns.prototype.onAuthStateChanged = function (user) {
                 if (doc.exists) {
                     bhs.user = doc.data();
 
-                    if (bhs.user.email != user.email) {
-                        bhs.user.email = user.email;
-                        bhs.updateUser();
-                    }
+                    //if (bhs.user.email != user.email) {
+                    //    bhs.user.email = user.email;
+                    //    bhs.updateUser();
+                    //}
                 } else {
-                    bhs.user.email = user.email;
+                    //bhs.user.email = user.email;
                     bhs.updateUser();
                 }
 
@@ -311,6 +311,37 @@ blackHoleSuns.prototype.getUserEntries = function (limit, displayFcn) {
                 displayFcn(d);
             }
         });
+    });
+}
+
+blackHoleSuns.prototype.getData = function (galaxy, platform, returnFcn) {
+    let ref = bhs.fbfs.collection(starsDoc + galaxy).where("blackhole", "==", true).orderBy("addr");
+
+    ref.onSnapshot(function (snapshot) {
+        let out = [];
+        for (let i = 0; i < snapshot.size; ++i) {
+            let d = snapshot.docs[i].data();
+            if (typeof d[platform] != "undefined") {
+                let n = {};
+                n.bhaddr = d.addr;
+                n.xitaddr = d[platform].connection;
+                n.sys = d[platform].sys;
+                n.reg = d.reg;
+                out.push(n);
+            }
+        }
+
+        if (returnFcn)
+            returnFcn(out);
+    });
+}
+
+blackHoleSuns.prototype.getUsers = function (displayFcn) {
+    let ref = bhs.fbfs.collection(usersCol).orderBy("playerName");
+
+    ref.onSnapshot(function (doc) {
+        let d = doc.data();
+        displayFcn(d);
     });
 }
 

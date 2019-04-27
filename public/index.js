@@ -55,7 +55,6 @@ $(document).ready(function () {
         let platform = loc.find("#btn-Platform").text().stripMarginWS();
         let galaxy = loc.find("#btn-Galaxy").text().stripNumber();
     
-
         if ($("#userItems").children().length == 0 || bhs.user.platform != platform || bhs.user.galaxy != galaxy) {
             bhs.extractUser();
             $("#userItems").empty();

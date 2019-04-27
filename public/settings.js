@@ -3,6 +3,8 @@
 $(document).ready(function () {
     startUp();
 
+    //bhs.getData("Euclid", "PC-XBox");
+
     bhs.generatePlayerList();
 
     bhs.buildMenu(loc, "Players", bhs.playerList, true);
