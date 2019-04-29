@@ -5,38 +5,259 @@ $(document).ready(function () {
 
     //bhs.getData("Euclid", "PC-XBox");
 
-    bhs.generatePlayerList();
+    //bhs.generatePlayerList();
 
-    bhs.buildMenu(loc, "Players", bhs.playerList, true);
-    bhs.buildMenu(loc, "Platform", platformList, true);
-    bhs.buildMenu(loc, "Galaxy", galaxyList, true);
+    //bhs.buildMenu(loc, "Players", bhs.playerList, true);
+    //bhs.buildMenu(loc, "Platform", platformList, true);
+    //bhs.buildMenu(loc, "Galaxy", galaxyList, true);
 
     bhs.settings = {};
 
-    $("#submit").click(function () {
-        bhs.readcsv($("#uploadedFile").val());
+    $("#uploadedFile").change(function () {
+        bhs.readTextFile(this);
     });
 
     $('.panel-collapse').on('show.bs.collapse', function () {
         $(this).siblings('.panel-heading').addClass('active');
 
-        let user={};
+        let user = {};
         user.uid = $("#btn-Players").data("uid");
         user.platform = $("#btn-Platform").text();
         user.galaxy = $("#btn-Galaxy").text();
-        
+
         if ($("#userItems").children().length == 0 || bhs.settings.user != user) {
             $("#userItems").empty();
-            
+
             bhs.setting.user = user;
 
             bhs.getUserEntries(user.uid, user.platform, user.galaxy, 100, bhs.displayUserEntry);
-    }});
+        }
+    });
 
     $('.panel-collapse').on('hide.bs.collapse', function () {
         $(this).siblings('.panel-heading').removeClass('active');
     });
 });
+
+var importTable = [{
+        match: /platform/i,
+        field: "platform",
+        required: true,
+        group: 0
+    },
+    {
+        match: /galaxy/i,
+        field: "galaxy",
+        required: true,
+        group: 0
+    },
+    {
+        match: /(traveler)|(player)/i,
+        field: "player",
+        group: 0
+    },
+    // 1st match
+    {
+        match: /coord/i,
+        field: "addr",
+        required: true,
+        format: reformatAddress,
+        validate: validateBHAddress,
+        group: 1
+    },
+    {
+        match: /economy/i,
+        field: "econ",
+        group: 1
+    },
+    {
+        match: /region/i,
+        field: "reg",
+        required: true,
+        group: 1
+    },
+    {
+        match: /system/i,
+        field: "sys",
+        required: true,
+        group: 1
+    },
+    {
+        match: /sun/i,
+        field: "sun",
+        group: 1
+    },
+    {
+        match: /lifeform/i,
+        field: "life",
+        group: 1
+    },
+    {
+        match: /conflict/i,
+        field: "conflict",
+        group: 1
+    },
+    // 2nd math
+    {
+        match: /coord/i,
+        field: "addr",
+        required: true,
+        format: reformatAddress,
+        validate: validateAddress,
+        group: 2
+    },
+    {
+        match: /economy/i,
+        field: "econ",
+        group: 2
+    },
+    {
+        match: /region/i,
+        field: "reg",
+        checkreq: checkZeroAddress,
+        checkval: 10,
+        checkgrp: 2,
+        group: 2
+    },
+    {
+        match: /system/i,
+        field: "sys",
+        checkreq: checkZeroAddress,
+        checkval: 10,
+        checkgrp: 2,
+        group: 2
+    },
+    {
+        match: /sun/i,
+        field: "sun",
+        group: 2
+    },
+    {
+        match: /lifeform/i,
+        field: "life",
+        group: 2
+    },
+    {
+        match: /conflict/i,
+        field: "conflict",
+        group: 2
+    }
+];
+
+blackHoleSuns.prototype.readTextFile = function (f) {
+    let file = f.files[0];
+    let reader = new FileReader();
+
+    reader.onload = async function () {
+        let allrows = reader.result.split(/\r?\n|\r/);
+        let hdr = allrows[1].split(/[,\t]/);
+
+        for (let i = 0; i < importTable.length; ++i) {
+            for (let j = 0; j < hdr.length; ++j) {
+                if (hdr[j].search(importTable[i].match) != -1) {
+                    importTable[i].index = j;
+                    hdr[j] = "";
+                    break;
+                }
+            }
+
+            if (importTable[i].required && typeof importTable[i].index == "undefined") {
+                console.log("missing " + importTable[i].match + " " + allrows[1]);
+                return;
+            }
+        }
+
+        var entry = [];
+
+        for (let i = 2, ok = true; i < allrows.length && ok; ++i, ok = true) {
+            entry[0] = {};
+            entry[1] = {};
+            entry[2] = {};
+
+            let row = allrows[i].split(/[,\t]/);
+
+            if (row[importTable[0].index] == "")
+                ok = false;
+
+            for (let j = 0; j < importTable.length && ok; ++j) {
+                let idx = importTable[j].index;
+                if (idx != -1) {
+                    if (typeof row[idx] == "undefined" || row[idx] == "") {
+                        let grp = importTable[j].checkgrp;
+                        let val = importTable[j].checkval;
+                        if (importTable[j].required || typeof importTable[j].checkreq != "undefined" &&
+                            importTable[j].checkreq(entry[importTable[grp].group][importTable[val].field])) {
+                            $("#status").prepend("<h7>row: " + (i + 1) + " missing " + importTable[j].match + "</h7>");
+                            ok = false;
+                        }
+                    } else {
+                        row[idx] = row[idx].stripNumber();
+
+                        if (typeof importTable[j].format != "undefined")
+                            row[idx] = importTable[j].format(row[idx]);
+
+                        if (typeof importTable[j].validate != "undefined")
+                            ok = importTable[j].validate(row[idx]);
+
+                        entry[importTable[j].group][importTable[j].field] = row[idx];
+
+                        if (!ok)
+                            $("#status").prepend("<h7>row: " + (i + 1) + " invalid value " + importTable[j].match + " " + entry[importTable[j].group][importTable[j].field] + "</h7>");
+                    }
+                }
+            }
+
+            if (ok) {
+                entry[0].platform = entry[0].platform.match(/pc/i) ||
+                    entry[0].platform.match(/xbox/i) ? "PC-XBox" : entry[0].platform;
+
+                //entry[1].uid = "xEKdsoLrGubLmPkb6WxcxsmtQaE3";
+                //entry[2].uid = "xEKdsoLrGubLmPkb6WxcxsmtQaE3";
+                //entry[1].player = "zeenewbian";
+                //entry[2].player = "zeenewbian";
+
+                entry[1].player = entry[0].player;
+                entry[1].blackhole = true;
+                entry[1].connection = entry[2].addr;
+                entry[2].player = entry[0].player;
+                entry[2].exit = true;
+                entry[2].connection = entry[1].addr;
+
+                let ref = bhs.fbfs.collection("stars");
+
+                await ref.doc(entry[0].galaxy).get().then(function (doc) {
+                    if (!doc.exists)
+                        ref.doc(entry[0].galaxy).set({
+                            name: entry[0].galaxy
+                        }).then(function () {});
+                });
+
+                ref = ref.doc(entry[0].galaxy).collection(entry[0].platform);
+
+                await ref.doc(entry[1].addr).get().then(function (doc) {
+                    if (!doc.exists) {
+                        ref.doc(entry[1].addr).set(entry[1]).then(function () {
+                            //$("#status").prepend("<h7>save: " + entry[1].addr + " </h7>");
+                        });
+                    } //else
+                    //$("#status").prepend("<h7>dup: " + entry[1].addr + " </h7>");
+                });
+
+                if (entry[1].connection != "0000:0000:0000:0000")
+                    await ref.doc(entry[2].addr).get().then(function (doc) {
+                        if (!doc.exists) {
+                            ref.doc(entry[2].addr).set(entry[2]).then(function () {
+                                //$("#status").prepend("<h7>save: " + entry[2].addr + " </h7>");
+                            });
+                        } // else
+                        //$("#status").prepend("<h7>dup: " + entry[2].addr + " </h7>");
+                    });
+            }
+        }
+    }
+
+    reader.readAsText(file);
+}
 
 const trStart = `   <tr id="id-idname">`;
 const thLine = `        <th scope="col" id="id-idname">label</th>`;

@@ -129,23 +129,20 @@
         </div>
         <br>
 
-        <div class="container border">
+        <div class="border">
             <div class="row">
-                <label class="control-label col-md-2 text-right" for="filename"><span>File</span></label>
-                <div class="col-md-10">
-                    <div class="input-group">
-                        <input type="hidden" id="filename" name="filename" value="">
-                        <input type="file" id="uploadedFile" name="uploadedFile" class="form-control form-control-sm"
+                <div class="col-10">
+                        <input type="file" id="uploadedFile" class="form-control form-control-sm"
                             accept=".csv">
-                        <div class="input-group-btn">
-                            <input id="submit" type="button" value="Upload" class="rounded-0 btn btn-primary">
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
+
+        <br>
+        <div id="status" class="card card-body"></div>
     </div>
     <br>
+
 
     <div id="footer"></div>
 </body>

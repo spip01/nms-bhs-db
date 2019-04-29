@@ -36,7 +36,9 @@ function getData (galaxy, platform, returnFcn) {
             let d = snapshot.docs[i].data();
             if (typeof d[platform] != "undefined") {
                 let n = {};
-                n.bhaddr = d.addr;
+                n.bhaddr = d.addr;  //n.bhaddr = d.addr.split(/:/); //for array of [x,y,z,p]
+                                    // for array converted to dec
+                                    //for (let i=0; i<n.bhaddr.length;++i) n.bhaddr[i]=parseInt(n.bhaddr, 16);
                 n.xitaddr = d[platform].connection;
                 n.sys = d[platform].sys;
                 n.reg = d.reg;

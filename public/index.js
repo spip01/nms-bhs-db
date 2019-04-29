@@ -194,7 +194,8 @@ blackHoleSuns.prototype.buildPanel = function (name, id) {
     //});
 
     loc.find("#id-addr").blur(function () {
-        let addr = bhs.reformatAddress(this);
+        let addr = bhs.reformatAddress($(this).val());
+        $(this).val(addr);
 
         let pnl = $(this).closest("[id|='pnl'");
         if (pnl.find("#id-sys").val() != "" && pnl.find("#id-reg").val() != "")

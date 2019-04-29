@@ -133,7 +133,6 @@ blackHoleSuns.prototype.userInit = function () {
     bhs.uid = null;
     bhs.user = {};
     bhs.user.playerName = "";
-    bhs.user.email = "";
     bhs.user.platform = platformList[0].name;
     bhs.user.galaxy = galaxyList[0].name;
 
@@ -675,8 +674,16 @@ blackHoleSuns.prototype.formatAddress = function (field, event) {
     }
 }
 
-blackHoleSuns.prototype.reformatAddress = function (field) {
-    let str = /[^0-9A-F]+/g [Symbol.replace]($(field).val().toUpperCase(), ":");
+function checkZeroAddress(addr) {
+    return /(0{4}:){3}0{4}/.test(0);
+}
+
+function reformatAddress(addr) {
+    return bhs.reformatAddress(addr);
+}
+
+blackHoleSuns.prototype.reformatAddress = function (addr) {
+    let str = /[^0-9A-F]+/g [Symbol.replace](addr.toUpperCase(), ":");
     str = str[0] == ":" ? str.slice(1) : str;
     let out = "";
 
@@ -688,8 +695,6 @@ blackHoleSuns.prototype.reformatAddress = function (field) {
         out += "0000".slice(0, 4 - s.length) + s + (i < 3 ? ":" : "");
     }
 
-    $(field).val(out);
-
     return out;
 }
 
@@ -697,8 +702,20 @@ String.prototype.stripColons = function () {
     return /:/g [Symbol.replace](this, "");
 }
 
+function validateAddress(addr) {
+    return bhs.validateAddress(addr);
+}
+
 blackHoleSuns.prototype.validateAddress = function (addr) {
     return /([0-9a-f]{4}:){3}[0-9a-f]{4}/i.test(addr.toUpperCase());
+}
+
+function validateBHAddress(addr) {
+    return bhs.validateBHAddress(addr);
+}
+
+blackHoleSuns.prototype.validateBHAddress = function (addr) {
+    return /([0-9a-f]{4}:){3}0079/i.test(addr.toUpperCase());
 }
 
 blackHoleSuns.prototype.makeBHAddress = function (addr) {
@@ -714,7 +731,7 @@ String.prototype.stripMarginWS = function () {
 }
 
 String.prototype.stripNumber = function () {
-    return this.replace(/\s*\d*\s*([.*]?)\s*/, "$1");
+    return this.replace(/(?:\s*[0-9.]+\s+)*([.*]*)\s*/, "$1");
 }
 
 blackHoleSuns.prototype.getIndex = function (list, field, id) {
