@@ -31,7 +31,7 @@ $(document).ready(function () {
         bhs.save();
         bhs.clearPanels();
         bhs.last = [];
-  });
+    });
 
     $("#delete").click(function () {
         if ($("#ck-singleSystem").prop("checked")) {
@@ -353,11 +353,16 @@ blackHoleSuns.prototype.setEntry = function (loc, idx) {
 
 blackHoleSuns.prototype.save = function () {
     let entry = [];
+    let ok = true;
 
     $("#status").empty();
 
-    bhs.extractUser();
-    let ok = bhs.validateUser();
+    let user = {};
+    if (user = bhs.extractUser()) {
+        ok = bhs.validateUser(user);
+        if (ok)
+            bhs.updateUser(user);
+    }
 
     let group = $("#ck-singleSystem").prop('checked') ? 1 : 0;
 

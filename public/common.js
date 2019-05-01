@@ -101,7 +101,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (user) {
                     //}
                 } else {
                     //bhs.user.email = user.email;
-                    bhs.updateUser();
+                    bhs.updateUser(bhs.user);
                 }
 
                 if (bhs.doLoggedin)
@@ -151,6 +151,60 @@ blackHoleSuns.prototype.userInit = function () {
 blackHoleSuns.prototype.navLoggedin = function () {
     $("#loggedout").hide();
     $("#loggedin").show();
+
+   // bhs.startDataRead();
+}
+
+blackHoleSuns.prototype.startDataRead = function () {
+    let ref = bhs.fbfs.collection(usersCol).where("uid", "==", bhs.user.uid);
+    ref.onSnapshot(function (snapshot) {
+        snapshot.docChanges().forEach(function (change) {
+            if (change.type === "added" || change.type === "modified") {
+                bhs.user = change.doc.data();
+                bhs.displayUser(bhs.user);
+            }
+        });
+    });
+
+    bhs.activeGalaxies = {};
+    bhs.userEntries = {};
+
+    ref = bhs.setStarRef();
+    ref.onSnapshot(function (snapshot) {
+        snapshot.docChanges().forEach(function (change) {
+            if (change.type === "added" || change.type === "modified") {
+                let d = change.doc.data();
+                bhs.activeGalaxies[d.name] = d;
+                bhs.displayGalaxyData(d);
+
+                for (let i = 0; i < platformList.length; ++i) {
+                    ref = bhs.setStarRef(d.name, platformList[i].name)
+                        .where("player", "==", bhs.user.player).orderBy("time", "desc").limit(10);
+                    ref.onSnapshot(function (snapshot) {
+                        snapshot.docChanges().forEach(function (change) {
+                            if (change.type === "added" || change.type === "modified") {
+                                let d = change.doc.data();
+                                bhs.userEntries[d.addr] = d;
+                                bhs.displayUserEntries(d);
+                            }
+                        });
+                    });
+                }
+            }
+        });
+    });
+}
+
+blackHoleSuns.prototype.displayGalaxyData = function (d) {
+    console.log(d);
+}
+
+blackHoleSuns.prototype.displayUser = function (d) {
+    console.log(d);
+}
+
+blackHoleSuns.prototype.displayUserEntries = function (d) {
+    console.log(d);
 }
 
 blackHoleSuns.prototype.navLoggedout = function () {
@@ -158,18 +212,28 @@ blackHoleSuns.prototype.navLoggedout = function () {
     $("#loggedin").hide();
 }
 
-blackHoleSuns.prototype.updateUser = function () {
+blackHoleSuns.prototype.updateUser = function (user) {
     if (bhs.checkLoggedInWithMessage()) {
-        let ref = bhs.fbfs.collection(usersCol).where("player", "==", bhs.user.player);
-        ref.get().then(function (snapshot) {
-            if (!snapshot.empty)
-                $("#status").prepend("<h7>Player Name:" + bhs.user.player + " is already taken.</h7>");
-            else {
-                let ref = bhs.fbfs.collection(usersCol).doc(bhs.user.uid);
-                ref.set(bhs.user);
-            }
-        });
+        bhs.user.galaxy = user.galaxy;
+        bhs.user.platform = user.platform;
+        bhs.user.player = user.player;
+
+        let ref = bhs.fbfs.collection(usersCol).doc(bhs.user.uid);
+        ref.set(bhs.user);
     }
+}
+
+blackHoleSuns.prototype.checkPlayerName = function (loc, player) {
+    let ref = bhs.fbfs.collection(usersCol).where("player", "==", player);
+    ref.get().then(function (snapshot) {
+        if (!snapshot.empty) {
+            let d = snapshot.docs[0].data();
+            if (d.uid != bhs.user.uid) {
+                $(loc).val(bhs.user.player);
+                $("#status").prepend("<h7>Player Name:" + player + " is already taken.</h7>");
+            }
+        }
+    });
 }
 
 blackHoleSuns.prototype.getEntry = function (addr, displayfcn, loc, idx) {
@@ -178,7 +242,7 @@ blackHoleSuns.prototype.getEntry = function (addr, displayfcn, loc, idx) {
         ref.get().then(function (doc) {
             if (doc.exists) {
                 let d = doc.data();
-                displayfcn(loc, d,idx);
+                displayfcn(loc, d, idx);
             }
         });
     }
@@ -224,30 +288,8 @@ blackHoleSuns.prototype.updateEntry = function (entry, panel) {
                 }
             }
 
-            let ref = bhs.setStarRef(bhs.user.galaxy, bhs.user.platform, entry.addr);
-
-            if (!doc.exists) {
-                ref.set(entry).then(function () {
-                    bhs.clearPanel(panel);
-
-                    $("#status").prepend("<h7>" + entry.addr + " Added.</h7>");
-                    let ref = bhs.fbfs.collection("statistics").doc("totals");
-                    ref.get().then(function (doc) {
-                        bhs.totals = bhs.incTotals(doc.data(), entry.blackhole);
-                        let ref = bhs.fbfs.collection("statistics").doc("totals");
-                        ref.set(bhs.totals);
-                    });
-
-                    bhs.user.totals = bhs.incTotals(bhs.user.totals, entry.blackhole);
-                    bhs.updateUser();
-                });
-            } else if (entry != d)
-                ref.set(entry).then(function () {
-                    bhs.clearPanel(panel);
-                    $("#status").prepend("<h7>" + entry.addr + " Updated.</h7>");
-                });
-            else
-                $("#status").prepend("<h7>" + entry.addr + " No changes needed.</h7>");
+            //document("fitness_teams/Team_1").
+            // updateData(["step_counter" : FieldValue.increment(500)])
         });
     }
 }
@@ -434,20 +476,20 @@ blackHoleSuns.prototype.checkLoggedInWithMessage = function () {
     return false;
 }
 
-blackHoleSuns.prototype.validateUser = function () {
+blackHoleSuns.prototype.validateUser = function (user) {
     let ok = true;
 
-    if (!bhs.user.player) {
+    if (!user.player) {
         $("#status").text("<h7>Error: Missing player name. Changes not saved.</h7>");
         ok = false;
     }
 
-    if (ok && !bhs.user.galaxy) {
+    if (ok && !user.galaxy) {
         $("#status").text("<h7>Error: Missing galaxy. Changes not saved.</h7>");
         ok = false;
     }
 
-    if (ok && !bhs.user.platform) {
+    if (ok && !user.platform) {
         $("#status").text("<h7>Error: Missing platform. Changes not saved.</h7>");
         ok = false;
     }

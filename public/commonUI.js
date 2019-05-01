@@ -21,6 +21,10 @@ blackHoleSuns.prototype.doLoggedin = function () {
 
     //$("#map").show();
     $("#userTable").show();
+
+    $("#id-player").blur(function () {
+        bhs.checkPlayerName(this, $(this).val());
+    });
 }
 
 const trStart = `   <tr id="idname">`;
@@ -408,8 +412,14 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
 
 blackHoleSuns.prototype.extractUser = function () {
     let loc = $("#pnl-user");
+    let u = {};
 
-    bhs.user.player = loc.find("#id-player").val();
-    bhs.user.platform = loc.find("#btn-Platform").text().stripMarginWS();
-    bhs.user.galaxy = loc.find("#btn-Galaxy").text().stripNumber();
+    u.player = loc.find("#id-player").val();
+    u.platform = loc.find("#btn-Platform").text().stripMarginWS();
+    u.galaxy = loc.find("#btn-Galaxy").text().stripNumber();
+
+    if (bhs.user.player != u.player || bhs.user.platform != u.platform || bhs.user.galaxy != u.galaxy)
+        return u;
+
+    return null;
 }
