@@ -593,7 +593,7 @@ blackHoleSuns.prototype.doLoggedout = function () {
 blackHoleSuns.prototype.doLoggedin = function () {
     let player = $("#pnl-user");
 
-    player.find("#inp-playerName").val(bhs.user.playerName);
+    player.find("#inp-player").val(bhs.user.player);
     player.find("#btn-Platform").text(bhs.user.platform);
 
     let l = galaxyList[bhs.getIndex(galaxyList, bhs.user.galaxy)].number;
@@ -633,7 +633,7 @@ blackHoleSuns.prototype.clearPanel = function (name) {
 blackHoleSuns.prototype.extractUser = function () {
 
     let loc = $("#pnl-user");
-    bhs.user.playerName = loc.find("#inp-playerName").val();
+    bhs.user.player = loc.find("#inp-player").val();
     bhs.user.platform = loc.find("#btn-Platform").text().stripMarginWS();
     bhs.user.galaxy = loc.find("#btn-Galaxy").text().stripNumber();
 }

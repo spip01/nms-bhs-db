@@ -22,9 +22,9 @@ const fbconfig = {
     messagingSenderId: FIREBASE_MSGID
 };
 
-const starsDoc = "stars/all/";
-const usersCol = "users/";
-const statsCol = "statistics/";
+const starsCol = "test";
+const usersCol = "users";
+const statsCol = "statistics";
 
 function startUp() {
     $("#javascript").empty();
@@ -86,7 +86,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (user) {
 
         bhs.uid = user.uid;
 
-        let ref = bhs.fbfs.doc(usersCol + bhs.uid);
+        let ref = bhs.fbfs.collection(usersCol).doc(bhs.uid);
 
         ref.get().then(function (doc) {
             if (typeof bhs.rewriteData != "undefined")
@@ -122,6 +122,8 @@ blackHoleSuns.prototype.onAuthStateChanged = function (user) {
 }
 
 blackHoleSuns.prototype.init = function () {
+    bhs.buildGalaxyInfo();
+
     bhs.userInit();
 
     bhs.totals = {};
@@ -132,7 +134,7 @@ blackHoleSuns.prototype.init = function () {
 blackHoleSuns.prototype.userInit = function () {
     bhs.uid = null;
     bhs.user = {};
-    bhs.user.playerName = "";
+    bhs.user.player = "";
     bhs.user.platform = platformList[0].name;
     bhs.user.galaxy = galaxyList[0].name;
 
@@ -143,7 +145,6 @@ blackHoleSuns.prototype.userInit = function () {
     bhs.user.bases = [];
     bhs.user.ships = [];
 }
-
 
 blackHoleSuns.prototype.navLoggedin = function () {
     $("#loggedout").hide();
@@ -157,13 +158,23 @@ blackHoleSuns.prototype.navLoggedout = function () {
 
 blackHoleSuns.prototype.updateUser = function () {
     if (bhs.checkLoggedInWithMessage()) {
-        bhs.fbfs.doc(usersCol + bhs.user.uid).set(bhs.user);
+        let ref = bhs.fbfs.collection(usersCol).where("player", "==", bhs.user.player);
+        ref.get().then(function (doc) {
+            if (doc.exists)
+                $("#status").prepend("<h7>Player Name:" + bhs.user.player + " is already taken.</h7>");
+            else {
+                let ref = bhs.fbfs.collection(usersCol).doc(bhs.user.uid);
+                ref.set(bhs.user);
+            }
+        });
     }
 }
 
 blackHoleSuns.prototype.getEntry = function (addr, displayfcn, loc) {
     if (bhs.checkLoggedInWithMessage()) {
-        let ref = bhs.fbfs.doc(starsDoc + bhs.user.galaxy + "/" + addr);
+        let ref = bhs.fbfs.collection(starsCol).doc(bhs.user.galaxy).
+        collection(bhs.user.platform).doc(addr);
+
         ref.get().then(function (doc) {
             if (doc.exists)
                 displayfcn(loc, doc.data());
@@ -173,48 +184,56 @@ blackHoleSuns.prototype.getEntry = function (addr, displayfcn, loc) {
 
 blackHoleSuns.prototype.updateEntry = function (entry, panel) {
     if (bhs.checkLoggedInWithMessage()) {
-        entry[bhs.user.platform].time = firebase.firestore.Timestamp.fromDate(new Date());
-        entry[bhs.user.platform].uid = bhs.uid;
-        entry[bhs.user.platform].playerName = bhs.user.playerName;
+        entry.time = firebase.firestore.Timestamp.fromDate(new Date());
+        entry.uid = bhs.uid;
+        entry.player = bhs.user.player;
 
         //if (entry.hasBase && bhs.createBase(entry)) 
         //    bhs.updateUser(bhs.user);
 
-        let ref = bhs.fbfs.doc(starsDoc + bhs.user.galaxy + "/" + entry.addr);
+        let ref = bhs.fbfs.collection(starsCol).doc(bhs.user.galaxy).
+        collection(bhs.user.platform).doc(entry.addr);
+
         ref.get().then(function (doc) {
-            let add = "add";
-            if (doc.exists)
-                add = bhs.mergeEntries(entry, doc.data())
+            let d = {};
+            if (doc.exists) {
+                d = doc.data();
+                entry.time = d.time;
+            }
 
-            if (add != "nochange") {
-                if (add == "ADDR") {
-                    let ref = bhs.fbfs.doc(starsDoc + bhs.user.galaxy + "/" + doc.data().addr);
-                    ref.delete();
-                }
+            if (entry != d)
+                if (entry.connection != d.connection)
+                    $("#status").prepend("<h7>Breaking connection with " + d.connection + "</h7>");
 
-                let ref = bhs.fbfs.doc(starsDoc + bhs.user.galaxy + "/" + entry.addr);
+            if (!doc.exists || entry != d) {
+                let ref = bhs.fbfs.collection(starsCol).doc(bhs.user.galaxy).
+                collection(bhs.user.platform).doc(entry.addr);
+
                 ref.set(entry).then(function () {
-                    $("#status").text("Changes saved.");
                     bhs.clearPanel(panel);
 
-                    if (add == "add") {
-                        let stat = bhs.fbfs.doc("statistics/totals");
+                    if (!doc.exists) {
+                        $("#status").prepend("<h7>" + entry.addr + " Added.</h7>");
+                        let stat = bhs.fbfs.collection("statistics").doc("totals");
                         bhs.totals = bhs.incTotals(bhs.totals, entry.blackhole);
                         stat.set(bhs.totals);
 
                         bhs.user.totals = bhs.incTotals(bhs.user.totals, entry.blackhole);
                         bhs.updateUser();
-                    }
+                    } else
+                        $("#status").prepend("<h7>" + entry.addr + " Changes saved.</h7>");
                 });
             } else
-                $("#status").text("No changes to save.");
+                $("#status").prepend("<h7>" + entry.addr + " No changes needed.</h7>");
         });
     }
 }
 
 blackHoleSuns.prototype.deleteEntry = function (addr) {
     if (bhs.checkLoggedInWithMessage()) {
-        let ref = bhs.fbfs.doc(starsDoc + bhs.user.galaxy + "/" + addr);
+        let ref = bhs.fbfs.collection(starsCol).doc(bhs.user.galaxy).
+        collection(bhs.user.platform).doc(addr);
+
         ref.delete();
     }
 }
@@ -225,13 +244,13 @@ blackHoleSuns.prototype.incTotals = function (d, bh) {
 
     if (bh) {
         ++d.totalBH;
-        ++d[p.platform].totalBH;
-        ++d[p.platform][p.galaxy].totalBH;
+        ++d[p.galaxy].totalBH;
+        ++d[p.galaxy][p.platform].totalBH;
     }
 
     ++d.totalStars;
-    ++d[p.platform].totalStars;
-    ++d[p.platform][p.galaxy].totalStars;
+    ++d[p.galaxy].totalStars;
+    ++d[p.galaxy][p.platform].totalStars;
 
     return d;
 }
@@ -244,16 +263,16 @@ blackHoleSuns.prototype.initTotals = function (d) {
         d.totalStars = 0;
     }
 
-    if (typeof d[p.platform] === 'undefined') {
-        d[p.platform] = {};
-        d[p.platform].totalBH = 0;
-        d[p.platform].totalStars = 0;
+    if (typeof d[p.galaxy] === 'undefined') {
+        d[p.galaxy] = {};
+        d[p.galaxy].totalBH = 0;
+        d[p.galaxy].totalStars = 0;
     }
 
-    if (typeof d[p.platform][p.galaxy] === 'undefined') {
-        d[p.platform][p.galaxy] = {};
-        d[p.platform][p.galaxy].totalBH = 0;
-        d[p.platform][p.galaxy].totalStars = 0;
+    if (typeof d[p.galaxy][p.platform] === 'undefined') {
+        d[p.galaxy][p.platform] = {};
+        d[p.galaxy][p.platform].totalBH = 0;
+        d[p.galaxy][p.platform].totalStars = 0;
     }
 
     return d;
@@ -268,24 +287,24 @@ blackHoleSuns.prototype.createBase = function (entry) {
     if (typeof d === 'undefined')
         d = [];
 
-    if (typeof d[p.platform] === 'undefined')
-        d[p.platform] = [];
+    if (typeof d[p.galaxy] === 'undefined')
+        d[p.galaxy] = [];
 
 
-    if (typeof d[p.platform][p.galaxy] === 'undefined')
-        d[p.platform][p.galaxy] = [];
+    if (typeof d[p.galaxy][p.platform] === 'undefined')
+        d[p.galaxy][p.platform] = [];
 
 
-    let i = bhs.getIndex(d[p.platform][p.galaxy], "addr", entry.addr);
+    let i = bhs.getIndex(d[p.galaxy][p.platform], "addr", entry.addr);
     if (i == -1) {
         b.addr = entry.addr;
         b.name = entry.basename;
 
-        d[p.platform][p.galaxy].push(b);
+        d[p.galaxy][p.platform].push(b);
         changed = true;
 
-    } else if (d[p.platform][p.galaxy].name != entry.basename) {
-        d[p.platform][p.galaxy].name = entry.basename;
+    } else if (d[p.galaxy][p.platform].name != entry.basename) {
+        d[p.galaxy][p.platform].name = entry.basename;
         changed = true;
     }
 
@@ -294,67 +313,72 @@ blackHoleSuns.prototype.createBase = function (entry) {
     return changed;
 }
 
-blackHoleSuns.prototype.getUserEntries = function (limit, displayFcn) {
-    let ref = bhs.fbfs.collection(starsDoc + bhs.user.galaxy);
-    ref = ref.where(bhs.user.platform + ".uid", "==", bhs.uid).orderBy(bhs.user.platform + ".time", "desc").limit(parseInt(limit));
+blackHoleSuns.prototype.getEntries = function (limit, displayFcn, galaxy, platform, player) {
+    let ref = bhs.fbfs.collection(starsCol);
 
-    ref.onSnapshot(function (querySnapshot) {
-        querySnapshot.docChanges().forEach(function (change) {
-            if (change.type === "added") {
-                let d = change.doc.data();
-                displayFcn(d);
-            }
+    if (!galaxy)
+        ref = ref.where("name", "==", bhs.user.galaxy);
 
-            if (change.type === "modified") {
-                let d = change.doc.data();
-                displayFcn(d);
+    ref.get().then(function (snapshot) {
+        snapshot.forEach(function (doc) {
+            let d = doc.data();
+
+            for (let i = 0; i < platformList.length; ++i) {
+                if (platform || bhs.user.platform == platformList[i].name) {
+                    let ref = bhs.fbfs.collection(starsCol).doc(d.name).collection(platformList[i].name);
+
+                    if (!player)
+                        ref = ref.where("player", "==", bhs.user.player);
+
+                    if (limit != 0)
+                        ref = ref.limit(parseInt(limit));
+
+                    ref = ref.orderBy("time", "desc");
+
+                    ref.onSnapshot(function (snapshot) {
+                        snapshot.docChanges().forEach(function (change) {
+
+                            if (change.type === "added" || change.type === "modified")
+                                displayFcn(change.doc.data(), galaxy, platform, player);
+                        });
+                    });
+                }
             }
         });
     });
 }
 
 blackHoleSuns.prototype.getData = function (galaxy, platform, returnFcn) {
-    let ref = bhs.fbfs.collection(starsDoc + galaxy).where("blackhole", "==", true).orderBy("addr");
+    let ref = bhs.fbfs.collection(starsCol).doc(galaxy).collection(platform)
+        .where("blackhole", "==", true).orderBy("addr", "desc");
 
     ref.onSnapshot(function (snapshot) {
-        let out = [];
-        for (let i = 0; i < snapshot.size; ++i) {
-            let d = snapshot.docs[i].data();
-            if (typeof d[platform] != "undefined") {
-                let n = {};
-                n.bhaddr = d.addr;
-                n.xitaddr = d[platform].connection;
-                n.sys = d[platform].sys;
-                n.reg = d.reg;
-                out.push(n);
-            }
-        }
-
         if (returnFcn)
-            returnFcn(out);
+            returnFcn(snapshot.docs[i].data());
     });
 }
 
 blackHoleSuns.prototype.getUsers = function (displayFcn) {
-    let ref = bhs.fbfs.collection(usersCol).orderBy("playerName");
+    let ref = bhs.fbfs.collection(usersCol).orderBy("player");
 
     ref.onSnapshot(function (doc) {
-        let d = doc.data();
-        displayFcn(d);
+        displayFcn(doc.data());
     });
 }
 
 blackHoleSuns.prototype.getStats = function (displayFcn) {
-    let ref = bhs.fbfs.doc(statsCol + "totals");
+    let ref = bhs.fbfs.collection(statsCol).doc("totals");
     ref.onSnapshot(function (doc) {
         bhs.totals = doc.data();
-        displayFcn();
+        if (typeof displayFcn != "undefined")
+            displayFcn();
     });
 
-    ref = bhs.fbfs.doc(usersCol + bhs.uid);
+    ref = bhs.fbfs.collection(usersCol).doc(bhs.uid);
     ref.onSnapshot(function (doc) {
         bhs.user.totals = doc.data();
-        displayFcn();
+        if (typeof displayFcn != "undefined")
+            displayFcn();
     });
 }
 
@@ -375,7 +399,7 @@ blackHoleSuns.prototype.checkLoggedInWithMessage = function () {
 blackHoleSuns.prototype.validateUser = function () {
     let ok = true;
 
-    if (!bhs.user.playerName) {
+    if (!bhs.user.player) {
         $("#status").text("Error: Missing player name. Changes not saved.");
         ok = false;
     }
@@ -401,7 +425,7 @@ blackHoleSuns.prototype.validateEntry = function (entry) {
         ok = false;
     }
 
-    if (ok && !entry[bhs.user.platform].sys) {
+    if (ok && !entry.sys) {
         $("#status").text("Error: Missing system name. Changes not saved.");
         ok = false;
     }
@@ -424,146 +448,6 @@ blackHoleSuns.prototype.validateEntry = function (entry) {
     return ok;
 }
 
-blackHoleSuns.prototype.mergeEntries = function (ent, doc) {
-    for (let i = 0; i < platformList.length; ++i) {
-        let p = platformList[i].name;
-        let ddef = typeof doc[p] != "undefined";
-        let edef = typeof ent[p] != "undefined";
-        if (ddef || edef) {
-            if (!edef)
-                ent[p] = doc[p];
-            else if (!ddef)
-                return "add";
-            else {
-                ddef = typeof doc[p].connection != "undefined";
-                edef = typeof ent[p].connection != "undefined";
-                if (ddef || edef) {
-                    if (!edef) {
-                        ent[p].connection = doc[p].conection;
-                        ent[p].exit = doc[p].exit;
-                    } else if (!ddef)
-                        return "add";
-                }
-
-                if (ent[p].sys != doc[p].sys)
-                    return "mod";
-                if (ent[p].connection != doc[p].connection)
-                    return "mod";
-                if (ent[p].exit != doc[p].exit)
-                    return "mod";
-            }
-        }
-    }
-
-    if (ent.reg != doc.reg ||
-        ent.blackhole != doc.blackhole ||
-        ent.econ != doc.econ ||
-        ent.life != doc.life)
-        return "mod";
-
-    if (ent.addr != doc.addr)
-        return "ADDR";
-
-    return "nochange";
-}
-
-/* warning: this needs to be run without reading in the current values elsewhere
-blackHoleSuns.prototype.calcStats = function () {
-    bhs.totals = bhs.initTotals(bhs.user);
-    bhs.user.totals = bhs.initTotals(bhs.user)
-
-    let ref = bhs.fbfs.collection("stars2/" + bhs.user.platform + "/" + bhs.user.galaxy);
-    ref.onSnapshot(function (querySnapshot) {
-        querySnapshot.docChanges().forEach(function (change) { // querySnapshot.size
-            let d = change.doc.data();
-            bhs.totals = bhs.incTotals(bhs.totals, bhs.user, d.blackhole);
-            bhs.user.totals = bhs.incTotals(bhs.user.totals, bhs.user, d.blackhole);
-
-            let stats = bhs.fbfs.doc("statistics/totals");
-            let user = bhs.fbfs.doc("users/" + bhs.uid);
-
-            stats.set(bhs.totals);
-            user.set(bhs.user);
-        });
-
-    });
-}
-*/
-/*
-blackHoleSuns.prototype.rewriteData = function () {
-    let ref = bhs.fbfs.collection("stars2/PC-XBox/Euclid").where("blackhole", "==", true);
-    ref.get().then(function (querySnapshot) {
-        querySnapshot.forEach(function (doc) {
-            let d = doc.data();
-            let x = bhs.reformatData(d);
-
-            let xref = bhs.fbfs.collection(starsDoc+"Euclid");
-            xref.doc(x.addr).set(x).then(function () {
-                console.log(x.addr + " write bh");
-            });
-
-            let ref = bhs.fbfs.doc("stars2/PC-XBox/Euclid/" + d.connection);
-            ref.get().then(function (doc) {
-                let e = doc.data();
-                let xe = bhs.reformatData(e);
-
-                xe["PC-XBox"].connection = d.addr;
-
-                let xref = bhs.fbfs.collection(starsDoc+"Euclid");
-                xref.doc(xe.addr).set(xe).then(function () {
-                    console.log(xe.addr + " write");
-                });
-            });
-        });
-    });
-}
-
-blackHoleSuns.prototype.reformatData = function (d) {
-    let x = {};
-    x.addr = d.addr;
-    x.galaxy = "Euclid";
-    x.blackhole = d.blackhole;
-    x.reg = d.reg;
-    x.life = d.life.stripMarginWS();
-    x.econ = d.econ.stripMarginWS();
-
-    x["PC-XBox"] = {};
-    x["PS4"] = {};
-
-    x["PC-XBox"].connection = d.connection;
-    x["PC-XBox"].sys = d.sys;
-    x["PC-XBox"].exit = d.exit;
-    x["PC-XBox"].time = d.time;
-    x["PC-XBox"].uid = d.uid;
-    x["PC-XBox"].playerName = d.playerName;
-
-    return x;
-}
-*/
-/*
-blackHoleSuns.prototype.rewriteUserData = function () {
-    let ref = bhs.fbfs.collection("users");
-    ref.get()
-        .then(function (querySnapshot) {
-            querySnapshot.forEach(function (doc) {
-                let d = doc.data();
-
-                let player = {};
-                player.galaxy = d.Galaxy;
-                player.platform = d.Platform;
-                player.playerName = d.playerName;
-                player.email = d.email;
-
-                if (player.email == "sp@farpoint.us")
-                    player.uid = "zzG3HwcIWLRZNEuEi4xEkhUhLeB3";
-                else
-                    player.uid = "TIGLMws4YDdAYiS5o56y8xmdMPb2";
-
-                bhs.fbfs.doc('users/' + player.uid).set(player);
-            })
-        });
-}
-*/
 function loadHtml(url, alturl, selector) {
     loadFile(url, alturl, function (data) {
         let html = data.substring(data.indexOf("<body>") + 6, data.indexOf("</body>"));
@@ -730,8 +614,36 @@ String.prototype.stripMarginWS = function () {
     return this.replace(/\s*([.*]?)\s*/, "$1");
 }
 
+function stripNumber(val) {
+    return val.stripNumber();
+}
+
 String.prototype.stripNumber = function () {
-    return this.replace(/(?:\s*[0-9.]+\s+)*([.*]*)\s*/, "$1");
+    return this.replace(/\s*\d*\.*\s*(\D*)\s*/, "$1");
+}
+
+function formatEcon(val) {
+    return bhs.formatListSel(val, economyList);
+}
+
+function formatConflict(val) {
+    return bhs.formatListSel(val, conflictList);
+}
+
+blackHoleSuns.prototype.formatListSel = function (val, list) {
+    let name = val.stripNumber();
+    if (name == "") {
+        let num = val.replace(/(\d+).*/, "$1");
+
+        if (num != "")
+            for (let i = 0; i < list.length; ++i)
+                if (list[i].level == num) {
+                    name = list[i].name;
+                    break;
+                }
+    }
+
+    return name;
 }
 
 blackHoleSuns.prototype.getIndex = function (list, field, id) {
@@ -800,56 +712,6 @@ blackHoleSuns.prototype.readcsv = function (file) {
     reader.readAsText(file);
 }
 
-/*
-const playerList = [{
-    name: "Player Name",
-    type: "text"
-}, {
-    name: "Platform",
-    type: "list",
-    list: platformList
-}, {
-    name: "Galaxy",
-    type: "list",
-    list: galaxyList
-}, {
-    name: "Base List", // list at the bottom
-    type: "array",
-    hidden: true
-}];
-
-const inputList = [{
-    name: "Has Base", // turns off some validation since it doesn't have to be a bh
-    type: "base"
-}, {
-    name: "Address",
-    type: "text"
-}, {
-    name: "System",
-    type: "text"
-}, {
-    name: "Region",
-    type: "text"
-}, {
-    name: "Lifeform",
-    type: "list",
-    list: lifeformList
-}, {
-    name: "Economy",
-    type: "list",
-    list: economyList
-}, {
-    name: "Conflict", // put optional items in hidden portion of panel
-    type: "list",
-    list: conflictList,
-    optional: true
-}, {
-    name: "Star Type",
-    type: "star",
-    format: starTypeRegex,
-    optional: true
-}];
-*/
 const lifeformList = [{
     name: "Vy'keen"
 }, {

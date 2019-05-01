@@ -46,6 +46,7 @@
     <script src="/__/firebase/init.js"></script>
 
     <script src="common.js"></script>
+    <script src="commonUI.js"></script>
     <script src="settings.js"></script>
 
     <link rel="stylesheet" type="text/css" href="local.css">
@@ -86,17 +87,59 @@
     <div id="jssite" class="card card-body bkg-light-green pad-bottom" style="display:none">
         <div id="loggedout" class="row clr-dark-green bkg-light-green">
             <h4>This is the admin page for the No Man's Sky Black Hole
-                Suns project. Please login to enter data.
+                Suns project. Please login.
             </h4>
         </div>
 
         <div id="pnl-user">
             <div class="row">
-                <div id="id-playerName" class="col-6"></div>
-                <div id="id-Platform" class="col-4"></div>
-                <div id="id-Galaxy" class="col-4"></div>
+                <div class="col-7">
+                    <div class="row">
+                        <div class="col-14 h6 clr-dark-green">Player Name&nbsp;</div>
+                        <input id="id-player" class="rounded col-13 h5" type="text">&nbsp;
+                        <label class="col-14">
+                            <input id="ck-allPlayers" type="checkbox">&nbsp;All</label>
+                    </div>
+                </div>
+
+                <div class="col-7">
+                    <div class="row">
+                        <div class="col-7">
+                            <div class="row">
+                                <div id="id-Platform" class="col-14"></div>
+                                <label class="col-14">
+                                    <input id="ck-allPlatforms" type="checkbox">&nbsp;All</label>
+                            </div>
+                        </div>
+
+                        <div class="col-7">
+                            <div class="row">
+                                <div id="id-Galaxy" class="col-14"></div>
+                                <label class="col-14">
+                                    <input id="ck-allGalaxies" type="checkbox">&nbsp;All</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+        <br>
+
+        <div class="border">
+            <div class="row">
+                <div class="col-10">
+                    <input type="file" id="uploadedFile" class="form-control form-control-sm" accept=".csv">
+                </div>
+            </div>
+            <br>
+
+            <div class="progress">
+                <div id="progress" class="progress-bar progress-bar-striped bg-success progress-bar-animated"
+                    role="progressbar" style="width: 0%; display:none" aria-valuenow="0" aria-valuemin="0"
+                    aria-valuemax="100"></div>
+            </div>
+        </div>
+        <br>
 
         <div class="panel-group border" id="accordion" role="tablist" aria-multiselectable="true">
             <div class="panel panel-default">
@@ -104,7 +147,7 @@
                     <h4 class="panel-title">
                         <a role="button" class="col-6" data-toggle="collapse" data-parent="#accordion"
                             href="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                            <i id="arrow" class="fas fa-angle-down"></i>
+                            <i id="arrow" class="fas fa-angle-up"></i>
                             User Data
                         </a>
                     </h4>
@@ -128,21 +171,9 @@
             </div>
         </div>
         <br>
-
-        <div class="border">
-            <div class="row">
-                <div class="col-10">
-                        <input type="file" id="uploadedFile" class="form-control form-control-sm"
-                            accept=".csv">
-                </div>
-            </div>
-        </div>
-
-        <br>
         <div id="status" class="card card-body"></div>
     </div>
     <br>
-
 
     <div id="footer"></div>
 </body>
