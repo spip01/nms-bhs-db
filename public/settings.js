@@ -14,9 +14,16 @@ $(document).ready(function () {
     bhs.buildUserTable();
     //bhs.buildStats();
 
+    $("#submit").click(function () {
+        if (bhs.fileSelected)
+            bhs.readTextFile(bhs.fileSelected);
+        else
+            $("#status").prepend("<h7>No file selected</h7>");
+    });
+
     $("#uploadedFile").change(function () {
-        bhs.extractUser();
-        bhs.readTextFile(this);
+        bhs.fileSelected = this;
+        //bhs.readTextFile(this);
     });
 });
 
@@ -141,9 +148,12 @@ blackHoleSuns.prototype.readTextFile = function (f) {
         }
 
         var entry = [];
+        entry[0] = {};
+        entry[0].player = bhs.user.player;
+        entry[0].galaxy = bhs.user.galaxy;
+        entry[0].platform = bhs.user.platform;
 
         for (let i = 2, ok = true; i < allrows.length && ok; ++i, ok = true) {
-            entry[0] = {};
             entry[1] = {};
             entry[2] = {};
 
@@ -187,9 +197,9 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                     entry[0].platform.match(/xbox/i) ? "PC-XBox" : entry[0].platform;
 
                 for (let i = 1; i <= 2; ++i) {
-                    entry[i].player = entry[0].player ? entry[0].player : bhs.user.player;
-                    entry[i].galaxy = entry[0].galaxy ? entry[0].galaxy : bhs.user.galaxy;
-                    entry[i].platform = entry[0].platform ? entry[0].platform : bhs.user.platform;
+                    entry[i].player = entry[0].player;
+                    entry[i].galaxy = entry[0].galaxy;
+                    entry[i].platform = entry[0].platform;
 
                     entry[i].blackhole = i == 1;
                     entry[i].exit = i == 2;
@@ -199,8 +209,8 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                 }
 
                 let ref = bhs.fbfs.collection(starsCol)
-                await ref.where("name", "==", entry[0].galaxy).get().then(function (doc) {
-                    if (!doc.exists) {
+                await ref.where("name", "==", entry[0].galaxy).get().then(function (snapshot) {
+                    if (snapshot.empty) {
                         ref.doc(entry[0].galaxy).set({
                             name: entry[0].galaxy,
                             time: entry[0].time,

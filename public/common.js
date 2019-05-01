@@ -161,8 +161,8 @@ blackHoleSuns.prototype.navLoggedout = function () {
 blackHoleSuns.prototype.updateUser = function () {
     if (bhs.checkLoggedInWithMessage()) {
         let ref = bhs.fbfs.collection(usersCol).where("player", "==", bhs.user.player);
-        ref.get().then(function (doc) {
-            if (doc.exists)
+        ref.get().then(function (snapshot) {
+            if (!snapshot.empty)
                 $("#status").prepend("<h7>Player Name:" + bhs.user.player + " is already taken.</h7>");
             else {
                 let ref = bhs.fbfs.collection(usersCol).doc(bhs.user.uid);
@@ -188,11 +188,12 @@ blackHoleSuns.prototype.updateEntry = function (entry, panel) {
     if (bhs.checkLoggedInWithMessage()) {
         entry.time = firebase.firestore.Timestamp.fromDate(new Date());
         entry.player = bhs.user.player;
+        entry.platform = bhs.user.platform;
         entry.galaxy = bhs.user.galaxy;
 
         let ref = bhs.setStarRef();
-        ref.where("name", "==", entry.galaxy).get().then(function (doc) {
-            if (!doc.exists) {
+        ref.where("name", "==", entry.galaxy).get().then(function (snapshot) {
+            if (snapshot.empty) {
                 let d = {
                     name: entry.galaxy,
                     time: entry.time,
@@ -437,17 +438,17 @@ blackHoleSuns.prototype.validateUser = function () {
     let ok = true;
 
     if (!bhs.user.player) {
-        $("#status").text("Error: Missing player name. Changes not saved.");
+        $("#status").text("<h7>Error: Missing player name. Changes not saved.</h7>");
         ok = false;
     }
 
     if (ok && !bhs.user.galaxy) {
-        $("#status").text("Error: Missing galaxy. Changes not saved.");
+        $("#status").text("<h7>Error: Missing galaxy. Changes not saved.</h7>");
         ok = false;
     }
 
     if (ok && !bhs.user.platform) {
-        $("#status").text("Error: Missing platform. Changes not saved.");
+        $("#status").text("<h7>Error: Missing platform. Changes not saved.</h7>");
         ok = false;
     }
 
@@ -458,27 +459,27 @@ blackHoleSuns.prototype.validateEntry = function (entry) {
     let ok = true;
 
     if (!entry.addr) {
-        $("#status").text("Error: Missing address. Changes not saved.");
+        $("#status").text("<h7>Error: Missing address. Changes not saved.<\h7>");
         ok = false;
     }
 
     if (ok && !entry.sys) {
-        $("#status").text("Error: Missing system name. Changes not saved.");
+        $("#status").text("<h7>Error: Missing system name. Changes not saved.</h7>");
         ok = false;
     }
 
     if (ok && !entry.reg) {
-        $("#status").text("Error: Missing region name. Changes not saved.");
+        $("#status").text("<h7>Error: Missing region name. Changes not saved.</h7>");
         ok = false;
     }
 
     if (ok && !bhs.validateAddress(entry.addr)) {
-        $("#status").text("Error: Invalid address. Changes not saved.");
+        $("#status").text("<h7>Error: Invalid address. Changes not saved.</h7>");
         ok = false;
     }
 
     if (ok && entry.blackhole && entry.addr.slice(15) != "0079") {
-        $("#status").text("Error: Black Hole address must end with '0079'. Changes not saved.");
+        $("#status").text("<h7>Error: Black Hole address must end with '0079'. Changes not saved.</h7>");
         ok = false;
     }
 
