@@ -21,118 +21,95 @@ $(document).ready(function () {
 });
 
 var importTable = [{
-        match: /platform/i,
-        field: "platform",
-        required: true,
-        group: 0
-    },
-    {
-        match: /galaxy/i,
-        field: "galaxy",
-        required: true,
-        format: stripNumber,
-        group: 0
-    },
-    {
-        match: /(traveler)|(player)/i,
-        field: "player",
-        group: 0
-    }, {
-        match: /uid/i,
-        field: "uid",
-        group: 0
-    },
-    // 1st match
-    {
-        match: /coord/i,
-        field: "addr",
-        required: true,
-        format: reformatAddress,
-        validate: validateBHAddress,
-        group: 1
-    },
-    {
-        match: /economy/i,
-        field: "econ",
-        format: formatEcon,
-        group: 1
-    },
-    {
-        match: /region/i,
-        field: "reg",
-        required: true,
-        group: 1
-    },
-    {
-        match: /system/i,
-        field: "sys",
-        required: true,
-        group: 1
-    },
-    {
-        match: /sun/i,
-        field: "sun",
-        group: 1
-    },
-    {
-        match: /lifeform/i,
-        field: "life",
-        group: 1
-    },
-    {
-        match: /conflict/i,
-        field: "conflict",
-        format: formatConflict,
-        group: 1
-    },
-    // 2nd math
-    {
-        match: /coord/i,
-        field: "addr",
-        required: true,
-        format: reformatAddress,
-        validate: validateAddress,
-        group: 2
-    },
-    {
-        match: /economy/i,
-        field: "econ",
-        format: formatEcon,
-        group: 2
-    },
-    {
-        match: /region/i,
-        field: "reg",
-        checkreq: checkZeroAddress,
-        checkval: 10,
-        checkgrp: 2,
-        group: 2
-    },
-    {
-        match: /system/i,
-        field: "sys",
-        checkreq: checkZeroAddress,
-        checkval: 10,
-        checkgrp: 2,
-        group: 2
-    },
-    {
-        match: /sun/i,
-        field: "sun",
-        group: 2
-    },
-    {
-        match: /lifeform/i,
-        field: "life",
-        group: 2
-    },
-    {
-        match: /conflict/i,
-        field: "conflict",
-        format: formatConflict,
-        group: 2
-    }
-];
+    match: /platform/i,
+    field: "platform",
+    required: true,
+    group: 0
+}, {
+    match: /galaxy/i,
+    field: "galaxy",
+    required: true,
+    format: stripNumber,
+    group: 0
+}, {
+    match: /(traveler)|(player)/i,
+    field: "player",
+    group: 0
+}, { // 1st match
+    match: /coord/i,
+    field: "addr",
+    required: true,
+    format: reformatAddress,
+    validate: validateBHAddress,
+    group: 1
+}, {
+    match: /economy/i,
+    field: "econ",
+    format: formatEcon,
+    group: 1
+}, {
+    match: /region/i,
+    field: "reg",
+    required: true,
+    group: 1
+}, {
+    match: /system/i,
+    field: "sys",
+    required: true,
+    group: 1
+}, {
+    match: /sun/i,
+    field: "sun",
+    group: 1
+}, {
+    match: /lifeform/i,
+    field: "life",
+    group: 1
+}, {
+    match: /conflict/i,
+    field: "conflict",
+    format: formatConflict,
+    group: 1
+}, { // 2nd match
+    match: /coord/i,
+    field: "addr",
+    required: true,
+    format: reformatAddress,
+    validate: validateAddress,
+    group: 2
+}, {
+    match: /economy/i,
+    field: "econ",
+    format: formatEcon,
+    group: 2
+}, {
+    match: /region/i,
+    field: "reg",
+    checkreq: checkZeroAddress,
+    checkval: 10,
+    checkgrp: 2,
+    group: 2
+}, {
+    match: /system/i,
+    field: "sys",
+    checkreq: checkZeroAddress,
+    checkval: 10,
+    checkgrp: 2,
+    group: 2
+}, {
+    match: /sun/i,
+    field: "sun",
+    group: 2
+}, {
+    match: /lifeform/i,
+    field: "life",
+    group: 2
+}, {
+    match: /conflict/i,
+    field: "conflict",
+    format: formatConflict,
+    group: 2
+}];
 
 blackHoleSuns.prototype.readTextFile = function (f) {
     let file = f.files[0];
@@ -225,7 +202,9 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                 await ref.where("name", "==", entry[0].galaxy).get().then(function (doc) {
                     if (!doc.exists) {
                         ref.doc(entry[0].galaxy).set({
-                            name: entry[0].galaxy
+                            name: entry[0].galaxy,
+                            time: entry[0].time,
+                            player: entry[0].player
                         });
                     }
                 });

@@ -3,6 +3,8 @@
 $(document).ready(function () {
     startUp();
 
+    bhs.last = [];
+
     let loc = $("#pnl-user");
 
     bhs.buildMenu(loc, "Platform", platformList, true);
@@ -19,7 +21,7 @@ $(document).ready(function () {
     bhs.buildStats();
 
     $('#pnl-user #ck-singleSystem').change(function () {
-        if (this.prop("checked"))
+        if ($(this).prop("checked"))
             bhs.activatePanelGroup(1);
         else
             bhs.activatePanelGroup(0);
@@ -27,21 +29,29 @@ $(document).ready(function () {
 
     $("#save").click(function () {
         bhs.save();
-    });
+        bhs.clearPanels();
+        bhs.last = [];
+  });
 
     $("#delete").click(function () {
-        if (("#ck-singleSystem").prop("checked")) {
-            bhs.deleteEntry($("#pnl-" + "Single System".nameToId()).addr, bhs.user);
+        if ($("#ck-singleSystem").prop("checked")) {
+            bhs.deleteEntry($("#" + panels[pnlSingleIndex].id + " #id-addr").val());
         } else {
-            bhs.deleteEntry($("#pnl-" + "Black Hole System".nameToId()).addr, bhs.user);
-            bhs.deleteEntry($("#pnl-" + "Exit System".nameToId()).addr, bhs.user);
+            bhs.deleteEntry($("#" + panels[pnlBHIndex].id + " #id-addr").val());
+            bhs.deleteEntry($("#" + panels[pnlExitIndex].id + " #id-addr").val());
         }
 
         bhs.clearPanels();
+        bhs.last = [];
     });
 
-    $("#clear").click(function () {
-        bhs.clearPanels();
+    $("#cancel").click(function () {
+        if ($("#ck-singleSystem").prop("checked")) {
+            bhs.displaySingle($("#" + panels[pnlSingleIndex].id), bhs.last[pnlSingleIndex]);
+        } else {
+            bhs.displaySingle($("#" + panels[pnlBHIndex].id), bhs.last[pnlBHIndex]);
+            bhs.displaySingle($("#" + panels[pnlExitIndex].id), bhs.last[pnlExitIndex]);
+        }
     });
 })
 
@@ -52,19 +62,19 @@ const pnlSingleIndex = 2;
 const panels = [{
     name: "Black Hole System",
     id: "pnl-BH",
-    listid: "lst-BH",
+    listid: "BH",
     calc: true,
     group: 0
 }, {
     name: "Exit System",
     id: "pnl-XS",
-    listid: "lst-XS",
+    listid: "Exit",
     calc: true,
     group: 0
 }, {
     name: "Single System",
     id: "pnl-SS",
-    listid: "lst-SS",
+    listid: "Single",
     calc: false,
     group: 1
 }];
@@ -174,7 +184,7 @@ blackHoleSuns.prototype.buildPanel = function (name, id) {
         $(this).val(addr);
 
         let pnl = $(this).closest("[id|='pnl'");
-        if (pnl.find("#id-sys").val() != "" && pnl.find("#id-reg").val() != "")
+        if (pnl.find("#id-sys").val() == "" && pnl.find("#id-reg").val() == "")
             bhs.getEntry(addr, bhs.displaySingle, pnl);
 
         if (panels[bhs.getIndex(panels, "id", pnl.prop("id"))].calc)
@@ -191,18 +201,25 @@ blackHoleSuns.prototype.buildPanel = function (name, id) {
     });
 }
 
-blackHoleSuns.prototype.displaySingle = function (loc, entry) {
-    loc.find("#id-addr").val(entry.addr);
-    loc.find("#id-sys").val(entry.sys);
-    loc.find("#id-reg").val(entry.reg);
-    loc.find("#btn-Lifeform").text(entry.life);
+blackHoleSuns.prototype.displaySingle = function (loc, entry, idx) {
+    if (entry) {
+        loc.find("#id-addr").val(entry.addr);
+        loc.find("#id-sys").val(entry.sys);
+        loc.find("#id-reg").val(entry.reg);
+        loc.find("#btn-Lifeform").text(entry.Lifeform);
 
-    let l = economyList[bhs.getIndex(economyList, "name", entry.econ)].level;
-    loc.find("#btn-Economy").text(l + " " + entry.econ);
-    loc.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";");
+        if (entry.Economy) {
+            let l = economyList[bhs.getIndex(economyList, "name", entry.Economy)].level;
+            loc.find("#btn-Economy").text(l + " " + entry.Economy);
+            loc.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";");
+        }
 
-    $("#delete").removeClass("disabled");
-    $("#delete").removeAttr("disabled");
+        $("#delete").removeClass("disabled");
+        $("#delete").removeAttr("disabled");
+
+        if (typeof idx != "undefined")
+            bhs.last[idx] = entry;
+    }
 }
 
 blackHoleSuns.prototype.buildStats = function () {
@@ -303,21 +320,18 @@ blackHoleSuns.prototype.extractEntry = function (idx) {
     return entry;
 }
 
-blackHoleSuns.prototype.setEntries = function (sel) {
-    let id = $(sel).prop("id").replace(/(.*?-.*?)-.*/, "$1");
+blackHoleSuns.prototype.setEntries = function (loc) {
+    let id = loc.prop("id").replace(/(.*?)-.*/, "$1");
 
     let x = bhs.getIndex(panels, "listid", id);
     let panel = panels[x];
 
-    bhs.setEntry(sel, panel.id);
+    bhs.setEntry(loc, x);
 
     if (panel.group == 0) {
         x = (x + 1) % 2;
         panel = panels[x];
-
-        let id = panel.listid + "-" + $(sel).data("con");
-
-        bhs.setEntry($("#" + id), panel.id);
+        bhs.setEntry($("#" + loc.data("con")), x);
 
         $("#ck-singleSystem").prop('checked', false);
     } else
@@ -326,23 +340,15 @@ blackHoleSuns.prototype.setEntries = function (sel) {
     bhs.activatePanelGroup(panel.group);
 }
 
-blackHoleSuns.prototype.setEntry = function (sel, pnlid) {
-    let loc = $(sel);
-    let pnl = $("#" + pnlid);
+blackHoleSuns.prototype.setEntry = function (loc, idx) {
+    let entry = {};
+    entry.addr = loc.find("#addr").text();
+    entry.sys = loc.find("#sys").text();
+    entry.reg = loc.find("#reg").text();
+    entry.Lifeform = loc.find("#life").text();
+    entry.Economy = loc.find("#econ").text();
 
-    pnl.find("#id-addr").val(loc.find("#addr").text());
-    pnl.find("#id-sys").val(loc.find("#sys").text());
-    pnl.find("#id-reg").val(loc.find("#reg").text());
-    pnl.find("#btn-Lifeform").text(loc.find("#life").text());
-
-    let t = loc.find("#econ").text();
-    if (t != "") {
-        let l = economyList[bhs.getIndex(economyList, "name", t)].level;
-        pnl.find("#btn-Economy").text(l + " " + t);
-        pnl.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";");
-    } else pnl.find("#btn-Economy").text(t);
-
-    pnl.find("#id-isbase").prop('checked', loc.find("#base").text() != "");
+    bhs.displaySingle($("#" + panels[idx].id), entry, idx);
 }
 
 blackHoleSuns.prototype.save = function () {

@@ -134,7 +134,7 @@ blackHoleSuns.prototype.displayUserEntry = function (entry, galaxy, platform, pl
     let s = galaxy ? entry.galaxy + "-" : "";
     s += platform ? entry.platform + "-" : "";
 
-    let pos = ui.find("#" + s + id + addr);
+    let pos = ui.find("#" + id + s + addr);
 
     if (pos.length == 0) {
         let sLabel = "";
@@ -143,11 +143,16 @@ blackHoleSuns.prototype.displayUserEntry = function (entry, galaxy, platform, pl
         let h = "";
 
         if (id == "Single-") {
-            sLabel = s + "Single-" + addr;
+            sLabel = "Single-" + s + addr;
             h = /idname/ [Symbol.replace](trStart, sLabel) + trEnd;
         } else {
-            bhLabel = s + "BH-" + addr;
-            xLabel = s + "Exit-" + addr;
+            if (id == "BH-") {
+                bhLabel = "BH-" + s + addr;
+                xLabel = "Exit-" + s + con;
+            } else {
+                bhLabel = "BH-" + s + con;
+                xLabel = "Exit-" + s + addr;
+            }
             h = /idname/ [Symbol.replace](trStart, bhLabel) + trEnd;
             h += /idname/ [Symbol.replace](trStart, xLabel) + trEnd;
         }
@@ -164,11 +169,11 @@ blackHoleSuns.prototype.displayUserEntry = function (entry, galaxy, platform, pl
         }
 
         if (id != "Single-") {
-            ui.find("#" + bhLabel).data("con", xaddr);
-            ui.find("#" + xLabel).data("con", bhaddr);
+            ui.find("#" + bhLabel).data("con", xLabel);
+            ui.find("#" + xLabel).data("con", bhLabel);
         }
 
-        pos = ui.find("#" + s + id + addr);
+        pos = ui.find("#" + id + s + addr);
     }
 
     let l = "";
@@ -205,10 +210,9 @@ blackHoleSuns.prototype.displayUserEntry = function (entry, galaxy, platform, pl
     h += /label/ [Symbol.replace](l, entry.life);
 
     l = /idname/ [Symbol.replace](thLine, "dist");
-    if (id == "Exit") {
-        let d = bhs.calcDist(bhaddr) - bhs.calcDist(xaddr);
-        h += /label/ [Symbol.replace](l, d);
-    } else
+    if (id == "Exit-")
+        h += /label/ [Symbol.replace](l, bhs.calcDist(bhaddr) - bhs.calcDist(xaddr));
+    else
         h += /label/ [Symbol.replace](l, "");
 
     l = /idname/ [Symbol.replace](thLine, "econ");
@@ -223,7 +227,7 @@ blackHoleSuns.prototype.displayUserEntry = function (entry, galaxy, platform, pl
     pos.append(h);
 
     pos.dblclick(function () {
-        bhs.setEntries(this);
+        bhs.setEntries($(this));
         bhs.displayCalc();
 
         $('html, body').animate({

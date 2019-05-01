@@ -139,6 +139,8 @@ blackHoleSuns.prototype.userInit = function () {
     bhs.user.galaxy = galaxyList[0].name;
 
     bhs.user.totals = {};
+    bhs.user.totals[platformList[0].name] = 0;
+    bhs.user.totals[galaxyList[0].name] = 0;
     bhs.user.totals.totalBH = 0;
     bhs.user.totals.totalStars = 0;
 
@@ -170,14 +172,14 @@ blackHoleSuns.prototype.updateUser = function () {
     }
 }
 
-blackHoleSuns.prototype.getEntry = function (addr, displayfcn, loc) {
+blackHoleSuns.prototype.getEntry = function (addr, displayfcn, loc, idx) {
     if (bhs.checkLoggedInWithMessage()) {
-        let ref = bhs.fbfs.collection(starsCol).doc(bhs.user.galaxy).
-        collection(bhs.user.platform).doc(addr);
-
+        let ref = bhs.setStarRef(bhs.user.galaxy, bhs.user.platform, addr);
         ref.get().then(function (doc) {
-            if (doc.exists)
-                displayfcn(loc, doc.data());
+            if (doc.exists) {
+                let d = doc.data();
+                displayfcn(loc, d,idx);
+            }
         });
     }
 }
@@ -185,56 +187,91 @@ blackHoleSuns.prototype.getEntry = function (addr, displayfcn, loc) {
 blackHoleSuns.prototype.updateEntry = function (entry, panel) {
     if (bhs.checkLoggedInWithMessage()) {
         entry.time = firebase.firestore.Timestamp.fromDate(new Date());
-        entry.uid = bhs.uid;
         entry.player = bhs.user.player;
+        entry.galaxy = bhs.user.galaxy;
+
+        let ref = bhs.setStarRef();
+        ref.where("name", "==", entry.galaxy).get().then(function (doc) {
+            if (!doc.exists) {
+                let d = {
+                    name: entry.galaxy,
+                    time: entry.time,
+                    player: entry.player
+                }
+                let ref = bhs.setStarRef().doc(d.name);
+                ref.set(d);
+            }
+        });
 
         //if (entry.hasBase && bhs.createBase(entry)) 
         //    bhs.updateUser(bhs.user);
 
-        let ref = bhs.fbfs.collection(starsCol).doc(bhs.user.galaxy).
-        collection(bhs.user.platform).doc(entry.addr);
-
+        ref = bhs.setStarRef(bhs.user.galaxy, bhs.user.platform, entry.addr);
         ref.get().then(function (doc) {
             let d = {};
             if (doc.exists) {
                 d = doc.data();
                 entry.time = d.time;
+
+                if (entry != d && entry.connection != d.connection) {
+                    let ref = bhs.setStarRef(bhs.user.galaxy, bhs.user.platform, d.connection);
+                    ref.delete().then(function () {
+                        $("#status").prepend("<h7>" + d.connection + " Deleted.</h7>");
+                    });
+
+                    $("#status").prepend("<h7>Breaking connection with " + d.connection + "</h7>");
+                }
             }
 
-            if (entry != d)
-                if (entry.connection != d.connection)
-                    $("#status").prepend("<h7>Breaking connection with " + d.connection + "</h7>");
+            let ref = bhs.setStarRef(bhs.user.galaxy, bhs.user.platform, entry.addr);
 
-            if (!doc.exists || entry != d) {
-                let ref = bhs.fbfs.collection(starsCol).doc(bhs.user.galaxy).
-                collection(bhs.user.platform).doc(entry.addr);
-
+            if (!doc.exists) {
                 ref.set(entry).then(function () {
                     bhs.clearPanel(panel);
 
-                    if (!doc.exists) {
-                        $("#status").prepend("<h7>" + entry.addr + " Added.</h7>");
-                        let stat = bhs.fbfs.collection("statistics").doc("totals");
-                        bhs.totals = bhs.incTotals(bhs.totals, entry.blackhole);
-                        stat.set(bhs.totals);
+                    $("#status").prepend("<h7>" + entry.addr + " Added.</h7>");
+                    let ref = bhs.fbfs.collection("statistics").doc("totals");
+                    ref.get().then(function (doc) {
+                        bhs.totals = bhs.incTotals(doc.data(), entry.blackhole);
+                        let ref = bhs.fbfs.collection("statistics").doc("totals");
+                        ref.set(bhs.totals);
+                    });
 
-                        bhs.user.totals = bhs.incTotals(bhs.user.totals, entry.blackhole);
-                        bhs.updateUser();
-                    } else
-                        $("#status").prepend("<h7>" + entry.addr + " Changes saved.</h7>");
+                    bhs.user.totals = bhs.incTotals(bhs.user.totals, entry.blackhole);
+                    bhs.updateUser();
                 });
-            } else
+            } else if (entry != d)
+                ref.set(entry).then(function () {
+                    bhs.clearPanel(panel);
+                    $("#status").prepend("<h7>" + entry.addr + " Updated.</h7>");
+                });
+            else
                 $("#status").prepend("<h7>" + entry.addr + " No changes needed.</h7>");
         });
     }
 }
 
-blackHoleSuns.prototype.deleteEntry = function (addr) {
-    if (bhs.checkLoggedInWithMessage()) {
-        let ref = bhs.fbfs.collection(starsCol).doc(bhs.user.galaxy).
-        collection(bhs.user.platform).doc(addr);
+blackHoleSuns.prototype.setStarRef = function (galaxy, platform, addr) {
+    let ref = bhs.fbfs.collection(starsCol);
+    if (galaxy) {
+        ref = ref.doc(galaxy);
+        if (platform) {
+            ref = ref.collection(platform);
+            if (addr) {
+                ref = ref.doc(addr);
+            }
+        }
+    }
 
-        ref.delete();
+    return ref;
+}
+
+blackHoleSuns.prototype.deleteEntry = function (addr) {
+    if (bhs.checkLoggedInWithMessage() && addr != "") {
+        let ref = bhs.setStarRef(bhs.user.galaxy, bhs.user.platform, addr);
+        ref.delete().then(function () {
+            $("#status").prepend("<h7>" + addr + " Deleted.</h7>");
+        });
     }
 }
 
@@ -314,7 +351,7 @@ blackHoleSuns.prototype.createBase = function (entry) {
 }
 
 blackHoleSuns.prototype.getEntries = function (limit, displayFcn, galaxy, platform, player) {
-    let ref = bhs.fbfs.collection(starsCol);
+    let ref = bhs.setStarRef();
 
     if (!galaxy)
         ref = ref.where("name", "==", bhs.user.galaxy);
@@ -325,7 +362,7 @@ blackHoleSuns.prototype.getEntries = function (limit, displayFcn, galaxy, platfo
 
             for (let i = 0; i < platformList.length; ++i) {
                 if (platform || bhs.user.platform == platformList[i].name) {
-                    let ref = bhs.fbfs.collection(starsCol).doc(d.name).collection(platformList[i].name);
+                    let ref = bhs.setStarRef(d.name, platformList[i].name);
 
                     if (!player)
                         ref = ref.where("player", "==", bhs.user.player);
@@ -349,7 +386,7 @@ blackHoleSuns.prototype.getEntries = function (limit, displayFcn, galaxy, platfo
 }
 
 blackHoleSuns.prototype.getData = function (galaxy, platform, returnFcn) {
-    let ref = bhs.fbfs.collection(starsCol).doc(galaxy).collection(platform)
+    let ref = bhs.setStarRef(galaxy, platform)
         .where("blackhole", "==", true).orderBy("addr", "desc");
 
     ref.onSnapshot(function (snapshot) {
