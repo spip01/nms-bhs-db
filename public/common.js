@@ -152,7 +152,7 @@ blackHoleSuns.prototype.navLoggedin = function () {
     $("#loggedout").hide();
     $("#loggedin").show();
 
-   // bhs.startDataRead();
+    // bhs.startDataRead();
 }
 
 blackHoleSuns.prototype.startDataRead = function () {
@@ -480,17 +480,17 @@ blackHoleSuns.prototype.validateUser = function (user) {
     let ok = true;
 
     if (!user.player) {
-        $("#status").text("<h7>Error: Missing player name. Changes not saved.</h7>");
+        $("#status").prepend("<h7>Error: Missing player name. Changes not saved.</h7>");
         ok = false;
     }
 
     if (ok && !user.galaxy) {
-        $("#status").text("<h7>Error: Missing galaxy. Changes not saved.</h7>");
+        $("#status").prepend("<h7>Error: Missing galaxy. Changes not saved.</h7>");
         ok = false;
     }
 
     if (ok && !user.platform) {
-        $("#status").text("<h7>Error: Missing platform. Changes not saved.</h7>");
+        $("#status").prepend("<h7>Error: Missing platform. Changes not saved.</h7>");
         ok = false;
     }
 
@@ -501,27 +501,27 @@ blackHoleSuns.prototype.validateEntry = function (entry) {
     let ok = true;
 
     if (!entry.addr) {
-        $("#status").text("<h7>Error: Missing address. Changes not saved.<\h7>");
+        $("#status").prepend("<h7>Error: Missing address. Changes not saved.<\h7>");
         ok = false;
     }
 
     if (ok && !entry.sys) {
-        $("#status").text("<h7>Error: Missing system name. Changes not saved.</h7>");
+        $("#status").prepend("<h7>Error: Missing system name. Changes not saved.</h7>");
         ok = false;
     }
 
     if (ok && !entry.reg) {
-        $("#status").text("<h7>Error: Missing region name. Changes not saved.</h7>");
+        $("#status").prepend("<h7>Error: Missing region name. Changes not saved.</h7>");
         ok = false;
     }
 
-    if (ok && !bhs.validateAddress(entry.addr)) {
-        $("#status").text("<h7>Error: Invalid address. Changes not saved.</h7>");
+    if (ok && entry.exit && !bhs.validateAddress(entry.addr, false)) {
+        $("#status").prepend("<h7>Error: Invalid exit address. Changes not saved.</h7>");
         ok = false;
     }
 
-    if (ok && entry.blackhole && entry.addr.slice(15) != "0079") {
-        $("#status").text("<h7>Error: Black Hole address must end with '0079'. Changes not saved.</h7>");
+    if (ok && entry.blackhole && !bhs.validateAddress(entry.addr, true)) {
+        $("#status").prepend("<h7>Error: Invalid black hole address. Changes not saved.</h7>");
         ok = false;
     }
 
@@ -666,20 +666,18 @@ String.prototype.stripColons = function () {
     return /:/g [Symbol.replace](this, "");
 }
 
-function validateAddress(addr) {
-    return bhs.validateAddress(addr);
-}
-
-blackHoleSuns.prototype.validateAddress = function (addr) {
-    return /([0-9a-f]{4}:){3}[0-9a-f]{4}/i.test(addr.toUpperCase());
-}
-
 function validateBHAddress(addr) {
-    return bhs.validateBHAddress(addr);
+    return bhs.validateAddress(addr, true);
 }
 
-blackHoleSuns.prototype.validateBHAddress = function (addr) {
-    return /([0-9a-f]{4}:){3}0079/i.test(addr.toUpperCase());
+function validateExitAddress(addr) {
+    return bhs.validateAddress(addr, false);
+}
+
+blackHoleSuns.prototype.validateAddress = function (addr, bh) {
+    let c = bhs.addressToXYZ(addr);
+    return c.x < 2048 && c.y < 128 && c.z < 2048 && (!bh || c.s == 121) && (bh || c.s != 121);
+
 }
 
 blackHoleSuns.prototype.makeBHAddress = function (addr) {

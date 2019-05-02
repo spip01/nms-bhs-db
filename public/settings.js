@@ -82,7 +82,7 @@ var importTable = [{
     field: "addr",
     required: true,
     format: reformatAddress,
-    validate: validateAddress,
+    validate: validateExitAddress,
     group: 2
 }, {
     match: /economy/i,

@@ -124,13 +124,14 @@
             <div id="entrybuttons" class="row">
                 <div class="col-8">
                     <div class="row>">
-                    <button id="save" type="button" class="col-4 btn border btn-sm btn-green">Save</button>&nbsp;
-                <button id="delete" type="button" class="col-4 btn border btn-sm btn-green disabled"
-                    disabled>Delete</button>&nbsp;
-                <button id="cancel" type="button" class="col-4 btn border btn-sm btn-green">Cancel</button>
-                </div></div>
+                        <button id="save" type="button" class="col-4 btn border btn-sm btn-green">Save</button>&nbsp;
+                        <button id="delete" type="button" class="col-4 btn border btn-sm btn-green disabled"
+                            disabled>Delete</button>&nbsp;
+                        <button id="cancel" type="button" class="col-4 btn border btn-sm btn-green">Cancel</button>
+                    </div>
+                </div>
                 <div class="col-6">
-                    <div id="status" class="card card-body"></div>
+                    <div id="status" class="card card-body text-danger"></div>
                 </div>
                 <br>
 
@@ -138,33 +139,30 @@
         </div>
         <br>
 
-        <div class="panel-group border" id="accordion" role="tablist" aria-multiselectable="true">
-            <div class="panel panel-default">
-                <div class="panel-heading row" role="tab" id="headingOne">
-                    <h4 class="panel-title">
-                        <a role="button" class="col-4" data-toggle="collapse" data-parent="#accordion"
-                            href="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                            <i id="arrow" class="fas fa-angle-up"></i>
-                            User Data
-                        </a>
-                    </h4>
-                    <div class="col-6 float-right">
+        <div class="card border">
+            <div class="card-header">
+                <div class="row">
+                    <h4 class="col-4">User Entries</h4>
+
+                    <div class="col-5">
                         <div class="row">
-                            <div class="col-7 h6 clr-dark-green text-right">Display Qty&nbsp;</div>
+                            <div class="col-8 h6 clr-dark-green text-right">Display Qty&nbsp;</div>
                             <input id="id-displalyqty" class="col-4 rounded h5" type="text" value="10">
                         </div>
                     </div>
-                </div>
 
-                <div id="collapseOne" class="panel-collapse collapse in bkg-white border" role="tabpanel"
-                    aria-labelledby="headingOne">
-                    <div class="panel-body">
-                        <table id="userTable" class="table table-hover table-sm">
-                            <thead id="userHeader"></thead>
-                            <tbody id="userItems"></tbody>
-                        </table>
+                    <div class="col-5">
+                        <button id="export" type="button" class="col-6 btn border btn-sm disabled"
+                            disabled>Export</button>&nbsp;
                     </div>
                 </div>
+            </div>
+
+            <div class="card-body">
+                <table id="userTable" class="table table-hover table-sm">
+                    <thead id="userHeader"></thead>
+                    <tbody id="userItems"></tbody>
+                </table>
             </div>
         </div>
         <br>
