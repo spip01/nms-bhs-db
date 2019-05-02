@@ -676,8 +676,9 @@ function validateExitAddress(addr) {
 
 blackHoleSuns.prototype.validateAddress = function (addr, bh) {
     let c = bhs.addressToXYZ(addr);
-    return c.x < 2048 && c.y < 128 && c.z < 2048 && (!bh || c.s == 121) && (bh || c.s != 121);
-
+    let ok = c.x <= 0xfff && c.y <= 0xff && c.z <= 0xfff && c.s <= 0x2ff;
+    ok = ok && (!bh || c.s == 0x79) && (bh || c.s != 0x79);
+    return ok;
 }
 
 blackHoleSuns.prototype.makeBHAddress = function (addr) {
@@ -760,15 +761,12 @@ blackHoleSuns.prototype.addressToXYZ = function (addr) {
 
 blackHoleSuns.prototype.calcDist = function (addr, addr2) {
     if (!addr)
-        return;
+        return addr;
 
     let cord = bhs.addressToXYZ(addr);
-    let cord2 = typeof addr2 != "undefined" ? bhs.addressToXYZ(addr2) : {
-        x: 2047,
-        y: 127,
-        z: 2047
-    };
-    return parseInt(Math.sqrt(Math.pow(cord2.x - cord.x, 2) + Math.pow(cord2.y - cord.y, 2) + Math.pow(cord2.z - cord.z, 2)) * 400);
+    let cord2 = typeof addr2 != "undefined" ? bhs.addressToXYZ(addr2) : { x: 0x7ff, y: 0x7f, z: 0x7ff };
+    let d = parseInt(Math.sqrt(Math.pow(cord2.x - cord.x, 2) + Math.pow(cord2.y - cord.y, 2) + Math.pow(cord2.z - cord.z, 2)) * 400);
+    return d;
 }
 
 blackHoleSuns.prototype.readcsv = function (file) {

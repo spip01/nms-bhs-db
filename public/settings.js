@@ -204,7 +204,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                     entry[i].blackhole = i == 1;
                     entry[i].exit = i == 2;
 
-                    entry[i].connection = entry[2].addr;
+                    entry[i].connection = entry[i == 1 ? 2 : 1].addr;
                     entry[i].time = firebase.firestore.Timestamp.fromDate(new Date());
                 }
 
