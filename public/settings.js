@@ -206,33 +206,12 @@ blackHoleSuns.prototype.readTextFile = function (f) {
 
                     entry[i].connection = entry[i == 1 ? 2 : 1].addr;
                     entry[i].time = firebase.firestore.Timestamp.fromDate(new Date());
-                }
 
-                let ref = bhs.fbfs.collection(starsCol)
-                await ref.where("name", "==", entry[0].galaxy).get().then(function (snapshot) {
-                    if (snapshot.empty) {
-                        ref.doc(entry[0].galaxy).set({
-                            name: entry[0].galaxy,
-                            time: entry[0].time,
-                            player: entry[0].player
-                        });
-                    }
-                });
-
-                ref = ref.doc(entry[0].galaxy).collection(entry[0].platform);
-
-                await ref.doc(entry[1].addr).get().then(function (doc) {
-                    //if (!doc.exists) {
-                    ref.doc(entry[1].addr).set(entry[1]);
-                    //}
-                });
-
-                if (entry[1].connection != "0000:0000:0000:0000")
-                    await ref.doc(entry[2].addr).get().then(function (doc) {
-                        //if (!doc.exists) {
-                        ref.doc(entry[2].addr).set(entry[2]);
-                        // }
+                    let ref = bhs.fbfs.collection("users").where("player", "==", entry[i].player);
+                    await ref.get().then(async function (snapshot) {
+                        await bhs.updateEntry(entry[i], snapshot.empty ? null : snapshot.docs[0].data().uid);
                     });
+                }
             }
         }
 

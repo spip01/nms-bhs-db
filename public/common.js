@@ -22,9 +22,8 @@ const fbconfig = {
     messagingSenderId: FIREBASE_MSGID
 };
 
-const starsCol = "test";
+const starsCol = "stars3";
 const usersCol = "users";
-const statsCol = "statistics";
 
 function startUp() {
     $("#javascript").empty();
@@ -92,21 +91,18 @@ blackHoleSuns.prototype.onAuthStateChanged = function (user) {
             if (typeof bhs.rewriteData != "undefined")
                 bhs.rewriteData();
             else {
-                if (doc.exists) {
+                if (doc.exists)
                     bhs.user = doc.data();
-
-                    //if (bhs.user.email != user.email) {
-                    //    bhs.user.email = user.email;
-                    //    bhs.updateUser();
-                    //}
-                } else {
-                    //bhs.user.email = user.email;
+                else
                     bhs.updateUser(bhs.user);
-                }
 
-                if (bhs.doLoggedin)
-                    bhs.doLoggedin();
-                bhs.navLoggedin();
+                if (bhs.fixDB)
+                    bhs.fixDB();
+                else {
+                    if (bhs.doLoggedin)
+                        bhs.doLoggedin();
+                    bhs.navLoggedin();
+                }
             }
         });
     } else {
@@ -152,60 +148,30 @@ blackHoleSuns.prototype.navLoggedin = function () {
     $("#loggedout").hide();
     $("#loggedin").show();
 
-    // bhs.startDataRead();
+    bhs.startDataRead();
 }
 
 blackHoleSuns.prototype.startDataRead = function () {
     let ref = bhs.fbfs.collection(usersCol).where("uid", "==", bhs.user.uid);
     ref.onSnapshot(function (snapshot) {
         snapshot.docChanges().forEach(function (change) {
-            if (change.type === "added" || change.type === "modified") {
                 bhs.user = change.doc.data();
                 bhs.displayUser(bhs.user);
             }
         });
     });
 
-    bhs.activeGalaxies = {};
-    bhs.userEntries = {};
+    bhs.listenForTotalChanges = function (change.doc.id, galaxy, uid) {
 
-    ref = bhs.setStarRef();
-    ref.onSnapshot(function (snapshot) {
-        snapshot.docChanges().forEach(function (change) {
-            if (change.type === "added" || change.type === "modified") {
-                let d = change.doc.data();
-                bhs.activeGalaxies[d.name] = d;
-                bhs.displayGalaxyData(d);
 
-                for (let i = 0; i < platformList.length; ++i) {
-                    ref = bhs.setStarRef(d.name, platformList[i].name)
-                        .where("player", "==", bhs.user.player).orderBy("time", "desc").limit(10);
-                    ref.onSnapshot(function (snapshot) {
-                        snapshot.docChanges().forEach(function (change) {
-                            if (change.type === "added" || change.type === "modified") {
-                                let d = change.doc.data();
-                                bhs.userEntries[d.addr] = d;
-                                bhs.displayUserEntries(d);
-                            }
-                        });
-                    });
-                }
-            }
-        });
-    });
-}
 
-blackHoleSuns.prototype.displayGalaxyData = function (d) {
-    console.log(d);
+
 }
 
 blackHoleSuns.prototype.displayUser = function (d) {
     console.log(d);
 }
 
-blackHoleSuns.prototype.displayUserEntries = function (d) {
-    console.log(d);
-}
 
 blackHoleSuns.prototype.navLoggedout = function () {
     $("#loggedout").show();
@@ -238,7 +204,7 @@ blackHoleSuns.prototype.checkPlayerName = function (loc, player) {
 
 blackHoleSuns.prototype.getEntry = function (addr, displayfcn, loc, idx) {
     if (bhs.checkLoggedInWithMessage()) {
-        let ref = bhs.setStarRef(bhs.user.galaxy, bhs.user.platform, addr);
+        let ref = bhs.setStarsColRef(bhs.user.galaxy, bhs.user.platform, addr);
         ref.get().then(function (doc) {
             if (doc.exists) {
                 let d = doc.data();
@@ -248,22 +214,23 @@ blackHoleSuns.prototype.getEntry = function (addr, displayfcn, loc, idx) {
     }
 }
 
-blackHoleSuns.prototype.updateEntry = function (entry, panel) {
-    if (bhs.checkLoggedInWithMessage()) {
+blackHoleSuns.prototype.updateEntry = function (entry, uid) {
+    if (bhs.checkLoggedInWithMessage() && entry.addr != "0000:0000:0000:0000") {
         entry.time = firebase.firestore.Timestamp.fromDate(new Date());
-        entry.player = bhs.user.player;
-        entry.platform = bhs.user.platform;
-        entry.galaxy = bhs.user.galaxy;
+        entry.player = entry.player ? entry.player : bhs.user.player;
+        entry.platform = entry.platform ? entry.platform : bhs.user.platform;
+        entry.galaxy = entry.galaxy ? entry.galaxy : bhs.user.galaxy;
 
-        let ref = bhs.setStarRef();
+        let ref = bhs.setStarsColRef();
         ref.where("name", "==", entry.galaxy).get().then(function (snapshot) {
             if (snapshot.empty) {
                 let d = {
                     name: entry.galaxy,
                     time: entry.time,
-                    player: entry.player
-                }
-                let ref = bhs.setStarRef().doc(d.name);
+                    player: entry.player,
+                };
+                d.totals = bhs.initTotals();
+                let ref = bhs.setStarsColRef().doc(d.name);
                 ref.set(d);
             }
         });
@@ -271,15 +238,15 @@ blackHoleSuns.prototype.updateEntry = function (entry, panel) {
         //if (entry.hasBase && bhs.createBase(entry)) 
         //    bhs.updateUser(bhs.user);
 
-        ref = bhs.setStarRef(bhs.user.galaxy, bhs.user.platform, entry.addr);
-        ref.get().then(function (doc) {
+        ref = bhs.setStarsColRef(entry.galaxy, entry.platform, entry.addr);
+        ref.get().then(async function (doc) {
             let d = {};
             if (doc.exists) {
                 d = doc.data();
                 entry.time = d.time;
 
                 if (entry != d && entry.connection != d.connection) {
-                    let ref = bhs.setStarRef(bhs.user.galaxy, bhs.user.platform, d.connection);
+                    let ref = bhs.setStarsColRef(entry.galaxy, entry.platform, d.connection);
                     ref.delete().then(function () {
                         $("#status").prepend("<h7>" + d.connection + " Deleted.</h7>");
                     });
@@ -288,13 +255,16 @@ blackHoleSuns.prototype.updateEntry = function (entry, panel) {
                 }
             }
 
-            //document("fitness_teams/Team_1").
-            // updateData(["step_counter" : FieldValue.increment(500)])
+            let ref = bhs.setStarsColRef(entry.galaxy, entry.platform, entry.addr);
+            await ref.set(entry).then(async function () {
+                if (!doc.exists)
+                    await bhs.incTotals(entry, uid);
+            });
         });
     }
 }
 
-blackHoleSuns.prototype.setStarRef = function (galaxy, platform, addr) {
+blackHoleSuns.prototype.setStarsColRef = function (galaxy, platform, addr) {
     let ref = bhs.fbfs.collection(starsCol);
     if (galaxy) {
         ref = ref.doc(galaxy);
@@ -311,51 +281,159 @@ blackHoleSuns.prototype.setStarRef = function (galaxy, platform, addr) {
 
 blackHoleSuns.prototype.deleteEntry = function (addr) {
     if (bhs.checkLoggedInWithMessage() && addr != "") {
-        let ref = bhs.setStarRef(bhs.user.galaxy, bhs.user.platform, addr);
+        let ref = bhs.setStarsColRef(bhs.user.galaxy, bhs.user.platform, addr);
         ref.delete().then(function () {
             $("#status").prepend("<h7>" + addr + " Deleted.</h7>");
         });
     }
 }
 
-blackHoleSuns.prototype.incTotals = function (d, bh) {
-    let p = bhs.user;
-    d = bhs.initTotals(d);
+blackHoleSuns.prototype.initTotals = function () {
+    let t = {};
+    t.stars = 0;
+    t.blackholes = 0;
 
-    if (bh) {
-        ++d.totalBH;
-        ++d[p.galaxy].totalBH;
-        ++d[p.galaxy][p.platform].totalBH;
-    }
+    t["PC-XBox"] = {};
+    t["PC-XBox"].stars = 0;
+    t["PC-XBox"].blackholes = 0;
 
-    ++d.totalStars;
-    ++d[p.galaxy].totalStars;
-    ++d[p.galaxy][p.platform].totalStars;
+    t["PS4"] = {};
+    t["PS4"].stars = 0;
+    t["PS4"].blackholes = 0;
 
-    return d;
+    return t;
 }
 
-blackHoleSuns.prototype.initTotals = function (d) {
-    let p = bhs.user;
-    if (typeof d === 'undefined') {
-        d = {};
-        d.totalBH = 0;
-        d.totalStars = 0;
+blackHoleSuns.prototype.listenForTotalChanges = function (updatefcn, galaxy, uid) {
+    bhs.checkForTotals();
+
+    let ref = bhs.setStarsColRef("totals");
+    ref.onSnapshot(function (snapshot) {
+        snapshot.docChanges().forEach(function (change) {
+                updatefcn(cange.doc.id, change.doc.data());
+        });
+    });
+
+    ref = bhs.setStarsColRef(galaxy);
+    ref.onSnapshot(function (snapshot) {
+        snapshot.docChanges().forEach(function (change) {
+            updatefcn(cange.doc.id, change.doc.data());
+        });
+    });
+
+    if (uid) {
+        ref = bhs.fbfs.collection("users").doc(uid);
+        ref.onSnapshot(function (snapshot) {
+            snapshot.docChanges().forEach(function (change) {
+                updatefcn(cange.doc.id, change.doc.data(), uid);
+            });
+        });
+
+        ref = bhs.fbfs.collection("users").doc(uid).collection("galaxies").doc(galaxy);
+        ref.onSnapshot(function (snapshot) {
+            snapshot.docChanges().forEach(function (change) {
+                updatefcn(cange.doc.id, change.doc.data(), uid);
+            });
+        });
+    }
+}
+
+blackHoleSuns.prototype.displayTotals(id, data, uid){
+    console.log(id+"--"+data+"--"+uid);
+}
+
+
+blackHoleSuns.prototype.checkForTotals = async function (galaxy, uid) {
+    let iTotal = bhs.initTotals();
+
+    let ref = bhs.setStarsColRef("totals");
+    await ref.get().then(async function (doc) {
+        if (!doc.exists) {
+            let d = {};
+            d.totals = iTotal;
+            let ref = bhs.setStarsColRef("totals");
+            await ref.set(d);
+        }
+    });
+
+    ref = bhs.setStarsColRef(galaxy);
+    await ref.get().then(async function (doc) {
+        if (doc.exists) {
+            let d = doc.data();
+            if (typeof d.totals == "undefined") {
+                d.totals = iTotal;
+                let ref = bhs.setStarsColRef(galaxy);
+                await ref.set(d);
+            }
+        }
+    });
+
+    if (uid) {
+        ref = bhs.fbfs.collection("users").doc(uid);
+        await ref.get().then(async function (doc) {
+            if (doc.exists) {
+                let d = doc.data();
+                if (typeof d.totals == "undefined") {
+                    d.totals = iTotal;
+                    let ref = bhs.fbfs.collection("users").doc(uid);
+                    await ref.set(d);
+                }
+            }
+        });
+
+        ref = bhs.fbfs.collection("users").doc(uid).collection("galaxies").doc(galaxy);
+        await ref.get().then(async function (doc) {
+            if (!doc.exists) {
+                let d = {};
+                d.totals = iTotal;
+                ref = bhs.fbfs.collection("users").doc(uid).collection("galaxies").doc(galaxy);
+                await ref.set(d);
+            }
+        });
+    }
+}
+
+blackHoleSuns.prototype.incTotals = async function (entry, uid) {
+    let total = bhs.getTotalUpdateFlds(entry);
+
+    let ref = bhs.setStarsColRef("totals");
+    total.forEach(x => ref.update(x));
+
+    ref = bhs.setStarsColRef(entry.galaxy);
+    total.forEach(x => ref.update(x));
+
+    if (uid) {
+        ref = bhs.fbfs.collection("users").doc(uid);
+        total.forEach(x => ref.update(x));
+
+        ref = bhs.fbfs.collection("users").doc(uid).collection("galaxies").doc(entry.galaxy);
+        total.forEach(x => ref.update(x));
+    }
+}
+
+blackHoleSuns.prototype.getTotalUpdateFlds = function (entry) {
+    const increment = firebase.firestore.FieldValue.increment(1);
+
+    let total = [];
+    total.push({
+        "totals.stars": increment
+    });
+
+    total.push({
+        ["totals." + entry.platform + ".stars"]: increment
+    });
+
+    if (entry.blackhole) {
+        total.push({
+            "totals.blackholes": increment
+        });
+
+        total.push({
+            ["totals." + entry.platform + ".blackholes"]: increment
+        });
     }
 
-    if (typeof d[p.galaxy] === 'undefined') {
-        d[p.galaxy] = {};
-        d[p.galaxy].totalBH = 0;
-        d[p.galaxy].totalStars = 0;
-    }
-
-    if (typeof d[p.galaxy][p.platform] === 'undefined') {
-        d[p.galaxy][p.platform] = {};
-        d[p.galaxy][p.platform].totalBH = 0;
-        d[p.galaxy][p.platform].totalStars = 0;
-    }
-
-    return d;
+    return total;
 }
 
 blackHoleSuns.prototype.createBase = function (entry) {
@@ -394,7 +472,7 @@ blackHoleSuns.prototype.createBase = function (entry) {
 }
 
 blackHoleSuns.prototype.getEntries = function (limit, displayFcn, galaxy, platform, player) {
-    let ref = bhs.setStarRef();
+    let ref = bhs.setStarsColRef();
 
     if (!galaxy)
         ref = ref.where("name", "==", bhs.user.galaxy);
@@ -405,7 +483,7 @@ blackHoleSuns.prototype.getEntries = function (limit, displayFcn, galaxy, platfo
 
             for (let i = 0; i < platformList.length; ++i) {
                 if (platform || bhs.user.platform == platformList[i].name) {
-                    let ref = bhs.setStarRef(d.name, platformList[i].name);
+                    let ref = bhs.setStarsColRef(d.name, platformList[i].name);
 
                     if (!player)
                         ref = ref.where("player", "==", bhs.user.player);
@@ -429,7 +507,7 @@ blackHoleSuns.prototype.getEntries = function (limit, displayFcn, galaxy, platfo
 }
 
 blackHoleSuns.prototype.getData = function (galaxy, platform, returnFcn) {
-    let ref = bhs.setStarRef(galaxy, platform)
+    let ref = bhs.setStarsColRef(galaxy, platform)
         .where("blackhole", "==", true).orderBy("addr", "desc");
 
     ref.onSnapshot(function (snapshot) {
@@ -764,7 +842,11 @@ blackHoleSuns.prototype.calcDist = function (addr, addr2) {
         return addr;
 
     let cord = bhs.addressToXYZ(addr);
-    let cord2 = typeof addr2 != "undefined" ? bhs.addressToXYZ(addr2) : { x: 0x7ff, y: 0x7f, z: 0x7ff };
+    let cord2 = typeof addr2 != "undefined" ? bhs.addressToXYZ(addr2) : {
+        x: 0x7ff,
+        y: 0x7f,
+        z: 0x7ff
+    };
     let d = parseInt(Math.sqrt(Math.pow(cord2.x - cord.x, 2) + Math.pow(cord2.y - cord.y, 2) + Math.pow(cord2.z - cord.z, 2)) * 400);
     return d;
 }

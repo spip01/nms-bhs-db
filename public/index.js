@@ -189,6 +189,8 @@ blackHoleSuns.prototype.buildPanel = function (name, id) {
 
         if (panels[bhs.getIndex(panels, "id", pnl.prop("id"))].calc)
             bhs.displayCalc();
+        
+        // fetch region name
     });
 
     loc.find('#ck-hasbase').change(function () {
@@ -379,6 +381,6 @@ blackHoleSuns.prototype.save = function () {
         let x = panels[i];
 
         if (ok && x.group == group)
-            bhs.updateEntry(entry[i], panels[i].id);
+            bhs.updateEntry(entry[i], bhs.user.uid);
     });
 }
