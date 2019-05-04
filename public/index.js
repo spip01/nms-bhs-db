@@ -5,94 +5,49 @@ $(document).ready(function () {
 
     bhs.last = [];
 
-    let loc = $("#pnl-user");
+    bhs.buildUserPanel();
 
-    bhs.buildMenu(loc, "Platform", platformList, true);
-    bhs.buildMenu(loc, "Galaxy", galaxyList, true);
-
-    Object.keys(panels).forEach(i => {
-        let x = panels[i];
-        bhs.buildPanel(x.name, x.id);
-    });
-
-    bhs.activatePanelGroup(0);
-
-    bhs.buildUserTable();
-    bhs.buildStats();
-
-    $('#pnl-user #ck-singleSystem').change(function () {
-        if ($(this).prop("checked"))
-            bhs.activatePanelGroup(1);
-        else
-            bhs.activatePanelGroup(0);
+    panels.forEach(function (p) {
+        bhs.buildPanel(p.id);
     });
 
     $("#save").click(function () {
         bhs.save();
-        bhs.clearPanels();
-        bhs.last = [];
     });
 
     $("#delete").click(function () {
-        if ($("#ck-singleSystem").prop("checked")) {
-            bhs.deleteEntry($("#" + panels[pnlSingleIndex].id + " #id-addr").val());
-        } else {
-            bhs.deleteEntry($("#" + panels[pnlBHIndex].id + " #id-addr").val());
-            bhs.deleteEntry($("#" + panels[pnlExitIndex].id + " #id-addr").val());
-        }
+        panels.forEach(function (p) {
+            bhs.deleteEntry($("#" + p.id + " #id-addr").val());
+        });
 
         bhs.clearPanels();
         bhs.last = [];
     });
 
     $("#cancel").click(function () {
-        if ($("#ck-singleSystem").prop("checked")) {
-            bhs.displaySingle($("#" + panels[pnlSingleIndex].id), bhs.last[pnlSingleIndex]);
-        } else {
-            bhs.displaySingle($("#" + panels[pnlBHIndex].id), bhs.last[pnlBHIndex]);
-            bhs.displaySingle($("#" + panels[pnlExitIndex].id), bhs.last[pnlExitIndex]);
-        }
+        bhs.displaySingle($("#" + panels[pnlTop].id), bhs.last[pnlTop], pnlTop);
     });
 })
 
-const pnlBHIndex = 0;
-const pnlExitIndex = 1;
-const pnlSingleIndex = 2;
+const pnlTop = 0;
+const pnlBottom = 1;
 
-const panels = [{
-    name: "Black Hole System",
-    id: "pnl-BH",
-    listid: "BH",
+var panels = [{
+    name: "System 1",
+    id: "pnl-S1",
+    listid: "S1",
     calc: true,
-    group: 0
 }, {
-    name: "Exit System",
-    id: "pnl-XS",
-    listid: "Exit",
+    name: "System 2",
+    id: "pnl-S2",
+    listid: "S2",
     calc: true,
-    group: 0
-}, {
-    name: "Single System",
-    id: "pnl-SS",
-    listid: "Single",
-    calc: false,
-    group: 1
 }];
 
-blackHoleSuns.prototype.activatePanelGroup = function (group) {
-    Object.keys(panels).forEach(i => {
-        let x = panels[i];
-        if (x.group == group)
-            $("#" + x.id).show();
-        else
-            $("#" + x.id).hide();
-    });
-}
-
-blackHoleSuns.prototype.buildPanel = function (name, id) {
+blackHoleSuns.prototype.buildPanel = function (id) {
     const panel = `
         <div id="idname" class="card pad-bottom">
-            <div class="h4 clr-dark-green card-header">heading</div>
+            <div id="pnlname" class="h4 clr-dark-green card-header"></div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-9 col-14">
@@ -132,16 +87,26 @@ blackHoleSuns.prototype.buildPanel = function (name, id) {
                     </div>
                 </div>
 
-                <div class="row container">
-                    <label class="col-3 h6 clr-dark-green">
-                        <input id="ck-hasbase" type="checkbox">
-                        Has Base
-                    </label>
+                <div class="row>>
+                    <div class="col-3">
+                    <div class="row" style="display:none">
+                        <label class="col-3 h6 clr-dark-green">
+                            <input id="ck-isdz" type="checkbox">
+                            Dead Zone
+                        </label>
+                    </div>
 
-                    <div class="col-10">
-                        <div id="id-isbase" class="row" style="display:none">
-                            <div class="col-4 h6 clr-dark-green">Name</div>&nbsp;
-                            <input id="id-basename" class="rounded col-6">
+                    <div class="col-11">
+                        <div class="row">
+                            <label class="col-3 h6 clr-dark-green">
+                                <input id="ck-hasbase" type="checkbox">
+                                Has Base
+                            </label>
+                            <div class="col-10">
+                                <div id="id-isbase" class="row" style="display:none">
+                                    <div class="col-4 h6 clr-dark-green">Name</div>
+                                    <input id="id-basename" class="rounded col-6">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -166,7 +131,6 @@ blackHoleSuns.prototype.buildPanel = function (name, id) {
         </div>`;
 
     let h = /idname/g [Symbol.replace](panel, id);
-    h = /heading/g [Symbol.replace](h, name);
 
     $("#panels").append(h);
 
@@ -175,40 +139,46 @@ blackHoleSuns.prototype.buildPanel = function (name, id) {
     bhs.buildMenu(loc, "Lifeform", lifeformList);
     bhs.buildMenu(loc, "Economy", economyList);
 
-    //loc.find("#id-addr").keydown(function (event) {
-    //    return bhs.formatAddress(this, event);
-    //});
-
     loc.find("#id-addr").blur(function () {
         let addr = bhs.reformatAddress($(this).val());
         $(this).val(addr);
 
         let pnl = $(this).closest("[id|='pnl'");
         if (pnl.find("#id-sys").val() == "" && pnl.find("#id-reg").val() == "")
-            bhs.getEntry(addr, bhs.displaySingle, pnl);
+            bhs.getEntry(addr, bhs.displaySingle, pnl.prop("id") == panels[pnlTop].id ? pnlTop : pnlBottom);
 
-        if (panels[bhs.getIndex(panels, "id", pnl.prop("id"))].calc)
-            bhs.displayCalc();
-        
-        // fetch region name
+        // if not found try getting region
     });
 
     loc.find('#ck-hasbase').change(function () {
         let pnl = $(this).closest("[id|='pnl'");
 
-        if (this.prop("checked"))
+        if ($(this).prop("checked"))
             pnl.find("#id-isbase").show();
         else
             pnl.find("#id-isbase").hide();
     });
 }
 
-blackHoleSuns.prototype.displaySingle = function (loc, entry, idx) {
+blackHoleSuns.prototype.displaySingle = function (entry, idx) {
     if (entry) {
+        let loc = $("#" + panels[idx].id);
+
         loc.find("#id-addr").val(entry.addr);
         loc.find("#id-sys").val(entry.sys);
         loc.find("#id-reg").val(entry.reg);
         loc.find("#btn-Lifeform").text(entry.Lifeform);
+
+        if (idx == pnlTop)
+            loc.find("#ck-isdz").prop("checked", entry.deadzone);
+        else
+            loc.find("#ck-isdz").hide();
+
+        loc.find("#ck-hasbase").prop("checked", entry.hasbase);
+        if (entry.hasbase) {
+            bhs.getBase(entry, bhs.displayBase, idx);
+            loc.find("#id-isbase").show();
+        }
 
         if (entry.Economy) {
             let l = economyList[bhs.getIndex(economyList, "name", entry.Economy)].level;
@@ -216,80 +186,59 @@ blackHoleSuns.prototype.displaySingle = function (loc, entry, idx) {
             loc.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";");
         }
 
+        loc.find("#id-fmcenter").show();
+        loc.find("#fmcenter").text(bhs.calcDist(entry.addr));
+
+        if (idx == pnlBottom) {
+            loc.find("#id-tocenter").show();
+            loc.find("#tocenter").text($("#" + panels[pnlTop].id + " #fmcenter").text() - loc.find("#fmcenter").text());
+        } else
+            loc.find("#id-tocenter").hide();
+
+        if (entry.blackhole)
+            bhs.getEntry(entry.connection, bhs.displaySingle, pnlBottom);
+
+        bhs.displayCalc(entry);
+
         $("#delete").removeClass("disabled");
         $("#delete").removeAttr("disabled");
 
-        if (typeof idx != "undefined")
-            bhs.last[idx] = entry;
+        bhs.last[idx] = entry;
     }
 }
 
-blackHoleSuns.prototype.buildStats = function () {
-    let h = trStart;
-    h += /label/ [Symbol.replace](thLine, "Black Holes");
-    h += /label/ [Symbol.replace](thLine, "User");
-    h += /label/ [Symbol.replace](thLine, "All Users");
-    h += /label/ [Symbol.replace](thLine, "Top Contributors");
-    h += trEnd;
-
-    let pos = $("#statsHeader");
-    pos.empty();
-    pos.append(h);
-}
-
-blackHoleSuns.prototype.displayStats = function () {
-    let p = bhs.user.platform;
-    let g = bhs.user.galaxy;
-
-    if (typeof bhs.user.totals === 'undefined' || typeof bhs.user.totals[g] === 'undefined' || typeof bhs.user.totals[g][p] === 'undefined')
-        return;
-
-    let h = trStart;
-    h += /label/ [Symbol.replace](thLine, "Total [" + g + "]");
-    h += /label/ [Symbol.replace](thLine, bhs.user.totals[g].totalBH);
-    h += /label/ [Symbol.replace](thLine, bhs.totals[g].totalBH);
-    h += trEnd;
-
-    h += trStart;
-    h += /label/ [Symbol.replace](thLine, "Total [" + g + "][" + p + "]");
-    h += /label/ [Symbol.replace](thLine, bhs.user.totals[g][p].totalBH);
-    h += /label/ [Symbol.replace](thLine, bhs.totals[g][p].totalBH);
-    h += trEnd;
-
-    h += trStart;
-    h += /label/ [Symbol.replace](thLine, "Grand Total");
-    h += /label/ [Symbol.replace](thLine, bhs.user.totals.totalBH);
-    h += /label/ [Symbol.replace](thLine, bhs.totals.totalBH);
-    h += trEnd;
-
-    h = /col/g [Symbol.replace](h, "row");
-
-    let loc = $("#statsItems");
-    loc.empty();
-    loc.append(h);
+blackHoleSuns.prototype.displayBase = function (entry, idx) {
+    $("#" + panels[idx].id + " #id-isbase").show();
+    $("#" + panels[idx].id + " #id-basename").val(entry ? entry.name : "");
 }
 
 blackHoleSuns.prototype.clearPanels = function () {
-    Object.keys(panels).forEach(i => {
-        let x = panels[i];
-        bhs.clearPanel(x.id);
+    panels.forEach(function (d) {
+        bhs.clearPanel(d.id);
     });
 
     $("#delete").addClass("disabled");
     $("#delete").prop("disabled", true);
 }
 
-blackHoleSuns.prototype.clearPanel = function (id) {
-    let pnl = $("#" + id);
+blackHoleSuns.prototype.clearPanel = function (d) {
+    let pnl = $("#" + d.id);
 
-    pnl.each(function () {
-        $(this).find("[id|='inp'").each(function () {
-            $(this).val("");
-        });
-        $(this).find("[id|='menu']").each(function () {
-            $(this).find("[id|='btn']").text("");
-        });
+    pnl.find("[id|='inp'").each(function () {
+        pnl.val("");
     });
+
+    pnl.find("[id|='ck'").each(function () {
+        pnl.prop("checked", false);
+    });
+
+    pnl.find("[id|='menu']").each(function () {
+        pnl.find("[id|='btn']").text("");
+    });
+
+    pnl.find("#id-isbase").hide();
+    pnl.find("#id-fmcenter").hide();
+    pnl.find("#id-tocenter").hide();
 }
 
 blackHoleSuns.prototype.extractEntry = function (idx) {
@@ -298,89 +247,74 @@ blackHoleSuns.prototype.extractEntry = function (idx) {
 
     let entry = {};
     entry.addr = loc.find("#id-addr").val();
-
     entry.sys = loc.find("#id-sys").val();
     entry.reg = loc.find("#id-reg").val();
     entry.life = loc.find("#btn-Lifeform").text().stripNumber();
     entry.econ = loc.find("#btn-Economy").text().stripNumber();
-    //    entry.hasBase = loc.find("#ck-hasbase").prop('checked');
-    //    if (entry.hasBase)
-    //        entry.basename = loc.find("#id-basename").val();
+    entry.hasbase = loc.find("#ck-hasbase").prop("checked");
 
-    entry.blackhole = idx == pnlBHIndex;
-    entry.exit = idx == pnlExitIndex;
+    if (idx == pnlTop) {
+        entry.deadzone = loc.find("#ck-deadzone").prop("checked");
 
-    if (panels[idx].group == 0) {
-        if (idx == pnlBHIndex)
-            loc = pnl.find("#" + panels[pnlExitIndex].id);
-        else
-            loc = pnl.find("#" + panels[pnlBHIndex].id);
+        if (!entry.deadzone) {
+            loc = pnl.find("#" + panels[pnlBottom].id + " #id-addr");
+            let con = loc.val();
 
-        entry.connection = loc.find("#id-addr").val();
+            if (con != "") {
+                entry.deadzone = con == entry.addr;
+                entry.blackhole = !entry.deadzone;
+
+                if (entry.blackhole)
+                    entry.connection = con;
+            }
+        }
     }
 
-    return entry;
-}
+    if (bhs.validateEntry(entry)) {
+        bhs.updateEntry(entry, bhs.user.uid);
 
-blackHoleSuns.prototype.setEntries = function (loc) {
-    let id = loc.prop("id").replace(/(.*?)-.*/, "$1");
+        if (entry.hasBase)
+            bhs.updateBase(entry)
 
-    let x = bhs.getIndex(panels, "listid", id);
-    let panel = panels[x];
-
-    bhs.setEntry(loc, x);
-
-    if (panel.group == 0) {
-        x = (x + 1) % 2;
-        panel = panels[x];
-        bhs.setEntry($("#" + loc.data("con")), x);
-
-        $("#ck-singleSystem").prop('checked', false);
-    } else
-        $("#ck-singleSystem").prop('checked', true);
-
-    bhs.activatePanelGroup(panel.group);
-}
-
-blackHoleSuns.prototype.setEntry = function (loc, idx) {
-    let entry = {};
-    entry.addr = loc.find("#addr").text();
-    entry.sys = loc.find("#sys").text();
-    entry.reg = loc.find("#reg").text();
-    entry.Lifeform = loc.find("#life").text();
-    entry.Economy = loc.find("#econ").text();
-
-    bhs.displaySingle($("#" + panels[idx].id), entry, idx);
+        if (entry.blackhole)
+            bhs.extractEntry(pnlBottom);
+    }
 }
 
 blackHoleSuns.prototype.save = function () {
-    let entry = [];
     let ok = true;
 
     $("#status").empty();
 
     let user = {};
-    if (user = bhs.extractUser()) {
-        ok = bhs.validateUser(user);
-        if (ok)
-            bhs.updateUser(user);
+    user = bhs.extractUser();
+    ok = bhs.validateUser(user);
+
+    if (ok) {
+        bhs.updateUser(user);
+        bhs.extractEntry(pnlTop);
     }
 
-    let group = $("#ck-singleSystem").prop('checked') ? 1 : 0;
+    bhs.clearPanels();
+    bhs.last = [];
+}
 
-    Object.keys(panels).forEach(i => {
-        let x = panels[i];
+blackHoleSuns.prototype.displayCalc = function (entry) {
+    let d = [];
 
-        if (ok && x.group == group) {
-            entry[i] = bhs.extractEntry(i);
-            ok = bhs.validateEntry(entry[i]);
-        }
-    });
+    if (entry.blackhole) {
+        panels[pnlTop].dist = bhs.calcDist(entry.address);
+        panels[pnlBottom].dist = bhs.calcDist(entry.connection);
 
-    Object.keys(panels).forEach(i => {
-        let x = panels[i];
+        panels.forEach(function (p) {
+            let loc = $("#" + p.id);
+            loc.find("#fmcenter").text(p.dist);
+            loc.find("#id-fmcenter").show();
+        });
 
-        if (ok && x.group == group)
-            bhs.updateEntry(entry[i], bhs.user.uid);
-    });
+        let loc = $("#" + panels[pnlBottom].id);
+
+        loc.find("#tocenter").text(panels[pnlTop].dist - panels[pnlBottom].dist);
+        loc.find("#id-tocenter").show();
+    }
 }

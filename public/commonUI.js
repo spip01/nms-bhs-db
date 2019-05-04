@@ -7,240 +7,347 @@ blackHoleSuns.prototype.doLoggedout = function () {
 }
 
 blackHoleSuns.prototype.doLoggedin = function () {
+    bhs.getUser(bhs.displayUser);
+}
+
+blackHoleSuns.prototype.displayUser = function (user) {
     let player = $("#pnl-user");
+
+    if (!bhs.hasupdated || bhs.user.galaxy != user.galaxy || bhs.user.platform != user.platform) {
+        bhs.hasupdated = true;
+        bhs.user.galaxy = user.galaxy;
+        bhs.user.platform = user.platform;
+
+        bhs.buildUserTable();
+        bhs.buildTotals();
+
+        bhs.getTotals(bhs.displayTotals);
+        bhs.getEntries(bhs.displayUserEntry);
+    }
+
+    bhs.user = user;
 
     player.find("#id-player").val(bhs.user.player);
     player.find("#btn-Platform").text(bhs.user.platform);
+    player.find("#btn-Orginization").text(bhs.user.org);
 
     let l = galaxyList[bhs.getIndex(galaxyList, "name", bhs.user.galaxy)].number;
     player.find("#btn-Galaxy").text(l + " " + bhs.user.galaxy);
     let i = bhs.getIndex(galaxyList, "name", bhs.user.galaxy);
     player.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[galaxyList[i].number].color + ";");
+}
 
-    bhs.getStats(bhs.displayStats);
+blackHoleSuns.prototype.buildUserPanel = function () {
+    const panel = `
+        <div id="pnl-user">
+            <div class="row">
+                <div class="col-7">
+                    <div class="row">
+                        <div class="col-14 h6 clr-dark-green">Traveler</div>
+                        <input id="id-player" class="rounded col-13 h5" type="text">&nbsp;
 
-    //$("#map").show();
-    $("#userTable").show();
+                        <div class="col-7">
+                            <div class="row">
+                                <div class="col-7 h6 clr-dark-green">Orginization</div>
+                                <div id="id-Orginization" class="col-7"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-7">
+                    <div class="row">
+                        <div id="id-Platform" class="col-7"></div>
+                        <div id="id-Galaxy" class="col-7"></div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+    $("#panels").prepend(panel);
+    let loc = $("#pnl-user");
+
+    //bhs.buildOrgList();
+
+    //bhs.buildMenu(loc, "Orginization", bhs.orgList, false);
+    bhs.buildMenu(loc, "Platform", platformList, true);
+    bhs.buildMenu(loc, "Galaxy", galaxyList, true);
 
     $("#id-player").blur(function () {
         bhs.checkPlayerName(this, $(this).val());
     });
 }
 
-const trStart = `   <tr id="idname">`;
-const thLine = `        <th scope="col" id="idname">label</th>`;
-const trEnd = `     </tr>`;
+const userTable = [{
+    title: "Player",
+    id: "id-player",
+    field: "player",
+    format: "col-2",
+    hide: true
+}, {
+    title: "Galaxy",
+    id: "id-galaxy",
+    field: "galaxy",
+    format: "col-2",
+    hide: true
+}, {
+    title: "Platform",
+    id: "id-platform",
+    field: "platform",
+    format: "col-2",
+    hide: true
+}, {
+    title: "Type",
+    id: "id-type",
+    format: "col-1",
+    field: "blackhole",
+    field2: "deadzone"
+}, {
+    title: "Coordinates",
+    id: "id-addr",
+    field: "addr",
+    format: "col-2"
+}, {
+    title: "LY to Ctr",
+    id: "id-toctr",
+    format: "col-2",
+    calc: true
+}, {
+    title: "System",
+    id: "id-sys",
+    field: "sys",
+    format: "col-2"
+}, {
+    title: "Region",
+    id: "id-reg",
+    field: "reg",
+    format: "col-2"
+}, {
+    title: "Lifeform",
+    id: "id-life",
+    field: "life",
+    format: "col-2"
+}, {
+    title: "Economy",
+    id: "id-econ",
+    field: "eon",
+    format: "col-2"
+}, {
+    title: "Base",
+    id: "id-base",
+    field: "hasbase",
+    format: "col-2",
+}];
 
 blackHoleSuns.prototype.buildUserTable = function () {
-    if (typeof bhs.last == "undefined")
-        bhs.last = {};
+    const table = `
+        <div class="card-header">
+            <div class="row">
+                <h4 class="col-10">Latest Changes</h4>
+                <button id="export" type="button" class="col-3 btn border btn-sm disabled"
+                 disabled>Export</button>&nbsp;
+            </div>
+        </div>
 
-    $('.panel-collapse').on('show.bs.collapse', function () {
-        $(this).siblings('.panel-heading').addClass('active');
-        $("#arrow").removeClass("fa-angle-down");
-        $("#arrow").addClass("fa-angle-up");
-        let limit = $("#id-displalyqty").val()
+        <div id="data" class="card-body">
+            <div id="userHeader" class="row"></div>
+            <div id="userItems" class="row"></div>
+            </table>
+        </div>`;
 
-        bhs.extractUser();
+    $("#userTable").empty();
+    $("#userTable").append(table);
 
-        let allGalaxies = $("#ck-allGalaxies").prop("checked");
-        let allPlatforms = $("#ck-allPlatforms").prop("checked");
-        let allPlayers = $("#ck-allPlayers").prop("checked");
+    const line = `<div id="idname" class="width">title<div>`;
 
-        bhs.displayHeader(allGalaxies, allPlatforms, allPlayers);
-        bhs.getEntries(limit, bhs.displayUserEntry, allGalaxies, allPlatforms, allPlayers);
+    let h = "";
+    userTable.forEach(function (t) {
+        let l = /idname/g [Symbol.replace](this, t.id);
+        l = /width/g [Symbol.replace](l, t.format);
+        h += /title/g [Symbol.replace](l, t.title);
     });
 
-    $('.panel-collapse').on('hide.bs.collapse', function () {
-        $(this).siblings('.panel-heading').removeClass('active');
-        $("#arrow").removeClass("fa-angle-up");
-        $("#arrow").addClass("fa-angle-down");
-    });
+    $("#userHeader").append(h);
 }
 
-blackHoleSuns.prototype.displayHeader = function (galaxy, platform, player) {
-    let l = "";
-    let h = /idname/ [Symbol.replace](trStart, "header");
-
-    if (player) {
-        l = /idname/ [Symbol.replace](thLine, "player");
-        h += /label/ [Symbol.replace](l, "Player");
+blackHoleSuns.prototype.hideTableEntry = function (entry) {
+    let loc = $("#userTable #data");
+    if (entry) {
+        let gpa = entry.galaxy + "-" + entry.platform + "-" + entry.addr.stripColons();
+        loc = loc.find("#userItems #id-" + gpa);
     }
 
-    if (galaxy) {
-        l = /idname/ [Symbol.replace](thLine, "galaxy");
-        h += /label/ [Symbol.replace](l, "Galaxy");
-    }
-
-    if (platform) {
-        l = /idname/ [Symbol.replace](thLine, "platform");
-        h += /label/ [Symbol.replace](l, "Platform");
-    }
-
-    l = /idname/ [Symbol.replace](thLine, "type");
-    h += /label/ [Symbol.replace](l, "");
-
-    l = /idname/ [Symbol.replace](thLine, "addr");
-    h += /label/ [Symbol.replace](l, "Address");
-
-    l = /idname/ [Symbol.replace](thLine, "sys");
-    h += /label/ [Symbol.replace](l, "System");
-
-    l = /idname/ [Symbol.replace](thLine, "reg");
-    h += /label/ [Symbol.replace](l, "Region");
-
-    l = /idname/ [Symbol.replace](thLine, "life");
-    h += /label/ [Symbol.replace](l, "Lifeform");
-
-    l = /idname/ [Symbol.replace](thLine, "dist");
-    h += /label/ [Symbol.replace](l, "LY to Center");
-
-    l = /idname/ [Symbol.replace](thLine, "econ");
-    h += /label/ [Symbol.replace](l, "Economy");
-
-    l = /idname/ [Symbol.replace](thLine, "base");
-    h += /label/ [Symbol.replace](l, "Base");
-
-    h += trEnd;
-
-    let pos = $("#userHeader");
-    pos.empty();
-    pos.append(h);
-
-    pos = $("#userItems");
-    pos.empty();
+    userTable.forEach(function (t) {
+        if (t.hide)
+            loc.find("#" + t.id).hide();
+    });
 }
 
 var last = false;
 
-blackHoleSuns.prototype.displayUserEntry = function (entry, galaxy, platform, player) {
-    let id = "";
+blackHoleSuns.prototype.displayUserEntry = function (entry) {
+    const lineHdr = `
+        <div id="id-gpa">`;
+    const line = `
+            <div id="idname" class="width">
+                <div id="bh-idname" class="col-14">bhdata<div>
+                <div id="x-idname" class="col14">xdata<div>
+            </div>`;
+    const lineEnd = `
+        </div>`;
 
-    let addr = /:/g [Symbol.replace](entry.addr, "");
-    let con = /:/g [Symbol.replace](entry.connection, "");
+    let gpa = entry.galaxy + "-" + entry.platform + "-" + entry.addr.stripColons();
 
-    let bhaddr = "";
-    let xaddr = "";
+    let loc = $("#entryTable").find("#id-" + gpa);
 
-    if (entry.blackhole) {
-        id = "BH-";
-        bhaddr = addr;
-        xaddr = con;
-    } else if (entry.exit) {
-        id = "Exit-";
-        bhaddr = con;
-        xaddr = addr;
-    } else
-        id = "Single-";
+    if (loc.length == 0) {
+        let h = /gpa/ [Symbol.replace](lineHdr, gpa);
+        let l = line;
 
-    let ui = $("#userItems");
+        userTable.forEach(function (t) {
+            l = /idname/g [Symbol.replace](l, t.id)
 
-    let s = galaxy ? entry.galaxy + "-" : "";
-    s += platform ? entry.platform + "-" : "";
-
-    let pos = ui.find("#" + id + s + addr);
-
-    if (pos.length == 0) {
-        let sLabel = "";
-        let bhLabel = "";
-        let xLabel = "";
-        let h = "";
-
-        if (id == "Single-") {
-            sLabel = "Single-" + s + addr;
-            h = /idname/ [Symbol.replace](trStart, sLabel) + trEnd;
-        } else {
-            if (id == "BH-") {
-                bhLabel = "BH-" + s + addr;
-                xLabel = "Exit-" + s + con;
+            if (t.calc) {
+                l = /bhdata/ [Symbol.replace](l, entry.blackhole ? bhs.calcDist(entry.addr) - bhs.calcDist(entry.connection) : "");
+                l = /xdata/ [Symbol.replace](l, "");
+            } else if (t.field == "blackhole") {
+                l = /bhdata/ [Symbol.replace](l, entry[t.field] ? "BH" : entry[t.field2] ? "DZ" : "");
+                l = /xdata/ [Symbol.replace](l, "");
+            } else if (entry.blackhole || entry.deadzone) {
+                l = /bhdata/ [Symbol.replace](l, entry[t.field]);
+                l = /xdata/ [Symbol.replace](l, "");
             } else {
-                bhLabel = "BH-" + s + con;
-                xLabel = "Exit-" + s + addr;
+                l = /bhdata/ [Symbol.replace](l, "");
+                l = /xdata/ [Symbol.replace](l, entry[t.field]);
             }
-            h = /idname/ [Symbol.replace](trStart, bhLabel) + trEnd;
-            h += /idname/ [Symbol.replace](trStart, xLabel) + trEnd;
-        }
+        });
 
-        ui.prepend(h);
+        h += l + lineEnd;
 
-        if (last = !last) {
-            if (id == "Single-")
-                ui.find("#" + sLabel).addClass("bkg-vlight-gray");
-            else {
-                ui.find("#" + bhLabel).addClass("bkg-vlight-gray");
-                ui.find("#" + xLabel).addClass("bkg-vlight-gray");
-            }
-        }
+        $("#userItems").prepend(h);
+        loc.prop("class", (last = !last) ? "bkg-light-gray" : "");
 
-        if (id != "Single-") {
-            ui.find("#" + bhLabel).data("con", xLabel);
-            ui.find("#" + xLabel).data("con", bhLabel);
-        }
+        loc.dblclick(function () {
+            // copy to input
 
-        pos = ui.find("#" + id + s + addr);
-    }
+            $('html, body').animate({
+                scrollTop: ($('#panels').offset().top)
+            }, 0);
 
-    let l = "";
-    let h = "";
+            $("#delete").removeClass("disabled");
+            $("#delete").removeAttr("disabled");
+        });
+    } else
+        userTable.forEach(function (t) {
+            loc.find("#" + (entry.blackhole ? "bh-" : "x-") + t.id).
+            text(entry[t.field]);
+        });
+}
 
-    if (player) {
-        l = /idname/ [Symbol.replace](thLine, "player");
-        h += /label/ [Symbol.replace](l, entry.player);
-    }
+const totalsRowHdr = ` <div id="idname" class="row">`;
+const totalsItems = `       <div id="idname" class="format">title</div>`;
+const totalsRowEnd = ` </div>`;
 
-    if (galaxy) {
-        l = /idname/ [Symbol.replace](thLine, "galaxy");
-        h += /label/ [Symbol.replace](l, entry.galaxy);
-    }
+const totalsDef = [{
+    title: "",
+    id: "id-what",
+    format: "col-4",
+}, {
+    title: "Player",
+    id: "id-player",
+    format: "col-2",
+}, {
+    title: "All Players",
+    id: "id-all",
+    format: "col-2",
+}, {
+    title: "Top Players",
+    id: "id-topname",
+    format: "col-3",
+}, {
+    title: "Total",
+    id: "id-topqty",
+    format: "col-2",
+}];
 
-    if (platform) {
-        l = /idname/ [Symbol.replace](thLine, "platform");
-        h += /label/ [Symbol.replace](l, entry.platform);
-    }
+blackHoleSuns.prototype.buildTotals = function () {
+    const pnl = `
+        <div class="card-header">Totals</div>
+        <div class="card-body">
+            <div id="totalsHeader"></div>
+            <div id="totalsItems"></div>
+        </div>`;
 
-    l = /idname/ [Symbol.replace](thLine, "type");
-    h += /label/ [Symbol.replace](l, id);
+    $("#totals").empty();
+    $("#totals").append(pnl);
 
-    l = /idname/ [Symbol.replace](thLine, "addr");
-    h += /label/ [Symbol.replace](l, entry.addr);
-
-    l = /idname/ [Symbol.replace](thLine, "sys");
-    h += /label/ [Symbol.replace](l, entry.sys);
-
-    l = /idname/ [Symbol.replace](thLine, "reg");
-    h += /label/ [Symbol.replace](l, entry.reg);
-
-    l = /idname/ [Symbol.replace](thLine, "life");
-    h += /label/ [Symbol.replace](l, entry.life);
-
-    l = /idname/ [Symbol.replace](thLine, "dist");
-    if (id == "Exit-")
-        h += /label/ [Symbol.replace](l, bhs.calcDist(bhaddr) - bhs.calcDist(xaddr));
-    else
-        h += /label/ [Symbol.replace](l, "");
-
-    l = /idname/ [Symbol.replace](thLine, "econ");
-    h += /label/ [Symbol.replace](l, entry.econ);
-
-    l = /idname/ [Symbol.replace](thLine, "base");
-    h += /label/ [Symbol.replace](l, typeof bhs.user.bases != "undefined" && bhs.user.bases.includes(entry.addr) ? "&#x2713;" : "");
-
-    h = /col/g [Symbol.replace](h, "row");
-
-    pos.empty();
-    pos.append(h);
-
-    pos.dblclick(function () {
-        bhs.setEntries($(this));
-        bhs.displayCalc();
-
-        $('html, body').animate({
-            scrollTop: ($('#panels').offset().top)
-        }, 0);
-
-        $("#delete").removeClass("disabled");
-        $("#delete").removeAttr("disabled");
+    let h = totalsRowHdr;
+    totalsDef.forEach(function (t) {
+        let l = /idname/ [Symbol.replace](totalsItems, t.id);
+        l = /title/ [Symbol.replace](l, t.title);
+        h += /format/ [Symbol.replace](l, t.format);
     });
+
+    h += totalsRowEnd;
+    $("#totalsHeader").append(h);
+
+    totalsRows.forEach(function (x) {
+        h = /idname/ [Symbol.replace](totalsRowHdr, x.id);
+
+        let t = /platform/ [Symbol.replace](x.title, bhs.user.platform);
+        t = /galaxy/ [Symbol.replace](t, bhs.user.galaxy);
+
+        totalsDef.forEach(function (y) {
+            let l = /idname/ [Symbol.replace](totalsItems, y.id);
+            l = /title/ [Symbol.replace](l, t);
+            h += /format/ [Symbol.replace](l, y.format);
+
+            t = "";
+        });
+
+        h += totalsRowEnd;
+        $("#totalsItems").append(h);
+    });
+}
+
+const rowTotal = 0;
+const rowGalaxy = 1;
+const rowPlatform = 2;
+const rowGalaxyPlatform = 3;
+
+const totalsRows = [{
+    title: "Total BH",
+    id: "id-totalBH",
+}, {
+    title: "Total[galaxy]",
+    id: "id-totalBHP",
+}, {
+    title: "Total[platform]",
+    id: "id-totalBHP",
+}, {
+    title: "Total[galaxy][platform]",
+    id: "id-totalBHPG",
+}];
+
+blackHoleSuns.prototype.displayTotals = function (entry) {
+    if (entry.totals) {
+        let pnl = $("#totalsItems");
+        let columnid = entry.loc == "stars" ? "id-all" : "id-player";
+
+        if (entry.name == bhs.user.galaxy) {
+            let rowid = totalsRows[rowGalaxy].id;
+            pnl.find("#" + rowid + " #" + columnid).text(entry.totals.blackholes);
+
+            rowid = totalsRows[rowGalaxyPlatform].id;
+            pnl.find("#" + rowid + " #" + columnid).text(entry.totals[bhs.user.platform].blackholes);
+        } else {
+            let rowid = totalsRows[rowTotal].id;
+            pnl.find("#" + rowid + " #" + columnid).text(entry.totals.blackholes);
+
+            rowid = totalsRows[rowPlatform].id;
+            pnl.find("#" + rowid + " #" + columnid).text(entry.totals[bhs.user.platform].blackholes);
+        }
+    }
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
@@ -311,33 +418,6 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
                 btn.attr("style", $(this).attr("style"));
         });
     }
-}
-
-blackHoleSuns.prototype.displayCalc = function () {
-    let dist = {};
-
-    Object.keys(panels).forEach(i => {
-        let x = panels[i];
-        if (x.calc) {
-            let loc = $("#" + x.id);
-            dist[x.id] = bhs.calcDist(loc.find("#id-addr").val());
-            if (dist[x.id]) {
-                loc.find("#fmcenter").text(dist[x.id]);
-                loc.find("#id-fmcenter").show();
-            } else
-                loc.find("#id-fmcenter").hide();
-
-            if (x.id == panels[pnlExitIndex].id &&
-                dist[panels[pnlBHIndex].id] &&
-                dist[panels[pnlExitIndex].id]) {
-
-                let t = dist[panels[pnlBHIndex].id] - dist[panels[pnlExitIndex].id];
-                loc.find("#tocenter").text(t);
-                loc.find("#id-tocenter").show();
-            } else
-                loc.find("#id-tocenter").hide();
-        }
-    });
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
@@ -417,9 +497,7 @@ blackHoleSuns.prototype.extractUser = function () {
     u.player = loc.find("#id-player").val();
     u.platform = loc.find("#btn-Platform").text().stripMarginWS();
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber();
+    u.org = loc.find("#btn-org").text().stripNumber();
 
-    if (bhs.user.player != u.player || bhs.user.platform != u.platform || bhs.user.galaxy != u.galaxy)
-        return u;
-
-    return null;
+    return u;
 }

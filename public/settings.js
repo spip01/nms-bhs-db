@@ -3,16 +3,9 @@
 $(document).ready(function () {
     startUp();
 
-    let loc = $("#pnl-user");
-
-    //bhs.generatePlayerList();
-    //bhs.buildMenu(loc, "Players", bhs.playerList, true);
-
-    bhs.buildMenu(loc, "Platform", platformList, true);
-    bhs.buildMenu(loc, "Galaxy", galaxyList, true);
-
+    bhs.buildPlayerPanel();
     bhs.buildUserTable();
-    //bhs.buildStats();
+    bhs.buildTotals();
 
     $("#submit").click(function () {
         if (bhs.fileSelected)
@@ -23,7 +16,6 @@ $(document).ready(function () {
 
     $("#uploadedFile").change(function () {
         bhs.fileSelected = this;
-        //bhs.readTextFile(this);
     });
 });
 
@@ -31,6 +23,7 @@ var importTable = [{
     match: /platform/i,
     field: "platform",
     required: true,
+    format: tolower,
     group: 0
 }, {
     match: /galaxy/i,
@@ -47,7 +40,7 @@ var importTable = [{
     field: "addr",
     required: true,
     format: reformatAddress,
-    validate: validateBHAddress,
+    validate: validateAddress,
     group: 1
 }, {
     match: /economy/i,
@@ -82,7 +75,7 @@ var importTable = [{
     field: "addr",
     required: true,
     format: reformatAddress,
-    validate: validateExitAddress,
+    validate: validateAddress,
     group: 2
 }, {
     match: /economy/i,
@@ -186,8 +179,10 @@ blackHoleSuns.prototype.readTextFile = function (f) {
 
                         entry[importTable[j].group][importTable[j].field] = row[idx];
 
-                        if (!ok)
-                            $("#status").prepend("<h7>row: " + (i + 1) + " invalid value " + importTable[j].match + " " + entry[importTable[j].group][importTable[j].field] + "</h7>");
+                        if (!ok) {
+                            let s = grp == 1 ? "bh " : grp == 2 ? "exit " : "";
+                            $("#status").prepend("<h7>row: " + (i + 1) + " invalid value " + s + importTable[j].match + " " + entry[importTable[j].group][importTable[j].field] + "</h7>");
+                        }
                     }
                 }
             }
@@ -196,21 +191,47 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                 entry[0].platform = entry[0].platform.match(/pc/i) ||
                     entry[0].platform.match(/xbox/i) ? "PC-XBox" : entry[0].platform;
 
-                for (let i = 1; i <= 2; ++i) {
+                if (entry[2].addr == "0000:0000:0000:0000") {
+                    entry[1].base = true;
+                    entry[2].addr = entry[1].addr;
+                }
+                else {
+                    entry[1].deadzone = entry[2].addr == entry[1].addr;
+                    entry[1].blackhole = !entry[1].deadzone;
+                    if (entry[1].blackhole) {
+                        if (ok = validateBHAddress(entry[1].addr))
+                            $("#status").prepend("row: " + (i + 1) + " invalid black hole address " + entry[1].addr);
+
+                        entry[1].connection = entry[2].addr;
+                    }
+                }
+
+                for (let i = 1; ok && i <= 2; ++i) {
                     entry[i].player = entry[0].player;
                     entry[i].galaxy = entry[0].galaxy;
                     entry[i].platform = entry[0].platform;
-
-                    entry[i].blackhole = i == 1;
-                    entry[i].exit = i == 2;
-
-                    entry[i].connection = entry[i == 1 ? 2 : 1].addr;
                     entry[i].time = firebase.firestore.Timestamp.fromDate(new Date());
+                    entry[i].version = "next";
 
-                    let ref = bhs.fbfs.collection("users").where("player", "==", entry[i].player);
-                    await ref.get().then(async function (snapshot) {
-                        await bhs.updateEntry(entry[i], snapshot.empty ? null : snapshot.docs[0].data().uid);
-                    });
+                    if (i == 2) {
+                        if (entry[1].base) {
+                            let ref = bhs.fbfs.collection("users").where("player", "==", entry[i].player);
+                            await ref.get().then(async function (snapshot) {
+                                await bhs.updateBase(entry[i], snapshot.empty ? null : snapshot.docs[0].data().uid);
+                            });
+                            break;
+                        }
+
+                        if (entry[1].deadzone)
+                            break;
+
+                        if (!validateExitAddress(entry[2])) {
+                            $("#status").prepend("<h7>row: " + (i + 1) + " invalid exit address " + importTable[j].match + " " + entry[2].addr + "</h7>");
+                            break;
+                        }
+                    }
+
+                        bhs.updateEntry(entry[i], snapshot.empty ? null : snapshot.docs[0].data().uid);
                 }
             }
         }
