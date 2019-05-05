@@ -270,3 +270,21 @@ body {
     right: auto !important;
     left: auto !important;
 }
+
+body, html {
+    height: 100%;
+  }
+
+  .bg {
+    /* The image used */
+    background-image: url("/images/bhjump.jpg");
+  
+    /* Half height */
+    height: 50%;
+  
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+  

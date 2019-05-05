@@ -1,22 +1,25 @@
 'use strict';
 
 blackHoleSuns.prototype.doLoggedout = function () {
-    $("#map").hide();
-    $("#userTable").hide();
-    $("#userItems").empty();
+    if (bhs.clearPanels) bhs.clearPanels();
+    bhs.user = bhs.userInit();
+    bhs.displayUser();
+
+    $("#status").empty();
+    $("#entryTable").empty();
+    $("#totals").empty();
 }
 
 blackHoleSuns.prototype.doLoggedin = function () {
     bhs.getUser(bhs.displayUser);
 }
 
+var first = 0;
 blackHoleSuns.prototype.displayUser = function (user) {
     let player = $("#pnl-user");
 
-    if (!bhs.hasupdated || bhs.user.galaxy != user.galaxy || bhs.user.platform != user.platform) {
-        bhs.hasupdated = true;
-        bhs.user.galaxy = user.galaxy;
-        bhs.user.platform = user.platform;
+    if (!first++ || bhs.user.galaxy != user.galaxy || bhs.user.platform != user.platform) {
+        bhs.merge(bhs.user, user);
 
         bhs.buildUserTable();
         bhs.buildTotals();
@@ -25,7 +28,7 @@ blackHoleSuns.prototype.displayUser = function (user) {
         bhs.getEntries(bhs.displayUserEntry);
     }
 
-    bhs.user = user;
+    bhs.merge(bhs.user, user);
 
     player.find("#id-player").val(bhs.user.player);
     player.find("#btn-Platform").text(bhs.user.platform);
@@ -44,14 +47,8 @@ blackHoleSuns.prototype.buildUserPanel = function () {
                 <div class="col-7">
                     <div class="row">
                         <div class="col-14 h6 clr-dark-green">Traveler</div>
-                        <input id="id-player" class="rounded col-13 h5" type="text">&nbsp;
-
-                        <div class="col-7">
-                            <div class="row">
-                                <div class="col-7 h6 clr-dark-green">Orginization</div>
-                                <div id="id-Orginization" class="col-7"></div>
-                            </div>
-                        </div>
+                        <input id="id-player" class="rounded col-13 h5" type="text">
+                        <div id="id-Orginization" class="col-13"></div>
                     </div>
                 </div>
 
@@ -68,76 +65,91 @@ blackHoleSuns.prototype.buildUserPanel = function () {
     let loc = $("#pnl-user");
 
     //bhs.buildOrgList();
+    const orgList = [{
+        name: "none"
+    }, {
+        name: "BHS"
+    }, {
+        name: "Galactic Hub"
+    }, {
+        name: "Alliance of Galactic Travelers"
+    }];
 
-    //bhs.buildMenu(loc, "Orginization", bhs.orgList, false);
-    bhs.buildMenu(loc, "Platform", platformList, true);
-    bhs.buildMenu(loc, "Galaxy", galaxyList, true);
+    bhs.buildMenu(loc, "Orginization", orgList, bhs.saveUser, false);
+    bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, true);
+    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, true);
 
     $("#id-player").blur(function () {
-        bhs.checkPlayerName(this, $(this).val());
+        bhs.checkPlayerName(this);
     });
 }
 
+const utPlayerIdx = 0;
+const utGalaxyIdx = 1;
+const utPlatformIdx = 2;
+
 const userTable = [{
-    title: "Player",
-    id: "id-player",
-    field: "player",
-    format: "col-2",
-    hide: true
-}, {
-    title: "Galaxy",
-    id: "id-galaxy",
-    field: "galaxy",
-    format: "col-2",
-    hide: true
-}, {
-    title: "Platform",
-    id: "id-platform",
-    field: "platform",
-    format: "col-2",
-    hide: true
-}, {
-    title: "Type",
-    id: "id-type",
-    format: "col-1",
-    field: "blackhole",
-    field2: "deadzone"
-}, {
-    title: "Coordinates",
-    id: "id-addr",
-    field: "addr",
-    format: "col-2"
-}, {
-    title: "LY to Ctr",
-    id: "id-toctr",
-    format: "col-2",
-    calc: true
-}, {
-    title: "System",
-    id: "id-sys",
-    field: "sys",
-    format: "col-2"
-}, {
-    title: "Region",
-    id: "id-reg",
-    field: "reg",
-    format: "col-2"
-}, {
-    title: "Lifeform",
-    id: "id-life",
-    field: "life",
-    format: "col-2"
-}, {
-    title: "Economy",
-    id: "id-econ",
-    field: "eon",
-    format: "col-2"
-}, {
-    title: "Base",
-    id: "id-base",
-    field: "hasbase",
-    format: "col-2",
-}];
+        title: "Player",
+        id: "id-player",
+        field: "player",
+        format: "col-2",
+        hide: true
+    }, {
+        title: "Galaxy",
+        id: "id-galaxy",
+        field: "galaxy",
+        format: "col-2",
+        hide: true
+    }, {
+        title: "Platform",
+        id: "id-platform",
+        field: "platform",
+        format: "col-2",
+        hide: true
+    }, {
+        title: "",
+        id: "id-type",
+        format: "col-1",
+        field: "blackhole",
+        field2: "deadzone"
+    }, {
+        title: "Coordinates",
+        id: "id-addr",
+        field: "addr",
+        format: "col-3"
+    }, {
+        title: "LY",
+        id: "id-toctr",
+        format: "col-1",
+        calc: true
+    }, {
+        title: "System",
+        id: "id-sys",
+        field: "sys",
+        format: "col-2"
+    }, {
+        title: "Region",
+        id: "id-reg",
+        field: "reg",
+        format: "col-2"
+    }, {
+        title: "Lifeform",
+        id: "id-life",
+        field: "life",
+        format: "col-2"
+    }, {
+        title: "Economy",
+        id: "id-econ",
+        field: "econ",
+        format: "col-2"
+    }
+    /*, {
+        title: "Base",
+        id: "id-base",
+        field: "hasbase",
+        format: "col-2",
+    }*/
+];
 
 blackHoleSuns.prototype.buildUserTable = function () {
     const table = `
@@ -150,68 +162,62 @@ blackHoleSuns.prototype.buildUserTable = function () {
         </div>
 
         <div id="data" class="card-body">
-            <div id="userHeader" class="row"></div>
-            <div id="userItems" class="row"></div>
+            <div id="userHeader" class="row border-bottom"></div>
+            <div id="userItems"></div>
             </table>
         </div>`;
 
-    $("#userTable").empty();
-    $("#userTable").append(table);
+    $("#entryTable").empty();
+    $("#entryTable").append(table);
 
-    const line = `<div id="idname" class="width">title<div>`;
+    const line = `<div id="idname" class="width h6">title</div>`;
 
     let h = "";
     userTable.forEach(function (t) {
-        let l = /idname/g [Symbol.replace](this, t.id);
+        let l = /idname/g [Symbol.replace](line, t.id);
         l = /width/g [Symbol.replace](l, t.format);
         h += /title/g [Symbol.replace](l, t.title);
     });
 
-    $("#userHeader").append(h);
-}
+    let loc = $("#userHeader");
+    loc.append(h);
 
-blackHoleSuns.prototype.hideTableEntry = function (entry) {
-    let loc = $("#userTable #data");
-    if (entry) {
-        let gpa = entry.galaxy + "-" + entry.platform + "-" + entry.addr.stripColons();
-        loc = loc.find("#userItems #id-" + gpa);
+    if ($("#entryTable").data().page == "input") {
+        bhs.hideUserTable(loc, utPlayerIdx);
+        bhs.hideUserTable(loc, utPlatformIdx);
+        bhs.hideUserTable(loc, utGalaxyIdx);
     }
-
-    userTable.forEach(function (t) {
-        if (t.hide)
-            loc.find("#" + t.id).hide();
-    });
 }
 
 var last = false;
 
 blackHoleSuns.prototype.displayUserEntry = function (entry) {
     const lineHdr = `
-        <div id="id-gpa">`;
+        <div id="id-gpa" class="row">`;
     const line = `
             <div id="idname" class="width">
-                <div id="bh-idname" class="col-14">bhdata<div>
-                <div id="x-idname" class="col14">xdata<div>
+                <div id="bh-idname" class="row">bhdata</div>
+                <div id="x-idname" class="row">xdata</div>
             </div>`;
     const lineEnd = `
         </div>`;
 
-    let gpa = entry.galaxy + "-" + entry.platform + "-" + entry.addr.stripColons();
+    let gpa = entry.galaxy + "-" + entry.platform + "-" + (entry.blackhole ? entry.connection.stripColons() : entry.addr.stripColons());
 
-    let loc = $("#entryTable").find("#id-" + gpa);
+    let loc = $("#userItems").find("#id-" + gpa);
 
     if (loc.length == 0) {
         let h = /gpa/ [Symbol.replace](lineHdr, gpa);
-        let l = line;
 
         userTable.forEach(function (t) {
-            l = /idname/g [Symbol.replace](l, t.id)
+            let l = /idname/g [Symbol.replace](line, t.id);
+            l = /width/g [Symbol.replace](l, t.format);
 
             if (t.calc) {
                 l = /bhdata/ [Symbol.replace](l, entry.blackhole ? bhs.calcDist(entry.addr) - bhs.calcDist(entry.connection) : "");
                 l = /xdata/ [Symbol.replace](l, "");
-            } else if (t.field == "blackhole") {
-                l = /bhdata/ [Symbol.replace](l, entry[t.field] ? "BH" : entry[t.field2] ? "DZ" : "");
+            } else if (t.id == "id-type") {
+                l = /bhdata/ [Symbol.replace](l, entry.blackhole ? "BH" : entry.deadzone ? "DZ" : "");
                 l = /xdata/ [Symbol.replace](l, "");
             } else if (entry.blackhole || entry.deadzone) {
                 l = /bhdata/ [Symbol.replace](l, entry[t.field]);
@@ -220,12 +226,15 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
                 l = /bhdata/ [Symbol.replace](l, "");
                 l = /xdata/ [Symbol.replace](l, entry[t.field]);
             }
+
+            h += l;
         });
 
-        h += l + lineEnd;
+        h += lineEnd;
 
         $("#userItems").prepend(h);
-        loc.prop("class", (last = !last) ? "bkg-light-gray" : "");
+        loc = $("#userItems").find("#id-" + gpa);
+        loc.prop("class", (last = !last) ? "row bkg-vlight-gray" : "row");
 
         loc.dblclick(function () {
             // copy to input
@@ -239,9 +248,25 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
         });
     } else
         userTable.forEach(function (t) {
-            loc.find("#" + (entry.blackhole ? "bh-" : "x-") + t.id).
-            text(entry[t.field]);
+            let e = loc.find("#" + (entry.blackhole || entry.deadzone ? "bh-" : "x-") + t.id);
+
+            if (t.calc)
+                e.text(entry.blackhole ? bhs.calcDist(entry.addr) - bhs.calcDist(entry.connection) : "");
+            else if (t.id == "id-type")
+                e.text(entry.blackhole ? "BH" : entry.deadzone ? "DZ" : "");
+            else
+                e.text(entry[t.field]);
         });
+
+    if ($("#entryTable").data().page == "input") {
+        bhs.hideUserTable(loc, utPlayerIdx);
+        bhs.hideUserTable(loc, utPlatformIdx);
+        bhs.hideUserTable(loc, utGalaxyIdx);
+    }
+}
+
+blackHoleSuns.prototype.hideUserTable = function (loc, idx) {
+    loc.find("#" + userTable[idx].id).hide();
 }
 
 const totalsRowHdr = ` <div id="idname" class="row">`;
@@ -272,7 +297,7 @@ const totalsDef = [{
 
 blackHoleSuns.prototype.buildTotals = function () {
     const pnl = `
-        <div class="card-header">Totals</div>
+        <div class="card-header h4">Totals</div>
         <div class="card-body">
             <div id="totalsHeader"></div>
             <div id="totalsItems"></div>
@@ -330,27 +355,25 @@ const totalsRows = [{
 }];
 
 blackHoleSuns.prototype.displayTotals = function (entry) {
-    if (entry.totals) {
-        let pnl = $("#totalsItems");
-        let columnid = entry.loc == "stars" ? "id-all" : "id-player";
+    let pnl = $("#totalsItems");
+    let columnid = entry.loc == "stars" ? "id-all" : "id-player";
 
-        if (entry.name == bhs.user.galaxy) {
-            let rowid = totalsRows[rowGalaxy].id;
-            pnl.find("#" + rowid + " #" + columnid).text(entry.totals.blackholes);
+    if (entry.galaxy == bhs.user.galaxy) {
+        let rowid = totalsRows[rowGalaxy].id;
+        pnl.find("#" + rowid + " #" + columnid).text(entry.totals.blackholes);
 
-            rowid = totalsRows[rowGalaxyPlatform].id;
-            pnl.find("#" + rowid + " #" + columnid).text(entry.totals[bhs.user.platform].blackholes);
-        } else {
-            let rowid = totalsRows[rowTotal].id;
-            pnl.find("#" + rowid + " #" + columnid).text(entry.totals.blackholes);
+        rowid = totalsRows[rowGalaxyPlatform].id;
+        pnl.find("#" + rowid + " #" + columnid).text(entry.totals[bhs.user.platform].blackholes);
+    } else {
+        let rowid = totalsRows[rowTotal].id;
+        pnl.find("#" + rowid + " #" + columnid).text(entry.totals.blackholes);
 
-            rowid = totalsRows[rowPlatform].id;
-            pnl.find("#" + rowid + " #" + columnid).text(entry.totals[bhs.user.platform].blackholes);
-        }
+        rowid = totalsRows[rowPlatform].id;
+        pnl.find("#" + rowid + " #" + columnid).text(entry.totals[bhs.user.platform].blackholes);
     }
 }
 
-blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
+blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
     let title = `        
         <div class="row">
             <div class="col-md-14 col-width h6 clr-dark-green">label</div>`;
@@ -413,6 +436,9 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
             let name = $(this).text().stripMarginWS();
             let btn = menu.find("#btn-" + id);
             btn.text(name);
+
+            if (changefcn)
+                changefcn(name.stripNumber());
 
             if ($(this).attr("style"))
                 btn.attr("style", $(this).attr("style"));
@@ -420,74 +446,10 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
     }
 }
 
-blackHoleSuns.prototype.buildMenu = function (loc, label, list, vertical) {
-    let title = `        
-        <div class="row">
-            <div class="col-md-14 col-width h6 clr-dark-green">label</div>`;
-    let block = `
-            <div id="menu-idname" class="col-md-14 col-width dropdown">
-                <button id="btn-idname" class="btn border btn-sm dropdown-toggle" style="rgbcolor" type="button" data-toggle="dropdown"></button>
-            </div>
-        </div>`;
-
-    let item = ``;
-    let hdr = ``;
-    if (list.length > 8) {
-        hdr = `<ul id="list" class="dropdown-menu scrollable-menu" role="menu"></ul>`;
-        item = `<li id="item-idname" class="dropdown-item" type="button" style="rgbcolor cursor: pointer">iname</li>`;
-    } else {
-        hdr = `<div id="list" class="dropdown-menu"></div>`;
-        item = `<button id="item-idname" class="dropdown-item border-bottom" type="button" style="rgbcolor cursor: pointer">iname</button>`;
-    }
-
-    let id = label.nameToId();
-    let h = /label/ [Symbol.replace](title, label);
-    h += /idname/g [Symbol.replace](block, id);
-    h = /width/ [Symbol.replace](h, vertical ? 13 : 4);
-    h = /rgbcolor/ [Symbol.replace](h, "background-color: " + levelRgb[label == "Galaxy" ? 0 : list[0].level]);
-    loc.find("#id-" + id).append(h);
-
-    let menu = loc.find("#menu-" + id);
-    menu.append(hdr);
-
-    let mlist = menu.find("#list");
-
-    for (let i = 0; i < list.length; ++i) {
-        let lid = list[i].name.nameToId();
-        h = /idname/ [Symbol.replace](item, lid);
-
-        if (list[i].level)
-            h = /iname/ [Symbol.replace](h, list[i].level + " " + list[i].name);
-        else
-        if (list[i].number)
-            h = /iname/ [Symbol.replace](h, list[i].number + " " + list[i].name);
-        else
-            h = /iname/ [Symbol.replace](h, list[i].name);
-
-        if (label != "Galaxy") {
-            if (list[i].level)
-                h = /rgbcolor/ [Symbol.replace](h, "background-color: " + levelRgb[list[i].level] + ";");
-            else
-                h = /rgbcolor/ [Symbol.replace](h, "background-color: #f0fff0;");
-        } else {
-            if (typeof bhs.galaxyInfo[galaxyList[i].number] != "undefined") {
-                let c = bhs.galaxyInfo[galaxyList[i].number].color;
-                h = /rgbcolor/ [Symbol.replace](h, "background-color: " + c + ";");
-            } else
-                h = /rgbcolor/ [Symbol.replace](h, "background-color: #ffffff;");
-        }
-
-        mlist.append(h);
-
-        mlist.find("#item-" + lid).click(function () {
-            let name = $(this).text().stripMarginWS();
-            let btn = menu.find("#btn-" + id);
-            btn.text(name);
-
-            if (typeof $(this).attr("style") != "undefined")
-                btn.attr("style", $(this).attr("style"));
-        });
-    }
+blackHoleSuns.prototype.saveUser = function () {
+    let user = bhs.extractUser();
+    if (bhs.validateUser(user))
+        bhs.updateUser(user);
 }
 
 blackHoleSuns.prototype.extractUser = function () {
@@ -495,7 +457,7 @@ blackHoleSuns.prototype.extractUser = function () {
     let u = {};
 
     u.player = loc.find("#id-player").val();
-    u.platform = loc.find("#btn-Platform").text().stripMarginWS();
+    u.platform = loc.find("#btn-Platform").text().stripNumber();
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber();
     u.org = loc.find("#btn-org").text().stripNumber();
 

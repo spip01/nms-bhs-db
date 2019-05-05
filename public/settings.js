@@ -3,9 +3,7 @@
 $(document).ready(function () {
     startUp();
 
-    bhs.buildPlayerPanel();
-    bhs.buildUserTable();
-    bhs.buildTotals();
+    bhs.buildUserPanel();
 
     $("#submit").click(function () {
         if (bhs.fileSelected)
@@ -145,6 +143,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
         entry[0].player = bhs.user.player;
         entry[0].galaxy = bhs.user.galaxy;
         entry[0].platform = bhs.user.platform;
+        entry[0].version = "next";
 
         for (let i = 2, ok = true; i < allrows.length && ok; ++i, ok = true) {
             entry[1] = {};
@@ -188,55 +187,66 @@ blackHoleSuns.prototype.readTextFile = function (f) {
             }
 
             if (ok) {
+                let hasbase = false;
+
                 entry[0].platform = entry[0].platform.match(/pc/i) ||
-                    entry[0].platform.match(/xbox/i) ? "PC-XBox" : entry[0].platform;
+                    entry[0].platform.match(/xbox/i) ? "PC-XBox" : entry[0].platform.toUpperCase();
+
+                if (entry[0].player != bhs.user.player) {
+                    let ref = bhs.getUsersColRef().where("player", "==", entry[0].player);
+                    await ref.get().then(async function (snapshot) {
+                        if (snapshot.exists)
+                            entry[0].uid = snapshot.doc.data().uid;
+                    });
+                } else
+                    entry[0].uid = bhs.user.uid;
 
                 if (entry[2].addr == "0000:0000:0000:0000") {
-                    entry[1].base = true;
+                    hasbase = true;
                     entry[2].addr = entry[1].addr;
-                }
-                else {
+                } else {
                     entry[1].deadzone = entry[2].addr == entry[1].addr;
                     entry[1].blackhole = !entry[1].deadzone;
-                    if (entry[1].blackhole) {
-                        if (ok = validateBHAddress(entry[1].addr))
-                            $("#status").prepend("row: " + (i + 1) + " invalid black hole address " + entry[1].addr);
 
-                        entry[1].connection = entry[2].addr;
+                    if (entry[1].blackhole || entry[1].deadzone) {
+                        if (!(ok = validateBHAddress(entry[1].addr)))
+                            $("#status").prepend("<h7>row: " + (i + 1) + " invalid black hole address " + entry[1].addr + "</h7>");
+
+                        if (entry[1].blackhole)
+                            entry[1].connection = entry[2].addr;
                     }
                 }
 
                 for (let i = 1; ok && i <= 2; ++i) {
-                    entry[i].player = entry[0].player;
-                    entry[i].galaxy = entry[0].galaxy;
-                    entry[i].platform = entry[0].platform;
+                    bhs.merge(entry[i], entry[0]);
                     entry[i].time = firebase.firestore.Timestamp.fromDate(new Date());
-                    entry[i].version = "next";
+
+                    if (hasbase && entry[0].uid)
+                        bhs.updateBase(entry[i]);
 
                     if (i == 2) {
-                        if (entry[1].base) {
-                            let ref = bhs.fbfs.collection("users").where("player", "==", entry[i].player);
-                            await ref.get().then(async function (snapshot) {
-                                await bhs.updateBase(entry[i], snapshot.empty ? null : snapshot.docs[0].data().uid);
-                            });
-                            break;
-                        }
-
                         if (entry[1].deadzone)
                             break;
 
-                        if (!validateExitAddress(entry[2])) {
-                            $("#status").prepend("<h7>row: " + (i + 1) + " invalid exit address " + importTable[j].match + " " + entry[2].addr + "</h7>");
+                        if (hasbase)
+                            break;
+
+                        if (!(ok = validateExitAddress(entry[2].addr))) {
+                            $("#status").prepend("<h7>row: " + (i + 1) + " invalid exit address " + entry[2].addr + "</h7>");
                             break;
                         }
                     }
 
-                        bhs.updateEntry(entry[i], snapshot.empty ? null : snapshot.docs[0].data().uid);
+                    await bhs.updateEntry(entry[i]);
                 }
+
+                entry[0].uid = "";
             }
         }
 
-        progress.hide();
+        progress.css("width", 100 + "%");
+        progress.text("done");
+
     }
 
     reader.readAsText(file);

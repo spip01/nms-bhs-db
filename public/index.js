@@ -246,12 +246,17 @@ blackHoleSuns.prototype.extractEntry = function (idx) {
     let loc = pnl.find("#" + panels[idx].id);
 
     let entry = {};
+    entry.player=bhs.user.player;
+    entry.uid=bhs.user.uid;
+    entry.platform=bhs.user.platform;
+    entry.galaxy=bhs.user.galaxy;
+
     entry.addr = loc.find("#id-addr").val();
     entry.sys = loc.find("#id-sys").val();
     entry.reg = loc.find("#id-reg").val();
     entry.life = loc.find("#btn-Lifeform").text().stripNumber();
     entry.econ = loc.find("#btn-Economy").text().stripNumber();
-    entry.hasbase = loc.find("#ck-hasbase").prop("checked");
+    let hasbase = loc.find("#ck-hasbase").prop("checked");
 
     if (idx == pnlTop) {
         entry.deadzone = loc.find("#ck-deadzone").prop("checked");
@@ -271,10 +276,10 @@ blackHoleSuns.prototype.extractEntry = function (idx) {
     }
 
     if (bhs.validateEntry(entry)) {
-        bhs.updateEntry(entry, bhs.user.uid);
+        bhs.updateEntry(entry, true);
 
-        if (entry.hasBase)
-            bhs.updateBase(entry)
+        if (hasbase)
+            bhs.updateBase(entry, true)
 
         if (entry.blackhole)
             bhs.extractEntry(pnlBottom);
@@ -282,19 +287,8 @@ blackHoleSuns.prototype.extractEntry = function (idx) {
 }
 
 blackHoleSuns.prototype.save = function () {
-    let ok = true;
-
     $("#status").empty();
-
-    let user = {};
-    user = bhs.extractUser();
-    ok = bhs.validateUser(user);
-
-    if (ok) {
-        bhs.updateUser(user);
-        bhs.extractEntry(pnlTop);
-    }
-
+    bhs.extractEntry(pnlTop);
     bhs.clearPanels();
     bhs.last = [];
 }
