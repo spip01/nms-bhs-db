@@ -179,7 +179,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                         entry[importTable[j].group][importTable[j].field] = row[idx];
 
                         if (!ok) {
-                            let s = grp == 1 ? "bh " : grp == 2 ? "exit " : "";
+                            let s = importTable[j].group == 1 ? "bh " : importTable[j].group == 2 ? "exit " : "";
                             $("#status").prepend("<h7>row: " + (i + 1) + " invalid value " + s + importTable[j].match + " " + entry[importTable[j].group][importTable[j].field] + "</h7>");
                         }
                     }

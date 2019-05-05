@@ -22,7 +22,7 @@ const fbconfig = {
     messagingSenderId: FIREBASE_MSGID
 };
 
-const starsCol = "stars3";
+const starsCol = "stars4";
 const usersCol = "users";
 
 function startUp() {
