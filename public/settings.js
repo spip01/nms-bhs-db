@@ -204,6 +204,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                 if (entry[2].addr == "0000:0000:0000:0000") {
                     hasbase = true;
                     entry[2].addr = entry[1].addr;
+                    entry[2].basename = entry[2].sys;
                 } else {
                     entry[1].deadzone = entry[2].addr == entry[1].addr;
                     entry[1].blackhole = !entry[1].deadzone;

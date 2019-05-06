@@ -161,9 +161,9 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 }
 
 blackHoleSuns.prototype.displaySingle = function (entry, idx) {
-    if (entry) {
-        let loc = $("#" + panels[idx].id);
+    let loc = $("#" + panels[idx].id);
 
+    if (entry) {
         loc.find("#id-addr").val(entry.addr);
         loc.find("#id-sys").val(entry.sys);
         loc.find("#id-reg").val(entry.reg);
@@ -204,12 +204,22 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
         $("#delete").removeAttr("disabled");
 
         bhs.last[idx] = entry;
+    } else {
+        loc.find("#id-addr").val("");
+        loc.find("#id-sys").val("");
+        loc.find("#id-reg").val("");
+        loc.find("#btn-Lifeform").text("");
+        loc.find("#ck-isdz").prop("checked", false);
+        loc.find("#ck-hasbase").prop("checked", false);
+        loc.find("#btn-Economy").text("");
+        loc.find("#id-fmcenter").hide();
+        loc.find("#id-tocenter").hide();
     }
 }
 
 blackHoleSuns.prototype.displayBase = function (entry, idx) {
     $("#" + panels[idx].id + " #id-isbase").show();
-    $("#" + panels[idx].id + " #id-basename").val(entry ? entry.name : "");
+    $("#" + panels[idx].id + " #id-basename").val(entry ? entry.basename : "");
 }
 
 blackHoleSuns.prototype.clearPanels = function () {
@@ -246,10 +256,10 @@ blackHoleSuns.prototype.extractEntry = function (idx) {
     let loc = pnl.find("#" + panels[idx].id);
 
     let entry = {};
-    entry.player=bhs.user.player;
-    entry.uid=bhs.user.uid;
-    entry.platform=bhs.user.platform;
-    entry.galaxy=bhs.user.galaxy;
+    entry.player = bhs.user.player;
+    entry.uid = bhs.user.uid;
+    entry.platform = bhs.user.platform;
+    entry.galaxy = bhs.user.galaxy;
 
     entry.addr = loc.find("#id-addr").val();
     entry.sys = loc.find("#id-sys").val();
@@ -278,9 +288,11 @@ blackHoleSuns.prototype.extractEntry = function (idx) {
     if (bhs.validateEntry(entry)) {
         bhs.updateEntry(entry, true);
 
-        if (hasbase)
+        if (hasbase) {
+            entry.basename = loc.find("#id-basename").val();
             bhs.updateBase(entry, true)
-
+        }
+        
         if (entry.blackhole)
             bhs.extractEntry(pnlBottom);
     }

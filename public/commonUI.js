@@ -3,7 +3,7 @@
 blackHoleSuns.prototype.doLoggedout = function () {
     if (bhs.clearPanels) bhs.clearPanels();
     bhs.user = bhs.userInit();
-    bhs.displayUser();
+    bhs.displayUser(bhs.user);
 
     $("#status").empty();
     $("#entryTable").empty();
@@ -11,6 +11,7 @@ blackHoleSuns.prototype.doLoggedout = function () {
 }
 
 blackHoleSuns.prototype.doLoggedin = function () {
+    first = 0;
     bhs.getUser(bhs.displayUser);
 }
 
@@ -87,6 +88,7 @@ blackHoleSuns.prototype.buildUserPanel = function () {
 const utPlayerIdx = 0;
 const utGalaxyIdx = 1;
 const utPlatformIdx = 2;
+const utAddrIdx = 4;
 
 const userTable = [{
         title: "Player",
@@ -237,7 +239,7 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
         loc.prop("class", (last = !last) ? "row bkg-vlight-gray" : "row");
 
         loc.dblclick(function () {
-            // copy to input
+            bhs.entryFromTable(this);
 
             $('html, body').animate({
                 scrollTop: ($('#panels').offset().top)
@@ -262,6 +264,20 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
         bhs.hideUserTable(loc, utPlayerIdx);
         bhs.hideUserTable(loc, utPlatformIdx);
         bhs.hideUserTable(loc, utGalaxyIdx);
+    }
+}
+
+blackHoleSuns.prototype.entryFromTable = function (ent) {
+    let addr = $(ent).find("#bh-" + userTable[utAddrIdx].id).text();
+    if (addr)
+        bhs.getEntry(addr, bhs.displaySingle, pnlTop);
+    else {
+
+        addr = $(ent).find("#x-" + userTable[utAddrIdx].id).text();
+        if (addr) {
+            bhs.getEntry(addr, bhs.displaySingle, pnlTop);
+            bhs.displaySingle(null, pnlBottom);
+        }
     }
 }
 
