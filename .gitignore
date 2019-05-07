@@ -1,3 +1,5 @@
+/fuctions/
+/node_modules/
 *.log
 bootstrap.min.css
 bootstrap.min.js
