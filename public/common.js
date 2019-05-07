@@ -22,7 +22,7 @@ const fbconfig = {
     messagingSenderId: FIREBASE_MSGID
 };
 
-const starsCol = "stars4";
+const starsCol = "stars5";
 const usersCol = "users";
 
 function startUp() {
@@ -328,40 +328,48 @@ blackHoleSuns.prototype.incTotals = function (entry) {
 }
 
 blackHoleSuns.prototype.updateAllTotals = function (entry, displayFcn) {
-        let ref = bhs.getStarsColRef("totals");
-        bhs.updateTotal(entry, bhs.userGalaxyInc, ref, bhs.initTotals);
-        ref = bhs.getStarsColRef(entry.galaxy);
-        bhs.updateTotal(entry, bhs.userGalaxyInc, ref, bhs.initGalaxy);
+    let ref = bhs.getStarsColRef("totals");
+    bhs.updateTotal(entry, bhs.userGalaxyInc, ref, bhs.initTotals);
+    ref = bhs.getStarsColRef(entry.galaxy);
+    bhs.updateTotal(entry, bhs.userGalaxyInc, ref, bhs.initGalaxy);
 
-        ref = bhs.getUsersColRef();
-        bhs.updateTotal(entry, bhs.userGalaxyInc, ref, bhs.initTotals, displayFcn);
-        ref = bhs.getStarsColRef(entry.uid, entry.galaxy);
-        bhs.updateTotal(entry, bhs.userGalaxyInc, ref, bhs.initGalaxy, displayFcn);
+    ref = bhs.getUsersColRef();
+    bhs.updateTotal(entry, bhs.userGalaxyInc, ref, bhs.initTotals, displayFcn);
+    ref = bhs.getStarsColRef(entry.uid, entry.galaxy);
+    bhs.updateTotal(entry, bhs.userGalaxyInc, ref, bhs.initGalaxy, displayFcn);
 
-        bhs.userGalaxyInc = {};
-        bhs.userGalaxyInc.stars = 0;
-        bhs.userGalaxyInc.blackholes = 0;
+    bhs.userGalaxyInc = {};
+    bhs.userGalaxyInc.stars = 0;
+    bhs.userGalaxyInc.blackholes = 0;
 }
 
 blackHoleSuns.prototype.updateTotal = function (entry, inc, ref, initfcn, displayFcn) {
-    bhs.fbfs.runTransaction(function (transaction) {
-        transaction.get(ref).then(function (doc) {
-            let t = {};
-            t.totals = initfcn(entry);
-            if (doc.exists)
-                t = doc.data();
-            t.totals.stars += inc.stars;
-            t.totals.blackholes += inc.blackholes;
-            t.totals[entry.platform].stars += inc.stars;
-            t.totals[entry.platform].blackholes += inc.blackholes;
+return;
 
-            transaction.update(ref, t);
-            return t;
-        });
-    }).then(function (t) {
-        if (displayFcn)
-            displayFcn(entry, t);
+    return bhs.fbfs.runTransaction(function() {
+    return transaction.get(ref).then(function(doc) {
+        if (!doc.exists) {
+            throw "Document does not exist!";
+        }
+
+        let t = doc.data();
+        t.totals.stars += inc.stars;
+        t.totals.blackholes += inc.blackholes;
+        t.totals[entry.platform].stars += inc.stars;
+        t.totals[entry.platform].blackholes += inc.blackholes;
+
+        transaction.update(ref, t);
+        return t;
     });
+}).then(function() {
+    if (displayFcn)
+    displayFcn(entry, t);
+}).catch(function(error) {
+      console.log("Transaction failed: ", error);
+  let t = {};
+    t.totals = initfcn(entry);
+    ref.set(t);
+});
 }
 
 blackHoleSuns.prototype.getEntries = function (displayFcn) {

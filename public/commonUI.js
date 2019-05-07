@@ -93,25 +93,27 @@ const utPlatformIdx = 2;
 const utTypeIdx = 3;
 const utAddrIdx = 4;
 
-const userTable = [{
-        title: "Player",
-        id: "id-player",
-        field: "player",
-        format: "col-2",
-        hide: true
-    }, {
-        title: "Galaxy",
-        id: "id-galaxy",
-        field: "galaxy",
-        format: "col-2",
-        hide: true
-    }, {
-        title: "Platform",
-        id: "id-platform",
-        field: "platform",
-        format: "col-2",
-        hide: true
-    }, {
+const userTable = [
+    /*{
+            title: "Player",
+            id: "id-player",
+            field: "player",
+            format: "col-2",
+            hide: true
+        }, {
+            title: "Galaxy",
+            id: "id-galaxy",
+            field: "galaxy",
+            format: "col-2",
+            hide: true
+        }, {
+            title: "Platform",
+            id: "id-platform",
+            field: "platform",
+            format: "col-2",
+            hide: true
+        },*/
+    {
         title: "",
         id: "id-type",
         format: "col-1",
@@ -137,18 +139,19 @@ const userTable = [{
         id: "id-reg",
         field: "reg",
         format: "col-2"
-    }, {
-        title: "Lifeform",
-        id: "id-life",
-        field: "life",
-        format: "col-2"
-    }, {
+    }
+    /*, {
+            title: "Lifeform",
+            id: "id-life",
+            field: "life",
+            format: "col-2"
+        }*/
+    , {
         title: "Economy",
         id: "id-econ",
         field: "econ",
         format: "col-2"
-    }
-    , {
+    }, {
         title: "Base",
         id: "id-base",
         field: "hasbase",
@@ -271,7 +274,7 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
 }
 
 blackHoleSuns.prototype.entryFromTable = function (ent) {
-    let type = $(ent).find("#id-type").text().stripMarginWS().slice(0,2);
+    let type = $(ent).find("#id-type").text().stripMarginWS().slice(0, 2);
     let addr = "";
 
     if (type == "BH" || type == "DZ")
@@ -377,6 +380,7 @@ const totalsRows = [{
 }];
 
 blackHoleSuns.prototype.displayTotals = function (entry) {
+    return;
     let pnl = $("#totalsItems");
     let columnid = entry.loc == "stars" ? "id-all" : "id-player";
 
