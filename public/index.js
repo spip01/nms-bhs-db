@@ -306,8 +306,8 @@ blackHoleSuns.prototype.extractEntry = function (idx) {
                 bhs.updateBase(entry, true)
             }
 
-            //if (!entry.blackhole)
-            //    bhs.updateAllTotals(entry, bhs.displayTotals);
+            if (!entry.blackhole)
+                bhs.updateAllTotals(entry, bhs.displayTotals);
         }
     }
 

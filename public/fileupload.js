@@ -217,7 +217,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                         entry[2].addr = entry[1].addr;
                         delete entry[2].sys;
                         delete entry[2].reg;
-                        bhs.batchUpdate(entry[1]); // don't overwrite bh info if it exists
+                        await bhs.batchUpdate(entry[1]); // don't overwrite bh info if it exists
                         bhs.batchWriteBase(entry[2]);
                     } else
                         console.log("Not written " + row);
@@ -275,20 +275,10 @@ blackHoleSuns.prototype.batchUpdate = async function (entry) {
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
     await ref.get().then(async function (doc) {
         if (!doc.exists) {
-            bhs.batch.set(ref, entry).catch(function () {
-                console.log("error");
-                ref.set(entry).then(function () {
-                    console.log("retry ok");
-                });
-            });
+            await bhs.batch.set(ref, entry);
             console.log("add " + entry.addr);
         } else {
-            bhs.batch.update(ref, entry).catch(function () {
-                console.log("error");
-                ref.update(entry).then(function () {
-                    console.log("retry ok");
-                });;
-            });
+            await bhs.batch.update(ref, entry);
             console.log("update " + entry.addr);
         }
 
