@@ -48,12 +48,10 @@ var importTable = [{
 }, {
     match: /region/i,
     field: "reg",
-    required: true,
     group: 1
 }, {
     match: /system/i,
     field: "sys",
-    required: true,
     group: 1
 }, {
     match: /sun/i,
@@ -115,7 +113,12 @@ blackHoleSuns.prototype.readTextFile = function (f) {
 
     reader.onload = async function () {
         let allrows = reader.result.split(/\r?\n|\r/);
+        console.log("rows "+allrows.length);
+
         let hdr = allrows[1].split(/[,\t]/);
+
+        bhs.batch = bhs.fbfs.batch();
+        bhs.batchcount = 0;
 
         let step = 1 / allrows.length * 100;
         let width = 1;
@@ -144,6 +147,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
         entry[0].galaxy = bhs.user.galaxy;
         entry[0].platform = bhs.user.platform;
         entry[0].version = "next";
+        let lastplayer = bhs.user.player;
 
         for (let i = 2, ok = true; i < allrows.length && ok; ++i, ok = true) {
             entry[1] = {};
@@ -155,7 +159,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
 
             let row = allrows[i].split(/[,\t]/);
 
-            if (row[importTable[4].index] == "")
+            if (row.length == 1 || row[importTable[3].index] == "")
                 ok = false;
 
             for (let j = 0; j < importTable.length && ok; ++j) {
@@ -187,24 +191,36 @@ blackHoleSuns.prototype.readTextFile = function (f) {
             }
 
             if (ok) {
-                let hasbase = false;
-
                 entry[0].platform = entry[0].platform.match(/pc/i) ||
                     entry[0].platform.match(/xbox/i) ? "PC-XBox" : entry[0].platform.toUpperCase();
 
-                if (entry[0].player != bhs.user.player) {
+                if (entry[0].player != lastplayer) {
                     let ref = bhs.getUsersColRef().where("player", "==", entry[0].player);
                     await ref.get().then(async function (snapshot) {
                         if (snapshot.exists)
                             entry[0].uid = snapshot.doc.data().uid;
                     });
+                    lastplayer = entry[0].player;
                 } else
                     entry[0].uid = bhs.user.uid;
 
+                bhs.merge(entry[1], entry[0]);
+                bhs.merge(entry[2], entry[0]);
+
                 if (entry[2].addr == "0000:0000:0000:0000") {
-                    hasbase = true;
-                    entry[2].addr = entry[1].addr;
-                    entry[2].basename = entry[2].sys;
+                    entry[2].basename = entry[2].sys ? entry[2].sys : entry[2].reg;
+
+                    if (!entry[2].basename && entry[1].sys && entry[1].reg) {
+                        await bhs.batchUpdate(entry[1]);
+                    } else if (entry[2].uid) {
+                        entry[1].hasbase = true;
+                        entry[2].addr = entry[1].addr;
+                        delete entry[2].sys;
+                        delete entry[2].reg;
+                        bhs.batchUpdate(entry[1]); // don't overwrite bh info if it exists
+                        bhs.batchWriteBase(entry[2]);
+                    } else
+                        console.log("Not written " + row);
                 } else {
                     entry[1].deadzone = entry[2].addr == entry[1].addr;
                     entry[1].blackhole = !entry[1].deadzone;
@@ -213,42 +229,86 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                         if (!(ok = validateBHAddress(entry[1].addr)))
                             $("#status").prepend("<h7>row: " + (i + 1) + " invalid black hole address " + entry[1].addr + "</h7>");
 
-                        if (entry[1].blackhole)
+                        if (ok && entry[1].blackhole) {
                             entry[1].connection = entry[2].addr;
-                    }
-                }
-
-                for (let i = 1; ok && i <= 2; ++i) {
-                    bhs.merge(entry[i], entry[0]);
-                    entry[i].time = firebase.firestore.Timestamp.fromDate(new Date());
-
-                    if (hasbase && entry[0].uid)
-                        bhs.updateBase(entry[i]);
-
-                    if (i == 2) {
-                        if (entry[1].deadzone)
-                            break;
-
-                        if (hasbase)
-                            break;
-
-                        if (!(ok = validateExitAddress(entry[2].addr))) {
-                            $("#status").prepend("<h7>row: " + (i + 1) + " invalid exit address " + entry[2].addr + "</h7>");
-                            break;
+                            if (!(ok = validateExitAddress(entry[2].addr))) {
+                                $("#status").prepend("<h7>row: " + (i + 1) + " invalid exit address " + entry[1].addr + "</h7>");
+                            }
                         }
-                    }
 
-                    await bhs.updateEntry(entry[i]);
+                        if (ok) {
+                            bhs.batchWrite(entry[1]);
+
+                            if (entry[1].blackhole)
+                                bhs.batchWrite(entry[2]);
+                        } else
+                            console.log("Not written " + row);
+                    }
                 }
 
-                entry[0].uid = "";
+                delete entry[0].uid;
             }
         }
 
+        console.log("commit");
+        await bhs.batch.commit();
         progress.css("width", 100 + "%");
         progress.text("done");
-
     }
 
     reader.readAsText(file);
+}
+
+blackHoleSuns.prototype.batchWrite = function (entry) {
+    let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
+    bhs.batch.set(ref, entry);
+    console.log("set " + entry.addr);
+    if (++bhs.batchcount == 500) {
+        console.log("commit");
+        bhs.batch.commit();
+        bhs.batch = bhs.fbfs.batch();
+        bhs.batchcount = 0;
+    }
+}
+
+blackHoleSuns.prototype.batchUpdate = async function (entry) {
+    let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
+    await ref.get().then(async function (doc) {
+        if (!doc.exists) {
+            bhs.batch.set(ref, entry).catch(function () {
+                console.log("error");
+                ref.set(entry).then(function () {
+                    console.log("retry ok");
+                });
+            });
+            console.log("add " + entry.addr);
+        } else {
+            bhs.batch.update(ref, entry).catch(function () {
+                console.log("error");
+                ref.update(entry).then(function () {
+                    console.log("retry ok");
+                });;
+            });
+            console.log("update " + entry.addr);
+        }
+
+        if (++bhs.batchcount == 500) {
+            console.log("commit");
+            bhs.batchbatch.commit();
+            bhs.batch = bhs.fbfs.batch();
+            bhs.batchcount = 0;
+        }
+    });
+}
+
+blackHoleSuns.prototype.batchWriteBase = function (entry) {
+    let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr);
+    bhs.batch.set(ref, entry);
+    console.log("base " + entry.addr);
+    if (++bhs.batchcount == 500) {
+        console.log("commit");
+        bhs.batchbatch.commit();
+        bhs.batch = bhs.fbfs.batch();
+        bhs.batchcount = 0;
+    }
 }

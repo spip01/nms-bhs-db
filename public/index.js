@@ -87,28 +87,32 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     </div>
                 </div>
 
-                <div class="row>>
-                    <div class="col-3">
-                    <div class="row" style="display:none">
-                        <label class="col-3 h6 clr-dark-green">
-                            <input id="ck-isdz" type="checkbox">
-                            Dead Zone
+                <div class="row">
+                    <label class="col-3 h6 clr-dark-green">
+                        <input id="ck-hasbase" type="checkbox">
+                        Has Base
+                    </label>
+                    <div class="col-10">
+                        <div id="id-isbase" class="row" style="display:none">
+                            <div class="col-4 h6 clr-dark-green">Name</div>
+                            <input id="id-basename" class="rounded col-6">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="id-pnl1-only" class="row">
+                    <div class="col-6">
+                        <label class="h6 clr-dark-green">
+                            <input id="ck-single" type="checkbox">
+                            Single System
                         </label>
                     </div>
 
-                    <div class="col-11">
-                        <div class="row">
-                            <label class="col-3 h6 clr-dark-green">
-                                <input id="ck-hasbase" type="checkbox">
-                                Has Base
-                            </label>
-                            <div class="col-10">
-                                <div id="id-isbase" class="row" style="display:none">
-                                    <div class="col-4 h6 clr-dark-green">Name</div>
-                                    <input id="id-basename" class="rounded col-6">
-                                </div>
-                            </div>
-                        </div>
+                    <div class="col-6">
+                        <label class="h6 clr-dark-green">
+                            <input id="ck-isdz" type="checkbox">
+                            Dead Zone
+                        </label>
                     </div>
                 </div>
 
@@ -158,6 +162,16 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         else
             pnl.find("#id-isbase").hide();
     });
+
+    $("#" + panels[pnlBottom].id + " #id-pnl1-only").hide();
+
+    loc.find('#ck-single, #ck-isdz').change(function () {
+        let pnl = $("#" + panels[pnlBottom].id);
+        if ($(this).prop("checked"))
+            pnl.hide();
+        else
+            pnl.show();
+    });
 }
 
 blackHoleSuns.prototype.displaySingle = function (entry, idx) {
@@ -168,16 +182,16 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
         loc.find("#id-sys").val(entry.sys);
         loc.find("#id-reg").val(entry.reg);
         loc.find("#btn-Lifeform").text(entry.Lifeform);
+        loc.find("#ck-isdz").prop("checked", entry.deadzone);
+        loc.find("#ck-hasbase").prop("checked", false);
 
-        if (idx == pnlTop)
-            loc.find("#ck-isdz").prop("checked", entry.deadzone);
-        else
-            loc.find("#ck-isdz").hide();
-
-        loc.find("#ck-hasbase").prop("checked", entry.hasbase);
         if (entry.hasbase) {
+            loc.find("#ck-hasbase").prop("checked", true);
             bhs.getBase(entry, bhs.displayBase, idx);
             loc.find("#id-isbase").show();
+        } else {
+            loc.find("#id-basename").val("");
+            loc.find("#id-isbase").hide();
         }
 
         if (entry.Economy) {
@@ -266,36 +280,38 @@ blackHoleSuns.prototype.extractEntry = function (idx) {
     entry.reg = loc.find("#id-reg").val();
     entry.life = loc.find("#btn-Lifeform").text().stripNumber();
     entry.econ = loc.find("#btn-Economy").text().stripNumber();
-    let hasbase = loc.find("#ck-hasbase").prop("checked");
+    entry.hasbase = loc.find("#ck-hasbase").prop("checked");
+    let single = loc.find("#ck-single").prop("checked");
 
     if (idx == pnlTop) {
-        entry.deadzone = loc.find("#ck-deadzone").prop("checked");
+        if (loc.find("#ck-isdz").prop("checked"))
+            entry.deadzone = true;
 
-        if (!entry.deadzone) {
-            loc = pnl.find("#" + panels[pnlBottom].id + " #id-addr");
-            let con = loc.val();
-
-            if (con != "") {
-                entry.deadzone = con == entry.addr;
-                entry.blackhole = !entry.deadzone;
-
-                if (entry.blackhole)
-                    entry.connection = con;
-            }
+        if (!entry.deadzone && !single) {
+            entry.blackhole = true;
+            entry.connection = pnl.find("#" + panels[pnlBottom].id + " #id-addr").val();
         }
     }
 
-    if (bhs.validateEntry(entry)) {
-        bhs.updateEntry(entry, true);
-
-        if (hasbase) {
-            entry.basename = loc.find("#id-basename").val();
-            bhs.updateBase(entry, true)
-        }
-        
+    let ok = true;
+    if (ok = bhs.validateEntry(entry)) {
         if (entry.blackhole)
-            bhs.extractEntry(pnlBottom);
+            ok = bhs.extractEntry(pnlBottom);
+
+        if (ok) {
+            bhs.updateEntry(entry, true);
+
+            if (entry.hasbase) {
+                entry.basename = loc.find("#id-basename").val();
+                bhs.updateBase(entry, true)
+            }
+
+            //if (!entry.blackhole)
+            //    bhs.updateAllTotals(entry, bhs.displayTotals);
+        }
     }
+
+    return ok;
 }
 
 blackHoleSuns.prototype.save = function () {
