@@ -159,7 +159,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
 
             let row = allrows[i].split(/[,\t]/);
 
-            if (row.length == 1 || row[importTable[3].index] == "")
+            if (row.length < 4 || row[0] == "")
                 ok = false;
 
             for (let j = 0; j < importTable.length && ok; ++j) {

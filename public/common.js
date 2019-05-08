@@ -22,7 +22,7 @@ const fbconfig = {
     messagingSenderId: FIREBASE_MSGID
 };
 
-const starsCol = "stars4";
+const starsCol = "stars5";
 const usersCol = "users";
 
 function startUp() {
@@ -62,7 +62,7 @@ blackHoleSuns.prototype.initFirebase = function () {
 
 blackHoleSuns.prototype.logIn = function () {
     let provider = new firebase.auth.GoogleAuthProvider();
-    bhs.fbauth.signInWithPopup(provider);
+    bhs.fbauth.signInWithRedirect(provider).catch(function(error){console.log(error);});
 }
 
 blackHoleSuns.prototype.logOut = function () {

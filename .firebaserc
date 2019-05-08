@@ -1,5 +1,28 @@
 {
+  "targets": {
+    "deploy": {
+      "hosting": {
+        "dist": [
+          "nms-bhs"
+        ],
+        "test": [
+          "test-nms-bhs"
+        ]
+      }
+    },
+    "nms-bhs": {
+      "hosting": {
+        "test": [
+          "test-nms-bhs"
+        ],
+        "dist": [
+          "nms-bhs"
+        ]
+      }
+    }
+  },
   "projects": {
-    "default": "nms-bhs"
+    "dist": "nms-bhs",
+    "test": "test-nms-bhs"
   }
 }
