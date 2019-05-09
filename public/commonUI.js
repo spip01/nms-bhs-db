@@ -226,7 +226,7 @@ blackHoleSuns.prototype.buildUserTable = function () {
         });
     });
 
-    $("#id-showQty").blur(function(){
+    $("#id-showQty").blur(function () {
         bhs.getEntries(bhs.displayUserEntry, $(this).val());
     });
 
@@ -418,11 +418,17 @@ const totalsRows = [{
     id: "id-totalBHPG",
 }];
 
-blackHoleSuns.prototype.displayTotals = function (entry, from) {
+blackHoleSuns.prototype.displayTotals = function (entry, path) {
     let pnl = $("#totalsItems");
-    let columnid = entry.loc == "star" ? "id-all" : "id-player";
-    let row1 = from == "total" ? rowTotal : rowGalaxy;
-    let row2 = from == "total" ? rowPlatform : rowGalaxyPlatform;
+    let pstars = path.match(/stars/);
+    let puser = path.match(/users/);
+    let ptotal = path.match(/totals/);
+    let pgalaxy = path.match(/galaxies/);
+
+    let columnid = puser ? "id-all" : "id-player";
+ 
+    let row1 = pstars && !ptotal ? rowGalaxy : pgalaxy ? rowGalaxy : rowTotal;
+    let row2 = row1 == rowTotal ? rowPlatform : rowGalaxyPlatform;
 
     pnl.find("#" + totalsRows[row1].id + " #" + columnid).text(entry.totals.blackholes);
     pnl.find("#" + totalsRows[row2].id + " #" + columnid).text(entry.totals[bhs.user.platform].blackholes);

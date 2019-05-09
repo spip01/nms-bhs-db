@@ -69,7 +69,6 @@ var importTable = [{
 }, { // 2nd match
     match: /coord/i,
     field: "addr",
-    required: true,
     format: reformatAddress,
     validate: validateAddress,
     group: 2
@@ -245,8 +244,11 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                 entry[1] = bhs.merge(entry[1], entry[0]);
                 entry[2] = bhs.merge(entry[2], entry[0]);
 
-                if (entry[2].addr == "0000:0000:0000:0000") {
-                    entry[2].basename = entry[2].sys ? entry[2].sys : entry[2].reg;
+                if (!entry[2].addr) {
+                    await bhs.batchUpdate(entry[1]); // don't overwrite bh info if it exists
+                }
+                else if (entry[2].addr == "0000:0000:0000:0000") {
+                        entry[2].basename = entry[2].sys ? entry[2].sys : entry[2].reg;
 
                     if (!entry[2].basename) {
                         await bhs.batchUpdate(entry[1]);

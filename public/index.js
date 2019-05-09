@@ -265,7 +265,7 @@ blackHoleSuns.prototype.clearPanel = function (d) {
     pnl.find("#id-tocenter").hide();
 }
 
-blackHoleSuns.prototype.extractEntry = function (idx) {
+blackHoleSuns.prototype.extractEntry = async function (idx) {
     let pnl = $("#panels");
     let loc = pnl.find("#" + panels[idx].id);
 
@@ -299,11 +299,11 @@ blackHoleSuns.prototype.extractEntry = function (idx) {
             ok = bhs.extractEntry(pnlBottom);
 
         if (ok) {
-            bhs.updateEntry(entry, true);
+            await bhs.updateEntry(entry, true);
 
             if (entry.hasbase) {
                 entry.basename = loc.find("#id-basename").val();
-                bhs.updateBase(entry, true)
+                await bhs.updateBase(entry, true)
             }
 
             if (!entry.blackhole)
