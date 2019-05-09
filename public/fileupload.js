@@ -12,6 +12,10 @@ $(document).ready(function () {
             $("#status").prepend("<h7>No file selected</h7>");
     });
 
+    $("#fixtotal").click(function () {
+        bhs.calcTotals();
+    });
+
     $("#uploadedFile").change(function () {
         bhs.fileSelected = this;
     });
@@ -26,6 +30,10 @@ var importTable = [{
     match: /galaxy/i,
     field: "galaxy",
     format: stripNumber,
+    group: 0
+}, {
+    match: /type/i,
+    field: "type",
     group: 0
 }, {
     match: /traveler|player/i,
@@ -173,8 +181,10 @@ blackHoleSuns.prototype.readTextFile = function (f) {
         entry[0].player = bhs.user.player;
         entry[0].galaxy = bhs.user.galaxy;
         entry[0].platform = bhs.user.platform;
+        entry[0].type = "bh";
         entry[0].version = "next";
-        let lastplayer = bhs.user.player;
+
+        var last = entry;
 
         for (let ok = true, i = k; i < allrows.length && ok; ++i, ok = true) {
             entry[1] = {};
@@ -185,7 +195,6 @@ blackHoleSuns.prototype.readTextFile = function (f) {
             progress.text(i);
 
             let row = allrows[i].split(/[,\t]/);
-
 
             if (row.length < 4 || row[0] == "")
                 ok = false;
@@ -199,8 +208,8 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                         if (importTable[j].required || importTable[j].checkreq &&
                             importTable[j].checkreq(entry[importTable[grp].group][importTable[val].field])) {
                             $("#status").prepend("<h7>row: " + (i + 1) + " missing " + importTable[j].match + "</h7>");
-                            bhs.batchWriteLog(file.name + "-" + i + "-e", "row: " + (i + 1) + " missing " + importTable[j].match);
-                            bhs.batchWriteLog(file.name + "-" + i, row);
+                            await bhs.batchWriteLog(file.name + "-" + i + "-e", "row: " + (i + 1) + " missing " + importTable[j].match);
+                            await bhs.batchWriteLog(file.name + "-" + i, row);
                             if (verbose) $("#status").prepend("<h7>row: " + i + " " + allrows[i] + "</h7>");
                             ok = false;
                         }
@@ -217,8 +226,8 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                         if (!ok) {
                             let s = importTable[j].group == 1 ? "bh " : importTable[j].group == 2 ? "exit " : "";
                             $("#status").prepend("<h7>row: " + (i + 1) + " invalid value " + s + importTable[j].match + " " + entry[importTable[j].group][importTable[j].field] + "</h7>");
-                            bhs.batchWriteLog(file.name + "-" + i + "-e", "row: " + (i + 1) + " invalid value " + s + importTable[j].match + " " + entry[importTable[j].group][importTable[j].field]);
-                            bhs.batchWriteLog(file.name + "-" + i, row);
+                            await bhs.batchWriteLog(file.name + "-" + i + "-e", "row: " + (i + 1) + " invalid value " + s + importTable[j].match + " " + entry[importTable[j].group][importTable[j].field]);
+                            await bhs.batchWriteLog(file.name + "-" + i, row);
                             if (verbose) $("#status").prepend("<h7>row: " + i + " " + allrows[i] + "</h7>");
                         }
                     }
@@ -226,29 +235,27 @@ blackHoleSuns.prototype.readTextFile = function (f) {
             }
 
             if (ok) {
-                entry[0].time = firebase.firestore.Timestamp.fromDate(new Date());
+                entry[0].modded = firebase.firestore.Timestamp.fromDate(new Date());
 
                 entry[0].platform = entry[0].platform.match(/pc/i) ||
                     entry[0].platform.match(/xbox/i) ? "PC-XBox" : entry[0].platform.toUpperCase();
 
-                if (entry[0].player != lastplayer) {
-                    let ref = bhs.getUsersColRef().where("player", "==", entry[0].player);
-                    await ref.get().then(async function (snapshot) {
-                        if (snapshot.exists)
-                            entry[0].uid = snapshot.doc.data().uid;
-                    });
-                    lastplayer = entry[0].player;
-                } else
-                    entry[0].uid = bhs.user.uid;
+                let ref = bhs.getUsersColRef().where("player", "==", entry[0].player);
+                await ref.get().then(function (snapshot) {
+                    entry[0].uid = snapshot.empty ? bhs.user.uid : snapshot.docs[0].data().uid;
+                });
 
                 entry[1] = bhs.merge(entry[1], entry[0]);
                 entry[2] = bhs.merge(entry[2], entry[0]);
 
-                if (!entry[2].addr) {
+                if (entry[0].type == "edit" || !entry[2].addr)
+                    await bhs.batchEdit(entry[1], entry[2].addr ? entry[2].addr : null);
+
+                else if (entry[0].type == "single" || !entry[2].addr) {
                     await bhs.batchUpdate(entry[1]); // don't overwrite bh info if it exists
-                }
-                else if (entry[2].addr == "0000:0000:0000:0000") {
-                        entry[2].basename = entry[2].sys ? entry[2].sys : entry[2].reg;
+
+                } else if (entry[0].type == "base" || entry[2].addr == "0000:0000:0000:0000") {
+                    entry[2].basename = entry[2].sys ? entry[2].sys : entry[2].reg;
 
                     if (!entry[2].basename) {
                         await bhs.batchUpdate(entry[1]);
@@ -258,32 +265,32 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                         delete entry[2].sys;
                         delete entry[2].reg;
                         await bhs.batchUpdate(entry[1]); // don't overwrite bh info if it exists
-                        bhs.batchWriteBase(entry[2]);
+                        await bhs.batchWriteBase(entry[2]);
                     }
                 } else {
-                    entry[1].deadzone = entry[2].addr == entry[1].addr;
+                    entry[1].deadzone = entry[0].type == "dz" || entry[2].addr == entry[1].addr;
                     entry[1].blackhole = !entry[1].deadzone;
 
                     if (entry[1].blackhole || entry[1].deadzone) {
                         if (!(ok = validateBHAddress(entry[1].addr))) {
                             $("#status").prepend("<h7>row: " + (i + 1) + " invalid black hole address " + entry[1].addr + "</h7>");
-                            bhs.batchWriteLog(file.name + "-" + i + "-e", "row: " + (i + 1) + " invalid black hole address " + entry[1].addr);
-                            bhs.batchWriteLog(file.name + "-" + i, row);
+                            await bhs.batchWriteLog(file.name + "-" + i + "-e", "row: " + (i + 1) + " invalid black hole address " + entry[1].addr);
+                            await bhs.batchWriteLog(file.name + "-" + i, row);
                         }
 
                         if (ok && entry[1].blackhole) {
                             entry[1].connection = entry[2].addr;
                             if (!(ok = validateExitAddress(entry[2].addr))) {
-                                bhs.batchWriteLog(file.name + "-" + i + "-e", "row: " + (i + 1) + " invalid exit address " + entry[1].addr);
-                                bhs.batchWriteLog(file.name + "-" + i, row);
+                                await bhs.batchWriteLog(file.name + "-" + i + "-e", "row: " + (i + 1) + " invalid exit address " + entry[1].addr);
+                                await bhs.batchWriteLog(file.name + "-" + i, row);
                                 $("#status").prepend("<h7>row: " + (i + 1) + " invalid exit address " + entry[1].addr + "</h7>");
                             }
                         }
 
                         if (ok) {
-                            bhs.batchWrite(entry[1]);
+                            await bhs.batchUpdate(entry[1]);  // don't overwrite existing base or creation dates
                             if (entry[1].blackhole)
-                                bhs.batchWrite(entry[2]);
+                                await bhs.batchUpdate(entry[2]);
                         } else if (verbose) $("#status").prepend("<h7>row: " + i + " " + allrows[i] + "</h7>");
                     }
                 }
@@ -294,6 +301,8 @@ blackHoleSuns.prototype.readTextFile = function (f) {
 
         console.log("commit");
         await bhs.batch.commit();
+        //await bhs.batchWriteTotals();
+
         progress.css("width", 100 + "%");
         progress.text("done");
     }
@@ -316,23 +325,13 @@ blackHoleSuns.prototype.batchWriteLog = function (doc, text) {
     }
 }
 
-blackHoleSuns.prototype.batchWrite = function (entry) {
-    let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
-    bhs.batch.set(ref, entry);
-    if (verbose) $("#status").prepend("<h7>set " + entry.addr + "</h7>");
-    if (++bhs.batchcount == 500) {
-        console.log("commit");
-        bhs.batch.commit();
-        bhs.batch = bhs.fbfs.batch();
-        bhs.batchcount = 0;
-    }
-}
-
 blackHoleSuns.prototype.batchUpdate = async function (entry) {
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
     await ref.get().then(async function (doc) {
         if (!doc.exists) {
+            entry.created = entry.modded;
             await bhs.batch.set(ref, entry);
+            //bhs.fileIncTotals(entry);
             if (verbose) $("#status").prepend("<h7>add " + entry.addr + "</h7>");
         } else {
             await bhs.batch.update(ref, entry);
@@ -348,14 +347,49 @@ blackHoleSuns.prototype.batchUpdate = async function (entry) {
     });
 }
 
-blackHoleSuns.prototype.batchWriteBase = function (entry) {
+blackHoleSuns.prototype.batchEdit = async function (entry, old) {
+    let addr = old ? old : entry.addr;
+    let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, addr);
+    await ref.get().then(async function (doc) {
+        if (!doc.exists) {
+            if (verbose) $("#status").prepend("<h7>edit doesn't exist " + addr + "</h7>");
+        } else {
+            if (old) {
+                let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, addr);
+                await ref.delete();
+            }
+
+            let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
+            await bhs.batch.set(ref, entry);
+
+            if (verbose) $("#status").prepend("<h7>edit " + entry.addr + "</h7>");
+
+            if (++bhs.batchcount == 500) {
+                console.log("commit");
+                bhs.batchbatch.commit();
+                bhs.batch = bhs.fbfs.batch();
+                bhs.batchcount = 0;
+            }
+        }
+    });
+}
+
+blackHoleSuns.prototype.batchWriteBase = async function (entry) {
     let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr);
-    bhs.batch.set(ref, entry);
-    if (verbose) $("#status").prepend("<h7>base " + entry.addr + "</h7>");
-    if (++bhs.batchcount == 500) {
-        console.log("commit");
-        bhs.batchbatch.commit();
-        bhs.batch = bhs.fbfs.batch();
-        bhs.batchcount = 0;
-    }
+    await ref.get().then(async function (doc) {
+        if (!doc.exists) {
+            entry.created = entry.modded;
+            await bhs.batch.set(ref, entry);
+            //bhs.fileIncTotals(entry);
+        } else
+            await bhs.batch.update(ref, entry);
+
+        if (verbose) $("#status").prepend("<h7>base " + entry.addr + "</h7>");
+        if (++bhs.batchcount == 500) {
+            console.log("commit");
+            bhs.batchbatch.commit();
+            bhs.batch = bhs.fbfs.batch();
+            bhs.batchcount = 0;
+        }
+    });
 }

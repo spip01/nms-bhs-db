@@ -350,7 +350,7 @@ blackHoleSuns.prototype.updateTotal = async function (entry, inc, ref, initfcn, 
     await bhs.fbfs.runTransaction(async function (transaction) {
         return await transaction.get(ref).then(async function (doc) {
             let t = doc.data();
-console.log("updt "+ref.path);
+
             if (!doc.exists || typeof t.totals == "undefined") {
                 if (ref.path.match(/users/) && !ref.path.match(/galaxies/))
                     t = bhs.merge(entry, initfcn(entry));
@@ -370,6 +370,89 @@ console.log("updt "+ref.path);
 
             if (displayFcn)
                 displayFcn(t, ref.path);
+        });
+    });
+}
+
+blackHoleSuns.prototype.calcUserTotals = function (entry) {
+    let stotal = bhs.initTotals();
+
+    let starsref = bhs.getStarsColRef();
+    starsref.get().then(function (querysnapshot) {
+        querysnapshot.forEach(function (doc) {  // all galaxies
+            if (!doc.id=="totals") {    // special stars total doc
+                platformList.forEach(function(platform){
+
+                    // all player's stars in galaxy, platform
+                    let uplatformref = bhs.getStarsColRef(sgalaxy.galaxy, platform.name);
+                        //uplatformref = uplatformref.where("player", "==", user.player);
+                        uplatformref.get().then(function (querysnapshot) {
+                                    // update users galaxy totals
+                                    stotal.totals.stars += querysnapshot.size();
+                                    stotal.totals[platform.name].stars += querysnapshot.size();
+                                    galaxy.totals.stars += querysnapshot.size();
+
+
+
+                                    // update users galaxy totals
+                                    ugalaxy.totals.stars += querysnapshot.size();
+                                    ugalaxy.totals[platform.name].stars += querysnapshot.size();
+
+                                    // update user totals
+                                    users.totals.stars += querysnapshot.size();
+                                    users.totals[platform.name].stars += querysnapshot.size();
+                                });
+
+                                // get player's bh systems in galaxy/platform
+                                let bhref = uplatformref.where("blackhole", "==", true);
+                                bhref.get().then(function (querysnapshot) { 
+                                    // update users galaxy totals
+                                    ugalaxy.totals.blackholes += querysnapshot.size();
+                                    ugalaxy.totals[platform.name].blackholes += querysnapshot.size();
+
+                                    // update user totals
+                                    users.totals.stars += blackholes.size();
+                                    users.totals[platform.name].blackholes += querysnapshot.size();
+                                });
+
+                                // get player's dz systems in galaxy/platform
+                                let dzref = uplatformref.where("deadzone", "==", true);
+                                dzref.get().then(function (querysnapshot) { 
+                                    // update users galaxy totals
+                                    ugalaxy.totals.blackholes += querysnapshot.size();
+                                    ugalaxy.totals[platform.name].blackholes += querysnapshot.size();
+
+                                    // update user totals
+                                    users.totals.stars += blackholes.size();
+                                    users.totals[platform.name].blackholes += querysnapshot.size();
+                                });
+                            });
+
+                            // write updated galaxy totals
+                            let ugalaxyref = bhs.getStarsColRef(user.uid, sgalaxy.galaxy);
+                            ugalaxyref.get().then(function (doc) { // user galaxy
+                                let ugalaxy = {};
+                                if(doc.exits) 
+                                    ugalaxy = bhs.merge(doc.data(), bhs.initTotals());
+                                else
+                                    ugalaxy = bhs.initGalaxy(u);
+
+                                    if (ugalaxy.total.stars)
+                                ugalaxyref.set(ugalaxy);
+                        });
+                    }
+                });
+            });
+
+            let userref = bhs.getUsersColRef();
+            if (entry)
+                userref = userref.where("player", "==", entry.player);
+        
+            userref.get().then(function (querysnapshot) {
+                querysnapshot.forEach(function (doc) {  // specified or all users
+                    let user = bhs.merge(doc.data(), bhs.initTotals());
+                    // write updated user totals
+            userref.set(user);
         });
     });
 }
