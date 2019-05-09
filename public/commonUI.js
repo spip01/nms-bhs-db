@@ -93,84 +93,97 @@ const utPlatformIdx = 2;
 const utTypeIdx = 3;
 const utAddrIdx = 4;
 
-const userTable = [{
-        title: "Player",
-        id: "id-player",
-        field: "player",
-        format: "col-2",
-        hide: true
-    }, {
-        title: "Galaxy",
-        id: "id-galaxy",
-        field: "galaxy",
-        format: "col-2",
-        hide: true
-    }, {
-        title: "Platform",
-        id: "id-platform",
-        field: "platform",
-        format: "col-2",
-        hide: true
-    }, {
-        title: "",
-        id: "id-type",
-        format: "col-1",
-        field: "blackhole",
-        field2: "deadzone"
-    }, {
-        title: "Coordinates",
-        id: "id-addr",
-        field: "addr",
-        format: "col-3"
-    }, {
-        title: "LY",
-        id: "id-toctr",
-        format: "col-1",
-        calc: true
-    }, {
-        title: "System",
-        id: "id-sys",
-        field: "sys",
-        format: "col-2"
-    }, {
-        title: "Region",
-        id: "id-reg",
-        field: "reg",
-        format: "col-2"
-    }, {
-        title: "Lifeform",
-        id: "id-life",
-        field: "life",
-        format: "col-2"
-    }, {
-        title: "Economy",
-        id: "id-econ",
-        field: "econ",
-        format: "col-2"
-    }
-    , {
-        title: "Base",
-        id: "id-base",
-        field: "hasbase",
-        format: "col-2",
-    }
-];
+var userTable = [{
+    title: "Player",
+    id: "id-player",
+    field: "player",
+    format: "col-2",
+    hide: true
+}, {
+    title: "Galaxy",
+    id: "id-galaxy",
+    field: "galaxy",
+    format: "col-2",
+    hide: true
+}, {
+    title: "Platform",
+    id: "id-platform",
+    field: "platform",
+    format: "col-2",
+    hide: true
+}, {
+    title: "",
+    id: "id-type",
+    format: "col-1",
+    field: "blackhole",
+    field2: "deadzone"
+}, {
+    title: "Coordinates",
+    id: "id-addr",
+    field: "addr",
+    format: "col-3"
+}, {
+    title: "LY",
+    id: "id-toctr",
+    format: "col-1",
+    calc: true
+}, {
+    title: "System",
+    id: "id-sys",
+    field: "sys",
+    format: "col-2"
+}, {
+    title: "Region",
+    id: "id-reg",
+    field: "reg",
+    format: "col-2"
+}, {
+    title: "Lifeform",
+    id: "id-life",
+    field: "life",
+    format: "col-2"
+}, {
+    title: "Economy",
+    id: "id-econ",
+    field: "econ",
+    format: "col-2"
+}, {
+    title: "Base",
+    id: "id-base",
+    field: "hasbase",
+    format: "col-2",
+}];
 
 blackHoleSuns.prototype.buildUserTable = function () {
     const table = `
         <div class="card-header">
             <div class="row">
-                <h4 class="col-10">Latest Changes</h4>
-                <button id="export" type="button" class="col-3 btn border btn-sm disabled"
-                 disabled>Export</button>&nbsp;
+                <h4 class="col-9">Latest Changes</h4>
+                <button id="export" type="button" class="col-2 btn border btn-sm disabled" disabled>Export</button>&nbsp;
+                <button id="btn-utSettings" type="button" class="col-1 btn-sm">
+                    <i class="fas fa-angle-down"></i>
+                </button>
             </div>
         </div>
 
-        <div id="data" class="card-body">
+        <div id="utSettings" class="card card-body" style="display:none">
+            <div class="row">
+                <div class="col-2 h6 clr-dark-green">Show</div>
+                <input id="id-showQty" class="rounded col-2 h5" type="text" placeholder="10">
+            </div>
+            <div id="id-utlistsel" class="row"></div>
+        </div>
+
+        <div id="id-table" class="card-body">
             <div id="userHeader" class="row border-bottom"></div>
             <div id="userItems"></div>
-            </table>
         </div>`;
+
+    const ckbox = `            
+        <label class="col-2 h6 clr-dark-green">
+            <input id="ck-idname" type="checkbox" checked>
+            title
+        </label>`;
 
     $("#entryTable").empty();
     $("#entryTable").append(table);
@@ -179,19 +192,54 @@ blackHoleSuns.prototype.buildUserTable = function () {
 
     let h = "";
     userTable.forEach(function (t) {
-        let l = /idname/g [Symbol.replace](line, t.id);
-        l = /width/g [Symbol.replace](l, t.format);
-        h += /title/g [Symbol.replace](l, t.title);
+        if (t.title) {
+            let l = /idname/ [Symbol.replace](line, t.id);
+            l = /width/ [Symbol.replace](l, t.format);
+            h += /title/ [Symbol.replace](l, t.title);
+        }
+
     });
 
     let loc = $("#userHeader");
     loc.append(h);
 
-    if ($("#entryTable").data().page == "input") {
-        bhs.hideUserTable(loc, utPlayerIdx);
-        bhs.hideUserTable(loc, utPlatformIdx);
-        bhs.hideUserTable(loc, utGalaxyIdx);
-    }
+    h = "";
+    userTable.forEach(function (t) {
+        if (t.title) {
+            let l = /idname/ [Symbol.replace](ckbox, t.id);
+            h += /title/ [Symbol.replace](l, t.title);
+        }
+    });
+
+    loc = $("#id-utlistsel");
+    loc.append(h);
+
+    userTable.forEach(function (t) {
+        loc.find("#ck-" + t.id).change(function () {
+            if ($(this).prop("checked")) {
+                $("#userHeader").find("#" + t.id).show();
+                $("#userItems").find("#" + t.id).show();
+            } else {
+                $("#userHeader").find("#" + t.id).hide();
+                $("#userItems").find("#" + t.id).hide();
+            }
+        });
+    });
+
+    $("#id-showQty").blur(function(){
+        bhs.getEntries(bhs.displayUserEntry, $(this).val());
+    });
+
+    $("#btn-utSettings").click(function () {
+        if ($(this).html() == `<i class="fas fa-angle-down"></i>`) {
+            $("#utSettings").show();
+            $(this).html(`<i class="fas fa-angle-up"></i>`);
+        } else {
+            $("#utSettings").hide();
+            $(this).html(`<i class="fas fa-angle-down"></i>`);
+        }
+    });
+
 }
 
 var last = false;
@@ -225,11 +273,11 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
                 l = /bhdata/ [Symbol.replace](l, entry.blackhole ? "BH" : entry.deadzone ? "DZ" : "");
                 l = /xdata/ [Symbol.replace](l, "");
             } else if (entry.blackhole || entry.deadzone) {
-                l = /bhdata/ [Symbol.replace](l, entry[t.field]);
+                l = /bhdata/ [Symbol.replace](l, entry[t.field] ? entry[t.field] : "");
                 l = /xdata/ [Symbol.replace](l, "");
             } else {
                 l = /bhdata/ [Symbol.replace](l, "");
-                l = /xdata/ [Symbol.replace](l, entry[t.field]);
+                l = /xdata/ [Symbol.replace](l, entry[t.field] ? entry[t.field] : "");
             }
 
             h += l;
@@ -262,16 +310,10 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
             else
                 e.text(entry[t.field]);
         });
-
-    if ($("#entryTable").data().page == "input") {
-        bhs.hideUserTable(loc, utPlayerIdx);
-        bhs.hideUserTable(loc, utPlatformIdx);
-        bhs.hideUserTable(loc, utGalaxyIdx);
-    }
 }
 
 blackHoleSuns.prototype.entryFromTable = function (ent) {
-    let type = $(ent).find("#id-type").text().stripMarginWS().slice(0,2);
+    let type = $(ent).find("#id-type").text().stripMarginWS().slice(0, 2);
     let addr = "";
 
     if (type == "BH" || type == "DZ")
@@ -376,23 +418,14 @@ const totalsRows = [{
     id: "id-totalBHPG",
 }];
 
-blackHoleSuns.prototype.displayTotals = function (entry) {
+blackHoleSuns.prototype.displayTotals = function (entry, from) {
     let pnl = $("#totalsItems");
-    let columnid = entry.loc == "stars" ? "id-all" : "id-player";
+    let columnid = entry.loc == "star" ? "id-all" : "id-player";
+    let row1 = from == "total" ? rowTotal : rowGalaxy;
+    let row2 = from == "total" ? rowPlatform : rowGalaxyPlatform;
 
-    if (entry.galaxy == bhs.user.galaxy) {
-        let rowid = totalsRows[rowGalaxy].id;
-        pnl.find("#" + rowid + " #" + columnid).text(entry.totals.blackholes);
-
-        rowid = totalsRows[rowGalaxyPlatform].id;
-        pnl.find("#" + rowid + " #" + columnid).text(entry.totals[bhs.user.platform].blackholes);
-    } else {
-        let rowid = totalsRows[rowTotal].id;
-        pnl.find("#" + rowid + " #" + columnid).text(entry.totals.blackholes);
-
-        rowid = totalsRows[rowPlatform].id;
-        pnl.find("#" + rowid + " #" + columnid).text(entry.totals[bhs.user.platform].blackholes);
-    }
+    pnl.find("#" + totalsRows[row1].id + " #" + columnid).text(entry.totals.blackholes);
+    pnl.find("#" + totalsRows[row2].id + " #" + columnid).text(entry.totals[bhs.user.platform].blackholes);
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
