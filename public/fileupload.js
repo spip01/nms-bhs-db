@@ -138,7 +138,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
         progress.show();
 
         let k = 0;
-        for (; k < 2; ++k) {
+        for (; k < allrows.length; ++k) {
             let row = allrows[k].split(/[,\t]/);
 
             for (let i = 0; i < importTable.length; ++i) {
@@ -235,8 +235,6 @@ blackHoleSuns.prototype.readTextFile = function (f) {
             }
 
             if (ok) {
-                entry[0].modded = firebase.firestore.Timestamp.fromDate(new Date());
-
                 entry[0].platform = entry[0].platform.match(/pc/i) ||
                     entry[0].platform.match(/xbox/i) ? "PC-XBox" : entry[0].platform.toUpperCase();
 
@@ -251,19 +249,21 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                 if (entry[0].type == "edit" || !entry[2].addr)
                     await bhs.batchEdit(entry[1], entry[2].addr ? entry[2].addr : null);
 
+                else if (entry[0].type == "delete")
+                    await bhs.batchDelete(entry[1]);
+
                 else if (entry[0].type == "single" || !entry[2].addr) {
                     await bhs.batchUpdate(entry[1]); // don't overwrite bh info if it exists
 
                 } else if (entry[0].type == "base" || entry[2].addr == "0000:0000:0000:0000") {
                     entry[2].basename = entry[2].sys ? entry[2].sys : entry[2].reg;
-
+                    delete entry[2].sys;
+                    delete entry[2].reg;
                     if (!entry[2].basename) {
                         await bhs.batchUpdate(entry[1]);
                     } else if (entry[2].uid) {
                         entry[1].hasbase = true;
-                        entry[2].addr = entry[1].addr;
-                        delete entry[2].sys;
-                        delete entry[2].reg;
+                        entry[2] = bhs.merge(entry[2], entry[1]);
                         await bhs.batchUpdate(entry[1]); // don't overwrite bh info if it exists
                         await bhs.batchWriteBase(entry[2]);
                     }
@@ -288,7 +288,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                         }
 
                         if (ok) {
-                            await bhs.batchUpdate(entry[1]);  // don't overwrite existing base or creation dates
+                            await bhs.batchUpdate(entry[1]); // don't overwrite existing base or creation dates
                             if (entry[1].blackhole)
                                 await bhs.batchUpdate(entry[2]);
                         } else if (verbose) $("#status").prepend("<h7>row: " + i + " " + allrows[i] + "</h7>");
@@ -326,6 +326,8 @@ blackHoleSuns.prototype.batchWriteLog = function (doc, text) {
 }
 
 blackHoleSuns.prototype.batchUpdate = async function (entry) {
+    entry.modded = firebase.firestore.Timestamp.fromDate(new Date());
+
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
     await ref.get().then(async function (doc) {
         if (!doc.exists) {
@@ -334,8 +336,11 @@ blackHoleSuns.prototype.batchUpdate = async function (entry) {
             //bhs.fileIncTotals(entry);
             if (verbose) $("#status").prepend("<h7>add " + entry.addr + "</h7>");
         } else {
-            await bhs.batch.update(ref, entry);
-            if (verbose) $("#status").prepend("<h7>update " + entry.addr + "</h7>");
+            if (doc.data().player == entry.player) {
+                await bhs.batch.update(ref, entry);
+                if (verbose) $("#status").prepend("<h7>update " + entry.addr + "</h7>");
+            } else
+            if (verbose) $("#status").prepend("<h7>" + entry.addr + " can only be edited by original creator</h7>");
         }
 
         if (++bhs.batchcount == 500) {
@@ -348,6 +353,8 @@ blackHoleSuns.prototype.batchUpdate = async function (entry) {
 }
 
 blackHoleSuns.prototype.batchEdit = async function (entry, old) {
+    entry.modded = firebase.firestore.Timestamp.fromDate(new Date());
+
     let addr = old ? old : entry.addr;
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, addr);
     await ref.get().then(async function (doc) {
@@ -374,13 +381,32 @@ blackHoleSuns.prototype.batchEdit = async function (entry, old) {
     });
 }
 
+blackHoleSuns.prototype.batchDelete = async function (entry) {
+    let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
+    await ref.get().then(async function (doc) {
+        if (!doc.exists)
+            $("#status").prepend("<h7>delete " + entry.addr + " doesn't exist</h7>");
+        else {
+            if (doc.data().player == entry.player) {
+
+                await ref.delete().then(function () {
+                    // bhs.fileDecTotals(entry);
+                    if (verbose) $("#status").prepend("<h7>delete " + entry.addr + "</h7>");
+                });
+            } else
+                $("#status").prepend("<h7>can't delete " + entry.addr + " it can only be deleted by original creator " + doc.data().player + "</h7>");
+        }
+    });
+}
+
 blackHoleSuns.prototype.batchWriteBase = async function (entry) {
+    entry.modded = firebase.firestore.Timestamp.fromDate(new Date());
+
     let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr);
     await ref.get().then(async function (doc) {
         if (!doc.exists) {
             entry.created = entry.modded;
             await bhs.batch.set(ref, entry);
-            //bhs.fileIncTotals(entry);
         } else
             await bhs.batch.update(ref, entry);
 

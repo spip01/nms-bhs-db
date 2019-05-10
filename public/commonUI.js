@@ -21,7 +21,7 @@ blackHoleSuns.prototype.doLoggedin = function () {
 }
 
 blackHoleSuns.prototype.displayUser = function (user) {
-    bhs.merge(bhs.user, user);
+    bhs.user = bhs.merge(bhs.user, user);
 
     if (bhs.user.uid) {
         bhs.buildUserTable();
