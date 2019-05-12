@@ -135,26 +135,42 @@ blackHoleSuns.prototype.init = function () {
 }
 
 blackHoleSuns.prototype.userInit = function () {
-    let user = bhs.initTotals();
+    let user = {};
     user.uid = null;
     user.player = "";
     user.platform = platformList[0].name;
     user.galaxy = galaxyList[0].name;
     user.firsttime = firebase.firestore.Timestamp.fromDate(new Date());
     user.lasttime = firebase.firestore.Timestamp.fromDate(new Date());
+    user.totals = bhs.initTotals();
+    user.totals[user.galaxy] = bhs.initTotals();
 
-    bhs.added = {};
-    bhs.added.stars = 0;
-    bhs.added.blackholes = 0;
-
+    bhs.totals = bhs.initTotals();
+    bhs.totals[user.galaxy] = bhs.initTotals();
 
     return user;
 }
 
 blackHoleSuns.prototype.merge = function (o, n) {
     Object.keys(n).forEach(function (x) {
-        o[x] = n[x];
-    })
+        if (typeof n[x] != "object")
+            o[x] = n[x];
+        else {
+            if (!o[x])
+                o[x] = {};
+            Object.keys(n[x]).forEach(function (y) {
+                if (typeof n[x][y] != "object")
+                    o[x][y] = n[x][y];
+                else {
+                    if (!o[x][y])
+                        o[x][y] = {};
+                    Object.keys(n[x][y]).forEach(function (z) {
+                        o[x][y][z] = n[x][y][z];
+                    });
+                }
+            });
+        }
+    });
 
     return o;
 }
@@ -219,10 +235,9 @@ blackHoleSuns.prototype.updateEntry = async function (entry, verbose) {
                 return;
             }
             entry = bhs.merge(entry, existing);
-        }
-        else 
+        } else
             entry.created = entry.modded;
-        
+
         await ref.set(entry).then(function () {
             if (verbose)
                 $("#status").prepend("<h7 class='clr-dark-green'>System at " + entry.addr + " saved.</h7>");
@@ -304,45 +319,39 @@ blackHoleSuns.prototype.getStarsColRef = function (galaxy, platform, addr) {
 
 blackHoleSuns.prototype.deleteEntry = async function (addr) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform, addr);
-    await ref.get().then(async function(doc){
+    await ref.get().then(async function (doc) {
         if (!doc.exists)
             $("#status").prepend("<h7>delete " + addr + " doesn't exist</h7>");
         else {
             if (doc.data().player == bhs.user.player) {
-        
+
                 await ref.delete().then(function () {
                     // bhs.fileDecTotals(entry);
                     if (verbose) $("#status").prepend("<h7>delete " + addr + "</h7>");
                 });
-            } else 
-                $("#status").prepend("<h7>can't delete " + addr + " it can only be deleted by original creator "+doc.data().player+"</h7>");
+            } else
+                $("#status").prepend("<h7>can't delete " + addr + " it can only be deleted by original creator " + doc.data().player + "</h7>");
         }
     });
 }
 
 blackHoleSuns.prototype.initTotals = function () {
     let t = {};
-    t.totals = {};
-    t.totals.stars = 0;
-    t.totals.blackholes = 0;
+    t.stars = 0;
+    t.blackholes = 0;
 
-    t.totals["PC-XBox"] = {};
-    t.totals["PC-XBox"].stars = 0;
-    t.totals["PC-XBox"].blackholes = 0;
+    t["PC-XBox"] = {};
+    t["PC-XBox"].stars = 0;
+    t["PC-XBox"].blackholes = 0;
 
-    t.totals["PS4"] = {};
-    t.totals["PS4"].stars = 0;
-    t.totals["PS4"].blackholes = 0;
+    t["PS4"] = {};
+    t["PS4"].stars = 0;
+    t["PS4"].blackholes = 0;
 
     return t;
 }
 
-blackHoleSuns.prototype.incTotals = function (entry) {
-    ++bhs.added.stars;
-
-    if (entry.blackhole || entry.deadzone)
-        ++bhs.added.blackholes;
-}
+blackHoleSuns.prototype.incTotals = function (entry) {}
 
 blackHoleSuns.prototype.updateAllTotals = async function (entry, displayFcn) {
     let ref = bhs.getStarsColRef("totals");
@@ -355,9 +364,7 @@ blackHoleSuns.prototype.updateAllTotals = async function (entry, displayFcn) {
     ref = bhs.getUsersColRef(entry.uid, entry.galaxy);
     await bhs.updateTotal(entry, bhs.added, ref, bhs.initGalaxy, displayFcn);
 
-    bhs.added = {};
-    bhs.added.stars = 0;
-    bhs.added.blackholes = 0;
+    delete bhs.totals;
 }
 
 blackHoleSuns.prototype.updateTotal = async function (entry, inc, ref, initfcn, displayFcn) {

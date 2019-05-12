@@ -181,6 +181,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
         entry[0].player = bhs.user.player;
         entry[0].galaxy = bhs.user.galaxy;
         entry[0].platform = bhs.user.platform;
+        entry[0].uploadplayer = bhs.user.player;
         entry[0].type = "bh";
         entry[0].version = "next";
 
@@ -237,11 +238,6 @@ blackHoleSuns.prototype.readTextFile = function (f) {
             if (ok) {
                 entry[0].platform = entry[0].platform.match(/pc/i) ||
                     entry[0].platform.match(/xbox/i) ? "PC-XBox" : entry[0].platform.toUpperCase();
-
-                let ref = bhs.getUsersColRef().where("player", "==", entry[0].player);
-                await ref.get().then(function (snapshot) {
-                    entry[0].uid = snapshot.empty ? bhs.user.uid : snapshot.docs[0].data().uid;
-                });
 
                 entry[1] = bhs.merge(entry[1], entry[0]);
                 entry[2] = bhs.merge(entry[2], entry[0]);
