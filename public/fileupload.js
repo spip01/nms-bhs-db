@@ -329,7 +329,7 @@ blackHoleSuns.prototype.batchUpdate = async function (entry) {
                 await bhs.batch.update(ref, entry);
                 bhs.status(entry.addr + " updated");
             } else
-                bhs.status(entry.addr + " can only be edited by owner.");
+                bhs.status(entry.addr + " can only be edited by owner: "+doc.data().player);
         }
 
         if (++bhs.batchcount == 500) {
@@ -383,7 +383,7 @@ blackHoleSuns.prototype.batchDelete = async function (entry) {
                     bhs.status(entry.addr + " deleted");
                 });
             } else
-                bhs.status(entry.addr + " can only be deleted by owner.", true);
+                bhs.status(entry.addr + " can only be deleted by owner: "+doc.data().player, true);
         }
     });
 }
