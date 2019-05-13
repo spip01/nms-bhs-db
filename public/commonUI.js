@@ -180,7 +180,7 @@ blackHoleSuns.prototype.buildUserTable = function () {
         </div>`;
 
     const ckbox = `            
-        <label class="col-2 h6 clr-dark-green">
+        <label class="col-3 h6 clr-dark-green">
             <input id="ck-idname" type="checkbox" checked>
             title
         </label>`;
