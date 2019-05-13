@@ -208,7 +208,7 @@ blackHoleSuns.prototype.checkPlayerName = function (loc) {
         ref.get().then(function (snapshot) {
             if (!snapshot.empty) {
                 $(loc).val(bhs.user.player);
-                $("#status").prepend("<h7>Player Name:" + n + " is already taken.</h7>");
+                bhs.status("Player Name:" + n + " is already taken.", true);
             } else {
                 bhs.user.player = n;
                 let ref = bhs.getUsersColRef(bhs.user.uid);
@@ -228,7 +228,7 @@ blackHoleSuns.prototype.getEntry = function (addr, displayfcn, idx) {
     });
 }
 
-blackHoleSuns.prototype.updateEntry = async function (entry, verbose) {
+blackHoleSuns.prototype.updateEntry = async function (entry) {
     entry.modded = firebase.firestore.Timestamp.fromDate(new Date());
     entry.version = "next";
 
@@ -237,7 +237,7 @@ blackHoleSuns.prototype.updateEntry = async function (entry, verbose) {
         if (!doc.exists) {
             let existing = doc.data();
             if (existing.player != entry.player) {
-                if (verbose) $("#status").prepend("<h7>" + entry.addr + " can only be edited by original creator " + existing.player + "</h7>");
+                bhs.status(entry.addr + " can only be edited by owner: " + existing.player, true);
                 return;
             }
             entry = bhs.merge(entry, existing);
@@ -245,8 +245,7 @@ blackHoleSuns.prototype.updateEntry = async function (entry, verbose) {
             entry.created = entry.modded;
 
         await ref.set(entry).then(function () {
-            if (verbose)
-                $("#status").prepend("<h7 class='clr-dark-green'>System at " + entry.addr + " saved.</h7>");
+            bhs.status(entry.addr + " saved.", true);
             if (!doc.exists)
                 bhs.incTotals(entry);
         });
@@ -271,7 +270,7 @@ blackHoleSuns.prototype.updateBase = function (entry, verbose) {
     let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr);
     ref.set(entry).then(function () {
         if (verbose)
-            $("#status").prepend("<h7 class='clr-dark-green'>Base at " + entry.addr + " saved.</h7>");
+            $("#status").prepend(entry.addr + " base saved.");
     });
 }
 
@@ -286,7 +285,7 @@ blackHoleSuns.prototype.getBase = function (entry, displayfcn, idx) {
 blackHoleSuns.prototype.deleteBase = function (entry) {
     let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform, entry.addr);
     ref.delete().then(function () {
-        $("#status").prepend("<h7>Base at " + addr + " deleted.</h7>");
+        bhs.status(entry.addr + " base deleted.");
     });
 }
 
@@ -327,16 +326,16 @@ blackHoleSuns.prototype.deleteEntry = async function (addr) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform, addr);
     await ref.get().then(async function (doc) {
         if (!doc.exists)
-            $("#status").prepend("<h7>delete " + addr + " doesn't exist</h7>");
+            bhs.status(addr + " doesn't exist for delete");
         else {
             if (doc.data().player == bhs.user.player) {
 
                 await ref.delete().then(function () {
                     // bhs.fileDecTotals(entry);
-                    if (verbose) $("#status").prepend("<h7>delete " + addr + "</h7>");
+                    bhs.status(addr + " deleted");
                 });
             } else
-                $("#status").prepend("<h7>can't delete " + addr + " it can only be deleted by original creator " + doc.data().player + "</h7>");
+                bhs.status(addr + " can only be deleted by owner: " + doc.data().player);
         }
     });
 }
@@ -568,17 +567,17 @@ blackHoleSuns.prototype.validateUser = function (user) {
     let ok = true;
 
     if (!user.player) {
-        $("#status").prepend("<h7>Error: Missing player name. Changes not saved.</h7>");
+        bhs.status("Error: Missing player name. Changes not saved.", true);
         ok = false;
     }
 
     if (ok && !user.galaxy) {
-        $("#status").prepend("<h7>Error: Missing galaxy. Changes not saved.</h7>");
+        bhs.status("Error: Missing galaxy. Changes not saved.", true);
         ok = false;
     }
 
     if (ok && !user.platform) {
-        $("#status").prepend("<h7>Error: Missing platform. Changes not saved.</h7>");
+        bhs.status("Error: Missing platform. Changes not saved.", true);
         ok = false;
     }
 
@@ -589,27 +588,27 @@ blackHoleSuns.prototype.validateEntry = function (entry) {
     let ok = true;
 
     if (!entry.addr) {
-        $("#status").prepend("<h7>Error: Missing address. Changes not saved.</h7>");
+        bhs.status("Error: Missing address. Changes not saved.", true);
         ok = false;
     }
 
     if (ok && !entry.sys) {
-        $("#status").prepend("<h7>Error: Missing system name. Changes not saved.</h7>");
+        bhs.status("Error: Missing system name. Changes not saved.", true);
         ok = false;
     }
 
     if (ok && !entry.reg) {
-        $("#status").prepend("<h7>Error: Missing region name. Changes not saved.</h7>");
+        bhs.status("Error: Missing region name. Changes not saved.", true);
         ok = false;
     }
 
     if (ok && !entry.blackhole && !entry.deadzone && !bhs.validateAddress(entry.addr, "xit")) {
-        $("#status").prepend("<h7>Error: Invalid exit address. Changes not saved.</h7>");
+        bhs.status("Error: Invalid exit address. Changes not saved.", true);
         ok = false;
     }
 
     if (ok && (entry.blackhole || entry.deadzone) && !bhs.validateAddress(entry.addr, "bh")) {
-        $("#status").prepend("<h7>Error: Invalid black hole address. Changes not saved.</h7>");
+        bhs.status("Error: Invalid black hole address. Changes not saved.", true);
         ok = false;
     }
 
@@ -772,6 +771,20 @@ blackHoleSuns.prototype.validateAddress = function (addr, ck) {
     let ok = c.x <= 0xfff && c.y <= 0xff && c.z <= 0xfff && c.s <= 0x2ff;
     ok = ok && (!ck || (ck != "bh" || c.s == 0x79) && (ck != "xit" || c.s != 0x79));
     return ok;
+}
+
+blackHoleSuns.prototype.validateDist = function (entry) {
+    let nok = false;
+    if (nok = entry.dist < 3200)
+        bhs.status(entry.addr + ` star in center void`, true);
+    else if (nok = (entry.dist > 3500 && entry.towardsCtr < 0))
+        bhs.status(entry.addr + ` distance < 0`, true);
+    else if (nok = (entry.dist <= 3500 && entry.towardsCtr < -400))
+        bhs.status(entry.addr + ` distance < -400`, true);
+    else if (nok = (entry.towardsCtr > 21000 && entry.dist <= 819200))
+        bhs.status(entry.addr + ` distance > 21000`, true);
+
+    return !nok;
 }
 
 blackHoleSuns.prototype.makeBHAddress = function (addr) {

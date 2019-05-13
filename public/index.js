@@ -342,3 +342,7 @@ blackHoleSuns.prototype.displayCalc = function (entry) {
         loc.find("#id-tocenter").show();
     }
 }
+
+blackHoleSuns.prototype.status = function (str) {
+    $("#status").prepend("<h7>" + str + "</h7>");
+}
