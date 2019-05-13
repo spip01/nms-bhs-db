@@ -159,7 +159,6 @@ blackHoleSuns.prototype.buildUserTable = function () {
         <div class="card-header">
             <div class="row">
                 <h4 class="col-9">Latest Changes</h4>
-                <button id="export" type="button" class="col-2 btn border btn-sm disabled" disabled>Export</button>&nbsp;
                 <button id="btn-utSettings" type="button" class="col-1 btn-sm">
                     <i class="fas fa-angle-down"></i>
                 </button>
@@ -168,9 +167,14 @@ blackHoleSuns.prototype.buildUserTable = function () {
 
         <div id="utSettings" class="card card-body" style="display:none">
             <div class="row">
-                <div class="col-2 h6 clr-dark-green">Show</div>
-                <input id="id-showQty" class="rounded col-2 h5" type="text" placeholder="10">
-            </div>
+                <div class="col-8">
+                    <div class="row">
+                        <div class="col-4 h6 clr-dark-green">Show</div>
+                        <input id="id-showQty" class="rounded col-6 h5" type="text" placeholder="10">
+                    </div>
+                </div>
+                <button id="export" type="button" class="col-2 btn border btn-sm disabled" disabled>Export</button>&nbsp;
+                </div>
             <div id="id-utlistsel" class="row"></div>
         </div>
 
