@@ -114,6 +114,15 @@ var importTable = [{
     group: 2
 }];
 
+/* type menu from spreadsheet
+ Black Hole
+Base
+DeadZone 
+Single System
+S Class Ship
+S Class Weapon
+*/
+
 blackHoleSuns.prototype.readTextFile = function (f) {
     let file = f.files[0];
     let reader = new FileReader();
@@ -166,9 +175,10 @@ blackHoleSuns.prototype.readTextFile = function (f) {
         var entry = [];
         entry[0] = {};
         entry[0].player = bhs.user.player;
+        entry[0].uploader = bhs.user.player;
         entry[0].galaxy = bhs.user.galaxy;
         entry[0].platform = bhs.user.platform;
-        entry[0].uploadplayer = bhs.user.player;
+        entry[0].uploader = bhs.user.player;
         entry[0].type = "bh";
         entry[0].version = "next";
 
@@ -325,11 +335,12 @@ blackHoleSuns.prototype.batchUpdate = async function (entry) {
             //bhs.fileIncTotals(entry);
             bhs.status(entry.addr + " added");
         } else {
-            if (doc.data().player == entry.player) {
+            let d = doc.data()
+            if (d.player == bhs.user.player || d.uploader == bhs.user.player) {
                 await bhs.batch.update(ref, entry);
                 bhs.status(entry.addr + " updated");
             } else
-                bhs.status(entry.addr + " can only be edited by owner: "+doc.data().player, true);
+                bhs.status(entry.addr + " can only be edited by owner: "+d.player, true);
         }
 
         if (++bhs.batchcount == 500) {
@@ -376,13 +387,14 @@ blackHoleSuns.prototype.batchDelete = async function (entry) {
         if (!doc.exists)
             bhs.status(entry.addr + " doesn't exist for delete.", true);
         else {
-            if (doc.data().player == entry.player) {
+            let d = doc.data();
+            if (d.player == bhs.user.player || d.uploader == bhs.user.player) {
                 await ref.delete().then(function () {
                     // bhs.fileDecTotals(entry);
                     bhs.status(entry.addr + " deleted");
                 });
             } else
-                bhs.status(entry.addr + " can only be deleted by owner: "+doc.data().player, true);
+                bhs.status(entry.addr + " can only be deleted by owner: "+d.player, true);
         }
     });
 }

@@ -328,14 +328,15 @@ blackHoleSuns.prototype.deleteEntry = async function (addr) {
         if (!doc.exists)
             bhs.status(addr + " doesn't exist for delete");
         else {
-            if (doc.data().player == bhs.user.player) {
+            let d=doc.data();
+            if (d.player == bhs.user.player || d.uploader == bhs.user.player) {
 
                 await ref.delete().then(function () {
                     // bhs.fileDecTotals(entry);
                     bhs.status(addr + " deleted");
                 });
             } else
-                bhs.status(addr + " can only be deleted by owner: " + doc.data().player);
+                bhs.status(addr + " can only be deleted by owner: " + d.player);
         }
     });
 }
