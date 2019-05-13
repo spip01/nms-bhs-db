@@ -152,25 +152,31 @@ blackHoleSuns.prototype.userInit = function () {
 }
 
 blackHoleSuns.prototype.merge = function (o, n) {
-    Object.keys(n).forEach(function (x) {
-        if (typeof n[x] != "object")
-            o[x] = n[x];
-        else {
-            if (!o[x])
-                o[x] = {};
-            Object.keys(n[x]).forEach(function (y) {
-                if (typeof n[x][y] != "object")
-                    o[x][y] = n[x][y];
-                else {
-                    if (!o[x][y])
-                        o[x][y] = {};
-                    Object.keys(n[x][y]).forEach(function (z) {
-                        o[x][y][z] = n[x][y][z];
-                    });
-                }
-            });
-        }
-    });
+    if (typeof n != "object")
+        o = n;
+    else {
+        if (!o)
+            o = {};
+        Object.keys(n).forEach(function (x) {
+            if (typeof n[x] != "object")
+                o[x] = n[x];
+            else {
+                if (!o[x])
+                    o[x] = {};
+                Object.keys(n[x]).forEach(function (y) {
+                    if (typeof n[x][y] != "object")
+                        o[x][y] = n[x][y];
+                    else {
+                        if (!o[x][y])
+                            o[x][y] = {};
+                        Object.keys(n[x][y]).forEach(function (z) {
+                            o[x][y][z] = n[x][y][z];
+                        });
+                    }
+                });
+            }
+        });
+    }
 
     return o;
 }

@@ -341,7 +341,7 @@ blackHoleSuns.prototype.batchUpdate = async function (entry) {
 
         if (++bhs.batchcount == 500) {
             console.log("commit");
-            bhs.batchbatch.commit();
+            bhs.batch.commit();
             bhs.batch = bhs.fbfs.batch();
             bhs.batchcount = 0;
         }
@@ -369,7 +369,7 @@ blackHoleSuns.prototype.batchEdit = async function (entry, old) {
 
             if (++bhs.batchcount == 500) {
                 console.log("commit");
-                bhs.batchbatch.commit();
+                bhs.batch.commit();
                 bhs.batch = bhs.fbfs.batch();
                 bhs.batchcount = 0;
             }
@@ -409,7 +409,7 @@ blackHoleSuns.prototype.batchWriteBase = async function (entry) {
         if (verbose) $("#status").prepend("<h7>base " + entry.addr + "</h7>");
         if (++bhs.batchcount == 500) {
             console.log("commit");
-            bhs.batchbatch.commit();
+            bhs.batch.commit();
             bhs.batch = bhs.fbfs.batch();
             bhs.batchcount = 0;
         }
