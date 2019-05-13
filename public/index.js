@@ -281,6 +281,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
     entry.life = loc.find("#btn-Lifeform").text().stripNumber();
     entry.econ = loc.find("#btn-Economy").text().stripNumber();
     entry.hasbase = loc.find("#ck-hasbase").prop("checked");
+    entry.dist = bhs.calcDist(entry.addr);
     let single = loc.find("#ck-single").prop("checked");
 
     if (idx == pnlTop) {
@@ -290,6 +291,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
         if (!entry.deadzone && !single) {
             entry.blackhole = true;
             entry.connection = pnl.find("#" + panels[pnlBottom].id + " #id-addr").val();
+            entry.distToCtr = bhs.calcDist(entry.connection) - entry.dist;
         }
     }
 

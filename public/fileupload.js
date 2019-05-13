@@ -242,6 +242,9 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                 entry[1] = bhs.merge(entry[1], entry[0]);
                 entry[2] = bhs.merge(entry[2], entry[0]);
 
+                entry[1].dist = bhs.calcDist(entry[1].addr);
+                entry[2].dist = bhs.calcDist(entry[2].addr);
+
                 if (entry[0].type == "edit" || !entry[2].addr)
                     await bhs.batchEdit(entry[1], entry[2].addr ? entry[2].addr : null);
 
@@ -276,6 +279,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
 
                         if (ok && entry[1].blackhole) {
                             entry[1].connection = entry[2].addr;
+                            entry[1].distToCtr = entry[1].dist - entry[2].dist;
                             if (!(ok = validateExitAddress(entry[2].addr))) {
                                 await bhs.batchWriteLog(file.name + "-" + i + "-e", "row: " + (i + 1) + " invalid exit address " + entry[1].addr);
                                 await bhs.batchWriteLog(file.name + "-" + i, row);
