@@ -413,29 +413,29 @@ const totalsRows = [{
     id: "id-totalBH",
 }, {
     title: "Total[galaxy]",
-    id: "id-totalBHP",
+    id: "id-totalBHG",
 }, {
     title: "Total[platform]",
     id: "id-totalBHP",
 }, {
     title: "Total[galaxy][platform]",
-    id: "id-totalBHPG",
+    id: "id-totalBHGP",
 }];
 
-blackHoleSuns.prototype.displayTotals = function (entry, path) {
+blackHoleSuns.prototype.displayTotals = function (totals, id) {
     let pnl = $("#totalsItems");
-    let pstars = path.match(/stars/);
-    let puser = path.match(/users/);
-    let ptotal = path.match(/totals/);
-    let pgalaxy = path.match(/galaxies/);
 
-    let columnid = puser ? "id-all" : "id-player";
- 
-    let row1 = pstars && !ptotal ? rowGalaxy : pgalaxy ? rowGalaxy : rowTotal;
-    let row2 = row1 == rowTotal ? rowPlatform : rowGalaxyPlatform;
+    let columnid = id == "totals" ? "id-all" : "id-player";
 
-    pnl.find("#" + totalsRows[row1].id + " #" + columnid).text(entry.totals.blackholes);
-    pnl.find("#" + totalsRows[row2].id + " #" + columnid).text(entry.totals[bhs.user.platform].blackholes);
+    pnl.find("#" + columnid).empty();
+
+    pnl.find("#" + totalsRows[rowTotal].id + " #" + columnid).text(totals.blackholes);
+    pnl.find("#" + totalsRows[rowPlatform].id + " #" + columnid).text(totals[bhs.user.platform].blackholes);
+
+    if (typeof totals.galaxy[bhs.user.galaxy] != "undefined") {
+        pnl.find("#" + totalsRows[rowGalaxy].id + " #" + columnid).text(totals.galaxy[bhs.user.galaxy].blackholes);
+        pnl.find("#" + totalsRows[rowGalaxyPlatform].id + " #" + columnid).text(totals.galaxy[bhs.user.galaxy][bhs.user.platform].blackholes);
+    }
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
@@ -462,7 +462,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
     let h = /label/ [Symbol.replace](title, label);
     h += /idname/g [Symbol.replace](block, id);
     h = /width/ [Symbol.replace](h, vertical ? 13 : 6);
-    h = /rgbcolor/ [Symbol.replace](h, "background-color: " + levelRgb[label == "Galaxy" ? 0 : list[0].level]);
+    h = /rgbcolor/ [Symbol.replace](h, "background-color: " + levelRgb[label == "Galaxy" ? 0 : list[0].number]);
     loc.find("#id-" + id).append(h);
 
     let menu = loc.find("#menu-" + id);
@@ -474,8 +474,8 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
         let lid = list[i].name.nameToId();
         h = /idname/ [Symbol.replace](item, lid);
 
-        if (list[i].level)
-            h = /iname/ [Symbol.replace](h, list[i].level + " " + list[i].name);
+        if (list[i].number)
+            h = /iname/ [Symbol.replace](h, list[i].number + " " + list[i].name);
         else
         if (list[i].number)
             h = /iname/ [Symbol.replace](h, list[i].number + " " + list[i].name);
@@ -483,8 +483,8 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
             h = /iname/ [Symbol.replace](h, list[i].name);
 
         if (label != "Galaxy") {
-            if (list[i].level)
-                h = /rgbcolor/ [Symbol.replace](h, "background-color: " + levelRgb[list[i].level] + ";");
+            if (list[i].number)
+                h = /rgbcolor/ [Symbol.replace](h, "background-color: " + levelRgb[list[i].number] + ";");
             else
                 h = /rgbcolor/ [Symbol.replace](h, "background-color: #f0fff0;");
         } else {

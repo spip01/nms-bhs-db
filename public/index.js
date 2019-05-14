@@ -195,7 +195,7 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
         }
 
         if (entry.Economy) {
-            let l = economyList[bhs.getIndex(economyList, "name", entry.Economy)].level;
+            let l = economyList[bhs.getIndex(economyList, "name", entry.Economy)].number;
             loc.find("#btn-Economy").text(l + " " + entry.Economy);
             loc.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";");
         }
@@ -309,7 +309,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
             }
 
             if (!entry.blackhole)
-                bhs.updateAllTotals(bhs.user, bhs.displayTotals);
+                bhs.updateAllTotals(bhs.totals);
         }
     }
 

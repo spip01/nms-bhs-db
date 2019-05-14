@@ -142,11 +142,6 @@ blackHoleSuns.prototype.userInit = function () {
     user.galaxy = galaxyList[0].name;
     user.firsttime = firebase.firestore.Timestamp.fromDate(new Date());
     user.lasttime = firebase.firestore.Timestamp.fromDate(new Date());
-    user.totals = bhs.initTotals();
-    user.totals[user.galaxy] = bhs.initTotals();
-
-    bhs.totals = bhs.initTotals();
-    bhs.totals[user.galaxy] = bhs.initTotals();
 
     return user;
 }
@@ -247,19 +242,9 @@ blackHoleSuns.prototype.updateEntry = async function (entry) {
         await ref.set(entry).then(function () {
             bhs.status(entry.addr + " saved.", true);
             if (!doc.exists)
-                bhs.incTotals(entry);
+                bhs.totals = bhs.addTotals(bhs.totals, entry, 1);
         });
     });
-}
-
-blackHoleSuns.prototype.initGalaxy = function (entry) {
-    let g = bhs.initTotals();
-    g.galaxy = entry.galaxy;
-    g.player = entry.player;
-    if (entry.uid)
-        g.uid = entry.uid;
-    g.time = firebase.firestore.Timestamp.fromDate(new Date());
-    return g;
 }
 
 blackHoleSuns.prototype.updateBase = function (entry, verbose) {
@@ -328,11 +313,10 @@ blackHoleSuns.prototype.deleteEntry = async function (addr) {
         if (!doc.exists)
             bhs.status(addr + " doesn't exist for delete");
         else {
-            let d=doc.data();
-            if (d.player == bhs.user.player || d.uploader == bhs.user.player) {
-
+            let d = doc.data();
+            if (d.player == bhs.user.player || d.uploader == bhs.user.uid) {
                 await ref.delete().then(function () {
-                    // bhs.fileDecTotals(entry);
+                    bhs.totals = bhs.addTotals(bhs.totals, entry, -1);
                     bhs.status(addr + " deleted");
                 });
             } else
@@ -357,129 +341,95 @@ blackHoleSuns.prototype.initTotals = function () {
     return t;
 }
 
-blackHoleSuns.prototype.incTotals = function (entry) {}
+blackHoleSuns.prototype.addTotals = function (totals, entry, inc) {
+    if (typeof totals == "undefined") {
+        totals = bhs.initTotals();
+        totals.galaxy = {};
+    }
+    if (typeof totals.user == "undefined")
+        totals.user = {};
 
-blackHoleSuns.prototype.updateAllTotals = async function (entry, displayFcn) {
-    let ref = bhs.getStarsColRef("totals");
-    await bhs.updateTotal(entry, bhs.added, ref, bhs.initTotals);
-    ref = bhs.getStarsColRef(entry.galaxy);
-    await bhs.updateTotal(entry, bhs.added, ref, bhs.initGalaxy);
+    if (typeof totals.user[entry.player] == "undefined") {
+        totals.user[entry.player] = bhs.initTotals();
+        totals.user[entry.player].galaxy = {};
+    }
 
-    ref = bhs.getUsersColRef(entry.uid);
-    await bhs.updateTotal(entry, bhs.added, ref, bhs.initTotals, displayFcn);
-    ref = bhs.getUsersColRef(entry.uid, entry.galaxy);
-    await bhs.updateTotal(entry, bhs.added, ref, bhs.initGalaxy, displayFcn);
+    if (typeof totals.galaxy[entry.galaxy] == "undefined")
+        totals.galaxy[entry.galaxy] = bhs.initTotals();
 
-    delete bhs.totals;
+    if (typeof totals.user[entry.player].galaxy[entry.galaxy] == "undefined")
+        totals.user[entry.player].galaxy[entry.galaxy] = bhs.initTotals();
+
+    ["stars", "blackholes"].forEach(x => {
+        if (x != "blackholes" || entry.blackhole || entry.deadzone) {
+            totals[x] += inc;
+            totals[entry.platform][x] += inc;
+            totals.galaxy[entry.galaxy][x] += inc;
+            totals.galaxy[entry.galaxy][entry.platform][x] += inc;
+
+            totals.user[entry.player][x] += inc;
+            totals.user[entry.player][entry.platform][x] += inc;
+            totals.user[entry.player].galaxy[entry.galaxy][x] += inc;
+            totals.user[entry.player].galaxy[entry.galaxy][entry.platform][x] += inc;
+        }
+    });
+
+    return totals;
 }
 
-blackHoleSuns.prototype.updateTotal = async function (entry, inc, ref, initfcn, displayFcn) {
+blackHoleSuns.prototype.updateAllTotals = async function (totals) {
+    if (bhs.totals) {
+        let ref = bhs.getStarsColRef("totals");
+        await bhs.updateTotal(totals, ref);
+
+        Object.keys(totals.user).forEach(async function (u) {
+            ref = bhs.getUsersColRef().where("player", "==", u);
+            await ref.get().then(async function (snapshot) {
+                if (!snapshot.empty)
+                    await bhs.updateTotal(totals.user[u], snapshot.docs[0].ref);
+            });
+        });
+
+        delete bhs.totals;
+    }
+}
+
+blackHoleSuns.prototype.updateTotal = async function (inc, ref) {
     await bhs.fbfs.runTransaction(async function (transaction) {
         return await transaction.get(ref).then(async function (doc) {
-            let t = doc.data();
-
-            if (!doc.exists || typeof t.totals == "undefined") {
-                if (ref.path.match(/users/) && !ref.path.match(/galaxies/))
-                    t = bhs.merge(entry, initfcn(entry));
-                else
-                    t = initfcn(entry);
-            }
-
-            t.totals.stars += inc.stars;
-            t.totals.blackholes += inc.blackholes;
-            t.totals[entry.platform].stars += inc.stars;
-            t.totals[entry.platform].blackholes += inc.blackholes;
+            let t = {};
 
             if (doc.exists)
-                await transaction.update(ref, t);
-            else
-                await transaction.set(ref, t);
+                t = doc.data();
 
-            if (displayFcn)
-                displayFcn(t, ref.path);
-        });
-    });
-}
-
-blackHoleSuns.prototype.calcUserTotals = function (entry) {
-    let stotal = bhs.initTotals();
-
-    let starsref = bhs.getStarsColRef();
-    starsref.get().then(function (querysnapshot) {
-        querysnapshot.forEach(function (doc) { // all galaxies
-            if (!doc.id == "totals") { // special stars total doc
-                platformList.forEach(function (platform) {
-
-                    // all player's stars in galaxy, platform
-                    let uplatformref = bhs.getStarsColRef(sgalaxy.galaxy, platform.name);
-                    //uplatformref = uplatformref.where("player", "==", user.player);
-                    uplatformref.get().then(function (querysnapshot) {
-                        // update users galaxy totals
-                        stotal.totals.stars += querysnapshot.size();
-                        stotal.totals[platform.name].stars += querysnapshot.size();
-                        galaxy.totals.stars += querysnapshot.size();
-
-
-
-                        // update users galaxy totals
-                        ugalaxy.totals.stars += querysnapshot.size();
-                        ugalaxy.totals[platform.name].stars += querysnapshot.size();
-
-                        // update user totals
-                        users.totals.stars += querysnapshot.size();
-                        users.totals[platform.name].stars += querysnapshot.size();
-                    });
-
-                    // get player's bh systems in galaxy/platform
-                    let bhref = uplatformref.where("blackhole", "==", true);
-                    bhref.get().then(function (querysnapshot) {
-                        // update users galaxy totals
-                        ugalaxy.totals.blackholes += querysnapshot.size();
-                        ugalaxy.totals[platform.name].blackholes += querysnapshot.size();
-
-                        // update user totals
-                        users.totals.stars += blackholes.size();
-                        users.totals[platform.name].blackholes += querysnapshot.size();
-                    });
-
-                    // get player's dz systems in galaxy/platform
-                    let dzref = uplatformref.where("deadzone", "==", true);
-                    dzref.get().then(function (querysnapshot) {
-                        // update users galaxy totals
-                        ugalaxy.totals.blackholes += querysnapshot.size();
-                        ugalaxy.totals[platform.name].blackholes += querysnapshot.size();
-
-                        // update user totals
-                        users.totals.stars += blackholes.size();
-                        users.totals[platform.name].blackholes += querysnapshot.size();
-                    });
-                });
-
-                // write updated galaxy totals
-                let ugalaxyref = bhs.getStarsColRef(user.uid, sgalaxy.galaxy);
-                ugalaxyref.get().then(function (doc) { // user galaxy
-                    let ugalaxy = {};
-                    if (doc.exits)
-                        ugalaxy = bhs.merge(doc.data(), bhs.initTotals());
-                    else
-                        ugalaxy = bhs.initGalaxy(u);
-
-                    if (ugalaxy.total.stars)
-                        ugalaxyref.set(ugalaxy);
-                });
+            if (typeof t.totals == "undefined") {
+                t.totals = bhs.initTotals();
+                t.totals.galaxy = {};
             }
-        });
-    });
 
-    let userref = bhs.getUsersColRef();
-    if (entry)
-        userref = userref.where("player", "==", entry.player);
+            delete t.totals.user;
+            t.totals.stars += inc.stars;
+            t.totals.blackholes += inc.blackholes;
 
-    userref.get().then(function (querysnapshot) {
-        querysnapshot.forEach(function (doc) { // specified or all users
-            let user = bhs.merge(doc.data(), bhs.initTotals());
-            // write updated user totals
-            userref.set(user);
+            platformList.forEach(p => {
+                t.totals[p.name].stars += inc[p.name].stars;
+                t.totals[p.name].blackholes += inc[p.name].blackholes;
+            });
+
+            Object.keys(inc.galaxy).forEach(g => {
+                if (typeof t.totals.galaxy[g] == "undefined")
+                    t.totals.galaxy[g] = bhs.initTotals();
+
+                t.totals.galaxy[g].stars += inc.galaxy[g].stars;
+                t.totals.galaxy[g].blackholes += inc.galaxy[g].blackholes;
+
+                platformList.forEach(p => {
+                    t.totals.galaxy[g][p.name].stars += inc.galaxy[g][p.name].stars;
+                    t.totals.galaxy[g][p.name].blackholes += inc.galaxy[g][p.name].blackholes;
+                });
+            });
+
+            await transaction.set(ref, t);
         });
     });
 }
@@ -508,59 +458,20 @@ blackHoleSuns.prototype.getUser = function (displayFcn) {
 
 blackHoleSuns.prototype.getTotals = function (displayFcn) {
     bhs.unsubscribe("totals");
-    bhs.unsubscribe("galaxy");
+    bhs.unsubscribe("usrtotals");
 
     let ref = bhs.getStarsColRef("totals");
     bhs.unsub.totals = ref.onSnapshot(function (doc) {
-        let ref = bhs.getStarsColRef("totals");
         let e = doc.data();
         if (doc.exists && typeof e.totals != "undefined")
-            displayFcn(e, ref.path);
-        else {
-            let g = bhs.initTotals();
-            ref.set(g);
-            displayFcn(g, ref.path);
-        }
-    });
-
-    ref = bhs.getStarsColRef(bhs.user.galaxy);
-    bhs.unsub.galaxy = ref.onSnapshot(function (doc) {
-        let ref = bhs.getStarsColRef(bhs.user.galaxy);
-        let e = doc.data();
-        if (doc.exists && typeof e.totals != "undefined")
-            displayFcn(e, ref.path);
-        else {
-            let g = bhs.initGalaxy(bhs.user);
-            ref.set(g);
-            displayFcn(g, ref.path);
-        }
+            displayFcn(e.totals, doc.id);
     });
 
     ref = bhs.getUsersColRef(bhs.user.uid);
-    ref.get().then(function (doc) {
-        let ref = bhs.getUsersColRef(bhs.user.uid);
+    bhs.unsub.usrtotals = ref.onSnapshot(function (doc) {
         let e = doc.data();
         if (doc.exists && typeof e.totals != "undefined")
-            displayFcn(e, ref.path);
-        else {
-            bhs.user = bhs.merge(bhs.user, bhs.initTotals());
-
-            ref.set(bhs.user);
-            displayFcn(bhs.user, ref.path);
-        }
-    });
-
-    ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy);
-    ref.get().then(function (doc) {
-        let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy);
-        let e = doc.data();
-        if (doc.exists && typeof e.totals != "undefined")
-            displayFcn(e, ref.path);
-        else {
-            let g = bhs.initGalaxy(bhs.user);
-            ref.set(g);
-            displayFcn(g, ref.path);
-        }
+            displayFcn(e.totals, doc.id);
     });
 }
 
@@ -820,26 +731,33 @@ function formatConflict(val) {
     return bhs.formatListSel(val, conflictList);
 }
 
+function formatGalaxy(val) {
+    return bhs.formatListSel(val, galaxyList);
+}
+
 blackHoleSuns.prototype.formatListSel = function (val, list) {
     let name = val.stripNumber();
     if (name == "") {
         let num = val.replace(/(\d+).*/, "$1");
-
-        if (num != "")
-            for (let i = 0; i < list.length; ++i)
-                if (list[i].level == num) {
-                    name = list[i].name;
-                    break;
-                }
+        let idx = bhs.getIndex(list, "number", num);
+        if (idx != -1)
+            name = list[idx].name;
+    } else {
+        let idx = bhs.getIndex(list, "name", name);
+        if (idx != -1)
+            name = list[idx].name;
     }
 
     return name;
 }
 
 blackHoleSuns.prototype.getIndex = function (list, field, id) {
+    if (!id)
+        return -1;
+
     return list.map(function (x) {
-        return x[field];
-    }).indexOf(id);
+        return typeof x[field] == "string" ? x[field].toLowerCase() : x[field];
+    }).indexOf(id.toLowerCase());
 }
 
 blackHoleSuns.prototype.buildGalaxyInfo = function () {
@@ -904,197 +822,197 @@ const platformList = [{
 
 const economyList = [{
     name: "Declining",
-    level: 1
+    number: 1
 }, {
     name: "Destitute",
-    level: 1
+    number: 1
 
 }, {
     name: "Failing",
-    level: 1
+    number: 1
 
 }, {
     name: "Fledgling",
-    level: 1
+    number: 1
 
 }, {
     name: "Low supply",
-    level: 1
+    number: 1
 
 }, {
     name: "Struggling",
-    level: 1
+    number: 1
 
 }, {
     name: "Unpromising",
-    level: 1
+    number: 1
 
 }, {
     name: "Unsuccessful",
-    level: 1
+    number: 1
 
 }, {
     name: "Adequate",
-    level: 2
+    number: 2
 
 }, {
     name: "Balanced",
-    level: 2
+    number: 2
 
 }, {
     name: "Comfortable",
-    level: 2
+    number: 2
 
 }, {
     name: "Developing",
-    level: 2
+    number: 2
 
 }, {
     name: "Medium Supply",
-    level: 2
+    number: 2
 
 }, {
     name: "Promising",
-    level: 2
+    number: 2
 
 }, {
     name: "Satisfactory",
-    level: 2
+    number: 2
 
 }, {
     name: "Sustainable",
-    level: 2
+    number: 2
 
 }, {
     name: "Advanced",
-    level: 3
+    number: 3
 
 }, {
     name: "Affluent",
-    level: 3
+    number: 3
 
 }, {
     name: "Booming",
-    level: 3
+    number: 3
 
 }, {
     name: "Flourishing",
-    level: 3
+    number: 3
 
 }, {
     name: "High Supply",
-    level: 3
+    number: 3
 
 }, {
     name: "Opulent",
-    level: 3
+    number: 3
 
 }, {
     name: "Prosperous",
-    level: 3
+    number: 3
 
 }, {
     name: "Wealthy",
-    level: 3
+    number: 3
 
 }];
 
 const conflictList = [{
     name: "Gentle",
-    level: 1
+    number: 1
 }, {
     name: "Low",
-    level: 1
+    number: 1
 }, {
     name: "Mild",
-    level: 1
+    number: 1
 }, {
     name: "Peaceful",
-    level: 1
+    number: 1
 }, {
     name: "Relaxed",
-    level: 1
+    number: 1
 }, {
     name: "Stable",
-    level: 1
+    number: 1
 }, {
     name: "Tranquil",
-    level: 1
+    number: 1
 }, {
     name: "Trivial",
-    level: 1
+    number: 1
 }, {
     name: "Unthreatening",
-    level: 1
+    number: 1
 }, {
     name: "Untroubled",
-    level: 1
+    number: 1
 }, {
     name: "Medium",
-    level: 2
+    number: 2
 }, {
     name: "Belligerent",
-    level: 2
+    number: 2
 }, {
     name: "Boisterous",
-    level: 2
+    number: 2
 }, {
     name: "Fractious",
-    level: 2
+    number: 2
 }, {
     name: "Intermittent",
-    level: 2
+    number: 2
 }, {
     name: "Medium",
-    level: 2
+    number: 2
 }, {
     name: "Rowdy",
-    level: 2
+    number: 2
 }, {
     name: "Sporadic",
-    level: 2
+    number: 2
 }, {
     name: "Testy",
-    level: 2
+    number: 2
 }, {
     name: "Unruly",
-    level: 2
+    number: 2
 }, {
     name: "Unstable",
-    level: 2
+    number: 2
 }, {
     name: "High",
-    level: 3
+    number: 3
 }, {
     name: "Aggressive",
-    level: 3
+    number: 3
 }, {
     name: "Alarming",
-    level: 3
+    number: 3
 }, {
     name: "At War",
-    level: 3
+    number: 3
 }, {
     name: "Critical",
-    level: 3
+    number: 3
 }, {
     name: "Dangerous",
-    level: 3
+    number: 3
 }, {
     name: "Destructive",
-    level: 3
+    number: 3
 }, {
     name: "Formidable",
-    level: 3
+    number: 3
 }, {
     name: "High",
-    level: 3
+    number: 3
 }, {
     name: "Lawless",
-    level: 3
+    number: 3
 }, {
     name: "Perilous",
-    level: 3
+    number: 3
 }];
 
 const starClassPossible = "OBAFGKMLTYE"
