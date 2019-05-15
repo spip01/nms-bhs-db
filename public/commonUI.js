@@ -21,7 +21,7 @@ blackHoleSuns.prototype.doLoggedin = function () {
 }
 
 blackHoleSuns.prototype.displayUser = function (user) {
-    bhs.user = bhs.merge(bhs.user, user);
+    bhs.user = mergeObjects(bhs.user, user);
 
     if (bhs.user.uid) {
         bhs.buildUserTable();
@@ -356,9 +356,9 @@ const totalsDef = [{
 }, {
     title: "Top Players",
     id: "id-topname",
-    format: "col-3",
+    format: "col-3 border-left",
 }, {
-    title: "Total",
+    title: "Total Entries",
     id: "id-topqty",
     format: "col-2",
 }];
@@ -404,22 +404,28 @@ blackHoleSuns.prototype.buildTotals = function () {
 }
 
 const rowTotal = 0;
-const rowGalaxy = 1;
-const rowPlatform = 2;
-const rowGalaxyPlatform = 3;
+// const rowGalaxy = 1;
+const rowPlatform = 1;
+const rowGalaxyPlatform = 2;
 
 const totalsRows = [{
     title: "Total BH",
     id: "id-totalBH",
 }, {
-    title: "Total[galaxy]",
-    id: "id-totalBHG",
-}, {
     title: "Total[platform]",
     id: "id-totalBHP",
+// }, {
+//     title: "Total[galaxy]",
+//     id: "id-totalBHG",
 }, {
     title: "Total[galaxy][platform]",
     id: "id-totalBHGP",
+}, {
+    title: "",
+    id: "id-top4",
+}, {
+    title: "",
+    id: "id-top5",
 }];
 
 blackHoleSuns.prototype.displayTotals = function (totals, id) {
@@ -429,12 +435,21 @@ blackHoleSuns.prototype.displayTotals = function (totals, id) {
 
     pnl.find("#" + columnid).empty();
 
-    pnl.find("#" + totalsRows[rowTotal].id + " #" + columnid).text(totals.blackholes);
+    pnl.find("#" + totalsRows[rowTotal].id + " #" + columnid).text(totals.total.blackholes);
     pnl.find("#" + totalsRows[rowPlatform].id + " #" + columnid).text(totals[bhs.user.platform].blackholes);
 
     if (typeof totals.galaxy[bhs.user.galaxy] != "undefined") {
-        pnl.find("#" + totalsRows[rowGalaxy].id + " #" + columnid).text(totals.galaxy[bhs.user.galaxy].blackholes);
+        // pnl.find("#" + totalsRows[rowGalaxy].id + " #" + columnid).text(totals.galaxy[bhs.user.galaxy].blackholes);
         pnl.find("#" + totalsRows[rowGalaxyPlatform].id + " #" + columnid).text(totals.galaxy[bhs.user.galaxy][bhs.user.platform].blackholes);
+    }
+
+    if (totals.top) {
+        let i=0;
+        totals.top.totals.blackholes.forEach(function(t){
+            pnl.find("#" + totalsRows[i].id + " #id-topname").text(t.name);
+            pnl.find("#" + totalsRows[i].id + " #id-topqty").text(t.qty);
+            ++i;
+        });
     }
 }
 

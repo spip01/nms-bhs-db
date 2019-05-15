@@ -15,6 +15,10 @@ $(document).ready(function () {
     $("#uploadedFile").change(function () {
         bhs.fileSelected = this;
     });
+
+    $("#btn-fixstats").click(function () {
+        bhs.rebuildTotals();
+    });
 });
 
 var importTable = [{
@@ -173,6 +177,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
         entry[0].uploader = bhs.user.uid;
         entry[0].galaxy = bhs.user.galaxy;
         entry[0].platform = bhs.user.platform;
+        entry[0].type = 'black hole';
         entry[0].version = "next";
 
         var last = entry;
@@ -199,7 +204,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                         if (importTable[j].required || importTable[j].checkreq &&
                             importTable[j].checkreq(entry[importTable[grp].group][importTable[val].field])) {
                             bhs.status("row: " + (i + 1) + " missing " + importTable[j].match, true, errorLog);
-                            bhs.status("row: " + (i + 1) + " " + allrows[i], true, errorLog);
+                            bhs.status("row: " + (i + 1) + " " + allrows[i], false, errorLog);
                             ok = false;
                         }
                     } else {
@@ -215,7 +220,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                         if (!ok) {
                             let s = importTable[j].group == 1 ? "bh " : importTable[j].group == 2 ? "exit " : "";
                             bhs.status("row: " + (i + 1) + " invalid value " + s + importTable[j].match + " " + entry[importTable[j].group][importTable[j].field], true, errorLog);
-                            bhs.status("row: " + (i + 1) + " " + allrows[i], true, errorLog);
+                            bhs.status("row: " + (i + 1) + " " + allrows[i], false, errorLog);
                         }
                     }
                 }
@@ -225,8 +230,8 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                 entry[0].platform = entry[0].platform.match(/pc/i) ||
                     entry[0].platform.match(/xbox/i) ? "PC-XBox" : entry[0].platform.toUpperCase();
 
-                entry[1] = bhs.merge(entry[1], entry[0]);
-                entry[2] = bhs.merge(entry[2], entry[0]);
+                entry[1] = mergeObjects(entry[1], entry[0]);
+                entry[2] = mergeObjects(entry[2], entry[0]);
 
                 entry[1].dist = bhs.calcDist(entry[1].addr);
                 entry[2].dist = bhs.calcDist(entry[2].addr);
@@ -245,7 +250,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                     entry[2] = {};
                     entry[2].basename = base;
                     entry[2].addr = entry[1].addr;
-                    entry[2] = bhs.merge(entry[2], entry[0]);
+                    entry[2] = mergeObjects(entry[2], entry[0]);
                     await bhs.batchWriteBase(entry[2]);
 
                     entry[1].hasbase = true;
@@ -257,7 +262,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                     if (entry[1].blackhole || entry[1].deadzone) {
                         if (!(ok = validateBHAddress(entry[1].addr))) {
                             bhs.status("row: " + (i + 1) + " invalid black hole address " + entry[1].addr, true, errorLog);
-                            bhs.status("row: " + (i + 1) + " " + allrows[i], true, errorLog);
+                            bhs.status("row: " + (i + 1) + " " + allrows[i], false, errorLog);
                         }
 
                         if (ok && entry[1].blackhole) {
@@ -265,12 +270,12 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                             entry[1].towardsCtr = entry[1].dist - entry[2].dist;
                             if (!(ok = validateExitAddress(entry[2].addr))) {
                                 bhs.status("row: " + (i + 1) + " invalid exit address " + entry[1].addr, true, errorLog);
-                                bhs.status("row: " + (i + 1) + " " + allrows[i], true, errorLog);
+                                bhs.status("row: " + (i + 1) + " " + allrows[i], false, errorLog);
                             }
                         }
 
-                        if (ok)
-                            ok = bhs.validateDist(entry[1]);
+                        if (ok && !(ok = bhs.validateDist(entry[1], "row: " + (i + 1) + " ", errorLog)))
+                            bhs.status("row: " + (i + 1) + " " + allrows[i], false, errorLog);
 
                         if (ok) {
                             await bhs.batchUpdate(entry[1]); // don't overwrite existing base or creation dates
@@ -284,7 +289,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
             }
         }
 
-        bhs.batchWriteLog(file.name, errorLog);
+        await bhs.batchWriteLog(file.name, errorLog);
 
         console.log("commit");
         if (bhs.batchcount > 0)
@@ -324,7 +329,7 @@ blackHoleSuns.prototype.batchUpdate = async function (entry) {
         if (!doc.exists) {
             entry.created = entry.modded;
             await bhs.batch.set(ref, entry);
-            bhs.totals = bhs.addTotals(bhs.totals, entry, 1);
+            bhs.totals = bhs.incTotals(bhs.totals, entry);
             bhs.status(entry.addr + " added");
         } else {
             let d = doc.data()
@@ -332,7 +337,7 @@ blackHoleSuns.prototype.batchUpdate = async function (entry) {
                 await bhs.batch.update(ref, entry);
                 bhs.status(entry.addr + " updated");
             } else
-                bhs.status(entry.addr + " can only be edited by owner: " + d.player, true);
+                bhs.status(entry.addr + " can only be edited by owner: " + d.player);
         }
 
         if (++bhs.batchcount == 500) {
@@ -384,11 +389,11 @@ blackHoleSuns.prototype.batchDelete = async function (entry) {
             let d = doc.data();
             if (d.player == bhs.user.player || d.uploader == bhs.user.uid) {
                 await ref.delete().then(function () {
-                    bhs.totals = bhs.addTotals(bhs.totals, entry, -1);
+                    bhs.totals = bhs.incTotals(bhs.totals, entry, -1);
                     bhs.status(entry.addr + " deleted");
                 });
             } else
-                bhs.status(entry.addr + " can only be deleted by owner: " + d.player, true);
+                bhs.status(entry.addr + " can only be deleted by owner: " + d.player);
         }
     });
 }
@@ -415,7 +420,7 @@ blackHoleSuns.prototype.batchWriteBase = async function (entry) {
 }
 
 blackHoleSuns.prototype.status = function (str, error, buf) {
-    if (error)
+    if (buf)
         buf += str + "\n";
 
     if (error || $("#ck-verbose").prop("checked"))

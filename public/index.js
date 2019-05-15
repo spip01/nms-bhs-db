@@ -181,7 +181,7 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
         loc.find("#id-addr").val(entry.addr);
         loc.find("#id-sys").val(entry.sys);
         loc.find("#id-reg").val(entry.reg);
-        loc.find("#btn-Lifeform").text(entry.Lifeform);
+        loc.find("#btn-Lifeform").text(entry.life);
         loc.find("#ck-isdz").prop("checked", entry.deadzone);
         loc.find("#ck-hasbase").prop("checked", false);
 
@@ -194,9 +194,9 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
             loc.find("#id-isbase").hide();
         }
 
-        if (entry.Economy) {
-            let l = economyList[bhs.getIndex(economyList, "name", entry.Economy)].number;
-            loc.find("#btn-Economy").text(l + " " + entry.Economy);
+        if (entry.econ) {
+            let l = economyList[bhs.getIndex(economyList, "name", entry.econ)].number;
+            loc.find("#btn-Economy").text(l + " " + entry.econ);
             loc.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";");
         }
 
@@ -291,14 +291,18 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
         if (!entry.deadzone && !single) {
             entry.blackhole = true;
             entry.connection = pnl.find("#" + panels[pnlBottom].id + " #id-addr").val();
-            entry.distToCtr = bhs.calcDist(entry.connection) - entry.dist;
+            entry.towardsCtr = bhs.calcDist(entry.connection) - entry.dist;
         }
     }
 
     let ok = true;
     if (ok = bhs.validateEntry(entry)) {
-        if (entry.blackhole)
+        if (entry.blackhole) {
             ok = bhs.extractEntry(pnlBottom);
+
+            if (ok)
+                ok = bhs.validateDist(entry);
+        }
 
         if (ok) {
             await bhs.updateEntry(entry, true);
