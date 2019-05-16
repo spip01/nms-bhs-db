@@ -73,12 +73,14 @@ blackHoleSuns.prototype.logOut = function () {
 }
 
 blackHoleSuns.prototype.unsubscribe = function (m) {
-    Object.keys(bhs.unsub).forEach(function (x) {
+    let ulist = Object.keys(bhs.unsub);
+    for (let i = 0; i < ulist.length; ++i) {
+        let x = ulist[i];
         if (!m || x == m) {
             bhs.unsub[x]();
             delete bhs.unsub[x];
         }
-    });
+    }
 }
 
 blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
@@ -293,20 +295,24 @@ blackHoleSuns.prototype.deleteEntry = async function (addr) {
     });
 }
 
-blackHoleSuns.prototype.rebuildTotals = function () {
+blackHoleSuns.prototype.rebuildTotals = async function () {
     let totals = bhs.checkTotalsInit();
 
-    galaxyList.forEach(function (g) {
-        platformList.forEach(async function (p) {
+    for (let i = 0; i < galaxyList.length; ++i) {
+        let g = galaxyList[i];
+
+        for (let j = 0; j < platformList.length; ++j) {
+            let p = platformList[j];
+
             let ref = bhs.getStarsColRef(g.name, p.name);
+            //ref = ref.limit(20);
             await ref.get().then(function (snapshot) {
-                console.log(ref.path + " " + snapshot.size);
-                snapshot.forEach(function (doc) {
-                    totals = bhs.incTotals(totals, doc.data());
-                });
+                console.log(i + " " + g.name + "/" + p.name + " " + snapshot.size);
+                for (let k = 0; k < snapshot.size; ++k)
+                    totals = bhs.incTotals(totals, snapshot.docs[k].data());
             });
-        });
-    });
+        }
+    }
 
     if (totals.total.stars != 0) {
         totals = bhs.checkTopUser(totals);
@@ -314,36 +320,57 @@ blackHoleSuns.prototype.rebuildTotals = function () {
     }
 }
 
-blackHoleSuns.prototype.checkTopUser = function (totals) {
-    Object.keys(totals.users).forEach(function (u) {
-        for (let i = 0; i < 5; ++i) {
-            ["total", "PC-XBox", "PS4"].forEach(x => {
-                ["stars", "blackholes"].forEach(y => {
+const plist = ["total", "PC-XBox", "PS4"];
+const slist = ["stars", "blackholes"];
+const maxTop = 5;
 
-                    if (totals.top[x][y].length == 0 || totals.top[x][y][i] < totals.users[u][x][y]) {
-                        totals.top[x][y].splice(i, 0, {
-                            player: u,
-                            qty: totals.users[u][x][y],
+blackHoleSuns.prototype.checkTopUser = function (totals) {
+    let t = Object.keys(totals.user);
+
+    for (let i = 0; i < t.length; ++i) {
+        let usr = t[i];
+        for (let k = 0; k < plist.length; ++k) {
+            let plat = plist[k];
+            for (let l = 0; l < slist.length; ++l) {
+                let star = slist[l];
+
+                for (let loc = 0; loc < maxTop; ++loc) {
+                    if ((typeof totals.top[plat][star][loc] == "undefined" ||
+                            totals.top[plat][star][loc].qty < totals.user[usr][plat][star]) &&
+                        totals.user[usr][plat][star] != 0) {
+
+                        totals.top[plat][star].splice(loc, 0, {
+                            player: usr,
+                            qty: totals.user[usr][plat][star],
                         });
 
-                        if (totals.top[x][y].length > 5)
-                            totals.top[x][y].pop();
+                        console.log(loc + " " + plat + " " + star + " " + totals.top[plat][star][loc].player + " " + totals.top[plat][star][loc].qty)
+
+                        if (totals.top[plat][star].length > maxTop)
+                            totals.top[plat][star].pop();
+
+                        break;
                     }
-                });
-            });
+                }
+            }
         }
-    });
+    }
+
+    return totals;
 }
 
 blackHoleSuns.prototype.initTotals = function () {
     let t = {};
 
-    ["total", "PC-XBox", "PS4"].forEach(x => {
-        t[x] = {};
-        ["stars", "blackholes"].forEach(y => {
-            t[x][y] = 0;
-        });
-    });
+    for (let k = 0; k < plist.length; ++k) {
+        let plat = plist[k];
+        t[plat] = {};
+
+        for (let l = 0; l < slist.length; ++l) {
+            let star = slist[l];
+            t[plat][star] = 0;
+        }
+    }
 
     return t;
 }
@@ -372,12 +399,15 @@ blackHoleSuns.prototype.checkTotalsInit = function (totals, entry) {
 
     if (typeof totals.top == "undefined") {
         totals.top = {};
-        ["total", "PC-XBox", "PS4"].forEach(x => {
-            totals.top[x] = {};
-            ["stars", "blackholes"].forEach(y => {
-                totals.top[x][y] = {};
-            });
-        });
+        for (let k = 0; k < plist.length; ++k) {
+            let plat = plist[k];
+            totals.top[plat] = {};
+
+            for (let l = 0; l < slist.length; ++l) {
+                let star = slist[l];
+                totals.top[plat][star] = [];
+            }
+        }
     }
 
     return totals;
@@ -387,64 +417,79 @@ blackHoleSuns.prototype.incTotals = function (totals, entry, inc) {
     totals = bhs.checkTotalsInit(totals, entry);
     inc = inc ? inc : 1;
 
-    ["stars", "blackholes"].forEach(x => {
-        if (x != "blackholes" || entry.blackhole || entry.deadzone) {
-            totals.total[x] += inc;
-            totals[entry.platform][x] += inc;
-            totals.galaxy[entry.galaxy].total[x] += inc;
-            totals.galaxy[entry.galaxy][entry.platform][x] += inc;
+    for (let l = 0; l < slist.length; ++l) {
+        let star = slist[l];
 
-            totals.user[entry.player].total[x] += inc;
-            totals.user[entry.player][entry.platform][x] += inc;
-            totals.user[entry.player].galaxy[entry.galaxy].total[x] += inc;
-            totals.user[entry.player].galaxy[entry.galaxy][entry.platform][x] += inc;
+        if (star != "blackholes" || entry.blackhole || entry.deadzone) {
+            totals.total[star] += inc;
+            totals[entry.platform][star] += inc;
+            totals.galaxy[entry.galaxy].total[star] += inc;
+            totals.galaxy[entry.galaxy][entry.platform][star] += inc;
+
+            totals.user[entry.player].total[star] += inc;
+            totals.user[entry.player][entry.platform][star] += inc;
+            totals.user[entry.player].galaxy[entry.galaxy].total[star] += inc;
+            totals.user[entry.player].galaxy[entry.galaxy][entry.platform][star] += inc;
         }
-    });
+    }
 
     return totals;
 }
 
 blackHoleSuns.prototype.addTotalsToTotals = function (totals, add) {
-    ["total", "PC-XBox", "PS4"].forEach(x => {
-        ["stars", "blackholes"].forEach(y => {
-            totals[x][y] += add[x][y];
-        });
-    });
+    for (let k = 0; k < plist.length; ++k) {
+        let plat = plist[k];
 
-    Object.keys(add.galaxy).forEach(g => {
-        if (typeof totals.galaxy[g] == "undefined")
-            totals.galaxy[g] = bhs.initTotals();
+        for (let l = 0; l < slist.length; ++l) {
+            let star = slist[l];
+            totals[plat][star] += add[plat][star];
+        }
+    }
 
-        ["total", "PC-XBox", "PS4"].forEach(x => {
-            ["stars", "blackholes"].forEach(y => {
-                totals.galaxy[g][x][y] += add.galaxy[g][x][y];
-            });
-        });
-    });
+    let glist = Object.keys(add.galaxy);
+
+    for (let i = 0; i < glist.length; ++i) {
+        let gal = glist[i];
+
+        if (typeof totals.galaxy[gal] == "undefined")
+            totals.galaxy[gal] = bhs.initTotals();
+
+        for (let k = 0; k < plist.length; ++k) {
+            let plat = plist[k];
+
+            for (let l = 0; l < slist.length; ++l) {
+                let star = slist[l];
+                totals.galaxy[gal][plat][star] += add.galaxy[gal][plat][star];
+            }
+        }
+    }
 
     return totals;
 }
 
 blackHoleSuns.prototype.updateAllTotals = async function (totals) {
-    if (bhs.totals) {
+    if (totals) {
         let ref = bhs.getStarsColRef("totals");
-        await bhs.updateTotal(totals, ref);
+        bhs.updateTotal(totals, ref);
 
-        Object.keys(totals.user).forEach(async function (u) {
+        let ulist = Object.keys(totals.user);
+        for (let i = 0; i < ulist.length; ++i) {
+            let u = ulist[i];
+
             ref = bhs.getUsersColRef().where("player", "==", u);
             await ref.get().then(async function (snapshot) {
                 if (!snapshot.empty)
-                    await bhs.updateTotal(totals.user[u], snapshot.docs[0].ref);
+                    bhs.updateTotal(totals.user[u], snapshot.docs[0].ref);
             });
-        });
+        }
 
         delete bhs.totals;
     }
 }
 
 blackHoleSuns.prototype.updateTotal = function (add, ref) {
-    bhs.fbfs.runTransaction(async function (transaction) {
-        return await transaction.get(ref).then(async function (doc) {
+    bhs.fbfs.runTransaction(function (transaction) {
+        return transaction.get(ref).then(function (doc) {
             let t = {};
             if (doc.exists)
                 t = doc.data();
@@ -455,8 +500,10 @@ blackHoleSuns.prototype.updateTotal = function (add, ref) {
             }
 
             t.totals = bhs.addTotalsToTotals(t.totals, add);
+            if (doc.id == "totals")
+                t.totals.top = mergeObjects(t.totals.top, add.top);
 
-            await transaction.set(ref, t);
+            transaction.set(ref, t);
         });
     });
 }
@@ -606,27 +653,13 @@ function mergeObjects(o, n) {
     if (typeof n != "object")
         o = n;
     else {
-        if (!o)
+        if (typeof o == "undefined")
             o = {};
-        Object.keys(n).forEach(function (x) {
-            if (typeof n[x] != "object")
-                o[x] = n[x];
-            else {
-                if (!o[x])
-                    o[x] = {};
-                Object.keys(n[x]).forEach(function (y) {
-                    if (typeof n[x][y] != "object")
-                        o[x][y] = n[x][y];
-                    else {
-                        if (!o[x][y])
-                            o[x][y] = {};
-                        Object.keys(n[x][y]).forEach(function (z) {
-                            o[x][y][z] = n[x][y][z];
-                        });
-                    }
-                });
-            }
-        });
+        let l = Object.keys(n);
+        for (let i = 0; i < l.length; ++i) {
+            let x = l[i];
+            o[x] = mergeObjects(o[x], n[x]);
+        }
     }
 
     return o;

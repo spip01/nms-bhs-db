@@ -114,12 +114,12 @@ var importTable = [{
 }];
 
 /* type menu from spreadsheet
- Black Hole
+Black Hole
 Base
 DeadZone 
 Single System
-S Class Ship
-S Class Weapon
+Edit
+Delete
 */
 
 blackHoleSuns.prototype.readTextFile = function (f) {

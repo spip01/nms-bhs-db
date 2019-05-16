@@ -356,7 +356,7 @@ const totalsDef = [{
 }, {
     title: "Top Players",
     id: "id-topname",
-    format: "col-3 border-left",
+    format: "col-4 border-left",
 }, {
     title: "Total Entries",
     id: "id-topqty",
@@ -378,7 +378,7 @@ blackHoleSuns.prototype.buildTotals = function () {
     totalsDef.forEach(function (t) {
         let l = /idname/ [Symbol.replace](totalsItems, t.id);
         l = /title/ [Symbol.replace](l, t.title);
-        h += /format/ [Symbol.replace](l, t.format);
+        h += /format/ [Symbol.replace](l, t.format +" border-bottom");
     });
 
     h += totalsRowEnd;
@@ -414,9 +414,9 @@ const totalsRows = [{
 }, {
     title: "Total[platform]",
     id: "id-totalBHP",
-// }, {
-//     title: "Total[galaxy]",
-//     id: "id-totalBHG",
+    // }, {
+    //     title: "Total[galaxy]",
+    //     id: "id-totalBHG",
 }, {
     title: "Total[galaxy][platform]",
     id: "id-totalBHGP",
@@ -443,14 +443,12 @@ blackHoleSuns.prototype.displayTotals = function (totals, id) {
         pnl.find("#" + totalsRows[rowGalaxyPlatform].id + " #" + columnid).text(totals.galaxy[bhs.user.galaxy][bhs.user.platform].blackholes);
     }
 
-    if (totals.top) {
-        let i=0;
-        totals.top.totals.blackholes.forEach(function(t){
-            pnl.find("#" + totalsRows[i].id + " #id-topname").text(t.name);
-            pnl.find("#" + totalsRows[i].id + " #id-topqty").text(t.qty);
-            ++i;
+    if (totals.top)
+        Object.keys(totals.top.total.blackholes).forEach(function (x) {
+            let t = totals.top.total.blackholes[x];
+            pnl.find("#" + totalsRows[x].id + " #id-topname").text(t.player);
+            pnl.find("#" + totalsRows[x].id + " #id-topqty").text(t.qty);
         });
-    }
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
