@@ -174,7 +174,7 @@ blackHoleSuns.prototype.checkPlayerName = function (loc) {
     ref.get().then(function (snapshot) {
         if (!snapshot.empty && snapshot.docs[0].data().uid != bhs.user.uid) {
             $(loc).val(bhs.user.player);
-            bhs.status("Player Name:" + n + " is already taken.", true);
+            bhs.status("Player Name:" + n + " is already taken.", 0);
         } else {
             bhs.user.player = n;
             let ref = bhs.getUsersColRef(bhs.user.uid);
@@ -202,7 +202,7 @@ blackHoleSuns.prototype.updateEntry = async function (entry) {
         if (doc.exists) {
             let existing = doc.data();
             if (existing.player != entry.player) {
-                bhs.status(entry.addr + " can only be edited by owner: " + existing.player, true);
+                bhs.status(entry.addr + " can only be edited by owner: " + existing.player, 1);
                 return;
             }
             entry = mergeObjects(existing, entry);
@@ -210,22 +210,21 @@ blackHoleSuns.prototype.updateEntry = async function (entry) {
             entry.created = entry.modded;
 
         await ref.set(entry).then(function () {
-            bhs.status(entry.addr + " saved.", true);
+            bhs.status(entry.addr + " saved.", 2);
             if (!doc.exists)
                 bhs.totals = bhs.incTotals(bhs.totals, entry);
         });
     });
 }
 
-blackHoleSuns.prototype.updateBase = function (entry, verbose) {
+blackHoleSuns.prototype.updateBase = function (entry) {
     entry.time = firebase.firestore.Timestamp.fromDate(new Date());
 
     entry.version = "next";
 
     let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr);
     ref.set(entry).then(function () {
-        if (verbose)
-            $("#status").prepend(entry.addr + " base saved.");
+        bhs.status(entry.addr + " base saved.", 2);
     });
 }
 
@@ -240,7 +239,7 @@ blackHoleSuns.prototype.getBase = function (entry, displayfcn, idx) {
 blackHoleSuns.prototype.deleteBase = function (entry) {
     let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform, entry.addr);
     ref.delete().then(function () {
-        bhs.status(entry.addr + " base deleted.");
+        bhs.status(entry.addr + " base deleted.", 2);
     });
 }
 
@@ -281,16 +280,16 @@ blackHoleSuns.prototype.deleteEntry = async function (addr) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform, addr);
     await ref.get().then(async function (doc) {
         if (!doc.exists)
-            bhs.status(addr + " doesn't exist for delete");
+            bhs.status(addr + " doesn't exist for delete", 0);
         else {
             let d = doc.data();
             if (d.player == bhs.user.player || d.uploader == bhs.user.uid) {
                 await ref.delete().then(function () {
                     bhs.totals = bhs.incTotals(bhs.totals, entry, -1);
-                    bhs.status(addr + " deleted");
+                    bhs.status(addr + " deleted", 2);
                 });
             } else
-                bhs.status(addr + " can only be deleted by owner: " + d.player);
+                bhs.status(addr + " can only be deleted by owner: " + d.player, 1);
         }
     });
 }
@@ -316,7 +315,7 @@ blackHoleSuns.prototype.rebuildTotals = async function () {
 
     if (totals.total.stars != 0) {
         totals = bhs.checkTopUser(totals);
-        bhs.updateAllTotals(totals);
+        bhs.updateAllTotals(totals, true);
     }
 }
 
@@ -467,10 +466,10 @@ blackHoleSuns.prototype.addTotalsToTotals = function (totals, add) {
     return totals;
 }
 
-blackHoleSuns.prototype.updateAllTotals = async function (totals) {
+blackHoleSuns.prototype.updateAllTotals = async function (totals, clear) {
     if (totals) {
         let ref = bhs.getStarsColRef("totals");
-        bhs.updateTotal(totals, ref);
+        bhs.updateTotal(totals, ref, clear);
 
         let ulist = Object.keys(totals.user);
         for (let i = 0; i < ulist.length; ++i) {
@@ -479,7 +478,7 @@ blackHoleSuns.prototype.updateAllTotals = async function (totals) {
             ref = bhs.getUsersColRef().where("player", "==", u);
             await ref.get().then(async function (snapshot) {
                 if (!snapshot.empty)
-                    bhs.updateTotal(totals.user[u], snapshot.docs[0].ref);
+                    bhs.updateTotal(totals.user[u], snapshot.docs[0].ref, clear);
             });
         }
 
@@ -487,21 +486,29 @@ blackHoleSuns.prototype.updateAllTotals = async function (totals) {
     }
 }
 
-blackHoleSuns.prototype.updateTotal = function (add, ref) {
+blackHoleSuns.prototype.updateTotal = function (add, ref, clear) {
     bhs.fbfs.runTransaction(function (transaction) {
         return transaction.get(ref).then(function (doc) {
             let t = {};
             if (doc.exists)
                 t = doc.data();
 
-            if (typeof t.totals == "undefined") {
-                t.totals = bhs.initTotals();
-                t.totals.galaxy = {};
+            if (typeof t[starsCol] == "undefined") {
+                t[starsCol] = bhs.initTotals();
+                t[starsCol].galaxy = {};
+                if (doc.id == "totals")
+                    t[starsCol].top = {};
             }
 
-            t.totals = bhs.addTotalsToTotals(t.totals, add);
-            if (doc.id == "totals")
-                t.totals.top = mergeObjects(t.totals.top, add.top);
+            if (clear) {
+                t[starsCol] = mergeObjects(t[starsCol], add);
+                if (doc.id != "totals")
+                    delete t[starsCol].top;
+            } else {
+                t[starsCol] = bhs.addTotalsToTotals(t[starsCol], add);
+                if (doc.id == "totals")
+                    t[starsCol].top = mergeObjects(t[starsCol].top, add.top);
+            }
 
             transaction.set(ref, t);
         });
@@ -537,15 +544,15 @@ blackHoleSuns.prototype.getTotals = function (displayFcn) {
     let ref = bhs.getStarsColRef("totals");
     bhs.unsub.totals = ref.onSnapshot(function (doc) {
         let e = doc.data();
-        if (doc.exists && typeof e.totals != "undefined")
-            displayFcn(e.totals, doc.id);
+        if (doc.exists)
+            displayFcn(e, doc.id);
     });
 
     ref = bhs.getUsersColRef(bhs.user.uid);
     bhs.unsub.usrtotals = ref.onSnapshot(function (doc) {
         let e = doc.data();
-        if (doc.exists && typeof e.totals != "undefined")
-            displayFcn(e.totals, doc.id);
+        if (doc.exists)
+            displayFcn(e, doc.id);
     });
 }
 
@@ -553,17 +560,17 @@ blackHoleSuns.prototype.validateUser = function (user) {
     let ok = true;
 
     if (!user.player) {
-        bhs.status("Error: Missing player name. Changes not saved.", true);
+        bhs.status("Error: Missing player name. Changes not saved.", 0);
         ok = false;
     }
 
     if (ok && !user.galaxy) {
-        bhs.status("Error: Missing galaxy. Changes not saved.", true);
+        bhs.status("Error: Missing galaxy. Changes not saved.", 0);
         ok = false;
     }
 
     if (ok && !user.platform) {
-        bhs.status("Error: Missing platform. Changes not saved.", true);
+        bhs.status("Error: Missing platform. Changes not saved.", 0);
         ok = false;
     }
 
@@ -574,27 +581,27 @@ blackHoleSuns.prototype.validateEntry = function (entry) {
     let ok = true;
 
     if (!entry.addr) {
-        bhs.status("Error: Missing address. Changes not saved.", true);
+        bhs.status("Error: Missing address. Changes not saved.", 0);
         ok = false;
     }
 
     if (ok && !entry.sys) {
-        bhs.status("Error: Missing system name. Changes not saved.", true);
+        bhs.status("Error: Missing system name. Changes not saved.", 0);
         ok = false;
     }
 
     if (ok && !entry.reg) {
-        bhs.status("Error: Missing region name. Changes not saved.", true);
+        bhs.status("Error: Missing region name. Changes not saved.", 0);
         ok = false;
     }
 
     if (ok && !entry.blackhole && !entry.deadzone && !bhs.validateAddress(entry.addr, "xit")) {
-        bhs.status("Error: Invalid exit address. Changes not saved.", true);
+        bhs.status("Error: Invalid exit address. Changes not saved.", 0);
         ok = false;
     }
 
     if (ok && (entry.blackhole || entry.deadzone) && !bhs.validateAddress(entry.addr, "bh")) {
-        bhs.status("Error: Invalid black hole address. Changes not saved.", true);
+        bhs.status("Error: Invalid black hole address. Changes not saved.", 0);
         ok = false;
     }
 
@@ -779,13 +786,13 @@ blackHoleSuns.prototype.validateDist = function (entry, pstr, log) {
     let nok = false;
     let p = pstr ? pstr : "";
     if (nok = entry.dist < 3200)
-        bhs.status(p + entry.addr + ` star in center void`, true, log);
+        bhs.status(p + entry.addr + ` star in center void`, 0, log);
     else if (nok = (entry.dist > 3500 && entry.towardsCtr < 0))
-        bhs.status(p + entry.addr + " => " + entry.connection + ` distance < 0`, true, log);
+        bhs.status(p + entry.addr + " => " + entry.connection + ` distance < 0`, 0, log);
     else if (nok = (entry.dist <= 3500 && entry.towardsCtr < -400))
-        bhs.status(p + entry.addr + " => " + entry.connection + ` distance < -400`, true, log);
+        bhs.status(p + entry.addr + " => " + entry.connection + ` distance < -400`, 0, log);
     else if (nok = (entry.towardsCtr > 21000 && entry.dist <= 819200))
-        bhs.status(p + entry.addr + " => " + entry.connection + ` distance > 21000`, true, log);
+        bhs.status(p + entry.addr + " => " + entry.connection + ` distance > 21000`, 0, log);
 
     return !nok;
 }

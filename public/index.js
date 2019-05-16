@@ -148,10 +148,12 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         $(this).val(addr);
 
         let pnl = $(this).closest("[id|='pnl'");
-        if (pnl.find("#id-sys").val() == "" && pnl.find("#id-reg").val() == "")
-            bhs.getEntry(addr, bhs.displaySingle, pnl.prop("id") == panels[pnlTop].id ? pnlTop : pnlBottom);
+        let top = pnl.prop("id") == panels[pnlTop].id;
+        bhs.getEntry(addr, bhs.displaySingle, top ? pnlTop : pnlBottom);
 
         // if not found try getting region
+
+        bhs.displayCalc();
     });
 
     loc.find('#ck-hasbase').change(function () {
@@ -200,19 +202,18 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
             loc.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";");
         }
 
-        loc.find("#id-fmcenter").show();
-        loc.find("#fmcenter").text(bhs.calcDist(entry.addr));
-
-        if (idx == pnlBottom) {
-            loc.find("#id-tocenter").show();
-            loc.find("#tocenter").text($("#" + panels[pnlTop].id + " #fmcenter").text() - loc.find("#fmcenter").text());
-        } else
-            loc.find("#id-tocenter").hide();
-
         if (entry.blackhole)
             bhs.getEntry(entry.connection, bhs.displaySingle, pnlBottom);
 
-        bhs.displayCalc(entry);
+        if (entry.blackhole || idx == pnlBottom) {
+            loc.find("#ck-single").prop("checked", false);
+            $("#" + panels[pnlBottom].id).show();
+        } else {
+            loc.find("#ck-single").prop("checked", true);
+            $("#" + panels[pnlBottom].id).hide();
+        }
+
+        bhs.displayCalc();
 
         $("#delete").removeClass("disabled");
         $("#delete").removeAttr("disabled");
@@ -291,17 +292,17 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
         if (!entry.deadzone && !single) {
             entry.blackhole = true;
             entry.connection = pnl.find("#" + panels[pnlBottom].id + " #id-addr").val();
-            entry.towardsCtr = bhs.calcDist(entry.connection) - entry.dist;
+            entry.towardsCtr = entry.dist - bhs.calcDist(entry.connection);
         }
     }
 
     let ok = true;
     if (ok = bhs.validateEntry(entry)) {
         if (entry.blackhole) {
-            ok = bhs.extractEntry(pnlBottom);
+            ok = bhs.validateDist(entry);
 
             if (ok)
-                ok = bhs.validateDist(entry);
+                ok = bhs.extractEntry(pnlBottom);
         }
 
         if (ok) {
@@ -327,23 +328,36 @@ blackHoleSuns.prototype.save = function () {
     bhs.last = [];
 }
 
-blackHoleSuns.prototype.displayCalc = function (entry) {
-    let d = [];
+blackHoleSuns.prototype.displayCalc = function () {
+    let top = $("#" + panels[pnlTop].id);
+    let bottom = $("#" + panels[pnlBottom].id);
 
-    if (entry.blackhole) {
-        panels[pnlTop].dist = bhs.calcDist(entry.address);
-        panels[pnlBottom].dist = bhs.calcDist(entry.connection);
+    let addr = top.find("#id-addr").val();
+    let connection = bottom.find("#id-addr").val();
 
-        panels.forEach(function (p) {
-            let loc = $("#" + p.id);
-            loc.find("#fmcenter").text(p.dist);
-            loc.find("#id-fmcenter").show();
-        });
+    let tdist = bhs.calcDist(addr);
 
-        let loc = $("#" + panels[pnlBottom].id);
+    top.find("#fmcenter").text(tdist);
+    top.find("#id-fmcenter").show();
 
-        loc.find("#tocenter").text(panels[pnlTop].dist - panels[pnlBottom].dist);
-        loc.find("#id-tocenter").show();
+    if (connection) {
+        let bdist = bhs.calcDist(connection);
+
+        bottom.find("#fmcenter").text(bdist);
+        bottom.find("#id-fmcenter").show();
+
+        bottom.find("#tocenter").text(tdist - bdist);
+        bottom.find("#id-tocenter").show();
+
+        let entry = {};
+        entry.addr = addr;
+        entry.connection = connection;
+        entry.dist = tdist;
+        entry.towardsCtr = tdist - bdist;
+        if (!bhs.validateDist(entry))
+            bottom.find("#id-tocenter").addClass("text-danger");
+        else
+            bottom.find("#id-tocenter").removeClass("text-danger");
     }
 }
 

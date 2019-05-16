@@ -326,11 +326,6 @@ blackHoleSuns.prototype.entryFromTable = function (ent) {
         addr = $(ent).find("#x-" + userTable[utAddrIdx].id).text().stripMarginWS();
 
     bhs.getEntry(addr, bhs.displaySingle, pnlTop);
-
-    if (type != "BH") {
-        $("#ck-single").prop("checked", true);
-        $("#" + panels[pnlBottom].id).hide();
-    }
 }
 
 blackHoleSuns.prototype.hideUserTable = function (loc, idx) {
@@ -428,24 +423,24 @@ const totalsRows = [{
     id: "id-top5",
 }];
 
-blackHoleSuns.prototype.displayTotals = function (totals, id) {
+blackHoleSuns.prototype.displayTotals = function (entry, id) {
     let pnl = $("#totalsItems");
 
     let columnid = id == "totals" ? "id-all" : "id-player";
 
     pnl.find("#" + columnid).empty();
 
-    pnl.find("#" + totalsRows[rowTotal].id + " #" + columnid).text(totals.total.blackholes);
-    pnl.find("#" + totalsRows[rowPlatform].id + " #" + columnid).text(totals[bhs.user.platform].blackholes);
+    pnl.find("#" + totalsRows[rowTotal].id + " #" + columnid).text(entry[starsCol].total.blackholes);
+    pnl.find("#" + totalsRows[rowPlatform].id + " #" + columnid).text(entry[starsCol][bhs.user.platform].blackholes);
 
-    if (typeof totals.galaxy[bhs.user.galaxy] != "undefined") {
+    if (typeof entry[starsCol].galaxy[bhs.user.galaxy] != "undefined") {
         // pnl.find("#" + totalsRows[rowGalaxy].id + " #" + columnid).text(totals.galaxy[bhs.user.galaxy].blackholes);
-        pnl.find("#" + totalsRows[rowGalaxyPlatform].id + " #" + columnid).text(totals.galaxy[bhs.user.galaxy][bhs.user.platform].blackholes);
+        pnl.find("#" + totalsRows[rowGalaxyPlatform].id + " #" + columnid).text(entry[starsCol].galaxy[bhs.user.galaxy][bhs.user.platform].blackholes);
     }
 
-    if (totals.top)
-        Object.keys(totals.top.total.blackholes).forEach(function (x) {
-            let t = totals.top.total.blackholes[x];
+    if (entry[starsCol].top)
+        Object.keys(entry[starsCol].top.total.blackholes).forEach(function (x) {
+            let t = entry[starsCol].top.total.blackholes[x];
             pnl.find("#" + totalsRows[x].id + " #id-topname").text(t.player);
             pnl.find("#" + totalsRows[x].id + " #id-topqty").text(t.qty);
         });
