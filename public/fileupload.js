@@ -12,6 +12,13 @@ $(document).ready(function () {
             $("#status").prepend("<h7>No file selected</h7>");
     });
 
+    $("#check").click(function () {
+        if (bhs.fileSelected)
+            bhs.readTextFile(bhs.fileSelected, true);
+        else
+            $("#status").prepend("<h7>No file selected</h7>");
+    });
+
     $("#uploadedFile").change(function () {
         bhs.fileSelected = this;
     });
@@ -124,7 +131,7 @@ Edit
 Delete
 */
 
-blackHoleSuns.prototype.readTextFile = function (f) {
+blackHoleSuns.prototype.readTextFile = function (f, check) {
     let file = f.files[0];
     let reader = new FileReader();
 
@@ -239,13 +246,13 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                 entry[2].dist = bhs.calcDist(entry[2].addr);
 
                 if (entry[0].type.match(/edit/i))
-                    await bhs.batchEdit(entry[1], entry[2].addr ? entry[2].addr : null);
+                    await bhs.batchEdit(entry[1], entry[2].addr ? entry[2].addr : null, check);
 
                 else if (entry[0].type.match(/delete/i))
-                    await bhs.batchDelete(entry[1]);
+                    await bhs.batchDelete(entry[1], check);
 
                 else if (entry[0].type.match(/single/i)) {
-                    await bhs.batchUpdate(entry[1]); // don't overwrite bh info if it exists
+                    await bhs.batchUpdate(entry[1], check); // don't overwrite bh info if it exists
 
                 } else if (entry[0].type.match(/base/i) || entry[2].addr == "0000:0000:0000:0000") {
                     let base = entry[2].sys ? entry[2].sys : entry[2].reg;
@@ -253,10 +260,10 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                     entry[2].basename = base;
                     entry[2].addr = entry[1].addr;
                     entry[2] = mergeObjects(entry[2], entry[0]);
-                    await bhs.batchWriteBase(entry[2]);
+                    await bhs.batchWriteBase(entry[2], check);
 
                     entry[1].hasbase = true;
-                    await bhs.batchUpdate(entry[1]); // don't overwrite bh info if it exists
+                    await bhs.batchUpdate(entry[1], check); // don't overwrite bh info if it exists
                 } else {
                     entry[1].deadzone = entry[0].type.match(/dead/i) || entry[2].addr == entry[1].addr;
                     entry[1].blackhole = !entry[1].deadzone;
@@ -280,9 +287,9 @@ blackHoleSuns.prototype.readTextFile = function (f) {
                             bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
 
                         if (ok) {
-                            await bhs.batchUpdate(entry[1]); // don't overwrite existing base or creation dates
+                            await bhs.batchUpdate(entry[1], check); // don't overwrite existing base or creation dates
                             if (entry[1].blackhole)
-                                await bhs.batchUpdate(entry[2]);
+                                await bhs.batchUpdate(entry[2], check);
                         }
                     }
                 }
@@ -297,6 +304,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
         if (bhs.batchcount > 0)
             await bhs.batch.commit();
 
+        if (!check)
         await bhs.updateAllTotals(bhs.totals);
 
         progress.css("width", 100 + "%");
@@ -322,7 +330,7 @@ blackHoleSuns.prototype.batchWriteLog = async function (filename, errorlog) {
     }
 }
 
-blackHoleSuns.prototype.batchUpdate = async function (entry) {
+blackHoleSuns.prototype.batchUpdate = async function (entry, check) {
     delete entry.type;
     entry.modded = firebase.firestore.Timestamp.fromDate(new Date());
 
@@ -330,19 +338,23 @@ blackHoleSuns.prototype.batchUpdate = async function (entry) {
     await ref.get().then(async function (doc) {
         if (!doc.exists) {
             entry.created = entry.modded;
+            if (!check) {
             await bhs.batch.set(ref, entry);
             bhs.totals = bhs.incTotals(bhs.totals, entry);
             bhs.status(entry.addr + " added", 2);
+            }
         } else {
             let d = doc.data()
             if (d.player == bhs.user.player || d.uploader == bhs.user.uid) {
+                if (!check) {
                 await bhs.batch.update(ref, entry);
                 bhs.status(entry.addr + " updated", 2);
+                }
             } else
                 bhs.status(entry.addr + " can only be edited by owner: " + d.player, 1);
         }
 
-        if (++bhs.batchcount == 500) {
+        if (!check && ++bhs.batchcount == 500) {
             console.log("commit");
             bhs.batch.commit();
             bhs.batch = bhs.fbfs.batch();
@@ -351,7 +363,7 @@ blackHoleSuns.prototype.batchUpdate = async function (entry) {
     });
 }
 
-blackHoleSuns.prototype.batchEdit = async function (entry, old) {
+blackHoleSuns.prototype.batchEdit = async function (entry, old, check) {
     delete entry.type;
     entry.modded = firebase.firestore.Timestamp.fromDate(new Date());
 
@@ -361,6 +373,7 @@ blackHoleSuns.prototype.batchEdit = async function (entry, old) {
         if (!doc.exists) {
             bhs.status(entry.addr + " doesn't exist for edit.", 1);
         } else {
+            if (!check) {
             if (old) {
                 let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, addr);
                 await ref.delete();
@@ -376,12 +389,12 @@ blackHoleSuns.prototype.batchEdit = async function (entry, old) {
                 bhs.batch.commit();
                 bhs.batch = bhs.fbfs.batch();
                 bhs.batchcount = 0;
-            }
+            }}
         }
     });
 }
 
-blackHoleSuns.prototype.batchDelete = async function (entry) {
+blackHoleSuns.prototype.batchDelete = async function (entry, check) {
     delete entry.type;
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
     await ref.get().then(async function (doc) {
@@ -389,7 +402,8 @@ blackHoleSuns.prototype.batchDelete = async function (entry) {
             bhs.status(entry.addr + " doesn't exist for delete.", 0);
         else {
             let d = doc.data();
-            if (d.player == bhs.user.player || d.uploader == bhs.user.uid) {
+            if ((d.player == bhs.user.player || d.uploader == bhs.user.uid)) {
+                if (!check)
                 await ref.delete().then(function () {
                     bhs.totals = bhs.incTotals(bhs.totals, entry, -1);
                     bhs.status(entry.addr + " deleted", 2);
@@ -400,10 +414,10 @@ blackHoleSuns.prototype.batchDelete = async function (entry) {
     });
 }
 
-blackHoleSuns.prototype.batchWriteBase = async function (entry) {
+blackHoleSuns.prototype.batchWriteBase = async function (entry, check) {
     delete entry.type;
     entry.modded = firebase.firestore.Timestamp.fromDate(new Date());
-
+    if (!check) {
     let ref = bhs.getUsersColRef().where("player", "==", entry.player);
     await ref.get().then(async function (snapshot) {
         if (!snapshot.empty) {
@@ -419,6 +433,7 @@ blackHoleSuns.prototype.batchWriteBase = async function (entry) {
             }
         }
     });
+}
 }
 
 blackHoleSuns.prototype.status = function (str, lvl, buf) {
