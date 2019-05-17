@@ -17,7 +17,8 @@ $(document).ready(function () {
     });
 
     $("#btn-fixstats").click(function () {
-        bhs.rebuildTotals();
+        //bhs.rebuildTotals();
+        //bhs.rebuildDB();
     });
 });
 

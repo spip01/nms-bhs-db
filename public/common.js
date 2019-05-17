@@ -22,7 +22,7 @@ const fbconfig = {
     messagingSenderId: FIREBASE_MSGID
 };
 
-const starsCol = "stars6";
+const starsCol = "stars5";
 const usersCol = "users";
 
 function startUp() {
@@ -293,25 +293,54 @@ blackHoleSuns.prototype.deleteEntry = async function (addr) {
         }
     });
 }
+/*
+blackHoleSuns.prototype.rebuildDB = async function () {
+    let ref = bhs.getStarsColRef();
+    await ref.get().then(function (snapshot) {
+        snapshot.forEach(async function (doc) {
+            let g = doc.data();
+            console.log(g.name);
 
+            for (let j = 0; j < platformList.length; ++j) {
+                let p = platformList[j];
+
+                let ref = bhs.getStarsColRef(g.name, p.name);
+                ref = ref.where("life", "==", "gek")
+                await ref.get().then(function (snapshot) {
+                    snapshot.forEach(function (doc) {
+                        let d = doc.data();
+                        d.life = "Gek";
+                        console.log(doc.ref.path + " " + doc.data().life + " " + d.life);
+                        let ref = bhs.fbfs.doc(doc.ref.path);
+                        ref.set(d);
+                    })
+                });
+            }
+        });
+    });
+}
+*/
 blackHoleSuns.prototype.rebuildTotals = async function () {
     let totals = bhs.checkTotalsInit();
 
-    for (let i = 0; i < galaxyList.length; ++i) {
-        let g = galaxyList[i];
+    let ref = bhs.getStarsColRef();
+    await ref.get().then(async function (snapshot) {
+        for (let i = 0; i < snapshot.docs.length; ++i) {
+            let g = snapshot.docs[0].data();
 
-        for (let j = 0; j < platformList.length; ++j) {
-            let p = platformList[j];
+            for (let j = 0; j < platformList.length; ++j) {
+                let p = platformList[j];
 
-            let ref = bhs.getStarsColRef(g.name, p.name);
-            //ref = ref.limit(20);
-            await ref.get().then(function (snapshot) {
-                console.log(i + " " + g.name + "/" + p.name + " " + snapshot.size);
-                for (let k = 0; k < snapshot.size; ++k)
-                    totals = bhs.incTotals(totals, snapshot.docs[k].data());
-            });
+                let ref = bhs.getStarsColRef(g.name, p.name);
+                //ref = ref.limit(20);
+                await ref.get().then(function (snapshot) {
+                    console.log(g.name + "/" + p.name + " " + snapshot.size);
+                    for (let k = 0; k < snapshot.size; ++k)
+                        totals = bhs.incTotals(totals, snapshot.docs[k].data());
+                });
+            }
         }
-    }
+    });
 
     if (totals.total.stars != 0) {
         totals = bhs.checkTopUser(totals);
