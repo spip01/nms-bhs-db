@@ -305,7 +305,7 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
             await bhs.batch.commit();
 
         if (!check)
-        await bhs.updateAllTotals(bhs.totals);
+            await bhs.updateAllTotals(bhs.totals);
 
         progress.css("width", 100 + "%");
         progress.text("done");
@@ -339,16 +339,16 @@ blackHoleSuns.prototype.batchUpdate = async function (entry, check) {
         if (!doc.exists) {
             entry.created = entry.modded;
             if (!check) {
-            await bhs.batch.set(ref, entry);
-            bhs.totals = bhs.incTotals(bhs.totals, entry);
-            bhs.status(entry.addr + " added", 2);
+                await bhs.batch.set(ref, entry);
+                bhs.totals = bhs.incTotals(bhs.totals, entry);
+                bhs.status(entry.addr + " added", 2);
             }
         } else {
             let d = doc.data()
             if (d.player == bhs.user.player || d.uploader == bhs.user.uid) {
                 if (!check) {
-                await bhs.batch.update(ref, entry);
-                bhs.status(entry.addr + " updated", 2);
+                    await bhs.batch.update(ref, entry);
+                    bhs.status(entry.addr + " updated", 2);
                 }
             } else
                 bhs.status(entry.addr + " can only be edited by owner: " + d.player, 1);
@@ -374,22 +374,23 @@ blackHoleSuns.prototype.batchEdit = async function (entry, old, check) {
             bhs.status(entry.addr + " doesn't exist for edit.", 1);
         } else {
             if (!check) {
-            if (old) {
-                let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, addr);
-                await ref.delete();
+                if (old) {
+                    let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, addr);
+                    await ref.delete();
+                }
+
+                let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
+                await bhs.batch.set(ref, entry);
+
+                bhs.status(entry.addr + " edited", 2);
+
+                if (++bhs.batchcount == 500) {
+                    console.log("commit");
+                    bhs.batch.commit();
+                    bhs.batch = bhs.fbfs.batch();
+                    bhs.batchcount = 0;
+                }
             }
-
-            let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
-            await bhs.batch.set(ref, entry);
-
-            bhs.status(entry.addr + " edited", 2);
-
-            if (++bhs.batchcount == 500) {
-                console.log("commit");
-                bhs.batch.commit();
-                bhs.batch = bhs.fbfs.batch();
-                bhs.batchcount = 0;
-            }}
         }
     });
 }
@@ -404,10 +405,10 @@ blackHoleSuns.prototype.batchDelete = async function (entry, check) {
             let d = doc.data();
             if ((d.player == bhs.user.player || d.uploader == bhs.user.uid)) {
                 if (!check)
-                await ref.delete().then(function () {
-                    bhs.totals = bhs.incTotals(bhs.totals, entry, -1);
-                    bhs.status(entry.addr + " deleted", 2);
-                });
+                    await ref.delete().then(function () {
+                        bhs.totals = bhs.incTotals(bhs.totals, entry, -1);
+                        bhs.status(entry.addr + " deleted", 2);
+                    });
             } else
                 bhs.status(entry.addr + " can only be deleted by owner: " + d.player, 1);
         }
@@ -418,28 +419,23 @@ blackHoleSuns.prototype.batchWriteBase = async function (entry, check) {
     delete entry.type;
     entry.modded = firebase.firestore.Timestamp.fromDate(new Date());
     if (!check) {
-    let ref = bhs.getUsersColRef().where("player", "==", entry.player);
-    await ref.get().then(async function (snapshot) {
-        if (!snapshot.empty) {
-            let ref = bhs.getUsersColRef(snapshot.docs[0].id, entry.galaxy, entry.platform, entry.addr);
-            await bhs.batch.set(ref, entry);
+        let ref = bhs.getUsersColRef(snapshot.docs[0].id, entry.galaxy, entry.platform, entry.addr);
+        await bhs.batch.set(ref, entry);
 
-            bhs.status(entry.addr + " base added/edited.", 2);
-            if (++bhs.batchcount == 500) {
-                console.log("commit");
-                bhs.batch.commit();
-                bhs.batch = bhs.fbfs.batch();
-                bhs.batchcount = 0;
-            }
+        bhs.status(entry.addr + " base added/edited.", 2);
+        if (++bhs.batchcount == 500) {
+            console.log("commit");
+            bhs.batch.commit();
+            bhs.batch = bhs.fbfs.batch();
+            bhs.batchcount = 0;
         }
-    });
-}
+    }
 }
 
 blackHoleSuns.prototype.status = function (str, lvl, buf) {
     if (buf)
         buf += str + "\n";
 
-        if (lvl == 0 || $("#ck-verbose").prop("checked") && lvl == 1 || $("#ck-vverbose").prop("checked") && lvl == 2)
+    if (lvl == 0 || $("#ck-verbose").prop("checked") && lvl == 1 || $("#ck-vverbose").prop("checked") && lvl == 2)
         $("#status").prepend("<h7>" + str + "</h7>");
 }
