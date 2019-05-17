@@ -105,6 +105,7 @@ var importTable = [{
 }, {
     match: /lifeform/i,
     field: "life",
+    format: formatLife,
     group: 2
 }, {
     match: /conflict/i,

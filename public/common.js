@@ -22,7 +22,7 @@ const fbconfig = {
     messagingSenderId: FIREBASE_MSGID
 };
 
-const starsCol = "stars5";
+const starsCol = "stars6";
 const usersCol = "users";
 
 function startUp() {
@@ -849,6 +849,7 @@ blackHoleSuns.prototype.formatListSel = function (val, list) {
     return name;
 }
 
+
 blackHoleSuns.prototype.getIndex = function (list, field, id) {
     if (!id)
         return -1;
@@ -898,6 +899,15 @@ blackHoleSuns.prototype.calcDist = function (addr, addr2) {
     };
     let d = parseInt(Math.sqrt(Math.pow(cord2.x - cord.x, 2) + Math.pow(cord2.y - cord.y, 2) + Math.pow(cord2.z - cord.z, 2)) * 400);
     return d;
+}
+
+function formatLife(val) {
+    if (val.match(/gek/i))
+        return "Gek";
+    if (val.match(/korvax/i))
+        return "Korvax";
+    if (val.match(/vy.keen/i))
+        return "Vy'keen";
 }
 
 const lifeformList = [{
