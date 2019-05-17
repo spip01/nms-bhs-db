@@ -165,7 +165,7 @@ blackHoleSuns.prototype.readTextFile = function (f) {
         }
 
         if (!found) {
-            bhs.status("missing required columns", 0, errorlog);
+            bhs.status("Missing required column labels.", 0, errorLog);
             await bhs.batchWriteLog(file.name, true, errorLog);
             bhs.batch.commit();
             return;
