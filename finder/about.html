@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>No Man's Sky Black Hole Suns</title>
+    <meta name="description" content="No Man's Sky Black Hole Suns Project">
+    <meta name="keywords" content="no man's sky,map,black hole">
+    <meta name="author" content="Stephen Piper">
+    <meta name="application-name" content="NMS-Black Hole Suns">
+
+    <script src="env.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-4"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', GOOGLEANALYTICS_ID);
+    </script>
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.12/css/all.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script>
+
+    <script src="common.js"></script>
+    <script src="about.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="local.css">
+</head>
+
+<body>
+    <div id="navbar"></div>
+
+    <div id="javascript" class="">
+        <nav class="navbar navbar-expand-sm bkg-light-green">
+            <a class="navbar-brand" href="index.html">
+                <span class=" clr-dark-green h2">
+                    <i class="fa fa-home"></i>
+                    NMS Black Hole Suns
+                </span>
+            </a>
+        </nav>
+
+        <!--googleoff:all-->
+        <div style="color: rgb(0, 78, 0);">
+            Unfortunately, this page cannot function without javasript. Please add this site to your "allowed" sites.
+            For chrome it's
+            located&nbsp;
+            <a href="chrome://settings/content/javascript">here</a>
+        </div>
+        <!--googleon:all-->
+        <br>
+    </div>
+
+    <div class="card">
+        <h5 class="card-title clr-dark-green">
+            No Man's Sky Black Hole Suns Project
+        </h5>
+        <div class="card-body">
+            <p>
+                Use this site as input for the Black Hole Suns router. (need link).
+            </p>
+            <p class="hanging-indent">
+                Player Name - Name associated with your game and with your input here. It will show up in the statistics
+                information.
+            </p>
+            <p class="hanging-indent">
+                Platform & Galaxy: Different platforms and different galaxies do not have the same information.
+            </p>
+            <p class="h5">
+                Black Hole System, Exit System, Single System
+            </p>
+            <div class="card card-body no-border">
+                <p class="hanging-indent">
+                    Address: NMS Galactic Address formatted "0000:0000:0000:0000". you can get this from a signal
+                    booster on any planet. This will be reformatted into a correct address when you leave the entry
+                    field. Anything other than the characters "0123456789abcdef" count as separators. A string with no
+                    separators will be broken up into blocks of 4 characters each. All black hole system addresses end
+                    with "0079".
+                </p>
+                <p class="hanging-indent">
+                    System name and Region name: These are from the galactic map. If you renamed the system be sure to
+                    use the new name. Otherwise, someone who tries to use it later won't be able to find it.
+                </p>
+                <p class="hanging-indent">
+                    Lifeform and Economy: These are from the galactic map and can also be found on the
+                    discoveries page.
+                </p>
+            </div>
+            <p class="h6 text-danger">
+                All black hole systems must be entered in pairs.
+            </p>
+            <p class="hanging-indent">
+                Systems with base computer and teleporter: You can enter systems where you have or have visited a built
+                base with a base computer and
+                teleporter. It will only work if it shows up in your teleport list. The router can use these as your
+                first move if you have them available. But this is not
+                required for the router to operate. It can just generate faster routes if you have them available. If
+                you entered a space station you've visited then the station can fall off of your transporter list and it
+                wouldn't be available to you anymore. These are only available for the current user.
+            </p>
+        </div>
+    </div>
+    </div>
+
+    <div id="footer"></div>
+
+</body>
+
+</html>

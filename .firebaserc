@@ -2,11 +2,14 @@
   "targets": {
     "deploy": {
       "hosting": {
-        "dist": [
+        "bhs": [
           "nms-bhs"
         ],
         "test": [
           "test-nms-bhs"
+        ],
+        "finder": [
+          "finder-nms-bhs"
         ]
       }
     },
@@ -15,8 +18,11 @@
         "test": [
           "test-nms-bhs"
         ],
-        "dist": [
+        "bhs": [
           "nms-bhs"
+        ],
+        "finder": [
+          "finder-nms-bhs"
         ]
       }
     }

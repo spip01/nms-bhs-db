@@ -13,8 +13,8 @@
     "source": "functions"
   },
   "hosting": [{
-    "target": "dist",
-    "public": "public",
+    "target": "bhs",
+    "public": "bhs",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -22,7 +22,15 @@
     ]
   }, {
     "target": "test",
-    "public": "public",
+    "public": "bhs",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }, {
+    "target": "finder",
+    "public": "finder",
     "ignore": [
       "firebase.json",
       "**/.*",
