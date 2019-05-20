@@ -154,9 +154,21 @@ body {
 
 [class|='col-'] {
     padding-left: 1px !important;
-    padding-right: 3px !important;
+    padding-right: 2px !important;
 }
 
+#tip {
+    background-color:white;
+    border:1px solid blue;
+    position:absolute;
+    left:-800px;
+    top:100px;
+    font: 16px Arial;
+}
+
+.scroll {
+    overflow-y: scroll;
+}
 .nav-text {
     padding-top: 8px;
     color: #008000;
@@ -169,6 +181,10 @@ body {
 
 .clr-light-green {
     color: #e8ffe8;
+}
+
+.bkg-trans {
+    background-color:transparent;
 }
 
 .bkg-white {
