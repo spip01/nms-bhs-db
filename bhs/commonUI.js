@@ -26,9 +26,11 @@ blackHoleSuns.prototype.displayUser = function (user) {
     if (bhs.user.uid) {
         bhs.buildUserTable();
         bhs.buildTotals();
+        bhs.buildMap();
 
         bhs.getTotals(bhs.displayTotals);
         bhs.getEntries(bhs.displayUserEntry);
+        bhs.getBases(bhs.displayUserEntry);
     }
 
     let player = $("#pnl-user");
@@ -61,7 +63,8 @@ blackHoleSuns.prototype.buildUserPanel = function () {
                     </div>
                 </div>
             </div>
-        </div>`;
+        </div>
+        <br>`;
 
     $("#panels").prepend(panel);
     let loc = $("#pnl-user");
@@ -93,75 +96,78 @@ const utPlatformIdx = 2;
 const utTypeIdx = 3;
 const utAddrIdx = 4;
 
-var userTable = [{
-    title: "Player",
-    id: "id-player",
-    field: "player",
-    format: "col-2",
-    hide: true
-}, {
-    title: "Galaxy",
-    id: "id-galaxy",
-    field: "galaxy",
-    format: "col-2",
-    hide: true
-}, {
-    title: "Platform",
-    id: "id-platform",
-    field: "platform",
-    format: "col-2",
-    hide: true
-}, {
-    title: "",
-    id: "id-type",
-    format: "col-1",
-    field: "blackhole",
-    field2: "deadzone"
-}, {
-    title: "Coordinates",
-    id: "id-addr",
-    field: "addr",
-    format: "col-3"
-}, {
-    title: "LY",
-    id: "id-toctr",
-    format: "col-1",
-    calc: true
-}, {
-    title: "System",
-    id: "id-sys",
-    field: "sys",
-    format: "col-2"
-}, {
-    title: "Region",
-    id: "id-reg",
-    field: "reg",
-    format: "col-2"
-}, {
-    title: "Lifeform",
-    id: "id-life",
-    field: "life",
-    format: "col-2"
-}, {
-    title: "Economy",
-    id: "id-econ",
-    field: "econ",
-    format: "col-2"
-}, {
-    title: "Base",
-    id: "id-base",
-    field: "hasbase",
-    format: "col-2",
-}];
+var userTable = [
+    /*{
+        title: "Player",
+        id: "id-player",
+        field: "player",
+        format: "col-2",
+        hide: true
+    }, {
+        title: "Galaxy",
+        id: "id-galaxy",
+        field: "galaxy",
+        format: "col-2",
+        hide: true
+    }, {
+        title: "Platform",
+        id: "id-platform",
+        field: "platform",
+        format: "col-2",
+        hide: true
+    },*/
+    {
+        title: "",
+        id: "id-type",
+        format: "col-1",
+        field: "blackhole",
+        field2: "deadzone"
+    }, {
+        title: "Coordinates",
+        id: "id-addr",
+        field: "addr",
+        format: "col-3"
+    }, {
+        title: "LY",
+        id: "id-toctr",
+        format: "col-1",
+        calc: true
+    }, {
+        title: "System",
+        id: "id-sys",
+        field: "sys",
+        format: "col-2"
+    }, {
+        title: "Region",
+        id: "id-reg",
+        field: "reg",
+        format: "col-2"
+    }, {
+        title: "Lifeform",
+        id: "id-life",
+        field: "life",
+        format: "col-2"
+    }, {
+        title: "Economy",
+        id: "id-econ",
+        field: "econ",
+        format: "col-2"
+    }, {
+        title: "Base",
+        id: "id-base",
+        field: "basename",
+        format: "col-2",
+    }
+];
 
 blackHoleSuns.prototype.buildUserTable = function () {
     const table = `
         <div class="card-header">
             <div class="row">
-                <h4 class="col-9">Latest Changes</h4>
-                <button id="btn-utSettings" type="button" class="col-1 btn-sm">
-                    <i class="fas fa-angle-down"></i>
-                </button>
+                <h4 class="col-12">Latest Changes</h4>
+                <div id="btn-utSettings" class="col-1">
+                    <i class="fa fa-cog" aria-hidden="true"></i>
+                </div>
             </div>
         </div>
 
@@ -169,7 +175,7 @@ blackHoleSuns.prototype.buildUserTable = function () {
             <div class="row">
                 <div class="col-8">
                     <div class="row">
-                        <div class="col-4 h6 clr-dark-green">Show</div>
+                        <div class="col-4 h6 clr-dark-green">Show Entries</div>
                         <input id="id-showQty" class="rounded col-6 h5" type="text" placeholder="10">
                     </div>
                 </div>
@@ -187,7 +193,7 @@ blackHoleSuns.prototype.buildUserTable = function () {
 
         <div id="id-table" class="card-body">
             <div id="userHeader" class="row border-bottom"></div>
-            <div id="userItems"></div>
+            <div id="userItems" class="scroll" style="height: 300px"></div>
         </div>`;
 
     const ckbox = `            
@@ -238,17 +244,17 @@ blackHoleSuns.prototype.buildUserTable = function () {
     });
 
     $("#id-showQty").blur(function () {
+        mapgrid = [];
+        bhs.buildMap();
         bhs.getEntries(bhs.displayUserEntry, $(this).val());
+        bhs.getBases(bhs.displayUserEntry, $(this).val());
     });
 
     $("#btn-utSettings").click(function () {
-        if ($(this).html() == `<i class="fas fa-angle-down"></i>`) {
+        if ($("#utSettings").is(":hidden"))
             $("#utSettings").show();
-            $(this).html(`<i class="fas fa-angle-up"></i>`);
-        } else {
+         else 
             $("#utSettings").hide();
-            $(this).html(`<i class="fas fa-angle-down"></i>`);
-        }
     });
 
 }
@@ -265,6 +271,8 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
             </div>`;
     const lineEnd = `
         </div>`;
+
+    bhs.drawMap(entry, true);
 
     let gpa = entry.galaxy + "-" + entry.platform + "-" + (entry.blackhole ? entry.connection.stripColons() : entry.addr.stripColons());
 
@@ -284,6 +292,9 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
                 l = /bhdata/ [Symbol.replace](l, entry.blackhole ? "BH" : entry.deadzone ? "DZ" : "");
                 l = /xdata/ [Symbol.replace](l, "");
             } else if (entry.blackhole || entry.deadzone) {
+                l = /bhdata/ [Symbol.replace](l, entry[t.field] ? entry[t.field] : "");
+                l = /xdata/ [Symbol.replace](l, "");
+            } else if (entry.basename) {
                 l = /bhdata/ [Symbol.replace](l, entry[t.field] ? entry[t.field] : "");
                 l = /xdata/ [Symbol.replace](l, "");
             } else {
@@ -380,7 +391,7 @@ blackHoleSuns.prototype.buildTotals = function () {
     totalsDef.forEach(function (t) {
         let l = /idname/ [Symbol.replace](totalsItems, t.id);
         l = /title/ [Symbol.replace](l, t.title);
-        h += /format/ [Symbol.replace](l, t.format +" border-bottom");
+        h += /format/ [Symbol.replace](l, t.format + " border-bottom");
     });
 
     h += totalsRowEnd;
@@ -544,4 +555,149 @@ blackHoleSuns.prototype.extractUser = function () {
     u.org = loc.find("#btn-org").text().stripNumber();
 
     return u;
+}
+
+blackHoleSuns.prototype.buildMap = function () {
+    let canvas = document.getElementById('map');
+    let ctx = canvas.getContext('2d');
+
+    let w = canvas.offsetWidth;
+    canvas.style.height = w + "px";
+
+    w = canvas.width;
+    let m = parseInt(w / 2) + .5;
+
+    canvas.height = w;
+    /*
+        ctx.fillStyle = 'yellow';
+        ctx.beginPath();
+        ctx.arc(w / 2, w / 2, 750 * 2 / 4096 * w, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(w / 2, w / 2, 650 * 2 / 4096 * w, 0, Math.PI * 2);
+        ctx.fill();
+    */
+    ctx.strokeStyle = 'gray';
+
+    ctx.strokeRect(0, 0, w, w);
+
+    ctx.beginPath();
+    ctx.moveTo(m, 0);
+    ctx.lineTo(m, w);
+    ctx.moveTo(0, m);
+    ctx.lineTo(w, m);
+    ctx.stroke();
+
+    $("#map").mousemove(function (evt) {
+        let canvas = document.getElementById('map');
+        let rect = canvas.getBoundingClientRect();
+
+        var tipCanvas = document.getElementById("tip");
+        var tipCtx = tipCanvas.getContext("2d");
+
+        let scaleX = canvas.width / rect.width;
+        let scaleY = canvas.height / rect.height;
+
+        let x = parseInt((evt.clientX - rect.left) * scaleX / 4);
+        let y = parseInt((evt.clientY - rect.top) * scaleY / 4);
+        if (mapgrid[x] && mapgrid[x][y]) {
+            console.log(mapgrid[x][y]);
+            let txt = mapgrid[x][y].split("\n");
+
+            tipCanvas.style.left = (evt.clientX + 5) + "px";
+            tipCanvas.style.top = (evt.clientY - 10) + "px";
+            tipCtx.clearRect(0, 0, tipCanvas.width, tipCanvas.height);
+
+            for (let i = 0; i < txt.length; ++i)
+                tipCtx.fillText(txt[i], 5.5, 15 + i * 15);
+        } else
+            tipCanvas.style.left = "-800px";
+    });
+
+    $("#map").mousedown(function (evt) {
+        let canvas = document.getElementById('map');
+        let rect = canvas.getBoundingClientRect();
+
+        let scaleX = canvas.width / rect.width;
+        let scaleY = canvas.height / rect.height;
+
+        let x = parseInt((evt.clientX - rect.left) * scaleX / 4);
+        let y = parseInt((evt.clientY - rect.top) * scaleY / 4);
+
+        if (mapgrid[x] && mapgrid[x][y]) {
+            bhs.buildMap();
+            bhs.drawChain(x,y);
+        }
+    });
+}
+
+blackHoleSuns.prototype.drawChain = function (x, y) {
+    let txt = mapgrid[x][y].split("\n");
+    mapgrid[x][y]="";
+    let w = document.getElementById('map').width;
+
+    for (let i = 0; i < txt.length && txt[i] != ""; ++i) {
+        let addr = txt[i].slice(0, 19);
+        let con = txt[i].slice(23);
+
+        console.log(addr);
+        bhs.getEntry(addr, bhs.drawMap);
+
+        let xyz = bhs.addressToXYZ(con);
+        let x = xyz.x / 4096 * w;
+        let y = xyz.z / 4096 * w;
+
+        let ix = parseInt(x / 4);
+        let iy = parseInt(y / 4);
+
+        if (mapgrid[ix] && mapgrid[ix][iy])
+            bhs.drawChain(ix, iy);
+    }
+}
+
+var mapgrid = [];
+
+blackHoleSuns.prototype.drawMap = function (entry, add) {
+    let canvas = document.getElementById('map');
+    let ctx = canvas.getContext('2d');
+
+    let w = document.getElementById('map').width;
+
+    let xyz = bhs.addressToXYZ(entry.addr);
+    let x = xyz.x / 4096 * w;
+    let y = xyz.z / 4096 * w;
+
+    if (entry.blackhole || entry.deadzone) {
+        let exyz = bhs.addressToXYZ(entry.connection);
+        let ex = exyz.x / 4096 * w;
+        let ey = exyz.z / 4096 * w;
+
+        ctx.fillStyle = 'blue';
+        ctx.strokeStyle = 'orange';
+
+        ctx.beginPath();
+        ctx.moveTo(x + .5, y + .5);
+        ctx.lineTo(ex + .5, ey + .5);
+        ctx.stroke();
+
+        if (add) {
+        let ix = parseInt(x / 4);
+        let iy = parseInt(y / 4);
+
+        if (!mapgrid[ix])
+            mapgrid[ix] = [];
+        if (!mapgrid[ix][iy])
+            mapgrid[ix][iy] = "";
+        mapgrid[ix][iy] += entry.addr + " -> " + entry.connection + "\n";
+        }
+    } else if (entry.basename)
+        ctx.fillStyle = 'green';
+    else
+        ctx.fillStyle = 'red';
+
+    ctx.beginPath();
+    ctx.arc(x, y, entry.blackhole ? 1.5 : 1, 0, Math.PI * 2);
+    ctx.fill();
 }

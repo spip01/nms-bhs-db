@@ -46,12 +46,11 @@ var panels = [{
 
 blackHoleSuns.prototype.buildPanel = function (id) {
     const panel = `
-        <div id="idname" class="card pad-bottom">
-            <div id="pnlname" class="h4 clr-dark-green card-header"></div>
+        <div id="idname" class="card pad-bottom bkg-trans-2">
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-9 col-14">
-                        <div class="card card-body no-border">
+                        <div class="card card-body no-border bkg-trans-2">
                             <div class="row">
                                 <div class="col-md-5 col-13">
                                     <div class="row">
@@ -78,7 +77,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     </div>
 
                     <div class="col-md-5 col-14">
-                        <div class="card card-body no-border">
+                        <div class="card card-body no-border bkg-trans-2">
                             <div class="row">
                                 <div id="id-Lifeform" class="col-md-4 col-14"></div>
                                 <div id="id-Economy" class="col-md-4 col-14"></div>
@@ -132,7 +131,8 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     </div>
                 </div>
             </div>
-        </div>`;
+        </div>
+        <br>`;
 
     let h = /idname/g [Symbol.replace](panel, id);
 
@@ -310,6 +310,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
 
             if (entry.hasbase) {
                 entry.basename = loc.find("#id-basename").val();
+                entry.owned = "mine";
                 await bhs.updateBase(entry, true)
             }
 

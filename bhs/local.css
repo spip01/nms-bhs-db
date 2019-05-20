@@ -187,8 +187,20 @@ body {
     background-color:transparent;
 }
 
+.bkg-trans-1 {
+    background-color:rgba(255,255,255,.1);
+}
+
+.bkg-trans-2 {
+    background-color:rgba(255,255,255,.2);
+}
+
 .bkg-white {
     background-color: #ffffff;
+}
+
+.bkg-green {
+    background-color: green;
 }
 
 .bkg-light-green {

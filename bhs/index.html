@@ -51,16 +51,22 @@
 
     <link rel="stylesheet" type="text/css" href="local.css">
     <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
+
+    <style>
+        body {
+            background-image: url("lBTK5EL.png");
+            background-color: green;
+        }
+    </style>
 </head>
 
 <body>
     <div id="navbar"></div>
 
     <div id="javascript">
-        <nav class="navbar navbar-expand-sm bkg-light-green">
+        <nav class="navbar navbar-expand-sm bkg-trans">
             <a class="navbar-brand" href="index.html">
                 <span class=" clr-dark-green h2">
-                    <i class="fa fa-home"></i>
                     NMS-Black Hole Suns
                 </span>
             </a>
@@ -92,10 +98,9 @@
                 </h4>
             </div>
 
-            <div id="panels" class="container"></div>
-            <br>
+            <div id="panels"></div>
 
-            <div id="entrybuttons" class="row">
+            <div id="entrybuttons" class="row bkg-trans-2">
                 <div class="col-8">
                     <div class="row>">
                         <button id="save" type="button" class="col-4 btn border btn-sm btn-green">Save</button>&nbsp;
@@ -106,7 +111,7 @@
                 </div>
 
                 <div class="col-6">
-                    <div id="status" class="card card-body text-danger"></div>
+                    <div id="status" class="card card-body text-danger bkg-white"></div>
                 </div>
             </div>
         </div>
@@ -115,10 +120,13 @@
         <div id="entryTable" data-page="input" class="card pad-bottom"></div>
         <br>
 
-        <div id="totals" class="card border pad-bottom"></div>  
+        <div id="totals" class="card border pad-bottom"></div>
         <br>
-        
-        <div id="map" class="card card-body pad-bottom"></div>
+
+        <div class="card card-body">
+            <canvas id="map" style="cursor: crosshair; background-color: black;max-width:350px"></canvas>
+            <canvas id="tip"></canvas>
+        </div>
         <br>
     </div>
     <br>

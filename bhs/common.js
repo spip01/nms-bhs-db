@@ -176,6 +176,8 @@ blackHoleSuns.prototype.checkPlayerName = function (loc) {
             $(loc).val(bhs.user.player);
             bhs.status("Player Name:" + n + " is already taken.", 0);
         } else {
+            //bhs.changePlayerName(bhs.user.player, n);
+
             bhs.user.player = n;
             let ref = bhs.getUsersColRef(bhs.user.uid);
             ref.set(bhs.user);
@@ -293,8 +295,8 @@ blackHoleSuns.prototype.deleteEntry = async function (addr) {
         }
     });
 }
-/*
-blackHoleSuns.prototype.rebuildDB = async function () {
+
+blackHoleSuns.prototype.changePlayerName = async function (oname, nname) {
     let ref = bhs.getStarsColRef();
     await ref.get().then(function (snapshot) {
         snapshot.forEach(async function (doc) {
@@ -305,12 +307,12 @@ blackHoleSuns.prototype.rebuildDB = async function () {
                 let p = platformList[j];
 
                 let ref = bhs.getStarsColRef(g.name, p.name);
-                ref = ref.where("life", "==", "gek")
+                ref = ref.where("player", "==", oname)
                 await ref.get().then(function (snapshot) {
                     snapshot.forEach(function (doc) {
                         let d = doc.data();
-                        d.life = "Gek";
-                        console.log(doc.ref.path + " " + doc.data().life + " " + d.life);
+                        console.log(doc.ref.path + " " + doc.data().addr + " " + d.player + " => " + nname);
+                        d.player = nname;
                         let ref = bhs.fbfs.doc(doc.ref.path);
                         ref.set(d);
                     })
@@ -319,7 +321,7 @@ blackHoleSuns.prototype.rebuildDB = async function () {
         });
     });
 }
-*/
+
 blackHoleSuns.prototype.rebuildTotals = async function () {
     let totals = bhs.checkTotalsInit();
 
@@ -547,7 +549,7 @@ blackHoleSuns.prototype.updateTotal = function (add, ref, clear) {
 blackHoleSuns.prototype.getEntries = function (displayFcn, limit) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
     ref = ref.where("player", "==", bhs.user.player);
-    ref = ref.limit(parseInt(limit ? limit : 10));
+    ref = ref.limit(parseInt(limit ? limit : 20));
     ref = ref.orderBy("modded", "desc");
 
     bhs.unsubscribe("entry");
@@ -565,6 +567,18 @@ blackHoleSuns.prototype.getUser = function (displayFcn) {
             displayFcn(doc.data());
     });
 }
+
+blackHoleSuns.prototype.getBases = function (displayFcn, limit) {
+/*    let ref = bhs.getUsersColRef(bhs.user.uid.bhs.user.galaxy, bhs.user.platform);
+    ref = ref.limit(parseInt(limit ? limit : 20));
+
+    bhs.unsubscribe("base");
+    bhs.unsub.base = ref.onSnapshot(function (querysnapshot) {
+        querysnapshot.forEach(function (doc) {
+            displayFcn(doc.data());
+        });
+    });
+*/}
 
 blackHoleSuns.prototype.getTotals = function (displayFcn) {
     bhs.unsubscribe("totals");
@@ -878,7 +892,6 @@ blackHoleSuns.prototype.formatListSel = function (val, list) {
     return name;
 }
 
-
 blackHoleSuns.prototype.getIndex = function (list, field, id) {
     if (!id)
         return -1;
@@ -933,28 +946,42 @@ blackHoleSuns.prototype.calcDist = function (addr, addr2) {
 function formatLife(val) {
     if (val.match(/gek/i))
         return "Gek";
-    if (val.match(/korvax/i))
+    if (val.match(/kor/i))
         return "Korvax";
-    if (val.match(/vy.keen/i))
+    if (val.match(/vy/i))
         return "Vy'keen";
 }
 
+function formatOwned(val) {
+    if (val.match(/s/i))
+        return ("station");
+    if (val.match(/v/i))
+        return ("visited");
+    else
+        return ("mine");
+}
+
+const portalFormat = "ppsssyyxxxzzz";
+
 const lifeformList = [{
-    name: "Vy'keen"
+    name: "Vy'keen",
+    match: /vy/i
 }, {
-    name: "Gek"
+    name: "Gek",
+    match: /gek/i
 }, {
-    name: "Korvax"
+    name: "Korvax",
+    match: /kor/i
 }, {
     name: "none"
 }];
 
 const platformList = [{
     name: "PC-XBox",
-
+    match: /pc|xbox/i
 }, {
-    name: "PS4"
-
+    name: "PS4",
+    match: /ps4/i
 }];
 
 const economyList = [{
