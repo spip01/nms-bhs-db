@@ -201,8 +201,8 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
         }
 
         if (!found) {
-            bhs.status("Missing required column labels.", 0, errorLog);
-            await bhs.batchWriteLog(file.name, true, errorLog);
+            errorLog = bhs.status("Missing required column labels.", 0, errorLog);
+            await bhs.batchWriteLog(file.name, errorLog);
             bhs.batch.commit();
             return;
         }
@@ -215,7 +215,7 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
 
             entry[0] = {};
             entry[0].player = bhs.user.player;
-            entry[0].org = bhs.user.org;
+            entry[0].org = bhs.user.org ? bhs.user.org : "";
             entry[0].uploader = bhs.user.uid;
             entry[0].galaxy = bhs.user.galaxy;
             entry[0].platform = bhs.user.platform;
@@ -240,8 +240,8 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
                         let val = importTable[j].checkval;
                         if (importTable[j].required || importTable[j].checkreq &&
                             importTable[j].checkreq(entry[importTable[grp].group][importTable[val].field])) {
-                            bhs.status("row: " + (i + 1) + " missing " + importTable[j].match, 0, errorLog);
-                            bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
+                                errorLog = bhs.status("row: " + (i + 1) + " missing " + importTable[j].match, 0, errorLog);
+                                errorLog = bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
                             ok = false;
                         }
                     } else {
@@ -256,8 +256,8 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
 
                         if (!ok) {
                             let s = importTable[j].group == 1 ? "bh " : importTable[j].group == 2 ? "exit " : "";
-                            bhs.status("row: " + (i + 1) + " invalid value " + s + importTable[j].match + " " + entry[importTable[j].group][importTable[j].field], 0, errorLog);
-                            bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
+                            errorLog = bhs.status("row: " + (i + 1) + " invalid value " + s + importTable[j].match + " " + entry[importTable[j].group][importTable[j].field], 0, errorLog);
+                            errorLog = bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
                         }
                     }
                 }
@@ -304,21 +304,21 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
 
                     if (entry[1].blackhole || entry[1].deadzone) {
                         if (!(ok = validateBHAddress(entry[1].addr))) {
-                            bhs.status("row: " + (i + 1) + " invalid black hole address " + entry[1].addr, 0, errorLog);
-                            bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
+                            errorLog = bhs.status("row: " + (i + 1) + " invalid black hole address " + entry[1].addr, 0, errorLog);
+                            errorLog = bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
                         }
 
                         if (ok && entry[1].blackhole) {
                             entry[1].connection = entry[2].addr;
                             entry[1].towardsCtr = entry[1].dist - entry[2].dist;
                             if (!(ok = validateExitAddress(entry[2].addr))) {
-                                bhs.status("row: " + (i + 1) + " invalid exit address " + entry[1].addr, 0, errorLog);
-                                bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
+                                errorLog = bhs.status("row: " + (i + 1) + " invalid exit address " + entry[1].addr, 0, errorLog);
+                                errorLog = bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
                             }
                         }
 
                         if (ok && !(ok = bhs.validateDist(entry[1], "row: " + (i + 1) + " ", 0, errorLog)))
-                            bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
+                        errorLog = bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
 
                         if (ok) {
                             await bhs.batchUpdate(entry[1], check); // don't overwrite existing base or creation dates
@@ -352,15 +352,10 @@ blackHoleSuns.prototype.batchWriteLog = async function (filename, errorlog) {
     if (errorlog) {
         let ref = bhs.fbfs.collection("log").doc(filename);
         let data = {};
-        data.error = errorlog;
+        data.error += errorlog;
         await bhs.batch.set(ref, data);
 
-        if (++bhs.batchcount == 500) {
-            console.log("commit");
-            bhs.batch.commit();
-            bhs.batch = bhs.fbfs.batch();
-            bhs.batchcount = 0;
-        }
+        bhs.checkBatchSize();
     }
 }
 
@@ -389,12 +384,7 @@ blackHoleSuns.prototype.batchUpdate = async function (entry, check) {
                 bhs.status(entry.addr + " can only be edited by owner: " + d.player, 1);
         }
 
-        if (!check && ++bhs.batchcount == 500) {
-            console.log("commit");
-            bhs.batch.commit();
-            bhs.batch = bhs.fbfs.batch();
-            bhs.batchcount = 0;
-        }
+        bhs.checkBatchSize();
     });
 }
 
@@ -419,13 +409,7 @@ blackHoleSuns.prototype.batchEdit = async function (entry, old, check) {
                 await bhs.batch.set(ref, entry);
 
                 bhs.status(entry.addr + " edited", 2);
-
-                if (++bhs.batchcount == 500) {
-                    console.log("commit");
-                    bhs.batch.commit();
-                    bhs.batch = bhs.fbfs.batch();
-                    bhs.batchcount = 0;
-                }
+                bhs.checkBatchSize();
             }
         }
     });
@@ -461,14 +445,18 @@ blackHoleSuns.prototype.batchWriteBase = async function (entry, check) {
                 await bhs.batch.set(ref, entry);
 
                 bhs.status(entry.addr + " base saved.", 2);
-                if (++bhs.batchcount == 500) {
-                    console.log("commit");
-                    bhs.batch.commit();
-                    bhs.batch = bhs.fbfs.batch();
-                    bhs.batchcount = 0;
-                }
+                bhs.checkBatchSize();
             }
         });
+    }
+}
+
+blackHoleSuns.prototype.checkBatchSize = function(){
+    if (++bhs.batchcount == 500) {
+        console.log("commit");
+        bhs.batch.commit();
+        bhs.batch = bhs.fbfs.batch();
+        bhs.batchcount = 0;
     }
 }
 
@@ -478,4 +466,6 @@ blackHoleSuns.prototype.status = function (str, lvl, buf) {
 
     if (lvl == 0 || $("#ck-verbose").prop("checked") && lvl == 1 || $("#ck-vverbose").prop("checked") && lvl == 2)
         $("#status").prepend("<h7>" + str + "</h7>");
+
+    return buf;
 }

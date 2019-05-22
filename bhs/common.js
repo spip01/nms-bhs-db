@@ -381,7 +381,7 @@ blackHoleSuns.prototype.checkTotalsInit = function (totals, entry) {
     if (typeof totals.user == "undefined")
         totals.user = {};
 
-    if (typeof totals.org == "undefined")
+    if (entry.org && typeof totals.org == "undefined")
         totals.org = {};
 
     if (entry) {
@@ -426,10 +426,12 @@ blackHoleSuns.prototype.incTotals = function (totals, entry, inc) {
             totals.user[entry.player].galaxy[entry.galaxy].total[star] += inc;
             totals.user[entry.player].galaxy[entry.galaxy][entry.platform][star] += inc;
 
+            if (entry.org) {
             totals.org[entry.org].total[star] += inc;
             totals.org[entry.org][entry.platform][star] += inc;
             totals.org[entry.org].galaxy[entry.galaxy].total[star] += inc;
             totals.org[entry.org].galaxy[entry.galaxy][entry.platform][star] += inc;
+            }
         }
     }
 
@@ -539,6 +541,7 @@ blackHoleSuns.prototype.getUser = function (displayFcn) {
 
 blackHoleSuns.prototype.getOrgList = async function () {
     bhs.orgList = [];
+    bhs.orgList.push({name:""});
 
     let ref = bhs.fbfs.collection("org").orderBy("name");
     await ref.get().then(function (snapshot) {
