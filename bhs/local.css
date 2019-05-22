@@ -166,6 +166,10 @@ body {
     font: 16px Arial;
 }
 
+.border-3 {
+    border-width:3px !important;
+}
+
 .scroll {
     overflow-y: scroll;
     overflow-x: hidden;

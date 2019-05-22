@@ -29,6 +29,7 @@ blackHoleSuns.prototype.displayUser = function (user) {
         bhs.buildMap();
 
         bhs.getTotals(bhs.displayTotals);
+        bhs.getUsers(bhs.displayUserTotals);
         bhs.getEntries(bhs.displayUserEntry);
         bhs.getBases(bhs.displayUserEntry);
     }
@@ -90,11 +91,11 @@ blackHoleSuns.prototype.buildUserPanel = function () {
     });
 }
 
-const utPlayerIdx = 0;
-const utGalaxyIdx = 1;
-const utPlatformIdx = 2;
-const utTypeIdx = 3;
-const utAddrIdx = 4;
+//const utPlayerIdx = 0;
+//const utGalaxyIdx = 0;
+//const utPlatformIdx = 1;
+const utTypeIdx = 0;
+const utAddrIdx = 1;
 
 var userTable = [
     /*{
@@ -103,20 +104,22 @@ var userTable = [
         field: "player",
         format: "col-2",
         hide: true
-    }, {
+    },
+    {
         title: "Galaxy",
         id: "id-galaxy",
         field: "galaxy",
         format: "col-2",
-        hide: true
+       // off: true,
+        fcn: getUserGalaxies,
     }, {
         title: "Platform",
         id: "id-platform",
         field: "platform",
         format: "col-2",
-        hide: true
-    },*/
-    {
+     //   off: true,
+        fcn: getUserPlatforms,
+    },*/{
         title: "",
         id: "id-type",
         format: "col-1",
@@ -224,12 +227,24 @@ blackHoleSuns.prototype.buildUserTable = function () {
     userTable.forEach(function (t) {
         if (t.title) {
             let l = /idname/ [Symbol.replace](ckbox, t.id);
+            //l = /checked/ [Symbol.replace](l, t.off ? "" : "checked");
             h += /title/ [Symbol.replace](l, t.title);
         }
     });
 
     loc = $("#id-utlistsel");
     loc.append(h);
+
+    userTable.forEach(function (t) {
+        let ck = loc.find("#ck-" + t.id)
+        if (ck.prop("checked")) {
+            $("#userHeader").find("#" + t.id).show();
+            $("#userItems").find("#" + t.id).show();
+        } else {
+            $("#userHeader").find("#" + t.id).hide();
+            $("#userItems").find("#" + t.id).hide();
+        }
+    });
 
     userTable.forEach(function (t) {
         loc.find("#ck-" + t.id).change(function () {
@@ -253,7 +268,7 @@ blackHoleSuns.prototype.buildUserTable = function () {
     $("#btn-utSettings").click(function () {
         if ($("#utSettings").is(":hidden"))
             $("#utSettings").show();
-         else 
+        else
             $("#utSettings").hide();
     });
 
@@ -346,75 +361,23 @@ blackHoleSuns.prototype.entryFromTable = function (ent) {
     bhs.getEntry(addr, bhs.displaySingle, pnlTop);
 }
 
-blackHoleSuns.prototype.hideUserTable = function (loc, idx) {
-    loc.find("#" + userTable[idx].id).hide();
-}
-
-const totalsRowHdr = ` <div id="idname" class="row">`;
+const totalsItemsHdr = `<div id="idname" class="row">`;
 const totalsItems = `       <div id="idname" class="format">title</div>`;
-const totalsRowEnd = ` </div>`;
+const totalsItemsEnd = `</div>`;
 
 const totalsDef = [{
     title: "",
     id: "id-what",
-    format: "col-4",
+    format: "col-7",
 }, {
     title: "Player",
     id: "id-player",
-    format: "col-2",
+    format: "col-3",
 }, {
-    title: "All Players",
+    title: "All",
     id: "id-all",
-    format: "col-2",
-}, {
-    title: "Top Players",
-    id: "id-topname",
-    format: "col-4 border-left",
-}, {
-    title: "Total Entries",
-    id: "id-topqty",
-    format: "col-2",
+    format: "col-3",
 }];
-
-blackHoleSuns.prototype.buildTotals = function () {
-    const pnl = `
-        <div class="card-header h4">Totals</div>
-        <div class="card-body">
-            <div id="totalsHeader"></div>
-            <div id="totalsItems"></div>
-        </div>`;
-
-    $("#totals").empty();
-    $("#totals").append(pnl);
-
-    let h = totalsRowHdr;
-    totalsDef.forEach(function (t) {
-        let l = /idname/ [Symbol.replace](totalsItems, t.id);
-        l = /title/ [Symbol.replace](l, t.title);
-        h += /format/ [Symbol.replace](l, t.format + " border-bottom");
-    });
-
-    h += totalsRowEnd;
-    $("#totalsHeader").append(h);
-
-    totalsRows.forEach(function (x) {
-        h = /idname/ [Symbol.replace](totalsRowHdr, x.id);
-
-        let t = /platform/ [Symbol.replace](x.title, bhs.user.platform);
-        t = /galaxy/ [Symbol.replace](t, bhs.user.galaxy);
-
-        totalsDef.forEach(function (y) {
-            let l = /idname/ [Symbol.replace](totalsItems, y.id);
-            l = /title/ [Symbol.replace](l, t);
-            h += /format/ [Symbol.replace](l, y.format);
-
-            t = "";
-        });
-
-        h += totalsRowEnd;
-        $("#totalsItems").append(h);
-    });
-}
 
 const rowTotal = 0;
 // const rowGalaxy = 1;
@@ -433,16 +396,64 @@ const totalsRows = [{
 }, {
     title: "Total[galaxy][platform]",
     id: "id-totalBHGP",
-}, {
-    title: "",
-    id: "id-top4",
-}, {
-    title: "",
-    id: "id-top5",
 }];
 
+blackHoleSuns.prototype.buildTotals = function () {
+    const pnl = `
+        <div class="card-header h4">Total Black Hole Entries</div>
+        <div class="card-body">
+            <div id="hdr0" class="row border-bottom"></div>
+            <div id="itm0"></div>
+            <br>
+            <div class="card card-body">
+                <div id="hdr1" class="row border-bottom"></div>
+                <div id="itm1" class="scroll" style="height:150px"></div>
+            </div>
+        </div>`;
+
+    let tot = $("#totals");
+    tot.empty();
+    tot.append(pnl);
+
+    let h = "";
+
+    totalsDef.forEach(function (t) {
+        let l = /idname/ [Symbol.replace](totalsItems, t.id);
+        l = /title/ [Symbol.replace](l, t.title);
+        h += /format/ [Symbol.replace](l, t.format + " ");
+    });
+
+    tot.find("#hdr0").append(h);
+
+    totalsRows.forEach(function (x) {
+        let t = /platform/ [Symbol.replace](x.title, bhs.user.platform);
+        t = /galaxy/ [Symbol.replace](t, bhs.user.galaxy);
+
+        let h = /idname/ [Symbol.replace](totalsItemsHdr, x.id);
+
+        totalsDef.forEach(function (y) {
+            let l = /idname/ [Symbol.replace](totalsItems, y.id);
+            l = /title/ [Symbol.replace](l, t);
+            h += /format/ [Symbol.replace](l, y.format);
+            t = "";
+        });
+
+        h += totalsItemsEnd;
+
+        tot.find("#itm0").append(h);
+    });
+
+    totalsPlayers.forEach(function (t) {
+        let l = /idname/ [Symbol.replace](totalsItems, t.id);
+        l = /title/ [Symbol.replace](l, t.title);
+        l = /format/ [Symbol.replace](l, t.format + " ");
+
+        tot.find("#hdr1").append(l);
+    });
+}
+
 blackHoleSuns.prototype.displayTotals = function (entry, id) {
-    let pnl = $("#totalsItems");
+    let pnl = $("#itm0");
 
     let columnid = id == "totals" ? "id-all" : "id-player";
 
@@ -455,13 +466,42 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
         // pnl.find("#" + totalsRows[rowGalaxy].id + " #" + columnid).text(totals.galaxy[bhs.user.galaxy].blackholes);
         pnl.find("#" + totalsRows[rowGalaxyPlatform].id + " #" + columnid).text(entry[starsCol].galaxy[bhs.user.galaxy][bhs.user.platform].blackholes);
     }
+}
 
-    if (entry[starsCol].top)
-        Object.keys(entry[starsCol].top.total.blackholes).forEach(function (x) {
-            let t = entry[starsCol].top.total.blackholes[x];
-            pnl.find("#" + totalsRows[x].id + " #id-topname").text(t.player);
-            pnl.find("#" + totalsRows[x].id + " #id-topqty").text(t.qty);
-        });
+const totalsPlayers = [{
+    title: "Contributors",
+    id: "id-names",
+    format: "col-10",
+}, {
+    title: "Total",
+    id: "id-qty",
+    format: "col-3",
+}];
+
+blackHoleSuns.prototype.displayUserTotals = function (entry) {
+    if (entry[starsCol]) {
+        const userHdr = `<div id="u-idname" class="row">`;
+        const userItms = `       <div id="idname" class="format">title</div>`;
+        const userEnd = `</div>`;
+
+        let pnl = $("#totals #itm1");
+        let player = pnl.find("#u-" + entry.player.nameToId());
+
+        if (player.length == 0) {
+            let h = /idname/ [Symbol.replace](userHdr, entry.player.nameToId())
+
+            totalsPlayers.forEach(function (x) {
+                let l = /idname/ [Symbol.replace](userItms, x.id);
+                l = /format/ [Symbol.replace](l, x.format);
+                h += /title/ [Symbol.replace](l, x.id == "id-names" ? entry.player : entry[starsCol].total.blackholes);
+            });
+
+            h += userEnd;
+
+            pnl.append(h);
+        } else
+            player.find("#id-qty").text(entry[starsCol].total.blackholes);
+    }
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
@@ -628,14 +668,14 @@ blackHoleSuns.prototype.buildMap = function () {
 
         if (mapgrid[x] && mapgrid[x][y]) {
             bhs.buildMap();
-            bhs.drawChain(x,y);
+            bhs.drawChain(x, y);
         }
     });
 }
 
 blackHoleSuns.prototype.drawChain = function (x, y) {
     let txt = mapgrid[x][y].split("\n");
-    mapgrid[x][y]="";
+    mapgrid[x][y] = "";
     let w = document.getElementById('map').width;
 
     for (let i = 0; i < txt.length && txt[i] != ""; ++i) {
@@ -683,14 +723,14 @@ blackHoleSuns.prototype.drawMap = function (entry, add) {
         ctx.stroke();
 
         if (add) {
-        let ix = parseInt(x / 4);
-        let iy = parseInt(y / 4);
+            let ix = parseInt(x / 4);
+            let iy = parseInt(y / 4);
 
-        if (!mapgrid[ix])
-            mapgrid[ix] = [];
-        if (!mapgrid[ix][iy])
-            mapgrid[ix][iy] = "";
-        mapgrid[ix][iy] += entry.addr + " -> " + entry.connection + "\n";
+            if (!mapgrid[ix])
+                mapgrid[ix] = [];
+            if (!mapgrid[ix][iy])
+                mapgrid[ix][iy] = "";
+            mapgrid[ix][iy] += entry.addr + " -> " + entry.connection + "\n";
         }
     } else if (entry.basename)
         ctx.fillStyle = 'green';

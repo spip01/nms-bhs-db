@@ -29,6 +29,7 @@ $(document).ready(function () {
     });
 });
 
+const inpCoordIdx = 5;
 var importTable = [{
     match: /platform/i,
     field: "platform",
@@ -207,7 +208,7 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
 
             let row = allrows[i].split(/[,\t]/);
 
-            if (row.length < 3 || row[importTable[4].index] == "")
+            if (row.length < 3 || row[importTable[inpCoordIdx].index] == "")
                 ok = false;
 
             for (let j = 0; j < importTable.length && ok; ++j) {
