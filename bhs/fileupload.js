@@ -240,8 +240,8 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
                         let val = importTable[j].checkval;
                         if (importTable[j].required || importTable[j].checkreq &&
                             importTable[j].checkreq(entry[importTable[grp].group][importTable[val].field])) {
-                                errorLog = bhs.status("row: " + (i + 1) + " missing " + importTable[j].match, 0, errorLog);
-                                errorLog = bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
+                            errorLog = bhs.status("row: " + (i + 1) + " missing " + importTable[j].match, 0, errorLog);
+                            errorLog = bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
                             ok = false;
                         }
                     } else {
@@ -318,7 +318,7 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
                         }
 
                         if (ok && !(ok = bhs.validateDist(entry[1], "row: " + (i + 1) + " ", 0, errorLog)))
-                        errorLog = bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
+                            errorLog = bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
 
                         if (ok) {
                             await bhs.batchUpdate(entry[1], check); // don't overwrite existing base or creation dates
@@ -337,6 +337,9 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
         console.log("commit");
         if (bhs.batchcount > 0)
             await bhs.batch.commit();
+
+        progress.css("width", 100 + "%");
+        progress.text("commit");
 
         if (!check)
             await bhs.updateAllTotals(bhs.totals);
@@ -451,7 +454,7 @@ blackHoleSuns.prototype.batchWriteBase = async function (entry, check) {
     }
 }
 
-blackHoleSuns.prototype.checkBatchSize = function(){
+blackHoleSuns.prototype.checkBatchSize = function () {
     if (++bhs.batchcount == 500) {
         console.log("commit");
         bhs.batch.commit();

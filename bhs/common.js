@@ -108,14 +108,14 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
 
             bhs.updateUser(user);
 
-            if (false && bhs.fix)
-                bhs.fix();
-            else {
-                if (bhs.doLoggedin)
-                    bhs.doLoggedin();
+            // if (bhs.rebuildTotals)
+            //     bhs.rebuildTotals();
 
-                bhs.navLoggedin();
-            }
+            if (bhs.doLoggedin)
+                bhs.doLoggedin();
+
+            bhs.navLoggedin();
+
         });
     } else {
         $("#usermenu").hide();
@@ -381,9 +381,6 @@ blackHoleSuns.prototype.checkTotalsInit = function (totals, entry) {
     if (typeof totals.user == "undefined")
         totals.user = {};
 
-    if (entry.org && typeof totals.org == "undefined")
-        totals.org = {};
-
     if (entry) {
         if (entry.player && typeof totals.user[entry.player] == "undefined") {
             totals.user[entry.player] = bhs.initTotals();
@@ -395,6 +392,9 @@ blackHoleSuns.prototype.checkTotalsInit = function (totals, entry) {
 
         if (entry.player && entry.galaxy && typeof totals.user[entry.player].galaxy[entry.galaxy] == "undefined")
             totals.user[entry.player].galaxy[entry.galaxy] = bhs.initTotals();
+
+        if (entry.org && typeof totals.org == "undefined")
+            totals.org = {};
 
         if (entry.org && typeof totals.org[entry.org] == "undefined") {
             totals.org[entry.org] = bhs.initTotals();
@@ -427,10 +427,10 @@ blackHoleSuns.prototype.incTotals = function (totals, entry, inc) {
             totals.user[entry.player].galaxy[entry.galaxy][entry.platform][star] += inc;
 
             if (entry.org) {
-            totals.org[entry.org].total[star] += inc;
-            totals.org[entry.org][entry.platform][star] += inc;
-            totals.org[entry.org].galaxy[entry.galaxy].total[star] += inc;
-            totals.org[entry.org].galaxy[entry.galaxy][entry.platform][star] += inc;
+                totals.org[entry.org].total[star] += inc;
+                totals.org[entry.org][entry.platform][star] += inc;
+                totals.org[entry.org].galaxy[entry.galaxy].total[star] += inc;
+                totals.org[entry.org].galaxy[entry.galaxy][entry.platform][star] += inc;
             }
         }
     }
@@ -485,15 +485,17 @@ blackHoleSuns.prototype.updateAllTotals = async function (totals, reset) {
             });
         }
 
-        let olist = Object.keys(totals.org);
-        for (let i = 0; i < olist.length; ++i) {
-            let o = olist[i];
+        if (totals.org) {
+            let olist = Object.keys(totals.org);
+            for (let i = 0; i < olist.length; ++i) {
+                let o = olist[i];
 
-            ref = bhs.fbfs.collection("org").where("name", "==", o);
-            await ref.get().then(async function (snapshot) {
-                if (!snapshot.empty)
-                    bhs.updateTotal(totals.org[o], snapshot.docs[0].ref, reset);
-            });
+                ref = bhs.fbfs.collection("org").where("name", "==", o);
+                await ref.get().then(async function (snapshot) {
+                    if (!snapshot.empty)
+                        bhs.updateTotal(totals.org[o], snapshot.docs[0].ref, reset);
+                });
+            }
         }
 
         delete bhs.totals;
@@ -541,7 +543,9 @@ blackHoleSuns.prototype.getUser = function (displayFcn) {
 
 blackHoleSuns.prototype.getOrgList = async function () {
     bhs.orgList = [];
-    bhs.orgList.push({name:""});
+    bhs.orgList.push({
+        name: ""
+    });
 
     let ref = bhs.fbfs.collection("org").orderBy("name");
     await ref.get().then(function (snapshot) {
