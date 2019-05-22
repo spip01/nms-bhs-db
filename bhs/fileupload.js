@@ -29,7 +29,7 @@ $(document).ready(function () {
     });
 });
 
-const inpCoordIdx = 5;
+const inpCoordIdx = 6;
 var importTable = [{
     match: /platform/i,
     field: "platform",
@@ -38,6 +38,11 @@ var importTable = [{
     match: /galaxy/i,
     field: "galaxy",
     format: formatGalaxy,
+    group: 0
+}, {
+    match: /org/i,
+    field: "org",
+    format: formatOrg,
     group: 0
 }, {
     match: /type/i,
@@ -131,7 +136,9 @@ var importTable = [{
 
 /* type menu from spreadsheet
 Black Hole
-Base
+Base Mine
+Base Visited
+Base Station
 DeadZone 
 Single System
 Edit
@@ -144,6 +151,19 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
 
     reader.onload = async function () {
         let allrows = reader.result.split(/\r?\n|\r/);
+
+        // if (file.name.match(/\.txt/i)) {
+        //     let ref = bhs.fbfs.collection("org")
+        //     for (let i = 0; i < allrows.length; ++i) {
+        //         if (allrows[i] != "") {
+        //             let org = {};
+        //             org.name = allrows[i];
+        //             ref.add(org);
+        //         }
+        //     }
+
+        //     return;
+        // }
 
         bhs.batch = bhs.fbfs.batch();
         bhs.batchcount = 0;
@@ -195,6 +215,7 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
 
             entry[0] = {};
             entry[0].player = bhs.user.player;
+            entry[0].org = bhs.user.org;
             entry[0].uploader = bhs.user.uid;
             entry[0].galaxy = bhs.user.galaxy;
             entry[0].platform = bhs.user.platform;
@@ -267,7 +288,7 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
                     entry[2].basename = base;
                     entry[2].addr = entry[1].addr;
 
-                     if (entry[0].type.match(/visit/i))
+                    if (entry[0].type.match(/visit/i))
                         entry[2].owned = "visited";
                     else if (entry[0].type.match(/station/i))
                         entry[2].owned = "station";

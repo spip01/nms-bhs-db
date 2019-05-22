@@ -77,11 +77,9 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     </div>
 
                     <div class="col-md-5 col-14">
-                        <div class="card card-body no-border bkg-trans-2">
-                            <div class="row">
-                                <div id="id-Lifeform" class="col-md-4 col-14"></div>
-                                <div id="id-Economy" class="col-md-4 col-14"></div>
-                            </div>
+                        <div class="row">
+                            <div id="id-Lifeform" class="col-md-4 col-14"></div>
+                            <div id="id-Economy" class="col-md-4 col-14"></div>
                         </div>
                     </div>
                 </div>
@@ -272,6 +270,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
 
     let entry = {};
     entry.player = bhs.user.player;
+    entry.org = bhs.user.org;
     entry.uid = bhs.user.uid;
     entry.platform = bhs.user.platform;
     entry.galaxy = bhs.user.galaxy;

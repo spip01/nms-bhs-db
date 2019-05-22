@@ -30,6 +30,7 @@ blackHoleSuns.prototype.displayUser = function (user) {
 
         bhs.getTotals(bhs.displayTotals);
         bhs.getUsers(bhs.displayUserTotals);
+        bhs.getOrgs(bhs.displayOrgTotals);
         bhs.getEntries(bhs.displayUserEntry);
         bhs.getBases(bhs.displayUserEntry);
     }
@@ -45,7 +46,7 @@ blackHoleSuns.prototype.displayUser = function (user) {
     player.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[galaxyList[i].number].color + ";");
 }
 
-blackHoleSuns.prototype.buildUserPanel = function () {
+blackHoleSuns.prototype.buildUserPanel = async function () {
     const panel = `
         <div id="pnl-user">
             <div class="row">
@@ -70,18 +71,9 @@ blackHoleSuns.prototype.buildUserPanel = function () {
     $("#panels").prepend(panel);
     let loc = $("#pnl-user");
 
-    //bhs.buildOrgList();
-    const orgList = [{
-        name: "none"
-    }, {
-        name: "BHS"
-    }, {
-        name: "Galactic Hub"
-    }, {
-        name: "Alliance of Galactic Travelers"
-    }];
+    await bhs.getOrgList();
 
-    bhs.buildMenu(loc, "Organization", orgList, bhs.saveUser);
+    bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser);
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, true);
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, true);
 
@@ -407,7 +399,12 @@ blackHoleSuns.prototype.buildTotals = function () {
             <br>
             <div class="card card-body">
                 <div id="hdr1" class="row border-bottom"></div>
-                <div id="itm1" class="scroll" style="height:150px"></div>
+                <div id="itm1" class="scroll" style="height:76px"></div>
+            </div>
+            <br>
+            <div class="card card-body">
+                <div id="hdr2" class="row border-bottom"></div>
+                <div id="itm2" class="scroll" style="height:76px"></div>
             </div>
         </div>`;
 
@@ -449,6 +446,14 @@ blackHoleSuns.prototype.buildTotals = function () {
         l = /format/ [Symbol.replace](l, t.format + " ");
 
         tot.find("#hdr1").append(l);
+    });
+
+    totalsOrgs.forEach(function (t) {
+        let l = /idname/ [Symbol.replace](totalsItems, t.id);
+        l = /title/ [Symbol.replace](l, t.title);
+        l = /format/ [Symbol.replace](l, t.format + " ");
+
+        tot.find("#hdr2").append(l);
     });
 }
 
@@ -504,6 +509,42 @@ blackHoleSuns.prototype.displayUserTotals = function (entry) {
     }
 }
 
+const totalsOrgs = [{
+    title: "Organization",
+    id: "id-names",
+    format: "col-10",
+}, {
+    title: "Total",
+    id: "id-qty",
+    format: "col-3",
+}];
+
+blackHoleSuns.prototype.displayOrgTotals = function (entry) {
+    if (entry[starsCol]) {
+        const userHdr = `<div id="o-idname" class="row">`;
+        const userItms = `       <div id="idname" class="format">title</div>`;
+        const userEnd = `</div>`;
+
+        let pnl = $("#totals #itm2");
+        let player = pnl.find("#o-" + entry.name.nameToId());
+
+        if (player.length == 0) {
+            let h = /idname/ [Symbol.replace](userHdr, entry.name.nameToId())
+
+            totalsOrgs.forEach(function (x) {
+                let l = /idname/ [Symbol.replace](userItms, x.id);
+                l = /format/ [Symbol.replace](l, x.format);
+                h += /title/ [Symbol.replace](l, x.id == "id-names" ? entry.name : entry[starsCol].total.blackholes);
+            });
+
+            h += userEnd;
+
+            pnl.append(h);
+        } else
+            player.find("#id-qty").text(entry[starsCol].total.blackholes);
+    }
+}
+
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
     let title = `        
         <div class="row">
@@ -528,7 +569,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
     let h = /label/ [Symbol.replace](title, label);
     h += /idname/g [Symbol.replace](block, id);
     h = /width/ [Symbol.replace](h, vertical ? 13 : 6);
-    h = /rgbcolor/ [Symbol.replace](h, "background-color: " + levelRgb[label == "Galaxy" ? 0 : list[0].number]);
+    h = /rgbcolor/ [Symbol.replace](h, "background-color: " + levelRgb[typeof list[0].number == "undefined" ? 0 : list[0].number]);
     loc.find("#id-" + id).append(h);
 
     let menu = loc.find("#menu-" + id);
@@ -592,7 +633,7 @@ blackHoleSuns.prototype.extractUser = function () {
     u.player = loc.find("#id-player").val();
     u.platform = loc.find("#btn-Platform").text().stripNumber();
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber();
-    u.org = loc.find("#btn-org").text().stripNumber();
+    u.org = loc.find("#btn-Organization").text().stripNumber();
 
     return u;
 }
@@ -630,6 +671,7 @@ blackHoleSuns.prototype.buildMap = function () {
     ctx.lineTo(w, m);
     ctx.stroke();
 
+/*
     $("#map").mousemove(function (evt) {
         let canvas = document.getElementById('map');
         let rect = canvas.getBoundingClientRect();
@@ -655,6 +697,7 @@ blackHoleSuns.prototype.buildMap = function () {
         } else
             tipCanvas.style.left = "-800px";
     });
+*/
 
     $("#map").mousedown(function (evt) {
         let canvas = document.getElementById('map');
