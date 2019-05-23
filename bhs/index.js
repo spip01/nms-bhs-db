@@ -154,6 +154,13 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         bhs.displayCalc();
     });
 
+    loc.find("#id-addr").keyup(function(event) {
+        if (event.keyCode === 13) {
+            $(this).blur();
+        }
+    });
+
+
     loc.find('#ck-hasbase').change(function () {
         let pnl = $(this).closest("[id|='pnl'");
 

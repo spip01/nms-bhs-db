@@ -36,8 +36,8 @@ blackHoleSuns.prototype.displayUser = function (user) {
         d = d.toDate();
         d.setDate(d.getDate() - 30);
 
-        bhs.getEntries(bhs.displayUserEntry, d);
-        bhs.getBases(bhs.displayUserEntry, d);
+        bhs.getEntries(bhs.displayUserEntry, d, 100);
+        bhs.getBases(bhs.displayUserEntry, d, 100);
     }
 
     let player = $("#pnl-user");
@@ -85,6 +85,12 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     $("#id-player").blur(function () {
         if (bhs.user.uid)
             bhs.checkPlayerName(this, bhs.displayUser);
+    });
+
+    $("#id-player").keyup(function(event) {
+        if (event.keyCode === 13) {
+            $(this).blur();
+        }
     });
 }
 
@@ -165,17 +171,23 @@ blackHoleSuns.prototype.buildUserTable = function () {
     const table = `
         <div class="card-header">
             <div class="row">
-                <h4 class="col-12">Latest Changes</h4>
-                <div id="btn-utSettings" class="col-1">
-                    <i class="fa fa-cog" aria-hidden="true"></i>
+                <h4 class="col-10">Latest Changes</h4>
+                <div id="btn-utSettings" class="col-4">
+                    <i class="fa fa-cog clr-dark-green" aria-hidden="true">&nbsp;Settings</i>
                 </div>
             </div>
         </div>
 
         <div id="utSettings" class="card card-body" style="display:none">
             <div class="row">
-                <div class="col-4 h6 clr-dark-green">Display changes after:</div>
-                <input id="id-showDate" class="rounded col-5 h5" type="date">
+                <label class="col-7 h6 clr-dark-green">Display changes after:
+                    <input id="id-showDate" class="rounded" type="date">
+                </label>
+
+                <label class="col-7 h6 clr-dark-green">Show last&nbsp;
+                    <input id="id-showLimit" class="rounded" type="number" value="100">
+                    &nbsp;systems
+                </label>
             </div>
 
             <div id="id-utlistsel" class="row"></div>
@@ -188,7 +200,7 @@ blackHoleSuns.prototype.buildUserTable = function () {
                 <button id="export" type="button" class="col-2 btn border btn-sm">Export</button>&nbsp;
             </div-->
         </div>
-
+        
         <div id="id-table" class="card-body">
             <div id="userHeader" class="row border-bottom"></div>
             <div id="userItems" class="scroll" style="height: 300px"></div>
@@ -256,8 +268,27 @@ blackHoleSuns.prototype.buildUserTable = function () {
     $("#id-showDate").blur(function () {
         mapgrid = [];
         bhs.buildMap();
-        bhs.getEntries(bhs.displayUserEntry, $(this).val());
-        bhs.getBases(bhs.displayUserEntry, $(this).val());
+        bhs.getEntries(bhs.displayUserEntry, $("#id-showDate").val(), $("#id-showLimit").val());
+        bhs.getBases(bhs.displayUserEntry, $("#id-showDate").val(), $("#id-showLimit").val());
+    });
+
+    $("#id-showDate").keyup(function(event) {
+        if (event.keyCode === 13) {
+            $(this).blur();
+        }
+    });
+
+    $("#id-showLimit").blur(function () {
+        mapgrid = [];
+        bhs.buildMap();
+        bhs.getEntries(bhs.displayUserEntry, $("#id-showDate").val(), $("#id-showLimit").val());
+        bhs.getBases(bhs.displayUserEntry, $("#id-showDate").val(), $("#id-showLimit").val());
+    });
+
+    $("#id-showLimit").keyup(function(event) {
+        if (event.keyCode === 13) {
+            $(this).blur();
+        }
     });
 
     $("#btn-utSettings").click(function () {
@@ -647,6 +678,7 @@ blackHoleSuns.prototype.buildMap = function () {
     let canvas = document.getElementById('map');
     let ctx = canvas.getContext('2d');
 
+
     let w = canvas.offsetWidth;
     canvas.style.height = w + "px";
 
@@ -654,6 +686,9 @@ blackHoleSuns.prototype.buildMap = function () {
     let m = parseInt(w / 2) + .5;
 
     canvas.height = w;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     /*
         ctx.fillStyle = 'yellow';
         ctx.beginPath();
@@ -757,7 +792,7 @@ blackHoleSuns.prototype.drawMap = function (entry, add) {
     let x = xyz.x / 4096 * w;
     let y = xyz.z / 4096 * w;
 
-    if (entry.blackhole || entry.deadzone) {
+    if (entry.blackhole) {
         let exyz = bhs.addressToXYZ(entry.connection);
         let ex = exyz.x / 4096 * w;
         let ey = exyz.z / 4096 * w;
@@ -782,6 +817,8 @@ blackHoleSuns.prototype.drawMap = function (entry, add) {
         }
     } else if (entry.basename)
         ctx.fillStyle = 'green';
+    else if (entry.deadzone)
+        ctx.fillStyle = 'black';
     else
         ctx.fillStyle = 'red';
 
