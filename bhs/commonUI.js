@@ -31,8 +31,13 @@ blackHoleSuns.prototype.displayUser = function (user) {
         bhs.getTotals(bhs.displayTotals);
         bhs.getUsers(bhs.displayUserTotals);
         bhs.getOrgs(bhs.displayOrgTotals);
-        bhs.getEntries(bhs.displayUserEntry);
-        bhs.getBases(bhs.displayUserEntry);
+
+        var d = new firebase.firestore.Timestamp(user.lasttime.seconds, 0);
+        d = d.toDate();
+        d.setDate(d.getDate() - 30);
+
+        bhs.getEntries(bhs.displayUserEntry, d);
+        bhs.getBases(bhs.displayUserEntry, d);
     }
 
     let player = $("#pnl-user");
@@ -79,7 +84,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
 
     $("#id-player").blur(function () {
         if (bhs.user.uid)
-            bhs.checkPlayerName(this);
+            bhs.checkPlayerName(this, bhs.displayUser);
     });
 }
 
@@ -111,7 +116,8 @@ var userTable = [
         format: "col-2",
      //   off: true,
         fcn: getUserPlatforms,
-    },*/{
+    },*/
+    {
         title: "",
         id: "id-type",
         format: "col-1",
@@ -168,22 +174,19 @@ blackHoleSuns.prototype.buildUserTable = function () {
 
         <div id="utSettings" class="card card-body" style="display:none">
             <div class="row">
-                <div class="col-8">
-                    <div class="row">
-                        <div class="col-4 h6 clr-dark-green">Show Entries</div>
-                        <input id="id-showQty" class="rounded col-6 h5" type="text" placeholder="10">
-                    </div>
-                </div>
+                <div class="col-4 h6 clr-dark-green">Display changes after:</div>
+                <input id="id-showDate" class="rounded col-5 h5" type="date">
             </div>
+
             <div id="id-utlistsel" class="row"></div>
 
-            <div class="row">
+            <!--div class="row">
                 <div class="col-9">
                     <input type="file" id="dlfile" class="form-control form-control-sm" accept=".csv">
                 </div>
                 
                 <button id="export" type="button" class="col-2 btn border btn-sm">Export</button>&nbsp;
-            </div>
+            </div-->
         </div>
 
         <div id="id-table" class="card-body">
@@ -250,7 +253,7 @@ blackHoleSuns.prototype.buildUserTable = function () {
         });
     });
 
-    $("#id-showQty").blur(function () {
+    $("#id-showDate").blur(function () {
         mapgrid = [];
         bhs.buildMap();
         bhs.getEntries(bhs.displayUserEntry, $(this).val());
@@ -364,11 +367,11 @@ const totalsDef = [{
 }, {
     title: "Player",
     id: "id-player",
-    format: "col-3",
+    format: "col-3 text-right",
 }, {
     title: "All",
     id: "id-all",
-    format: "col-3",
+    format: "col-3 text-right",
 }];
 
 const rowTotal = 0;
@@ -464,23 +467,25 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
 
     pnl.find("#" + columnid).empty();
 
-    pnl.find("#" + totalsRows[rowTotal].id + " #" + columnid).text(entry[starsCol].total.blackholes);
-    pnl.find("#" + totalsRows[rowPlatform].id + " #" + columnid).text(entry[starsCol][bhs.user.platform].blackholes);
+    if (typeof entry[starsCol] != "undefined") {
+        pnl.find("#" + totalsRows[rowTotal].id + " #" + columnid).text(entry[starsCol].total.blackholes);
+        pnl.find("#" + totalsRows[rowPlatform].id + " #" + columnid).text(entry[starsCol][bhs.user.platform].blackholes);
 
-    if (typeof entry[starsCol].galaxy[bhs.user.galaxy] != "undefined") {
-        // pnl.find("#" + totalsRows[rowGalaxy].id + " #" + columnid).text(totals.galaxy[bhs.user.galaxy].blackholes);
-        pnl.find("#" + totalsRows[rowGalaxyPlatform].id + " #" + columnid).text(entry[starsCol].galaxy[bhs.user.galaxy][bhs.user.platform].blackholes);
+        if (typeof entry[starsCol].galaxy[bhs.user.galaxy] != "undefined") {
+            // pnl.find("#" + totalsRows[rowGalaxy].id + " #" + columnid).text(totals.galaxy[bhs.user.galaxy].blackholes);
+            pnl.find("#" + totalsRows[rowGalaxyPlatform].id + " #" + columnid).text(entry[starsCol].galaxy[bhs.user.galaxy][bhs.user.platform].blackholes);
+        }
     }
 }
 
 const totalsPlayers = [{
     title: "Contributors",
     id: "id-names",
-    format: "col-10",
+    format: "col-8",
 }, {
     title: "Total",
     id: "id-qty",
-    format: "col-3",
+    format: "col-4 text-right",
 }];
 
 blackHoleSuns.prototype.displayUserTotals = function (entry) {
@@ -512,11 +517,11 @@ blackHoleSuns.prototype.displayUserTotals = function (entry) {
 const totalsOrgs = [{
     title: "Organization",
     id: "id-names",
-    format: "col-10",
+    format: "col-8",
 }, {
     title: "Total",
     id: "id-qty",
-    format: "col-3",
+    format: "col-4 text-right",
 }];
 
 blackHoleSuns.prototype.displayOrgTotals = function (entry) {
@@ -671,33 +676,33 @@ blackHoleSuns.prototype.buildMap = function () {
     ctx.lineTo(w, m);
     ctx.stroke();
 
-/*
-    $("#map").mousemove(function (evt) {
-        let canvas = document.getElementById('map');
-        let rect = canvas.getBoundingClientRect();
+    /*
+        $("#map").mousemove(function (evt) {
+            let canvas = document.getElementById('map');
+            let rect = canvas.getBoundingClientRect();
 
-        var tipCanvas = document.getElementById("tip");
-        var tipCtx = tipCanvas.getContext("2d");
+            var tipCanvas = document.getElementById("tip");
+            var tipCtx = tipCanvas.getContext("2d");
 
-        let scaleX = canvas.width / rect.width;
-        let scaleY = canvas.height / rect.height;
+            let scaleX = canvas.width / rect.width;
+            let scaleY = canvas.height / rect.height;
 
-        let x = parseInt((evt.clientX - rect.left) * scaleX / 4);
-        let y = parseInt((evt.clientY - rect.top) * scaleY / 4);
-        if (mapgrid[x] && mapgrid[x][y]) {
-            console.log(mapgrid[x][y]);
-            let txt = mapgrid[x][y].split("\n");
+            let x = parseInt((evt.clientX - rect.left) * scaleX / 4);
+            let y = parseInt((evt.clientY - rect.top) * scaleY / 4);
+            if (mapgrid[x] && mapgrid[x][y]) {
+                console.log(mapgrid[x][y]);
+                let txt = mapgrid[x][y].split("\n");
 
-            tipCanvas.style.left = (evt.clientX + 5) + "px";
-            tipCanvas.style.top = (evt.clientY - 10) + "px";
-            tipCtx.clearRect(0, 0, tipCanvas.width, tipCanvas.height);
+                tipCanvas.style.left = (evt.clientX + 5) + "px";
+                tipCanvas.style.top = (evt.clientY - 10) + "px";
+                tipCtx.clearRect(0, 0, tipCanvas.width, tipCanvas.height);
 
-            for (let i = 0; i < txt.length; ++i)
-                tipCtx.fillText(txt[i], 5.5, 15 + i * 15);
-        } else
-            tipCanvas.style.left = "-800px";
-    });
-*/
+                for (let i = 0; i < txt.length; ++i)
+                    tipCtx.fillText(txt[i], 5.5, 15 + i * 15);
+            } else
+                tipCanvas.style.left = "-800px";
+        });
+    */
 
     $("#map").mousedown(function (evt) {
         let canvas = document.getElementById('map');

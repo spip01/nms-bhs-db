@@ -168,19 +168,37 @@ blackHoleSuns.prototype.updateUser = function (user, displayFcn) {
         displayFcn(bhs.user);
 }
 
-blackHoleSuns.prototype.checkPlayerName = function (loc) {
+blackHoleSuns.prototype.checkPlayerName = function (loc, displayFcn) {
     let n = $(loc).val();
+    if (n.match(/Unknown Traveler/i)) {
+        $(loc).val(bhs.user.player);
+        bhs.status("Player Name:" + n + " is restricted.", 0);
+    }
+
     let ref = bhs.getUsersColRef().where("player", "==", n);
-    ref.get().then(function (snapshot) {
+    ref.get().then(async function (snapshot) {
         if (!snapshot.empty && snapshot.docs[0].data().uid != bhs.user.uid) {
             $(loc).val(bhs.user.player);
             bhs.status("Player Name:" + n + " is already taken.", 0);
         } else {
             //bhs.changePlayerName(bhs.user.player, n);
+            if (typeof bhs.user[starsCol] == "undefined") {
+                let ref = bhs.getStarsColRef("totals");
+                await ref.get().then(async function (doc) {
+                    if (doc.exists) {
+                        let d = doc.data();
+                        if (typeof d[starsCol].user[n] != "undefined")
+                            bhs.user[starsCol] = d[starsCol].user[n];
+                    }
+                });
+            }
 
             bhs.user.player = n;
             let ref = bhs.getUsersColRef(bhs.user.uid);
             ref.set(bhs.user);
+
+            if (displayFcn)
+                displayFcn(bhs.user);
         }
     });
 }
@@ -312,7 +330,6 @@ blackHoleSuns.prototype.changePlayerName = async function (oname, nname) {
                     await ref.get().then(function (snapshot) {
                         snapshot.forEach(function (doc) {
                             let d = doc.data();
-                            console.log(doc.ref.path + " " + doc.data().addr + " " + d.player + " => " + nname);
                             d.player = nname;
                             let ref = bhs.fbfs.doc(doc.ref.path);
                             ref.set(d);
@@ -524,12 +541,12 @@ blackHoleSuns.prototype.updateTotal = function (add, ref, reset) {
     });
 }
 
-blackHoleSuns.prototype.getEntries = function (displayFcn, limit) {
+blackHoleSuns.prototype.getEntries = function (displayFcn, date) {
+    let d = typeof date == "Date" ? date : new Date(date);
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
     ref = ref.where("player", "==", bhs.user.player);
-    ref = ref.limit(parseInt(limit ? limit : 20));
+    ref = ref.where("modded", ">=", firebase.firestore.Timestamp.fromDate(d));
     ref = ref.orderBy("modded", "desc");
-
     bhs.subscribe("entry", ref, displayFcn);
 }
 
@@ -570,9 +587,12 @@ blackHoleSuns.prototype.getOrgs = function (displayFcn) {
     bhs.subscribe("org", ref, displayFcn);
 }
 
-blackHoleSuns.prototype.getBases = function (displayFcn, limit) {
+blackHoleSuns.prototype.getBases = function (displayFcn, date) {
+    let d = typeof date == "Date" ? date : new Date(date);
+
     let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform);
-    ref = ref.limit(parseInt(limit ? limit : 20));
+    ref = ref.where("modded", ">=", firebase.firestore.Timestamp.fromDate(d));
+    ref = ref.orderBy("modded", "desc");
     bhs.subscribe("bases", ref, displayFcn);
 }
 
@@ -712,16 +732,15 @@ function mergeObjects(o, n) {
     return o;
 }
 
-String.prototype.idToName = function () {
-    let name = /--/g [Symbol.replace](this, "'");
-    name = /-/g [Symbol.replace](name, " ");
+// String.prototype.idToName = function () {
+//     let name = /--/g [Symbol.replace](this, "'");
+//     name = /-/g [Symbol.replace](name, " ");
 
-    return name;
-}
+//     return name;
+// }
 
 String.prototype.nameToId = function () {
-    let id = /'/g [Symbol.replace](this, "--");
-    id = / /g [Symbol.replace](id, "-");
+    let id = /['/= ]/g [Symbol.replace](this, "-");
 
     return id;
 }
