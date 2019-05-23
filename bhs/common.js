@@ -36,6 +36,9 @@ function startUp() {
 
     bhs.init();
     bhs.initFirebase();
+
+    if (starsCol != "stars5")
+        document.body.style.backgroundColor = "red";
 }
 
 function blackHoleSuns() {
