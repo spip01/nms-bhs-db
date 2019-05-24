@@ -111,8 +111,8 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
 
             bhs.updateUser(user);
 
-            //if (bhs.assignUID)
-            //    bhs.assignUID();
+            //bhs.assignUID();
+            //bhs.rebuildTotals();
 
             if (bhs.doLoggedin)
                 bhs.doLoggedin();
