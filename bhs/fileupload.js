@@ -89,12 +89,12 @@ var importTable = [{
     format: formatLife,
     group: 1
 }, {
-    match: /conflict/i,
+    match: /conf/i,
     field: "conflict",
     format: formatConflict,
     group: 1
 }, { // 2nd match
-    match: /coord/i,
+    match: /coord|addr/i,
     field: "addr",
     format: reformatAddress,
     validate: validateAddress,
@@ -128,7 +128,7 @@ var importTable = [{
     format: formatLife,
     group: 2
 }, {
-    match: /conflict/i,
+    match: /conf/i,
     field: "conflict",
     format: formatConflict,
     group: 2
@@ -467,7 +467,7 @@ blackHoleSuns.prototype.batchWriteBase = async function (b, entry, check) {
 
 blackHoleSuns.prototype.status = function (str, lvl, buf) {
     if (typeof buf != "undefined")
-        buf += str + "\n";
+        buf += bhs.user.player+" "+str + ";";
 
     if (lvl == 0 || $("#ck-verbose").prop("checked") && lvl == 1 || $("#ck-vverbose").prop("checked") && lvl == 2)
         $("#status").append("<h7>" + str + "</h7>");
