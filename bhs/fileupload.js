@@ -470,7 +470,7 @@ blackHoleSuns.prototype.status = function (str, lvl, buf) {
         buf += str + "\n";
 
     if (lvl == 0 || $("#ck-verbose").prop("checked") && lvl == 1 || $("#ck-vverbose").prop("checked") && lvl == 2)
-        $("#status").prepend("<h7>" + str + "</h7>");
+        $("#status").append("<h7>" + str + "</h7>");
 
     return buf;
 }

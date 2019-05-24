@@ -32,12 +32,8 @@ blackHoleSuns.prototype.displayUser = function (user) {
         bhs.getUsers(bhs.displayUserTotals);
         bhs.getOrgs(bhs.displayOrgTotals);
 
-        var d = new firebase.firestore.Timestamp(user.lasttime.seconds, 0);
-        d = d.toDate();
-        d.setDate(d.getDate() - 30);
-
-        bhs.getEntries(bhs.displayUserEntry, d, 100);
-        bhs.getBases(bhs.displayUserEntry, d, 100);
+        bhs.getEntries(bhs.displayUserEntry, 100);
+        bhs.getBases(bhs.displayUserEntry, 100);
     }
 
     let player = $("#pnl-user");
@@ -87,7 +83,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
             bhs.checkPlayerName(this, bhs.displayUser);
     });
 
-    $("#id-player").keyup(function(event) {
+    $("#id-player").keyup(function (event) {
         if (event.keyCode === 13) {
             $(this).blur();
         }
@@ -180,13 +176,9 @@ blackHoleSuns.prototype.buildUserTable = function () {
 
         <div id="utSettings" class="card card-body" style="display:none">
             <div class="row">
-                <label class="col-7 h6 clr-dark-green">Display changes after:
-                    <input id="id-showDate" class="rounded" type="date">
-                </label>
-
-                <label class="col-7 h6 clr-dark-green">Show last&nbsp;
+                <label class="col-14 h6 clr-dark-green">Show last&nbsp;
                     <input id="id-showLimit" class="rounded" type="number" value="100">
-                    &nbsp;systems
+                    &nbsp;black holes &amp; bases
                 </label>
             </div>
 
@@ -265,27 +257,14 @@ blackHoleSuns.prototype.buildUserTable = function () {
         });
     });
 
-    $("#id-showDate").blur(function () {
-        mapgrid = [];
-        bhs.buildMap();
-        bhs.getEntries(bhs.displayUserEntry, $("#id-showDate").val(), $("#id-showLimit").val());
-        bhs.getBases(bhs.displayUserEntry, $("#id-showDate").val(), $("#id-showLimit").val());
-    });
-
-    $("#id-showDate").keyup(function(event) {
-        if (event.keyCode === 13) {
-            $(this).blur();
-        }
-    });
-
     $("#id-showLimit").blur(function () {
         mapgrid = [];
         bhs.buildMap();
-        bhs.getEntries(bhs.displayUserEntry, $("#id-showDate").val(), $("#id-showLimit").val());
-        bhs.getBases(bhs.displayUserEntry, $("#id-showDate").val(), $("#id-showLimit").val());
+        bhs.getEntries(bhs.displayUserEntry, $("#id-showLimit").val() * 2);
+        bhs.getBases(bhs.displayUserEntry, $("#id-showLimit").val());
     });
 
-    $("#id-showLimit").keyup(function(event) {
+    $("#id-showLimit").keyup(function (event) {
         if (event.keyCode === 13) {
             $(this).blur();
         }
@@ -348,19 +327,21 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
 
         h += lineEnd;
 
-        $("#userItems").prepend(h);
+        $("#userItems").append(h);
         loc = $("#userItems").find("#id-" + gpa);
         loc.addClass((last = !last) ? "row bkg-vlight-gray" : "row");
 
         loc.dblclick(function () {
-            bhs.entryFromTable(this);
+            if (typeof pnlTop != "undefined") {
+                bhs.entryFromTable(this);
 
-            $('html, body').animate({
-                scrollTop: ($('#panels').offset().top)
-            }, 0);
+                $('html, body').animate({
+                    scrollTop: ($('#panels').offset().top)
+                }, 0);
 
-            $("#delete").removeClass("disabled");
-            $("#delete").removeAttr("disabled");
+                $("#delete").removeClass("disabled");
+                $("#delete").removeAttr("disabled");
+            }
         });
     } else
         userTable.forEach(function (t) {
@@ -499,12 +480,12 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
     pnl.find("#" + columnid).empty();
 
     if (typeof entry[starsCol] != "undefined") {
-        pnl.find("#" + totalsRows[rowTotal].id + " #" + columnid).text(entry[starsCol].total.blackholes);
-        pnl.find("#" + totalsRows[rowPlatform].id + " #" + columnid).text(entry[starsCol][bhs.user.platform].blackholes);
+        pnl.find("#" + totalsRows[rowTotal].id + " #" + columnid).text(entry[starsCol].total);
+        pnl.find("#" + totalsRows[rowPlatform].id + " #" + columnid).text(entry[starsCol][bhs.user.platform]);
 
         if (typeof entry[starsCol].galaxy[bhs.user.galaxy] != "undefined") {
-            // pnl.find("#" + totalsRows[rowGalaxy].id + " #" + columnid).text(totals.galaxy[bhs.user.galaxy].blackholes);
-            pnl.find("#" + totalsRows[rowGalaxyPlatform].id + " #" + columnid).text(entry[starsCol].galaxy[bhs.user.galaxy][bhs.user.platform].blackholes);
+            // pnl.find("#" + totalsRows[rowGalaxy].id + " #" + columnid).text(totals.galaxy[bhs.user.galaxy]);
+            pnl.find("#" + totalsRows[rowGalaxyPlatform].id + " #" + columnid).text(entry[starsCol].galaxy[bhs.user.galaxy][bhs.user.platform]);
         }
     }
 }
@@ -534,14 +515,14 @@ blackHoleSuns.prototype.displayUserTotals = function (entry) {
             totalsPlayers.forEach(function (x) {
                 let l = /idname/ [Symbol.replace](userItms, x.id);
                 l = /format/ [Symbol.replace](l, x.format);
-                h += /title/ [Symbol.replace](l, x.id == "id-names" ? entry.player : entry[starsCol].total.blackholes);
+                h += /title/ [Symbol.replace](l, x.id == "id-names" ? entry.player : entry[starsCol].total);
             });
 
             h += userEnd;
 
             pnl.append(h);
         } else
-            player.find("#id-qty").text(entry[starsCol].total.blackholes);
+            player.find("#id-qty").text(entry[starsCol].total);
     }
 }
 
@@ -570,14 +551,14 @@ blackHoleSuns.prototype.displayOrgTotals = function (entry) {
             totalsOrgs.forEach(function (x) {
                 let l = /idname/ [Symbol.replace](userItms, x.id);
                 l = /format/ [Symbol.replace](l, x.format);
-                h += /title/ [Symbol.replace](l, x.id == "id-names" ? entry.name : entry[starsCol].total.blackholes);
+                h += /title/ [Symbol.replace](l, x.id == "id-names" ? entry.name : entry[starsCol].total);
             });
 
             h += userEnd;
 
             pnl.append(h);
         } else
-            player.find("#id-qty").text(entry[starsCol].total.blackholes);
+            player.find("#id-qty").text(entry[starsCol].total);
     }
 }
 
@@ -792,10 +773,14 @@ blackHoleSuns.prototype.drawMap = function (entry, add) {
     let x = xyz.x / 4096 * w;
     let y = xyz.z / 4096 * w;
 
+    let size = 1;
+
     if (entry.blackhole) {
         let exyz = bhs.addressToXYZ(entry.connection);
         let ex = exyz.x / 4096 * w;
         let ey = exyz.z / 4096 * w;
+
+        size = 2;
 
         ctx.fillStyle = 'blue';
         ctx.strokeStyle = 'orange';
@@ -815,14 +800,15 @@ blackHoleSuns.prototype.drawMap = function (entry, add) {
                 mapgrid[ix][iy] = "";
             mapgrid[ix][iy] += entry.addr + " -> " + entry.connection + "\n";
         }
-    } else if (entry.basename)
-        ctx.fillStyle = 'green';
-    else if (entry.deadzone)
+    } else if (entry.hasbase) {
+        ctx.fillStyle = 'lime';
+        size = 3.5;
+    } else if (entry.deadzone)
         ctx.fillStyle = 'black';
     else
         ctx.fillStyle = 'red';
 
     ctx.beginPath();
-    ctx.arc(x, y, entry.blackhole ? 1.5 : 1, 0, Math.PI * 2);
+    ctx.arc(x, y, size, 0, Math.PI * 2);
     ctx.fill();
 }
