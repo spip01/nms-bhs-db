@@ -295,7 +295,8 @@ blackHoleSuns.prototype.deleteEntry = async function (addr) {
             let d = doc.data();
             if (d.uid == bhs.user.uid) {
                 await ref.delete().then(function () {
-                    bhs.totals = bhs.incTotals(bhs.totals, entry, -1);
+                    if (d.blackhole)
+                        bhs.totals = bhs.incTotals(bhs.totals, entry, -1);
                     bhs.status(addr + " deleted", 2);
                 });
             } else
@@ -482,26 +483,25 @@ blackHoleSuns.prototype.incTotals = function (totals, entry, inc) {
     inc = inc ? inc : 1;
 
     if (entry.blackhole || entry.deadzone) {
-        totals.total += inc;
-        totals[entry.platform] += inc;
-        totals.galaxy[entry.galaxy].total += inc;
-        totals.galaxy[entry.galaxy][entry.platform] += inc;
+        totals = bhs.incPart(totals, entry, inc);
 
         let p = entry.uid ? entry.uid : entry.player;
-        totals.user[p].total += inc;
-        totals.user[p][entry.platform] += inc;
-        totals.user[p].galaxy[entry.galaxy].total += inc;
-        totals.user[p].galaxy[entry.galaxy][entry.platform] += inc;
+        totals.user[p] = bhs.incPart(totals.user[p], entry, inc);
 
         if (entry.org) {
-            totals.org[entry.org].total += inc;
-            totals.org[entry.org][entry.platform] += inc;
-            totals.org[entry.org].galaxy[entry.galaxy].total += inc;
-            totals.org[entry.org].galaxy[entry.galaxy][entry.platform] += inc;
+            totals.org[entry.org] = bhs.incPart(totals.org[entry.org], entry, inc);
         }
     }
 
     return totals;
+}
+
+blackHoleSuns.prototype.incPart = function (t, entry, inc) {
+    t.total += inc;
+    t[entry.platform] += inc;
+    t.galaxy[entry.galaxy].total += inc;
+    t.galaxy[entry.galaxy][entry.platform] += inc;
+    return t;
 }
 
 blackHoleSuns.prototype.addTotalsToTotals = function (totals, add) {
