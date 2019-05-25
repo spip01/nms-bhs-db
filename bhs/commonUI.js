@@ -288,7 +288,7 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
 
     bhs.drawMap(entry, true);
 
-    let gpa = entry.galaxy + "-" + entry.platform + "-" + (entry.blackhole ? entry.connection.stripColons() : entry.addr.stripColons());
+    let gpa = entry.galaxy.nameToId() + "-" + entry.platform + "-" + (entry.blackhole ? entry.connection.stripColons() : entry.addr.stripColons());
 
     let loc = $("#userItems").find("#" + gpa);
 
@@ -308,9 +308,6 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
             } else if (entry.blackhole || entry.deadzone) {
                 l = /bhdata/ [Symbol.replace](l, entry[t.field] ? entry[t.field] : "");
                 l = /xdata/ [Symbol.replace](l, "");
-            } else if (entry.basename) {
-                l = /bhdata/ [Symbol.replace](l, entry[t.field] ? entry[t.field] : "");
-                l = /xdata/ [Symbol.replace](l, "");
             } else {
                 l = /bhdata/ [Symbol.replace](l, "");
                 l = /xdata/ [Symbol.replace](l, entry[t.field] ? entry[t.field] : "");
@@ -327,14 +324,17 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
 
         loc.dblclick(function () {
             if (typeof pnlTop != "undefined") {
-                bhs.entryFromTable(this);
+                let e = {};
+                e.addr = bhs.entryFromTable(this);
 
-                $('html, body').animate({
-                    scrollTop: ($('#panels').offset().top)
-                }, 0);
+                // $('html, body').animate({
+                //     scrollTop: ($('#panels').offset().top)
+                // }, 0);
 
                 $("#delete").removeClass("disabled");
                 $("#delete").removeAttr("disabled");
+
+                bhs.drawMap(e, false, true);
             }
         });
     } else
@@ -362,6 +362,8 @@ blackHoleSuns.prototype.entryFromTable = function (ent) {
         addr = $(ent).find("#x-" + userTable[utAddrIdx].id).text().stripMarginWS();
 
     bhs.getEntry(addr, bhs.displaySingle, pnlTop);
+
+    return (addr);
 }
 
 const totalsItemsHdr = `<div id="idname" class="row">`;
@@ -796,7 +798,7 @@ blackHoleSuns.prototype.drawChain = function (x, y) {
 
 var mapgrid = [];
 
-blackHoleSuns.prototype.drawMap = function (entry, add) {
+blackHoleSuns.prototype.drawMap = function (entry, add, large) {
     let canvas = document.getElementById('map');
     let ctx = canvas.getContext('2d');
 
@@ -840,6 +842,9 @@ blackHoleSuns.prototype.drawMap = function (entry, add) {
         ctx.fillStyle = 'black';
     else
         ctx.fillStyle = 'red';
+
+    if (large)
+        size = 4;
 
     ctx.beginPath();
     ctx.arc(x, y, size, 0, Math.PI * 2);

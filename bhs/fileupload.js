@@ -270,7 +270,7 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
                     entry[0].platform.match(/xbox/i) ? "PC-XBox" : entry[0].platform.toUpperCase();
 
                 if (entry[0].player != bhs.user.player)
-                    delete entry.uid;
+                    delete entry[0].uid;
 
                 entry[1] = mergeObjects(entry[1], entry[0]);
                 entry[2] = mergeObjects(entry[2], entry[0]);

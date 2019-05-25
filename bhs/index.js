@@ -44,6 +44,8 @@ var panels = [{
     calc: true,
 }];
 
+const ownershipList=[{name:"mine"},{name:"visited"},{name:"station"}];
+
 blackHoleSuns.prototype.buildPanel = function (id) {
     const panel = `
         <div id="idname" class="card pad-bottom bkg-trans-2">
@@ -83,16 +85,19 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                         </div>
                     </div>
                 </div>
+                <br>
 
                 <div class="row">
                     <label class="col-3 h6 clr-dark-green">
                         <input id="ck-hasbase" type="checkbox">
                         Has Base
                     </label>
-                    <div class="col-10">
+                    <div class="col-11">
                         <div id="id-isbase" class="row" style="display:none">
-                            <div class="col-4 h6 clr-dark-green">Name</div>
-                            <input id="id-basename" class="rounded col-6">
+                            <label class="col-7 h6 clr-dark-green">Name
+                                <input id="id-basename" class="rounded">
+                            </label>
+                            <div id="id-Owned" class="col-7"></div>
                         </div>
                     </div>
                 </div>
@@ -140,6 +145,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
     bhs.buildMenu(loc, "Lifeform", lifeformList);
     bhs.buildMenu(loc, "Economy", economyList);
+    bhs.buildMenu(loc, "Owned", ownershipList);
 
     loc.find("#id-addr").blur(function () {
         let addr = bhs.reformatAddress($(this).val());
@@ -240,6 +246,7 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
 blackHoleSuns.prototype.displayBase = function (entry, idx) {
     $("#" + panels[idx].id + " #id-isbase").show();
     $("#" + panels[idx].id + " #id-basename").val(entry ? entry.basename : "");
+    $("#" + panels[idx].id + " #btn-Owned").text(entry ? entry.owned : "");
 }
 
 blackHoleSuns.prototype.clearPanels = function () {
@@ -316,7 +323,8 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
 
             if (entry.hasbase) {
                 entry.basename = loc.find("#id-basename").val();
-                entry.owned = "mine";
+                entry.owned = loc.find("#btn-Owned").text().stripNumber();
+                entry.owned = entry.owned ? entry.owned : "mine";
                 await bhs.updateBase(entry, true)
             }
 
