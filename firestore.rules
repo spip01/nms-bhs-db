@@ -5,22 +5,27 @@ service cloud.firestore {
       allow write: if false;
     }
     
-     match /contest/{document=**} {
-      allow read: if request.auth.uid != null;
-      allow write: if false;
-    }
-    
     match /api/{document=**} {
       allow read: if request.auth.uid != null;
       allow write: if false;
     }
     
+    match /contest/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write: if false;
+    }
+
     match /stars5/{document=**} {
       allow read: if request.auth.uid != null;
       allow write: if request.auth.uid != null;
     }
     
     match /stars6/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write: if request.auth.uid != null;
+    }
+    
+    match /org/{document=**} {
       allow read: if request.auth.uid != null;
       allow write: if request.auth.uid != null;
     }

@@ -305,24 +305,24 @@ blackHoleSuns.prototype.deleteEntry = async function (addr) {
     });
 }
 
-blackHoleSuns.prototype.setGalaxyNames = async function () {
-    galaxyList.forEach(g => {
-        let ref = bhs.getStarsColRef(g.name);
-        ref.get().then(function (doc) {
-            if (doc.exists)
-                doc.ref.update({
-                    empty: false
-                });
-            else {
-                let d = {
-                    name: doc.id,
-                    empty: true
-                };
-                doc.ref.set(d);
-            }
-        });
-    });
-}
+// blackHoleSuns.prototype.setGalaxyNames = async function () {
+//     galaxyList.forEach(g => {
+//         let ref = bhs.getStarsColRef(g.name);
+//         ref.get().then(function (doc) {
+//             if (doc.exists)
+//                 doc.ref.update({
+//                     empty: false
+//                 });
+//             else {
+//                 let d = {
+//                     name: doc.id,
+//                     empty: true
+//                 };
+//                 doc.ref.set(d);
+//             }
+//         });
+//     });
+// }
 
 blackHoleSuns.prototype.rebuildTotals = async function () {
     let totals = bhs.checkTotalsInit();
@@ -339,7 +339,8 @@ blackHoleSuns.prototype.rebuildTotals = async function () {
                     let ref = bhs.getStarsColRef(g.name, p.name);
                     await ref.get().then(function (snapshot) {
                         console.log(g.name + "/" + p.name + " " + snapshot.size);
-                        for (let k = 0; k < snapshot.size; ++k)
+
+                        for (let k = 0; k < snapshot.size; ++k) 
                             totals = bhs.incTotals(totals, snapshot.docs[k].data());
 
                         if (snapshot.size) {
@@ -375,6 +376,7 @@ blackHoleSuns.prototype.assignUID = function () {
 
                             let ref = bhs.getStarsColRef(g.name, p.name);
                             ref = ref.where("player", "==", u.player)
+                            ref = ref.where("uid", "==", "")
                             ref.get().then(async function (snapshot) {
                                 console.log(g.name + "/" + p.name + " qty = " + snapshot.size + " => " + u.player)
 
@@ -387,13 +389,9 @@ blackHoleSuns.prototype.assignUID = function () {
                                         let doc = snapshot.docs[i];
                                         let d = doc.data();
 
-                                        if (typeof d.uid == "undefined") {
-                                            d.uid = u.uid;
-                                            delete d.uploader;
-                                            await b.batch.set(doc.ref, d);
-                                            b = await bhs.checkBatchSize(b);
-                                        }
-
+                                        d.uid = u.uid;
+                                        await b.batch.update(doc.ref, d);
+                                        b = await bhs.checkBatchSize(b);
                                     }
 
                                     await bhs.checkBatchSize(b, true);
@@ -408,7 +406,7 @@ blackHoleSuns.prototype.assignUID = function () {
 }
 
 blackHoleSuns.prototype.checkBatchSize = async function (b, flush) {
-    if (++b.batchcount == 500 || flush && b.batchcount > 0) {
+    if (flush && b.batchcount > 0 || ++b.batchcount == 500) {
         await console.log("commit " + b.batchcount);
         await b.batch.commit();
         b.batch = await bhs.fbfs.batch();
