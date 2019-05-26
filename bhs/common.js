@@ -77,16 +77,24 @@ blackHoleSuns.prototype.logIn = function () {
         provider.addScope('profile');
         provider.addScope('email');
         firebase.auth().signInWithRedirect(provider)
-        .then(function(res){console.log(res);})
-        .catch(function(err){console.log(err);});
+            .then(function (res) {
+                console.log(res);
+            })
+            .catch(function (err) {
+                console.log(err);
+            });
     });
 
     $("#lgithub").click(function () {
         var provider = new firebase.auth.GithubAuthProvider();
         provider.addScope('repo');
         firebase.auth().signInWithRedirect(provider)
-        .then(function(res){console.log(res);})
-        .catch(function(err){console.log(err);});
+            .then(function (res) {
+                console.log(res);
+            })
+            .catch(function (err) {
+                console.log(err);
+            });
     });
 
     $("#ltwitch").click(function () {
@@ -755,6 +763,9 @@ function loadHtml(url, alturl, selector) {
         $(selector).html(h);
 
         if (selector === "#navbar") {
+            let r1 = $("#r1").outerHeight(true);
+            $("#r2").css("margin-top", r1 + "px");
+
             let navbarheight = $("#imported-navbar").outerHeight(true);
             $("#jssite").css("margin-top", navbarheight + "px");
             $("#loginpnl").css("margin-top", navbarheight + "px");

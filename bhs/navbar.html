@@ -12,14 +12,12 @@
 
 <body>
     <div id="imported-navbar" class="bkg-light-green fixed-top clr-dark-green container-fluid noprint">
-            <div class="row" style="background-color:black">
-                <a class="text-centered" href="index.html"><img src="nmsbhs_banner.jpg" alt="BHS Banner"></a>
-            </div>
+        <div id="r1" class="row" style="background-color:black">
+            <a class="text-centered" href="index.html"><img src="nmsbhs_banner.jpg" alt="BHS Banner"></a>
+        </div>
 
-            <div class="row">
-            <a id="about" class="col-5 text-centered h5" href="about.html">
-                About
-            </a>
+        <div id="r2" class="row">
+            <a id="about" class="col-5 text-centered h5" href="about.html">About</a>
 
             <div id="full-usermenu" class="container col-5">
                 <button id="login" type="button" class="text-centered bkg-light-green clr-dark-green no-border">
@@ -27,25 +25,29 @@
                 </button>
 
                 <div id="usermenu" class="dropdown" style="display: none">
-                    <button type="button" class="row text-centered bkg-light-green clr-dark-green no-border dropdown-toggle" data-toggle="dropdown">
+                    <button type="button"
+                        class="row text-centered bkg-light-green clr-dark-green no-border dropdown-toggle"
+                        data-toggle="dropdown">
                         <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
                         <h5 id="username">
                             User
                         </h5>
                     </button>
- 
+
                     <div class="dropdown-menu">
                         <a class="dropdown-item h5 text-centered bkg-light-green clr-dark-green" href="fileupload.html">
                             <h5>File Upload</h5>
                         </a>
 
-                        <button id="logout" type="button" class="no-border text-centered dropdown-item bkg-light-green clr-dark-green">
+                        <button id="logout" type="button"
+                            class="no-border text-centered dropdown-item bkg-light-green clr-dark-green">
                             <h5>Logout</h5>
                         </button>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
     </div>
     <br>
 
