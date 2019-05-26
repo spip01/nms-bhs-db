@@ -51,66 +51,48 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         <div id="idname" class="card pad-bottom bkg-trans-2">
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-9 col-14">
-                        <div class="card card-body no-border bkg-trans-2">
-                            <div class="row">
-                                <div class="col-md-5 col-13">
-                                    <div class="row">
-                                        <div class="col-md-14 col-4 h6 clr-dark-green">Address</div>&nbsp;
-                                        <input id="id-addr" class="rounded col-md-14 col-9" placeholder="0000:0000:0000:0000">
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4 col-13">
-                                    <div class="row">
-                                        <div class="col-md-14 col-4 h6 clr-dark-green">System Name</div>&nbsp;
-                                        <input id="id-sys" class="rounded col-md-14 col-9">
-                                    </div>
-                                </div>
-
-                                <div class="col-md-5 col-13">
-                                    <div class="row">
-                                        <div class="col-md-14 col-4 h6 clr-dark-green">Region Name</div>&nbsp;
-                                        <input id="id-reg" class="rounded col-md-14 col-9">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-5 col-14">
-                        <div class="row">
-                            <div id="id-Lifeform" class="col-md-4 col-14"></div>
-                            <div id="id-Economy" class="col-md-4 col-14"></div>
-                        </div>
-                    </div>
+                    <div class="col-4 h6 clr-dark-green">Address&nbsp;</div>
+                    <input id="id-addr" class="rounded col-9" placeholder="0000:0000:0000:0000">
                 </div>
-                <br>
 
                 <div class="row">
-                    <label class="col-3 h6 clr-dark-green">
+                    <div class="col-4 h6 clr-dark-green">System Name&nbsp;</div>
+                    <input id="id-sys" class="rounded col-9">
+                </div>
+
+                <div class="row">
+                    <div class="col-4 h6 clr-dark-green">Region Name&nbsp;</div>
+                    <input id="id-reg" class="rounded col-9">
+                </div>
+
+                <div class="row">
+                    <div class="col-1">&nbsp;</div>
+                    <div id="id-Lifeform" class="col-6"></div>
+                    <div id="id-Economy" class=" col-7"></div>
+                </div>
+
+                <div class="row">
+                    <label class="col-7 h6 clr-dark-green">
                         <input id="ck-hasbase" type="checkbox">
                         Has Base
                     </label>
-                    <div class="col-11">
-                        <div id="id-isbase" class="row" style="display:none">
-                            <label class="col-7 h6 clr-dark-green">Name
-                                <input id="id-basename" class="rounded">
-                            </label>
-                            <div id="id-Owned" class="col-7"></div>
-                        </div>
-                    </div>
+                </div>
+
+                <div id="id-isbase" class="row" style="display:none">
+                    <div class="col-3 h6 clr-dark-green">Name</div>
+                    <input id="id-basename" class="rounded col-5">
+                    <div id="id-Owned" class="col-6"></div>
                 </div>
 
                 <div id="id-pnl1-only" class="row">
-                    <div class="col-6">
+                    <div class="col-4">
                         <label class="h6 clr-dark-green">
                             <input id="ck-single" type="checkbox">
                             Single System
                         </label>
                     </div>
 
-                    <div class="col-6">
+                    <div class="col-4">
                         <label class="h6 clr-dark-green">
                             <input id="ck-isdz" type="checkbox">
                             Dead Zone

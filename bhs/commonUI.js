@@ -57,7 +57,6 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
                     <div class="row">
                         <div class="col-14 h6 clr-dark-green">Traveler</div>
                         <input id="id-player" class="rounded col-13 h5" type="text">
-                        <div id="id-Organization" class="col-13"></div>
                     </div>
                 </div>
 
@@ -67,6 +66,10 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
                         <div id="id-Galaxy" class="col-7"></div>
                     </div>
                 </div>
+            </div>
+
+            <div class="row">
+                <div id="id-Organization" class="col-9"></div>
             </div>
         </div>
         <br>`;
@@ -563,9 +566,9 @@ blackHoleSuns.prototype.displayOrgTotals = function (entry) {
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
     let title = `        
         <div class="row">
-            <div class="col-md-14 col-width h6 clr-dark-green">label</div>`;
+            <div class="col-width h6 clr-dark-green">label</div>`;
     let block = `
-            <div id="menu-idname" class="col-md-14 col-width dropdown">
+            <div id="menu-idname" class="col-width dropdown">
                 <button id="btn-idname" class="btn border btn-sm dropdown-toggle" style="rgbcolor" type="button" data-toggle="dropdown"></button>
             </div>
         </div>`;
@@ -582,9 +585,10 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
 
     let id = label.nameToId();
     let h = /label/ [Symbol.replace](title, label);
-    h += /idname/g [Symbol.replace](block, id);
     h = /width/ [Symbol.replace](h, vertical ? 13 : 6);
-    h = /rgbcolor/ [Symbol.replace](h, "background-color: " + levelRgb[typeof list[0].number == "undefined" ? 0 : list[0].number]);
+    let l = /idname/g [Symbol.replace](block, id);
+    l = /width/ [Symbol.replace](l, vertical ? 13 : 8);
+    h += /rgbcolor/ [Symbol.replace](l, "background-color: " + levelRgb[typeof list[0].number == "undefined" ? 0 : list[0].number]);
     loc.find("#id-" + id).append(h);
 
     let menu = loc.find("#menu-" + id);

@@ -64,9 +64,36 @@ blackHoleSuns.prototype.initFirebase = function () {
 }
 
 blackHoleSuns.prototype.logIn = function () {
-    let provider = new firebase.auth.GoogleAuthProvider();
-    bhs.fbauth.signInWithRedirect(provider).catch(function (error) {
-        console.log(error);
+    $("#loginpnl").show();
+    $("#jssite").hide();
+
+    $("#lcancel").click(function () {
+        $("#loginpnl").hide();
+        $("#jssite").show();
+    });
+
+    $("#lgoogle").click(function () {
+        let provider = new firebase.auth.GoogleAuthProvider();
+        bhs.fbauth.signInWithRedirect(provider).catch(function (error) {
+            console.log(error);
+        });
+    });
+
+    $("#ltwitch").click(function () {
+        let ref = bhs.fbfs.doc("api/twitch");
+        ref.get().then(function(doc){
+            if (doc.exists) {
+                let d = doc.data();
+                let id = d[window.location.hostname];
+
+            }
+        });
+    });
+
+    $("#ldiscord").click(function () {
+    });
+
+    $("#lredit").click(function () {
     });
 }
 
@@ -340,7 +367,7 @@ blackHoleSuns.prototype.rebuildTotals = async function () {
                     await ref.get().then(function (snapshot) {
                         console.log(g.name + "/" + p.name + " " + snapshot.size);
 
-                        for (let k = 0; k < snapshot.size; ++k) 
+                        for (let k = 0; k < snapshot.size; ++k)
                             totals = bhs.incTotals(totals, snapshot.docs[k].data());
 
                         if (snapshot.size) {
@@ -610,10 +637,6 @@ blackHoleSuns.prototype.getOrgList = async function () {
     });
 }
 
-function getUserGalaxies(displayFcn) {}
-
-function getUserPlatforms(displayFcn) {}
-
 blackHoleSuns.prototype.getUsers = function (displayFcn) {
     let ref = bhs.getUsersColRef();
     ref = ref.orderBy(starsCol + ".total", "desc");
@@ -725,6 +748,7 @@ function loadHtml(url, alturl, selector) {
         if (selector === "#navbar") {
             let navbarheight = $("#imported-navbar").outerHeight(true);
             $("#jssite").css("margin-top", navbarheight + "px");
+            $("#loginpnl").css("margin-top", navbarheight + "px");
 
             $("#login").click(function () {
                 bhs.logIn();

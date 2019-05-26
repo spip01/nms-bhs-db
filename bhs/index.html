@@ -55,7 +55,7 @@
     <style>
         body {
             background-image: url("lBTK5EL.png");
-            background-color: green;
+            background-color: black;
         }
     </style>
 </head>
@@ -89,49 +89,81 @@
         <!--googleon:all-->
         <br>
     </div>
+    <br>
+
+    <!--googleoff:all-->
+    <div id="loginpnl" class="card bkg-light-green pad-bottom" style="display:none">
+        <div class="card-header">
+            <div class="h4 clr-dark-green text-center">Login to Black Hole Suns DB</div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-5">&nbsp;</div>
+                <div id="lgoogle" class="h6 text-center col-4 btn-sm bkg-light-gray">login using Google</div>
+            </div>
+            <div class="row">
+                <div class="col-5">&nbsp;</div>
+                <div id="ltwitch" class="h6 text-center col-4 btn-sm bkg-light-gray">login using Twitch</div>
+            </div>
+            <div class="row">
+                <div class="col-5">&nbsp;</div>
+                <div id="ldiscord" class="h6 text-center col-4 btn-sm bkg-light-gray">login using Discord</div>
+            </div>
+            <div class="row">
+                <div class="col-5">&nbsp;</div>
+                <div id="lredit" class="h6 text-center col-4 btn-sm bkg-light-gray">login using Redit</div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-6">&nbsp;</div>
+                <div id="lcancel" class="h6 text-center col-2 btn-sm bkg-light-gray">Cancel</div>
+            </div>
+        </div>
+    </div>
+    <!--googleon:all-->
 
     <div id="jssite" class="card card-body bkg-light-green pad-bottom" style="display:none">
-        <div class="card card-body pad-bottom">
-            <div id="loggedout" class="row clr-dark-green bkg-light-green">
-                <h4>This is the data entry page for the No Man's Sky Black Hole
-                    Suns project. Please login to enter data.
-                </h4>
-            </div>
+        <div class="row">
+            <div class="col-md-7 col-sm-9 col-14">
+                <div class="card card-body pad-bottom">
+                    <div id="loggedout" class="row clr-dark-green bkg-light-green">
+                        <h4>This is the data entry page for the No Man's Sky Black Hole
+                            Suns project. Please login to enter data.
+                        </h4>
+                    </div>
 
-            <div id="panels"></div>
+                    <div id="panels"></div>
 
-            <div id="entrybuttons" class="row bkg-trans-2">
-                <div class="col-8">
-                    <div class="row>">
-                        <button id="save" type="button" class="col-4 btn border btn-sm btn-green">Save</button>&nbsp;
-                        <button id="delete" type="button" class="col-4 btn border btn-sm btn-green disabled"
+                    <div id="entrybuttons" class="row">
+                        <button id="save" type="button" class="col-2 btn border btn-sm btn-green">Save</button>&nbsp;
+                        <button id="delete" type="button" class="col-2 btn border btn-sm btn-green disabled"
                             disabled>Delete</button>&nbsp;
-                        <button id="cancel" type="button" class="col-4 btn border btn-sm btn-green">Cancel</button>
+                        <button id="cancel" type="button"
+                            class="col-2 btn border btn-sm btn-green">Cancel</button>&nbsp;
+                        <div id="status" class="border col-7 text-danger bkg-white"></div>
                     </div>
                 </div>
+                <br>
+            </div>
 
-                <div class="col-6">
-                    <div id="status" class="card card-body text-danger bkg-white"></div>
+            <div class="col-md-7 col-sm-5 col-14">
+                <div class="card card-body">
+                    <canvas id="map" class="bkg-vlight-gray" style="cursor: crosshair;max-width:400px"></canvas>
+                    <!--canvas id="tip"></canvas-->
                 </div>
             </div>
         </div>
         <br>
 
-        <div id="entryTable" data-page="input" class="card pad-bottom"></div>
-        <br>
+        <div class="row">
+            <div class="col-md-7 col-sm-9 col-14">
+                <div id="entryTable" data-page="input" class="card pad-bottom"></div>
+            </div>
 
-        <div class="card card-body">
-            <div class="row">
-                <div class="col-sm-7 col-14">
-                    <div id="totals" class="card border pad-bottom"></div>
-                </div>
-
-                <div class="col-sm-7 col-14">
-                    <div class="card card-body">
-                        <canvas id="map" class="bkg-vlight-gray" style="cursor: crosshair;max-width:350px"></canvas>
-                        <!--canvas id="tip"></canvas-->
-                    </div>
-                </div>
+            <div class="col-md-7 col-sm-5 col-14">
+                <div id="totals" class="card border pad-bottom"></div>
+                <br>
             </div>
         </div>
     </div>
