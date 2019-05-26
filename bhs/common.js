@@ -763,9 +763,7 @@ function loadHtml(url, alturl, selector) {
         $(selector).html(h);
 
         if (selector === "#navbar") {
-            var img = document.getElementById('r1'); 
-            var r1 = img.clientHeight;
-            $("#r2").css("margin-top", r1 + "px");
+            $("#r2").css("margin-top", "30px");
 
             let navbarheight = $("#imported-navbar").outerHeight(true);
             $("#jssite").css("margin-top", navbarheight + "px");
