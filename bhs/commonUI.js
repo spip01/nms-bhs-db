@@ -25,7 +25,7 @@ blackHoleSuns.prototype.displayUser = function (user) {
     bhs.user = mergeObjects(bhs.user, user);
 
     if (bhs.user.uid) {
-        bhs.buildUserTable();
+        bhs.buildUserTable(bhs.user);
         bhs.buildTotals();
         bhs.buildMap();
 
@@ -169,13 +169,15 @@ var userTable = [
     }
 ];
 
-blackHoleSuns.prototype.buildUserTable = function () {
+blackHoleSuns.prototype.buildUserTable = function (entry) {
     const table = `
         <div class="card-header">
             <div class="row">
-                <h4 class="col-10">Latest Changes</h4>
-                <div id="btn-utSettings" class="col-4">
-                    <i class="fa fa-cog txt-inp-def" aria-hidden="true">&nbsp;Settings</i>
+                <h4 class="col-4">Latest Changes</h4>
+                <div id="lc-plat" class="col-2 h5"></div>
+                <div id="lc-gal" class="col-2 h5"></div>
+                <div id="btn-utSettings" class="col-6 text-right">
+                    <i class="fa fa-cog txt-inp-def">Settings</i>
                 </div>
             </div>
         </div>
@@ -228,6 +230,8 @@ blackHoleSuns.prototype.buildUserTable = function () {
 
     let loc = $("#userHeader");
     loc.append(h);
+    $("#lc-plat").text(entry.platform);
+    $("#lc-gal").text(entry.galaxy);
 
     h = "";
     userTable.forEach(function (t) {
