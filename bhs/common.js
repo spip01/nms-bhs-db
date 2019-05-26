@@ -29,8 +29,8 @@ function startUp() {
     $("#javascript").empty();
     $("#jssite").show();
 
-    loadHtml("https://nms-bhs.firebaseapp.com/navbar.html", "https://raw.githubusercontent.com/spip01/nms-bhs-db/testing/bhs/navbar.html", "#navbar");
-    loadHtml("https://nms-bhs.firebaseapp.com/footer.html", "https://raw.githubusercontent.com/spip01/nms-bhs-db/testing/bhs/footer.html", "#footer");
+    // loadHtml("https://nms-bhs.firebaseapp.com/navbar.html", "https://raw.githubusercontent.com/spip01/nms-bhs-db/testing/bhs/navbar.html", "#navbar");
+    // loadHtml("https://nms-bhs.firebaseapp.com/footer.html", "https://raw.githubusercontent.com/spip01/nms-bhs-db/testing/bhs/footer.html", "#footer");
 
     bhs = new blackHoleSuns();
 
@@ -39,6 +39,14 @@ function startUp() {
 
     if (starsCol != "stars5")
         document.body.style.backgroundColor = "red";
+
+    $("#login").click(function () {
+        bhs.logIn();
+    });
+
+    $("#logout").click(function () {
+        bhs.logOut();
+    });
 }
 
 function blackHoleSuns() {

@@ -51,17 +51,17 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         <div id="idname" class="card pad-bottom bkg-trans-2">
             <div class="card-body">
                 <div class="row">
-                    <div class="col-4 h6 clr-dark-green">Address&nbsp;</div>
+                    <div class="col-4 h6 txt-inp-def">Address&nbsp;</div>
                     <input id="id-addr" class="rounded col-9" placeholder="0000:0000:0000:0000">
                 </div>
 
                 <div class="row">
-                    <div class="col-4 h6 clr-dark-green">System Name&nbsp;</div>
+                    <div class="col-4 h6 txt-inp-def">System Name&nbsp;</div>
                     <input id="id-sys" class="rounded col-9">
                 </div>
 
                 <div class="row">
-                    <div class="col-4 h6 clr-dark-green">Region Name&nbsp;</div>
+                    <div class="col-4 h6 txt-inp-def">Region Name&nbsp;</div>
                     <input id="id-reg" class="rounded col-9">
                 </div>
 
@@ -72,28 +72,28 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                 </div>
 
                 <div class="row">
-                    <label class="col-7 h6 clr-dark-green">
+                    <label class="col-7 h6 txt-inp-def">
                         <input id="ck-hasbase" type="checkbox">
                         Has Base
                     </label>
                 </div>
 
                 <div id="id-isbase" class="row" style="display:none">
-                    <div class="col-3 h6 clr-dark-green">Name</div>
+                    <div class="col-3 h6 txt-inp-def">Name</div>
                     <input id="id-basename" class="rounded col-5">
                     <div id="id-Owned" class="col-6"></div>
                 </div>
 
                 <div id="id-pnl1-only" class="row">
                     <div class="col-4">
-                        <label class="h6 clr-dark-green">
+                        <label class="h6 txt-inp-def">
                             <input id="ck-single" type="checkbox">
                             Single System
                         </label>
                     </div>
 
                     <div class="col-4">
-                        <label class="h6 clr-dark-green">
+                        <label class="h6 txt-inp-def">
                             <input id="ck-isdz" type="checkbox">
                             Dead Zone
                         </label>
@@ -101,14 +101,14 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                 </div>
 
                 <div class="row">
-                    <div id="id-fmcenter" class="col-8 clr-dark-green" style="display:none">
+                    <div id="id-fmcenter" class="col-8 txt-inp-def" style="display:none">
                         <div class="row">
                             <div class="col-9 text-right">Distance (ly): From Center&nbsp;</div>
                             <div id="fmcenter" class="col-5 text-left h6"></div>
                         </div>
                     </div>
                         
-                    <div id="id-tocenter" class="col-6 clr-dark-green" style="display:none">
+                    <div id="id-tocenter" class="col-6 txt-inp-def" style="display:none">
                         <div class="row">
                             <div class="col-9 text-right"> Towards Center&nbsp;</div>
                             <div id="tocenter" class="col-5 text-left h6"></div>

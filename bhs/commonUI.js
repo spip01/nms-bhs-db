@@ -8,6 +8,7 @@ blackHoleSuns.prototype.doLoggedout = function () {
     $("#status").empty();
     $("#entryTable").empty();
     $("#totals").empty();
+    bhs.buildMap();
 
     $("#save").addClass("disabled");
     $("#save").prop("disabled", true);
@@ -55,7 +56,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
             <div class="row">
                 <div class="col-7">
                     <div class="row">
-                        <div class="col-14 h6 clr-dark-green">Traveler</div>
+                        <div class="col-14 h6 txt-inp-def">Traveler</div>
                         <input id="id-player" class="rounded col-13 h5" type="text">
                     </div>
                 </div>
@@ -174,14 +175,14 @@ blackHoleSuns.prototype.buildUserTable = function () {
             <div class="row">
                 <h4 class="col-10">Latest Changes</h4>
                 <div id="btn-utSettings" class="col-4">
-                    <i class="fa fa-cog clr-dark-green" aria-hidden="true">&nbsp;Settings</i>
+                    <i class="fa fa-cog txt-inp-def" aria-hidden="true">&nbsp;Settings</i>
                 </div>
             </div>
         </div>
 
         <div id="utSettings" class="card card-body" style="display:none">
             <div class="row">
-                <label class="col-14 h6 clr-dark-green">Show last&nbsp;
+                <label class="col-14 h6 txt-inp-def">Show last&nbsp;
                     <input id="id-showLimit" class="rounded" type="number" value="100">
                     &nbsp;black holes &amp; bases
                 </label>
@@ -190,7 +191,7 @@ blackHoleSuns.prototype.buildUserTable = function () {
             <div id="id-utlistsel" class="row"></div>
 
             <div class="row">
-                <button id="btn-saveUser" type="button" class="col-2 btn border btn-sm">Save</button>&nbsp;
+                <button id="btn-saveUser" type="button" class="col-2 txt-def btn border btn-sm">Save</button>&nbsp;
             </div>
 
             <!--div class="row">
@@ -198,7 +199,7 @@ blackHoleSuns.prototype.buildUserTable = function () {
                     <input type="file" id="dlfile" class="form-control form-control-sm" accept=".csv">
                 </div>
                 
-                <button id="export" type="button" class="col-2 btn border btn-sm">Export</button>&nbsp;
+                <button id="export" type="button" class="col-2 txt-def btn border btn-sm">Export</button>&nbsp;
             </div-->
         </div>
         
@@ -208,7 +209,7 @@ blackHoleSuns.prototype.buildUserTable = function () {
         </div>`;
 
     const ckbox = `            
-        <label class="col-3 h6 clr-dark-green">
+        <label class="col-3 h6 txt-inp-def">
             <input id="ck-idname" type="checkbox" checked>
             title
         </label>`;
@@ -376,7 +377,11 @@ const totalsItemsEnd = `</div>`;
 const totalsDef = [{
     title: "",
     id: "id-what",
-    format: "col-7",
+    format: "col-5",
+}, {
+    title: "Contest",
+    id: "id-contest",
+    format: "col-3 text-right",
 }, {
     title: "Player",
     id: "id-player",
@@ -494,7 +499,11 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
 const totalsPlayers = [{
     title: "Contributors",
     id: "id-names",
-    format: "col-8",
+    format: "col-6",
+}, {
+    title: "Contest",
+    id: "id-ctst",
+    format: "col-4 text-right",
 }, {
     title: "Total",
     id: "id-qty",
@@ -504,7 +513,7 @@ const totalsPlayers = [{
 blackHoleSuns.prototype.displayUserTotals = function (entry) {
     if (entry[starsCol]) {
         const userHdr = `<div id="u-idname" class="row">`;
-        const userItms = `       <div id="idname" class="format">title</div>`;
+        const userItms = `  <div id="idname" class="format">title</div>`;
         const userEnd = `</div>`;
 
         let pnl = $("#totals #itm1");
@@ -516,7 +525,7 @@ blackHoleSuns.prototype.displayUserTotals = function (entry) {
             totalsPlayers.forEach(function (x) {
                 let l = /idname/ [Symbol.replace](userItms, x.id);
                 l = /format/ [Symbol.replace](l, x.format);
-                h += /title/ [Symbol.replace](l, x.id == "id-names" ? entry.player : entry[starsCol].total);
+                h += /title/ [Symbol.replace](l, x.id == "id-names" ? entry.player : x.id=="id-ctst" ? entry[starsCol].contest ?entry[starsCol].contest:"" : entry[starsCol].total);
             });
 
             h += userEnd;
@@ -530,7 +539,11 @@ blackHoleSuns.prototype.displayUserTotals = function (entry) {
 const totalsOrgs = [{
     title: "Organization",
     id: "id-names",
-    format: "col-8",
+    format: "col-6",
+}, {
+    title: "Contest",
+    id: "id-ctst",
+    format: "col-4 text-right",
 }, {
     title: "Total",
     id: "id-qty",
@@ -552,7 +565,7 @@ blackHoleSuns.prototype.displayOrgTotals = function (entry) {
             totalsOrgs.forEach(function (x) {
                 let l = /idname/ [Symbol.replace](userItms, x.id);
                 l = /format/ [Symbol.replace](l, x.format);
-                h += /title/ [Symbol.replace](l, x.id == "id-names" ? entry.name : entry[starsCol].total);
+                h += /title/ [Symbol.replace](l, x.id == "id-names" ? entry.name : x.id=="id-ctst" ? entry[starsCol].contest ?entry[starsCol].contest:"" : entry[starsCol].total);
             });
 
             h += userEnd;
@@ -566,7 +579,7 @@ blackHoleSuns.prototype.displayOrgTotals = function (entry) {
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
     let title = `        
         <div class="row">
-            <div class="col-width h6 clr-dark-green">label</div>`;
+            <div class="col-width h6 txt-inp-def">label</div>`;
     let block = `
             <div id="menu-idname" class="col-width dropdown">
                 <button id="btn-idname" class="btn border btn-sm dropdown-toggle" style="rgbcolor" type="button" data-toggle="dropdown"></button>
@@ -612,7 +625,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
             if (list[i].number)
                 h = /rgbcolor/ [Symbol.replace](h, "background-color: " + levelRgb[list[i].number] + ";");
             else
-                h = /rgbcolor/ [Symbol.replace](h, "background-color: #f0fff0;");
+                h = /rgbcolor/ [Symbol.replace](h, "background-color: #c0f0ff;");
         } else {
             if (typeof bhs.galaxyInfo[galaxyList[i].number] != "undefined") {
                 let c = bhs.galaxyInfo[galaxyList[i].number].color;
