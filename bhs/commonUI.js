@@ -698,7 +698,6 @@ blackHoleSuns.prototype.buildMap = function () {
     let canvas = document.getElementById('map');
     let ctx = canvas.getContext('2d');
 
-
     let w = canvas.offsetWidth;
     canvas.style.height = w + "px";
 
@@ -708,6 +707,12 @@ blackHoleSuns.prototype.buildMap = function () {
     canvas.height = w;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, w, w);
+
+    $("#logo").prop("width", w/3);
+    $("#logo").prop("height", w/3);
 
     /*
         ctx.fillStyle = 'yellow';
@@ -720,7 +725,7 @@ blackHoleSuns.prototype.buildMap = function () {
         ctx.arc(w / 2, w / 2, 650 * 2 / 4096 * w, 0, Math.PI * 2);
         ctx.fill();
     */
-    ctx.strokeStyle = 'gray';
+    ctx.strokeStyle = 'white';
 
     ctx.strokeRect(0, 0, w, w);
 
@@ -819,10 +824,10 @@ blackHoleSuns.prototype.drawMap = function (entry, add, large) {
         let ex = exyz.x / 4096 * w;
         let ey = exyz.z / 4096 * w;
 
-        size = 2;
+        size = 2.5;
 
-        ctx.fillStyle = 'blue';
-        ctx.strokeStyle = 'orange';
+        ctx.fillStyle = 'aqua';
+        ctx.strokeStyle = 'blue';
 
         ctx.beginPath();
         ctx.moveTo(x + .5, y + .5);

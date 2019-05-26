@@ -774,19 +774,17 @@ function loadFile(url, alturl, fctn) {
         }
     });
 
-    /***************
-    let xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState == 4) {
-            if (this.status == 200)
-                fctn(this.responseText);
-            else if (alturl)
-                loadFile(alturl, null, fctn);
-        }
-    }
-    xhttp.open("GET", url, true);
-    xhttp.send();
-    *************/
+    // let xhttp = new XMLHttpRequest();
+    // xhttp.onreadystatechange = function () {
+    //     if (this.readyState == 4) {
+    //         if (this.status == 200)
+    //             fctn(this.responseText);
+    //         else if (alturl)
+    //             loadFile(alturl, null, fctn);
+    //     }
+    // }
+    // xhttp.open("GET", url, true);
+    // xhttp.send();
 }
 
 function mergeObjects(o, n) {

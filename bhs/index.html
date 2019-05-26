@@ -51,13 +51,6 @@
 
     <link rel="stylesheet" type="text/css" href="local.css">
     <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
-
-    <style>
-        body {
-            background-image: url("lBTK5EL.png");
-            background-color: black;
-        }
-    </style>
 </head>
 
 <body>
@@ -92,7 +85,7 @@
     <br>
 
     <!--googleoff:all-->
-    <div id="loginpnl" class="card bkg-light-green pad-bottom" style="display:none">
+    <div id="loginpnl" class="card bkg-def pad-bottom" style="display:none">
         <div class="card-header">
             <div class="h4 clr-dark-green text-center">Login to Black Hole Suns DB</div>
         </div>
@@ -123,11 +116,11 @@
     </div>
     <!--googleon:all-->
 
-    <div id="jssite" class="card card-body bkg-light-green pad-bottom" style="display:none">
+    <div id="jssite" class="card card-body bkg-def pad-bottom" style="display:none">
         <div class="row">
             <div class="col-md-7 col-sm-9 col-14">
                 <div class="card card-body pad-bottom">
-                    <div id="loggedout" class="row clr-dark-green bkg-light-green">
+                    <div id="loggedout" class="row text-danger h5">
                         <h4>This is the data entry page for the No Man's Sky Black Hole
                             Suns project. Please login to enter data.
                         </h4>
@@ -149,7 +142,15 @@
 
             <div class="col-md-7 col-sm-5 col-14">
                 <div class="card card-body">
-                    <canvas id="map" class="bkg-vlight-gray" style="cursor: crosshair;max-width:400px"></canvas>
+                    <div class="row">
+                        <div class="col-10">
+                            <canvas id="map" style="cursor: crosshair;max-width:400px"></canvas>
+                        </div>
+
+                        <div class="col-4">
+                            <img id="logo" src="lBTK5EL.png" alt="BHS Logo" width="400" height="400">
+                        </div>
+                    </div>
                     <!--canvas id="tip"></canvas-->
                 </div>
             </div>
@@ -159,11 +160,11 @@
         <div class="row">
             <div class="col-md-7 col-sm-9 col-14">
                 <div id="entryTable" data-page="input" class="card pad-bottom"></div>
+                <br>
             </div>
 
             <div class="col-md-7 col-sm-5 col-14">
                 <div id="totals" class="card border pad-bottom"></div>
-                <br>
             </div>
         </div>
     </div>

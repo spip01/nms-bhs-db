@@ -180,6 +180,14 @@ body {
     background-color: #f0fff0;
 }
 
+.clr-def {
+    color: black;
+}
+
+.bkg-def {
+    background-color: black;
+}
+
 .clr-dark-green {
     color: #008000;
 }
