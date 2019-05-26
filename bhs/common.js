@@ -29,8 +29,8 @@ function startUp() {
     $("#javascript").empty();
     $("#jssite").show();
 
-    loadHtml("https://nms-bhs.firebaseapp.com/navbar.html", "https://raw.githubusercontent.com/spip01/nms-bhs-db/master/public/navbar.html", "#navbar");
-    loadHtml("https://nms-bhs.firebaseapp.com/footer.html", "https://raw.githubusercontent.com/spip01/nms-bhs-db/master/public/footer.html", "#footer");
+    loadHtml("https://nms-bhs.firebaseapp.com/navbar.html", "https://raw.githubusercontent.com/spip01/nms-bhs-db/testing/bhs/navbar.html", "#navbar");
+    loadHtml("https://nms-bhs.firebaseapp.com/footer.html", "https://raw.githubusercontent.com/spip01/nms-bhs-db/testing/bhs/footer.html", "#footer");
 
     bhs = new blackHoleSuns();
 
@@ -73,28 +73,37 @@ blackHoleSuns.prototype.logIn = function () {
     });
 
     $("#lgoogle").click(function () {
-        let provider = new firebase.auth.GoogleAuthProvider();
-        bhs.fbauth.signInWithRedirect(provider).catch(function (error) {
-            console.log(error);
-        });
+        var provider = new firebase.auth.GoogleAuthProvider();
+        provider.addScope('profile');
+        provider.addScope('email');
+        firebase.auth().signInWithRedirect(provider)
+        .then(function(res){console.log(res);})
+        .catch(function(err){console.log(err);});
+    });
+
+    $("#lgithub").click(function () {
+        var provider = new firebase.auth.GithubAuthProvider();
+        provider.addScope('repo');
+        firebase.auth().signInWithRedirect(provider)
+        .then(function(res){console.log(res);})
+        .catch(function(err){console.log(err);});
     });
 
     $("#ltwitch").click(function () {
         let ref = bhs.fbfs.doc("api/twitch");
-        ref.get().then(function(doc){
+        ref.get().then(function (doc) {
             if (doc.exists) {
                 let d = doc.data();
                 let id = d[window.location.hostname];
 
+                console.log(window.location.hostname);
             }
         });
     });
 
-    $("#ldiscord").click(function () {
-    });
+    $("#ldiscord").click(function () {});
 
-    $("#lredit").click(function () {
-    });
+    $("#lredit").click(function () {});
 }
 
 blackHoleSuns.prototype.logOut = function () {
@@ -742,8 +751,8 @@ blackHoleSuns.prototype.validateEntry = function (entry) {
 
 function loadHtml(url, alturl, selector) {
     loadFile(url, alturl, function (data) {
-        let html = data.substring(data.indexOf("<body>") + 6, data.indexOf("</body>"));
-        $(selector).append(html);
+        let h = data.substring(data.indexOf("<body>") + 6, data.indexOf("</body>"));
+        $(selector).html(h);
 
         if (selector === "#navbar") {
             let navbarheight = $("#imported-navbar").outerHeight(true);
