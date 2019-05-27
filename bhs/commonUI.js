@@ -103,15 +103,19 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     $("#ck-fileupload").change(function (event) {
         if ($(this).prop("checked")) {
             panels.forEach(function (p) {
-                $("#"+p.id).hide();
+                $("#" + p.id).hide();
             });
-            $("#entrybuttons").hide();
+            $("#save").hide();
+            $("#delete").hide();
+            $("#cancel").hide();
             $("#upload").show();
-        }else {
+        } else {
             panels.forEach(function (p) {
-                $("#"+p.id).show();
+                $("#" + p.id).show();
             });
-            $("#entrybuttons").show();
+            $("#save").show();
+            $("#delete").show();
+            $("#cancel").show();
             $("#upload").hide();
         }
     });
@@ -550,7 +554,7 @@ blackHoleSuns.prototype.displayUserTotals = function (entry) {
             totalsPlayers.forEach(function (x) {
                 let l = /idname/ [Symbol.replace](userItms, x.id);
                 l = /format/ [Symbol.replace](l, x.format);
-                h += /title/ [Symbol.replace](l, x.id == "id-names" ? entry.player : x.id=="id-ctst" ? entry[starsCol].contest ?entry[starsCol].contest:"" : entry[starsCol].total);
+                h += /title/ [Symbol.replace](l, x.id == "id-names" ? entry.player : x.id == "id-ctst" ? entry[starsCol].contest ? entry[starsCol].contest : "" : entry[starsCol].total);
             });
 
             h += userEnd;
@@ -590,7 +594,7 @@ blackHoleSuns.prototype.displayOrgTotals = function (entry) {
             totalsOrgs.forEach(function (x) {
                 let l = /idname/ [Symbol.replace](userItms, x.id);
                 l = /format/ [Symbol.replace](l, x.format);
-                h += /title/ [Symbol.replace](l, x.id == "id-names" ? entry.name : x.id=="id-ctst" ? entry[starsCol].contest ?entry[starsCol].contest:"" : entry[starsCol].total);
+                h += /title/ [Symbol.replace](l, x.id == "id-names" ? entry.name : x.id == "id-ctst" ? entry[starsCol].contest ? entry[starsCol].contest : "" : entry[starsCol].total);
             });
 
             h += userEnd;
@@ -749,20 +753,9 @@ blackHoleSuns.prototype.buildMap = function () {
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, w, w);
 
-    $("#logo").prop("width", w/3);
-    $("#logo").prop("height", w/3);
+    $("#logo").prop("width", w / 3);
+    $("#logo").prop("height", w / 3);
 
-    /*
-        ctx.fillStyle = 'yellow';
-        ctx.beginPath();
-        ctx.arc(w / 2, w / 2, 750 * 2 / 4096 * w, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = 'white';
-        ctx.beginPath();
-        ctx.arc(w / 2, w / 2, 650 * 2 / 4096 * w, 0, Math.PI * 2);
-        ctx.fill();
-    */
     ctx.strokeStyle = 'white';
 
     ctx.strokeRect(0, 0, w, w);
@@ -886,9 +879,9 @@ blackHoleSuns.prototype.drawMap = function (entry, add, large) {
         ctx.fillStyle = 'lime';
         size = 3.5;
     } else if (entry.deadzone)
-        ctx.fillStyle = 'black';
-    else
         ctx.fillStyle = 'red';
+    else
+        ctx.fillStyle = 'yellow';
 
     if (large)
         size = 4;
