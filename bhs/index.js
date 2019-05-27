@@ -6,6 +6,7 @@ $(document).ready(function () {
     bhs.last = [];
 
     bhs.buildUserPanel();
+    bhs.buildFilePanel();
 
     panels.forEach(function (p) {
         bhs.buildPanel(p.id);

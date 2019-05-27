@@ -96,14 +96,10 @@ blackHoleSuns.prototype.logIn = function () {
     $("#lgithub").click(function () {
         var provider = new firebase.auth.GithubAuthProvider();
         provider.addScope('repo');
-        firebase.auth().signInWithRedirect(provider)
-            .then(function (res) {
-                console.log(res);
-            })
-            .catch(function (err) {
-                console.log(err);
-            });
+        firebase.auth().signInWithRedirect(provider);
     });
+
+    // Start a sign in process for an unauthenticated user.
 
     $("#ltwitch").click(function () {
         let ref = bhs.fbfs.doc("api/twitch");

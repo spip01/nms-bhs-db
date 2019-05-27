@@ -71,9 +71,14 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
 
             <div class="row">
                 <div id="id-Organization" class="col-9"></div>
+                <label class="col-4 h5 text-right align-bottom">
+                    File Upload&nbsp;
+                    <input id="ck-fileupload" type="checkbox">
+                </label>
             </div>
         </div>
-        <br>`;
+    </div>
+    <br>`;
 
     $("#panels").prepend(panel);
     let loc = $("#pnl-user");
@@ -92,6 +97,22 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     $("#id-player").keyup(function (event) {
         if (event.keyCode === 13) {
             $(this).blur();
+        }
+    });
+
+    $("#ck-fileupload").change(function (event) {
+        if ($(this).prop("checked")) {
+            panels.forEach(function (p) {
+                $("#"+p.id).hide();
+            });
+            $("#entrybuttons").hide();
+            $("#upload").show();
+        }else {
+            panels.forEach(function (p) {
+                $("#"+p.id).show();
+            });
+            $("#entrybuttons").show();
+            $("#upload").hide();
         }
     });
 }

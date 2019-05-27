@@ -1,9 +1,26 @@
 'use strict';
 
-$(document).ready(function () {
-    startUp();
+blackHoleSuns.prototype.buildFilePanel=function(){
+ const panel = `
+    <div id="upload" class="card card-body" style="display:none">
+        <div class="row">
+            <div class="col-9">
+                <input type="file" id="uploadedFile" class="form-control form-control-sm" accept=".csv">
+            </div>
+            <button id="check" type="button" class="col-2 btn border btn-sm txt-def btn-def">Check</button>&nbsp;
+            <button id="submit" type="button" class="col-2 btn border btn-sm txt-def btn-def">Submit</button>&nbsp;
+        </div>
+        <br>
 
-    bhs.buildUserPanel();
+        <div class="progress">
+            <div id="progress" class="progress-bar progress-bar-striped bg-success progress-bar-animated"
+                role="progressbar" style="width: 0%; display:none" aria-valuenow="0" aria-valuemin="0"
+                aria-valuemax="100"></div>
+            </div>
+        </div>
+    </div>`;
+
+    $("#panels").append(panel);
 
     $("#submit").click(function () {
         if (bhs.fileSelected)
@@ -22,12 +39,7 @@ $(document).ready(function () {
     $("#uploadedFile").change(function () {
         bhs.fileSelected = this;
     });
-
-    $("#btn-fixstats").click(function () {
-        //bhs.rebuildTotals();
-        //bhs.rebuildDB();
-    });
-});
+}
 
 const inpCoordIdx = 6;
 var importTable = [{
