@@ -384,7 +384,7 @@ blackHoleSuns.prototype.rebuildTotals = async function () {
                             let d = snapshot.docs[k].data();
                             totals = bhs.incTotals(totals, d);
 
-                            if (ulist[d.player] && !d.uid) {
+                            if (ulist[d.player] && ulist[d.player] != d.uid) {
                                 d.uid = ulist[d.player];
                                 await b.batch.update(snapshot.docs[k].ref, d);
                                 b = await bhs.checkBatchSize(b);
