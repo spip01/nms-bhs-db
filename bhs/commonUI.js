@@ -282,7 +282,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
 
     $("#id-showLimit").blur(function () {
         mapgrid = [];
-        bhs.buildUserTable(bhs.user);
+        $("#entryTable #userItems").empty();
         bhs.buildMap();
 
         let l = $(this).val();
