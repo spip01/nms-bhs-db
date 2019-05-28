@@ -199,16 +199,18 @@ body {
 
 .btn-def.disabled,
 .btn-def:disabled {
-    color: rgba(0,0,255,.2);
+    color: rgba(255,215,0,.9);
     border: 0px;
 }
 
 .btn-def.focus,
 .btn-def:focus,
+.btn-def:not(:disabled):not(.disabled).hover,
+.btn-def:not(:disabled):not(.disabled):hover,
 .btn-def:not(:disabled):not(.disabled).active:focus,
 .btn-def:not(:disabled):not(.disabled):active:focus,
 .show>.btn-def.dropdown-toggle:focus {
-    box-shadow: 0 0 0 .2rem rgba(0, 0, 255, .1);
+    box-shadow: 0 0 0 .2rem rgba(255, 215, 0, .2);
     animation: pulse .25s 1;
 }
 

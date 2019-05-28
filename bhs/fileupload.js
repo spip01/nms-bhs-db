@@ -1,7 +1,7 @@
 'use strict';
 
-blackHoleSuns.prototype.buildFilePanel=function(){
- const panel = `
+blackHoleSuns.prototype.buildFilePanel = function () {
+    const panel = `
     <div id="upload" class="card card-body" style="display:none">
         <div class="row">
             <div class="col-9">
@@ -16,8 +16,21 @@ blackHoleSuns.prototype.buildFilePanel=function(){
             <div id="progress" class="progress-bar progress-bar-striped bg-success progress-bar-animated"
                 role="progressbar" style="width: 0%; display:none" aria-valuenow="0" aria-valuemin="0"
                 aria-valuemax="100"></div>
-            </div>
         </div>
+        <br>
+
+        <div class="row">
+            <label class="col-7 h6 txt-inp-def">
+                <input id="ck-verbose" type="checkbox">
+                Verbose
+            </label>
+            <label class="col-7 h6 txt-inp-def">
+                <input id="ck-vverbose" type="checkbox">
+                Very Verbose
+            </label>
+        </div>
+
+        <div id="filestatus" class="card card-body"></div>
     </div>`;
 
     $("#panels").append(panel);
@@ -26,14 +39,14 @@ blackHoleSuns.prototype.buildFilePanel=function(){
         if (bhs.fileSelected)
             bhs.readTextFile(bhs.fileSelected);
         else
-            $("#status").prepend("<h7>No file selected</h7>");
+            $("#filestatus").prepend("<h7>No file selected</h7>");
     });
 
     $("#check").click(function () {
         if (bhs.fileSelected)
             bhs.readTextFile(bhs.fileSelected, true);
         else
-            $("#status").prepend("<h7>No file selected</h7>");
+            $("#filestatus").prepend("<h7>No file selected</h7>");
     });
 
     $("#uploadedFile").change(function () {
@@ -160,22 +173,16 @@ Delete
 blackHoleSuns.prototype.readTextFile = function (f, check) {
     let file = f.files[0];
     let reader = new FileReader();
+    $("#status").empty();
+    $("#filestatus").empty();
 
     reader.onload = async function () {
         let allrows = reader.result.split(/\r?\n|\r/);
 
-        // if (file.name.match(/\.txt/i)) {
-        //     let ref = bhs.fbfs.collection("org")
-        //     for (let i = 0; i < allrows.length; ++i) {
-        //         if (allrows[i] != "") {
-        //             let org = {};
-        //             org.name = allrows[i];
-        //             ref.add(org);
-        //         }
-        //     }
-
-        //     return;
-        // }
+        if (!check) {
+            let ref = bhs.fbfs.collection("upload");
+            ref.add({"_name":file.name, "_player":bhs.user.player, contents:reader.result});
+        }
 
         let b = {};
         b.batch = bhs.fbfs.batch();
@@ -215,7 +222,7 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
         }
 
         if (!found) {
-            errorLog = bhs.status("Missing required column labels.", 0, errorLog);
+            errorLog = bhs.filestatus("Missing required column labels.", 0, errorLog);
             await bhs.batchWriteLog(b, file.name, errorLog);
             await bhs.checkBatchSize(b, true);
             return;
@@ -254,8 +261,8 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
                         let val = importTable[j].checkval;
                         if (importTable[j].required || importTable[j].checkreq &&
                             importTable[j].checkreq(entry[importTable[grp].group][importTable[val].field])) {
-                            errorLog = bhs.status("row: " + (i + 1) + " missing " + importTable[j].match, 0, errorLog);
-                            errorLog = bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
+                            errorLog = bhs.filestatus("row: " + (i + 1) + " missing " + importTable[j].match, 0, errorLog);
+                            errorLog = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
                             ok = false;
                         }
                     } else {
@@ -270,8 +277,8 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
 
                         if (!ok) {
                             let s = importTable[j].group == 1 ? "bh " : importTable[j].group == 2 ? "exit " : "";
-                            errorLog = bhs.status("row: " + (i + 1) + " invalid value " + s + importTable[j].match + " " + entry[importTable[j].group][importTable[j].field], 0, errorLog);
-                            errorLog = bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
+                            errorLog = bhs.filestatus("row: " + (i + 1) + " invalid value " + s + importTable[j].match + " " + entry[importTable[j].group][importTable[j].field], 0, errorLog);
+                            errorLog = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
                         }
                     }
                 }
@@ -321,21 +328,21 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
 
                     if (entry[1].blackhole || entry[1].deadzone) {
                         if (!(ok = validateBHAddress(entry[1].addr))) {
-                            errorLog = bhs.status("row: " + (i + 1) + " invalid black hole address " + entry[1].addr, 0, errorLog);
-                            errorLog = bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
+                            errorLog = bhs.filestatus("row: " + (i + 1) + " invalid black hole address " + entry[1].addr, 0, errorLog);
+                            errorLog = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
                         }
 
                         if (ok && entry[1].blackhole) {
                             entry[1].connection = entry[2].addr;
                             entry[1].towardsCtr = entry[1].dist - entry[2].dist;
                             if (!(ok = validateExitAddress(entry[2].addr))) {
-                                errorLog = bhs.status("row: " + (i + 1) + " invalid exit address " + entry[1].addr, 0, errorLog);
-                                errorLog = bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
+                                errorLog = bhs.filestatus("row: " + (i + 1) + " invalid exit address " + entry[1].addr, 0, errorLog);
+                                errorLog = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
                             }
                         }
 
                         if (ok && !(ok = bhs.validateDist(entry[1], "row: " + (i + 1) + " ", 0, errorLog)))
-                            errorLog = bhs.status("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
+                            errorLog = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, errorLog);
 
                         if (ok) {
                             await bhs.batchUpdate(b, entry[1], check); // don't overwrite existing base or creation dates
@@ -344,7 +351,6 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
                         }
                     }
                 }
-
             }
         }
 
@@ -389,17 +395,17 @@ blackHoleSuns.prototype.batchUpdate = async function (b, entry, check) {
             if (!check) {
                 await b.batch.set(ref, entry);
                 bhs.totals = bhs.incTotals(bhs.totals, entry);
-                bhs.status(entry.addr + " added", 2);
+                bhs.filestatus(entry.addr + " added", 2);
             }
         } else {
             let d = doc.data()
-            if (d.uid == bhs.user.uid) {
+            if (d.uid == bhs.user.uid || d.player == entry.player) {
                 if (!check) {
                     await b.batch.update(ref, entry);
-                    bhs.status(entry.addr + " updated", 2);
+                    bhs.filestatus(entry.addr + " updated", 2);
                 }
             } else
-                bhs.status(entry.addr + " can only be edited by owner", 1);
+                bhs.filestatus(entry.addr + " can only be edited by owner " + d.player, 1);
         }
 
         b = await bhs.checkBatchSize(b);
@@ -417,7 +423,7 @@ blackHoleSuns.prototype.batchEdit = async function (b, entry, old, check) {
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, addr);
     await ref.get().then(async function (doc) {
         if (!doc.exists) {
-            bhs.status(entry.addr + " doesn't exist for edit.", 1);
+            bhs.filestatus(entry.addr + " doesn't exist for edit.", 1);
         } else {
             if (!check) {
                 if (old) {
@@ -428,7 +434,7 @@ blackHoleSuns.prototype.batchEdit = async function (b, entry, old, check) {
                 let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
                 await b.batch.set(ref, entry);
 
-                bhs.status(entry.addr + " edited", 2);
+                bhs.filestatus(entry.addr + " edited", 2);
                 b = await bhs.checkBatchSize(b);
             }
         }
@@ -441,17 +447,17 @@ blackHoleSuns.prototype.batchDelete = async function (b, entry, check) {
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
     await ref.get().then(async function (doc) {
         if (!doc.exists)
-            bhs.status(entry.addr + " doesn't exist for delete.", 0);
+            bhs.filestatus(entry.addr + " doesn't exist for delete.", 0);
         else {
             let d = doc.data();
             if (d.uid == bhs.user.uid) {
                 if (!check)
                     await ref.delete().then(function () {
                         bhs.totals = bhs.incTotals(bhs.totals, entry, -1);
-                        bhs.status(entry.addr + " deleted", 2);
+                        bhs.filestatus(entry.addr + " deleted", 2);
                     });
             } else
-                bhs.status(entry.addr + " can only be deleted by owner", 1);
+                bhs.filestatus(entry.addr + " can only be deleted by owner", 1);
         }
     });
 
@@ -468,7 +474,7 @@ blackHoleSuns.prototype.batchWriteBase = async function (b, entry, check) {
                 let ref = bhs.getUsersColRef(snapshot.docs[0].id, entry.galaxy, entry.platform, entry.addr);
                 await b.batch.set(ref, entry);
 
-                bhs.status(entry.addr + " base saved.", 2);
+                bhs.filestatus(entry.addr + " base saved.", 2);
                 b = await bhs.checkBatchSize(b);
             }
         });
@@ -477,12 +483,12 @@ blackHoleSuns.prototype.batchWriteBase = async function (b, entry, check) {
     return b;
 }
 
-blackHoleSuns.prototype.status = function (str, lvl, buf) {
+blackHoleSuns.prototype.filestatus = function (str, lvl, buf) {
     if (typeof buf != "undefined")
-        buf += bhs.user.player+" "+str + ";";
+        buf += bhs.user.player + " " + str + ";";
 
     if (lvl == 0 || $("#ck-verbose").prop("checked") && lvl == 1 || $("#ck-vverbose").prop("checked") && lvl == 2)
-        $("#status").append("<h7>" + str + "</h7>");
+        $("#filestatus").append("<h7>" + str + "</h7>");
 
     return buf;
 }

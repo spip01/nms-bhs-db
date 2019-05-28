@@ -361,4 +361,5 @@ blackHoleSuns.prototype.displayCalc = function () {
 
 blackHoleSuns.prototype.status = function (str) {
     $("#status").append("<h7>" + str + "</h7>");
+    $("#filestatus").append("<h7>" + str + "</h7>");
 }

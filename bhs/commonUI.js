@@ -6,6 +6,7 @@ blackHoleSuns.prototype.doLoggedout = function () {
     bhs.displayUser(bhs.user);
 
     $("#status").empty();
+    $("#filestatus").empty();
     $("#entryTable").empty();
     $("#totals").empty();
     bhs.buildMap();
@@ -105,17 +106,13 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
             panels.forEach(function (p) {
                 $("#" + p.id).hide();
             });
-            $("#save").hide();
-            $("#delete").hide();
-            $("#cancel").hide();
+            $("#entrybuttons").hide();
             $("#upload").show();
         } else {
             panels.forEach(function (p) {
                 $("#" + p.id).show();
             });
-            $("#save").show();
-            $("#delete").show();
-            $("#cancel").show();
+            $("#entrybuttons").show();
             $("#upload").hide();
         }
     });
