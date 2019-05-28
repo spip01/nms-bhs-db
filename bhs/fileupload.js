@@ -488,7 +488,7 @@ blackHoleSuns.prototype.filestatus = function (str, lvl, buf) {
         buf += bhs.user.player + " " + str + ";";
 
     if (lvl == 0 || $("#ck-verbose").prop("checked") && lvl == 1 || $("#ck-vverbose").prop("checked") && lvl == 2)
-        $("#filestatus").append("<h7>" + str + "</h7>");
+        $("#filestatus").append("<h6>" + str + "</h6>");
 
     return buf;
 }

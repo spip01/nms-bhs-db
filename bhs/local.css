@@ -154,8 +154,13 @@ body {
 
 [class|='col-'] {
     padding-left: 1px !important;
-    padding-right: 2px !important;
+    padding-right: 1px !important;
 }
+
+.nopadding {
+    padding: 0 !important;
+    margin: 0 !important;
+ }
 
 #tip {
     background-color:white;
@@ -205,13 +210,16 @@ body {
 
 .btn-def.focus,
 .btn-def:focus,
-.btn-def:not(:disabled):not(.disabled).hover,
-.btn-def:not(:disabled):not(.disabled):hover,
 .btn-def:not(:disabled):not(.disabled).active:focus,
 .btn-def:not(:disabled):not(.disabled):active:focus,
 .show>.btn-def.dropdown-toggle:focus {
-    box-shadow: 0 0 0 .2rem rgba(255, 215, 0, .2);
+    box-shadow: 0 0 0 .2rem rgba(255, 215, 0, .3);
     animation: pulse .25s 1;
+}
+
+.btn-def:not(:disabled):not(.disabled).hover,
+.btn-def:not(:disabled):not(.disabled):hover{
+    box-shadow: 0 0 0 .2rem rgba(255, 215, 0, .7);
 }
 
 .clr-dark-green {

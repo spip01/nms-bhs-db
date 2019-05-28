@@ -53,23 +53,26 @@ blackHoleSuns.prototype.buildPanel = function (id) {
             <div class="card-body">
                 <div class="row">
                     <div class="col-4 h6 txt-inp-def">Address&nbsp;</div>
-                    <input id="id-addr" class="rounded col-9" placeholder="0000:0000:0000:0000">
+                    <input id="id-addr" class="rounded col-md-5 col-6" placeholder="0000:0000:0000:0000">
                 </div>
 
                 <div class="row">
                     <div class="col-4 h6 txt-inp-def">System Name&nbsp;</div>
-                    <input id="id-sys" class="rounded col-9">
+                    <input id="id-sys" class="rounded col-md-5 col-6">
                 </div>
 
                 <div class="row">
                     <div class="col-4 h6 txt-inp-def">Region Name&nbsp;</div>
-                    <input id="id-reg" class="rounded col-9">
+                    <input id="id-reg" class="rounded col-md-5 col-6">
                 </div>
 
                 <div class="row">
                     <div class="col-1">&nbsp;</div>
-                    <div id="id-Lifeform" class="col-6"></div>
-                    <div id="id-Economy" class=" col-7"></div>
+                    <div id="id-Lifeform" class="col-11"></div>
+                </div>
+                <div class="row">
+                    <div class="col-1">&nbsp;</div>
+                    <div id="id-Economy" class="col-11"></div>
                 </div>
 
                 <div class="row">
@@ -86,14 +89,14 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                 </div>
 
                 <div id="id-pnl1-only" class="row">
-                    <div class="col-4">
+                    <div class="col-6">
                         <label class="h6 txt-inp-def">
                             <input id="ck-single" type="checkbox">
                             Single System
                         </label>
                     </div>
 
-                    <div class="col-4">
+                    <div class="col-6">
                         <label class="h6 txt-inp-def">
                             <input id="ck-isdz" type="checkbox">
                             Dead Zone
@@ -198,6 +201,11 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
 
         if (entry.blackhole)
             bhs.getEntry(entry.connection, bhs.displaySingle, pnlBottom);
+
+            $("#" + panels[pnlTop].id).show();
+            $("#entrybuttons").show();
+            $("#upload").hide();
+            $("#ck-fileupload").prop("checked", false);
 
         if (entry.blackhole || idx == pnlBottom) {
             loc.find("#ck-single").prop("checked", false);
@@ -360,6 +368,6 @@ blackHoleSuns.prototype.displayCalc = function () {
 }
 
 blackHoleSuns.prototype.status = function (str) {
-    $("#status").append("<h7>" + str + "</h7>");
-    $("#filestatus").append("<h7>" + str + "</h7>");
+    $("#status").append("<h5>" + str + "</h5>");
+    $("#filestatus").append("<h5>" + str + "</h5>");
 }

@@ -72,7 +72,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
 
             <div class="row">
                 <div id="id-Organization" class="col-9"></div>
-                <label class="col-4 h5 text-right align-bottom">
+                <label class="col-5 h5 text-right align-bottom">
                     File Upload&nbsp;
                     <input id="ck-fileupload" type="checkbox">
                 </label>
@@ -157,7 +157,7 @@ var userTable = [
         title: "Coordinates",
         id: "id-addr",
         field: "addr",
-        format: "col-3"
+        format: "col-lg-3 col-md-4 col-sm-4 col-6"
     }, {
         title: "LY",
         id: "id-toctr",
@@ -195,10 +195,12 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
     const table = `
         <div class="card-header">
             <div class="row">
-                <h4 class="col-4">Latest Changes</h4>
-                <div id="lc-plat" class="col-2 h5"></div>
-                <div id="lc-gal" class="col-2 h5"></div>
-                <div id="btn-utSettings" class="col-6 text-right">
+                <h4 class="col-13">Latest Changes</h4>
+            </div>
+            <div class="row">
+                <div id="lc-plat" class="col-4 h5"></div>
+                <div id="lc-gal" class="col-5 h5"></div>
+                <div id="btn-utSettings" class="col-5 text-right">
                     <i class="fa fa-cog txt-inp-def">Settings</i>
                 </div>
             </div>
@@ -207,7 +209,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
         <div id="utSettings" class="card card-body" style="display:none">
             <div class="row">
                 <label class="col-14 h6 txt-inp-def">Show last&nbsp;
-                    <input id="id-showLimit" class="rounded" type="number" value="100">
+                    <input id="id-showLimit" class="rounded" type="number">
                     &nbsp;black holes &amp; bases
                 </label>
             </div>
@@ -280,9 +282,12 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
 
     $("#id-showLimit").blur(function () {
         mapgrid = [];
+        bhs.buildUserTable(bhs.user);
         bhs.buildMap();
-        bhs.getEntries(bhs.displayUserEntry, $("#id-showLimit").val() * 2);
-        bhs.getBases(bhs.displayUserEntry, $("#id-showLimit").val());
+
+        let l = $(this).val();
+        bhs.getEntries(bhs.displayUserEntry, l * 2);
+        bhs.getBases(bhs.displayUserEntry, l);
     });
 
     $("#id-showLimit").keyup(function (event) {
@@ -403,19 +408,19 @@ const totalsItemsEnd = `</div>`;
 const totalsDef = [{
     title: "",
     id: "id-what",
-    format: "col-5",
+    format: "col-lg-14 col-md-5 col-sm-14 col-5",
 }, {
     title: "Contest",
     id: "id-contest",
-    format: "col-3 text-right",
+    format: "col-lg-4 col-md-3 col-sm-4 col-3 text-right",
 }, {
     title: "Player",
     id: "id-player",
-    format: "col-3 text-right",
+    format: "col-lg-4 col-md-3 col-sm-4 col-3 text-right",
 }, {
     title: "All",
     id: "id-all",
-    format: "col-3 text-right",
+    format: "col-lg-4 col-md-3 col-sm-4 col-3 text-right",
 }];
 
 const rowTotal = 0;
@@ -446,12 +451,12 @@ blackHoleSuns.prototype.buildTotals = function () {
             <br>
             <div class="card card-body">
                 <div id="hdr1" class="row border-bottom"></div>
-                <div id="itm1" class="scroll" style="height:76px"></div>
+                <div id="itm1" class="scroll" style="height:80px"></div>
             </div>
             <br>
             <div class="card card-body">
                 <div id="hdr2" class="row border-bottom"></div>
-                <div id="itm2" class="scroll" style="height:76px"></div>
+                <div id="itm2" class="scroll" style="height:80px"></div>
             </div>
         </div>`;
 
@@ -602,12 +607,17 @@ blackHoleSuns.prototype.displayOrgTotals = function (entry) {
     }
 }
 
+// xs (for phones - screens less than 768px wide)
+// sm (for tablets - screens equal to or greater than 768px wide)
+// md (for small laptops - screens equal to or greater than 992px wide)
+// lg (for laptops and desktops - screens equal to or greater than 1200px wide)
+
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
     let title = `        
         <div class="row">
-            <div class="col-width h6 txt-inp-def">label</div>`;
+            <div class="col-md-medium col-sm-small col-xs h6 txt-inp-def">label</div>`;
     let block = `
-            <div id="menu-idname" class="col-width dropdown">
+            <div id="menu-idname" class="col-md-medium col-sm-small col-xs dropdown">
                 <button id="btn-idname" class="btn border btn-sm dropdown-toggle" style="rgbcolor" type="button" data-toggle="dropdown"></button>
             </div>
         </div>`;
@@ -624,9 +634,15 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
 
     let id = label.nameToId();
     let h = /label/ [Symbol.replace](title, label);
-    h = /width/ [Symbol.replace](h, vertical ? 13 : 6);
+    h = /medium/ [Symbol.replace](h, vertical ? 13 : 8);
+    h = /small/ [Symbol.replace](h, vertical ? 13 : 7);
+    h = /xs/ [Symbol.replace](h, vertical ? 13 : 6);
+
     let l = /idname/g [Symbol.replace](block, id);
-    l = /width/ [Symbol.replace](l, vertical ? 13 : 8);
+    l = /medium/ [Symbol.replace](l, vertical ? 13 : 5);
+    l = /small/ [Symbol.replace](l, vertical ? 13 : 6);
+    l = /xs/ [Symbol.replace](l, vertical ? 13 : 7);
+
     h += /rgbcolor/ [Symbol.replace](l, "background-color: " + levelRgb[typeof list[0].number == "undefined" ? 0 : list[0].number]);
     loc.find("#id-" + id).append(h);
 
@@ -737,12 +753,10 @@ blackHoleSuns.prototype.buildMap = function () {
     let canvas = document.getElementById('map');
     let ctx = canvas.getContext('2d');
 
-    let w = canvas.offsetWidth;
-    canvas.style.height = w + "px";
+    let pnlw = $("#pnl-map").width();
 
-    w = canvas.width;
-    let m = parseInt(w / 2) + .5;
-
+    let w = pnlw*2/3;
+    canvas.width = w;
     canvas.height = w;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -750,14 +764,15 @@ blackHoleSuns.prototype.buildMap = function () {
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, w, w);
 
-    $("#logo").prop("width", w / 3);
-    $("#logo").prop("height", w / 3);
+    $("#logo").prop("width", Math.min(w/2, pnlw-w-24));
+    $("#logo").prop("height", Math.min(w/2, pnlw-w-24));
 
     ctx.strokeStyle = 'white';
 
     ctx.strokeRect(0, 0, w, w);
 
-    ctx.beginPath();
+     let m = parseInt(w / 2) + .5;
+   ctx.beginPath();
     ctx.moveTo(m, 0);
     ctx.lineTo(m, w);
     ctx.moveTo(0, m);
