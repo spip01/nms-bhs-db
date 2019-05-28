@@ -68,7 +68,28 @@ blackHoleSuns.prototype.initFirebase = function () {
     bhs.fbauth = firebase.auth();
     bhs.fbfs = firebase.firestore();
 
-    bhs.fbauth.onAuthStateChanged(bhs.onAuthStateChanged.bind(bhs));
+    firebase.auth().getRedirectResult().then(function (result) {
+        if (result.credential) {
+            // This gives you a GitHub Access Token. You can use it to access the GitHub API.
+            var token = result.credential.accessToken;
+            // ...
+        }
+        // The signed-in user info.
+        var user = result.user;
+
+        bhs.onAuthStateChanged(user);
+    }).catch(function (error) {
+        // Handle Errors here.
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        // The email of the user's account used.
+        var email = error.email;
+        // The firebase.auth.AuthCredential type that was used.
+        var credential = error.credential;
+
+    });
+
+     bhs.fbauth.onAuthStateChanged(bhs.onAuthStateChanged.bind(bhs));
 }
 
 blackHoleSuns.prototype.logIn = function () {
@@ -84,34 +105,15 @@ blackHoleSuns.prototype.logIn = function () {
         var provider = new firebase.auth.GoogleAuthProvider();
         provider.addScope('profile');
         provider.addScope('email');
-        firebase.auth().signInWithRedirect(provider)
-            .then(function (res) {
-                console.log(res);
-            })
-            .catch(function (err) {
-                console.log(err);
-            });
-    });
-
-    $("#lgithub").click(function () {
-        var provider = new firebase.auth.GithubAuthProvider();
-        provider.addScope('repo');
         firebase.auth().signInWithRedirect(provider);
     });
 
-    // Start a sign in process for an unauthenticated user.
-
-    $("#ltwitch").click(function () {
-        let ref = bhs.fbfs.doc("api/twitch");
-        ref.get().then(function (doc) {
-            if (doc.exists) {
-                let d = doc.data();
-                let id = d[window.location.hostname];
-
-                console.log(window.location.hostname);
-            }
-        });
+    $("#lgithub").click(async function () {
+        var provider = new firebase.auth.GithubAuthProvider();
+        firebase.auth().signInWithRedirect(provider);
     });
+
+    $("#ltwitch").click(function () {});
 
     $("#ldiscord").click(function () {});
 
@@ -341,9 +343,9 @@ blackHoleSuns.prototype.deleteEntry = async function (addr) {
         else {
             let d = doc.data();
             if (d.uid == bhs.user.uid) {
-                await ref.delete().then(function () {
+                await ref.delete().then(async function () {
                     if (d.blackhole)
-                        bhs.totals = bhs.incTotals(bhs.totals, entry, -1);
+                        bhs.totals = bhs.incTotals(bhs.totals, d, -1);
                     bhs.status(addr + " deleted", 2);
                 });
             } else
@@ -414,13 +416,13 @@ blackHoleSuns.prototype.rebuildTotals = async function () {
 
 blackHoleSuns.prototype.ckmad = async function () {
     let ref = bhs.getStarsColRef("Euclid", "PS4");
-    ref= ref.where("player", ">=", "mad");
-    ref= ref.where("player", "<", "mae");
-    
+    ref = ref.where("player", ">=", "mad");
+    ref = ref.where("player", "<", "mae");
+
     await ref.get().then(async function (snapshot) {
         console.log(snapshot.size);
-        for (let i=0; i<snapshot.size;++i) {
-            console.log(snapshot.docs[i].data().player+" "+snapshot.docs[i].data().uid);
+        for (let i = 0; i < snapshot.size; ++i) {
+            console.log(snapshot.docs[i].data().player + " " + snapshot.docs[i].data().uid);
         }
     });
 }
@@ -552,7 +554,7 @@ blackHoleSuns.prototype.updateAllTotals = async function (totals, reset) {
             let u = ulist[i];
 
             ref = bhs.getUsersColRef()
-            ref = ref.where("player","==",u);
+            ref = ref.where("player", "==", u);
             await ref.get().then(async function (snapshot) {
                 if (!snapshot.empty)
                     await bhs.updateTotal(totals.user[u], snapshot.docs[0].ref, reset);
