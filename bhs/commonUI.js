@@ -148,7 +148,7 @@ var userTable = [
         fcn: getUserPlatforms,
     },*/
     {
-        title: "    ",
+        title: "Type",
         id: "id-type",
         format: "col-1",
         field: "blackhole",
@@ -263,10 +263,8 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
 
     h = "";
     userTable.forEach(function (t) {
-        if (t.title.match(/[^ ]/)) {
-            let l = /idname/ [Symbol.replace](ckbox, t.id);
-            h += /title/ [Symbol.replace](l, t.title);
-        }
+        let l = /idname/ [Symbol.replace](ckbox, t.id);
+        h += /title/ [Symbol.replace](l, t.title);
     });
 
     loc = $("#id-utlistsel");
@@ -362,7 +360,7 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
                 l = /bhdata/ [Symbol.replace](l, entry.blackhole ? bhs.calcDist(entry.addr) - bhs.calcDist(entry.connection) : "");
                 l = /xdata/ [Symbol.replace](l, "");
             } else if (t.id == "id-type") {
-                l = /bhdata/ [Symbol.replace](l, entry.blackhole ? "BH" : entry.deadzone ? "DZ" : "");
+                l = /bhdata/ [Symbol.replace](l, entry.blackhole ? "BH" : entry.deadzone ? "DZ" : entry.hasbase ? "Base":"");
                 l = /xdata/ [Symbol.replace](l, "");
             } else if (entry.blackhole || entry.deadzone) {
                 l = /bhdata/ [Symbol.replace](l, entry[t.field] ? entry[t.field] : "");
@@ -739,14 +737,16 @@ blackHoleSuns.prototype.extractUser = function () {
 
 blackHoleSuns.prototype.extractSettings = function () {
     let s = {};
-    s.options = [];
+    s.options = {};
+
     let loc = $("#utSettings");
     s.limit = loc.find("#id-showLimit").val();
     s.bases = loc.find("#id-showBases").val();
 
-    loc.find(":checked").each(function () {
+    loc.find("[id|='ck']").each(function () {
         let id = $(this).prop("id");
-        s.options.push(id);
+        let checked = $(this).prop("checked");
+        s.options[id] = checked;
     });
 
     return s;
@@ -754,14 +754,14 @@ blackHoleSuns.prototype.extractSettings = function () {
 
 blackHoleSuns.prototype.initSettings = function () {
     let s = {};
-    s.options = [];
+    s.options = {};
     s.limit = 20;
     s.bases = 5;
 
     let loc = $("#utSettings");
     loc.find("[id|='ck']").each(function () {
         let id = $(this).prop("id");
-        s.options.push(id);
+        s.options[id] = true;
     });
 
     return s;
@@ -774,21 +774,25 @@ blackHoleSuns.prototype.displaySettings = function (entry) {
     let loc = $("#utSettings");
     loc.find("#id-showLimit").val(entry.settings.limit);
     loc.find("#id-showBases").val(entry.settings.bases);
-    loc.find(":checkbox").prop("checked", false);
 
     let tbl = $("#id-table");
-    tbl.find("[id|='id']").hide();
-
     let usrHdr = tbl.find("#userHeader");
     let usrItm = tbl.find("#userItems");
+
     usrHdr.find("#id-type").show();
     usrItm.find("#id-type").show();
 
     Object.keys(entry.settings.options).forEach(x => {
-        loc.find("#" + entry.settings.options[x]).prop("checked", true);
-        let y = entry.settings.options[x].replace(/ck-(.*)/, "$1");
+        loc.find("#" + x).prop("checked", entry.settings.options[x]);
+        let y = x.replace(/ck-(.*)/, "$1");
+        if(entry.settings.options[x]) {
         usrHdr.find("#" + y).show();
         usrItm.find("#" + y).show();
+        }
+        else {
+            usrHdr.find("#" + y).hide();
+            usrItm.find("#" + y).hide();
+        }
     });
 }
 
