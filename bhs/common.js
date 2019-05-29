@@ -238,12 +238,12 @@ blackHoleSuns.prototype.checkPlayerName = function (loc, displayFcn) {
     });
 }
 
-blackHoleSuns.prototype.getEntry = function (addr, displayfcn, idx) {
+blackHoleSuns.prototype.getEntry = function (addr, displayfcn, idx, flag) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform, addr);
     ref.get().then(function (doc) {
         if (doc.exists) {
             let d = doc.data();
-            displayfcn(d, idx);
+            displayfcn(d, idx, flag);
         }
     });
 }
@@ -628,6 +628,16 @@ blackHoleSuns.prototype.updateTotal = function (add, ref, reset) {
 blackHoleSuns.prototype.getEntries = function (displayFcn, limit) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
     ref = ref.where("uid", "==", bhs.user.uid);
+    ref = ref.orderBy("modded", "desc");
+    limit = parseInt(limit);
+    ref = ref.limit(limit ? limit : 1);
+    bhs.subscribe("entry", ref, displayFcn);
+}
+
+blackHoleSuns.prototype.getBHEntries = function (displayFcn, limit) {
+    let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
+    ref = ref.where("uid", "==", bhs.user.uid);
+    ref = ref.where("blackhole", "==", true);
     ref = ref.orderBy("modded", "desc");
     limit = parseInt(limit);
     ref = ref.limit(limit ? limit : 1);

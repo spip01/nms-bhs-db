@@ -36,7 +36,7 @@ blackHoleSuns.prototype.displayUser = function (user) {
         bhs.getUsers(bhs.displayUserTotals);
         bhs.getOrgs(bhs.displayOrgTotals);
 
-        bhs.getEntries(bhs.displayEntries, bhs.user.settings.limit);
+        bhs.getBHEntries(bhs.displayEntries, bhs.user.settings.limit);
         bhs.getBases(bhs.displayEntries, bhs.user.settings.bases);
     }
 
@@ -209,7 +209,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
             <div class="row">
                 <div class="col-3 h6 txt-inp-def">Show last:&nbsp;</div>
                 <label class="col-5 h6 txt-inp-def">
-                    Systems&nbsp;
+                    BH Pairs&nbsp;
                     <input id="id-showLimit" class="col-5 rounded" type="number">
                 </label>
                 <label class="col-5 h6 txt-inp-def">
@@ -343,7 +343,10 @@ blackHoleSuns.prototype.displayEntries = function (entry) {
     const lineEnd = `
         </div>`;
 
-    bhs.drawMap(entry, true);
+    bhs.drawMap(entry, 0);
+
+    if (entry.blackhole)
+        bhs.getEntry(entry.connection, bhs.displayEntries, pnlBottom);
 
     let gpa = entry.galaxy.nameToId() + "-" + entry.platform + "-" + (entry.blackhole ? entry.connection.stripColons() : entry.addr.stripColons());
 
@@ -391,7 +394,7 @@ blackHoleSuns.prototype.displayEntries = function (entry) {
                 $("#delete").removeClass("disabled");
                 $("#delete").removeAttr("disabled");
 
-                bhs.drawMap(e, false, true);
+                bhs.drawMap(e, 1, false, true);
             }
         });
     } else
@@ -804,8 +807,8 @@ blackHoleSuns.prototype.buildMap = function () {
     canvas.height = w;
 
     let o = $("#maplogo").width();
-    $("#logo").prop("width", o-16);
-    $("#logo").prop("height", o-16);
+    $("#logo").prop("width", o - 16);
+    $("#logo").prop("height", o - 16);
 
     ctx.fillStyle = 'black';
     ctx.clearRect(0, 0, w, w);
@@ -829,11 +832,12 @@ blackHoleSuns.prototype.buildMap = function () {
         let scaleX = canvas.width / rect.width;
         let scaleY = canvas.height / rect.height;
 
-        let x = parseInt((evt.clientX - rect.left) * scaleX / 8);
-        let y = parseInt((evt.clientY - rect.top) * scaleY / 8);
+        let x = parseInt((evt.clientX - rect.left) * scaleX / 6);
+        let y = parseInt((evt.clientY - rect.top) * scaleY / 6);
 
         if (mapgrid[x] && mapgrid[x][y]) {
             bhs.buildMap();
+            bhs.drawUpChain(x, y);
             bhs.drawChain(x, y);
         }
     });
@@ -841,7 +845,7 @@ blackHoleSuns.prototype.buildMap = function () {
 
 blackHoleSuns.prototype.drawChain = function (x, y) {
     let txt = mapgrid[x][y].split("\n");
-    mapgrid[x][y] = "";
+    delete mapgrid[x][y];
     let w = $("#mapcol").width();
 
     for (let i = 0; i < txt.length && txt[i] != ""; ++i) {
@@ -855,17 +859,44 @@ blackHoleSuns.prototype.drawChain = function (x, y) {
         let x = xyz.x / 4096 * w;
         let y = xyz.z / 4096 * w;
 
-        let ix = parseInt(x / 8);
-        let iy = parseInt(y / 8);
+        let ix = parseInt(x / 6);
+        let iy = parseInt(y / 6);
 
         if (mapgrid[ix] && mapgrid[ix][iy])
             bhs.drawChain(ix, iy);
     }
 }
 
-var mapgrid = [];
+blackHoleSuns.prototype.drawUpChain = function (x, y) {
+    let txt = mapupgrid[x][y].split("\n");
+    delete mapupgrid[x][y];
+    let w = $("#mapcol").width();
 
-blackHoleSuns.prototype.drawMap = function (entry, add, large) {
+    for (let i = 0; i < txt.length && txt[i] != ""; ++i) {
+        let addr = txt[i].slice(0, 19);
+        let con = txt[i].slice(23);
+
+        let xyz = bhs.addressToXYZ(addr);
+        let x = xyz.x / 4096 * w;
+        let y = xyz.z / 4096 * w;
+
+        let ix = parseInt(x / 6);
+        let iy = parseInt(y / 6);
+
+        if (mapupgrid[ix] && mapupgrid[ix][iy])
+            bhs.drawUpChain(ix, iy);
+
+
+        console.log(addr);
+        bhs.getEntry(addr, bhs.drawMap, 1, true);
+
+    }
+}
+
+var mapgrid = [];
+var mapupgrid = [];
+
+blackHoleSuns.prototype.drawMap = function (entry, idx, up, large) {
     let canvas = document.getElementById('map');
     let ctx = canvas.getContext('2d');
     let w = $("#mapcol").width();
@@ -884,30 +915,42 @@ blackHoleSuns.prototype.drawMap = function (entry, add, large) {
         size = 2.5;
 
         ctx.fillStyle = 'aqua';
-        ctx.strokeStyle = 'blue';
+        ctx.strokeStyle = !up ? 'blue' : 'royalBlue';
 
         ctx.beginPath();
-        ctx.moveTo(x + .5, y + .5);
-        ctx.lineTo(ex + .5, ey + .5);
+        ctx.moveTo(x, y);
+        ctx.lineTo(ex, ey);
         ctx.stroke();
 
-        if (add) {
-            let ix = parseInt(x / 8);
-            let iy = parseInt(y / 8);
+        if (idx == 0) {
+            let ix = parseInt(x / 6);
+            let iy = parseInt(y / 6);
 
             if (!mapgrid[ix])
                 mapgrid[ix] = [];
             if (!mapgrid[ix][iy])
                 mapgrid[ix][iy] = "";
+
             mapgrid[ix][iy] += entry.addr + " -> " + entry.connection + "\n";
+
+            ix = parseInt(ex / 6);
+            iy = parseInt(ey / 6);
+
+            if (!mapupgrid[ix])
+                mapupgrid[ix] = [];
+            if (!mapupgrid[ix][iy])
+                mapupgrid[ix][iy] = "";
+
+            mapupgrid[ix][iy] += entry.addr + " -> " + entry.connection + "\n";
         }
     } else if (entry.hasbase) {
         ctx.fillStyle = 'lime';
         size = 3.5;
     } else if (entry.deadzone)
         ctx.fillStyle = 'red';
-    else
+    else {
         ctx.fillStyle = 'yellow';
+    }
 
     if (large)
         size = 4;
