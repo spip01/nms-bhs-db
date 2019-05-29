@@ -360,7 +360,7 @@ blackHoleSuns.prototype.displayEntries = function (entry) {
                 l = /bhdata/ [Symbol.replace](l, entry.blackhole ? bhs.calcDist(entry.addr) - bhs.calcDist(entry.connection) : "");
                 l = /xdata/ [Symbol.replace](l, "");
             } else if (t.id == "id-type") {
-                l = /bhdata/ [Symbol.replace](l, entry.blackhole ? "BH" : entry.deadzone ? "DZ" : entry.hasbase ? "Base":"");
+                l = /bhdata/ [Symbol.replace](l, entry.blackhole ? "BH" : entry.deadzone ? "DZ" : entry.hasbase ? "Base" : "");
                 l = /xdata/ [Symbol.replace](l, "");
             } else if (entry.blackhole || entry.deadzone) {
                 l = /bhdata/ [Symbol.replace](l, entry[t.field] ? entry[t.field] : "");
@@ -785,11 +785,10 @@ blackHoleSuns.prototype.displaySettings = function (entry) {
     Object.keys(entry.settings.options).forEach(x => {
         loc.find("#" + x).prop("checked", entry.settings.options[x]);
         let y = x.replace(/ck-(.*)/, "$1");
-        if(entry.settings.options[x]) {
-        usrHdr.find("#" + y).show();
-        usrItm.find("#" + y).show();
-        }
-        else {
+        if (entry.settings.options[x]) {
+            usrHdr.find("#" + y).show();
+            usrItm.find("#" + y).show();
+        } else {
             usrHdr.find("#" + y).hide();
             usrItm.find("#" + y).hide();
         }
@@ -800,22 +799,19 @@ blackHoleSuns.prototype.buildMap = function () {
     let canvas = document.getElementById('map');
     let ctx = canvas.getContext('2d');
 
-    let pnlw = $("#pnl-map").width();
-
-    let w = pnlw * 2 / 3;
+    let w = $("#mapcol").width();
     canvas.width = w;
     canvas.height = w;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let o = $("#maplogo").width();
+    $("#logo").prop("width", o-16);
+    $("#logo").prop("height", o-16);
 
     ctx.fillStyle = 'black';
+    ctx.clearRect(0, 0, w, w);
     ctx.fillRect(0, 0, w, w);
 
-    $("#logo").prop("width", Math.min(w / 2, pnlw - w - 24));
-    $("#logo").prop("height", Math.min(w / 2, pnlw - w - 24));
-
     ctx.strokeStyle = 'white';
-
     ctx.strokeRect(0, 0, w, w);
 
     let m = parseInt(w / 2) + .5;
@@ -826,34 +822,6 @@ blackHoleSuns.prototype.buildMap = function () {
     ctx.lineTo(w, m);
     ctx.stroke();
 
-    /*
-        $("#map").mousemove(function (evt) {
-            let canvas = document.getElementById('map');
-            let rect = canvas.getBoundingClientRect();
-
-            var tipCanvas = document.getElementById("tip");
-            var tipCtx = tipCanvas.getContext("2d");
-
-            let scaleX = canvas.width / rect.width;
-            let scaleY = canvas.height / rect.height;
-
-            let x = parseInt((evt.clientX - rect.left) * scaleX / 4);
-            let y = parseInt((evt.clientY - rect.top) * scaleY / 4);
-            if (mapgrid[x] && mapgrid[x][y]) {
-                console.log(mapgrid[x][y]);
-                let txt = mapgrid[x][y].split("\n");
-
-                tipCanvas.style.left = (evt.clientX + 5) + "px";
-                tipCanvas.style.top = (evt.clientY - 10) + "px";
-                tipCtx.clearRect(0, 0, tipCanvas.width, tipCanvas.height);
-
-                for (let i = 0; i < txt.length; ++i)
-                    tipCtx.fillText(txt[i], 5.5, 15 + i * 15);
-            } else
-                tipCanvas.style.left = "-800px";
-        });
-    */
-
     $("#map").mousedown(function (evt) {
         let canvas = document.getElementById('map');
         let rect = canvas.getBoundingClientRect();
@@ -861,8 +829,8 @@ blackHoleSuns.prototype.buildMap = function () {
         let scaleX = canvas.width / rect.width;
         let scaleY = canvas.height / rect.height;
 
-        let x = parseInt((evt.clientX - rect.left) * scaleX / 4);
-        let y = parseInt((evt.clientY - rect.top) * scaleY / 4);
+        let x = parseInt((evt.clientX - rect.left) * scaleX / 8);
+        let y = parseInt((evt.clientY - rect.top) * scaleY / 8);
 
         if (mapgrid[x] && mapgrid[x][y]) {
             bhs.buildMap();
@@ -874,7 +842,7 @@ blackHoleSuns.prototype.buildMap = function () {
 blackHoleSuns.prototype.drawChain = function (x, y) {
     let txt = mapgrid[x][y].split("\n");
     mapgrid[x][y] = "";
-    let w = document.getElementById('map').width;
+    let w = $("#mapcol").width();
 
     for (let i = 0; i < txt.length && txt[i] != ""; ++i) {
         let addr = txt[i].slice(0, 19);
@@ -887,8 +855,8 @@ blackHoleSuns.prototype.drawChain = function (x, y) {
         let x = xyz.x / 4096 * w;
         let y = xyz.z / 4096 * w;
 
-        let ix = parseInt(x / 4);
-        let iy = parseInt(y / 4);
+        let ix = parseInt(x / 8);
+        let iy = parseInt(y / 8);
 
         if (mapgrid[ix] && mapgrid[ix][iy])
             bhs.drawChain(ix, iy);
@@ -900,8 +868,7 @@ var mapgrid = [];
 blackHoleSuns.prototype.drawMap = function (entry, add, large) {
     let canvas = document.getElementById('map');
     let ctx = canvas.getContext('2d');
-
-    let w = document.getElementById('map').width;
+    let w = $("#mapcol").width();
 
     let xyz = bhs.addressToXYZ(entry.addr);
     let x = xyz.x / 4096 * w;
@@ -925,8 +892,8 @@ blackHoleSuns.prototype.drawMap = function (entry, add, large) {
         ctx.stroke();
 
         if (add) {
-            let ix = parseInt(x / 4);
-            let iy = parseInt(y / 4);
+            let ix = parseInt(x / 8);
+            let iy = parseInt(y / 8);
 
             if (!mapgrid[ix])
                 mapgrid[ix] = [];

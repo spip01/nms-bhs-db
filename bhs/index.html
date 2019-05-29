@@ -55,7 +55,7 @@
 </head>
 
 <body class="bkg-def">
-    <a href="index.html"><img src="nmsbhs_banner.jpg" alt="BHS Banner"></a>
+    <a href="https://darc.blackholesuns.com"><img src="nmsbhs_banner.jpg" alt="BHS Banner"></a>
 
     <div id="r2" class="container-fluid">
         <div class="row">
@@ -88,7 +88,7 @@
 
     <div id="javascript">
         <!--googleoff:all-->
-        <div style="color: rgb(0, 78, 0);">
+        <div class="text-danger h6">
             Unfortunately, this page cannot function without javasript. Please add this site to your "allowed" sites.
             For chrome it's located&nbsp;
             <a href="chrome://settings/content/javascript">here</a>
@@ -158,7 +158,8 @@
                                     class="col-4 btn btn-def border btn-sm txt-def">Cancel</button>&nbsp;
                             </div>
                         </div>
-                        <div id="status" class="border col-7 text-danger bkg-white scrollbar container-fluid" style="overflow-y: scroll; height: 40px"></div>
+                        <div id="status" class="border col-7 text-danger bkg-white scrollbar container-fluid"
+                            style="overflow-y: scroll; height: 40px"></div>
                     </div>
                 </div>
                 <br>
@@ -167,15 +168,30 @@
             <div class="col-md-7 col-sm-5 col-14">
                 <div id="pnl-map" class="card card-body">
                     <div class="row">
-                        <div class="col-10">
+                        <div id="mapcol" class="col-10">
                             <canvas id="map" style="cursor: crosshair;max-width:500px"></canvas>
                         </div>
 
-                        <div class="col-4 nopadding">
-                            <img id="logo" src="lBTK5EL.png" class="float-left" alt="BHS Logo" width="1" height="1">
+                        <div class="col-4">
+                            <a id="maplogo" html="https://darc.blackholesuns.com" class="row">
+                                <img id="logo" src="lBTK5EL.png" class="float-left" alt="BHS Logo" width="20"
+                                    height="20"></a>
+
+                            <br>
+                            <div id="mapkey" class="card card-body bkg-def">
+                                <div class="row" style="color:aqua">Black Hole System</div>
+                                <div class="row" style="color:yellow">Exit System</div>
+                                <div class="row" style="color:red">Dead Zone</div>
+                                <div class="row" style="color:lime">Base</div>
+                            </div>
+                            <br>
+
+                            <div id="mapphelp" class="card card-body">
+                                <div class="row h6">Click on Black Hole to see chain.</div>
+                            </div>
                         </div>
                     </div>
-                    <!--canvas id="tip"></canvas-->
+                    <div id="mapoptions" class="card card-body"></div>
                 </div>
             </div>
         </div>
@@ -194,7 +210,12 @@
     </div>
     <br>
 
-    <div id="footer"></div>
+    <div id="footer" class="row">
+        <a href="https://darc.blackholesuns.com/" class="col-3 text-center">BHS DaRC Web</a>
+        <a href="https://guide.blackholesuns.com/" class="col-3 text-center">Travel Guide</a>
+        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center">Follow us on Redit</a>
+        <a href="https://discord.blackholesuns.com/" class="col-4 text-center">Talk to us on Discord</a>
+    </div>
 
 </body>
 
