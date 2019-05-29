@@ -178,7 +178,7 @@ blackHoleSuns.prototype.userInit = function () {
     user.platform = platformList[0].name;
     user.galaxy = galaxyList[0].name;
     user.firsttime = firebase.firestore.Timestamp.fromDate(new Date());
-    user.lasttime = firebase.firestore.Timestamp.fromDate(new Date());
+    user.lasttime = user.firsttime;
 
     return user;
 }
@@ -599,8 +599,8 @@ blackHoleSuns.prototype.getEntries = function (displayFcn, limit) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
     ref = ref.where("player", "==", bhs.user.player);
     ref = ref.orderBy("modded", "desc");
-    if (limit)
-        ref = ref.limit(parseInt(limit));
+    limit = parseInt(limit);
+    ref = ref.limit(limit ? limit : 1);
     bhs.subscribe("entry", ref, displayFcn);
 }
 
@@ -640,8 +640,8 @@ blackHoleSuns.prototype.getOrgs = function (displayFcn) {
 blackHoleSuns.prototype.getBases = function (displayFcn, limit) {
     let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform);
     ref = ref.orderBy("modded", "desc");
-    if (limit)
-        ref = ref.limit(parseInt(limit));
+    limit = parseInt(limit);
+    ref = ref.limit(limit ? limit : 1);
     bhs.subscribe("bases", ref, displayFcn);
 }
 

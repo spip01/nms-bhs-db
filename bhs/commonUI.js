@@ -36,8 +36,8 @@ blackHoleSuns.prototype.displayUser = function (user) {
         bhs.getUsers(bhs.displayUserTotals);
         bhs.getOrgs(bhs.displayOrgTotals);
 
-        bhs.getEntries(bhs.displayUserEntry, 100);
-        bhs.getBases(bhs.displayUserEntry, 100);
+        bhs.getEntries(bhs.displayUserEntry, bhs.user.settings.limit);
+        bhs.getBases(bhs.displayUserEntry, bhs.user.settings.bases);
     }
 
     let player = $("#pnl-user");
@@ -208,9 +208,13 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
 
         <div id="utSettings" class="card card-body" style="display:none">
             <div class="row">
-                <label class="col-14 h6 txt-inp-def">Show last&nbsp;
+                <label class="col-8 h6 txt-inp-def">Show last:&nbsp;
                     <input id="id-showLimit" class="rounded" type="number">
-                    &nbsp;black holes &amp; bases
+                    &nbsp;Systems
+                </label>
+                <label class="col-6 h6 txt-inp-def">
+                    <input id="id-showBases" class="rounded" type="number">
+                    &nbsp;Bases
                 </label>
             </div>
 
@@ -231,7 +235,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
         
         <div id="id-table" class="card-body">
             <div id="userHeader" class="row border-bottom"></div>
-            <div id="userItems" class="scroll" style="height: 300px"></div>
+            <div id="userItems" class="scrollbar container-fluid" style="overflow-y: scroll; height: 300px"></div>
         </div>`;
 
     const ckbox = `            
@@ -286,11 +290,31 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
         bhs.buildMap();
 
         let l = $(this).val();
-        bhs.getEntries(bhs.displayUserEntry, l * 2);
+        bhs.getEntries(bhs.displayUserEntry, l);
+
+        l = $("#id-showBases").val();
         bhs.getBases(bhs.displayUserEntry, l);
     });
 
     $("#id-showLimit").keyup(function (event) {
+        if (event.keyCode === 13) {
+            $(this).blur();
+        }
+    });
+
+    $("#id-showBases").blur(function () {
+        mapgrid = [];
+        $("#entryTable #userItems").empty();
+        bhs.buildMap();
+
+        let l = $(this).val();
+        bhs.getBases(bhs.displayUserEntry, l);
+
+        l = $("#id-showLimit").val();
+        bhs.getEntries(bhs.displayUserEntry, l);
+    });
+
+    $("#id-showBases").keyup(function (event) {
         if (event.keyCode === 13) {
             $(this).blur();
         }
@@ -362,9 +386,9 @@ blackHoleSuns.prototype.displayUserEntry = function (entry) {
                 let e = {};
                 e.addr = bhs.entryFromTable(this);
 
-                // $('html, body').animate({
-                //     scrollTop: ($('#panels').offset().top)
-                // }, 0);
+                $('html, body').animate({
+                    scrollTop: ($('#panels').offset().top)
+                }, 0);
 
                 $("#delete").removeClass("disabled");
                 $("#delete").removeAttr("disabled");
@@ -451,12 +475,12 @@ blackHoleSuns.prototype.buildTotals = function () {
             <br>
             <div class="card card-body">
                 <div id="hdr1" class="row border-bottom"></div>
-                <div id="itm1" class="scroll" style="height:80px"></div>
+                <div id="itm1" class="scrollbar container-fluid" style="overflow-y: scroll; height:80px"></div>
             </div>
             <br>
             <div class="card card-body">
                 <div id="hdr2" class="row border-bottom"></div>
-                <div id="itm2" class="scroll" style="height:80px"></div>
+                <div id="itm2" class="scrollbar container-fluid" style="overflow-y: scroll; height:80px"></div>
             </div>
         </div>`;
 
@@ -718,6 +742,8 @@ blackHoleSuns.prototype.extractSettings = function () {
     s.options = [];
     let loc = $("#utSettings");
     s.limit = loc.find("#id-showLimit").val();
+    s.bases = loc.find("#id-showBases").val();
+
     loc.find(":checked").each(function () {
         let id = $(this).prop("id");
         s.options.push(id);
@@ -726,27 +752,44 @@ blackHoleSuns.prototype.extractSettings = function () {
     return s;
 }
 
+blackHoleSuns.prototype.initSettings = function () {
+    let s = {};
+    s.options = [];
+    s.limit = 20;
+    s.bases = 5;
+
+    let loc = $("#utSettings");
+    loc.find("[id|='ck']").each(function () {
+        let id = $(this).prop("id");
+        s.options.push(id);
+    });
+
+    return s;
+}
+
 blackHoleSuns.prototype.displaySettings = function (entry) {
-    if (typeof entry.settings != "undefined") {
-        let loc = $("#utSettings");
-        loc.find("#id-showLimit").val(entry.settings.limit);
-        loc.find(":checkbox").prop("checked", false);
+    if (typeof entry.settings == "undefined")
+        entry.settings = bhs.initSettings();
 
-        let tbl = $("#id-table");
-        tbl.find("[id|='id']").hide();
+    let loc = $("#utSettings");
+    loc.find("#id-showLimit").val(entry.settings.limit);
+    loc.find("#id-showBases").val(entry.settings.bases);
+    loc.find(":checkbox").prop("checked", false);
 
-        let usrHdr = tbl.find("#userHeader");
-        let usrItm = tbl.find("#userItems");
-        usrHdr.find("#id-type").show();
-        usrItm.find("#id-type").show();
+    let tbl = $("#id-table");
+    tbl.find("[id|='id']").hide();
 
-        Object.keys(entry.settings.options).forEach(x => {
-            loc.find("#" + entry.settings.options[x]).prop("checked", true);
-            let y = entry.settings.options[x].replace(/ck-(.*)/, "$1");
-            usrHdr.find("#" + y).show();
-            usrItm.find("#" + y).show();
-        });
-    }
+    let usrHdr = tbl.find("#userHeader");
+    let usrItm = tbl.find("#userItems");
+    usrHdr.find("#id-type").show();
+    usrItm.find("#id-type").show();
+
+    Object.keys(entry.settings.options).forEach(x => {
+        loc.find("#" + entry.settings.options[x]).prop("checked", true);
+        let y = entry.settings.options[x].replace(/ck-(.*)/, "$1");
+        usrHdr.find("#" + y).show();
+        usrItm.find("#" + y).show();
+    });
 }
 
 blackHoleSuns.prototype.buildMap = function () {
@@ -755,7 +798,7 @@ blackHoleSuns.prototype.buildMap = function () {
 
     let pnlw = $("#pnl-map").width();
 
-    let w = pnlw*2/3;
+    let w = pnlw * 2 / 3;
     canvas.width = w;
     canvas.height = w;
 
@@ -764,15 +807,15 @@ blackHoleSuns.prototype.buildMap = function () {
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, w, w);
 
-    $("#logo").prop("width", Math.min(w/2, pnlw-w-24));
-    $("#logo").prop("height", Math.min(w/2, pnlw-w-24));
+    $("#logo").prop("width", Math.min(w / 2, pnlw - w - 24));
+    $("#logo").prop("height", Math.min(w / 2, pnlw - w - 24));
 
     ctx.strokeStyle = 'white';
 
     ctx.strokeRect(0, 0, w, w);
 
-     let m = parseInt(w / 2) + .5;
-   ctx.beginPath();
+    let m = parseInt(w / 2) + .5;
+    ctx.beginPath();
     ctx.moveTo(m, 0);
     ctx.lineTo(m, w);
     ctx.moveTo(0, m);

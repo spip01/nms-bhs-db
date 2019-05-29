@@ -68,8 +68,7 @@
                 </button>
 
                 <div id="usermenu" class="dropdown" style="display: none">
-                    <button type="button"
-                        class="row text-centered txt-def no-border dropdown-toggle"
+                    <button type="button" class="row text-centered txt-def no-border dropdown-toggle"
                         data-toggle="dropdown">
                         <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
                         <h5 id="username">
@@ -78,8 +77,7 @@
                     </button>
 
                     <div class="dropdown-menu bkg-def">
-                        <button id="logout" type="button"
-                            class="no-border text-centered dropdown-item txt-def">
+                        <button id="logout" type="button" class="no-border text-centered dropdown-item txt-def">
                             <h5>Logout</h5>
                         </button>
                     </div>
@@ -149,12 +147,18 @@
                     <div id="panels"></div>
 
                     <div id="entrybuttons" class="row">
-                        <button id="save" type="button" class="col-2 btn border btn-sm btn-def txt-def">Save</button>&nbsp;
-                        <button id="delete" type="button" class="col-2 btn border btn-sm btn-def txt-def disabled"
-                            disabled>Delete</button>&nbsp;
-                        <button id="cancel" type="button"
-                            class="col-2 btn btn-def border btn-sm txt-def">Cancel</button>&nbsp;
-                        <div id="status" class="border col-7 text-danger bkg-white"></div>
+                        <div class="col-7">
+                            <div class="row">
+                                <button id="save" type="button"
+                                    class="col-4 btn border btn-sm btn-def txt-def">Save</button>&nbsp;
+                                <button id="delete" type="button"
+                                    class="col-4 btn border btn-sm btn-def txt-def disabled"
+                                    disabled>Delete</button>&nbsp;
+                                <button id="cancel" type="button"
+                                    class="col-4 btn btn-def border btn-sm txt-def">Cancel</button>&nbsp;
+                            </div>
+                        </div>
+                        <div id="status" class="border col-7 text-danger bkg-white scrollbar container-fluid" style="overflow-y: scroll; height: 40px"></div>
                     </div>
                 </div>
                 <br>
