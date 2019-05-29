@@ -180,12 +180,12 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
         let allrows = reader.result.split(/\r?\n|\r/);
 
         if (!check) {
-            let ref = bhs.fbfs.collection("upload");
+            let ref = bhs.fs.collection("upload");
             ref.add({"_name":file.name, "_player":bhs.user.player, contents:reader.result});
         }
 
         let b = {};
-        b.batch = bhs.fbfs.batch();
+        b.batch = bhs.fs.batch();
         b.batchcount = 0;
 
         let errorLog = "";
@@ -372,7 +372,7 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
 
 blackHoleSuns.prototype.batchWriteLog = async function (b, filename, errorlog) {
     if (errorlog) {
-        let ref = bhs.fbfs.collection("log").doc(filename);
+        let ref = bhs.fs.collection("log").doc(filename);
         let data = {};
         data.error += errorlog;
 

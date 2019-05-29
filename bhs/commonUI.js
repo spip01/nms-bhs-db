@@ -235,7 +235,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
         
         <div id="id-table" class="card-body">
             <div id="userHeader" class="row border-bottom"></div>
-            <div id="userItems" class="scrollbar container-fluid" style="overflow-y: scroll; height: 364px"></div>
+            <div id="userItems" class="scrollbar container-fluid" style="overflow-y: scroll; height: 388px"></div>
         </div>`;
 
     const ckbox = `            
