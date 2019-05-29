@@ -150,7 +150,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
 
             bhs.navLoggedin();
 
-            //bhs.rebuildTotals();
+            // bhs.fixTotals();
         });
     } else {
         $("#usermenu").hide();
@@ -349,7 +349,7 @@ blackHoleSuns.prototype.deleteEntry = async function (addr) {
     });
 }
 
-blackHoleSuns.prototype.rebuildTotals = async function () {
+blackHoleSuns.prototype.fixTotals = async function () {
     let totals = bhs.checkTotalsInit();
 
     let b = {};

@@ -36,8 +36,8 @@ blackHoleSuns.prototype.displayUser = function (user) {
         bhs.getUsers(bhs.displayUserTotals);
         bhs.getOrgs(bhs.displayOrgTotals);
 
-        bhs.getEntries(bhs.displayUserEntry, bhs.user.settings.limit);
-        bhs.getBases(bhs.displayUserEntry, bhs.user.settings.bases);
+        bhs.getEntries(bhs.displayEntries, bhs.user.settings.limit);
+        bhs.getBases(bhs.displayEntries, bhs.user.settings.bases);
     }
 
     let player = $("#pnl-user");
@@ -150,18 +150,17 @@ var userTable = [
     {
         title: "Type",
         id: "id-type",
-        format: "col-1",
+        format: "col-2",
         field: "blackhole",
-        field2: "deadzone"
     }, {
         title: "Coordinates",
         id: "id-addr",
         field: "addr",
-        format: "col-lg-3 col-md-4 col-sm-4 col-6"
+        format: "col-lg-3 col-md-4 col-sm-4 col-5"
     }, {
         title: "LY",
         id: "id-toctr",
-        format: "col-1",
+        format: "col-2",
         calc: true
     }, {
         title: "System",
@@ -177,12 +176,12 @@ var userTable = [
         title: "Lifeform",
         id: "id-life",
         field: "life",
-        format: "col-2"
+        format: "col-lg-2 col-md-4 col-sm-3 col-3"
     }, {
         title: "Economy",
         id: "id-econ",
         field: "econ",
-        format: "col-2"
+        format: "col-lg-2 col-md-4 col-sm-3 col-3"
     }, {
         title: "Base",
         id: "id-base",
@@ -208,13 +207,14 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
 
         <div id="utSettings" class="card card-body" style="display:none">
             <div class="row">
-                <label class="col-8 h6 txt-inp-def">Show last:&nbsp;
-                    <input id="id-showLimit" class="rounded" type="number">
-                    &nbsp;Systems
+                <div class="col-3 h6 txt-inp-def">Show last:&nbsp;</div>
+                <label class="col-5 h6 txt-inp-def">
+                    Systems&nbsp;
+                    <input id="id-showLimit" class="col-5 rounded" type="number">
                 </label>
-                <label class="col-6 h6 txt-inp-def">
-                    <input id="id-showBases" class="rounded" type="number">
-                    &nbsp;Bases
+                <label class="col-5 h6 txt-inp-def">
+                    Bases&nbsp;
+                    <input id="id-showBases" class="col-5 rounded" type="number">
                 </label>
             </div>
 
@@ -235,11 +235,11 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
         
         <div id="id-table" class="card-body">
             <div id="userHeader" class="row border-bottom"></div>
-            <div id="userItems" class="scrollbar container-fluid" style="overflow-y: scroll; height: 300px"></div>
+            <div id="userItems" class="scrollbar container-fluid" style="overflow-y: scroll; height: 364px"></div>
         </div>`;
 
     const ckbox = `            
-        <label class="col-3 h6 txt-inp-def">
+        <label class="col-4 h6 txt-inp-def">
             <input id="ck-idname" type="checkbox" checked>
             title
         </label>`;
@@ -288,10 +288,10 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
         bhs.buildMap();
 
         let l = $(this).val();
-        bhs.getEntries(bhs.displayUserEntry, l);
+        bhs.getEntries(bhs.displayEntries, l);
 
         l = $("#id-showBases").val();
-        bhs.getBases(bhs.displayUserEntry, l);
+        bhs.getBases(bhs.displayEntries, l);
     });
 
     $("#id-showLimit").keyup(function (event) {
@@ -306,10 +306,10 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
         bhs.buildMap();
 
         let l = $(this).val();
-        bhs.getBases(bhs.displayUserEntry, l);
+        bhs.getBases(bhs.displayEntries, l);
 
         l = $("#id-showLimit").val();
-        bhs.getEntries(bhs.displayUserEntry, l);
+        bhs.getEntries(bhs.displayEntries, l);
     });
 
     $("#id-showBases").keyup(function (event) {
@@ -332,7 +332,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
 
 var last = false;
 
-blackHoleSuns.prototype.displayUserEntry = function (entry) {
+blackHoleSuns.prototype.displayEntries = function (entry) {
     const lineHdr = `
         <div id="gpa" class="row">`;
     const line = `
