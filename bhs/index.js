@@ -22,11 +22,10 @@ $(document).ready(function () {
         });
 
         bhs.clearPanels();
-        bhs.last = [];
     });
 
     $("#cancel").click(function () {
-        bhs.displaySingle($("#" + panels[pnlTop].id), bhs.last[pnlTop], pnlTop);
+        bhs.displaySingle(bhs.last[pnlTop], pnlTop);
     });
 })
 
@@ -174,6 +173,8 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 }
 
 blackHoleSuns.prototype.displaySingle = function (entry, idx) {
+    bhs.last[idx] = entry;
+
     let loc = $("#" + panels[idx].id);
 
     if (entry) {
@@ -245,23 +246,25 @@ blackHoleSuns.prototype.clearPanels = function () {
         bhs.clearPanel(d.id);
     });
 
+    bhs.last = [];
+
     $("#delete").addClass("disabled");
     $("#delete").prop("disabled", true);
 }
 
 blackHoleSuns.prototype.clearPanel = function (d) {
-    let pnl = $("#" + d.id);
+    let pnl = $("#" + d);
 
-    pnl.find("[id|='inp'").each(function () {
-        pnl.val("");
+    pnl.find("input").each(function () {
+        $(this).val("");
     });
 
-    pnl.find("[id|='ck'").each(function () {
-        pnl.prop("checked", false);
+    pnl.find("[id|='ck']").each(function () {
+        $(this).prop("checked", false);
     });
 
     pnl.find("[id|='menu']").each(function () {
-        pnl.find("[id|='btn']").text("");
+        $(this).find("[id|='btn']").text("");
     });
 
     pnl.find("#id-isbase").hide();

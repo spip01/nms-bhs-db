@@ -38,7 +38,7 @@ function startUp() {
     bhs.initFirebase();
 
     if (starsCol != "stars5")
-        document.body.style.backgroundColor = "red";
+        $("body").css("background-color", "red");
 
     $("#login").click(function () {
         bhs.logIn();
