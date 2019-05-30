@@ -257,7 +257,7 @@ blackHoleSuns.prototype.updateEntry = async function (entry) {
         if (doc.exists) {
             let existing = doc.data();
             if (existing.uid != entry.uid) {
-                bhs.status(entry.addr + " can only be edited by owner", 1);
+                bhs.status(entry.addr + " can only be edited by " + entry.player, 1);
                 return;
             }
             entry = mergeObjects(existing, entry);
@@ -373,11 +373,14 @@ blackHoleSuns.prototype.fixUid = async function () {
                             let ref = bhs.getStarsColRef(g.name, p.name);
                             ref = ref.where("player", "==", u.player)
                             await ref.get().then(async function (snapshot) {
+                                console.log(g.name+" "+p.name+" "+u.player);
                                 for (let k = 0; k < snapshot.size; ++k) {
+                                    let d = snapshot.docs[k].data();
                                     if (typeof d.uid == "undefined" || u.uid != d.uid) {
                                         await b.batch.update(snapshot.docs[k].ref, {
                                             uid: u.uid
                                         });
+
                                         b = await bhs.checkBatchSize(b);
                                     }
                                 }

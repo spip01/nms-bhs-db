@@ -65,6 +65,11 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     <input id="id-reg" class="rounded col-md-5 col-6">
                 </div>
 
+                <div id="id-byrow" class="row" style="display:none">
+                    <div class="col-4 h6 txt-inp-def">Entered by&nbsp;</div>
+                    <div id="id-by" class="col-md-5 col-6 txt-inp-def"></div>
+                </div>
+
                 <div class="row">
                     <div class="col-1">&nbsp;</div>
                     <div id="id-Lifeform" class="col-11"></div>
@@ -178,9 +183,19 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
     let loc = $("#" + panels[idx].id);
 
     if (entry) {
+        bhs.drawMap(entry, 1, false, true);
+
         loc.find("#id-addr").val(entry.addr);
         loc.find("#id-sys").val(entry.sys);
         loc.find("#id-reg").val(entry.reg);
+
+        if (entry.player && idx == 0) {
+            $("#id-byrow").show();
+            $("#id-by").html("<h6>"+entry.player+"</h6>");
+        }
+        else
+            $("#id-byrow").hide();
+
         loc.find("#btn-Lifeform").text(entry.life);
         loc.find("#ck-isdz").prop("checked", entry.deadzone);
         loc.find("#ck-hasbase").prop("checked", false);
@@ -266,6 +281,8 @@ blackHoleSuns.prototype.clearPanel = function (d) {
     pnl.find("[id|='menu']").each(function () {
         $(this).find("[id|='btn']").text("");
     });
+
+    pnl.find("#id-byrow").hide();
 
     pnl.find("#id-isbase").hide();
     pnl.find("#id-fmcenter").hide();

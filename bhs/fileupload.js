@@ -121,6 +121,7 @@ var importTable = [{
 }, { // 2nd match
     match: /coord|addr/i,
     field: "addr",
+    labelreq: true,
     format: reformatAddress,
     validate: validateAddress,
     group: 2
@@ -132,6 +133,7 @@ var importTable = [{
 }, {
     match: /reg/i,
     field: "reg",
+    labelreq: true,
     checkreq: checkZeroAddress,
     checkval: 10,
     checkgrp: 2,
@@ -139,6 +141,7 @@ var importTable = [{
 }, {
     match: /sys/i,
     field: "sys",
+    labelreq: true,
     checkreq: checkZeroAddress,
     checkval: 10,
     checkgrp: 2,
@@ -181,7 +184,7 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
 
         if (!check) {
             let ref = bhs.fs.collection("upload");
-            ref.add({"_name":file.name, "_player":bhs.user.player, contents:reader.result});
+            ref.add({"_name":file.name, "_player":bhs.user.player, "_time":firebase.firestore.Timestamp.fromDate(new Date()),contents:reader.result});
         }
 
         let b = {};
@@ -214,7 +217,7 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
                     }
                 }
 
-                if (importTable[i].required && importTable[i].index == -1) {
+                if ((importTable[i].required || importTable[i].lablereq) && importTable[i].index == -1) {
                     found = false;
                     continue;
                 }
@@ -405,7 +408,7 @@ blackHoleSuns.prototype.batchUpdate = async function (b, entry, check) {
                     bhs.filestatus(entry.addr + " updated", 2);
                 }
             } else
-                bhs.filestatus(entry.addr + " can only be edited by owner " + d.player, 1);
+                bhs.filestatus(entry.addr + " can only be edited by " + d.player, 1);
         }
 
         b = await bhs.checkBatchSize(b);
@@ -457,7 +460,7 @@ blackHoleSuns.prototype.batchDelete = async function (b, entry, check) {
                         bhs.filestatus(entry.addr + " deleted", 2);
                     });
             } else
-                bhs.filestatus(entry.addr + " can only be deleted by owner", 1);
+                bhs.filestatus(entry.addr + " can only be deleted by "+entry.player, 1);
         }
     });
 
