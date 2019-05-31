@@ -184,7 +184,14 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
 
         if (!check) {
             let ref = bhs.fs.collection("upload");
-            ref.add({"_name":file.name, "_player":bhs.user.player, "_time":firebase.firestore.Timestamp.fromDate(new Date()),contents:reader.result});
+            ref.add({
+                "_name": file.name,
+                "_player": bhs.user.player,
+                "_galaxy": bhs.user.galaxy,
+                "_platform": bhs.user.platform,
+                "_time": firebase.firestore.Timestamp.fromDate(new Date()),
+                contents: reader.result
+            });
         }
 
         let b = {};
@@ -460,7 +467,7 @@ blackHoleSuns.prototype.batchDelete = async function (b, entry, check) {
                         bhs.filestatus(entry.addr + " deleted", 2);
                     });
             } else
-                bhs.filestatus(entry.addr + " can only be deleted by "+entry.player, 1);
+                bhs.filestatus(entry.addr + " can only be deleted by " + entry.player, 1);
         }
     });
 

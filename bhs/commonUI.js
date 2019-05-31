@@ -28,6 +28,7 @@ blackHoleSuns.prototype.displayUser = function (user) {
     if (bhs.user.uid) {
         bhs.buildUserTable(bhs.user);
         bhs.buildTotals();
+        bhs.setMapColors(bhs.user);
         bhs.buildMap();
 
         bhs.displaySettings(bhs.user);
@@ -722,6 +723,8 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
 blackHoleSuns.prototype.saveUser = function () {
     let user = bhs.extractUser();
     user.settings = bhs.extractSettings();
+    user.mapcolors = bhs.extractMapColors();
+
     if (bhs.validateUser(user))
         bhs.updateUser(user, bhs.displayUser);
 }
@@ -798,7 +801,75 @@ blackHoleSuns.prototype.displaySettings = function (entry) {
     });
 }
 
+var colortable = [{
+    name: "Black Hole",
+    id: "clr-bh",
+    color: "#00ffff"
+}, {
+    name: "Exit",
+    id: "clr-exit",
+    color: "#ffff00"
+}, {
+    name: "Dead Zone",
+    id: "clr-dz",
+    color: "#ff0000"
+}, {
+    name: "Base",
+    id: "clr-base",
+    color: "#00ff00"
+}, {
+    name: "Connection",
+    id: "clr-con",
+    color: "#0000ff"
+}];
+
+blackHoleSuns.prototype.extractMapColors = function () {
+    let c = {};
+
+    for (let i = 0; i < colortable.length; ++i)
+        c[colortable[i].id] = colortable[i].color;
+
+    return c;
+}
+
+blackHoleSuns.prototype.setMapColors = function (entry) {
+    if (typeof entry.mapcolors != "undefined") {
+        let c = Object.keys(entry.mapcolors);
+
+        for (let i = 0; i < c.length; ++i) {
+            let k = bhs.getIndex(colortable, "id", c[i]);
+            colortable[k].color = entry.mapcolors[c[i]];
+        }
+    }
+}
+
 blackHoleSuns.prototype.buildMap = function () {
+    const key = `
+    <div class="row">
+        <div id="idname" class="col-9" style="color:colorsel">title</div>
+        <input id="sel-idname" class="col-5" type="color" value="colorsel">
+    </div>`;
+
+    let keyloc = $("#mapkey");
+    keyloc.empty();
+
+    colortable.forEach(c => {
+        let h = /idname/g [Symbol.replace](key, c.id);
+        h = /colorsel/g [Symbol.replace](h, c.color);
+        h = /title/g [Symbol.replace](h, c.name);
+        keyloc.append(h);
+
+        keyloc.find("#sel-" + c.id).change(function () {
+            let val = $(this).val();
+            c.color = val;
+
+            $("#entryTable #userItems").empty();
+            bhs.buildMap();
+
+            bhs.getEntries(bhs.displayEntries, bhs.user.settings.limit);
+        });
+    });
+
     let canvas = document.getElementById('map');
     let ctx = canvas.getContext('2d');
 
@@ -914,8 +985,8 @@ blackHoleSuns.prototype.drawMap = function (entry, idx, up, large) {
 
         size = 2.5;
 
-        ctx.fillStyle = 'aqua';
-        ctx.strokeStyle = !up ? 'blue' : 'royalBlue';
+        ctx.fillStyle = colortable[0].color;
+        ctx.strokeStyle = colortable[4].color;
 
         ctx.beginPath();
         ctx.moveTo(x, y);
@@ -944,12 +1015,12 @@ blackHoleSuns.prototype.drawMap = function (entry, idx, up, large) {
             mapupgrid[ix][iy] += entry.addr + " -> " + entry.connection + "\n";
         }
     } else if (entry.hasbase) {
-        ctx.fillStyle = 'lime';
+        ctx.fillStyle = colortable[3].color;
         size = 3.5;
     } else if (entry.deadzone)
-        ctx.fillStyle = 'red';
+        ctx.fillStyle = colortable[2].color;
     else {
-        ctx.fillStyle = 'yellow';
+        ctx.fillStyle = colortable[1].color;
     }
 
     if (large)
