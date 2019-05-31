@@ -56,6 +56,11 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                 </div>
 
                 <div class="row">
+                    <div class="col-4 h6 txt-inp-def">Portal&nbsp;</div>
+                    <div id="id-glyph" class=" col-md-6 col-7 h4 txt-inp-def glyph"></div>
+                </div>
+
+                <div class="row">
                     <div class="col-4 h6 txt-inp-def">System Name&nbsp;</div>
                     <input id="id-sys" class="rounded col-md-5 col-6">
                 </div>
@@ -141,11 +146,13 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         let addr = bhs.reformatAddress($(this).val());
         $(this).val(addr);
 
+        $(this).closest().find("#id-glyph").html(bhs.addrToGlyph(addr));
+
         let pnl = $(this).closest("[id|='pnl'");
         let top = pnl.prop("id") == panels[pnlTop].id;
         bhs.getEntry(addr, bhs.displaySingle, top ? pnlTop : pnlBottom);
 
-        // if not found try getting region
+        bhs.drawMap({addr:addr},1,false,true);
 
         bhs.displayCalc();
     });
@@ -186,6 +193,7 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
         bhs.drawMap(entry, 1, false, true);
 
         loc.find("#id-addr").val(entry.addr);
+        loc.find("#id-glyph").html(bhs.addrToGlyph(entry.addr));
         loc.find("#id-sys").val(entry.sys);
         loc.find("#id-reg").val(entry.reg);
 

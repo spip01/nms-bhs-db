@@ -373,7 +373,7 @@ blackHoleSuns.prototype.fixUid = async function () {
                             let ref = bhs.getStarsColRef(g.name, p.name);
                             ref = ref.where("player", "==", u.player)
                             await ref.get().then(async function (snapshot) {
-                                console.log(g.name+" "+p.name+" "+u.player);
+                                console.log(g.name + " " + p.name + " " + u.player);
                                 for (let k = 0; k < snapshot.size; ++k) {
                                     let d = snapshot.docs[k].data();
                                     if (typeof d.uid == "undefined" || u.uid != d.uid) {
@@ -1050,6 +1050,7 @@ blackHoleSuns.prototype.addressToXYZ = function (addr) {
         s: 0
     };
 
+    // xxx:yyy:zzz:sss
     if (addr) {
         out.x = parseInt(addr.slice(0, 4), 16);
         out.y = parseInt(addr.slice(5, 9), 16);
@@ -1058,6 +1059,26 @@ blackHoleSuns.prototype.addressToXYZ = function (addr) {
     }
 
     return out;
+}
+
+blackHoleSuns.prototype.addrToGlyph = function (addr) {
+    let s = "";
+
+    if (addr) {
+        let xyz = bhs.addressToXYZ(addr);
+        let xs = "00" + xyz.s.toString(16);
+        let xx = "00" + (xyz.x + 0x801).toString(16).toUpperCase();
+        let xy = "00" + (xyz.y + 0x81).toString(16).toUpperCase();
+        let xz = "00" + (xyz.z + 0x801).toString(16).toUpperCase();
+
+        s = "0";
+        s += xs.slice(xs.length - 3);
+        s += xy.slice(xy.length - 2);
+        s += xz.slice(xz.length - 3);
+        s += xx.slice(xx.length - 3);
+    }
+
+    return s;
 }
 
 blackHoleSuns.prototype.calcDist = function (addr, addr2) {

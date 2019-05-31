@@ -142,6 +142,15 @@ h7 {
     }
 }
 
+@font-face {
+    font-family: 'glyph';
+    src: url('NMS-Glyphs-Mono.ttf') format('truetype');
+}
+
+.glyph {
+    font-family: "glyph";
+}
+
 body {
     font-size: .75rem !important;
 }
@@ -160,25 +169,26 @@ body {
 .nopadding {
     padding: 0 !important;
     margin: 0 !important;
- }
+}
 
 #tip {
-    background-color:white;
-    border:1px solid blue;
-    position:absolute;
-    left:-800px;
-    top:100px;
+    background-color: white;
+    border: 1px solid blue;
+    position: absolute;
+    left: -800px;
+    top: 100px;
     font: 16px Arial;
 }
 
 .border-3 {
-    border-width:3px !important;
+    border-width: 3px !important;
 }
 
 .scroll {
     overflow-y: scroll;
     overflow-x: hidden;
 }
+
 .nav-text {
     padding-top: 8px;
     color: #008000;
@@ -204,7 +214,7 @@ body {
 
 .btn-def.disabled,
 .btn-def:disabled {
-    color: rgba(255,215,0,.9);
+    color: rgba(255, 215, 0, .9);
     border: 0px;
 }
 
@@ -218,7 +228,7 @@ body {
 }
 
 .btn-def:not(:disabled):not(.disabled).hover,
-.btn-def:not(:disabled):not(.disabled):hover{
+.btn-def:not(:disabled):not(.disabled):hover {
     box-shadow: 0 0 0 .2rem rgba(255, 215, 0, .7);
 }
 
@@ -231,15 +241,15 @@ body {
 }
 
 .bkg-trans {
-    background-color:transparent;
+    background-color: transparent;
 }
 
 .bkg-trans-1 {
-    background-color:rgba(255,255,255,.1);
+    background-color: rgba(255, 255, 255, .1);
 }
 
 .bkg-trans-2 {
-    background-color:rgba(255,255,255,.2);
+    background-color: rgba(255, 255, 255, .2);
 }
 
 .bkg-white {
