@@ -360,35 +360,39 @@ blackHoleSuns.prototype.fixUid = async function () {
         for (let i = 0; i < snapshot.size; ++i) {
             let u = snapshot.docs[i].data();
 
-            let ref = bhs.getStarsColRef();
-            ref = ref.where("empty", "==", false);
-            await ref.get().then(async function (snapshot) {
-                for (let i = 0; i < snapshot.docs.length; ++i) {
-                    if (snapshot.docs[i].id != "totals") {
-                        let g = snapshot.docs[i].data();
+            if (typeof u.assigned == "undefined") {
+                snapshot.docs[i].ref.update({assigned:true});
 
-                        for (let j = 0; j < platformList.length; ++j) {
-                            let p = platformList[j];
+                let ref = bhs.getStarsColRef();
+                ref = ref.where("empty", "==", false);
+                await ref.get().then(async function (snapshot) {
+                    for (let i = 0; i < snapshot.docs.length; ++i) {
+                        if (snapshot.docs[i].id != "totals") {
+                            let g = snapshot.docs[i].data();
 
-                            let ref = bhs.getStarsColRef(g.name, p.name);
-                            ref = ref.where("player", "==", u.player)
-                            await ref.get().then(async function (snapshot) {
-                                console.log(g.name + " " + p.name + " " + u.player);
-                                for (let k = 0; k < snapshot.size; ++k) {
-                                    let d = snapshot.docs[k].data();
-                                    if (typeof d.uid == "undefined" || u.uid != d.uid) {
-                                        await b.batch.update(snapshot.docs[k].ref, {
-                                            uid: u.uid
-                                        });
+                            for (let j = 0; j < platformList.length; ++j) {
+                                let p = platformList[j];
 
-                                        b = await bhs.checkBatchSize(b);
+                                let ref = bhs.getStarsColRef(g.name, p.name);
+                                ref = ref.where("player", "==", u.player)
+                                await ref.get().then(async function (snapshot) {
+                                    console.log(g.name + " " + p.name + " " + u.player);
+                                    for (let k = 0; k < snapshot.size; ++k) {
+                                        let d = snapshot.docs[k].data();
+                                        if (typeof d.uid == "undefined" || u.uid != d.uid) {
+                                            await b.batch.update(snapshot.docs[k].ref, {
+                                                uid: u.uid
+                                            });
+
+                                            b = await bhs.checkBatchSize(b);
+                                        }
                                     }
-                                }
-                            });
+                                });
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         }
     });
 
