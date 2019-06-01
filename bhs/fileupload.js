@@ -2,39 +2,46 @@
 
 blackHoleSuns.prototype.buildFilePanel = function () {
     const panel = `
-    <div id="upload" class="card card-body" style="display:none">
-        <div class="row">
-            <a href="https://bulk.blackholesuns.com/" class="col-14 text-center h6 txt-def">Bulk Entry Sheet Download</a>
-        </div>
-        <br>
-        <div class="row">
-            <div class="col-9">
-                <input type="file" id="uploadedFile" class="form-control form-control-sm" accept=".csv">
+    <div id="upload" class="card" style="display:none">
+        <div class="card-header txt-def h5">
+            <div class="row">
+                <div class="col-7 txt-def h5">Bulk File Upload</div>
+                <a href="https://bulk.blackholesuns.com/" class="col-7 text-right h6 txt-def">
+                    <i class="fa fa-download"></i>&nbsp;Bulk Entry Sheet Download
+                </a>
             </div>
-            <button id="check" type="button" class="col-2 btn border btn-sm txt-def btn-def">Check</button>&nbsp;
-            <button id="submit" type="button" class="col-2 btn border btn-sm txt-def btn-def">Submit</button>&nbsp;
-        </div>
-        <br>
-
-        <div class="progress">
-            <div id="progress" class="progress-bar progress-bar-striped bg-success progress-bar-animated"
-                role="progressbar" style="width: 0%; display:none" aria-valuenow="0" aria-valuemin="0"
-                aria-valuemax="100"></div>
-        </div>
-        <br>
-
-        <div class="row">
-            <label class="col-7 h6 txt-inp-def">
-                <input id="ck-verbose" type="checkbox">
-                Verbose
-            </label>
-            <label class="col-7 h6 txt-inp-def">
-                <input id="ck-vverbose" type="checkbox">
-                Very Verbose
-            </label>
         </div>
 
-        <div id="filestatus" class="card card-body scrollbar container-fluid" style="overflow-y: scroll; height:100px"></div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-9">
+                    <input type="file" id="uploadedFile" class="form-control form-control-sm" accept=".csv">
+                </div>
+                <button id="check" type="button" class="col-2 btn border btn-sm txt-def btn-def">Check</button>&nbsp;
+                <button id="submit" type="button" class="col-2 btn border btn-sm txt-def btn-def">Submit</button>&nbsp;
+            </div>
+            <br>
+
+            <div class="progress">
+                <div id="progress" class="progress-bar progress-bar-striped bg-success progress-bar-animated"
+                    role="progressbar" style="width: 0%; display:none" aria-valuenow="0" aria-valuemin="0"
+                    aria-valuemax="100"></div>
+            </div>
+            <br>
+
+            <div class="row">
+                <label class="col-7 h6 txt-inp-def">
+                    <input id="ck-verbose" type="checkbox">
+                    Verbose
+                </label>
+                <label class="col-7 h6 txt-inp-def">
+                    <input id="ck-vverbose" type="checkbox">
+                    Very Verbose
+                </label>
+            </div>
+
+            <div id="filestatus" class="card card-body scrollbar container-fluid" style="overflow-y: scroll; height:100px"></div>
+        </div>
     </div>`;
 
     $("#panels").append(panel);

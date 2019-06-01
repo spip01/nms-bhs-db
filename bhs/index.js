@@ -55,7 +55,7 @@ const ownershipList = [{
 blackHoleSuns.prototype.buildPanel = function (id) {
     const panel = `
         <div id="idname" class="card pad-bottom bkg-trans-2">
-            <div class="card-header">title</div>
+            <div class="card-header txt-def h5">title</div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-4 h6 txt-inp-def">Address&nbsp;</div>
