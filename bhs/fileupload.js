@@ -4,6 +4,10 @@ blackHoleSuns.prototype.buildFilePanel = function () {
     const panel = `
     <div id="upload" class="card card-body" style="display:none">
         <div class="row">
+            <a href="https://bulk.blackholesuns.com/" class="col-14 text-center h6 txt-def">Bulk Entry Sheet Download</a>
+        </div>
+        <br>
+        <div class="row">
             <div class="col-9">
                 <input type="file" id="uploadedFile" class="form-control form-control-sm" accept=".csv">
             </div>

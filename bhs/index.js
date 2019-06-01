@@ -33,22 +33,29 @@ const pnlTop = 0;
 const pnlBottom = 1;
 
 var panels = [{
-    name: "System 1",
+    name: "Black Hole System",
     id: "pnl-S1",
     listid: "S1",
     calc: true,
 }, {
-    name: "System 2",
+    name: "Exit System",
     id: "pnl-S2",
     listid: "S2",
     calc: true,
 }];
 
-const ownershipList=[{name:"mine"},{name:"visited"},{name:"station"}];
+const ownershipList = [{
+    name: "mine"
+}, {
+    name: "visited"
+}, {
+    name: "station"
+}];
 
 blackHoleSuns.prototype.buildPanel = function (id) {
     const panel = `
         <div id="idname" class="card pad-bottom bkg-trans-2">
+            <div class="card-header">title</div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-4 h6 txt-inp-def">Address&nbsp;</div>
@@ -133,6 +140,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         <br>`;
 
     let h = /idname/g [Symbol.replace](panel, id);
+    h = /title/g [Symbol.replace](h, id == "pnl-S1" ? panels[pnlTop].name : panels[pnlBottom].name);
 
     $("#panels").append(h);
 
@@ -152,12 +160,14 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         let top = pnl.prop("id") == panels[pnlTop].id;
         bhs.getEntry(addr, bhs.displaySingle, top ? pnlTop : pnlBottom);
 
-        bhs.drawMap({addr:addr},1,false,true);
+        bhs.drawMap({
+            addr: addr
+        }, 1, false, true);
 
         bhs.displayCalc();
     });
 
-    loc.find("#id-addr").keyup(function(event) {
+    loc.find("#id-addr").keyup(function (event) {
         if (event.keyCode === 13) {
             $(this).blur();
         }
@@ -199,9 +209,8 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
 
         if (entry.player && idx == 0) {
             $("#id-byrow").show();
-            $("#id-by").html("<h6>"+entry.player+"</h6>");
-        }
-        else
+            $("#id-by").html("<h6>" + entry.player + "</h6>");
+        } else
             $("#id-byrow").hide();
 
         loc.find("#btn-Lifeform").text(entry.life);
@@ -226,10 +235,10 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
         if (entry.blackhole)
             bhs.getEntry(entry.connection, bhs.displaySingle, pnlBottom);
 
-            $("#" + panels[pnlTop].id).show();
-            $("#entrybuttons").show();
-            $("#upload").hide();
-            $("#ck-fileupload").prop("checked", false);
+        $("#" + panels[pnlTop].id).show();
+        $("#entrybuttons").show();
+        $("#upload").hide();
+        $("#ck-fileupload").prop("checked", false);
 
         if (entry.blackhole || idx == pnlBottom) {
             loc.find("#ck-single").prop("checked", false);
