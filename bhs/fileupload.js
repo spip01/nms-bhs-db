@@ -17,8 +17,8 @@ blackHoleSuns.prototype.buildFilePanel = function () {
                 <div class="col-9">
                     <input type="file" id="uploadedFile" class="form-control form-control-sm" accept=".csv">
                 </div>
-                <button id="check" type="button" class="col-2 btn border btn-sm txt-def btn-def">Check</button>&nbsp;
-                <button id="submit" type="button" class="col-2 btn border btn-sm txt-def btn-def">Submit</button>&nbsp;
+                <button id="check" type="button" class="col-2 btn btn-sm btn-def">Check</button>&nbsp;
+                <button id="submit" type="button" class="col-2 btn btn-sm btn-def">Submit</button>&nbsp;
             </div>
             <br>
 

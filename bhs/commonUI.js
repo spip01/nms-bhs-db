@@ -28,7 +28,7 @@ blackHoleSuns.prototype.displayUser = function (user) {
     if (bhs.user.uid) {
         bhs.buildUserTable(bhs.user);
         bhs.buildTotals();
-        bhs.setMapColors(bhs.user);
+        bhs.setMapOptions(bhs.user);
         bhs.buildMap();
 
         bhs.displaySettings(bhs.user);
@@ -193,15 +193,15 @@ var userTable = [
 
 blackHoleSuns.prototype.buildUserTable = function (entry) {
     const table = `
-        <div class="card-header">
+        <div class="card-header bkg-def">
             <div class="row">
-                <h4 class="col-13">Latest Changes</h4>
+                <h4 class="col-13 txt-def">Latest Changes</h4>
             </div>
             <div class="row">
-                <div id="lc-plat" class="col-4 h5"></div>
-                <div id="lc-gal" class="col-5 h5"></div>
-                <div id="btn-utSettings" class="col-5 text-right">
-                    <i class="fa fa-cog txt-inp-def">Settings</i>
+                <div id="lc-plat" class="col-4 txt-def h5"></div>
+                <div id="lc-gal" class="col-5 h5 txt-def"></div>
+                <div id="btn-utSettings" class="col-5 text-right txt-def">
+                    <i class="fa fa-cog txt-def"></i>&nbsp;Settings
                 </div>
             </div>
         </div>
@@ -222,7 +222,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
             <div id="id-utlistsel" class="row"></div>
 
             <div class="row">
-                <button id="btn-saveUser" type="button" class="col-2 txt-def btn border btn-sm">Save</button>&nbsp;
+                <button id="btn-saveUser" type="button" class="col-2 btn-def btn btn-sm">Save</button>&nbsp;
             </div>
 
             <!--div class="row">
@@ -230,12 +230,12 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
                     <input type="file" id="dlfile" class="form-control form-control-sm" accept=".csv">
                 </div>
                 
-                <button id="export" type="button" class="col-2 txt-def btn border btn-sm">Export</button>&nbsp;
+                <button id="export" type="button" class="col-2 btn-def btn btn-sm">Export</button>&nbsp;
             </div-->
         </div>
         
         <div id="id-table" class="card-body">
-            <div id="userHeader" class="row border-bottom"></div>
+            <div id="userHeader" class="row border-bottom bkg-def txt-def"></div>
             <div id="userItems" class="scrollbar container-fluid" style="overflow-y: scroll; height: 388px"></div>
         </div>`;
 
@@ -333,7 +333,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
 
 var last = false;
 
-blackHoleSuns.prototype.displayEntries = function (entry) {
+blackHoleSuns.prototype.displayEntries = function (entry, cache) {
     const lineHdr = `
         <div id="gpa" class="row">`;
     const line = `
@@ -344,10 +344,10 @@ blackHoleSuns.prototype.displayEntries = function (entry) {
     const lineEnd = `
         </div>`;
 
-    bhs.drawMap(entry, 0);
+    bhs.drawMap(entry, cache, 0);
 
-    if (entry.blackhole)
-        bhs.getEntry(entry.connection, bhs.displayEntries, pnlBottom);
+     if (entry.blackhole)
+         bhs.getEntry(entry.connection, bhs.displayEntries, cache, 1);
 
     let gpa = entry.galaxy.nameToId() + "-" + entry.platform + "-" + (entry.blackhole ? entry.connection.stripColons() : entry.addr.stripColons());
 
@@ -395,7 +395,7 @@ blackHoleSuns.prototype.displayEntries = function (entry) {
                 $("#delete").removeClass("disabled");
                 $("#delete").removeAttr("disabled");
 
-                bhs.drawMap(e, 1, false, true);
+                bhs.drawMap(e, false, 1, true);
             }
         });
     } else
@@ -422,7 +422,7 @@ blackHoleSuns.prototype.entryFromTable = function (ent) {
     else
         addr = $(ent).find("#x-" + userTable[utAddrIdx].id).text().stripMarginWS();
 
-    bhs.getEntry(addr, bhs.displaySingle, pnlTop);
+    bhs.getEntry(addr, bhs.displaySingle, true, 0);
 
     return (addr);
 }
@@ -470,19 +470,19 @@ const totalsRows = [{
 
 blackHoleSuns.prototype.buildTotals = function () {
     const pnl = `
-        <div class="card-header h4">Total Black Hole Entries</div>
+        <div class="card-header h4 bkg-def txt-def">Total Black Hole Entries</div>
         <div class="card-body">
-            <div id="hdr0" class="row border-bottom"></div>
+            <div id="hdr0" class="row border-bottom bkg-def txt-def"></div>
             <div id="itm0"></div>
             <br>
             <div class="card card-body">
-                <div id="hdr1" class="row border-bottom"></div>
-                <div id="itm1" class="scrollbar container-fluid" style="overflow-y: scroll; height:80px"></div>
+                <div id="hdr1" class="row border-bottom txt-def"></div>
+                <div id="itm1" class="scrollbar container-fluid" style="overflow-y: scroll; height:86px"></div>
             </div>
             <br>
             <div class="card card-body">
-                <div id="hdr2" class="row border-bottom"></div>
-                <div id="itm2" class="scrollbar container-fluid" style="overflow-y: scroll; height:80px"></div>
+                <div id="hdr2" class="row border-bottom txt-def"></div>
+                <div id="itm2" class="scrollbar container-fluid" style="overflow-y: scroll; height:86px"></div>
             </div>
         </div>`;
 
@@ -723,7 +723,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
 blackHoleSuns.prototype.saveUser = function () {
     let user = bhs.extractUser();
     user.settings = bhs.extractSettings();
-    user.mapcolors = bhs.extractMapColors();
+    user.mapoptions = bhs.extractMapOptions();
 
     if (bhs.validateUser(user))
         bhs.updateUser(user, bhs.displayUser);
@@ -823,23 +823,25 @@ var colortable = [{
     color: "#0000ff"
 }];
 
-blackHoleSuns.prototype.extractMapColors = function () {
+blackHoleSuns.prototype.extractMapOptions = function () {
     let c = {};
 
     for (let i = 0; i < colortable.length; ++i)
         c[colortable[i].id] = colortable[i].color;
 
+    c.depth = $("#inp-chaindepth").val()
+    c.connection = $("#ck-drawcon").prop("checked");
+
     return c;
 }
 
-blackHoleSuns.prototype.setMapColors = function (entry) {
-    if (typeof entry.mapcolors != "undefined") {
-        let c = Object.keys(entry.mapcolors);
+blackHoleSuns.prototype.setMapOptions = function (entry) {
+    if (typeof entry.mapoptions != "undefined") {
+        for (let i = 0; i < colortable.length; ++i)
+            colortable[i].color = entry.mapoptions[colortable[i].id];
 
-        for (let i = 0; i < c.length; ++i) {
-            let k = bhs.getIndex(colortable, "id", c[i]);
-            colortable[k].color = entry.mapcolors[c[i]];
-        }
+        $("#inp-chaindepth").val(entry.mapoptions.depth);
+        $("#ck-drawcon").prop("checked", entry.mapoptions.connection);
     }
 }
 
@@ -847,11 +849,13 @@ blackHoleSuns.prototype.buildMap = function () {
     const key = `
     <div class="row">
         <div id="idname" class="col-9" style="color:colorsel">title</div>
-        <input id="sel-idname" class="col-5" type="color" value="colorsel">
+        <input id="sel-idname" class="col-5 bkg-def" style="border-color:black" type="color" value="colorsel">
     </div>`;
 
     let keyloc = $("#mapkey");
     keyloc.empty();
+
+    keyloc.append(`<div class="row"><div class="col-14 text-center h5 txt-def">Key</div></div>`);
 
     colortable.forEach(c => {
         let h = /idname/g [Symbol.replace](key, c.id);
@@ -866,7 +870,7 @@ blackHoleSuns.prototype.buildMap = function () {
             $("#entryTable #userItems").empty();
             bhs.buildMap();
 
-            bhs.getEntries(bhs.displayEntries, bhs.user.settings.limit);
+            bhs.getEntries(bhs.displayEntries, bhs.user.settings.limit, true);
         });
     });
 
@@ -886,7 +890,7 @@ blackHoleSuns.prototype.buildMap = function () {
     ctx.fillRect(0, 0, w, w);
 
     ctx.strokeStyle = 'white';
-    ctx.strokeRect(0, 0, w, w);
+    ctx.strokeRect(0, 0, w-1, w-1);
 
     let m = parseInt(w / 2) + .5;
     ctx.beginPath();
@@ -908,66 +912,84 @@ blackHoleSuns.prototype.buildMap = function () {
 
         if (mapgrid[x] && mapgrid[x][y]) {
             bhs.buildMap();
-            bhs.drawUpChain(x, y);
-            bhs.drawChain(x, y);
+            bhs.drawUpChain(x, y, $("#inp-chaindepth").val());
+            bhs.drawChain(x, y, $("#inp-chaindepth").val());
         }
+    });
+
+    $("#ck-drawcon").change(function () {
+        $("#entryTable #userItems").empty();
+        bhs.buildMap();
+
+        bhs.getEntries(bhs.displayEntries, bhs.user.settings.limit, true);
+    });
+
+    $("#btn-redraw").click(function () {
+        $("#entryTable #userItems").empty();
+        bhs.buildMap();
+
+        bhs.getEntries(bhs.displayEntries, bhs.user.settings.limit, true);
+    });
+
+    $("#btn-mapsave").click(function () {
+        bhs.saveUser();
     });
 }
 
-blackHoleSuns.prototype.drawChain = function (x, y) {
-    let txt = mapgrid[x][y].split("\n");
-    delete mapgrid[x][y];
-    let w = $("#mapcol").width();
+blackHoleSuns.prototype.drawChain = function (x, y, d) {
+    if (mapgrid[x] && mapgrid[x][y] && d-- > 0) {
+        let txt = mapgrid[x][y].split("\n");
+        delete mapgrid[x][y];
+        let w = $("#mapcol").width();
 
-    for (let i = 0; i < txt.length && txt[i] != ""; ++i) {
-        let addr = txt[i].slice(0, 19);
-        let con = txt[i].slice(23);
+        for (let i = 0; i < txt.length && txt[i] != ""; ++i) {
+            let addr = txt[i].slice(0, 19);
+            let con = txt[i].slice(23);
 
-        console.log(addr);
-        bhs.getEntry(addr, bhs.drawMap);
+            console.log(addr);
+            bhs.getEntry(addr, bhs.drawMap, true, 1);
 
-        let xyz = bhs.addressToXYZ(con);
-        let x = xyz.x / 4096 * w;
-        let y = xyz.z / 4096 * w;
+            let xyz = bhs.addressToXYZ(con);
+            let x = xyz.x / 4096 * w;
+            let y = xyz.z / 4096 * w;
 
-        let ix = parseInt(x / 6);
-        let iy = parseInt(y / 6);
+            let ix = parseInt(x / 6);
+            let iy = parseInt(y / 6);
 
-        if (mapgrid[ix] && mapgrid[ix][iy])
-            bhs.drawChain(ix, iy);
+            bhs.drawChain(ix, iy, d);
+        }
     }
 }
 
-blackHoleSuns.prototype.drawUpChain = function (x, y) {
-    let txt = mapupgrid[x][y].split("\n");
-    delete mapupgrid[x][y];
-    let w = $("#mapcol").width();
+blackHoleSuns.prototype.drawUpChain = function (x, y, d) {
+    if (mapupgrid[x] && mapupgrid[x][y] && d-- > 0) {
+        let txt = mapupgrid[x][y].split("\n");
+        delete mapupgrid[x][y];
+        let w = $("#mapcol").width();
 
-    for (let i = 0; i < txt.length && txt[i] != ""; ++i) {
-        let addr = txt[i].slice(0, 19);
-        let con = txt[i].slice(23);
+        for (let i = 0; i < txt.length && txt[i] != ""; ++i) {
+            let addr = txt[i].slice(0, 19);
+            let con = txt[i].slice(23);
 
-        let xyz = bhs.addressToXYZ(addr);
-        let x = xyz.x / 4096 * w;
-        let y = xyz.z / 4096 * w;
+            console.log(addr);
+            bhs.getEntry(addr, bhs.drawMap, true, 1, true);
 
-        let ix = parseInt(x / 6);
-        let iy = parseInt(y / 6);
+            let xyz = bhs.addressToXYZ(addr);
+            let x = xyz.x / 4096 * w;
+            let y = xyz.z / 4096 * w;
 
-        if (mapupgrid[ix] && mapupgrid[ix][iy])
-            bhs.drawUpChain(ix, iy);
+            let ix = parseInt(x / 6);
+            let iy = parseInt(y / 6);
 
-
-        console.log(addr);
-        bhs.getEntry(addr, bhs.drawMap, 1, true);
-
+            bhs.drawUpChain(ix, iy, d);
+        }
     }
 }
 
 var mapgrid = [];
 var mapupgrid = [];
 
-blackHoleSuns.prototype.drawMap = function (entry, idx, up, large) {
+blackHoleSuns.prototype.drawMap = function (entry, cache, idx, large) {
     let canvas = document.getElementById('map');
     let ctx = canvas.getContext('2d');
     let w = $("#mapcol").width();
@@ -988,10 +1010,12 @@ blackHoleSuns.prototype.drawMap = function (entry, idx, up, large) {
         ctx.fillStyle = colortable[0].color;
         ctx.strokeStyle = colortable[4].color;
 
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(ex, ey);
-        ctx.stroke();
+        if ($("#ck-drawcon").prop("checked")) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(ex, ey);
+            ctx.stroke();
+        }
 
         if (idx == 0) {
             let ix = parseInt(x / 6);

@@ -74,8 +74,9 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
                 <div class="row">
                     <div class="col-4 h6 txt-inp-def">Region Name&nbsp;</div>
-                    <input id="id-reg" class="rounded col-md-5 col-6">
-                </div>
+                    <input id="id-reg" class="rounded col-md-5 col-6">&nbsp;
+                    <button id="btn-searchRegion" type="button" class="col-2 btn-def btn btn-sm">Search</button>&nbsp;
+                    </div>
 
                 <div id="id-byrow" class="row" style="display:none">
                     <div class="col-4 h6 txt-inp-def">Entered by&nbsp;</div>
@@ -153,16 +154,13 @@ blackHoleSuns.prototype.buildPanel = function (id) {
     loc.find("#id-addr").blur(function () {
         let addr = bhs.reformatAddress($(this).val());
         $(this).val(addr);
-
         $(this).closest().find("#id-glyph").html(bhs.addrToGlyph(addr));
 
-        let pnl = $(this).closest("[id|='pnl'");
-        let top = pnl.prop("id") == panels[pnlTop].id;
-        bhs.getEntry(addr, bhs.displaySingle, top ? pnlTop : pnlBottom);
+        bhs.getEntry(addr, bhs.displaySingle, false, 0);
 
         bhs.drawMap({
             addr: addr
-        }, 1, false, true);
+        }, false, 1, true);
 
         bhs.displayCalc();
     });
@@ -192,22 +190,26 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         else
             pnl.show();
     });
+
+    loc.find("#btn-searchRegion").click(function(){
+        bhs.getEntryByRegion(loc.find("#id-reg").val(), bhs.displaySingle, 0);
+    });
 }
 
-blackHoleSuns.prototype.displaySingle = function (entry, idx) {
+blackHoleSuns.prototype.displaySingle = function (entry, cache, idx) {
     bhs.last[idx] = entry;
 
     let loc = $("#" + panels[idx].id);
 
     if (entry) {
-        bhs.drawMap(entry, 1, false, true);
+        bhs.drawMap(entry, cache, 1, true);
 
         loc.find("#id-addr").val(entry.addr);
         loc.find("#id-glyph").html(bhs.addrToGlyph(entry.addr));
         loc.find("#id-sys").val(entry.sys);
         loc.find("#id-reg").val(entry.reg);
 
-        if (entry.player && idx == 0) {
+        if (entry.player) {
             $("#id-byrow").show();
             $("#id-by").html("<h6>" + entry.player + "</h6>");
         } else
@@ -232,8 +234,8 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
             loc.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";");
         }
 
-        if (entry.blackhole)
-            bhs.getEntry(entry.connection, bhs.displaySingle, pnlBottom);
+        //   if (entry.blackhole)
+        //       bhs.getEntry(entry.connection, bhs.displaySingle, true, 1);
 
         $("#" + panels[pnlTop].id).show();
         $("#entrybuttons").show();
