@@ -17,11 +17,10 @@ $(document).ready(function () {
     });
 
     $("#delete").click(function () {
+        $("#status").empty();
         panels.forEach(function (p) {
             bhs.deleteEntry($("#" + p.id + " #id-addr").val());
         });
-
-        bhs.clearPanels();
     });
 
     $("#cancel").click(function () {
@@ -58,7 +57,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
             <div class="card-header txt-def h5">title</div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-4 h6 txt-inp-def">Address&nbsp;</div>
+                    <div class="col-4 h6 txt-inp-def">Coordinates&nbsp;</div>
                     <input id="id-addr" class="rounded col-md-5 col-6" placeholder="0000:0000:0000:0000">
                 </div>
 
@@ -154,13 +153,13 @@ blackHoleSuns.prototype.buildPanel = function (id) {
     loc.find("#id-addr").blur(function () {
         let addr = bhs.reformatAddress($(this).val());
         $(this).val(addr);
-        $(this).closest().find("#id-glyph").html(bhs.addrToGlyph(addr));
+        $(this).closest("[id|='pnl']").find("#id-glyph").html(bhs.addrToGlyph(addr));
 
-        bhs.getEntry(addr, bhs.displaySingle, false, 0);
+        bhs.getEntry(addr, bhs.displaySingle, 0);
 
         bhs.drawMap({
             addr: addr
-        }, false, 1, true);
+        }, 1, true);
 
         bhs.displayCalc();
     });
@@ -196,22 +195,22 @@ blackHoleSuns.prototype.buildPanel = function (id) {
     });
 }
 
-blackHoleSuns.prototype.displaySingle = function (entry, cache, idx) {
+blackHoleSuns.prototype.displaySingle = function (entry, idx) {
     bhs.last[idx] = entry;
 
     let loc = $("#" + panels[idx].id);
 
     if (entry) {
-        bhs.drawMap(entry, cache, 1, true);
+        bhs.drawMap(entry, 1, true);
 
         loc.find("#id-addr").val(entry.addr);
         loc.find("#id-glyph").html(bhs.addrToGlyph(entry.addr));
         loc.find("#id-sys").val(entry.sys);
         loc.find("#id-reg").val(entry.reg);
 
-        if (entry.player) {
+        if (entry._name) {
             $("#id-byrow").show();
-            $("#id-by").html("<h6>" + entry.player + "</h6>");
+            $("#id-by").html("<h6>" + entry._name + "</h6>");
         } else
             $("#id-byrow").hide();
 
@@ -233,9 +232,6 @@ blackHoleSuns.prototype.displaySingle = function (entry, cache, idx) {
             loc.find("#btn-Economy").text(l + " " + entry.econ);
             loc.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";");
         }
-
-        //   if (entry.blackhole)
-        //       bhs.getEntry(entry.connection, bhs.displaySingle, true, 1);
 
         $("#" + panels[pnlTop].id).show();
         $("#entrybuttons").show();
@@ -313,7 +309,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
     let loc = pnl.find("#" + panels[idx].id);
 
     let entry = {};
-    entry.player = bhs.user.player;
+    entry._name = bhs.user._name;
     entry.org = bhs.user.org;
     entry.uid = bhs.user.uid;
     entry.platform = bhs.user.platform;
@@ -349,6 +345,9 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
         }
 
         if (ok) {
+            if (bhs.contest)
+                entry.contest = bhs.contest.name;
+
             await bhs.updateEntry(entry, true);
 
             if (entry.hasbase) {
@@ -358,8 +357,10 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
                 await bhs.updateBase(entry, true)
             }
 
-            if (!entry.blackhole)
+            if (entry.blackhole) {
                 bhs.updateAllTotals(bhs.totals);
+                bhs.totals = {};
+            }
         }
     }
 
@@ -368,9 +369,10 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
 
 blackHoleSuns.prototype.save = function () {
     $("#status").empty();
-    bhs.extractEntry(pnlTop);
+    if (bhs.extractEntry(pnlTop)) {
     bhs.clearPanels();
     bhs.last = [];
+    }
 }
 
 blackHoleSuns.prototype.displayCalc = function () {
