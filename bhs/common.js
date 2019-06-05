@@ -22,7 +22,7 @@ const fbconfig = {
     messagingSenderId: FIREBASE_MSGID
 };
 
-const starsCol = "stars6";
+const starsCol = "stars5";
 const usersCol = "users";
 
 function startUp() {
@@ -203,7 +203,7 @@ blackHoleSuns.prototype.updateUser = function (user, displayFcn) {
         displayFcn(bhs.user);
 }
 
-blackHoleSuns.prototype.checkPlayerName = function (loc, displayFcn) {
+blackHoleSuns.prototype.changeName = function (loc, displayFcn) {
     let n = $(loc).val();
     if (n == bhs.user._name)
         return;
@@ -244,12 +244,13 @@ blackHoleSuns.prototype.checkPlayerName = function (loc, displayFcn) {
 
                         let g = doc.data();
 
-                        for (let k = 0; k < plist.length; ++k) {
-                            let ref = bhs.getStarsColRef(g.name, plist[k].name).where("uid", "==", bhs.user.uid);
+                        for (let k = 0; k < platformList.length; ++k) {
+                            let ref = bhs.getStarsColRef(g.name, platformList[k].name);
+                            ref = ref.where("uid", "==", bhs.user.uid);
                             await ref.get().then(async function (snapshot) {
                                 for (let i = 0; i < snapshot.size; ++i) {
                                     await b.batch.update(snapshot.docs[i].ref, {
-                                        _name: bhs.user._name
+                                        _name: n
                                     });
                                     b = await bhs.checkBatchSize(b);
                                 }
@@ -324,7 +325,7 @@ blackHoleSuns.prototype.updateEntry = async function (entry) {
     await ref.get().then(async function (doc) {
         if (doc.exists) {
             let existing = doc.data();
-            if (existing.uid != entry.uid) {
+            if (existing.uid != entry.uid || typeof existing.uid == "undefined" && entry._name != existing.player) {
                 bhs.status(entry.addr + " can only be edited by " + entry._name ? entry._name : entry.player, 1);
                 return;
             }
@@ -429,45 +430,45 @@ blackHoleSuns.prototype.fixUid = async function () {
     await ref.get().then(async function (snapshot) {
         for (let i = 0; i < snapshot.size; ++i) {
             let u = snapshot.docs[i].data();
-            u.assigned = true;
-            u._name = u.player;
 
-            //if (typeof u.assigned == "undefined") {
-            await b.batch.set(snapshot.docs[i].ref, u);
-            b = await bhs.checkBatchSize(b);
-            //}
+            if (typeof u.assigned == "undefined") {
+                u.assigned = true;
+                u._name = u.player;
 
-            let updt = {};
-            updt.uid = u.uid;
-            updt._name = u._name;
+                await b.batch.set(snapshot.docs[i].ref, u);
+                b = await bhs.checkBatchSize(b);
 
-            let ref = bhs.getStarsColRef();
-            ref = ref.where("totals.total", ">", 0);
-            await ref.get().then(async function (snapshot) {
-                for (let i = 0; i < snapshot.docs.length; ++i) {
-                    if (snapshot.docs[i].id != "totals") {
-                        let g = snapshot.docs[i].data();
+                let updt = {};
+                updt.uid = u.uid;
+                updt._name = u._name;
 
-                        for (let j = 0; j < platformList.length; ++j) {
-                            let p = platformList[j];
+                let ref = bhs.getStarsColRef();
+                ref = ref.where("totals.total", ">", 0);
+                await ref.get().then(async function (snapshot) {
+                    for (let i = 0; i < snapshot.docs.length; ++i) {
+                        if (snapshot.docs[i].id != "totals") {
+                            let g = snapshot.docs[i].data();
 
-                            let ref = bhs.getStarsColRef(g.name, p.name);
-                            ref = ref.where("player", "==", u._name)
-                            await ref.get().then(async function (snapshot) {
-                                if (!snapshot.empty) {
-                                    console.log(g.name + " " + p.name + " " + u._name + " " + snapshot.size);
+                            for (let j = 0; j < platformList.length; ++j) {
+                                let p = platformList[j];
 
-                                    for (let k = 0; k < snapshot.size; ++k) {
-                                        await b.batch.update(snapshot.docs[k].ref, updt);
-                                        b = await bhs.checkBatchSize(b);
+                                let ref = bhs.getStarsColRef(g.name, p.name);
+                                ref = ref.where("player", "==", u._name)
+                                await ref.get().then(async function (snapshot) {
+                                    if (!snapshot.empty) {
+                                        console.log(g.name + " " + p.name + " " + u._name + " " + snapshot.size);
+
+                                        for (let k = 0; k < snapshot.size; ++k) {
+                                            await b.batch.update(snapshot.docs[k].ref, updt);
+                                            b = await bhs.checkBatchSize(b);
+                                        }
                                     }
-                                }
-                            });
+                                });
+                            }
                         }
                     }
-                }
-            });
-            //}
+                });
+            }
         }
     });
 
@@ -601,26 +602,28 @@ blackHoleSuns.prototype.fixAllTotals = async function () {
     let ref = bhs.getStarsColRef();
     await ref.get().then(async function (snapshot) {
         for (let i = 0; i < snapshot.docs.length; ++i) {
-            if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "users")
+            if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "players")
                 continue;
 
-            let gname = snapshot.docs[i].id;
+            let g = snapshot.docs[i].data()
 
             for (let j = 0; j < platformList.length; ++j) {
                 let p = platformList[j];
 
-                let ref = bhs.getStarsColRef(gname, p.name);
+                let ref = bhs.getStarsColRef(g.name, p.name);
                 ref = ref.where("blackhole", "==", true);
+                ref = ref.where("uid", ">", "");
                 await ref.get().then(function (snapshot) {
-                    console.log("bh " + gname + "/" + p.name + " " + snapshot.size);
+                    console.log("bh " + g.name + "/" + p.name + " " + snapshot.size);
                     for (let i = 0; i < snapshot.size; ++i)
                         totals = bhs.incTotals(totals, snapshot.docs[i].data(), 1);
                 });
 
-                ref = bhs.getStarsColRef(gname, p.name);
+                ref = bhs.getStarsColRef(g.name, p.name);
                 ref = ref.where("deadzone", "==", true);
+                ref = ref.where("uid", ">", "");
                 await ref.get().then(function (snapshot) {
-                    console.log("dz " + gname + "/" + p.name + " " + snapshot.size);
+                    console.log("dz " + g.name + "/" + p.name + " " + snapshot.size);
                     for (let i = 0; i < snapshot.size; ++i)
                         totals = bhs.incTotals(totals, snapshot.docs[i].data(), 1);
                 });
@@ -664,15 +667,16 @@ blackHoleSuns.prototype.checkTotalsInit = function (t, entry) {
         t.totals = bhs.initTotals();
 
     if (entry) {
-        if (entry.contest) {
+        if (bhs.contest) {
+            let contest = bhs.contest.name;
             if (typeof t.contest == "undefined") {
                 t.contest = {};
-                t.contest[entry.contest] = bhs.initTotals();
-                t.contest[entry.contest].galaxy = {};
+                t.contest[contest] = bhs.initTotals();
+                t.contest[contest].galaxy = {};
             }
 
-            if (typeof t.contest[entry.contest].galaxy[entry.galaxy] == "undefined")
-                t.contest[entry.contest].galaxy[entry.galaxy] = bhs.initTotals();
+            if (typeof t.contest[contest].galaxy[entry.galaxy] == "undefined")
+                t.contest[contest].galaxy[entry.galaxy] = bhs.initTotals();
         }
 
         if (entry.org) {
@@ -687,12 +691,13 @@ blackHoleSuns.prototype.checkTotalsInit = function (t, entry) {
             if (typeof t.orgs[entry.org].galaxy[entry.galaxy] == "undefined")
                 t.orgs[entry.org].galaxy[entry.galaxy] = bhs.initTotals();
 
-            if (entry.contest) {
+            if (bhs.contest) {
+                let contest = bhs.contest.name;
                 if (typeof t.orgs[entry.org].contest == "undefined")
                     t.orgs[entry.org].contest = {}
 
-                if (typeof t.orgs[entry.org].contest[entry.contest] == "undefined")
-                    t.orgs[entry.org].contest[entry.contest] = bhs.initTotals();
+                if (typeof t.orgs[entry.org].contest[contest] == "undefined")
+                    t.orgs[entry.org].contest[contest] = bhs.initTotals();
             }
         }
 
@@ -707,18 +712,19 @@ blackHoleSuns.prototype.checkTotalsInit = function (t, entry) {
         if (typeof t.users[entry.uid].galaxy[entry.galaxy] == "undefined")
             t.users[entry.uid].galaxy[entry.galaxy] = bhs.initTotals();
 
-        if (entry.contest) {
+        if (bhs.contest) {
+            let contest = bhs.contest.name;
             if (typeof t.users[entry.uid].contest == "undefined")
                 t.users[entry.uid].contest = {}
 
-            if (typeof t.users[entry.uid].contest[entry.contest] == "undefined")
-                t.users[entry.uid].contest[entry.contest] = bhs.initTotals();
+            if (typeof t.users[entry.uid].contest[contest] == "undefined")
+                t.users[entry.uid].contest[contest] = bhs.initTotals();
 
-            if (typeof t.users[entry.uid].contest[entry.contest].galaxy == "undefined")
-                t.users[entry.uid].contest[entry.contest].galaxy = {};
+            if (typeof t.users[entry.uid].contest[contest].galaxy == "undefined")
+                t.users[entry.uid].contest[contest].galaxy = {};
 
-            if (typeof t.users[entry.uid].contest[entry.contest].galaxy[entry.galaxy] == "undefined")
-                t.users[entry.uid].contest[entry.contest].galaxy[entry.galaxy] = bhs.initTotals();
+            if (typeof t.users[entry.uid].contest[contest].galaxy[entry.galaxy] == "undefined")
+                t.users[entry.uid].contest[contest].galaxy[entry.galaxy] = bhs.initTotals();
         }
 
         if (typeof t.galaxy == "undefined")
@@ -736,7 +742,7 @@ blackHoleSuns.prototype.incTotals = function (totals, entry, inc) {
     totals = bhs.checkTotalsInit(totals, entry);
     inc = inc ? inc : 1;
 
-    if (entry.blackhole || entry.deadzone) {
+    if ((entry.blackhole || entry.deadzone) && (entry.player || entry._name)) {
         totals.totals = bhs.incParts(totals.totals, entry, inc);
         totals.galaxy[entry.galaxy] = bhs.incParts(totals.galaxy[entry.galaxy], entry, inc);
         totals.users[entry.uid] = bhs.incParts(totals.users[entry.uid], entry, inc);
@@ -744,12 +750,14 @@ blackHoleSuns.prototype.incTotals = function (totals, entry, inc) {
         if (entry.org)
             totals.orgs[entry.org] = bhs.incParts(totals.orgs[entry.org], entry, inc);
 
-        if (entry.contest) {
-            totals.contest[entry.contest] = bhs.incParts(totals.contest[entry.contest], entry, inc);
-            totals.users[entry.uid].contest[entry.contest] = bhs.incParts(totals.users[entry.uid].contest[entry.contest], entry, inc);
+        if (bhs.contest && entry.created > bhs.contest.start && entry.created < bhs.contest.end) {
+            let contest = bhs.contest.name;
+
+            totals.contest[contest] = bhs.incParts(totals.contest[contest], entry, inc);
+            totals.users[entry.uid].contest[contest] = bhs.incParts(totals.users[entry.uid].contest[contest], entry, inc);
 
             if (entry.org)
-                totals.orgs[entry.org].contest[entry.contest] = bhs.incParts(totals.orgs[entry.org].contest[entry.contest], entry, inc);
+                totals.orgs[entry.org].contest[contest] = bhs.incParts(totals.orgs[entry.org].contest[contest], entry, inc);
         }
     }
 
@@ -930,7 +938,7 @@ blackHoleSuns.prototype.getTotals = function (displayFcn) {
 
     ref = bhs.getUsersColRef();
     ref = ref.orderBy(starsCol + ".total", "desc");
-    bhs.subscribe("users", ref, displayFcn);
+    bhs.subscribe("userTotals", ref, displayFcn);
 
     ref = bhs.fs.collection("org");
     ref = ref.orderBy(starsCol + ".total", "desc");

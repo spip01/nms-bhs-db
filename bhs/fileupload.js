@@ -424,8 +424,8 @@ blackHoleSuns.prototype.batchUpdate = async function (b, entry, check) {
             }
         } else {
             let d = doc.data()
-            if (d.uid == bhs.user.uid) {
-                if (!check) {
+                if (d.uid == entry.uid || typeof d.uid == "undefined" && entry._name == d.player) {
+                    if (!check) {
                     await b.batch.update(ref, entry);
                     bhs.filestatus(entry.addr + " updated", 2);
                 }
@@ -475,7 +475,7 @@ blackHoleSuns.prototype.batchDelete = async function (b, entry, check) {
             bhs.filestatus(entry.addr + " doesn't exist for delete.", 0);
         else {
             let d = doc.data();
-            if (d.uid == bhs.user.uid) {
+            if (d.uid == entry.uid || typeof d.uid == "undefined" && entry._name == d.player) {
                 if (!check)
                     await ref.delete().then(function () {
                         bhs.totals = bhs.incTotals(bhs.totals, entry, -1);

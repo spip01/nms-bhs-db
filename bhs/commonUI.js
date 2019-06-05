@@ -91,7 +91,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
 
     $("#id-player").blur(function () {
         if (bhs.user.uid)
-            bhs.checkPlayerName(this, bhs.displayUser);
+            bhs.changeName(this, bhs.displayUser);
     });
 
     $("#id-player").keyup(function (event) {
@@ -452,23 +452,26 @@ const totalsDef = [{
 }];
 
 const rowTotal = 0;
-const rowGalaxy = 2;
 const rowPlatform = 1;
-const rowGalaxyPlatform = 3;
+//const rowGalaxy = 2;
+const rowGalaxyPlatform = 2;
 
 const totalsRows = [{
-    title: "Total BH",
-    id: "id-totalBH",
-}, {
-    title: "Total[platform]",
-    id: "id-totalBHP",
-}, {
-    title: "Total[galaxy]",
-    id: "id-totalBHG",
-}, {
-    title: "Total[galaxy][platform]",
-    id: "id-totalBHGP",
-}];
+        title: "Total BH",
+        id: "id-totalBH",
+    }, {
+        title: "Total[platform]",
+        id: "id-totalBHP",
+    },
+    /* {
+        title: "Total[galaxy]",
+        id: "id-totalBHG",
+    },*/
+    {
+        title: "Total[galaxy][platform]",
+        id: "id-totalBHGP",
+    }
+];
 
 blackHoleSuns.prototype.buildTotals = function () {
     const pnl = `
@@ -477,6 +480,10 @@ blackHoleSuns.prototype.buildTotals = function () {
             <div id="cname" class="row text-danger"></div>
         </div>
         <div class="card-body">
+            <label class="row h6 txt-inp-def">
+                Show All&nbsp;
+                <input id="ck-showall" type="checkbox">
+            </label>
             <div id="hdr0" class="row border-bottom bkg-def txt-def"></div>
             <div id="itm0"></div>
             <br>
@@ -540,6 +547,13 @@ blackHoleSuns.prototype.buildTotals = function () {
 
         tot.find("#hdr2").append(l);
     });
+
+    tot.find("#ck-showall").change(function () {
+        if ($(this).prop("checked"))
+            bhs.displayAllUTotals(bhs.user);
+        else
+            bhs.clearAllUTotals(bhs.user);
+    });
 }
 
 blackHoleSuns.prototype.displayTotals = function (entry, id) {
@@ -548,10 +562,10 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
 
     if (bhs.contest.name) {
         let now = firebase.firestore.Timestamp.fromDate(new Date());
-        let s = "<h5>Contest: \"" + bhs.contest.name+"\"; ";
-        s += "Starts: " + bhs.contest.start.toDate().toDateLocalTimeString()+"; ";
+        let s = "<h5>Contest: \"" + bhs.contest.name + "\"; ";
+        s += "Starts: " + bhs.contest.start.toDate().toDateLocalTimeString() + "; ";
         s += now > bhs.contest.end ? "ENDED" : "Ends: " + bhs.contest.end.toDate().toDateLocalTimeString();
-        s+="</h5>";
+        s += "</h5>";
 
         $("#totals #cname").html(s);
     }
@@ -588,10 +602,47 @@ blackHoleSuns.prototype.displayUTotals = function (entry, cid) {
         pnl.find("#" + totalsRows[rowPlatform].id + " #" + cid).text(entry[bhs.user.platform]);
 
         if (typeof entry.galaxy != "undefined" && typeof entry.galaxy[bhs.user.galaxy] != "undefined") {
-            pnl.find("#" + totalsRows[rowGalaxy].id + " #" + cid).text(entry.galaxy[bhs.user.galaxy].total);
+            if (typeof rowGalaxy != "undefined")
+                pnl.find("#" + totalsRows[rowGalaxy].id + " #" + cid).text(entry.galaxy[bhs.user.galaxy].total);
             pnl.find("#" + totalsRows[rowGalaxyPlatform].id + " #" + cid).text(entry.galaxy[bhs.user.galaxy][bhs.user.platform]);
         }
     }
+}
+
+blackHoleSuns.prototype.displayAllUTotals = function (entry) {
+    let pnl = $("#itm0");
+    pnl.find("#id-totalBHGP").css("border-bottom", "1px solid black");
+    Object.keys(entry[starsCol].galaxy).forEach(function (g) {
+        for (let i = 0; i < platformList.length; ++i) {
+            if (entry[starsCol].galaxy[g][platformList[i].name] > 0) {
+                let id = "id-" + g.nameToId() + "-" + platformList[i].name.nameToId();
+                let h = /idname/ [Symbol.replace](totalsItemsHdr, id);
+
+                let t = /galaxy/ [Symbol.replace](totalsRows[rowGalaxyPlatform].title, g);
+                t = /platform/ [Symbol.replace](t, platformList[i].name);
+                let l = /title/ [Symbol.replace](totalsItems, t);
+                h += /format/ [Symbol.replace](l, totalsDef[0].format);
+
+                l = /title/ [Symbol.replace](totalsItems, entry[starsCol].galaxy[g][platformList[i].name]);
+                h += /format/ [Symbol.replace](l, totalsDef[1].format);
+
+                h += totalsItemsEnd;
+                pnl.append(h);
+            }
+        }
+    });
+}
+
+blackHoleSuns.prototype.clearAllUTotals = function (entry) {
+    let pnl = $("#itm0");
+    Object.keys(entry[starsCol].galaxy).forEach(function (g) {
+        for (let i = 0; i < platformList.length; ++i) {
+            if (entry[starsCol].galaxy[g][platformList[i].name] > 0) {
+                let id = "id-" + g.nameToId() + "-" + platformList[i].name.nameToId();
+                pnl.find("#" + id).remove();
+            }
+        }
+    });
 }
 
 const totalsPlayers = [{
@@ -617,8 +668,8 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
         const userItms = `  <div id="idname" class="format">title</div>`;
         const userEnd = `</div>`;
 
-        let pnl = $("#totals #"+id);
-        let rid = entry.uid ? entry.uid:entry.name.nameToId();
+        let pnl = $("#totals #" + id);
+        let rid = entry.uid ? entry.uid : entry.name.nameToId();
         let player = pnl.find("#u-" + rid);
 
         if (player.length == 0) {
@@ -629,7 +680,7 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
                 l = /format/ [Symbol.replace](l, x.format);
                 switch (x.title) {
                     case "Contributors":
-                        h += /title/ [Symbol.replace](l, entry._name?entry._name:entry.name);
+                        h += /title/ [Symbol.replace](l, entry._name ? entry._name : entry.name);
                         break;
                     case "Contest":
                         h += /title/ [Symbol.replace](l, bhs.contest.name && entry[starsCol].contest ? entry[starsCol].contest[bhs.contest.name].total : "");
