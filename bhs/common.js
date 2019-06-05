@@ -768,13 +768,13 @@ blackHoleSuns.prototype.updateTotal = function (add, ref, reset) {
     });
 }
 
-blackHoleSuns.prototype.getEntries = function (displayFcn, limit) {
-    let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
-    ref = ref.where("uid", "==", bhs.user.uid);
-    ref = ref.orderBy("modded", "desc");
-    ref = ref.limit(parseInt(limit));
-    bhs.subscribe("entry", ref, displayFcn);
-}
+// blackHoleSuns.prototype.getEntries = function (displayFcn, limit) {
+//     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
+//     ref = ref.where("uid", "==", bhs.user.uid);
+//     ref = ref.orderBy("modded", "desc");
+//     ref = ref.limit(parseInt(limit));
+//     bhs.subscribe("entry", ref, displayFcn);
+// }
 
 blackHoleSuns.prototype.getBHEntries = function (displayFcn, limit) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
@@ -1222,11 +1222,11 @@ blackHoleSuns.prototype.addressToXYZ = function (addr) {
 blackHoleSuns.prototype.addrToGlyph = function (addr) {
     let s = "";
 
-    //const portalFormat = "ppsssyyxxxzzz";
+    //const portalFormat = "psssyyxxxzzz";
 
     if (addr) {
         let xyz = bhs.addressToXYZ(addr);
-        let xs = "00" + xyz.s.toString(16);
+        let xs = "00" + xyz.s.toString(16).toUpperCase();
         let xx = "00" + (xyz.x + 0x801).toString(16).toUpperCase();
         let xy = "00" + (xyz.y + 0x81).toString(16).toUpperCase();
         let xz = "00" + (xyz.z + 0x801).toString(16).toUpperCase();

@@ -63,7 +63,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
                 <div class="row">
                     <div class="col-4 h6 txt-inp-def">Portal&nbsp;</div>
-                    <div id="id-glyph" class=" col-md-6 col-7 h4 txt-inp-def glyph"></div>
+                    <div id="id-glyph" class="col-10 h4 txt-inp-def text-left glyph"></div>
                 </div>
 
                 <div class="row">

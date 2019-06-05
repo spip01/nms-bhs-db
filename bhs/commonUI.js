@@ -27,14 +27,14 @@ blackHoleSuns.prototype.displayUser = async function (user) {
     bhs.contest = await bhs.getActiveContest();
 
     if (bhs.user.uid) {
-        bhs.setMapOptions(bhs.user);
-        bhs.buildMap();
-
-        bhs.buildTotals();
-        bhs.getTotals(bhs.displayTotals);
-
         bhs.buildUserTable(bhs.user);
+        bhs.buildMap();
+        bhs.buildTotals();
+
         bhs.displaySettings(bhs.user);
+        bhs.setMapOptions(bhs.user);
+
+        bhs.getTotals(bhs.displayTotals);
         bhs.getBHEntries(bhs.displayEntries, bhs.user.settings.limit);
         bhs.getBases(bhs.displayEntries, bhs.user.settings.bases);
     }
@@ -48,6 +48,26 @@ blackHoleSuns.prototype.displayUser = async function (user) {
     pnl.find("#btn-Galaxy").text(l + " " + bhs.user.galaxy);
     let i = bhs.getIndex(galaxyList, "name", bhs.user.galaxy);
     pnl.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[galaxyList[i].number].color + ";");
+
+    $("#darkmode").click(function () {
+        $("body .card").css("background-color", "black");
+        $("body .card").css("color", "gold");
+        $("body .card").css("border-color", "white");
+
+        $("body .txt-inp-def").css("background-color", "black");
+        $("body .txt-inp-def").css("color", "#7dcef6");
+
+        $("body .txt-def").css("background-color", "black");
+        $("body .txt-def").css("color", "gold");
+
+        $("body .bkg-vlight-gray").css("background-color", "#303030");
+        $("body .bkg-vlight-gray").css("color", "gold");
+
+        $("body input").css("background-color", "black");
+        $("body input").css("color", "gold");
+
+        $("body button").css("border-color", "white");
+    });
 }
 
 blackHoleSuns.prototype.buildUserPanel = async function () {
@@ -287,7 +307,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
         bhs.buildMap();
 
         let l = $(this).val();
-        bhs.getEntries(bhs.displayEntries, l);
+        bhs.getBHEntries(bhs.displayEntries, l);
 
         l = $("#id-showBases").val();
         bhs.getBases(bhs.displayEntries, l);
@@ -1042,14 +1062,14 @@ blackHoleSuns.prototype.buildMap = function () {
         $("#entryTable #userItems").empty();
         bhs.buildMap();
 
-        bhs.getEntries(bhs.displayEntries, bhs.user.settings.limit, true);
+        bhs.getBHEntries(bhs.displayEntries, bhs.user.settings.limit, true);
     });
 
     $("#btn-redraw").click(function () {
         $("#entryTable #userItems").empty();
         bhs.buildMap();
 
-        bhs.getEntries(bhs.displayEntries, bhs.user.settings.limit, true);
+        bhs.getBHEntries(bhs.displayEntries, bhs.user.settings.limit, true);
     });
 
     $("#btn-mapsave").click(function () {

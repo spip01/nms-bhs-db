@@ -40,7 +40,7 @@ blackHoleSuns.prototype.buildFilePanel = function () {
                 </label>
             </div>
 
-            <div id="filestatus" class="card card-body scrollbar container-fluid" style="overflow-y: scroll; height:100px"></div>
+            <div id="filestatus" class="card card-body text-danger scrollbar container-fluid" style="overflow-y: scroll; height:100px"></div>
         </div>
     </div>`;
 
