@@ -714,7 +714,7 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
                             if (bhs.contest.disq.users[d[i]] == entry._name)
                                 disq = true;
 
-                        h += /title/ [Symbol.replace](l, bhs.contest.name && entry[starsCol].contest ? disq ? "D" : entry[starsCol].contest[bhs.contest.name].total : "");
+                        h += /title/ [Symbol.replace](l, bhs.contest.name && entry[starsCol].contest ? disq ? "--" : entry[starsCol].contest[bhs.contest.name].total : "");
                         break;
                     case "Total":
                         h += /title/ [Symbol.replace](l, entry[starsCol].total);
