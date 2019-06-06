@@ -151,7 +151,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
             bhs.navLoggedin();
 
             //bhs.fixAllTotals();
-            //bhs.fixUid();
+            ////bhs.fixUid();
         });
     } else {
         $("#usermenu").hide();
@@ -168,7 +168,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
 
 blackHoleSuns.prototype.init = function () {
     bhs.buildGalaxyInfo();
-    bhs.userInit();
+    bhs.user = bhs.userInit();
 }
 
 blackHoleSuns.prototype.userInit = function () {
@@ -177,6 +177,7 @@ blackHoleSuns.prototype.userInit = function () {
     user._name = "";
     user.platform = platformList[0].name;
     user.galaxy = galaxyList[0].name;
+    user.assigned = false;
     user.org = "";
 
     return user;
@@ -202,7 +203,7 @@ blackHoleSuns.prototype.updateUser = function (user, displayFcn) {
         displayFcn(bhs.user);
 }
 
-blackHoleSuns.prototype.changeName = function (loc, displayFcn) {
+blackHoleSuns.prototype.changeName = function (loc) {
     let n = $(loc).val();
     if (n == bhs.user._name)
         return;
@@ -218,54 +219,53 @@ blackHoleSuns.prototype.changeName = function (loc, displayFcn) {
             $(loc).val(bhs.user._name);
             bhs.status("Player Name:" + n + " is already taken.", 0);
         } else {
-            bhs.user_name = n;
+            bhs.user._name = n;
 
             if (!bhs.user.assigned) {
                 let ref = bhs.getStarsColRef("players");
                 await ref.get().then(async function (doc) {
                     if (doc.exists) {
                         let d = doc.data();
-                        if (typeof d[bhs.user_name] != "undefined")
-                            bhs.user[starsCol] = d[bhs.user_name];
-                    }
-                });
-            } else {
-                let b = {};
-                b.batch = bhs.fs.batch();
-                b.batchcount = 0;
-
-                let ref = bhs.getStarsColRef().where("totals.total", ">", 0);
-                await ref.get().then(async function (snapshot) {
-                    for (let i = 0; i < snapshot.size; ++i) {
-                        let doc = snapshot.docs[i];
-                        if (doc.id == "totals" || doc.id == "players")
-                            continue;
-
-                        let g = doc.data();
-
-                        for (let k = 0; k < platformList.length; ++k) {
-                            let ref = bhs.getStarsColRef(g.name, platformList[k].name);
-                            ref = ref.where("uid", "==", bhs.user.uid);
-                            await ref.get().then(async function (snapshot) {
-                                for (let i = 0; i < snapshot.size; ++i) {
-                                    await b.batch.update(snapshot.docs[i].ref, {
-                                        _name: n
-                                    });
-                                    b = await bhs.checkBatchSize(b);
-                                }
-                            });
+                        if (typeof d[bhs.user._name] != "undefined") {
+                            bhs.user[starsCol] = d[bhs.user._name];
+                            bhs.user.assigned = true;
+                            await bhs.assignUid(bhs.user);
                         }
                     }
                 });
-
-                bhs.user._name = n;
-                ref = bhs.getUsersColRef(bhs.user.uid);
-                await b.batch.update(ref, bhs.user);
-                await bhs.checkBatchSize(b, true);
             }
 
-            if (displayFcn)
-                displayFcn(bhs.user);
+            let b = {};
+            b.batch = bhs.fs.batch();
+            b.batchcount = 0;
+
+            let ref = bhs.getStarsColRef().where("totals.total", ">", 0);
+            await ref.get().then(async function (snapshot) {
+                for (let i = 0; i < snapshot.size; ++i) {
+                    let doc = snapshot.docs[i];
+                    if (doc.id == "totals" || doc.id == "players")
+                        continue;
+
+                    let g = doc.data();
+
+                    for (let k = 0; k < platformList.length; ++k) {
+                        let ref = bhs.getStarsColRef(g.name, platformList[k].name);
+                        ref = ref.where("uid", "==", bhs.user.uid);
+                        await ref.get().then(async function (snapshot) {
+                            for (let i = 0; i < snapshot.size; ++i) {
+                                await b.batch.update(snapshot.docs[i].ref, {
+                                    _name: n
+                                });
+                                b = await bhs.checkBatchSize(b);
+                            }
+                        });
+                    }
+                }
+            });
+
+            ref = bhs.getUsersColRef(bhs.user.uid);
+            await b.batch.update(ref, bhs.user);
+            await bhs.checkBatchSize(b, true);
         }
     });
 }
@@ -421,58 +421,58 @@ blackHoleSuns.prototype.deleteEntry = async function (addr) {
 }
 
 blackHoleSuns.prototype.fixUid = async function () {
-    let b = {};
-    b.batch = bhs.fs.batch();
-    b.batchcount = 0;
-
     let ref = bhs.getUsersColRef();
     await ref.get().then(async function (snapshot) {
         for (let i = 0; i < snapshot.size; ++i) {
             let u = snapshot.docs[i].data();
 
-            if (typeof u.assigned == "undefined") {
-                u.assigned = true;
-                u._name = u.player;
+            if ((typeof u.assigned == "undefined" || u.assigned == false) && u._name != "") {
+                bhs.assignUid(u);
+                snapshot.docs[i].ref.update({
+                    assigned: true
+                });
+            }
+        }
+    });
+}
 
-                await b.batch.set(snapshot.docs[i].ref, u);
-                b = await bhs.checkBatchSize(b);
+blackHoleSuns.prototype.assignUid = async function (entry) {
+    let b = {};
+    b.batch = bhs.fs.batch();
+    b.batchcount = 0;
 
-                let updt = {};
-                updt.uid = u.uid;
-                updt._name = u._name;
+    let updt = {};
+    updt.uid = entry.uid;
+    updt._name = entry._name;
 
-                let ref = bhs.getStarsColRef();
-                ref = ref.where("totals.total", ">", 0);
-                await ref.get().then(async function (snapshot) {
-                    for (let i = 0; i < snapshot.docs.length; ++i) {
-                        if (snapshot.docs[i].id != "totals") {
-                            let g = snapshot.docs[i].data();
+    let ref = bhs.getStarsColRef();
+    ref = ref.where("totals.total", ">", 0);
+    await ref.get().then(async function (snapshot) {
+        for (let i = 0; i < snapshot.docs.length; ++i) {
+            if (snapshot.docs[i].id != "totals") {
+                let g = snapshot.docs[i].data();
 
-                            for (let j = 0; j < platformList.length; ++j) {
-                                let p = platformList[j];
+                for (let j = 0; j < platformList.length; ++j) {
+                    let p = platformList[j];
 
-                                let ref = bhs.getStarsColRef(g.name, p.name);
-                                ref = ref.where("player", "==", u._name)
-                                await ref.get().then(async function (snapshot) {
-                                    if (!snapshot.empty) {
-                                        console.log(g.name + " " + p.name + " " + u._name + " " + snapshot.size);
+                    let ref = bhs.getStarsColRef(g.name, p.name);
+                    ref = ref.where("player", "==", entry._name)
+                    await ref.get().then(async function (snapshot) {
+                        if (!snapshot.empty) {
+                            console.log(g.name + " " + p.name + " " + entry._name + " " + snapshot.size);
 
-                                        for (let k = 0; k < snapshot.size; ++k) {
-                                            await b.batch.update(snapshot.docs[k].ref, updt);
-                                            b = await bhs.checkBatchSize(b);
-                                        }
-                                    }
-                                });
+                            for (let k = 0; k < snapshot.size; ++k) {
+                                await b.batch.update(snapshot.docs[k].ref, updt);
+                                b = await bhs.checkBatchSize(b);
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
         }
     });
 
     await bhs.checkBatchSize(b, true);
-    console.log("done");
 }
 
 blackHoleSuns.prototype.getActiveContest = async function () {

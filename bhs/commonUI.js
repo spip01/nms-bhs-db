@@ -111,7 +111,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
 
     $("#id-player").blur(function () {
         if (bhs.user.uid)
-            bhs.changeName(this, bhs.displayUser);
+            bhs.changeName(this);
     });
 
     $("#id-player").keyup(function (event) {
@@ -703,7 +703,18 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
                         h += /title/ [Symbol.replace](l, entry._name ? entry._name : entry.name);
                         break;
                     case "Contest":
-                        h += /title/ [Symbol.replace](l, bhs.contest.name && entry[starsCol].contest ? entry[starsCol].contest[bhs.contest.name].total : "");
+                        let disq = false;
+                        let d = Object.keys(bhs.contest.disq.orgs);
+                        for (let i = 0; i < d.length && !disq; ++i)
+                            if (bhs.contest.disq.orgs[d[i]] == entry.name)
+                                disq = true;
+
+                        d = Object.keys(bhs.contest.disq.users);
+                        for (let i = 0; i < d.length && !disq; ++i)
+                            if (bhs.contest.disq.users[d[i]] == entry._name)
+                                disq = true;
+
+                        h += /title/ [Symbol.replace](l, bhs.contest.name && entry[starsCol].contest ? disq ? "D" : entry[starsCol].contest[bhs.contest.name].total : "");
                         break;
                     case "Total":
                         h += /title/ [Symbol.replace](l, entry[starsCol].total);
@@ -1052,6 +1063,10 @@ blackHoleSuns.prototype.buildMap = function () {
         let y = parseInt((evt.clientY - rect.top) * scaleY / 6);
 
         if (mapgrid[x] && mapgrid[x][y]) {
+            let txt = mapgrid[x][y].split("\n");
+            let addr = txt[0].slice(0, 19);
+            bhs.getEntry(addr, bhs.displaySingle, 0);
+
             bhs.buildMap();
             bhs.drawUpChain(x, y, $("#inp-chaindepth").val());
             bhs.drawChain(x, y, $("#inp-chaindepth").val());
