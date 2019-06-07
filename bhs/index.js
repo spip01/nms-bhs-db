@@ -121,14 +121,21 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                 </div>
 
                 <div class="row">
-                    <div id="id-fmcenter" class="col-8 txt-inp-def" style="display:none">
+                    <div id="id-fmcenter" class="col-4 txt-inp-def" style="display:none">
                         <div class="row">
-                            <div class="col-9 text-right">Distance (ly): From Center&nbsp;</div>
-                            <div id="fmcenter" class="col-5 text-left h6"></div>
+                            <div class="col-7 text-right">To Center&nbsp;</div>
+                            <div id="fmcenter" class="col-7 text-left h6"></div>
                         </div>
                     </div>
                         
-                    <div id="id-tocenter" class="col-6 txt-inp-def" style="display:none">
+                    <div id="id-traveled" class="col-5 txt-inp-def" style="display:none">
+                        <div class="row">
+                            <div class="col-8 text-right"> Traveled&nbsp;</div>
+                            <div id="traveled" class="col-6 text-left h6"></div>
+                        </div>
+                    </div>
+
+                   <div id="id-tocenter" class="col-5 txt-inp-def" style="display:none">
                         <div class="row">
                             <div class="col-9 text-right"> Towards Center&nbsp;</div>
                             <div id="tocenter" class="col-5 text-left h6"></div>
@@ -261,6 +268,7 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
         loc.find("#ck-hasbase").prop("checked", false);
         loc.find("#btn-Economy").text("");
         loc.find("#id-fmcenter").hide();
+        loc.find("#id-traveled").hide();
         loc.find("#id-tocenter").hide();
     }
 }
@@ -301,6 +309,7 @@ blackHoleSuns.prototype.clearPanel = function (d) {
 
     pnl.find("#id-isbase").hide();
     pnl.find("#id-fmcenter").hide();
+    loc.find("#id-traveled").hide();
     pnl.find("#id-tocenter").hide();
 }
 
@@ -384,16 +393,19 @@ blackHoleSuns.prototype.displayCalc = function () {
 
     let tdist = bhs.calcDist(addr);
 
-    top.find("#fmcenter").text(tdist);
+    top.find("#fmcenter").text(tdist+"ly");
     top.find("#id-fmcenter").show();
 
     if (connection) {
         let bdist = bhs.calcDist(connection);
 
-        bottom.find("#fmcenter").text(bdist);
+        bottom.find("#fmcenter").text(bdist+"ly");
         bottom.find("#id-fmcenter").show();
 
-        bottom.find("#tocenter").text(tdist - bdist);
+        bottom.find("#traveled").text(bhs.calcDist(addr, connection)+"ly");
+        bottom.find("#id-traveled").show();
+
+        bottom.find("#tocenter").text((tdist - bdist)+"ly");
         bottom.find("#id-tocenter").show();
 
         let entry = {};
