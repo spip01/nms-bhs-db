@@ -374,7 +374,7 @@ blackHoleSuns.prototype.getUsersColRef = function (uid, galaxy, platform, addr) 
     if (uid) {
         ref = ref.doc(uid);
         if (galaxy) {
-            ref = ref.collection("galaxies").doc(galaxy);
+            ref = ref.collection(starsCol).doc(galaxy);
             if (platform) {
                 ref = ref.collection(platform);
                 if (addr) {
@@ -787,19 +787,19 @@ blackHoleSuns.prototype.updateTotal = function (add, ref, reset) {
     });
 }
 
-blackHoleSuns.prototype.getEntries = function (displayFcn, limit) {
+blackHoleSuns.prototype.getEntries = async function (displayFcn, limit) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
     ref = ref.where("uid", "==", bhs.user.uid);
     ref = ref.orderBy("modded", "desc");
     ref = ref.limit(parseInt(limit));
-    ref.get().then(function (snapshot) {
-        for (let i = 0; i < snapshot.length; ++i) {
-            let e = snapshot.docs[i].data();
-            bhs.addEntryList(e);
-        }
+   await ref.get().then(async function (snapshot) {
+        for (let i = 0; i < snapshot.size; ++i)
+            bhs.addEntryList(snapshot.docs[i].data());
 
-        if (displayFcn) {
-            displayFcn(bhs.entries);
+            await blackHoleSuns.prototype.getBases(displayFcn);
+
+            if (displayFcn) {
+                isplayFcn(bhs.entries);
 
             let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
             ref = ref.where("uid", "==", bhs.user.uid);
@@ -818,28 +818,45 @@ blackHoleSuns.prototype.addEntryList = function (entry) {
     if (typeof bhs.entries == "undefined")
         bhs.entries = {};
 
-    if (e.blackhole) {
-        if (typeof bhs.entries[e.connection] == "undefined")
-            bhs.entries[e.connection] = {};
-        bhs.entries[e.connection].bh = e;
-    } else if (e.deadzone) {
-        if (typeof bhs.entries[e.addr] == "undefined")
-            bhs.entries[e.addr] = {};
-        bhs.entries[e.addr].dz = e;
+    if (entry.blackhole) {
+        if (typeof bhs.entries[entry.connection] == "undefined")
+            bhs.entries[entry.connection] = {};
+        bhs.entries[entry.connection].bh = entry;
+    } else if (entry.deadzone) {
+        if (typeof bhs.entries[entry.addr] == "undefined")
+            bhs.entries[entry.addr] = {};
+        bhs.entries[entry.addr].dz = entry;
     } else {
-        if (typeof bhs.entries[e.addr] == "undefined")
-            bhs.entries[e.addr] = {};
-        bhs.entries[e.addr].xit = e;
+        if (typeof bhs.entries[entry.addr] == "undefined")
+            bhs.entries[entry.addr] = {};
+        bhs.entries[entry.addr].xit = entry;
     }
 }
 
-blackHoleSuns.prototype.getBHEntries = function (displayFcn, limit) {
-    let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
-    ref = ref.where("uid", "==", bhs.user.uid);
-    ref = ref.where("blackhole", "==", true);
-    ref = ref.orderBy("modded", "desc");
-    ref = ref.limit(parseInt(limit));
-    bhs.subscribe("bhentry", ref, displayFcn);
+blackHoleSuns.prototype.getBases = async function (displayFcn) {
+    let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform);
+    await ref.get().then(async function (snapshot) {
+        for (let i = 0; i < snapshot.size; ++i)
+            bhs.addBaseList(entry)
+
+        if (displayFcn) {
+            let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform);
+            ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()));
+            bhs.subscribe("bases", ref, addBaseList);
+        }
+    });
+}
+
+blackHoleSuns.prototype.addBaseList = function (entry) {
+    if (typeof bhs.entries[entry.addr] != "undefined")
+        bhs.entries[entry.addr].bhbase = entry;
+    else {
+        let keys = Object.keys(bhs.entries);
+        for (let k = 0; k < keys.length; ++k) {
+            if (bhs.entries[entry.addr].bh.connection == entry.addr)
+                bhs.entries[entry.addr].xitbase = entry;
+        }
+    }
 }
 
 blackHoleSuns.prototype.getUser = function (displayFcn) {
@@ -867,23 +884,6 @@ blackHoleSuns.prototype.getUsers = function (displayFcn) {
     let ref = bhs.getUsersColRef();
     ref = ref.orderBy(starsCol + ".total", "desc");
     bhs.subscribe("users", ref, displayFcn);
-}
-
-blackHoleSuns.prototype.getOrgs = function (displayFcn) {
-    let ref = bhs.fs.collection("org");
-    ref = ref.orderBy(starsCol + ".total", "desc");
-    bhs.subscribe("org", ref, displayFcn);
-}
-
-blackHoleSuns.prototype.getBases = function (displayFcn, limit) {
-    let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform);
-    ref = ref.orderBy("modded", "desc");
-    limit = parseInt(limit);
-    if (limit > 0)
-        ref = ref.limit(parseInt(limit));
-    else
-        ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()));
-    bhs.subscribe("bases", ref, displayFcn);
 }
 
 blackHoleSuns.prototype.getTotals = function (displayFcn) {

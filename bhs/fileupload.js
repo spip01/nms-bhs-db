@@ -343,8 +343,6 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
 
                     entry[2] = mergeObjects(entry[2], entry[0]);
                     await bhs.batchWriteBase(b, entry[2], check);
-
-                    entry[1].hasbase = true;
                     await bhs.batchUpdate(b, entry[1], check); // don't overwrite bh info if it exists
                 } else {
                     entry[1].deadzone = entry[0].type.match(/dead/i) || entry[2].addr == entry[1].addr;
