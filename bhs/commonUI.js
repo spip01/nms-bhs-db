@@ -328,7 +328,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
         bhs.getBases(bhs.displayEntries, l);
 
         l = $("#id-showLimit").val();
-        bhs.getEntries(bhs.displayEntries, l);
+        bhs.getBHEntries(bhs.displayEntries, l);
     });
 
     $("#id-showBases").keyup(function (event) {
@@ -1022,7 +1022,7 @@ blackHoleSuns.prototype.buildMap = function () {
             $("#entryTable #userItems").empty();
             bhs.buildMap();
 
-            bhs.getEntries(bhs.displayEntries, bhs.user.settings.limit, true);
+            bhs.getBHEntries(bhs.displayEntries, bhs.user.settings.limit, true);
         });
     });
 

@@ -322,7 +322,7 @@ blackHoleSuns.prototype.updateEntry = async function (entry) {
     entry.xyzs = bhs.addressToXYZ(entry.addr);
     if (entry.connection)
         entry.conxyzs = bhs.addressToXYZ(entry.connection);
-    
+
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
     await ref.get().then(async function (doc) {
         if (doc.exists) {
@@ -440,7 +440,7 @@ blackHoleSuns.prototype.fixStars = async function () {
             for (let k = 0; k < platformList.length; ++k) {
                 let ref = bhs.getStarsColRef(g.name, platformList[k].name);
                 await ref.get().then(async function (snapshot) {
-                    console.log(g.name+" "+platformList[k].name+" "+snapshot.size);
+                    console.log(g.name + " " + platformList[k].name + " " + snapshot.size);
                     for (let i = 0; i < snapshot.size; ++i) {
                         let d = snapshot.docs[i].data();
                         d.xyzs = bhs.addressToXYZ(d.addr);
@@ -503,8 +503,8 @@ blackHoleSuns.prototype.getActiveContest = async function () {
     let ref = bhs.fs.collection("contest");
     ref = ref.orderBy("end", "desc");
     await ref.get().then(async function (snapshot) {
-        if (!snapshot.empty) 
-            contest = snapshot.docs[snapshot.size-1].data();
+        if (!snapshot.empty)
+            contest = snapshot.docs[snapshot.size - 1].data();
     });
 
     return contest;
@@ -787,13 +787,51 @@ blackHoleSuns.prototype.updateTotal = function (add, ref, reset) {
     });
 }
 
-// blackHoleSuns.prototype.getEntries = function (displayFcn, limit) {
-//     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
-//     ref = ref.where("uid", "==", bhs.user.uid);
-//     ref = ref.orderBy("modded", "desc");
-//     ref = ref.limit(parseInt(limit));
-//     bhs.subscribe("entry", ref, displayFcn);
-// }
+blackHoleSuns.prototype.getEntries = function (displayFcn, limit) {
+    let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
+    ref = ref.where("uid", "==", bhs.user.uid);
+    ref = ref.orderBy("modded", "desc");
+    ref = ref.limit(parseInt(limit));
+    ref.get().then(function (snapshot) {
+        for (let i = 0; i < snapshot.length; ++i) {
+            let e = snapshot.docs[i].data();
+            bhs.addEntryList(e);
+        }
+
+        if (displayFcn) {
+            displayFcn(bhs.entries);
+
+            let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
+            ref = ref.where("uid", "==", bhs.user.uid);
+            ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()));
+            bhs.subscribe("entries", ref, bhs.dispEntryList, displayFcn);
+        }
+    });
+}
+
+blackHoleSuns.prototype.dispEntryList = function (entry, id, displayFcn) {
+    bhs.addEntryList(entry);
+    displayFcn(bhs.entries);
+}
+
+blackHoleSuns.prototype.addEntryList = function (entry) {
+    if (typeof bhs.entries == "undefined")
+        bhs.entries = {};
+
+    if (e.blackhole) {
+        if (typeof bhs.entries[e.connection] == "undefined")
+            bhs.entries[e.connection] = {};
+        bhs.entries[e.connection].bh = e;
+    } else if (e.deadzone) {
+        if (typeof bhs.entries[e.addr] == "undefined")
+            bhs.entries[e.addr] = {};
+        bhs.entries[e.addr].dz = e;
+    } else {
+        if (typeof bhs.entries[e.addr] == "undefined")
+            bhs.entries[e.addr] = {};
+        bhs.entries[e.addr].xit = e;
+    }
+}
 
 blackHoleSuns.prototype.getBHEntries = function (displayFcn, limit) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
@@ -873,7 +911,7 @@ blackHoleSuns.prototype.getTotals = function (displayFcn) {
     });
 }
 
-blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn) {
+blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn, pass) {
     if (displayFcn) {
         bhs.unsubscribe(what);
         bhs.unsub[what] = ref.onSnapshot(function (snapshot) {
@@ -881,7 +919,7 @@ blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn) {
                 displayFcn(snapshot.data(), snapshot.ref.path);
             else if (typeof snapshot.empty != "undefined" && !snapshot.empty)
                 snapshot.forEach(function (doc) {
-                    displayFcn(doc.data(), doc.ref.path);
+                    displayFcn(doc.data(), doc.ref.path, pass);
                 });
         });
     }
@@ -1219,8 +1257,8 @@ blackHoleSuns.prototype.buildGalaxyInfo = function () {
     }
 }
 
-blackHoleSuns.prototype.getAngles = function(loc, dest) {
-    
+blackHoleSuns.prototype.getAngles = function (loc, dest) {
+
 }
 
 
