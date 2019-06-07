@@ -351,7 +351,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
 
 var last = false;
 
-blackHoleSuns.prototype.displayEntries = function (entry) {
+blackHoleSuns.prototype.displayEntries = function (entry, id) {
     const lineHdr = `
         <div id="gpa" class="row">`;
     const line = `
@@ -1042,7 +1042,7 @@ blackHoleSuns.prototype.buildMap = function () {
     ctx.fillRect(0, 0, w, w);
 
     ctx.strokeStyle = 'white';
-    ctx.strokeRect(0, 0, w - 1, w - 1);
+    ctx.strokeRect(0.5, 0.5, w - 1.5, w - 1.5);
 
     let m = parseInt(w / 2) + .5;
     ctx.beginPath();
@@ -1085,6 +1085,8 @@ blackHoleSuns.prototype.buildMap = function () {
         bhs.buildMap();
 
         bhs.getBHEntries(bhs.displayEntries, bhs.user.settings.limit, true);
+
+        // bhs.draw3dmap();
     });
 
     $("#btn-mapsave").click(function () {
@@ -1209,4 +1211,103 @@ blackHoleSuns.prototype.drawMap = function (entry, idx, large) {
     ctx.beginPath();
     ctx.arc(x, y, size, 0, Math.PI * 2);
     ctx.fill();
+}
+
+blackHoleSuns.prototype.draw3dmap = function () {
+    let data = [];
+    let zmin = 0x80;
+    let zmax = 0x80;
+
+    $("#userItems").children().each(function () {
+        let bhaddr = $(this).find("#bh-id-addr").text();
+        let xaddr = $(this).find("#x-id-addr").text();
+        let bhreg = $(this).find("#bh-id-reg").text();
+        let xreg= $(this).find("#x-id-reg").text();
+        let bh = bhs.addressToXYZ(bhaddr);
+        let xit = bhs.addressToXYZ(xaddr);
+
+        let x = [],
+            y = [],
+            z = [],
+            t = [];
+
+        x.push(bh.x);
+       // x.push(xit.x);
+        y.push(bh.z);
+        //y.push(xit.z);
+        z.push(bh.y);
+      // z.push(xit.y);
+        t.push(bhaddr+"\n"+bhreg);
+     //   t.push(xaddr+"\n"+xreg);
+
+        zmin = Math.min(zmin, bh.y);
+        zmin = Math.min(zmin, xit.y);
+        zmax = Math.max(zmax, bh.y);
+        zmax = Math.max(zmax, xit.y);
+
+        data.push({
+            x: x,
+            y: y,
+            z: z,
+            text: t,
+            mode: 'markers',
+            marker: {
+                size: 4,
+                line: {
+                    color: 'rgba(217, 217, 217, 0.14)',
+                    width: 0.5
+                },
+                opacity: 0.8
+            },
+            type: 'scatter3d',
+            hoverinfo: 'text',
+        });
+    });
+
+    var layout = {
+        margin: {
+            l: 0,
+            r: 0,
+            b: 0,
+            t: 0
+        },
+        showlegend: false,
+        scene: {
+            zaxis: {
+                nticks: 3,
+                backgroundcolor: "rgb(0, 0, 0)",
+                gridcolor: "rgb(255, 255, 255)",
+                zerolinecolor: "rgb(255, 255, 255)",
+                showbackground: true,
+                title: "Y",
+                range: [0x70, 0x90],
+                tickvals: [1, 0x7f, 0xff],
+                ticktext: ['0', '7f', 'ff'],
+            },
+            xaxis: {
+                nticks: 3,
+                backgroundcolor: "rgb(0, 0, 0)",
+                gridcolor: "rgb(255, 255, 255)",
+                zerolinecolor: "rgb(255, 255, 255)",
+                showbackground: true,
+                title: "X",
+                tickvals: [1, 0x7ff, 0xfff],
+                range: [0xc10, 0xc30],
+                ticktext: ['0', '7ff', 'fff'],
+            },
+            yaxis: {
+                nticks: 3,
+                backgroundcolor: "rgb(0, 0, 0)",
+                gridcolor: "rgb(255, 255, 255)",
+                zerolinecolor: "rgb(255, 255, 255)",
+                title: "Z",
+                showbackground: true,
+                range: [0x2f0, 0x310],
+                tickvals: [1, 0x7ff, 0xfff],
+                ticktext: ['0', '7ff', 'fff'],
+            },
+        },
+    };
+
+    Plotly.newPlot('plymap', data, layout);
 }

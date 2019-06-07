@@ -479,13 +479,11 @@ blackHoleSuns.prototype.getActiveContest = async function () {
     let now = firebase.firestore.Timestamp.fromDate(new Date());
     let contest;
 
-    let ref = bhs.fs.collection("contest").where("end", ">=", now);
+    let ref = bhs.fs.collection("contest");
+    ref = ref.orderBy("end", "desc");
     await ref.get().then(async function (snapshot) {
-        for (let i = 0; i < snapshot.size; ++i) {
-            contest = snapshot.docs[i].data();
-            if (contest.start < now)
-                break;
-        }
+        if (!snapshot.empty) 
+            contest = snapshot.docs[snapshot.size-1].data();
     });
 
     return contest;

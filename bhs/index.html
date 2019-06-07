@@ -40,6 +40,8 @@
         integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous">
     </script>
 
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
     <script src="/__/firebase/5.9.4/firebase-app.js"></script>
     <script src="/__/firebase/5.9.4/firebase-auth.js"></script>
     <script src="/__/firebase/5.9.4/firebase-firestore.js"></script>
@@ -170,6 +172,7 @@
                 <div id="pnl-map" class="card card-body border bkg-def">
                     <div class="row">
                         <div id="mapcol" class="col-10">
+                            <!--div id="plymap" style="cursor: crosshair;max-width:1000px"></div-->
                             <canvas id="map" style="cursor: crosshair;max-width:500px"></canvas>
                         </div>
 
@@ -202,8 +205,10 @@
                             <button id="btn-mapsave" type="button"
                                 class="col-2 border btn btn-sm btn-def">Save</button>&nbsp;
                             <div class="col-9">
-                                <div class="col-14 h6 text-danger text-center">Click on Black Hole to select chain.</div>
-                                <div class="col-14 h6 text-danger text-center">Click on color box in map key to change colors.
+                                <div class="col-14 h6 text-danger text-center">Click on Black Hole to select chain.
+                                </div>
+                                <div class="col-14 h6 text-danger text-center">Click on color box in map key to change
+                                    colors.
                                 </div>
                             </div>
                         </div>
