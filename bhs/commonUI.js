@@ -139,49 +139,47 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
 const utTypeIdx = 0;
 const utAddrIdx = 1;
 
-var userTable = [
-    {
-        title: "Type",
-        id: "id-type",
-        format: "col-2",
-        field: "blackhole",
-    }, {
-        title: "Coordinates",
-        id: "id-addr",
-        field: "addr",
-        format: "col-lg-3 col-md-4 col-sm-4 col-5"
-    }, {
-        title: "LY",
-        id: "id-toctr",
-        format: "col-2",
-        calc: true
-    }, {
-        title: "System",
-        id: "id-sys",
-        field: "sys",
-        format: "col-3"
-    }, {
-        title: "Region",
-        id: "id-reg",
-        field: "reg",
-        format: "col-3"
-    }, {
-        title: "Lifeform",
-        id: "id-life",
-        field: "life",
-        format: "col-lg-2 col-md-4 col-sm-3 col-3"
-    }, {
-        title: "Economy",
-        id: "id-econ",
-        field: "econ",
-        format: "col-lg-2 col-md-4 col-sm-3 col-3"
-    }, {
-        title: "Base",
-        id: "id-base",
-        field: "basename",
-        format: "col-3",
-    }
-];
+var userTable = [{
+    title: "Type",
+    id: "id-type",
+    format: "col-2",
+    field: "blackhole",
+}, {
+    title: "Coordinates",
+    id: "id-addr",
+    field: "addr",
+    format: "col-lg-3 col-md-4 col-sm-4 col-5"
+}, {
+    title: "LY",
+    id: "id-toctr",
+    format: "col-2",
+    calc: true
+}, {
+    title: "System",
+    id: "id-sys",
+    field: "sys",
+    format: "col-3"
+}, {
+    title: "Region",
+    id: "id-reg",
+    field: "reg",
+    format: "col-3"
+}, {
+    title: "Lifeform",
+    id: "id-life",
+    field: "life",
+    format: "col-lg-2 col-md-4 col-sm-3 col-3"
+}, {
+    title: "Economy",
+    id: "id-econ",
+    field: "econ",
+    format: "col-lg-2 col-md-4 col-sm-3 col-3"
+}, {
+    title: "Base",
+    id: "id-base",
+    field: "basename",
+    format: "col-3",
+}];
 
 blackHoleSuns.prototype.buildUserTable = function (entry) {
     const table = `
@@ -299,61 +297,99 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
     });
 }
 
-blackHoleSuns.prototype.displayEntryList = function (entrylist, id) {
-    const lineHdr = `
+blackHoleSuns.prototype.displayEntryList = function (entrylist, entry) {
+    if (!entrylist && !entry)
+        return;
+
+    bhs.draw3dmap(entrylist, entry);
+
+    if (!entry) {
+        const lineHdr = `
         <div id="gpa" class="row">`;
-    const line = `
+        const line = `
             <div id="idname" class="width" ondblclick="entryDblclk(this)">
                 <div id="bh-idname" class="row">bhdata</div>
                 <div id="x-idname" class="row">xdata</div>
             </div>`;
-    const lineEnd = `
+        const lineEnd = `
         </div>`;
 
-    let h = "";
-    let alt = true;
+        let h = "";
+        let alt = true;
 
-    let keys = Object.keys(entrylist);
-    for (let i = 0; i < keys.length; ++i) {
-        let entry = entrylist[keys[i]];
-        h += /gpa/ [Symbol.replace](lineHdr, keys[i]);
-        let l = "";
+        let keys = Object.keys(entrylist);
+        for (let i = 0; i < keys.length; ++i) {
+            let entry = entrylist[keys[i]];
+            h += /gpa/ [Symbol.replace](lineHdr, keys[i].nameToId());
+            let l = "";
+
+            for (let j = 0; j < userTable.length; ++j) {
+                let t = userTable[j];
+
+                l = /idname/g [Symbol.replace](line, t.id);
+                l = /width/g [Symbol.replace](l, t.format + (alt ? " bkg-vlight-gray" : ""));
+
+                if (t.calc) {
+                    l = /bhdata/ [Symbol.replace](l, entry.bh ? entry.bh.towardsCtr : "");
+                    l = /xdata/ [Symbol.replace](l, "");
+                } else if (t.id == "id-type") {
+                    l = /bhdata/ [Symbol.replace](l, entry.bh ? "BH" : entry.dz ? "DZ" : "");
+                    l = /xdata/ [Symbol.replace](l, "");
+                } else if (t.id == "id-base") {
+                    if (entry.bh && entry.bhbase)
+                        l = /bhdata/ [Symbol.replace](l, entry.bhbase[t.field]);
+                    else if (entry.dz && entry.dzbase)
+                        l = /bhdata/ [Symbol.replace](l, entry.dzbase[t.field]);
+                    else
+                        l = /bhdata/ [Symbol.replace](l, "");
+                        
+                    l = /xdata/ [Symbol.replace](l, entry.xitbase ? entry.xitbase[t.field] : "");
+                } else {
+                    if (entry.bh && entry.bh[t.field])
+                        l = /bhdata/ [Symbol.replace](l, entry.bh[t.field]);
+                    else if (entry.dz && entry.dz[t.field])
+                        l = /bhdata/ [Symbol.replace](l, entry.dz[t.field]);
+                    else
+                        l = /bhdata/ [Symbol.replace](l, "");
+
+                    l = /xdata/ [Symbol.replace](l, entry.xit && entry.xit[t.field] ? entry.xit[t.field] : "");
+                }
+
+                h += l;
+            }
+
+            alt = !alt;
+            h += lineEnd;
+        }
+
+        $("#userItems").append(h);
+        bhs.displaySettings(bhs.user);
+    } else {
+        let id = (entry.bh ? entry.bh.connection : entry.dz ? entry.dz.addr : entry.xit.addr).nameToId();
+        let loc = $("#userItems #" + id);
 
         for (let j = 0; j < userTable.length; ++j) {
             let t = userTable[j];
 
-            l = /idname/g [Symbol.replace](line, t.id);
-            l = /width/g [Symbol.replace](l, t.format + (alt ? " bkg-vlight-gray" : ""));
-
-            if (t.calc) {
-                l = /bhdata/ [Symbol.replace](l, entry.bh ? entry.bh.towardsCtr : "");
-                l = /xdata/ [Symbol.replace](l, "");
-            } else if (t.id == "id-type") {
-                l = /bhdata/ [Symbol.replace](l, entry.bh ? "BH" : entry.dz ? "DZ" : "");
-                l = /xdata/ [Symbol.replace](l, "");
-            } else {
+            if (t.calc)
+                loc.find("#bh-" + t.id).text(entry.bh ? entry.bh.towardsCtr : "")
+            else if (t.id == "id-type")
+                loc.find("#bh-" + t.id).text(entry.bh ? "BH" : entry.dz ? "DZ" : "")
+            else {
                 if (entry.bh)
-                    l = /bhdata/ [Symbol.replace](l, entry.bh[t.field] ? entry.bh[t.field] : "");
+                    loc.find("#bh-" + t.id).text(entry.bh[t.field] ? entry.bh[t.field] : "")
                 if (entry.dz)
-                    l = /bhdata/ [Symbol.replace](l, entry.dz[t.field] ? entry.dz[t.field] : "");
+                    loc.find("#bh-" + t.id).text(entry.dz[t.field] ? entry.dz[t.field] : "")
                 if (entry.xit)
-                    l = /xdata/ [Symbol.replace](l, entry.xit[t.field] ? entry.xit[t.field] : "");
+                    loc.find("#x-" + t.id).text(entry.xit[t.field] ? entry.xit[t.field] : "")
             }
-
-            h += l;
         }
-
-        alt = !alt;
-        h += lineEnd;
     }
-
-    $("#userItems").append(h);
-    bhs.displaySettings(bhs.user);
 }
 
 function entryDblclk(evt) {
     let id = $(evt).parent().prop("id");
-    bhs.displayListEntry (bhs.entryList[id]);
+    bhs.displayListEntry(bhs.entries[bhs.reformatAddress(id)]);
 }
 
 const totalsItemsHdr = `<div id="idname" class="row">`;
@@ -866,6 +902,7 @@ blackHoleSuns.prototype.setMapOptions = function (entry) {
 }
 
 blackHoleSuns.prototype.buildMap = function () {
+    return;
     const key = `
     <div class="row">
         <div id="idname" class="col-9" style="color:colorsel">title</div>
@@ -1016,6 +1053,7 @@ var mapgrid = [];
 var mapupgrid = [];
 
 blackHoleSuns.prototype.drawMap = function (entry, idx, large) {
+    return;
     let canvas = document.getElementById('map');
     let ctx = canvas.getContext('2d');
     let w = $("#mapcol").width();
@@ -1081,56 +1119,90 @@ blackHoleSuns.prototype.drawMap = function (entry, idx, large) {
     ctx.fill();
 }
 
-blackHoleSuns.prototype.draw3dmap = function () {
-    let data = [];
-    let zmin = 0x80;
-    let zmax = 0x80;
+blackHoleSuns.prototype.draw3dmap = function (entrylist, entry) {
+    // let data = [];
+    // let zmin = 0x80;
+    // let zmax = 0x80;
 
-    $("#userItems").children().each(function () {
-        let bhaddr = $(this).find("#bh-id-addr").text();
-        let xaddr = $(this).find("#x-id-addr").text();
-        let bhreg = $(this).find("#bh-id-reg").text();
-        let xreg = $(this).find("#x-id-reg").text();
-        let bh = bhs.addressToXYZ(bhaddr);
-        let xit = bhs.addressToXYZ(xaddr);
+    let x = [],
+        y = [],
+        z = [],
+        t = [],
+        data = [];
 
-        let x = [],
-            y = [],
-            z = [],
-            t = [];
+    let keys = Object.keys(entrylist);
+    for (let i = 0; i < keys.length; ++i) {
+        if (entrylist[keys[i]].bh) {
+            x.push(entrylist[keys[i]].bh.xyzs.x);
+            y.push(entrylist[keys[i]].bh.xyzs.z);
+            z.push(entrylist[keys[i]].bh.xyzs.y);
+            t.push(entrylist[keys[i]].bh.addr);
+        }
+    }
 
-        x.push(bh.x);
-        // x.push(xit.x);
-        y.push(bh.z);
-        //y.push(xit.z);
-        z.push(bh.y);
-        // z.push(xit.y);
-        t.push(bhaddr + "\n" + bhreg);
-        //   t.push(xaddr+"\n"+xreg);
-
-        zmin = Math.min(zmin, bh.y);
-        zmin = Math.min(zmin, xit.y);
-        zmax = Math.max(zmax, bh.y);
-        zmax = Math.max(zmax, xit.y);
-
-        data.push({
-            x: x,
-            y: y,
-            z: z,
-            text: t,
-            mode: 'markers',
-            marker: {
-                size: 4,
-                line: {
-                    color: 'rgba(217, 217, 217, 0.14)',
-                    width: 0.5
-                },
-                opacity: 0.8
+    data.push({
+        x: x,
+        y: y,
+        z: z,
+        text: t,
+        mode: 'markers',
+        marker: {
+            size: 4,
+            line: {
+                color: 'rgba(217, 217, 217, 0.14)',
+                width: 0.5
             },
-            type: 'scatter3d',
-            hoverinfo: 'text',
-        });
+            opacity: 0.8
+        },
+        type: 'scatter3d',
+        hoverinfo: 'text',
     });
+
+    // $("#userItems").children().each(function () {
+    //     let bhaddr = $(this).find("#bh-id-addr").text();
+    //     let xaddr = $(this).find("#x-id-addr").text();
+    //     let bhreg = $(this).find("#bh-id-reg").text();
+    //     let xreg = $(this).find("#x-id-reg").text();
+    //     let bh = bhs.addressToXYZ(bhaddr);
+    //     let xit = bhs.addressToXYZ(xaddr);
+
+    //     let x = [],
+    //         y = [],
+    //         z = [],
+    //         t = [];
+
+    //     x.push(bh.x);
+    //     // x.push(xit.x);
+    //     y.push(bh.z);
+    //     //y.push(xit.z);
+    //     z.push(bh.y);
+    //     // z.push(xit.y);
+    //     t.push(bhaddr + "\n" + bhreg);
+    //     //   t.push(xaddr+"\n"+xreg);
+
+    //     zmin = Math.min(zmin, bh.y);
+    //     zmin = Math.min(zmin, xit.y);
+    //     zmax = Math.max(zmax, bh.y);
+    //     zmax = Math.max(zmax, xit.y);
+
+    //     data.push({
+    //         x: x,
+    //         y: y,
+    //         z: z,
+    //         text: t,
+    //         mode: 'markers',
+    //         marker: {
+    //             size: 4,
+    //             line: {
+    //                 color: 'rgba(217, 217, 217, 0.14)',
+    //                 width: 0.5
+    //             },
+    //             opacity: 0.8
+    //         },
+    //         type: 'scatter3d',
+    //         hoverinfo: 'text',
+    //     });
+    // });
 
     var layout = {
         margin: {
@@ -1148,7 +1220,7 @@ blackHoleSuns.prototype.draw3dmap = function () {
                 zerolinecolor: "rgb(255, 255, 255)",
                 showbackground: true,
                 title: "Y",
-                range: [0x70, 0x90],
+                //range: [0x70, 0x90],
                 tickvals: [1, 0x7f, 0xff],
                 ticktext: ['0', '7f', 'ff'],
             },
@@ -1160,7 +1232,7 @@ blackHoleSuns.prototype.draw3dmap = function () {
                 showbackground: true,
                 title: "X",
                 tickvals: [1, 0x7ff, 0xfff],
-                range: [0xc10, 0xc30],
+                //range: [0xc10, 0xc30],
                 ticktext: ['0', '7ff', 'fff'],
             },
             yaxis: {
@@ -1170,7 +1242,7 @@ blackHoleSuns.prototype.draw3dmap = function () {
                 zerolinecolor: "rgb(255, 255, 255)",
                 title: "Z",
                 showbackground: true,
-                range: [0x2f0, 0x310],
+                //range: [0x2f0, 0x310],
                 tickvals: [1, 0x7ff, 0xfff],
                 ticktext: ['0', '7ff', 'fff'],
             },

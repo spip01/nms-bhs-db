@@ -261,6 +261,7 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
 
 blackHoleSuns.prototype.displayBase = function (entry, idx) {
     $("#" + panels[idx].id + " #id-isbase").show();
+    $("#" + panels[idx].id + " #ck-hasbase").prop("checked",true);
     $("#" + panels[idx].id + " #id-basename").val(entry.basename);
     $("#" + panels[idx].id + " #btn-Owned").text(entry.owned);
 }
@@ -294,7 +295,7 @@ blackHoleSuns.prototype.clearPanel = function (d) {
     pnl.find("#id-byrow").hide();
     pnl.find("#id-isbase").hide();
     pnl.find("#id-fmcenter").hide();
-    loc.find("#id-traveled").hide();
+    pnl.find("#id-traveled").hide();
     pnl.find("#id-tocenter").hide();
 }
 
@@ -346,6 +347,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
             await bhs.updateEntry(entry, true);
 
             if (hasbase) {
+                console.log(loc.find("#id-basename"));
                 entry.basename = loc.find("#id-basename").val();
                 entry.owned = loc.find("#btn-Owned").text().stripNumber();
                 entry.owned = entry.owned ? entry.owned : "mine";
@@ -362,9 +364,9 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
     return ok;
 }
 
-blackHoleSuns.prototype.save = function () {
+blackHoleSuns.prototype.save = async function () {
     $("#status").empty();
-    if (bhs.extractEntry(pnlTop)) {
+    if (await bhs.extractEntry(pnlTop)) {
         bhs.clearPanels();
         bhs.last = [];
     }

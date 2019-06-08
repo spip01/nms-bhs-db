@@ -65,7 +65,7 @@ blackHoleSuns.prototype.buildFilePanel = function () {
     });
 }
 
-const inpCoordIdx = 6;
+const inpCoordIdx = 5;
 var importTable = [{
         match: /platform/i,
         field: "platform",
@@ -342,6 +342,7 @@ blackHoleSuns.prototype.readTextFile = function (f, check) {
                         entry[2].owned = "station";
 
                     entry[2] = mergeObjects(entry[2], entry[0]);
+                    entry[2] = mergeObjects(entry[2], entry[1]);
                     await bhs.batchWriteBase(b, entry[2], check);
                     await bhs.batchUpdate(b, entry[1], check); // don't overwrite bh info if it exists
                 } else {
@@ -425,8 +426,8 @@ blackHoleSuns.prototype.batchUpdate = async function (b, entry, check) {
             }
         } else {
             let d = doc.data()
-                if (d.uid == entry.uid || typeof d.uid == "undefined" && entry._name == d.player) {
-                    if (!check) {
+            if (d.uid == entry.uid || typeof d.uid == "undefined" && entry._name == d.player) {
+                if (!check) {
                     await b.batch.update(ref, entry);
                     bhs.filestatus(entry.addr + " updated", 2);
                 }
