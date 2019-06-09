@@ -7,11 +7,11 @@
     <meta name="keywords" content="no man's sky,map,black hole">
     <meta name="author" content="Stephen Piper">
     <meta name="application-name" content="NMS-Black Hole Suns">
+    <link rel="shortcut icon" href="favicon.ico">
 
     <script src="env.js"></script>
 
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-4"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-5"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
 
@@ -20,7 +20,7 @@
         }
         gtag('js', new Date());
 
-        gtag('config', GOOGLEANALYTICS_ID);
+        gtag('config', 'UA-66007591-5');
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -61,16 +61,17 @@
 
     <div id="r2" class="container-fluid">
         <div class="row">
-            <div class="col-2">&nbsp;</div>
-            <a id="about" class="col-5 text-centered h5 txt-def" href="https://dbguide.blackholesuns.com/">About</a>
+            <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">About</a>
+            <!--a  class="col-3 text-center h5 txt-def" href="galaxy.html">Galaxy</a-->
+            <!--a  class="col-3 text-center h5 txt-def" href="search.html">Search</a-->
 
-            <div id="full-usermenu" class="container col-5">
-                <button id="login" type="button" class="text-centered btn-def no-border">
-                    <h5>Login</h5>
+            <div id="full-usermenu" class="container col-4">
+                <button id="login" type="button" class="text-center btn-def no-border h5">
+                    Login
                 </button>
 
                 <div id="usermenu" class="dropdown" style="display: none">
-                    <button type="button" class="row text-centered txt-def no-border dropdown-toggle"
+                    <button type="button" class="row text-center txt-def no-border dropdown-toggle h5"
                         data-toggle="dropdown">
                         <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
                         <h5 id="username">
@@ -79,10 +80,10 @@
                     </button>
 
                     <div class="dropdown-menu bkg-def">
-                        <button id="logout" type="button" class="no-border text-centered dropdown-item btn-def">
+                        <button id="logout" type="button" class="no-border text-center dropdown-item btn-def">
                             <h5>Logout</h5>
                         </button>
-                        <button id="darkmode" type="button" class="no-border text-centered dropdown-item btn-def">
+                        <button id="darkmode" type="button" class="no-border text-center dropdown-item btn-def">
                             <h5>Dark Mode</h5>
                         </button>
                     </div>
@@ -141,14 +142,15 @@
     <!--googleon:all-->
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
+        <div id="loggedout" class="row text-danger h5">
+            <h4>This is the data entry page for the No Man's Sky Black Hole
+                Suns project. Please login.
+            </h4>
+        </div>
+
         <div class="row">
             <div class="col-md-7 col-sm-9 col-14">
                 <div class="card card-body pad-bottom">
-                    <div id="loggedout" class="row text-danger h5">
-                        <h4>This is the data entry page for the No Man's Sky Black Hole
-                            Suns project. Please login to enter data.
-                        </h4>
-                    </div>
 
                     <div id="panels"></div>
 
@@ -208,10 +210,10 @@
     <br>
 
     <div id="footer" class="row">
-        <a href="https://darc.blackholesuns.com/" class="col-3 text-center txt-def">BHS DaRC Web</a>
-        <a href="https://guide.blackholesuns.com/" class="col-3 text-center txt-def">Travel Guide</a>
-        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center txt-def">Follow us on Redit</a>
-        <a href="https://discord.blackholesuns.com/" class="col-4 text-center txt-def">Talk to us on Discord</a>
+        <a href="https://darc.blackholesuns.com/" class="col-3 text-center txt-def h5">BHS DaRC Web</a>
+        <a href="https://guide.blackholesuns.com/" class="col-3 text-center txt-def h5">Travel Guide</a>
+        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center txt-def h5">Follow us on Redit</a>
+        <a href="https://discord.blackholesuns.com/" class="col-4 text-center txt-def h5">Talk to us on Discord</a>
     </div>
 
 </body>

@@ -77,7 +77,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     <button id="btn-searchRegion" type="button" class="col-2 btn-def btn btn-sm">Search</button>&nbsp;
                     </div>
 
-                <div id="id-byrow" class="row" style="display:none">
+                <div id="id-byrow" class="row">
                     <div class="col-4 h6 txt-inp-def">Entered by&nbsp;</div>
                     <div id="id-by" class="col-md-5 col-6 txt-inp-def"></div>
                 </div>
@@ -163,6 +163,22 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         $(this).closest("[id|='pnl']").find("#id-glyph").html(bhs.addrToGlyph(addr));
 
         bhs.getEntry(addr, bhs.displaySingle, 0);
+        let e = {};
+        e.addr = addr;
+        e.xyzs = bhs.addressToXYZ(addr);
+        e.blackhole = true;
+        let min = [];
+
+        let list = Object.keys(bhs.entries);
+        for (let i = 0; i < list.length; ++i) {
+            if (bhs.entries[list[i]].bh) {
+                let d = bhs.calcDist(e.addr, bhs.entries[list[i]].bh.addr);
+                min.push(d);
+            }
+        }
+
+        min.sort((a, b) => a - b);
+        bhs.draw3dmap(bhs.entries, e, min[10] / 400);
 
         bhs.displayCalc();
     });
@@ -206,10 +222,10 @@ blackHoleSuns.prototype.displayListEntry = function (entry) {
         if (entry.bhbase)
             bhs.displayBase(entry.bhbase, pnlTop);
 
-        $("#" + panels[pnlTop].id+" #ck-single").prop("checked", false);
+        $("#" + panels[pnlTop].id + " #ck-single").prop("checked", false);
         $("#" + panels[pnlTop].id).show();
     } else {
-        $("#" + panels[pnlBottom].id+" #ck-single").prop("checked", true);
+        $("#" + panels[pnlBottom].id + " #ck-single").prop("checked", true);
         $("#" + panels[pnlBottom].id).hide();
     }
 
@@ -223,8 +239,8 @@ blackHoleSuns.prototype.displayListEntry = function (entry) {
     bhs.last = entry;
 }
 
-blackHoleSuns.prototype.displaySingle = function (entry, idx, reg) {
-    bhs.draw3dmap(bhs.entries, entry, reg);
+blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
+    bhs.draw3dmap(bhs.entries, entry, zoom);
 
     let loc = $("#" + panels[idx].id);
 
@@ -259,7 +275,7 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, reg) {
 
 blackHoleSuns.prototype.displayBase = function (entry, idx) {
     $("#" + panels[idx].id + " #id-isbase").show();
-    $("#" + panels[idx].id + " #ck-hasbase").prop("checked",true);
+    $("#" + panels[idx].id + " #ck-hasbase").prop("checked", true);
     $("#" + panels[idx].id + " #id-basename").val(entry.basename);
     $("#" + panels[idx].id + " #btn-Owned").text(entry.owned);
 }
@@ -290,7 +306,6 @@ blackHoleSuns.prototype.clearPanel = function (d) {
         $(this).find("[id|='btn']").text("");
     });
 
-    pnl.find("#id-byrow").hide();
     pnl.find("#id-isbase").hide();
     pnl.find("#id-fmcenter").hide();
     pnl.find("#id-traveled").hide();

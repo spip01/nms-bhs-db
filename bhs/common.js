@@ -40,6 +40,8 @@ function startUp() {
     if (starsCol != "stars5")
         $("body").css("background-color", "red");
 
+    console.log(document.domain);
+
     $("#login").click(function () {
         bhs.logIn();
     });
@@ -293,7 +295,7 @@ blackHoleSuns.prototype.getEntryByRegion = function (reg, displayfcn, idx) {
     ref.get().then(function (snapshot) {
         if (!snapshot.empty) {
             let d = snapshot.docs[0].data();
-            displayfcn(d, d.blackhole ? 0 : 1, true);
+            displayfcn(d, d.blackhole ? 0 : 1, bhs.user.mapoptions.zoomsz);
 
             if (idx == 0) {
                 if (!d.blackhole)
@@ -846,7 +848,8 @@ blackHoleSuns.prototype.updateTotal = function (add, ref, reset) {
 
 blackHoleSuns.prototype.getEntries = async function (displayFcn) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
-    ref = ref.where("uid", "==", bhs.user.uid);
+    if (document.domain != "test-nms-bhs.firebaseapp.com")// && document.domain != "localhost")
+        ref = ref.where("uid", "==", bhs.user.uid);
     await ref.get().then(async function (snapshot) {
         for (let i = 0; i < snapshot.size; ++i)
             bhs.addEntryList(snapshot.docs[i].data());
@@ -857,7 +860,8 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn) {
             displayFcn(bhs.entries);
 
             let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
-            ref = ref.where("uid", "==", bhs.user.uid);
+            if (document.domain != "test-nms-bhs.firebaseapp.com")// && document.domain != "localhost")
+                ref = ref.where("uid", "==", bhs.user.uid);
             ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()));
             bhs.subscribe("entries", ref, bhs.dispEntryList, displayFcn);
         }
