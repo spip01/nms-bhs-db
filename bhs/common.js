@@ -270,48 +270,48 @@ blackHoleSuns.prototype.changeName = function (loc) {
     });
 }
 
-blackHoleSuns.prototype.getEntry = function (addr, displayfcn, idx, flag) {
+blackHoleSuns.prototype.getEntry = function (addr, displayfcn, idx) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform, addr);
     ref.get().then(function (doc) {
         if (doc.exists) {
             let d = doc.data();
-            displayfcn(d, d.blackhole ? 0 : 1, flag);
+            displayfcn(d, d.blackhole ? 0 : 1);
 
             if (idx == 0) {
                 if (!d.blackhole)
-                    bhs.getEntryByConnection(d.addr, displayfcn, 1, flag);
+                    bhs.getEntryByConnection(d.addr, displayfcn, 1);
                 else
-                    bhs.getEntry(d.connection, displayfcn, 1, flag);
+                    bhs.getEntry(d.connection, displayfcn, 1);
             }
         }
     });
 }
 
-blackHoleSuns.prototype.getEntryByRegion = function (reg, displayfcn, idx, flag) {
+blackHoleSuns.prototype.getEntryByRegion = function (reg, displayfcn, idx) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
     ref = ref.where("reg", "==", reg);
     ref.get().then(function (snapshot) {
         if (!snapshot.empty) {
             let d = snapshot.docs[0].data();
-            displayfcn(d, d.blackhole ? 0 : 1, flag);
+            displayfcn(d, d.blackhole ? 0 : 1, true);
 
             if (idx == 0) {
                 if (!d.blackhole)
-                    bhs.getEntryByConnection(d.addr, displayfcn, 1, flag);
+                    bhs.getEntryByConnection(d.addr, displayfcn, 1);
                 else
-                    bhs.getEntry(d.connection, displayfcn, 1, flag);
+                    bhs.getEntry(d.connection, displayfcn, 1);
             }
         }
     });
 }
 
-blackHoleSuns.prototype.getEntryByConnection = function (addr, displayfcn, idx, flag) {
+blackHoleSuns.prototype.getEntryByConnection = function (addr, displayfcn, idx) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
     ref = ref.where("connection", "==", addr);
     ref.get().then(function (snapshot) {
         if (!snapshot.empty) {
             let d = snapshot.docs[0].data();
-            displayfcn(d, 0, flag);
+            displayfcn(d, 0);
         }
     });
 }
@@ -844,11 +844,9 @@ blackHoleSuns.prototype.updateTotal = function (add, ref, reset) {
     });
 }
 
-blackHoleSuns.prototype.getEntries = async function (displayFcn, limit) {
+blackHoleSuns.prototype.getEntries = async function (displayFcn) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform);
     ref = ref.where("uid", "==", bhs.user.uid);
-    ref = ref.orderBy("modded", "desc");
-    ref = ref.limit(parseInt(limit));
     await ref.get().then(async function (snapshot) {
         for (let i = 0; i < snapshot.size; ++i)
             bhs.addEntryList(snapshot.docs[i].data());

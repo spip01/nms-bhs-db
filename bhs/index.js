@@ -164,10 +164,6 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
         bhs.getEntry(addr, bhs.displaySingle, 0);
 
-        bhs.drawMap({
-            addr: addr
-        }, 1, true);
-
         bhs.displayCalc();
     });
 
@@ -227,7 +223,9 @@ blackHoleSuns.prototype.displayListEntry = function (entry) {
     bhs.last = entry;
 }
 
-blackHoleSuns.prototype.displaySingle = function (entry, idx) {
+blackHoleSuns.prototype.displaySingle = function (entry, idx, reg) {
+    bhs.draw3dmap(bhs.entries, entry, reg);
+
     let loc = $("#" + panels[idx].id);
 
     loc.find("#id-addr").val(entry.addr);
