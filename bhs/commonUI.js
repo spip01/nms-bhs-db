@@ -1121,17 +1121,17 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
                 if (opt.connection) {
                     if (entries[j] == "bh") {
                         out.con = initout();
-                        pushentry(out.con, entrylist[addr[i]].bh.xyzs, entrylist[addr[i]].bh.addr+"\n"+entrylist[addr[i]].bh.sys);
+                        pushentry(out.con, entrylist[addr[i]].bh.xyzs, entrylist[addr[i]].bh.addr+"<br>"+entrylist[addr[i]].bh.sys+"<br>"+entrylist[addr[i]].bh.reg);
                         pushentry(out.con, entrylist[addr[i]].bh.conxyzs, entrylist[addr[i]].bh.connection);
                         data.push(makedata(out.con, 4, opt["clr-bh"], opt["clr-con"], true));
                         break;
                     }
                 } else if (entries[j] == "bhbase" || entries[j] == "xitbase") {
                     out.base = initout(out.base);
-                    pushentry(out.base, entrylist[addr[i]][entries[j]].xyzs, entrylist[addr[i]][entries[j]].addr + "\n" + entrylist[addr[i]][entries[j]].basename);
+                    pushentry(out.base, entrylist[addr[i]][entries[j]].xyzs, entrylist[addr[i]][entries[j]].addr + "<br>" + entrylist[addr[i]][entries[j]].basename);
                 } else {
                     out[entries[j]] = initout(out[entries[j]]);
-                    pushentry(out[entries[j]], entrylist[addr[i]][entries[j]].xyzs, entrylist[addr[i]][entries[j]].addr + "\n" + entrylist[addr[i]][entries[j]].sys);
+                    pushentry(out[entries[j]], entrylist[addr[i]][entries[j]].xyzs, entrylist[addr[i]][entries[j]].addr + "<br>" + entrylist[addr[i]][entries[j]].sys + "<br>" + entrylist[addr[i]][entries[j]].reg);
                 }
             }
         }
@@ -1155,17 +1155,17 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
                 if (opt.connection) {
                     if (entries[j] == "bh") {
                         out.con = initout();
-                        pushentry(out.con, entry.bh.xyzs, entry.bh.addr + "\n" + entry.bh.sys);
+                        pushentry(out.con, entry.bh.xyzs, entry.bh.addr + "<br>" + entry.bh.sys + "<br>" + entry.bh.reg);
                         pushentry(out.con, entry.bh.conxyzs, entry.bh.connection);
                         Plotly.addTraces('plymap', makedata(out.con, 8, opt["clr-bh"], opt["clr-con"], true));
                         break;
                     }
                 } else if (entries[j] == "bhbase" || entries[j] == "xitbase") {
                     out.base = initout(out.base);
-                    pushentry(out.base, entry[entries[j]].xyzs, entry[entries[j]].addr + "\n" + entry[entries[j]].basename);
+                    pushentry(out.base, entry[entries[j]].xyzs, entry[entries[j]].addr + "<br>" + entry[entries[j]].basename);
                 } else {
                     out[entries[j]] = initout(out[entries[j]]);
-                    pushentry(out[entries[j]], entry[entries[j]].xyzs, entry[entries[j]].addr + "\n" + entry[entries[j]].sys);
+                    pushentry(out[entries[j]], entry[entries[j]].xyzs, entry[entries[j]].addr + "<br>" + entry[entries[j]].sys + "<br>" + entry[entries[j]].reg);
                 }
             }
 
@@ -1180,7 +1180,7 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
             }
         } else {
             out = initout();
-            pushentry(out, entry.xyzs, entry.addr + "\n" + entry.sys);
+            pushentry(out, entry.xyzs, entry.addr + "<br>" + entry.sys + "<br>" + entry.reg);
 
             if (entry.blackhole || entry.deadzone)
                 Plotly.addTraces('plymap', makedata(out, 10, opt["clr-bh"]));
