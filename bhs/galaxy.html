@@ -7,7 +7,6 @@
     <meta name="keywords" content="no man's sky,map,black hole">
     <meta name="author" content="Stephen Piper">
     <meta name="application-name" content="NMS-Black Hole Suns">
-    <link rel="shortcut icon" href="favicon.ico">
 
     <script src="env.js"></script>
 
@@ -49,11 +48,11 @@
 
     <script src="common.js"></script>
     <script src="commonUI.js"></script>
-    <script src="fileupload.js"></script>
-    <script src="index.js"></script>
+    <script src="galaxy.js"></script>
 
     <link rel="stylesheet" type="text/css" href="local.css">
     <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
+    <link rel="shortcut icon" href="favicon.ico">
 </head>
 
 <body class="bkg-def">
@@ -62,8 +61,8 @@
     <div id="r2" class="container-fluid">
         <div class="row">
             <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">About</a>
-            <a  class="col-3 text-center h5 txt-def" href="galaxy.html">Totals</a>
-            <!--a  class="col-3 text-center h5 txt-def" href="search.html">Search</a-->
+            <a class="col-3 text-center h5 txt-def" href="index.html">Input</a>
+            <a class="col-3 text-center h5 txt-def" href="search.html">Search</a>
 
             <div id="full-usermenu" class="container col-4">
                 <button id="login" type="button" class="text-center btn-def no-border h5">
@@ -73,18 +72,16 @@
                 <div id="usermenu" class="dropdown" style="display: none">
                     <button type="button" class="row text-center txt-def no-border dropdown-toggle h5"
                         data-toggle="dropdown">
-                        <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
-                        <h5 id="username">
-                            User
-                        </h5>
+                        <img id="userpic" class="h5" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
+                        <div id="username">User</div>
                     </button>
 
                     <div class="dropdown-menu bkg-def">
-                        <button id="logout" type="button" class="no-border text-center dropdown-item btn-def">
-                            <h5>Logout</h5>
+                        <button id="logout" type="button" class="h5 no-border text-center dropdown-item btn-def">
+                            Logout
                         </button>
-                        <button id="darkmode" type="button" class="no-border text-center dropdown-item btn-def">
-                            <h5>Dark Mode</h5>
+                        <button id="darkmode" type="button" class="h5 no-border text-center dropdown-item btn-def">
+                            Dark Mode
                         </button>
                     </div>
                 </div>
@@ -143,68 +140,59 @@
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div id="loggedout" class="row text-danger h5">
-            <h4>This is the data entry page for the No Man's Sky Black Hole
+            <h4>This is the data display page for the No Man's Sky Black Hole
                 Suns project. Please login.
             </h4>
         </div>
 
         <div class="row">
-            <div class="col-md-7 col-sm-9 col-14">
-                <div class="card card-body pad-bottom">
-
-                    <div id="panels"></div>
-
-                    <div id="entrybuttons" class="row">
-                        <div class="col-7">
-                            <div class="row">
-                                <button id="save" type="button" class="col-4 btn  btn-sm btn-def">Save</button>&nbsp;
-                                <button id="delete" type="button" class="col-4 btn  btn-sm btn-def disabled"
-                                    disabled>Delete</button>&nbsp;
-                                <button id="cancel" type="button"
-                                    class="col-4 btn btn-def  btn-sm">Cancel</button>&nbsp;
-                            </div>
-                        </div>
-                        <div id="status" class="border col-7 text-danger scrollbar container-fluid"
-                            style="overflow-y: scroll; height: 40px"></div>
-                    </div>
-                </div>
-                <br>
+            <div class="col-md-7 col-14">
+                <div id="totals" class="card border pad-bottom"></div>
+                  <br>
             </div>
 
-            <div class="col-md-7 col-sm-5 col-14">
-                <div id="pnl-map" class="card card-body border bkg-def">
+            <div class="col-md-7 col-14">
+                <div id="pnl-user" class="card card-body border pad-bottom"></div>
+                <br>
+
+                <div class="card card-body border pad-bottom bkg-def">
                     <div class="row">
-                        <div id="mapcol" class="col-10">
-                            <div id="plymap" style="max-width:1000px"></div>
+                        <div class="col-md-9 col-14">
+                            <div id="pnl-map" class="card card-body border bkg-def pad-bottom">
+                                <div id="plymap" style="max-width:1200px"></div>
+                            </div>
+                            <br>
                         </div>
 
-                        <div class="col-4">
-                            <a id="maplogo" html="https://darc.blackholesuns.com" class="row">
-                                <img id="logo" src="lBTK5EL.png" class="float-left" alt="BHS Logo" width="20"
-                                    height="20"></a>
-                            <br>
-                            <br>
+                        <div class="col-md-5 col-14">
+                            <div class="row">
+                                <div class="col-md-14 col-4">
+                                    <div id="mapkey" class="card card-body bkg-def border pad-bottom"></div>
+                                </div>
 
-                            <div id="mapkey" class="card card-body bkg-def border"></div>
+                                <div class="col-md-3 col-1"></div>
+
+                                <div class="col-md-6 col-3">
+                                    <br>
+                                    <a id="maplogo" html="https://darc.blackholesuns.com" class="row">
+                                        <img id="logo" src="lBTK5EL.png" class="float-center" alt="BHS Logo"
+                                            height="20px" width="20px"></a>
+                                </div>
+                            </div>
+                            <br>
                         </div>
                     </div>
-                    <br>
 
-                    <div id="mapoptions" class="card card-body bkg-def border"></div>
+                    <div class="card no-border">
+                        <div id="mapoptions" class="card card-body bkg-def border pad-bottom"></div>
+                    </div>
                 </div>
             </div>
         </div>
         <br>
 
-        <div class="row">
-            <div class="col-md-7 col-sm-9 col-14">
-                <div id="entryTable" class="card pad-bottom"></div>
-                <br>
-            </div>
-
-            <div class="col-md-7 col-sm-5 col-14">
-                <div id="totals" class="card border pad-bottom"></div>
-            </div>
+        <div id="showentries" class="card" style="display:none">
+            <div id="entryTable" class="card border pad-bottom"></div>
         </div>
     </div>
     <br>
@@ -212,7 +200,8 @@
     <div id="footer" class="row">
         <a href="https://darc.blackholesuns.com/" class="col-3 text-center txt-def h5">BHS DaRC Web</a>
         <a href="https://guide.blackholesuns.com/" class="col-3 text-center txt-def h5">Travel Guide</a>
-        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center txt-def h5">Follow us on Redit</a>
+        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center txt-def h5">Follow us on
+            Redit</a>
         <a href="https://discord.blackholesuns.com/" class="col-4 text-center txt-def h5">Talk to us on Discord</a>
     </div>
 

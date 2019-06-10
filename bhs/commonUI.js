@@ -41,6 +41,7 @@ blackHoleSuns.prototype.displayUser = async function (user) {
 
     let pnl = $("#pnl-user");
     pnl.find("#id-player").val(bhs.user._name);
+    pnl.find("#btn-Player").text(bhs.user._name);
     pnl.find("#btn-Platform").text(bhs.user.platform);
     pnl.find("#btn-Organization").text(bhs.user.org);
 
@@ -382,7 +383,7 @@ const totalsItemsHdr = `<div id="idname" class="row">`;
 const totalsItems = `       <div id="idname" class="format">title</div>`;
 const totalsItemsEnd = `</div>`;
 
-const totalsDef = [{
+const totalsCol = [{
     title: "",
     id: "id-what",
     format: "col-6",
@@ -390,10 +391,12 @@ const totalsDef = [{
     title: "Player",
     id: "id-player",
     format: " col-2 text-right",
+    where: "index",
 }, {
     title: "Contest",
     id: "id-contest",
     format: "col-2 text-right",
+    where: "index",
 }, {
     title: "All",
     id: "id-totalsall",
@@ -406,39 +409,52 @@ const totalsDef = [{
 
 const rowTotal = 0;
 const rowPlatform = 1;
-//const rowGalaxy = 2;
-const rowGalaxyPlatform = 2;
+const rowAltPlatform = 2;
+const rowGalaxy = 3;
+const rowGalaxyPlatform = 4;
 
 const totalsRows = [{
-        title: "Total BH",
-        id: "id-totalBH",
-    }, {
-        title: "Total[platform]",
-        id: "id-totalBHP",
-    },
-    /* {
-        title: "Total[galaxy]",
-        id: "id-totalBHG",
-    },*/
-    {
-        title: "Total[galaxy][platform]",
-        id: "id-totalBHGP",
-    }
-];
+    title: "Total BH",
+    id: "id-totalBH",
+}, {
+    title: "Total[platform]",
+    id: "id-totalBHP",
+}, {
+    title: "Total[altplatform]",
+    id: "id-totalAHP",
+    where: "galaxy",
+}, {
+    title: "Total[galaxy]",
+    id: "id-totalBHG",
+    where: "index",
+}, {
+    title: "Total[galaxy][platform]",
+    id: "id-totalBHGP",
+    where: "index",
+}];
 
 blackHoleSuns.prototype.buildTotals = function () {
+    let findex = window.location.pathname == "/index.html" || window.location.pathname == "/";
+    let fgal = window.location.pathname == "/galaxy.html";
+
     const pnl = `
         <div class="card-header h4 bkg-def txt-def">
             <div class="row">Total Black Hole Entries</div>
-            <div id="cname" class="row text-danger"></div>
+            <div id="cname" class="row clr-creme"></div>
         </div>
         <div class="card-body">
-            <label class="row h6 txt-inp-def">
+            <label id="id-showall" class="row h6 txt-inp-def">
                 Show All&nbsp;
                 <input id="ck-showall" type="checkbox">
             </label>
             <div id="hdr0" class="row border-bottom bkg-def txt-def"></div>
             <div id="itm0"></div>
+            <br>
+            
+            <div id="tgalaxy" class="card card-body" style="display:none">
+                <div id="hdrg" class="row border-bottom txt-def"></div>
+                <div id="itmg" class="scrollbar container-fluid" style="overflow-y: scroll; height:120px"></div>
+            </div>
             <br>
 
             <div class="card card-body">
@@ -457,23 +473,28 @@ blackHoleSuns.prototype.buildTotals = function () {
     tot.empty();
     tot.append(pnl);
 
+    if (!findex) {
+        tot.find("#itm1").css("height", "210px");
+        tot.find("#itm2").css("height", "120px");
+    }
+
     let h = "";
 
-    totalsDef.forEach(function (t) {
+    totalsCol.forEach(function (t) {
         let l = /idname/ [Symbol.replace](totalsItems, t.id);
         l = /title/ [Symbol.replace](l, t.title);
         h += /format/ [Symbol.replace](l, t.format + " ");
     });
-
     tot.find("#hdr0").append(h);
 
     totalsRows.forEach(function (x) {
-        let t = /platform/ [Symbol.replace](x.title, bhs.user.platform);
+        let t = /altplatform/ [Symbol.replace](x.title, bhs.user.platform != "PS4" ? "PS4" : "PC-XBox");
+        t = /platform/ [Symbol.replace](t, bhs.user.platform);
         t = /galaxy/ [Symbol.replace](t, bhs.user.galaxy);
 
         let h = /idname/ [Symbol.replace](totalsItemsHdr, x.id);
 
-        totalsDef.forEach(function (y) {
+        totalsCol.forEach(function (y) {
             let l = /idname/ [Symbol.replace](totalsItems, y.id);
             l = /title/ [Symbol.replace](l, t);
             h += /format/ [Symbol.replace](l, y.format);
@@ -483,6 +504,26 @@ blackHoleSuns.prototype.buildTotals = function () {
         h += totalsItemsEnd;
 
         tot.find("#itm0").append(h);
+    });
+
+    totalsCol.forEach(function (t) {
+        if (t.where == "index" && !findex) {
+            tot.find("#hdr0 #" + t.id).hide();
+            tot.find("#itm0 #" + t.id).hide();
+        }
+    });
+
+    totalsRows.forEach(function (t) {
+        if (t.where == "galaxy" && !fgal || t.where == "index" && !findex)
+            tot.find("#itm0 #" + t.id).hide();
+    });
+
+    totalsGalaxy.forEach(function (t) {
+        let l = /idname/ [Symbol.replace](totalsItems, t.id);
+        l = /title/ [Symbol.replace](l, t.title);
+        l = /format/ [Symbol.replace](l, t.hformat);
+
+        tot.find("#hdrg").append(l);
     });
 
     totalsPlayers.forEach(function (t) {
@@ -501,6 +542,11 @@ blackHoleSuns.prototype.buildTotals = function () {
         tot.find("#hdr2").append(l);
     });
 
+    if (fgal) {
+        tot.find("#id-showall").hide();
+        tot.find("#tgalaxy").show();
+    }
+
     tot.find("#ck-showall").change(function () {
         if ($(this).prop("checked"))
             bhs.displayAllUTotals(bhs.user);
@@ -510,26 +556,28 @@ blackHoleSuns.prototype.buildTotals = function () {
 }
 
 blackHoleSuns.prototype.displayTotals = function (entry, id) {
-    let pnl = $("#totals #itm0");
+    let fgal = window.location.pathname == "/galaxy.html";
     let cid = "";
 
     if (bhs.contest.name) {
         let now = firebase.firestore.Timestamp.fromDate(new Date());
         let s = "<h5>Contest: \"" + bhs.contest.name + "\"; ";
-        s += "Starts: " + bhs.contest.start.toDate().toDateLocalTimeString() + "; ";
-        s += now > bhs.contest.end ? "ENDED" : "Ends: " + bhs.contest.end.toDate().toDateLocalTimeString();
+        s += " Starts: " + bhs.contest.start.toDate().toDateLocalTimeString() + "; ";
+        s += " Ends: " + bhs.contest.end.toDate().toDateLocalTimeString() + (now > bhs.contest.end ? " CLOSED" : "");
         s += "</h5>";
 
         $("#totals #cname").html(s);
     }
 
-    if (id.match(/totals/))
+    if (id.match(/totals/)) {
         cid = "id-totalsall";
-
-    else if (id.match(/contest/))
+        if (fgal)
+            bhs.displayGTotals(entry, "itmg");
+    } else if (id.match(/contest/)) {
         cid = "id-contestall";
-
-    else if (id.match(/user/)) {
+        if (fgal)
+            bhs.displayGTotals(entry, "itmg", true);
+    } else if (id.match(/user/)) {
         bhs.displayUserTotals(entry, "itm1");
         if (entry.uid != bhs.user.uid)
             return;
@@ -553,6 +601,7 @@ blackHoleSuns.prototype.displayUTotals = function (entry, cid) {
     if (typeof entry != "undefined") {
         pnl.find("#" + totalsRows[rowTotal].id + " #" + cid).text(entry.total);
         pnl.find("#" + totalsRows[rowPlatform].id + " #" + cid).text(entry[bhs.user.platform]);
+        pnl.find("#" + totalsRows[rowAltPlatform].id + " #" + cid).text(entry[bhs.user.platform == "PS4" ? "PC-XBox" : "PS4"]);
 
         if (typeof entry.galaxy != "undefined" && typeof entry.galaxy[bhs.user.galaxy] != "undefined") {
             if (typeof rowGalaxy != "undefined")
@@ -574,10 +623,10 @@ blackHoleSuns.prototype.displayAllUTotals = function (entry) {
                 let t = /galaxy/ [Symbol.replace](totalsRows[rowGalaxyPlatform].title, g);
                 t = /platform/ [Symbol.replace](t, platformList[i].name);
                 let l = /title/ [Symbol.replace](totalsItems, t);
-                h += /format/ [Symbol.replace](l, totalsDef[0].format);
+                h += /format/ [Symbol.replace](l, totalsCol[0].format);
 
                 l = /title/ [Symbol.replace](totalsItems, entry[starsCol].galaxy[g][platformList[i].name]);
-                h += /format/ [Symbol.replace](l, totalsDef[1].format);
+                h += /format/ [Symbol.replace](l, totalsCol[1].format);
 
                 h += totalsItemsEnd;
                 pnl.append(h);
@@ -601,21 +650,67 @@ blackHoleSuns.prototype.clearAllUTotals = function (entry) {
 const totalsPlayers = [{
     title: "Contributors",
     id: "id-names",
-    format: "col-6",
-    hformat: "col-6",
+    format: "col-7",
+    hformat: "col-7",
 }, {
     title: "Contest",
     id: "id-ctst",
-    format: "col-4 text-right",
-    hformat: "col-5 text-center",
+    format: "col-2 text-right",
+    hformat: "col-2 text-center",
 }, {
     title: "Total",
     id: "id-qty",
-    format: "col-4 text-right",
-    hformat: "col-3 text-center",
+    format: "col-2 text-right",
+    hformat: "col-2 text-center",
+}];
+
+const totalsOrgs = [{
+    title: "Organization",
+    id: "id-names",
+    format: "col-7",
+    hformat: "col-7",
+}, {
+    title: "Contest",
+    id: "id-ctst",
+    format: "col-2 text-right",
+    hformat: "col-2 text-center",
+}, {
+    title: "Total",
+    id: "id-qty",
+    format: "col-2 text-right",
+    hformat: "col-2 text-center",
+}];
+
+const totalsGalaxy = [{
+    title: "Galaxy",
+    id: "id-names",
+    format: "col-5",
+    hformat: "col-5",
+}, {
+    title: "PC-XBox",
+    id: "id-pct",
+    format: "col-2 text-right",
+    hformat: "col-2 text-center",
+}, {
+    title: "PS4",
+    id: "id-ps4t",
+    format: "col-2 text-right",
+    hformat: "col-2 text-center",
+}, {
+    title: "Total",
+    id: "id-qty",
+    format: "col-2 text-right",
+    hformat: "col-2 text-center",
+}, {
+    title: "Contest",
+    id: "id-ctst",
+    format: "col-2 text-right",
+    hformat: "col-2 text-center",
 }];
 
 blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
+    let fgal = window.location.pathname == "/galaxy.html";
+
     if (entry[starsCol]) {
         const userHdr = `<div id="u-idname" class="row">`;
         const userItms = `  <div id="idname" class="format">title</div>`;
@@ -658,6 +753,14 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
             h += userEnd;
 
             pnl.append(h);
+
+            if (fgal && entry.uid) {
+                pnl.find("#u-" + rid).dblclick(function () {
+                    bhs.entries = {};
+                    $("#btn-Player").text(entry._name);
+                    bhs.getEntries(bhs.displayEntryList, entry.uid);
+                });
+            }
         } else {
             player.find("#id-qty").text(entry[starsCol].total);
             player.find("#id-ctst").text(bhs.contest.name && entry[starsCol].contest ? entry[starsCol].contest[bhs.contest.name].total : "");
@@ -665,22 +768,68 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
     }
 }
 
-const totalsOrgs = [{
-    title: "Organization",
-    id: "id-names",
-    format: "col-6",
-    hformat: "col-6",
-}, {
-    title: "Contest",
-    id: "id-ctst",
-    format: "col-4 text-right",
-    hformat: "col-5 text-center",
-}, {
-    title: "Total",
-    id: "id-qty",
-    format: "col-4 text-right",
-    hformat: "col-3 text-center",
-}];
+blackHoleSuns.prototype.displayGTotals = function (entry, id, ifcontest) {
+    if (entry[starsCol]) {
+        const userHdr = `<div id="u-idname" class="row">`;
+        const userItms = `  <div id="idname" class="format">title</div>`;
+        const userEnd = `</div>`;
+
+        let pnl = $("#totals #" + id);
+
+        for (let i = 0; i < galaxyList.length; ++i) {
+            let g = entry[starsCol].galaxy[galaxyList[i].name];
+            if (g && g.total > 0) {
+                let rid = galaxyList[i].name.nameToId();
+                let player = pnl.find("#u-" + rid);
+
+                if (player.length == 0) {
+                    let h = /idname/ [Symbol.replace](userHdr, rid)
+
+                    totalsGalaxy.forEach(function (x) {
+                        let l = /idname/ [Symbol.replace](userItms, x.id);
+                        l = /format/ [Symbol.replace](l, x.format);
+                        switch (x.title) {
+                            case "Galaxy":
+                                h += /title/ [Symbol.replace](l, galaxyList[i].number + ". " + galaxyList[i].name);
+                                break;
+                            case "Contest":
+                                h += /title/ [Symbol.replace](l, ifcontest ? g.total : "");
+                                break;
+                            case "Total":
+                                h += /title/ [Symbol.replace](l, !ifcontest ? g.total : "");
+                                break;
+                            case "PC-XBox":
+                                h += /title/ [Symbol.replace](l, !ifcontest ? g['PC-XBox'] : "");
+                                break;
+                            case "PS4":
+                                h += /title/ [Symbol.replace](l, !ifcontest ? g["PS4"] : "");
+                                break;
+                        }
+                    });
+
+                    h += userEnd;
+
+                    pnl.append(h);
+
+                    pnl.find("#u-" + rid).dblclick(function () {
+                        bhs.entries = {};
+                        $("#btn-Galaxy").text(galaxyList[i].name);
+                        $("#btn-Player").text("");
+                        bhs.getEntries(bhs.displayEntryList, null, galaxyList[i].name);
+                    });
+                } else {
+                    if (ifcontest)
+                        player.find("#id-ctst").text(g.total);
+                    else {
+                        player.find("#id-qty").text(g.total);
+                        player.find("#id-ps4t").text(g["PS4"]);
+                        player.find("#id-pct").text(g["PC-XBox"]);
+                    }
+                }
+            }
+        }
+    }
+}
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
     let title = `        
@@ -887,6 +1036,16 @@ blackHoleSuns.prototype.extractMapOptions = function () {
 }
 
 blackHoleSuns.prototype.setMapOptions = function (entry) {
+    let findex = window.location.pathname == "/" || window.location.pathname == "/index.html";
+
+    if (!findex) {
+        $("#id-mapinp").hide();
+        $("#id-zoomreg").hide();
+        $("#id-chain").hide();
+        $("#id-drawbase").hide();
+        $("#id-drawcon").hide();
+    }
+
     if (typeof entry.mapoptions != "undefined") {
         for (let i = 0; i < colortable.length; ++i) {
             $("#sel-" + colortable[i].id).val(entry.mapoptions[colortable[i].id]);
@@ -923,13 +1082,13 @@ blackHoleSuns.prototype.buildMap = function () {
 
     const settings = `
         <div class="row">
-            <div class="col-6">
-            <label class="row h6 txt-def">Chain Depth&nbsp;
-                <input id="inp-chaindepth" type="number" class="rounded col-5 txt-def" value="1">
-            </label>
-            <label class="row h6 txt-def">Reg Zoom Size&nbsp;
-                <input id="inp-zoomsz" type="number" class="rounded col-5 txt-def" value="3">
-            </label>
+            <div id="id-mapinp" class="col-6">
+                <label id="id-chaindepth" class="row h6 txt-def">Chain Depth&nbsp;
+                    <input id="inp-chaindepth" type="number" class="rounded col-5 txt-def" value="1">
+                </label>
+                <label id="id-zoomsz" class="row h6 txt-def">Reg Zoom Size&nbsp;
+                    <input id="inp-zoomsz" type="number" class="rounded col-5 txt-def" value="3">
+                </label>
             </div>
             <div class="col-8">
                 <div class="row">
@@ -937,7 +1096,7 @@ blackHoleSuns.prototype.buildMap = function () {
                         <input id="ck-3dmap" type="checkbox" checked>
                         3D Map
                     </label>
-                    <label class="col-7 h6 txt-def">
+                    <label id="id-drawcon" class="col-7 h6 txt-def">
                         <input id="ck-drawcon" type="checkbox" checked>
                         Draw Connections
                     </label>
@@ -945,11 +1104,11 @@ blackHoleSuns.prototype.buildMap = function () {
                         <input id="ck-drawexits" type="checkbox" checked>
                         Draw Exits
                     </label>
-                    <label class="col-7 h6 txt-def">
+                    <label id="id-drawbase" class="col-7 h6 txt-def">
                         <input id="ck-drawbase" type="checkbox" checked>
                         Draw Bases
                     </label>
-                    <label class="col-7 h6 txt-def">
+                    <label id="id-zoomreg" class="col-7 h6 txt-def">
                         <input id="ck-zoomreg" type="checkbox" checked>
                         Auto Zoom
                     </label>
@@ -961,8 +1120,8 @@ blackHoleSuns.prototype.buildMap = function () {
             <button id="btn-redraw" type="button" class="col-2 border btn btn-sm btn-def">Redraw</button>&nbsp;
             <button id="btn-mapsave" type="button" class="col-2 border btn btn-sm btn-def">Save</button>&nbsp;
             <div class="col-9 border">
-                <div class="col-14 h6 text-danger text-center">Click on Black Hole to select chain.</div>
-                <div class="col-14 h6 text-danger text-center">Click on color box in map key to change colors.</div>
+                <div id="id-chain" class="col-14 h6 clr-creme text-center">Click on Black Hole to select chain.</div>
+                <div class="col-14 h6 clr-creme text-center">Click on color box in map key to change colors. Then click redraw.</div>
             </div>
         </div>`;
 
@@ -1069,8 +1228,9 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
                 showbackground: true,
                 title: "Y",
                 range: [0, 256],
-                tickvals: [1, 0x7f, 0xff],
+                tickvals: [0, 0x7f, 0xff],
                 ticktext: ['0', '7f', 'ff'],
+                tickangle: 45,
             },
             xaxis: {
                 nticks: 3,
@@ -1079,9 +1239,10 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
                 zerolinecolor: "rgb(0, 0, 0)",
                 showbackground: true,
                 title: "X",
-                tickvals: [1, 0x7ff, 0xfff],
+                tickvals: [0, 0x7ff, 0xfff],
                 range: [0, 4096],
                 ticktext: ['0', '7ff', 'fff'],
+                tickangle: 45,
             },
             yaxis: {
                 nticks: 3,
@@ -1091,8 +1252,9 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
                 title: "Z",
                 showbackground: true,
                 range: [4096, 0],
-                tickvals: [1, 0x7ff, 0xfff],
+                tickvals: [0, 0x7ff, 0xfff],
                 ticktext: ['0', '7ff', 'fff'],
+                tickangle: 45,
             },
         },
     };
@@ -1106,7 +1268,7 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
     };
 
     if ((opt.zoomreg && zoom)) {
-        let s = parseInt(zoom)+1;
+        let s = parseInt(zoom) + 1;
         layout.scene.xaxis.range = [entry.xyzs.x - s, entry.xyzs.x + s];
         layout.scene.yaxis.range = [entry.xyzs.z + s, entry.xyzs.z - s];
         layout.scene.zaxis.range = [entry.xyzs.y - s, entry.xyzs.y + s];
