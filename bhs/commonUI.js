@@ -757,6 +757,9 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
             if (fgal && entry.uid) {
                 pnl.find("#u-" + rid).dblclick(function () {
                     bhs.entries = {};
+                    entry.galaxy = $("#btn-Galaxy").text().stripNumber();
+                    entry.platform = $("#btn-Platform").text().stripNumber();
+                    bhs.buildUserTable(entry)
                     $("#btn-Player").text(entry._name);
                     bhs.getEntries(bhs.displayEntryList, entry.uid);
                 });
@@ -1120,7 +1123,7 @@ blackHoleSuns.prototype.buildMap = function () {
             <button id="btn-redraw" type="button" class="col-2 border btn btn-sm btn-def">Redraw</button>&nbsp;
             <button id="btn-mapsave" type="button" class="col-2 border btn btn-sm btn-def">Save</button>&nbsp;
             <div class="col-9 border">
-                <div id="id-chain" class="col-14 h6 clr-creme text-center">Click on Black Hole to select chain.</div>
+                <!--div id="id-chain" class="col-14 h6 clr-creme text-center">Click on Black Hole to select chain.</div-->
                 <div class="col-14 h6 clr-creme text-center">Click on color box in map key to change colors. Then click redraw.</div>
             </div>
         </div>`;
@@ -1152,16 +1155,18 @@ blackHoleSuns.prototype.buildMap = function () {
     $("#btn-mapsave").click(function () {
         bhs.saveUser();
     });
+
 }
 
 blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
     let opt = bhs.extractMapOptions();
 
-    var pushentry = function (data, entry, label) {
+    var pushentry = function (data, entry, label, alt) {
         data.x.push(entry.x);
         data.y.push(entry.z);
         data.z.push(entry.y);
         data.t.push(label);
+        data.a.push(alt);
     };
 
     var initout = function (out) {
@@ -1171,6 +1176,7 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
             out.y = [];
             out.z = [];
             out.t = [];
+            out.a = [];
         }
 
         return out;
@@ -1182,6 +1188,7 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
             y: out.y,
             z: out.z,
             text: out.t,
+            altdata: out.a,
             mode: 'markers',
             marker: {
                 size: size,
@@ -1293,24 +1300,29 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
 
         let addr = Object.keys(entrylist);
         for (let i = 0; i < addr.length; ++i) {
+            let e = entrylist[addr[i]];
 
-            let entries = Object.keys(entrylist[addr[i]]);
+            let entries = Object.keys(e);
             for (let j = 0; j < entries.length; ++j) {
+                let w = entries[j];
 
                 if (opt.connection) {
-                    if (entries[j] == "bh") {
+                    if (w == "bh") {
                         out.con = initout();
-                        pushentry(out.con, entrylist[addr[i]].bh.xyzs, entrylist[addr[i]].bh.addr + "<br>" + entrylist[addr[i]].bh.sys + "<br>" + entrylist[addr[i]].bh.reg);
-                        pushentry(out.con, entrylist[addr[i]].bh.conxyzs, entrylist[addr[i]].bh.connection);
+                        pushentry(out.con, e.bh.xyzs, e.bh.addr + "<br>" + e.bh.sys + "<br>" + e.bh.reg);
+                        pushentry(out.con, e.bh.conxyzs, e.bh.connection);
                         data.push(makedata(out.con, 4, opt["clr-bh"], opt["clr-con"], true));
                         break;
                     }
-                } else if (entries[j] == "bhbase" || entries[j] == "xitbase") {
+                } else if (w == "bhbase" || w == "xitbase") {
                     out.base = initout(out.base);
-                    pushentry(out.base, entrylist[addr[i]][entries[j]].xyzs, entrylist[addr[i]][entries[j]].addr + "<br>" + entrylist[addr[i]][entries[j]].basename);
+                    pushentry(out.base, e[w].xyzs, e[w].addr + "<br>" + e[w].basename);
                 } else {
-                    out[entries[j]] = initout(out[entries[j]]);
-                    pushentry(out[entries[j]], entrylist[addr[i]][entries[j]].xyzs, entrylist[addr[i]][entries[j]].addr + "<br>" + entrylist[addr[i]][entries[j]].sys + "<br>" + entrylist[addr[i]][entries[j]].reg);
+                    out[w] = initout(out[w]);
+                    pushentry(out[w], e[w].xyzs, e[w].addr + "<br>" + e[w].sys + "<br>" + e[w].reg, {
+                        bh: e.bh?e.bh.xyzs:null,
+                        xit: e.xit?e.xit.xyzs:null
+                    });
                 }
             }
         }
@@ -1326,26 +1338,65 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
                 data.push(makedata(out.base, 2, opt["clr-base"]));
         }
 
-        Plotly.newPlot('plymap', data, layout);
+        Plotly.newPlot('plymap', data, layout).then(plot => {
+            plot.on('plotly_click', function (e) {
+                setTimeout(function () {
+                    if (e.points.length > 0) {
+                        let d = e.points[0].data.altdata[e.points[0].pointNumber];
+                        if (d.bh && d.xit) {
+                            console.log(d.bh);
+                            out.con = initout();
+                            pushentry(out.con, d.bh);
+                            pushentry(out.con, d.xit);
+                            Plotly.addTraces('plymap', makedata(out.con, 4, opt["clr-bh"], opt["clr-con"], true));
+                        }
+
+                        if (window.location.pathname=="/index.html"||window.location.pathname=="/")
+                        bhs.getEntry(e.points[0].text.slice(0, 19), bhs.displaySingle, 0);
+                    }
+                }, 500);
+            });
+
+            // plot.on('plotly_hover', e => {
+            //     if (e.points.length > 0) {
+            //         let d = e.points[0].data;
+            //         let xyz = d.altdata[e.points[0].pointNumber];
+            //         if (xyz) {
+            //             console.log(xyz);
+            //             //Plotly.Fx.hover('plymap', {yval:[xyz.z], xval:[xyz.x], zval:[xyz.y] },["xyz"]);
+            //             // for (let i = 0; i < d.x.length; ++i) {
+            //                 // if (d.x[i] == xyz.x && d.y[i] == xyz.z && d.z[i] == xyz.y)
+            //                     Plotly.restyle('plymap', {
+            //                         "marker.size": 8
+            //                     }, {y:[xyz.z], x:[xyz.x], z:[xyz.y] })
+            //             // }
+            //         }
+            //     }
+            // });
+        });
+
     } else {
         if (!entry.addr) {
             let entries = Object.keys(entry);
             for (let j = 0; j < entries.length; ++j) {
-
+                let w = entries[j];
                 if (opt.connection) {
-                    if (entries[j] == "bh") {
+                    if (w == "bh") {
                         out.con = initout();
                         pushentry(out.con, entry.bh.xyzs, entry.bh.addr + "<br>" + entry.bh.sys + "<br>" + entry.bh.reg);
                         pushentry(out.con, entry.bh.conxyzs, entry.bh.connection);
                         Plotly.addTraces('plymap', makedata(out.con, 8, opt["clr-bh"], opt["clr-con"], true));
                         break;
                     }
-                } else if (entries[j] == "bhbase" || entries[j] == "xitbase") {
+                } else if (w == "bhbase" || w == "xitbase") {
                     out.base = initout(out.base);
-                    pushentry(out.base, entry[entries[j]].xyzs, entry[entries[j]].addr + "<br>" + entry[entries[j]].basename);
+                    pushentry(out.base, entry[w].xyzs, entry[w].addr + "<br>" + entry[w].basename);
                 } else {
-                    out[entries[j]] = initout(out[entries[j]]);
-                    pushentry(out[entries[j]], entry[entries[j]].xyzs, entry[entries[j]].addr + "<br>" + entry[entries[j]].sys + "<br>" + entry[entries[j]].reg);
+                    out[w] = initout(out[w]);
+                    pushentry(out[w], entry[w].xyzs, entry[w].addr + "<br>" + entry[w].sys + "<br>" + entry[w].reg, {
+                        bh: entry.bh?entry.bh.xyzs:null,
+                        xit: entry.xit?entry.xit.xyzs:null
+                    });
                 }
             }
 
@@ -1361,7 +1412,10 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
             }
         } else {
             out = initout();
-            pushentry(out, entry.xyzs, entry.addr + "<br>" + entry.sys + "<br>" + entry.reg);
+            pushentry(out, entry.xyzs, entry.addr + "<br>" + entry.sys + "<br>" + entry.reg, {
+                bh: entry.xyzs,
+                xit: entry.conxyzs
+            });
 
             if (entry.blackhole || entry.deadzone)
                 Plotly.addTraces('plymap', makedata(out, 8, opt["clr-bh"]));
