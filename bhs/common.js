@@ -911,8 +911,8 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, uid, galaxy, pl
 }
 
 blackHoleSuns.prototype.dispEntryList = function (entry, id, displayFcn) {
-    bhs.entries[entry.galaxy][entry.platform] = bhs.addEntryList(entry, bhs.entries[entry.galaxy][entry.platform]);
-    bhs.list = bhs.addEntryList(entry, bhs.list);
+    bhs.entries = bhs.addEntryList(entry, bhs.entries);
+    bhs.list[entry.galaxy][entry.platform] = bhs.addEntryList(entry, bhs.list[entry.galaxy][entry.platform]);
     displayFcn(bhs.entries);
 }
 
@@ -976,8 +976,7 @@ blackHoleSuns.prototype.addBaseList = function (entry, list) {
 
 blackHoleSuns.prototype.dispBaseList = function (entry, id, displayFcn) {
     bhs.entries = bhs.addBaseList(entry, bhs.entries);
-    let e = bhs.entries[entry.galaxy][entry.platform];
-    displayFcn(e);
+    displayFcn(bhs.entries);
 }
 
 

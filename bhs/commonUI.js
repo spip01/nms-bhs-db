@@ -340,6 +340,7 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist, entry) {
             h += lineEnd;
         }
 
+        $("#userItems").empty();
         $("#userItems").append(h);
         bhs.displaySettings(bhs.user);
     } else {
