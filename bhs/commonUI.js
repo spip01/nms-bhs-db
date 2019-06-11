@@ -577,16 +577,33 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
         cid = "id-contestall";
         if (fgal)
             bhs.displayGTotals(entry, "itmg", true);
+    } else if (id.match(/players/)) {
+        bhs.displayPlayerTotals(entry, "itm1");
     } else if (id.match(/user/)) {
         bhs.displayUserTotals(entry, "itm1");
-        if (entry.uid != bhs.user.uid)
-            return;
 
         cid = "id-player";
     } else if (id.match(/org/)) {
         bhs.displayUserTotals(entry, "itm2");
         return;
     }
+
+    let loc = $("#itm1");
+    var list = loc.children();
+
+    if (fgal)
+        list.sort((a, b) => $(a).prop("id").toLowerCase() > $(b).prop("id").toLowerCase() ? 1 :
+            $(a).prop("id").toLowerCase() < $(b).prop("id").toLowerCase() ? -1 : 0);
+    else
+        list.sort((a, b) => parseInt($(a).find("#id-qty").text()) < parseInt($(b).find("#id-qty").text()) ? 1 :
+            parseInt($(a).find("#id-qty").text()) > parseInt($(b).find("#id-qty").text()) ? -1 : 0);
+
+    loc.empty();
+    for (var i = 0; i < list.length; i++)
+        loc.append(list[i]);
+
+    if (entry.uid != bhs.user.uid)
+        return;
 
     bhs.displayUTotals(entry[starsCol], cid);
 
@@ -717,7 +734,7 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
         const userEnd = `</div>`;
 
         let pnl = $("#totals #" + id);
-        let rid = entry.uid ? entry.uid : entry.name.nameToId();
+        let rid = entry._name ? entry._name.nameToId() : entry.name.nameToId();
         let player = pnl.find("#u-" + rid);
 
         if (player.length == 0) {
@@ -768,6 +785,17 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
             player.find("#id-qty").text(entry[starsCol].total);
             player.find("#id-ctst").text(bhs.contest.name && entry[starsCol].contest ? entry[starsCol].contest[bhs.contest.name].total : "");
         }
+    }
+}
+
+blackHoleSuns.prototype.displayPlayerTotals = function (entry, id) {
+    let u = Object.keys(entry);
+    for (let i = 0; i < u.length; ++i) {
+        let e = {};
+        e._name = u[i];
+        e[starsCol] = entry[u[i]];
+
+        bhs.displayUserTotals(e, id);
     }
 }
 
@@ -1320,8 +1348,8 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
                 } else {
                     out[w] = initout(out[w]);
                     pushentry(out[w], e[w].xyzs, e[w].addr + "<br>" + e[w].sys + "<br>" + e[w].reg, {
-                        bh: e.bh?e.bh.xyzs:null,
-                        xit: e.xit?e.xit.xyzs:null
+                        bh: e.bh ? e.bh.xyzs : null,
+                        xit: e.xit ? e.xit.xyzs : null
                     });
                 }
             }
@@ -1351,8 +1379,8 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
                             Plotly.addTraces('plymap', makedata(out.con, 4, opt["clr-bh"], opt["clr-con"], true));
                         }
 
-                        if (window.location.pathname=="/index.html"||window.location.pathname=="/")
-                        bhs.getEntry(e.points[0].text.slice(0, 19), bhs.displaySingle, 0);
+                        if (window.location.pathname == "/index.html" || window.location.pathname == "/")
+                            bhs.getEntry(e.points[0].text.slice(0, 19), bhs.displaySingle, 0);
                     }
                 }, 500);
             });
@@ -1394,8 +1422,8 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
                 } else {
                     out[w] = initout(out[w]);
                     pushentry(out[w], entry[w].xyzs, entry[w].addr + "<br>" + entry[w].sys + "<br>" + entry[w].reg, {
-                        bh: entry.bh?entry.bh.xyzs:null,
-                        xit: entry.xit?entry.xit.xyzs:null
+                        bh: entry.bh ? entry.bh.xyzs : null,
+                        xit: entry.xit ? entry.xit.xyzs : null
                     });
                 }
             }

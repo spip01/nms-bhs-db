@@ -1028,10 +1028,15 @@ blackHoleSuns.prototype.getUsers = function (displayFcn) {
     bhs.subscribe("users", ref, displayFcn);
 }
 
-blackHoleSuns.prototype.getTotals = function (displayFcn) {
+blackHoleSuns.prototype.getTotals = async function (displayFcn) {
     let fgal = window.location.pathname == "/galaxy.html";
 
-    let ref = bhs.getStarsColRef("totals");
+    let ref = bhs.getStarsColRef("players");
+    ref.get().then(await function(doc){
+        displayFcn(doc.data(), doc.ref.path);
+    });
+
+    ref = bhs.getStarsColRef("totals");
     bhs.subscribe("totals", ref, displayFcn);
 
     ref = bhs.getUsersColRef();
