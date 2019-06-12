@@ -157,7 +157,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
     bhs.buildMenu(loc, "Economy", economyList);
     bhs.buildMenu(loc, "Owned", ownershipList);
 
-    loc.find("#id-addr").blur(function () {
+    loc.find("#id-addr").change(function () {
         let addr = bhs.reformatAddress($(this).val());
         $(this).val(addr);
         $(this).closest("[id|='pnl']").find("#id-glyph").html(bhs.addrToGlyph(addr));
@@ -185,7 +185,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
     loc.find("#id-addr").keyup(function (event) {
         if (event.keyCode === 13) {
-            $(this).blur();
+            $(this).change();
         }
     });
 
@@ -240,7 +240,12 @@ blackHoleSuns.prototype.displayListEntry = function (entry) {
 }
 
 blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
-    bhs.draw3dmap(bhs.entries, entry, zoom);
+    if (zoom) {
+        $("#inp-ctrcord").val(entry.addr);
+        bhs.changeMapLayout(true, true);
+    }
+
+    bhs.draw3dmap(bhs.entries, entry);
 
     let loc = $("#" + panels[idx].id);
 

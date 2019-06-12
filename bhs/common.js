@@ -300,7 +300,7 @@ blackHoleSuns.prototype.getEntryByRegion = function (reg, displayfcn, idx) {
     ref.get().then(function (snapshot) {
         if (!snapshot.empty) {
             let d = snapshot.docs[0].data();
-            displayfcn(d, d.blackhole ? 0 : 1, bhs.user.mapoptions.zoomsz);
+            displayfcn(d, d.blackhole ? 0 : 1, $("#ck-zoomreg").prop("checked"));
 
             if (idx == 0) {
                 if (!d.blackhole)

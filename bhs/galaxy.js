@@ -4,6 +4,7 @@ $(document).ready(function () {
     startUp();
     bhs.buildSelectPanel();
 });
+
 blackHoleSuns.prototype.buildSelectPanel = async function () {
     const panel = `
         <div id="sel">

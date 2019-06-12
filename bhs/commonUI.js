@@ -22,6 +22,7 @@ blackHoleSuns.prototype.doLoggedin = function () {
 }
 
 blackHoleSuns.prototype.displayUser = async function (user) {
+    let ifindex = window.location.pathname == "/index.html" || window.location.pathname == "/";
     let changed = bhs.user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform);
 
     bhs.user = mergeObjects(bhs.user, user);
@@ -41,7 +42,8 @@ blackHoleSuns.prototype.displayUser = async function (user) {
 
     let pnl = $("#pnl-user");
     pnl.find("#id-player").val(bhs.user._name);
-    pnl.find("#btn-Player").text(bhs.user._name);
+    if (ifindex)
+        pnl.find("#btn-Player").text(bhs.user._name);
     pnl.find("#btn-Platform").text(bhs.user.platform);
     pnl.find("#btn-Organization").text(bhs.user.org);
 
@@ -110,14 +112,14 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, true);
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, true);
 
-    $("#id-player").blur(function () {
+    $("#id-player").change(function () {
         user = bhs.extractUser();
         bhs.changeName(user);
     });
 
     $("#id-player").keyup(function (event) {
         if (event.keyCode === 13) {
-            $(this).blur();
+            $(this).change();
         }
     });
 
@@ -627,11 +629,20 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
     $("#contrib").html("Total Contributors: " + list.length);
 
     loc.empty();
-    for (var i = 0; i < list.length; i++)
+    for (var i = 0; i < list.length; i++) {
         loc.append(list[i]);
 
-        if (entry.uid != bhs.user.uid)
-            return;
+        loc.find("#" + $(list[i]).prop("id")).dblclick(function () {
+            bhs.entries = {};
+            let galaxy = $("#btn-Galaxy").text().stripNumber();
+            let platform = $("#btn-Platform").text().stripMarginWS();
+            $("#btn-Player").text($(this).find("#id-names").text().stripMarginWS());
+            bhs.getEntries(bhs.displayEntryList, $(this).find("#id-uid").text().stripMarginWS(), galaxy, platform);
+        });
+    }
+
+    if (entry.uid != bhs.user.uid)
+        return;
 
     bhs.displayUTotals(entry[starsCol], cid);
 
@@ -699,6 +710,11 @@ const totalsPlayers = [{
     id: "id-names",
     format: "col-7",
     hformat: "col-7",
+}, {
+    title: "",
+    id: "id-uid",
+    format: "col-1",
+    hformat: "col-1",
 }, {
     title: "Contest",
     id: "id-ctst",
@@ -777,6 +793,9 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
                     case "Contributors":
                         h += /title/ [Symbol.replace](l, entry._name ? entry._name : entry.name);
                         break;
+                    case "uid":
+                        h += /title/ [Symbol.replace](l, entry.uid ? entry.uid : "");
+                        break;
                     case "Contest":
                         let disq = false;
                         if (bhs.contest) {
@@ -803,14 +822,14 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
 
             pnl.append(h);
 
-            if (fgal && entry.uid) {
-                pnl.find("#u-" + rid).dblclick(function () {
+            if (fgal && entry.uid && rid) {
+                let player = pnl.find("#u-" + rid);
+                player.dblclick(function () {
                     bhs.entries = {};
-                    entry.galaxy = $("#btn-Galaxy").text().stripNumber();
-                    entry.platform = $("#btn-Platform").text().stripNumber();
-                    bhs.buildUserTable(entry)
+                    let galaxy = $("#btn-Galaxy").text().stripNumber();
+                    let platform = $("#btn-Platform").text().stripNumber();
                     $("#btn-Player").text(entry._name);
-                    bhs.getEntries(bhs.displayEntryList, entry.uid);
+                    bhs.getEntries(bhs.displayEntryList, entry.uid, galaxy, platform);
                 });
             }
         } else {
@@ -819,6 +838,8 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
                 player.find("#id-ctst").text(bhs.contest.name && entry[starsCol].contest ? entry[starsCol].contest[bhs.contest.name].total : "");
         }
     }
+
+    $("#totals #id-uid").hide();
 
     if (!bhs.contest)
         $("#totals #id-ctst").hide();
@@ -877,13 +898,6 @@ blackHoleSuns.prototype.displayGTotals = function (entry, id, ifcontest) {
                     h += userEnd;
 
                     pnl.append(h);
-
-                    pnl.find("#u-" + rid).dblclick(function () {
-                        bhs.entries = {};
-                        $("#btn-Galaxy").text(galaxyList[i].name);
-                        $("#btn-Player").text("");
-                        bhs.getEntries(bhs.displayEntryList, null, galaxyList[i].name);
-                    });
                 } else {
                     if (ifcontest)
                         player.find("#id-ctst").text(g.total);
@@ -985,8 +999,6 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
 
 blackHoleSuns.prototype.saveUser = function () {
     let user = bhs.extractUser();
-    user.settings = bhs.extractSettings();
-    user.mapoptions = bhs.extractMapOptions();
 
     if (bhs.validateUser(user))
         bhs.updateUser(user);
@@ -1086,62 +1098,109 @@ var colortable = [{
     name: "Page Bkg",
     id: "clr-page",
     color: "#c0c0c0"
+}, {
+    name: "Grid",
+    id: "clr-grid",
+    color: "#000000"
 }];
+
+const minmaxtable = [{
+        id: "xmin",
+        val: 0
+    },
+    {
+        id: "xmax",
+        val: 4095
+    },
+    {
+        id: "ymin",
+        val: 0
+    },
+    {
+        id: "ymax",
+        val: 255
+    },
+    {
+        id: "zmin",
+        val: 0
+    },
+    {
+        id: "zmax",
+        val: 4095
+    },
+];
 
 blackHoleSuns.prototype.extractMapOptions = function () {
     let c = {};
+    let opt = $("#mapkey");
 
     for (let i = 0; i < colortable.length; ++i)
-        c[colortable[i].id] = $("#sel-" + colortable[i].id).val();
+        c[colortable[i].id] = opt.find("#sel-" + colortable[i].id).val();
 
-    c.depth = $("#inp-chaindepth").val()
-    c.zoomsz = $("#inp-zoomsz").val()
-    c.connection = $("#ck-drawcon").prop("checked");
-    c.map3d = $("#ck-3dmap").prop("checked");
-    c.exit = $("#ck-drawexits").prop("checked");
-    c.base = $("#ck-drawbase").prop("checked");
-    c.zoomreg = $("#ck-zoomreg").prop("checked");
+    opt = $("#mapoptions");
+    c.zoomsz = 5;
+    for (let i = 0; i < minmaxtable.length; ++i)
+        c[minmaxtable[i].id] = parseInt(opt.find("#inp-" + minmaxtable[i].id).val());
+
+    c.ctrcord = bhs.reformatAddress(opt.find("#inp-ctrcord").val());
+    c.ctrzoom = parseInt(opt.find("#inp-ctrzoom").val());
+
+    c.connection = opt.find("#ck-drawcon").prop("checked");
+    c.map3d = opt.find("#ck-3dmap").prop("checked");
+    c.exit = opt.find("#ck-drawexits").prop("checked");
+    c.base = opt.find("#ck-drawbase").prop("checked");
+    c.zoomreg = opt.find("#ck-zoomreg").prop("checked");
+    c.addzero = opt.find("#ck-addzero").prop("checked");
 
     return c;
 }
 
 blackHoleSuns.prototype.setMapOptions = function (entry) {
     let findex = window.location.pathname == "/" || window.location.pathname == "/index.html";
+    let opt = $("#mapoptions");
 
     if (!findex) {
-        $("#id-mapinp").hide();
-        $("#id-zoomreg").hide();
-        $("#id-chain").hide();
-        $("#id-drawbase").hide();
-        $("#id-drawcon").hide();
+        opt.find("#id-drawbase").hide();
+        opt.find("#id-drawcon").hide();
+        opt.find("#id-zoomreg").hide();
     }
 
     if (typeof entry.mapoptions != "undefined") {
-        for (let i = 0; i < colortable.length; ++i) {
-            $("#sel-" + colortable[i].id).val(entry.mapoptions[colortable[i].id]);
-            $("#" + colortable[i].id).css("color", entry.mapoptions[colortable[i].id]);
-        }
+        opt = $("#mapkey");
+        for (let i = 0; i < colortable.length; ++i)
+            opt.find("#sel-" + colortable[i].id).val(entry.mapoptions[colortable[i].id] ? entry.mapoptions[colortable[i].id] : colortable[i].color);
 
-        $("#inp-chaindepth").val(entry.mapoptions.depth);
-        $("#inp-zoomsz").val(entry.mapoptions.zoomsz ? entry.mapoptions.zoomsz : 3);
-        $("#ck-drawcon").prop("checked", entry.mapoptions.connection);
-        $("#ck-3dmap").prop("checked", entry.mapoptions.map3d);
-        $("#ck-drawexits").prop("checked", entry.mapoptions.exit);
-        $("#ck-drawbase").prop("checked", entry.mapoptions.base);
-        $("#ck-zoomreg").prop("checked", entry.mapoptions.zoomreg ? entry.mapoptions.zoomreg : false);
+        opt = $("#mapoptions");
+        for (let i = 0; i < minmaxtable.length; ++i)
+            opt.find("#inp-" + minmaxtable[i].id).val(entry.mapoptions[minmaxtable[i].id] ? entry.mapoptions[minmaxtable[i].id] : minmaxtable[i].val);
+
+        opt.find("#inp-ctrcord").val(entry.mapoptions.ctrcord ? entry.mapoptions.ctrcord : "07FF:007F:07FF:0000");
+        opt.find("#inp-ctrzoom").val(entry.mapoptions.ctrzoom ? entry.mapoptions.ctrzoom : 10);
+
+        opt.find("#ck-drawcon").prop("checked", entry.mapoptions.connection ? entry.mapoptions.connection : false);
+        opt.find("#ck-3dmap").prop("checked", entry.mapoptions.map3d ? entry.mapoptions.map3d : true);
+        opt.find("#ck-drawexits").prop("checked", entry.mapoptions.exit ? entry.mapoptions.exit : false);
+        opt.find("#ck-drawbase").prop("checked", entry.mapoptions.base ? entry.mapoptions.base : false);
+        opt.find("#ck-zoomreg").prop("checked", entry.mapoptions.zoomreg ? entry.mapoptions.zoomreg : false);
+        opt.find("#ck-addzero").prop("checked", entry.mapoptions.addzero ? entry.mapoptions.addzero : true);
     } else {
-        for (let i = 0; i < colortable.length; ++i) {
-            $("#sel-" + colortable[i].id).val(colortable[i].color);
-            $("#" + colortable[i].id).css("color", colortable[i].color);
-        }
+        opt = $("#mapkey");
+        for (let i = 0; i < colortable.length; ++i)
+            opt.find("#sel-" + colortable[i].id).val(colortable[i].color);
 
-        $("#inp-chaindepth").val(2);
-        $("#inp-zoomsz").val(3);
-        $("#ck-drawcon").prop("checked", false);
-        $("#ck-3dmap").prop("checked", false);
-        $("#ck-drawexits").prop("checked", false);
-        $("#ck-drawbase").prop("checked", false);
-        $("#ck-zoomreg").prop("checked", false);
+        opt = $("#mapoptions");
+        for (let i = 0; i < minmaxtable.length; ++i)
+            opt.find("#inp-" + minmaxtable[i].id).val(minmaxtable[i].val);
+
+        opt.find("#inp-ctrcord").val("07FF:007F:07FF:0000");
+        opt.find("#inp-ctrzoom").val(10);
+
+        opt.find("#ck-drawcon").prop("checked", false);
+        opt.find("#ck-3dmap").prop("checked", true);
+        opt.find("#ck-drawexits").prop("checked", false);
+        opt.find("#ck-drawbase").prop("checked", false);
+        opt.find("#ck-zoomreg").prop("checked", false);
+        opt.find("#ck-addzero").prop("checked", true);
     }
 }
 
@@ -1155,43 +1214,73 @@ blackHoleSuns.prototype.buildMap = function () {
     $("#logo").prop("height", w - 16);
 
     const settings = `
+        <br>
         <div class="row">
             <div id="id-mapinp" class="col-6">
-                <label id="id-chaindepth" class="row h6 txt-def">Chain Depth&nbsp;
-                    <input id="inp-chaindepth" type="number" class="rounded col-5 txt-def" value="1">
-                </label>
-                <label id="id-zoomsz" class="row h6 txt-def">Reg Zoom Size&nbsp;
-                    <input id="inp-zoomsz" type="number" class="rounded col-5 txt-def" value="3">
-                </label>
-            </div>
-            <div class="col-8">
                 <div class="row">
-                    <label class="col-7 h6 txt-def">
-                        <input id="ck-3dmap" type="checkbox" checked>
-                        3D Map
-                    </label>
-                    <label id="id-drawcon" class="col-7 h6 txt-def">
-                        <input id="ck-drawcon" type="checkbox" checked>
-                        Draw Connections
-                    </label>
-                    <label class="col-7 h6 txt-def">
-                        <input id="ck-drawexits" type="checkbox" checked>
-                        Draw Exits
-                    </label>
-                    <label id="id-drawbase" class="col-7 h6 txt-def">
-                        <input id="ck-drawbase" type="checkbox" checked>
-                        Draw Bases
-                    </label>
-                    <label id="id-zoomreg" class="col-7 h6 txt-def">
-                        <input id="ck-zoomreg" type="checkbox" checked>
-                        Auto Zoom
-                    </label>
+                    <div class="col-1"></div>
+                    <div class="col-5 txt-def">Min</div>
+                    <div class="col-5 txt-def">Max</div>
+                </div>
+                <div class="row">
+                    <div class="col-1 txt-def">X</div>
+                    <input id="inp-xmin" type="number" class="rounded col-5 txt-def" min="0" max="4095" value="0">
+                    <input id="inp-xmax" type="number" class="rounded col-5 txt-def" min="0" max="4095" value="4095">
+                </div>
+                <div class="row">
+                    <div class="col-1 txt-def">Z</div>
+                    <input id="inp-zmin" type="number" class="rounded col-5 txt-def" min="0" max="4095" value="0">
+                    <input id="inp-zmax" type="number" class="rounded col-5 txt-def" min="0" max="4095" value="4095">
+                </div>
+                <div class="row">
+                    <div class="col-1 txt-def">Y</div>
+                    <input id="inp-ymin" type="number" class="rounded col-5 txt-def" min="0" max="255" value="0">
+                    <input id="inp-ymax" type="number" class="rounded col-5 txt-def" min="0" max="255" value="255">
                 </div>
             </div>
+
+            <div class="col-8 border-left">
+                <label class="col-6 h6 txt-def">
+                    <input id="ck-3dmap" type="checkbox" checked>
+                    3D Map
+                </label>
+                <label id="id-drawcon" class="col-7 h6 txt-def">
+                    <input id="ck-drawcon" type="checkbox" checked>
+                    Draw Connections
+                </label>
+                <label class="col-6 h6 txt-def">
+                    <input id="ck-drawexits" type="checkbox" checked>
+                    Draw Exits
+                </label>
+                <label id="id-drawbase" class="col-7 h6 txt-def">
+                    <input id="ck-drawbase" type="checkbox" checked>
+                    Draw Bases
+                </label>
+                <label id="id-zoomreg" class="col-6 h6 txt-def">
+                    <input id="ck-zoomreg" type="checkbox" checked>
+                    Auto Zoom
+                </label>
+            </div>
         </div>
+        <br>
+        <div class="border-top">&nbsp;</div>
 
         <div class="row">
-            <button id="btn-redraw" type="button" class="col-2 border btn btn-sm btn-def">Redraw</button>&nbsp;
+            <div class="h6 txt-def align-bottom">&nbsp;Zoom:&nbsp;</div>
+            <label class="col-6 h6 txt-def">Coord&nbsp;
+                <input id="inp-ctrcord" type="text" class="rounded col-10 txt-def" placeholder="07FF:007F:07FF:0000">
+            </label>
+            <label class="col-4 h6 txt-def">Radius&nbsp;
+                <input id="inp-ctrzoom" type="number" class="rounded col-6 txt-def" min="0" max="2048" value="2048">
+            </label>
+            <label class="col-3 h6 txt-def">
+            <input id="ck-addzero" type="checkbox" checked>
+                &nbsp;Add 0
+            </label>
+        </div>
+        <br>
+
+        <div class="row">
             <button id="btn-mapsave" type="button" class="col-2 border btn btn-sm btn-def">Save</button>&nbsp;
             <div class="col-9 border">
                 <!--div id="id-chain" class="col-14 h6 clr-creme text-center">Click on Black Hole to select chain.</div-->
@@ -1199,11 +1288,12 @@ blackHoleSuns.prototype.buildMap = function () {
             </div>
         </div>`;
 
-    $("#mapoptions").html(settings);
+    let opt = $("#mapoptions");
+    opt.html(settings);
 
     const key = `
     <div class="row">
-        <div id="idname" class="col-9" style="color:colorsel">title</div>
+        <div id="idname" class="col-9">title</div>
         <input id="sel-idname" class="col-5 bkg-def" style="border-color:black" type="color" value="colorsel">
     </div>`;
 
@@ -1223,152 +1313,33 @@ blackHoleSuns.prototype.buildMap = function () {
         bhs.draw3dmap(bhs.entries);
     });
 
-    $("#btn-mapsave").click(function () {
+    opt.find("#btn-mapsave").click(function () {
         bhs.updateUser({
             mapoptions: bhs.extractMapOptions()
         }, bhs.displayUser);
     });
 
+    for (let i = 0; i < minmaxtable.length; ++i)
+        opt.find("#inp-" + minmaxtable[i].id).change(function () {
+            bhs.changeMapLayout(true);
+        });
+
+    opt.find("#inp-ctrcord").change(function () {
+        bhs.changeMapLayout(true, true);
+    });
+
+    opt.find("#inp-ctrzoom").change(function () {
+        bhs.changeMapLayout(true, true);
+    });
+
 }
 
-blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
+blackHoleSuns.prototype.draw3dmap = function (entrylist, entry) {
     let opt = bhs.extractMapOptions();
-
-    var pushentry = function (data, entry, label, alt) {
-        data.x.push(entry.x);
-        data.y.push(4095 - entry.z);
-        data.z.push(entry.y);
-        data.t.push(label);
-        data.a.push(alt);
-    };
-
-    var initout = function (out) {
-        if (!out) {
-            out = {};
-            out.x = [];
-            out.y = [];
-            out.z = [];
-            out.t = [];
-            out.a = [];
-        }
-
-        return out;
-    };
-
-    var makedata = function (out, size, color, linecolor, lines) {
-        let line = {
-            x: out.x,
-            y: out.y,
-            z: out.z,
-            text: out.t,
-            altdata: out.a,
-            mode: 'markers',
-            marker: {
-                size: size,
-                line: {
-                    color: color,
-                    width: 1,
-                    opacity: 1,
-
-                },
-                color: color,
-                opacity: 0.5,
-            },
-            type: opt.map3d || (opt.zoomreg && zoom) ? "scatter3d" : "scatter",
-            hoverinfo: 'text',
-        };
-
-        if (lines) {
-            line.mode = 'lines+markers';
-            line.line = {
-                color: linecolor,
-                width: 2,
-                opacity: 0.5,
-            };
-        }
-
-        return line;
-    }
-
-    var layout = {
-        margin: {
-            l: 0,
-            r: 0,
-            b: 0,
-            t: 0
-        },
-        showlegend: false,
-        paper_bgcolor: opt["clr-page"],
-        scene: {
-            zaxis: {
-                nticks: 5,
-                backgroundcolor: opt["clr-bkg"],
-                gridcolor: "rgb(0, 0, 0)",
-                zerolinecolor: "rgb(0, 0, 0)",
-                showbackground: true,
-                title: "Y",
-                range: [0, 256],
-                tickvals: [0, 0x7f, 0xff],
-                ticktext: ['0', '7f', 'ff'],
-                tickangle: 45,
-            },
-            xaxis: {
-                nticks: 5,
-                backgroundcolor: opt["clr-bkg"],
-                gridcolor: "rgb(0, 0, 0)",
-                zerolinecolor: "rgb(0, 0, 0)",
-                showbackground: true,
-                title: "X",
-                tickvals: [0, 0x7ff, 0xfff],
-                range: [0, 4096],
-                ticktext: ['0', '7ff', 'fff'],
-                tickangle: 45,
-            },
-            yaxis: {
-                nticks: 5,
-                backgroundcolor: opt["clr-bkg"],
-                gridcolor: "rgb(0, 0, 0)",
-                zerolinecolor: "rgb(0, 0, 0)",
-                title: "Z",
-                showbackground: true,
-                range: [0, 4096],
-                tickvals: [0, 0x7ff, 0xfff],
-                ticktext: ['fff', '7ff', '0'],
-                tickangle: 45,
-            },
-        },
-    };
-
+    let layout = bhs.changeMapLayout();
     let out = {};
-    let zero = {
-        x: 0,
-        y: 0,
-        z: 0,
-        s: 0
-    };
 
-    if ((opt.zoomreg && zoom)) {
-        let s = parseInt(zoom) + 1;
-        layout.scene.xaxis.range = [entry.xyzs.x - s, entry.xyzs.x + s];
-        layout.scene.yaxis.range = [entry.xyzs.z - s, entry.xyzs.z + s];
-        layout.scene.zaxis.range = [entry.xyzs.y - s, entry.xyzs.y + s];
-
-        layout.scene.xaxis.tickvals = [entry.xyzs.x - s, entry.xyzs.x + s];
-        layout.scene.xaxis.ticktext = [(entry.xyzs.x - s).toString(16), (entry.xyzs.x + s).toString(16)];
-        layout.scene.xaxis.nticks = 2;
-
-        layout.scene.yaxis.tickvals = [entry.xyzs.z + s, entry.xyzs.z - s];
-        layout.scene.yaxis.ticktext = [(entry.xyzs.z - s).toString(16), (entry.xyzs.z + s).toString(16)];
-        layout.scene.yaxis.nticks = 2;
-
-        layout.scene.zaxis.tickvals = [entry.xyzs.y - s, entry.xyzs.y + s];
-        layout.scene.zaxis.ticktext = [(entry.xyzs.y - s).toString(16), (entry.xyzs.y + s).toString(16)];
-        layout.scene.zaxis.nticks = 2;
-
-        Plotly.relayout('plymap', layout);
-    }
-
-    if (!entry || (opt.zoomreg && zoom)) {
+    if (!entry) {
         let data = [];
 
         let addr = Object.keys(entrylist);
@@ -1384,7 +1355,7 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
                         out.con = initout();
                         pushentry(out.con, e.bh.xyzs, e.bh.addr + "<br>" + e.bh.sys + "<br>" + e.bh.reg);
                         pushentry(out.con, e.bh.conxyzs, e.bh.connection);
-                        data.push(makedata(out.con, 4, opt["clr-bh"], opt["clr-con"], true));
+                        data.push(makedata(opt, out.con, 4, opt["clr-bh"], opt["clr-con"], true));
                         break;
                     }
                 } else if (w == "bhbase" || w == "xitbase") {
@@ -1402,13 +1373,13 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
 
         if (!opt.connection) {
             if (out.bh)
-                data.push(makedata(out.bh, 4, opt["clr-bh"]));
+                data.push(makedata(opt, out.bh, 4, opt["clr-bh"]));
 
             if (opt.exit && out.xit)
-                data.push(makedata(out.xit, 2, opt["clr-exit"]));
+                data.push(makedata(opt, out.xit, 2, opt["clr-exit"]));
 
             if (opt.base && out.base)
-                data.push(makedata(out.base, 2, opt["clr-base"]));
+                data.push(makedata(opt, out.base, 2, opt["clr-base"]));
         }
 
         Plotly.newPlot('plymap', data, layout).then(plot => {
@@ -1420,7 +1391,7 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
                             out.con = initout();
                             pushentry(out.con, d.bh);
                             pushentry(out.con, d.xit);
-                            Plotly.addTraces('plymap', makedata(out.con, 8, opt["clr-bh"], opt["clr-con"], true));
+                            Plotly.addTraces('plymap', makedata(opt, out.con, 8, opt["clr-bh"], opt["clr-con"], true));
                         }
 
                         if (window.location.pathname == "/index.html" || window.location.pathname == "/")
@@ -1456,7 +1427,7 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
                         out.con = initout();
                         pushentry(out.con, entry.bh.xyzs, entry.bh.addr + "<br>" + entry.bh.sys + "<br>" + entry.bh.reg);
                         pushentry(out.con, entry.bh.conxyzs, entry.bh.connection);
-                        Plotly.addTraces('plymap', makedata(out.con, 8, opt["clr-bh"], opt["clr-con"], true));
+                        Plotly.addTraces('plymap', makedata(opt, out.con, 8, opt["clr-bh"], opt["clr-con"], true));
                         break;
                     }
                 } else if (w == "bhbase" || w == "xitbase") {
@@ -1473,13 +1444,13 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
 
             if (!opt.connection) {
                 if (out.bh)
-                    Plotly.addTraces('plymap', makedata(out.bh, 8, opt["clr-bh"]));
+                    Plotly.addTraces('plymap', makedata(opt, out.bh, 8, opt["clr-bh"]));
 
                 if (opt.exit && out.xit)
-                    Plotly.addTraces('plymap', makedata(out.xit, 8, opt["clr-exit"]));
+                    Plotly.addTraces('plymap', makedata(opt, out.xit, 8, opt["clr-exit"]));
 
                 if (opt.base && out.base)
-                    Plotly.addTraces('plymap', makedata(out.base, 8, opt["clr-base"]));
+                    Plotly.addTraces('plymap', makedata(opt, out.base, 8, opt["clr-base"]));
             }
         } else {
             out = initout();
@@ -1489,11 +1460,189 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
             });
 
             if (entry.blackhole || entry.deadzone)
-                Plotly.addTraces('plymap', makedata(out, 8, opt["clr-bh"]));
+                Plotly.addTraces('plymap', makedata(opt, out, 8, opt["clr-bh"]));
             else if (opt.base && entry.basename)
-                Plotly.addTraces('plymap', makedata(out, 8, opt["clr-base"]));
+                Plotly.addTraces('plymap', makedata(opt, out, 8, opt["clr-base"]));
             else if (opt.exit)
-                Plotly.addTraces('plymap', makedata(out, 8, opt["clr-exit"]));
+                Plotly.addTraces('plymap', makedata(opt, out, 8, opt["clr-exit"]));
         }
     }
+}
+
+blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
+    let opt = bhs.extractMapOptions();
+    let ctr = bhs.addressToXYZ(opt.ctrcord);
+    ctr.z = 4096 - ctr.z;
+
+    let xstart, xctr, xend;
+    let ystart, yctr, yend;
+    let zstart, zctr, zend;
+
+    if (zoom) {
+        xstart = ctr.x - opt.ctrzoom;
+        xctr = ctr.x + parseInt(opt.ctrzoom / 2);
+        xend = ctr.x + opt.ctrzoom;
+
+        ystart = ctr.z - opt.ctrzoom;
+        yctr = ctr.z + parseInt(opt.ctrzoom / 2);
+        yend = ctr.z + opt.ctrzoom;
+
+        zstart = ctr.y - opt.ctrzoom;
+        zctr = ctr.y + parseInt(opt.ctrzoom / 2);
+        zend = ctr.y + opt.ctrzoom;
+    } else {
+        xstart = opt.xmin;
+        xctr = opt.xmin + parseInt((opt.xmax - opt.xmin) / 2) - 1;
+        xend = opt.xmax - 1;
+
+        zstart = opt.ymin;
+        zctr = opt.ymin + parseInt((opt.ymax - opt.ymin) / 2) - 1;
+        zend = opt.ymax - 1;
+
+        ystart = opt.zmin;
+        yctr = opt.zmin + parseInt((opt.zmax - opt.zmin) / 2) - 1;
+        yend = opt.zmax - 1;
+    }
+
+    let layout = {
+        showlegend: false,
+        paper_bgcolor: opt["clr-page"],
+        scene: {
+            zaxis: {
+                backgroundcolor: opt["clr-bkg"],
+                gridcolor: opt["clr-grid"],
+                zerolinecolor: opt["clr-grid"],
+                showbackground: true,
+                title: {
+                    text: "Y",
+                    font: {
+                        color: opt["clr-grid"],
+                    }
+                },
+                range: [zstart, zend],
+                tickvals: [zstart, zctr, zend],
+                ticktext: [zstart.toString(16), zctr.toString(16), zend.toString(16)],
+                tickfont:{color: opt["clr-grid"]},
+                tickangle: 45,
+            },
+            xaxis: {
+                backgroundcolor: opt["clr-bkg"],
+                gridcolor: opt["clr-grid"],
+                zerolinecolor: opt["clr-grid"],
+                showbackground: true,
+                title: {
+                    text: "X",
+                    font: {
+                        color: opt["clr-grid"],
+                    }
+                },
+                range: [xstart, xend],
+                tickvals: [xstart, xctr, xend],
+                ticktext: [xstart.toString(16), xctr.toString(16), xend.toString(16)],
+                tickfont:{color: opt["clr-grid"]},
+                tickangle: 45,
+            },
+            yaxis: {
+                backgroundcolor: opt["clr-bkg"],
+                gridcolor: opt["clr-grid"],
+                zerolinecolor: opt["clr-grid"],
+                title: {
+                    text: "Z",
+                    font: {
+                        color: opt["clr-grid"],
+                    }
+                },
+                showbackground: true,
+                range: [ystart, yend],
+                tickvals: [ystart, yctr, yend],
+                ticktext: [ystart.toString(16), yctr.toString(16), yend.toString(16)],
+                tickfont:{color: opt["clr-grid"]},
+                tickangle: 45,
+            },
+        },
+    };
+
+    if (opt.map3d) {
+        layout.margin = {
+            l: 0,
+            r: 0,
+            b: 0,
+            t: 0
+        };
+    }
+
+    if (exec) Plotly.relayout('plymap', layout);
+
+    if (zoom && opt.addzero) {
+        let out = {};
+        let zero = {
+            x: 2048,
+            y: 128,
+            z: 2048,
+            s: 0
+        };
+
+        out.con = initout();
+        pushentry(out.con, zero);
+        pushentry(out.con, ctr);
+        Plotly.addTraces('plymap', makedata(opt, out.con, 8, opt["clr-bh"], opt["clr-con"], true));
+    }
+
+    return layout;
+}
+
+function pushentry(data, entry, label, alt) {
+    data.x.push(entry.x);
+    data.y.push(4095 - entry.z);
+    data.z.push(entry.y);
+    data.t.push(label);
+    data.a.push(alt);
+};
+
+function initout(out) {
+    if (!out) {
+        out = {};
+        out.x = [];
+        out.y = [];
+        out.z = [];
+        out.t = [];
+        out.a = [];
+    }
+
+    return out;
+};
+
+function makedata(opt, out, size, color, linecolor, lines) {
+    let line = {
+        x: out.x,
+        y: out.y,
+        z: out.z,
+        text: out.t,
+        altdata: out.a,
+        mode: 'markers',
+        marker: {
+            size: size,
+            line: {
+                color: color,
+                width: 1,
+                opacity: 1,
+
+            },
+            color: color,
+            opacity: 0.5,
+        },
+        type: opt.map3d ? "scatter3d" : "scatter",
+        hoverinfo: 'text',
+    };
+
+    if (lines) {
+        line.mode = 'lines+markers';
+        line.line = {
+            color: linecolor,
+            width: 2,
+            opacity: 0.5,
+        };
+    }
+
+    return line;
 }
