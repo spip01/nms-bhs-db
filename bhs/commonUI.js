@@ -14,8 +14,8 @@ blackHoleSuns.prototype.doLoggedout = function () {
     $("#save").prop("disabled", true);
 }
 
-blackHoleSuns.prototype.doLoggedin = function () {
-    bhs.getUser(bhs.displayUser);
+blackHoleSuns.prototype.doLoggedin = function (user) {
+    bhs.displayUser(user);
 
     $("#save").removeClass("disabled");
     $("#save").removeAttr("disabled");
@@ -23,7 +23,7 @@ blackHoleSuns.prototype.doLoggedin = function () {
 
 blackHoleSuns.prototype.displayUser = async function (user) {
     let ifindex = window.location.pathname == "/index.html" || window.location.pathname == "/";
-    let changed = bhs.user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform);
+    let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform);
 
     bhs.user = mergeObjects(bhs.user, user);
     bhs.contest = await bhs.getActiveContest();

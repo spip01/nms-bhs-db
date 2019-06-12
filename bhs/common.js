@@ -134,6 +134,15 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
         $("#login").hide();
         $("#usermenu").show();
 
+        // let ref = bhs.fs.collection("users").where("_name","==","debert58");
+        // ref.get().then(function(snapshot){
+        //     if (!snapshot.empty)
+        //         user = snapshot.docs[0].data();
+
+        //      bhs.doLoggedin(user);
+        //      bhs.navLoggedin();
+        // });
+
         let ref = bhs.getUsersColRef(usr.uid);
         ref.get().then(function (doc) {
             if (doc.exists) {
@@ -146,13 +155,11 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
                 bhs.updateUser(user, true);
             }
 
-            if (bhs.doLoggedin)
-                bhs.doLoggedin();
-
+            bhs.doLoggedin(user);
             bhs.navLoggedin();
 
-            //bhs.fixAllTotals();
-            //bhs.fixStars();
+            // bhs.fixAllTotals();
+            // bhs.fixStars();
         });
     } else {
         $("#usermenu").hide();
