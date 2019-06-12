@@ -40,8 +40,6 @@ function startUp() {
     if (starsCol != "stars5")
         $("body").css("background-color", "red");
 
-    console.log(document.domain);
-
     $("#login").click(function () {
         bhs.logIn();
     });
@@ -199,29 +197,35 @@ blackHoleSuns.prototype.updateUser = function (user, displayFcn) {
     mergeObjects(bhs.user, user);
 
     let ref = bhs.getUsersColRef(bhs.user.uid);
-    ref.set(bhs.user);
+    ref.update(bhs.user);
 
     if (displayFcn)
         displayFcn(bhs.user);
 }
 
-blackHoleSuns.prototype.changeName = function (loc) {
-    let n = $(loc).val();
-    if (n == bhs.user._name)
-        return;
+blackHoleSuns.prototype.changeName = function (loc, user) {
+    if (user._name == bhs.user._name)
+        return ;
 
-    if (n.match(/Unknown Traveler/i)) {
+    if (user._name.match(/Unknown Traveler/i)) {
         $(loc).val(bhs.user._name);
         bhs.status("Player Name:" + n + " is restricted.", 0);
+        return ;
     }
 
-    let ref = bhs.getUsersColRef().where("_name", "==", n);
+    if (user._name == "") {
+        $(loc).val(bhs.user._name);
+        bhs.status("Empty Player Name.", 0);
+        return ;
+    }
+
+    let ref = bhs.getUsersColRef().where("_name", "==", user._name);
     ref.get().then(async function (snapshot) {
         if (!snapshot.empty && snapshot.docs[0].data().uid != bhs.user.uid) {
             $(loc).val(bhs.user._name);
             bhs.status("Player Name:" + n + " is already taken.", 0);
         } else {
-            bhs.user._name = n;
+            bhs.user=mergeObjects(bhs.user, user);
 
             if (!bhs.user.assigned) {
                 let ref = bhs.getStarsColRef("players");
@@ -236,7 +240,7 @@ blackHoleSuns.prototype.changeName = function (loc) {
                     }
                 });
             }
-
+            
             let b = {};
             b.batch = bhs.fs.batch();
             b.batchcount = 0;
@@ -603,7 +607,7 @@ blackHoleSuns.prototype.fixAllTotals = async function () {
 
 blackHoleSuns.prototype.checkBatchSize = async function (b, flush) {
     if (flush && b.batchcount > 0 || ++b.batchcount == 500) {
-        await console.log("commit " + b.batchcount);
+        console.log("commit " + b.batchcount);
         await b.batch.commit();
         b.batch = await bhs.fs.batch();
         b.batchcount = 0;
@@ -953,7 +957,7 @@ blackHoleSuns.prototype.addBaseList = function (entry, list) {
         list[entry.addr].xitbase = entry;
     else {
         let keys = Object.keys(list);
-        let k =0;
+        let k = 0;
         for (; k < keys.length; ++k) {
             if (list[keys[k]].bh && list[keys[k]].bh.addr == entry.addr) {
                 list[keys[k]].bhbase = entry;
@@ -1031,18 +1035,15 @@ blackHoleSuns.prototype.getTotals = async function (displayFcn) {
     let fgal = window.location.pathname == "/galaxy.html";
 
     let ref = bhs.getStarsColRef("players");
-    ref.get().then(await function(doc){
-        displayFcn(doc.data(), doc.ref.path);
-    });
+    ref.get().then(await
+        function (doc) {
+            displayFcn(doc.data(), doc.ref.path);
+        });
 
     ref = bhs.getStarsColRef("totals");
     bhs.subscribe("totals", ref, displayFcn);
 
     ref = bhs.getUsersColRef();
-    if (fgal)
-        ref = ref.orderBy("_name");
-    else
-        ref = ref.orderBy(starsCol + ".total", "desc");
     bhs.subscribe("userTotals", ref, displayFcn);
 
     ref = bhs.fs.collection("org");

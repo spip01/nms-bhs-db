@@ -360,7 +360,6 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
             await bhs.updateEntry(entry, true);
 
             if (hasbase) {
-                console.log(loc.find("#id-basename"));
                 entry.basename = loc.find("#id-basename").val();
                 entry.owned = loc.find("#btn-Owned").text().stripNumber();
                 entry.owned = entry.owned ? entry.owned : "mine";

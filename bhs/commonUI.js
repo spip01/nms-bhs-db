@@ -111,8 +111,8 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, true);
 
     $("#id-player").blur(function () {
-        if (bhs.user.uid)
-            bhs.changeName(this);
+        user = bhs.extractUser();
+        bhs.changeName(user);
     });
 
     $("#id-player").keyup(function (event) {
@@ -271,7 +271,9 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
     });
 
     $("#btn-saveUser").click(function () {
-        bhs.saveUser();
+        bhs.updateUser({
+            settings: bhs.extractSettings()
+        }, bhs.displayUser);
     });
 }
 
@@ -367,16 +369,22 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist, entry) {
 }
 
 function entryDblclk(evt) {
-    $('html, body').animate({
-        scrollTop: ($('#panels').offset().top)
-    }, 0);
-
-    $("#delete").removeClass("disabled");
-    $("#delete").removeAttr("disabled");
+    let ifgal = window.location.pathname == "/galaxy.html"
 
     let id = $(evt).parent().prop("id");
     let e = bhs.entries[bhs.reformatAddress(id)];
-    bhs.displayListEntry(e);
+
+    if (!ifgal) {
+        $('html, body').animate({
+            scrollTop: ($('#panels').offset().top)
+        }, 0);
+
+        $("#delete").removeClass("disabled");
+        $("#delete").removeAttr("disabled");
+
+        bhs.displayListEntry(e);
+    }
+
     bhs.draw3dmap(bhs.entries, e);
 }
 
@@ -439,11 +447,13 @@ blackHoleSuns.prototype.buildTotals = function () {
     let fgal = window.location.pathname == "/galaxy.html";
 
     const pnl = `
-        <div class="card-header h4 bkg-def txt-def">
-            <div class="row">Total Black Hole Entries</div>
+        <div class="card-header bkg-def">
+            <div class="row">
+            <div class="col-7 h4 txt-def">Total Black Hole Entries</div>
+            <div id="contrib" class="col-7 clr-creme">Total contributors: </div>
             <div id="cname" class="row clr-creme"></div>
         </div>
-        <div class="card-body">
+        <div class="card-body bkg-white">
             <label id="id-showall" class="row h6 txt-inp-def">
                 Show All&nbsp;
                 <input id="ck-showall" type="checkbox">
@@ -516,7 +526,7 @@ blackHoleSuns.prototype.buildTotals = function () {
 
     totalsRows.forEach(function (t) {
         if (t.where == "galaxy" && !fgal || t.where == "index" && !findex)
-            tot.find("#itm0 #" + t.id).hide();
+            tot.find("#tgalaxy #" + t.id).hide();
     });
 
     totalsGalaxy.forEach(function (t) {
@@ -545,7 +555,14 @@ blackHoleSuns.prototype.buildTotals = function () {
 
     if (fgal) {
         tot.find("#id-showall").hide();
+        tot.find("#hdr0").hide();
+        tot.find("#itm0").hide();
         tot.find("#tgalaxy").show();
+    } else if (findex) {
+        tot.find("#id-showall").show();
+        tot.find("#hdr0").show();
+        tot.find("#itm0").show();
+        tot.find("#tgalaxy").hide();
     }
 
     tot.find("#ck-showall").change(function () {
@@ -560,7 +577,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
     let fgal = window.location.pathname == "/galaxy.html";
     let cid = "";
 
-    if (bhs.contest.name) {
+    if (bhs.contest.name && !bhs.contest.hidden) {
         let now = firebase.firestore.Timestamp.fromDate(new Date());
         let s = "<h5>Contest: \"" + bhs.contest.name + "\"; ";
         s += " Starts: " + bhs.contest.start.toDate().toDateLocalTimeString() + "; ";
@@ -598,6 +615,8 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
     else
         list.sort((a, b) => parseInt($(a).find("#id-qty").text()) < parseInt($(b).find("#id-qty").text()) ? 1 :
             parseInt($(a).find("#id-qty").text()) > parseInt($(b).find("#id-qty").text()) ? -1 : 0);
+
+    $("#contrib").html("Total Contributors: " + list.length);
 
     loc.empty();
     for (var i = 0; i < list.length; i++)
@@ -735,7 +754,7 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
         const userEnd = `</div>`;
 
         let pnl = $("#totals #" + id);
-        let rid = entry._name ? entry._name.nameToId() : entry.name.nameToId();
+        let rid = typeof entry._name != "undefined" ? entry._name.nameToId() : entry.name.nameToId();
         let player = pnl.find("#u-" + rid);
 
         if (player.length == 0) {
@@ -1182,7 +1201,9 @@ blackHoleSuns.prototype.buildMap = function () {
     });
 
     $("#btn-mapsave").click(function () {
-        bhs.saveUser();
+        bhs.updateUser({
+            mapoptions: bhs.extractMapOptions()
+        }, bhs.displayUser);
     });
 
 }
@@ -1238,7 +1259,7 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
             line.mode = 'lines+markers';
             line.line = {
                 color: linecolor,
-                width: 1,
+                width: 2,
                 opacity: 0.5,
             };
         }
@@ -1373,11 +1394,10 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
                     if (e.points.length > 0) {
                         let d = e.points[0].data.altdata[e.points[0].pointNumber];
                         if (d.bh && d.xit) {
-                            console.log(d.bh);
                             out.con = initout();
                             pushentry(out.con, d.bh);
                             pushentry(out.con, d.xit);
-                            Plotly.addTraces('plymap', makedata(out.con, 4, opt["clr-bh"], opt["clr-con"], true));
+                            Plotly.addTraces('plymap', makedata(out.con, 8, opt["clr-bh"], opt["clr-con"], true));
                         }
 
                         if (window.location.pathname == "/index.html" || window.location.pathname == "/")
@@ -1391,7 +1411,6 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
             //         let d = e.points[0].data;
             //         let xyz = d.altdata[e.points[0].pointNumber];
             //         if (xyz) {
-            //             console.log(xyz);
             //             //Plotly.Fx.hover('plymap', {yval:[xyz.z], xval:[xyz.x], zval:[xyz.y] },["xyz"]);
             //             // for (let i = 0; i < d.x.length; ++i) {
             //                 // if (d.x[i] == xyz.x && d.y[i] == xyz.z && d.z[i] == xyz.y)
