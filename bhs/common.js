@@ -136,14 +136,15 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
 
         let ref = bhs.getUsersColRef(usr.uid);
         ref.get().then(function (doc) {
-            if (doc.exists)
+            if (doc.exists) {
                 user = doc.data();
-            else
+                user.lasttime = firebase.firestore.Timestamp.fromDate(new Date());
+                bhs.updateUser(user);
+            } else {
                 user.firsttime = firebase.firestore.Timestamp.fromDate(new Date());
-
-            user.lasttime = firebase.firestore.Timestamp.fromDate(new Date());
-
-            bhs.updateUser(user);
+                user.lasttime = user.firsttime;;
+                bhs.updateUser(user, true);
+            }
 
             if (bhs.doLoggedin)
                 bhs.doLoggedin();
@@ -193,30 +194,30 @@ blackHoleSuns.prototype.navLoggedout = function () {
     $("#loggedin").hide();
 }
 
-blackHoleSuns.prototype.updateUser = function (user, displayFcn) {
+blackHoleSuns.prototype.updateUser = function (user, ifnew) {
     mergeObjects(bhs.user, user);
 
     let ref = bhs.getUsersColRef(bhs.user.uid);
-    ref.update(bhs.user);
-
-    if (displayFcn)
-        displayFcn(bhs.user);
+    if (ifnew)
+        ref.set(bhs.user);
+    else
+        ref.update(bhs.user);
 }
 
 blackHoleSuns.prototype.changeName = function (loc, user) {
     if (user._name == bhs.user._name)
-        return ;
+        return;
 
     if (user._name.match(/Unknown Traveler/i)) {
         $(loc).val(bhs.user._name);
         bhs.status("Player Name:" + n + " is restricted.", 0);
-        return ;
+        return;
     }
 
     if (user._name == "") {
         $(loc).val(bhs.user._name);
         bhs.status("Empty Player Name.", 0);
-        return ;
+        return;
     }
 
     let ref = bhs.getUsersColRef().where("_name", "==", user._name);
@@ -225,7 +226,7 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
             $(loc).val(bhs.user._name);
             bhs.status("Player Name:" + n + " is already taken.", 0);
         } else {
-            bhs.user=mergeObjects(bhs.user, user);
+            bhs.user = mergeObjects(bhs.user, user);
 
             if (!bhs.user.assigned) {
                 let ref = bhs.getStarsColRef("players");
@@ -240,7 +241,7 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
                     }
                 });
             }
-            
+
             let b = {};
             b.batch = bhs.fs.batch();
             b.batchcount = 0;
@@ -560,7 +561,7 @@ blackHoleSuns.prototype.getActiveContest = async function () {
     let ref = bhs.fs.collection("contest");
     ref = ref.orderBy("end", "desc");
     await ref.get().then(async function (snapshot) {
-        if (!snapshot.empty)
+        if (!snapshot.empty && !snapshot.docs[snapshot.size - 1].data().hidden)
             contest = snapshot.docs[snapshot.size - 1].data();
     });
 

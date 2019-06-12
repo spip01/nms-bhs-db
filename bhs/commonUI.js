@@ -403,7 +403,7 @@ const totalsCol = [{
     where: "index",
 }, {
     title: "Contest",
-    id: "id-contest",
+    id: "id-ctst",
     format: "col-2 text-right",
     where: "index",
 }, {
@@ -571,13 +571,18 @@ blackHoleSuns.prototype.buildTotals = function () {
         else
             bhs.clearAllUTotals(bhs.user);
     });
+
+    if (!bhs.contest) {
+        tot.find("#id-ctst").hide();
+        tot.find("#id-contestall").hide();
+    }
 }
 
 blackHoleSuns.prototype.displayTotals = function (entry, id) {
     let fgal = window.location.pathname == "/galaxy.html";
     let cid = "";
 
-    if (bhs.contest.name && !bhs.contest.hidden) {
+    if (bhs.contest && bhs.contest.name) {
         let now = firebase.firestore.Timestamp.fromDate(new Date());
         let s = "<h5>Contest: \"" + bhs.contest.name + "\"; ";
         s += " Starts: " + bhs.contest.start.toDate().toDateLocalTimeString() + "; ";
@@ -589,17 +594,20 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
 
     if (id.match(/totals/)) {
         cid = "id-totalsall";
+        bhs.displayUTotals(entry[starsCol], cid);
         if (fgal)
             bhs.displayGTotals(entry, "itmg");
     } else if (id.match(/contest/)) {
+        if (!bhs.contest)
+            return;
         cid = "id-contestall";
         if (fgal)
             bhs.displayGTotals(entry, "itmg", true);
     } else if (id.match(/players/)) {
         bhs.displayPlayerTotals(entry, "itm1");
+        return;
     } else if (id.match(/user/)) {
         bhs.displayUserTotals(entry, "itm1");
-
         cid = "id-player";
     } else if (id.match(/org/)) {
         bhs.displayUserTotals(entry, "itm2");
@@ -622,12 +630,12 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
     for (var i = 0; i < list.length; i++)
         loc.append(list[i]);
 
-    if (entry.uid != bhs.user.uid)
-        return;
+        if (entry.uid != bhs.user.uid)
+            return;
 
     bhs.displayUTotals(entry[starsCol], cid);
 
-    if (cid == "id-player" && typeof entry[starsCol].contest != "undefined") {
+    if (cid == "id-player" && entry[starsCol] && entry[starsCol].contest && bhs.contest) {
         cid = "id-contest";
         bhs.displayUTotals(entry[starsCol].contest[bhs.contest.name], cid);
     }
@@ -651,25 +659,27 @@ blackHoleSuns.prototype.displayUTotals = function (entry, cid) {
 blackHoleSuns.prototype.displayAllUTotals = function (entry) {
     let pnl = $("#itm0");
     pnl.find("#id-totalBHGP").css("border-bottom", "1px solid black");
-    Object.keys(entry[starsCol].galaxy).forEach(function (g) {
-        for (let i = 0; i < platformList.length; ++i) {
-            if (entry[starsCol].galaxy[g][platformList[i].name] > 0) {
-                let id = "id-" + g.nameToId() + "-" + platformList[i].name.nameToId();
-                let h = /idname/ [Symbol.replace](totalsItemsHdr, id);
+    if (entry[starsCol]) {
+        Object.keys(entry[starsCol].galaxy).forEach(function (g) {
+            for (let i = 0; i < platformList.length; ++i) {
+                if (entry[starsCol].galaxy[g][platformList[i].name] > 0) {
+                    let id = "id-" + g.nameToId() + "-" + platformList[i].name.nameToId();
+                    let h = /idname/ [Symbol.replace](totalsItemsHdr, id);
 
-                let t = /galaxy/ [Symbol.replace](totalsRows[rowGalaxyPlatform].title, g);
-                t = /platform/ [Symbol.replace](t, platformList[i].name);
-                let l = /title/ [Symbol.replace](totalsItems, t);
-                h += /format/ [Symbol.replace](l, totalsCol[0].format);
+                    let t = /galaxy/ [Symbol.replace](totalsRows[rowGalaxyPlatform].title, g);
+                    t = /platform/ [Symbol.replace](t, platformList[i].name);
+                    let l = /title/ [Symbol.replace](totalsItems, t);
+                    h += /format/ [Symbol.replace](l, totalsCol[0].format);
 
-                l = /title/ [Symbol.replace](totalsItems, entry[starsCol].galaxy[g][platformList[i].name]);
-                h += /format/ [Symbol.replace](l, totalsCol[1].format);
+                    l = /title/ [Symbol.replace](totalsItems, entry[starsCol].galaxy[g][platformList[i].name]);
+                    h += /format/ [Symbol.replace](l, totalsCol[1].format);
 
-                h += totalsItemsEnd;
-                pnl.append(h);
+                    h += totalsItemsEnd;
+                    pnl.append(h);
+                }
             }
-        }
-    });
+        });
+    }
 }
 
 blackHoleSuns.prototype.clearAllUTotals = function (entry) {
@@ -769,17 +779,19 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
                         break;
                     case "Contest":
                         let disq = false;
-                        let d = Object.keys(bhs.contest.disq.orgs);
-                        for (let i = 0; i < d.length && !disq; ++i)
-                            if (bhs.contest.disq.orgs[d[i]] == entry.name)
-                                disq = true;
+                        if (bhs.contest) {
+                            let d = Object.keys(bhs.contest.disq.orgs);
+                            for (let i = 0; i < d.length && !disq; ++i)
+                                if (bhs.contest.disq.orgs[d[i]] == entry.name)
+                                    disq = true;
 
-                        d = Object.keys(bhs.contest.disq.users);
-                        for (let i = 0; i < d.length && !disq; ++i)
-                            if (bhs.contest.disq.users[d[i]] == entry._name)
-                                disq = true;
+                            d = Object.keys(bhs.contest.disq.users);
+                            for (let i = 0; i < d.length && !disq; ++i)
+                                if (bhs.contest.disq.users[d[i]] == entry._name)
+                                    disq = true;
 
-                        h += /title/ [Symbol.replace](l, bhs.contest.name && entry[starsCol].contest ? disq ? "--" : entry[starsCol].contest[bhs.contest.name].total : "");
+                            h += /title/ [Symbol.replace](l, bhs.contest.name && entry[starsCol].contest ? disq ? "--" : entry[starsCol].contest[bhs.contest.name].total : "");
+                        }
                         break;
                     case "Total":
                         h += /title/ [Symbol.replace](l, entry[starsCol].total);
@@ -803,9 +815,13 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
             }
         } else {
             player.find("#id-qty").text(entry[starsCol].total);
-            player.find("#id-ctst").text(bhs.contest.name && entry[starsCol].contest ? entry[starsCol].contest[bhs.contest.name].total : "");
+            if (bhs.contest)
+                player.find("#id-ctst").text(bhs.contest.name && entry[starsCol].contest ? entry[starsCol].contest[bhs.contest.name].total : "");
         }
     }
+
+    if (!bhs.contest)
+        $("#totals #id-ctst").hide();
 }
 
 blackHoleSuns.prototype.displayPlayerTotals = function (entry, id) {
@@ -844,16 +860,16 @@ blackHoleSuns.prototype.displayGTotals = function (entry, id, ifcontest) {
                                 h += /title/ [Symbol.replace](l, galaxyList[i].number + ". " + galaxyList[i].name);
                                 break;
                             case "Contest":
-                                h += /title/ [Symbol.replace](l, ifcontest ? g.total : "");
+                                h += /title/ [Symbol.replace](l, g.total);
                                 break;
                             case "Total":
-                                h += /title/ [Symbol.replace](l, !ifcontest ? g.total : "");
+                                h += /title/ [Symbol.replace](l, g.total);
                                 break;
                             case "PC-XBox":
-                                h += /title/ [Symbol.replace](l, !ifcontest ? g['PC-XBox'] : "");
+                                h += /title/ [Symbol.replace](l, g['PC-XBox']);
                                 break;
                             case "PS4":
-                                h += /title/ [Symbol.replace](l, !ifcontest ? g["PS4"] : "");
+                                h += /title/ [Symbol.replace](l, g["PS4"]);
                                 break;
                         }
                     });
@@ -880,6 +896,9 @@ blackHoleSuns.prototype.displayGTotals = function (entry, id, ifcontest) {
             }
         }
     }
+
+    if (bhs.contest)
+        $("#totals #id-ctst").hide();
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
@@ -970,7 +989,7 @@ blackHoleSuns.prototype.saveUser = function () {
     user.mapoptions = bhs.extractMapOptions();
 
     if (bhs.validateUser(user))
-        bhs.updateUser(user, bhs.displayUser);
+        bhs.updateUser(user);
 }
 
 blackHoleSuns.prototype.extractUser = function () {
@@ -1127,9 +1146,13 @@ blackHoleSuns.prototype.setMapOptions = function (entry) {
 }
 
 blackHoleSuns.prototype.buildMap = function () {
-    let o = $("#maplogo").width();
-    $("#logo").prop("width", o - 16);
-    $("#logo").prop("height", o - 16);
+    let w = $("#plymap").width();
+    $("#plymap").prop("width", w);
+    $("#plymap").prop("height", w);
+
+    w = $("#maplogo").width();
+    $("#logo").prop("width", w - 16);
+    $("#logo").prop("height", w - 16);
 
     const settings = `
         <div class="row">
@@ -1213,7 +1236,7 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
 
     var pushentry = function (data, entry, label, alt) {
         data.x.push(entry.x);
-        data.y.push(entry.z);
+        data.y.push(4095 - entry.z);
         data.z.push(entry.y);
         data.t.push(label);
         data.a.push(alt);
@@ -1278,7 +1301,7 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
         paper_bgcolor: opt["clr-page"],
         scene: {
             zaxis: {
-                nticks: 3,
+                nticks: 5,
                 backgroundcolor: opt["clr-bkg"],
                 gridcolor: "rgb(0, 0, 0)",
                 zerolinecolor: "rgb(0, 0, 0)",
@@ -1290,7 +1313,7 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
                 tickangle: 45,
             },
             xaxis: {
-                nticks: 3,
+                nticks: 5,
                 backgroundcolor: opt["clr-bkg"],
                 gridcolor: "rgb(0, 0, 0)",
                 zerolinecolor: "rgb(0, 0, 0)",
@@ -1302,15 +1325,15 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
                 tickangle: 45,
             },
             yaxis: {
-                nticks: 3,
+                nticks: 5,
                 backgroundcolor: opt["clr-bkg"],
                 gridcolor: "rgb(0, 0, 0)",
                 zerolinecolor: "rgb(0, 0, 0)",
                 title: "Z",
                 showbackground: true,
-                range: [4096, 0],
+                range: [0, 4096],
                 tickvals: [0, 0x7ff, 0xfff],
-                ticktext: ['0', '7ff', 'fff'],
+                ticktext: ['fff', '7ff', '0'],
                 tickangle: 45,
             },
         },
@@ -1327,7 +1350,7 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
     if ((opt.zoomreg && zoom)) {
         let s = parseInt(zoom) + 1;
         layout.scene.xaxis.range = [entry.xyzs.x - s, entry.xyzs.x + s];
-        layout.scene.yaxis.range = [entry.xyzs.z + s, entry.xyzs.z - s];
+        layout.scene.yaxis.range = [entry.xyzs.z - s, entry.xyzs.z + s];
         layout.scene.zaxis.range = [entry.xyzs.y - s, entry.xyzs.y + s];
 
         layout.scene.xaxis.tickvals = [entry.xyzs.x - s, entry.xyzs.x + s];
@@ -1335,7 +1358,7 @@ blackHoleSuns.prototype.draw3dmap = function (entrylist, entry, zoom) {
         layout.scene.xaxis.nticks = 2;
 
         layout.scene.yaxis.tickvals = [entry.xyzs.z + s, entry.xyzs.z - s];
-        layout.scene.yaxis.ticktext = [(entry.xyzs.z + s).toString(16), (entry.xyzs.z - s).toString(16)];
+        layout.scene.yaxis.ticktext = [(entry.xyzs.z - s).toString(16), (entry.xyzs.z + s).toString(16)];
         layout.scene.yaxis.nticks = 2;
 
         layout.scene.zaxis.tickvals = [entry.xyzs.y - s, entry.xyzs.y + s];

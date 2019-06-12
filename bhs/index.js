@@ -378,6 +378,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
 
 blackHoleSuns.prototype.save = async function () {
     $("#status").empty();
+
     if (await bhs.extractEntry(pnlTop)) {
         bhs.clearPanels();
         bhs.last = [];
