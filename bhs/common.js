@@ -559,7 +559,6 @@ blackHoleSuns.prototype.assignUid = async function (entry) {
 }
 
 blackHoleSuns.prototype.getActiveContest = async function () {
-    let now = firebase.firestore.Timestamp.fromDate(new Date());
     let contest;
 
     let ref = bhs.fs.collection("contest");

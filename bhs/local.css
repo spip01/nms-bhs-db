@@ -224,7 +224,6 @@ body {
 .btn-def.disabled,
 .btn-def:disabled {
     border: 0px;
-    color: rgba(255, 215, 0, .9);
 }
 
 .btn-def.focus,
@@ -232,13 +231,13 @@ body {
 .btn-def:not(:disabled):not(.disabled).active:focus,
 .btn-def:not(:disabled):not(.disabled):active:focus,
 .show>.btn-def.dropdown-toggle:focus {
-    box-shadow: 0 0 0 .2rem rgba(255, 215, 0, .9);
-    animation: pulse .25s 1;
+    box-shadow: 0 0 0 .2rem gold;
+    animation: pulse .1s 2;
 }
 
 .btn-def:not(:disabled):not(.disabled).hover,
 .btn-def:not(:disabled):not(.disabled):hover {
-    box-shadow: 0 0 0 .2rem rgba(255, 215, 0, .9);
+    box-shadow: 0 0 0 .2rem gold;
 }
 
 .clr-dark-green {

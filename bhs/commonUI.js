@@ -130,6 +130,8 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
             });
             $("#entrybuttons").hide();
             $("#upload").show();
+
+            bhs.buildFileList();
         } else {
             panels.forEach(function (p) {
                 $("#" + p.id).show();
@@ -205,15 +207,14 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
 
             <div class="row">
                 <button id="btn-saveUser" type="button" class="col-2 btn-def btn btn-sm">Save</button>&nbsp;
-            </div>
 
-            <!--div class="row">
-                <div class="col-9">
-                    <input type="file" id="dlfile" class="form-control form-control-sm" accept=".csv">
-                </div>
+                <label id="id-export" class="col-7 text-right h6 txt-inp-def border-left" style="display:none">File Name&nbsp;
+                    <input id="inp-exportfile" type="text" class="rounded col-10">
+                </label>
                 
-                <button id="export" type="button" class="col-2 btn-def btn btn-sm">Export</button>&nbsp;
-            </div-->
+                <button id="btn-create" type="button" href="" class="col-2 btn-def btn btn-sm" style="display:none">Create</button>&nbsp;
+                <a id="btn-export" type="button" href="" class="col-2 btn-def btn btn-sm disabled" disabled style="display:none">Export</a>
+            </div>
         </div>
         
         <div id="id-table" class="card-body">
@@ -277,6 +278,43 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
             settings: bhs.extractSettings()
         }, bhs.displayUser);
     });
+
+    //  <a id="download_link" download="my_exported_file.txt" href=”” >Download as Text File</a>
+
+    if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
+        $("#id-export").show();
+        $("#btn-create").show();
+        $("#btn-export").show();
+
+        $("#btn-create").click(function () {
+            var text = bhs.entriesToCsv();
+
+            var data = new Blob([text], {
+                type: 'text/plain'
+            });
+            var url = window.URL.createObjectURL(data);
+            document.getElementById('btn-export').href = url;
+
+            $("#btn-export").prop("download", $("#inp-exportfile").val());
+            $("#btn-export").removeClass("disabled");
+            $("#btn-export").removeAttr("disabled");
+        });
+    }
+}
+
+blackHoleSuns.prototype.entriesToCsv = function () {
+    let out = "bh coord,sys,reg,life,econ,exit coord,sys,reg,life,econ\n";
+
+    let entries = Object.keys(bhs.entries);
+    for (let i = 0; i < entries.length; ++i) {
+        let e = bhs.entries[entries[i]];
+        if (e.bh && e.xit) {
+            out += e.bh.addr + "," + e.bh.sys + "," + e.bh.reg + "," + e.bh.life + "," + e.bh.econ + ",";
+            out += e.xit.addr + "," + e.xit.sys + "," + e.xit.reg + "," + e.xit.life + "," + e.xit.econ + "\n";
+        }
+    }
+
+    return out;
 }
 
 blackHoleSuns.prototype.displayEntryList = function (entrylist, entry) {
@@ -1522,7 +1560,9 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
                 range: [zstart, zend],
                 tickvals: [zstart, zctr, zend],
                 ticktext: [zstart.toString(16), zctr.toString(16), zend.toString(16)],
-                tickfont:{color: opt["clr-grid"]},
+                tickfont: {
+                    color: opt["clr-grid"]
+                },
                 tickangle: 45,
             },
             xaxis: {
@@ -1539,7 +1579,9 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
                 range: [xstart, xend],
                 tickvals: [xstart, xctr, xend],
                 ticktext: [xstart.toString(16), xctr.toString(16), xend.toString(16)],
-                tickfont:{color: opt["clr-grid"]},
+                tickfont: {
+                    color: opt["clr-grid"]
+                },
                 tickangle: 45,
             },
             yaxis: {
@@ -1556,7 +1598,9 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
                 range: [ystart, yend],
                 tickvals: [ystart, yctr, yend],
                 ticktext: [ystart.toString(16), yctr.toString(16), yend.toString(16)],
-                tickfont:{color: opt["clr-grid"]},
+                tickfont: {
+                    color: opt["clr-grid"]
+                },
                 tickangle: 45,
             },
         },
