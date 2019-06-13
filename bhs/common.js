@@ -166,10 +166,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
         $("#login").show();
 
         bhs.user = bhs.userInit();
-
-        if (bhs.doLoggedout)
-            bhs.doLoggedout();
-
+        bhs.doLoggedout();
         bhs.navLoggedout();
     }
 }
@@ -789,7 +786,12 @@ blackHoleSuns.prototype.updateAllTotals = function (totals, reset) {
                 let t = {}
                 t[starsCol] = totals.users[ulist[i]];
                 let ref = bhs.getUsersColRef(ulist[i])
-                bhs.updateTotal(t, ref, reset);
+                ref.get().then(function (doc) {
+                    if (doc.exists)
+                        bhs.updateTotal(t, doc.ref, reset);
+                    else
+                        console.log("not found " + ulist[i]);
+                });
             }
         }
 
