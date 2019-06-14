@@ -159,6 +159,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
             bhs.navLoggedin();
 
             // bhs.fixAllTotals();
+            // bhs.listUsers();
         });
     } else {
         $("#usermenu").hide();
@@ -428,7 +429,7 @@ blackHoleSuns.prototype.deleteEntry = async function (addr) {
                     bhs.status(addr + " deleted", 2);
                 });
             } else
-                bhs.status(addr + " can only be deleted by " + d._name, 1);
+                bhs.status(addr + " can only be deleted by " +  d._name ? d._name : d.player, 1);
         }
     });
 }
@@ -483,6 +484,16 @@ blackHoleSuns.prototype.getActiveContest = async function () {
     });
 
     return contest;
+}
+
+blackHoleSuns.prototype.listUsers=function(){
+    let ref=bhs.getUsersColRef();
+    ref.get().then(function(snapshot){
+        for (let i=0; i<snapshot.size;++i){
+            let d = snapshot.docs[i].data();
+            console.log(snapshot.docs[i].id+" "+d._name);
+        }
+    });
 }
 
 blackHoleSuns.prototype.fixAllTotals = async function () {
@@ -905,7 +916,6 @@ blackHoleSuns.prototype.dispBaseList = function (entry, id, displayFcn) {
     bhs.entries = bhs.addBaseList(entry, bhs.entries);
     displayFcn(bhs.entries);
 }
-
 
 blackHoleSuns.prototype.getUser = function (displayFcn) {
     let ref = bhs.getUsersColRef(bhs.user.uid);

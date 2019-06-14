@@ -21,7 +21,10 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
     let loc = $("#pnl-user #sel");
 
     bhs.usersList = await bhs.getUserList();
-    bhs.usersList.unshift({name:"", uid:null});
+    bhs.usersList.unshift({
+        name: "",
+        uid: null
+    });
 
     bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select, true);
     bhs.buildMenu(loc, "Platform", platformList, bhs.select, true);
@@ -31,7 +34,7 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
 blackHoleSuns.prototype.select = function () {
     bhs.entries = {};
     let i = bhs.getIndex(bhs.usersList, "name", $("#btn-Player").text().stripNumber());
-    let uid = i!= -1 ? bhs.usersList[i].uid:null;
+    let uid = i != -1 ? bhs.usersList[i].uid : null;
     let galaxy = $("#btn-Galaxy").text().stripNumber();
     let platform = $("#btn-Platform").text().stripNumber();
     bhs.getEntries(bhs.displayEntryList, uid, galaxy, platform);

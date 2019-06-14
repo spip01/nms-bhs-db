@@ -171,6 +171,10 @@ body {
     margin: 0px !important;
 }
 
+.hidden {
+    display: none;
+}
+
 .nopadding-left {
     padding-left: 0px !important;
 }
@@ -217,7 +221,7 @@ body {
 }
 
 .btn-def {
-    background-color:black;
+    background-color: black;
     color: gold;
 }
 

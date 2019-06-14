@@ -279,8 +279,6 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
         });
     });
 
-    //  <a id="download_link" download="my_exported_file.txt" href=”” >Download as Text File</a>
-
     if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
         $("#id-export").show();
         $("#btn-create").show();
@@ -669,14 +667,17 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
     loc.empty();
     for (var i = 0; i < list.length; i++) {
         loc.append(list[i]);
-
-        loc.find("#" + $(list[i]).prop("id")).dblclick(function () {
-            bhs.entries = {};
-            let galaxy = $("#btn-Galaxy").text().stripNumber();
-            let platform = $("#btn-Platform").text().stripMarginWS();
-            $("#btn-Player").text($(this).find("#id-names").text().stripMarginWS());
-            bhs.getEntries(bhs.displayEntryList, $(this).find("#id-uid").text().stripMarginWS(), galaxy, platform);
-        });
+        if ($(list[i]).find("#id-uid").length > 0)
+            loc.find("#" + $(list[i]).prop("id")).dblclick(function () {
+                console.log($(this).find("#id-names").text().stripMarginWS() + " " + $(this).find("#id-uid").text().stripMarginWS());
+                if (fgal) {
+                    bhs.entries = {};
+                    let galaxy = $("#btn-Galaxy").text().stripNumber();
+                    let platform = $("#btn-Platform").text().stripMarginWS();
+                    $("#btn-Player").text($(this).find("#id-names").text().stripMarginWS());
+                    bhs.getEntries(bhs.displayEntryList, $(this).find("#id-uid").text().stripMarginWS(), galaxy, platform);
+                }
+            });
     }
 
     if (entry.uid != bhs.user.uid)
@@ -752,10 +753,10 @@ const totalsPlayers = [{
     format: "col-7",
     hformat: "col-7",
 }, {
-    title: "",
+    title: "uid",
     id: "id-uid",
-    format: "col-1",
-    hformat: "col-1",
+    format: "col-1 hidden",
+    hformat: "col-1 hidden",
 }, {
     title: "Contest",
     id: "id-ctst",
@@ -821,7 +822,7 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
         const userEnd = `</div>`;
 
         let pnl = $("#totals #" + id);
-        let rid = typeof entry._name != "undefined" ? entry._name.nameToId() : entry.name?entry.name.nameToId():"-";
+        let rid = typeof entry._name != "undefined" ? entry._name.nameToId() : entry.name ? entry.name.nameToId() : "-";
         let player = pnl.find("#u-" + rid);
 
         if (player.length == 0) {
@@ -862,17 +863,6 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
             h += userEnd;
 
             pnl.append(h);
-
-            if (fgal && entry.uid && rid) {
-                let player = pnl.find("#u-" + rid);
-                player.dblclick(function () {
-                    bhs.entries = {};
-                    let galaxy = $("#btn-Galaxy").text().stripNumber();
-                    let platform = $("#btn-Platform").text().stripNumber();
-                    $("#btn-Player").text(entry._name);
-                    bhs.getEntries(bhs.displayEntryList, entry.uid, galaxy, platform);
-                });
-            }
         } else {
             player.find("#id-qty").text(entry[starsCol].total);
             if (bhs.contest)
