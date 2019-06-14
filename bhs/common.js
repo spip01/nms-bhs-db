@@ -134,7 +134,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
         $("#login").hide();
         $("#usermenu").show();
 
-        // let ref = bhs.fs.collection("users").where("_name","==","debert58");
+        // let ref = bhs.fs.collection("users").where("_name","==","zeenewbian");
         // ref.get().then(function(snapshot){
         //     if (!snapshot.empty)
         //         user = snapshot.docs[0].data();
@@ -151,7 +151,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
                 bhs.updateUser(user);
             } else {
                 user.firsttime = firebase.firestore.Timestamp.fromDate(new Date());
-                user.lasttime = user.firsttime;;
+                user.lasttime = user.firsttime;
                 bhs.updateUser(user, true);
             }
 
@@ -159,7 +159,6 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
             bhs.navLoggedin();
 
             // bhs.fixAllTotals();
-            // bhs.fixStars();
         });
     } else {
         $("#usermenu").hide();
@@ -433,91 +432,6 @@ blackHoleSuns.prototype.deleteEntry = async function (addr) {
         }
     });
 }
-
-blackHoleSuns.prototype.fixStars = async function () {
-    let b = {};
-    b.batch = bhs.fs.batch();
-    b.batchcount = 0;
-
-    let ref = bhs.getStarsColRef().where("totals.total", ">", 0);
-    await ref.get().then(async function (snapshot) {
-        for (let i = 0; i < snapshot.size; ++i) {
-            let doc = snapshot.docs[i];
-            if (doc.id == "totals" || doc.id == "players")
-                continue;
-
-            let g = doc.data();
-
-            for (let k = 0; k < platformList.length; ++k) {
-                let ref = bhs.getStarsColRef(g.name, platformList[k].name);
-                await ref.get().then(async function (snapshot) {
-                    console.log(g.name + " " + platformList[k].name + " " + snapshot.size);
-                    for (let i = 0; i < snapshot.size; ++i) {
-                        let d = snapshot.docs[i].data();
-                        d.xyzs = bhs.addressToXYZ(d.addr);
-                        if (d.connection)
-                            d.conxyzs = bhs.addressToXYZ(d.connection);
-                        await b.batch.update(snapshot.docs[i].ref, d);
-                        b = await bhs.checkBatchSize(b);
-                    }
-                });
-            }
-        }
-    });
-
-    await bhs.checkBatchSize(b, true);
-}
-
-// blackHoleSuns.prototype.fixBases = async function () {
-//     let b = {};
-//     b.batch = bhs.fs.batch();
-//     b.batchcount = 0;
-
-//     let ref = bhs.getUsersColRef();
-//     await ref.get().then(async function (snapshot) {
-//         for (let i = 0; i < snapshot.size; ++i) {
-//             let u = snapshot.docs[i].data();
-//             console.log(u._name);
-
-//             if (u[starsCol]) {
-//                 let glist = Object.keys(u[starsCol].galaxy);
-//                 for (let k = 0; k < glist.length; ++k) {
-//                     let g = glist[k];
-
-//                     for (let j = 0; j < platformList.length; ++j) {
-//                         let p = platformList[j];
-
-//                         let ref = bhs.fs.collection("users/" + u.uid + "/galaxies/" + g + "/" + p.name);
-//                         await ref.get().then(async function (snapshot) {
-//                             if (snapshot.size)
-//                                 console.log(g + "/" + p.name + " " + snapshot.size);
-
-//                             for (let i = 0; i < snapshot.size; ++i) {
-//                                 let base = snapshot.docs[i].data();
-//                                 if (!base.owner)
-//                                     base.owner = "mine";
-
-//                                 let ref = bhs.getStarsColRef(g, p.name, base.addr);
-//                                 await ref.get().then(async function (doc) {
-//                                     let s = doc.data();
-//                                     delete s.player;
-
-//                                     base = mergeObjects(base, s);
-
-//                                     let ref = bhs.getUsersColRef(u.uid, g, p.name, base.addr);
-//                                     await b.batch.set(ref, base);
-//                                     b = await bhs.checkBatchSize(b);
-//                                 });
-//                             }
-//                         });
-//                     }
-//                 }
-//             }
-//         }
-//     });
-
-//     await bhs.checkBatchSize(b, true);
-// }
 
 blackHoleSuns.prototype.assignUid = async function (entry) {
     let b = {};
@@ -995,10 +909,7 @@ blackHoleSuns.prototype.dispBaseList = function (entry, id, displayFcn) {
 
 blackHoleSuns.prototype.getUser = function (displayFcn) {
     let ref = bhs.getUsersColRef(bhs.user.uid);
-    ref.get().then(function (doc) {
-        if (doc.exists)
-            displayFcn(doc.data());
-    });
+    bhs.subscribe("user", ref, displayFcn);
 }
 
 blackHoleSuns.prototype.getOrgList = async function () {
@@ -1118,31 +1029,36 @@ blackHoleSuns.prototype.validateUser = function (user) {
 
 blackHoleSuns.prototype.validateEntry = function (entry) {
     let ok = true;
+    let error="";
 
     if (!entry.addr) {
-        bhs.status("Error: Missing address. Changes not saved.", 0);
+        error+="Missing address. ";
         ok = false;
     }
 
     if (ok && !entry.sys) {
-        bhs.status("Error: Missing system name. Changes not saved.", 0);
+        error+="Missing system name. ";
         ok = false;
     }
 
     if (ok && !entry.reg) {
-        bhs.status("Error: Missing region name. Changes not saved.", 0);
+        error+="Missing region name. ";
         ok = false;
     }
 
-    if (ok && !entry.blackhole && !entry.deadzone && !bhs.validateAddress(entry.addr, "xit")) {
-        bhs.status("Error: Invalid exit address. Changes not saved.", 0);
+    let str;
+    if (ok && !entry.blackhole && !entry.deadzone && (str = bhs.validateXitAddress(entry.addr, "xit"))) {
+        error+="Invalid exit address. ("+str+") ";
         ok = false;
     }
 
-    if (ok && (entry.blackhole || entry.deadzone) && !bhs.validateAddress(entry.addr, "bh")) {
-        bhs.status("Error: Invalid black hole address. Changes not saved.", 0);
+    if (ok && (entry.blackhole || entry.deadzone) && (str = bhs.validateBHAddress(entry.addr, "bh"))) {
+        error+="Invalid black hole address. ("+str+") ";
         ok = false;
     }
+
+    if (!ok)
+        bhs.status("Error: "+error+"Changes not saved.", 0);
 
     return ok;
 }
@@ -1224,54 +1140,6 @@ String.prototype.nameToId = function () {
     return id;
 }
 
-blackHoleSuns.prototype.formatAddress = function (field, event) {
-    let str = $(field).val();
-    let len = str.length;
-    let key = event.key;
-
-    if (event.metaKey || event.ctrlKey || event.keyCode < 0x20)
-        return true;
-
-    if (/[g-z]/i.test(key)) {
-        event.preventDefault();
-        return false;
-    }
-
-    if (/[0-9a-f]/i.test(key)) {
-        if (len == 4 || len == 9 || len == 14) {
-            $(field).val(str + ":" + key);
-            event.preventDefault();
-            return false;
-        }
-
-        if (len > 18)
-            event.preventDefault();
-
-        return true;
-    }
-
-    if (/[:.,; ]/.test(key)) {
-        if (len > 18) {
-            event.preventDefault();
-            return false;
-        }
-
-        let loc = str.lastIndexOf(":");
-        let out = loc > 0 ? str.slice(0, loc + 1) : "";
-        let rem = str.slice(loc + 1);
-
-        if (rem.length < 4) {
-            out += "0000".slice(0, 4 - rem.length) + rem;
-            out += out.length < 15 ? ":" : "";
-        }
-
-        $(field).val(out);
-
-        event.preventDefault();
-        return false;
-    }
-}
-
 function checkZeroAddress(addr) {
     return /(0{4}:){3}0{4}/.test(addr);
 }
@@ -1289,7 +1157,7 @@ blackHoleSuns.prototype.reformatAddress = function (addr) {
         let idx = str.indexOf(":");
         let end = idx > 4 || idx == -1 ? 4 : idx;
         let s = str.slice(0, end);
-        str = str.slice(end + (idx <= 4 ? 1 : 0));
+        str = str.slice(end + (idx <= 4 && idx >= 0 ? 1 : 0));
         out += "0000".slice(0, 4 - s.length) + s + (i < 3 ? ":" : "");
     }
 
@@ -1314,9 +1182,14 @@ function validateExitAddress(addr) {
 
 blackHoleSuns.prototype.validateAddress = function (addr, ck) {
     let c = bhs.addressToXYZ(addr);
-    let ok = c.x <= 0xfff && c.y <= 0xff && c.z <= 0xfff && c.s <= 0x2ff;
-    ok = ok && (!ck || (ck != "bh" || c.s == 0x79) && (ck != "xit" || c.s != 0x79));
-    return ok;
+    let error = null;
+    if (c.x > 0xfff) error = "x > 0fff";
+    else if (c.y > 0xff) error = "y > 00ff";
+    else if (c.z > 0xfff) error = "z > 0fff";
+    else if (c.s > 0x2ff) error = "system > 02ff";
+
+    else if(!ck || (ck != "bh" || c.s == 0x79) && (ck != "xit" || c.s != 0x79)) error='BH system must be 0079'
+    return error;
 }
 
 blackHoleSuns.prototype.validateDist = function (entry, pstr, log) {

@@ -131,7 +131,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
             $("#entrybuttons").hide();
             $("#upload").show();
 
-            bhs.buildFileList();
+            //bhs.buildFileList();
         } else {
             panels.forEach(function (p) {
                 $("#" + p.id).show();
@@ -206,7 +206,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
             <div id="id-utlistsel" class="row"></div>
 
             <div class="row">
-                <button id="btn-saveUser" type="button" class="col-2 btn-def btn btn-sm">Save</button>&nbsp;
+                <button id="btn-saveListSettings" type="button" class="col-2 btn-def btn btn-sm">Save</button>&nbsp;
 
                 <label id="id-export" class="col-7 text-right h6 txt-inp-def border-left" style="display:none">File Name&nbsp;
                     <input id="inp-exportfile" type="text" class="rounded col-10">
@@ -273,10 +273,10 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
             $("#utSettings").hide();
     });
 
-    $("#btn-saveUser").click(function () {
+    $("#btn-saveListSettings").click(function () {
         bhs.updateUser({
             settings: bhs.extractSettings()
-        }, bhs.displayUser);
+        });
     });
 
     //  <a id="download_link" download="my_exported_file.txt" href=”” >Download as Text File</a>
@@ -695,7 +695,10 @@ blackHoleSuns.prototype.displayUTotals = function (entry, cid) {
     if (typeof entry != "undefined") {
         pnl.find("#" + totalsRows[rowTotal].id + " #" + cid).text(entry.total);
         pnl.find("#" + totalsRows[rowPlatform].id + " #" + cid).text(entry[bhs.user.platform]);
-        pnl.find("#" + totalsRows[rowAltPlatform].id + " #" + cid).text(entry[bhs.user.platform == "PS4" ? "PC-XBox" : "PS4"]);
+        if (entry[bhs.user.platform == "PS4" ? "PC-XBox" : "PS4"])
+            pnl.find("#" + totalsRows[rowAltPlatform].id + " #" + cid).text(entry[bhs.user.platform == "PS4" ? "PC-XBox" : "PS4"]);
+        else
+            pnl.find("#" + totalsRows[rowAltPlatform].id).hide();
 
         if (typeof entry.galaxy != "undefined" && typeof entry.galaxy[bhs.user.galaxy] != "undefined") {
             if (typeof rowGalaxy != "undefined")
@@ -818,7 +821,7 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
         const userEnd = `</div>`;
 
         let pnl = $("#totals #" + id);
-        let rid = typeof entry._name != "undefined" ? entry._name.nameToId() : entry.name.nameToId();
+        let rid = typeof entry._name != "undefined" ? entry._name.nameToId() : entry.name?entry.name.nameToId():"-";
         let player = pnl.find("#u-" + rid);
 
         if (player.length == 0) {
@@ -1038,8 +1041,10 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
 blackHoleSuns.prototype.saveUser = function () {
     let user = bhs.extractUser();
 
-    if (bhs.validateUser(user))
+    if (bhs.validateUser(user)) {
         bhs.updateUser(user);
+        bhs.displayUser(user);
+    }
 }
 
 blackHoleSuns.prototype.extractUser = function () {
@@ -1354,7 +1359,7 @@ blackHoleSuns.prototype.buildMap = function () {
     opt.find("#btn-mapsave").click(function () {
         bhs.updateUser({
             mapoptions: bhs.extractMapOptions()
-        }, bhs.displayUser);
+        });
     });
 
     for (let i = 0; i < minmaxtable.length; ++i)
