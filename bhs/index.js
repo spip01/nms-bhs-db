@@ -243,6 +243,7 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
     if (zoom) {
         $("#inp-ctrcord").val(entry.addr);
         bhs.changeMapLayout(true, true);
+        bhs.traceZero(entry);
     }
 
     bhs.drawSingle(entry);

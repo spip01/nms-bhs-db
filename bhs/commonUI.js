@@ -1549,7 +1549,7 @@ blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
                 pushentry(out, d.bh.xyzs);
                 pushentry(out, d.exit.xyzs);
 
-                Plotly.addTraces('plymap', makedata(opt, out, 4, opt["clr-bh"], opt["clr-con"], true));
+                Plotly.addTraces('plymap', makedata(opt, out, 5, opt["clr-bh"], opt["clr-con"], true));
 
                 bhs.drawChain(opt, d.exit.xyzs, depth);
                 bhs.drawChain(opt, d.bh.xyzs, depth, true);
@@ -1686,22 +1686,24 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
 
     if (exec) Plotly.relayout('plymap', layout);
 
-    if (zoom && opt.addzero) {
-        let out = {};
+    return layout;
+}
+
+blackHoleSuns.prototype.traceZero = function (addr) {
+    let opt = bhs.extractMapOptions();
+
+    if (opt.addzero) {
         let zero = {
             x: 2048,
             y: 128,
             z: 2048,
-            s: 0
         };
 
-        out.con = initout();
-        pushentry(out.con, zero);
-        pushentry(out.con, ctr);
-        Plotly.addTraces('plymap', makedata(opt, out.con, 8, opt["clr-bh"], opt["clr-con"], true));
+        let out = initout();
+        pushentry(out, zero);
+        pushentry(out, addr.xyzs);
+        Plotly.addTraces('plymap', makedata(opt, out, 5, opt["clr-bh"], opt["clr-con"], true));
     }
-
-    return layout;
 }
 
 function pushentry(data, xyz, label, alt) {
