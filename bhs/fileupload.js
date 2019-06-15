@@ -428,18 +428,21 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                         entry[1].deadzone = entry[0].type.match(/dead/i) || entry[2].addr == entry[1].addr;
                         entry[1].blackhole = !entry[1].deadzone;
 
+                        let str = "";
                         if (entry[1].blackhole || entry[1].deadzone) {
-                            if (!(ok = validateBHAddress(entry[1].addr))) {
-                                log.log = bhs.filestatus("row: " + (i + 1) + " invalid black hole address " + entry[1].addr, 0, log.log);
+                            if ((str = validateBHAddress(entry[1].addr))) {
+                                log.log = bhs.filestatus("row: " + (i + 1) + " invalid black hole address ("+str+") " + entry[1].addr, 0, log.log);
                                 log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log);
+                                ok = false;
                             }
 
                             if (ok && entry[1].blackhole) {
                                 entry[1].connection = entry[2].addr;
                                 entry[1].towardsCtr = entry[1].dist - entry[2].dist;
-                                if (!(ok = validateExitAddress(entry[2].addr))) {
-                                    log.log = bhs.filestatus("row: " + (i + 1) + " invalid exit address " + entry[1].addr, 0, log.log);
+                                if ((str = validateExitAddress(entry[2].addr))) {
+                                    log.log = bhs.filestatus("row: " + (i + 1) + " invalid exit address ("+str+") " + entry[1].addr, 0, log.log);
                                     log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log);
+                                    ok = false;
                                 }
                             }
 

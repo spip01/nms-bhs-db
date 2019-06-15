@@ -22,7 +22,7 @@ const fbconfig = {
     messagingSenderId: FIREBASE_MSGID
 };
 
-const starsCol = "stars5";
+var starsCol = "stars5";
 const usersCol = "users";
 
 function startUp() {
@@ -36,6 +36,9 @@ function startUp() {
 
     bhs.init();
     bhs.initFirebase();
+
+    // if (document.domain == "localhost") 
+    //     starsCol = "stars6";
 
     if (starsCol != "stars5")
         $("body").css("background-color", "red");
@@ -965,10 +968,10 @@ blackHoleSuns.prototype.getTotals = async function (displayFcn) {
     let fgal = window.location.pathname == "/galaxy.html";
 
     let ref = bhs.getStarsColRef("players");
-    ref.get().then(await
-        function (doc) {
+    ref.get().then(await function (doc) {
+        if (doc.exists)
             displayFcn(doc.data(), doc.ref.path);
-        });
+    });
 
     ref = bhs.getStarsColRef("totals");
     bhs.subscribe("totals", ref, displayFcn);
@@ -1057,12 +1060,12 @@ blackHoleSuns.prototype.validateEntry = function (entry) {
     }
 
     let str;
-    if (ok && !entry.blackhole && !entry.deadzone && (str = bhs.validateXitAddress(entry.addr, "xit"))) {
+    if (ok && !entry.blackhole && !entry.deadzone && (str = bhs.validateXitAddress(entry.addr))) {
         error+="Invalid exit address. ("+str+") ";
         ok = false;
     }
 
-    if (ok && (entry.blackhole || entry.deadzone) && (str = bhs.validateBHAddress(entry.addr, "bh"))) {
+    if (ok && (entry.blackhole || entry.deadzone) && (str = bhs.validateBHAddress(entry.addr))) {
         error+="Invalid black hole address. ("+str+") ";
         ok = false;
     }
@@ -1178,8 +1181,8 @@ String.prototype.stripColons = function () {
     return /:/g [Symbol.replace](this, "");
 }
 
-function validateAddress(addr) {
-    return bhs.validateAddress(addr);
+function validateAddress(addr, ck) {
+    return bhs.validateAddress(addr, ck) == "";
 }
 
 function validateBHAddress(addr) {
@@ -1192,13 +1195,13 @@ function validateExitAddress(addr) {
 
 blackHoleSuns.prototype.validateAddress = function (addr, ck) {
     let c = bhs.addressToXYZ(addr);
-    let error = null;
+    let error = "";
     if (c.x > 0xfff) error = "x > 0fff";
     else if (c.y > 0xff) error = "y > 00ff";
     else if (c.z > 0xfff) error = "z > 0fff";
     else if (c.s > 0x2ff) error = "system > 02ff";
+    else if(ck == "bh" && c.s != 0x79) error='BH system must be 0079';
 
-    else if(!ck || (ck != "bh" || c.s == 0x79) && (ck != "xit" || c.s != 0x79)) error='BH system must be 0079'
     return error;
 }
 
@@ -1365,6 +1368,11 @@ blackHoleSuns.prototype.calcDist = function (addr, addr2) {
         z: 0x7ff
     };
     let d = parseInt(Math.sqrt(Math.pow(cord2.x - cord.x, 2) + Math.pow(cord2.y - cord.y, 2) + Math.pow(cord2.z - cord.z, 2)) * 400);
+    return d;
+}
+
+blackHoleSuns.prototype.calcXYZDist = function (xyz1, xyz2) {
+    let d = parseInt(Math.sqrt(Math.pow(xyz1.x - xyz2.x, 2) + Math.pow(xyz1.y - xyz2.y, 2) + Math.pow(xyz1.z - xyz2.z, 2)));
     return d;
 }
 
