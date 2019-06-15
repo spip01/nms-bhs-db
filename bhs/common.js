@@ -50,6 +50,16 @@ function startUp() {
     $("#logout").click(function () {
         bhs.logOut();
     });
+
+    if (document.domain == "localhost")
+        $("#testmode").show();
+
+    $("#testmode").click(function () {
+        if (document.domain == "localhost") {
+            starsCol = "stars6";
+            $("body").css("background-color", "red");
+        }
+    });
 }
 
 function blackHoleSuns() {
@@ -432,7 +442,7 @@ blackHoleSuns.prototype.deleteEntry = async function (addr) {
                     bhs.status(addr + " deleted", 2);
                 });
             } else
-                bhs.status(addr + " can only be deleted by " +  d._name ? d._name : d.player, 1);
+                bhs.status(addr + " can only be deleted by " + d._name ? d._name : d.player, 1);
         }
     });
 }
@@ -489,12 +499,12 @@ blackHoleSuns.prototype.getActiveContest = async function () {
     return contest;
 }
 
-blackHoleSuns.prototype.listUsers=function(){
-    let ref=bhs.getUsersColRef();
-    ref.get().then(function(snapshot){
-        for (let i=0; i<snapshot.size;++i){
+blackHoleSuns.prototype.listUsers = function () {
+    let ref = bhs.getUsersColRef();
+    ref.get().then(function (snapshot) {
+        for (let i = 0; i < snapshot.size; ++i) {
             let d = snapshot.docs[i].data();
-            console.log(snapshot.docs[i].id+" "+d._name);
+            console.log(snapshot.docs[i].id + " " + d._name);
         }
     });
 }
@@ -869,7 +879,7 @@ blackHoleSuns.prototype.addEntryList = function (entry, list) {
     } else {
         if (typeof list[entry.addr] == "undefined")
             list[entry.addr] = {};
-        list[entry.addr].xit = entry;
+        list[entry.addr].exit = entry;
     }
 
     return list;
@@ -891,7 +901,7 @@ blackHoleSuns.prototype.getBases = async function (displayFcn) {
 
 blackHoleSuns.prototype.addBaseList = function (entry, list) {
     if (typeof list[entry.addr] != "undefined")
-        list[entry.addr].xitbase = entry;
+        list[entry.addr].exitbase = entry;
     else {
         let keys = Object.keys(list);
         let k = 0;
@@ -908,7 +918,7 @@ blackHoleSuns.prototype.addBaseList = function (entry, list) {
 
         if (k == keys.length) {
             list[entry.addr] = {}
-            list[entry.addr].xitbase = entry;
+            list[entry.addr].exitbase = entry;
         }
     }
 
@@ -968,10 +978,11 @@ blackHoleSuns.prototype.getTotals = async function (displayFcn) {
     let fgal = window.location.pathname == "/galaxy.html";
 
     let ref = bhs.getStarsColRef("players");
-    ref.get().then(await function (doc) {
-        if (doc.exists)
-            displayFcn(doc.data(), doc.ref.path);
-    });
+    ref.get().then(await
+        function (doc) {
+            if (doc.exists)
+                displayFcn(doc.data(), doc.ref.path);
+        });
 
     ref = bhs.getStarsColRef("totals");
     bhs.subscribe("totals", ref, displayFcn);
@@ -1042,36 +1053,36 @@ blackHoleSuns.prototype.validateUser = function (user) {
 
 blackHoleSuns.prototype.validateEntry = function (entry) {
     let ok = true;
-    let error="";
+    let error = "";
 
     if (!entry.addr) {
-        error+="Missing address. ";
+        error += "Missing address. ";
         ok = false;
     }
 
     if (ok && !entry.sys) {
-        error+="Missing system name. ";
+        error += "Missing system name. ";
         ok = false;
     }
 
     if (ok && !entry.reg) {
-        error+="Missing region name. ";
+        error += "Missing region name. ";
         ok = false;
     }
 
     let str;
-    if (ok && !entry.blackhole && !entry.deadzone && (str = bhs.validateXitAddress(entry.addr))) {
-        error+="Invalid exit address. ("+str+") ";
+    if (ok && !entry.blackhole && !entry.deadzone && (str = validateExitAddress(entry.addr))) {
+        error += "Invalid exit address. (" + str + ") ";
         ok = false;
     }
 
-    if (ok && (entry.blackhole || entry.deadzone) && (str = bhs.validateBHAddress(entry.addr))) {
-        error+="Invalid black hole address. ("+str+") ";
+    if (ok && (entry.blackhole || entry.deadzone) && (str = validateBHAddress(entry.addr))) {
+        error += "Invalid black hole address. (" + str + ") ";
         ok = false;
     }
 
     if (!ok)
-        bhs.status("Error: "+error+"Changes not saved.", 0);
+        bhs.status("Error: " + error + "Changes not saved.", 0);
 
     return ok;
 }
@@ -1190,7 +1201,7 @@ function validateBHAddress(addr) {
 }
 
 function validateExitAddress(addr) {
-    return bhs.validateAddress(addr, "xit");
+    return bhs.validateAddress(addr, "exit");
 }
 
 blackHoleSuns.prototype.validateAddress = function (addr, ck) {
@@ -1200,7 +1211,7 @@ blackHoleSuns.prototype.validateAddress = function (addr, ck) {
     else if (c.y > 0xff) error = "y > 00ff";
     else if (c.z > 0xfff) error = "z > 0fff";
     else if (c.s > 0x2ff) error = "system > 02ff";
-    else if(ck == "bh" && c.s != 0x79) error='BH system must be 0079';
+    else if (ck == "bh" && c.s != 0x79) error = 'BH system must be 0079';
 
     return error;
 }

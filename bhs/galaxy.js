@@ -9,12 +9,10 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
     const panel = `
         <div id="sel">
             <div class="row">
-            <div class="col-1"></div>
-            <div id="id-Player" class="col-4"></div>
-            <div id="id-Platform" class="col-4"></div>
-                <div id="id-Galaxy" class="col-4"></div>
+                <div id="id-Player" class="col-4 text-center"></div>
+                <div id="id-Platform" class="col-4 text-center"></div>
+                <div id="id-Galaxy" class="col-4 text-center"></div>
             </div>
-        </div>
         <br>`;
 
     $("#pnl-user").append(panel);

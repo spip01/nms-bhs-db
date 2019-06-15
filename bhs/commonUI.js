@@ -191,7 +191,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
     const table = `
         <div class="card-header bkg-def">
             <div class="row">
-                <h4 class="col-13 txt-def">Latest Changes</h4>
+                <h4 class="col-13 txt-def">User Entries</h4>
             </div>
             <div class="row">
                 <div id="lc-plat" class="col-4 txt-def h5"></div>
@@ -306,9 +306,9 @@ blackHoleSuns.prototype.entriesToCsv = function () {
     let entries = Object.keys(bhs.entries);
     for (let i = 0; i < entries.length; ++i) {
         let e = bhs.entries[entries[i]];
-        if (e.bh && e.xit) {
+        if (e.bh && e.exit) {
             out += e.bh.addr + "," + e.bh.sys + "," + e.bh.reg + "," + e.bh.life + "," + e.bh.econ + ",";
-            out += e.xit.addr + "," + e.xit.sys + "," + e.xit.reg + "," + e.xit.life + "," + e.xit.econ + "\n";
+            out += e.exit.addr + "," + e.exit.sys + "," + e.exit.reg + "," + e.exit.life + "," + e.exit.econ + "\n";
         }
     }
 
@@ -319,7 +319,7 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist, entry) {
     if (!entrylist && !entry)
         return;
 
-    bhs.draw3dmap(entrylist, entry);
+    bhs.drawList(entrylist);
 
     if (!entry) {
         const lineHdr = `
@@ -361,7 +361,7 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist, entry) {
                     else
                         l = /bhdata/ [Symbol.replace](l, "");
 
-                    l = /xdata/ [Symbol.replace](l, entry.xitbase ? entry.xitbase[t.field] : "");
+                    l = /xdata/ [Symbol.replace](l, entry.exitbase ? entry.exitbase[t.field] : "");
                 } else {
                     if (entry.bh && entry.bh[t.field])
                         l = /bhdata/ [Symbol.replace](l, entry.bh[t.field]);
@@ -370,7 +370,7 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist, entry) {
                     else
                         l = /bhdata/ [Symbol.replace](l, "");
 
-                    l = /xdata/ [Symbol.replace](l, entry.xit && entry.xit[t.field] ? entry.xit[t.field] : "");
+                    l = /xdata/ [Symbol.replace](l, entry.exit && entry.exit[t.field] ? entry.exit[t.field] : "");
                 }
 
                 h += l;
@@ -384,7 +384,7 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist, entry) {
         $("#userItems").append(h);
         bhs.displaySettings(bhs.user);
     } else {
-        let id = (entry.bh ? entry.bh.connection : entry.dz ? entry.dz.addr : entry.xit.addr).nameToId();
+        let id = (entry.bh ? entry.bh.connection : entry.dz ? entry.dz.addr : entry.exit.addr).nameToId();
         let loc = $("#userItems #" + id);
 
         for (let j = 0; j < userTable.length; ++j) {
@@ -399,8 +399,8 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist, entry) {
                     loc.find("#bh-" + t.id).text(entry.bh[t.field] ? entry.bh[t.field] : "")
                 if (entry.dz)
                     loc.find("#bh-" + t.id).text(entry.dz[t.field] ? entry.dz[t.field] : "")
-                if (entry.xit)
-                    loc.find("#x-" + t.id).text(entry.xit[t.field] ? entry.xit[t.field] : "")
+                if (entry.exit)
+                    loc.find("#x-" + t.id).text(entry.exit[t.field] ? entry.exit[t.field] : "")
             }
         }
     }
@@ -422,8 +422,6 @@ function entryDblclk(evt) {
 
         bhs.displayListEntry(e);
     }
-
-    bhs.draw3dmap(bhs.entries, e);
 }
 
 const totalsItemsHdr = `<div id="idname" class="row">`;
@@ -816,7 +814,7 @@ const totalsGalaxy = [{
 blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
     let fgal = window.location.pathname == "/galaxy.html";
 
-    if (entry[starsCol]) {
+    if (entry[starsCol] && entry[starsCol].total > 0) {
         const userHdr = `<div id="u-idname" class="row">`;
         const userItms = `  <div id="idname" class="format">title</div>`;
         const userEnd = `</div>`;
@@ -848,7 +846,7 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
 
                             d = Object.keys(bhs.contest.disq.users);
                             for (let i = 0; i < d.length && !disq; ++i)
-                                if (bhs.contest.disq.users[d[i]] == entry._name)
+                                if (bhs.contest.disq.users[d[i]].uid == entry.uid)
                                     disq = true;
 
                             h += /title/ [Symbol.replace](l, bhs.contest.name && entry[starsCol].contest ? disq ? "--" : entry[starsCol].contest[bhs.contest.name].total : "");
@@ -1177,7 +1175,8 @@ blackHoleSuns.prototype.extractMapOptions = function () {
 
     c.ctrcord = bhs.reformatAddress(opt.find("#inp-ctrcord").val());
     c.ctrzoom = parseInt(opt.find("#inp-ctrzoom").val());
-    c.chaindepth = parseInt(opt.find("#inp-chain").val());
+    c.chaindepth = parseInt(opt.find("#inp-chaindepth").val());
+    c.chainradius = parseInt(opt.find("#inp-chainradius").val());
 
     c.connection = opt.find("#ck-drawcon").prop("checked");
     c.map3d = opt.find("#ck-3dmap").prop("checked");
@@ -1211,7 +1210,8 @@ blackHoleSuns.prototype.setMapOptions = function (entry) {
 
         opt.find("#inp-ctrcord").val(entry.mapoptions.ctrcord ? entry.mapoptions.ctrcord : "07FF:007F:07FF:0000");
         opt.find("#inp-ctrzoom").val(entry.mapoptions.ctrzoom ? entry.mapoptions.ctrzoom : 10);
-        opt.find("#inp-chain").val(entry.mapoptions.chaindepth ? entry.mapoptions.chaindepth : 1);
+        opt.find("#inp-chaindepth").val(entry.mapoptions.chaindepth ? entry.mapoptions.chaindepth : 1);
+        opt.find("#inp-chainradius").val(entry.mapoptions.chainradius ? entry.mapoptions.chainradius : 1);
 
         opt.find("#ck-drawcon").prop("checked", entry.mapoptions.connection ? entry.mapoptions.connection : false);
         opt.find("#ck-3dmap").prop("checked", entry.mapoptions.map3d ? entry.mapoptions.map3d : true);
@@ -1231,7 +1231,8 @@ blackHoleSuns.prototype.setMapOptions = function (entry) {
 
         opt.find("#inp-ctrcord").val("07FF:007F:07FF:0000");
         opt.find("#inp-ctrzoom").val(10);
-        opt.find("#inp-chain").val(1);
+        opt.find("#inp-chaindepth").val(1);
+        opt.find("#inp-chainradius").val(1);
 
         opt.find("#ck-drawcon").prop("checked", false);
         opt.find("#ck-3dmap").prop("checked", true);
@@ -1249,8 +1250,8 @@ blackHoleSuns.prototype.buildMap = function () {
     $("#plymap").prop("height", w);
 
     w = $("#maplogo").width();
-    $("#logo").prop("width", w - 16);
-    $("#logo").prop("height", w - 16);
+    $("#logo").prop("width", w);
+    $("#logo").prop("height", w);
 
     const settings = `
         <br>
@@ -1295,15 +1296,23 @@ blackHoleSuns.prototype.buildMap = function () {
                     <input id="ck-drawbase" type="checkbox" checked>
                     Draw Bases
                 </label>
-                <label id="id-zoomreg" class="col-6 h6 txt-def">
+
+                <label id="id-zoomreg" class="col-14 h6 txt-def">
                     <input id="ck-zoomreg" type="checkbox" checked>
-                    Auto Zoom
+                    Auto Zoom Reg Search (zoom radius)
                 </label>
-                <label class="col-12 h6 txt-def">
-                    <input id="ck-chain" type="checkbox" checked>
-                    Draw Chain&nbsp;
-                    <input id="inp-chain" type="number" class="rounded col-4 txt-def" min="0" value="1">
-                </label>
+
+                <div class="row">
+                    <label class="col-8 h6 txt-def">
+                        <input id="ck-chain" type="checkbox" checked>
+                        Select Chain&nbsp;
+                        <input id="inp-chaindepth" type="number" class="rounded col-6 txt-def" min="0">
+                    </label> 
+                    <label class="col-6 h6 txt-def">
+                        Radius&nbsp;
+                        <input id="inp-chainradius" type="number" class="rounded col-7 txt-def" min="1">
+                    </label>
+                </div>
             </div>
         </div>
         <br>
@@ -1315,7 +1324,7 @@ blackHoleSuns.prototype.buildMap = function () {
                 <input id="inp-ctrcord" type="text" class="rounded col-10 txt-def" placeholder="07FF:007F:07FF:0000">
             </label>
             <label class="col-4 h6 txt-def">Radius&nbsp;
-                <input id="inp-ctrzoom" type="number" class="rounded col-6 txt-def" min="0" max="2048" value="2048">
+                <input id="inp-ctrzoom" type="number" class="rounded col-6 txt-def" min="0" max="2048">
             </label>
             <label class="col-3 h6 txt-def">
             <input id="ck-addzero" type="checkbox" checked>
@@ -1336,15 +1345,17 @@ blackHoleSuns.prototype.buildMap = function () {
     opt.html(settings);
 
     const key = `
-    <div class="row">
-        <div id="idname" class="col-9">title</div>
-        <input id="sel-idname" class="col-5 bkg-def" style="border-color:black" type="color" value="colorsel">
+    <div class="col-4">
+        <div class="row">
+            <div id="idname" class="col-9 text-center">title</div>
+            <input id="sel-idname" class="col-5 bkg-def" style="border-color:black" type="color" value="colorsel">
+        </div>
     </div>`;
 
     let keyloc = $("#mapkey");
     keyloc.empty();
 
-    keyloc.append(`<div class="row"><div class="col-14 text-center h5 txt-def">Key</div></div>`);
+    $("#showmapkey").prepend(`<div class="row text-center"><div class="col-14 h5 txt-def">Key</div></div>`);
 
     colortable.forEach(c => {
         let h = /idname/g [Symbol.replace](key, c.id);
@@ -1354,7 +1365,7 @@ blackHoleSuns.prototype.buildMap = function () {
     });
 
     $("#btn-redraw").click(function () {
-        bhs.draw3dmap(bhs.entries);
+        bhs.drawList(bhs.entries);
     });
 
     opt.find("#btn-mapsave").click(function () {
@@ -1376,181 +1387,188 @@ blackHoleSuns.prototype.buildMap = function () {
         bhs.changeMapLayout(true, true);
     });
 
+    let zero = {
+        x: 2048,
+        y: 128,
+        z: 2048,
+    };
+
+    opt = bhs.extractMapOptions();
+    let layout = bhs.changeMapLayout();
+    let data = [];
+    let out = initout();
+    pushentry(out, zero);
+    data.push(makedata(opt, out, 6, "#ffffff"));
+
+    Plotly.newPlot('plymap', data, layout).then(plot => {
+        plot.on('plotly_click', function (e) {
+            setTimeout(function () {
+                if (e.points.length > 0 && e.points[0].text) {
+                    if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
+                        let addr = bhs.addressToXYZ(e.points[0].text.slice(0, 19));
+                        let opt = bhs.extractMapOptions();
+                        bhs.mapped = {};
+                        bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1);
+                        delete bhs.mapped;
+                    }
+
+                    if (window.location.pathname == "/index.html" || window.location.pathname == "/")
+                        bhs.getEntry(e.points[0].text.slice(0, 19), bhs.displaySingle, 0);
+                }
+            }, 500);
+        });
+
+        // plot.on('plotly_hover', e => {
+        //     if (e.points.length > 0) {
+        //         let d = e.points[0].data;
+        //         let xyz = d.altdata[e.points[0].pointNumber];
+        //         if (xyz) {
+        //             //Plotly.Fx.hover('plymap', {yval:[xyz.z], xval:[xyz.x], zval:[xyz.y] },["xyz"]);
+        //             // for (let i = 0; i < d.x.length; ++i) {
+        //                 // if (d.x[i] == xyz.x && d.y[i] == xyz.z && d.z[i] == xyz.y)
+        //                     Plotly.restyle('plymap', {
+        //                         "marker.size": 8
+        //                     }, {y:[xyz.z], x:[xyz.x], z:[xyz.y] })
+        //             // }
+        //         }
+        //     }
+        // });
+    });
+
+    $("#btn-mapsettings").click(function () {
+        if ($("#showmapkey").is(":hidden")) {
+            $("#showmapkey").show();
+            $("#showmapoptions").show();
+        } else {
+            $("#showmapkey").hide();
+            $("#showmapoptions").hide();
+        }
+    });
 }
 
-blackHoleSuns.prototype.draw3dmap = function (entrylist, entry) {
+blackHoleSuns.prototype.drawList = function (listEntry) {
     let findex = window.location.pathname == "/" || window.location.pathname == "/index.html";
 
     let opt = bhs.extractMapOptions();
     if (!findex)
         opt.connection = false;
 
-    let layout = bhs.changeMapLayout();
     let out = {};
+    let data = [];
 
-    if (!entry) {
-        let data = [];
-
-        let addr = Object.keys(entrylist);
-        for (let i = 0; i < addr.length; ++i) {
-            let e = entrylist[addr[i]];
-
-            let entries = Object.keys(e);
-            for (let j = 0; j < entries.length; ++j) {
-                let w = entries[j];
-
-                if (opt.connection) {
-                    if (w == "bh") {
-                        out.con = initout();
-                        pushentry(out.con, e.bh.xyzs, e.bh.addr + "<br>" + e.bh.sys + "<br>" + e.bh.reg);
-                        pushentry(out.con, e.bh.conxyzs, e.bh.connection);
-                        data.push(makedata(opt, out.con, 4, opt["clr-bh"], opt["clr-con"], true));
-                        break;
-                    }
-                } else if (w == "bhbase" || w == "xitbase") {
-                    out.base = initout(out.base);
-                    pushentry(out.base, e[w].xyzs, e[w].addr + "<br>" + e[w].basename);
-                } else {
-                    out[w] = initout(out[w]);
-                    pushentry(out[w], e[w].xyzs, e[w].addr + "<br>" + e[w].sys + "<br>" + e[w].reg, {
-                        bh: e.bh ? e.bh.xyzs : null,
-                        xit: e.xit ? e.xit.xyzs : null
-                    });
-                }
-            }
-        }
-
-        if (!opt.connection) {
-            if (out.bh)
-                data.push(makedata(opt, out.bh, 4, opt["clr-bh"]));
-
-            if (opt.exit && out.xit)
-                data.push(makedata(opt, out.xit, 1, opt["clr-exit"]));
-
-            if (opt.base && out.base)
-                data.push(makedata(opt, out.base, 1, opt["clr-base"]));
-        }
-
-        Plotly.newPlot('plymap', data, layout).then(plot => {
-                plot.on('plotly_click', function (e) {
-                    setTimeout(function () {
-                        if (e.points.length > 0 && e.points[0].text) {
-                            if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
-                                let addr = bhs.addressToXYZ(e.points[0].text.slice(0, 19));
-                                bhs.mapped = {};
-                                bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1);
-                                delete bhs.mapped;
-                            }
-
-                            if (window.location.pathname == "/index.html" || window.location.pathname == "/")
-                                bhs.getEntry(e.points[0].text.slice(0, 19), bhs.displaySingle, 0);
-                        }
-                    }, 500);
-                });
-
-                // plot.on('plotly_hover', e => {
-                //     if (e.points.length > 0) {
-                //         let d = e.points[0].data;
-                //         let xyz = d.altdata[e.points[0].pointNumber];
-                //         if (xyz) {
-                //             //Plotly.Fx.hover('plymap', {yval:[xyz.z], xval:[xyz.x], zval:[xyz.y] },["xyz"]);
-                //             // for (let i = 0; i < d.x.length; ++i) {
-                //                 // if (d.x[i] == xyz.x && d.y[i] == xyz.z && d.z[i] == xyz.y)
-                //                     Plotly.restyle('plymap', {
-                //                         "marker.size": 8
-                //                     }, {y:[xyz.z], x:[xyz.x], z:[xyz.y] })
-                //             // }
-                //         }
-                //     }
-                // });
-        });
-    } else {
-        if (!entry.addr) {
-            let entries = Object.keys(entry);
-            for (let j = 0; j < entries.length; ++j) {
-                let w = entries[j];
-                if (opt.connection) {
-                    if (w == "bh") {
-                        out.con = initout();
-                        pushentry(out.con, entry.bh.xyzs, entry.bh.addr + "<br>" + entry.bh.sys + "<br>" + entry.bh.reg);
-                        pushentry(out.con, entry.bh.conxyzs, entry.bh.connection);
-                        Plotly.addTraces('plymap', makedata(opt, out.con, 8, opt["clr-bh"], opt["clr-con"], true));
-                        break;
-                    }
-                } else if (w == "bhbase" || w == "xitbase") {
-                    out.base = initout(out.base);
-                    pushentry(out.base, entry[w].xyzs, entry[w].addr + "<br>" + entry[w].basename);
-                } else {
-                    out[w] = initout(out[w]);
-                    pushentry(out[w], entry[w].xyzs, entry[w].addr + "<br>" + entry[w].sys + "<br>" + entry[w].reg, {
-                        bh: entry.bh ? entry.bh.xyzs : null,
-                        xit: entry.xit ? entry.xit.xyzs : null
-                    });
-                }
-            }
-
-            if (!opt.connection) {
-                if (out.bh)
-                    Plotly.addTraces('plymap', makedata(opt, out.bh, 8, opt["clr-bh"]));
-
-                if (opt.exit && out.xit)
-                    Plotly.addTraces('plymap', makedata(opt, out.xit, 8, opt["clr-exit"]));
-
-                if (opt.base && out.base)
-                    Plotly.addTraces('plymap', makedata(opt, out.base, 8, opt["clr-base"]));
-            }
+    let k = Object.keys(listEntry);
+    for (let i = 0; i < k.length; ++i) {
+        let entry = listEntry[k[i]];
+        if (opt.connection && entry.bh && entry.exit) {
+            let out = initout(out);
+            pushentry(out, entry.bh.xyzs, entry.bh.addr + "<br>" + entry.bh.sys + "<br>" + entry.bh.reg);
+            pushentry(out, entry.exit.xyzs, entry.exit.addr + "<br>" + entry.exit.sys + "<br>" + entry.exit.reg);
+            data.push(makedata(opt, out, size, color));
         } else {
-            out = initout();
-            pushentry(out, entry.xyzs, entry.addr + "<br>" + entry.sys + "<br>" + entry.reg, {
-                bh: entry.xyzs,
-                xit: entry.conxyzs
-            });
+            let t = Object.keys(entry);
+            for (let i = 0; i < t.length; ++i) {
+                out[t[i]] = initout(out[t[i]]);
+                let e = entry[t[i]];
+                let text = e.addr + "<br>" + e.sys + "<br>" + e.reg;
 
-            if (entry.blackhole || entry.deadzone)
-                Plotly.addTraces('plymap', makedata(opt, out, 8, opt["clr-bh"]));
-            else if (opt.base && entry.basename)
-                Plotly.addTraces('plymap', makedata(opt, out, 8, opt["clr-base"]));
-            else if (opt.exit)
-                Plotly.addTraces('plymap', makedata(opt, out, 8, opt["clr-exit"]));
+                if (t[i].match(/base/))
+                    text += "<br>" + e.basename;
+
+                pushentry(out[t[i]], e.xyzs, text);
+            }
         }
     }
+
+    let o = Object.keys(out);
+    for (let i = 0; i < o.length; ++i) {
+        let color = opt["clr-bh"];
+        let size = 5;
+        switch (o[i]) {
+            case "dz":
+                color = opt["clr-dz"];
+                size = 2;
+                break;
+            case "exit":
+                color = opt["clr-exit"];
+                size = 2;
+                break;
+            case "bhbase":
+            case "exitbase":
+                color = opt["clr-base"];
+                size = 2;
+                break;
+        }
+
+        data.push(makedata(opt, out[o[i]], size, color));
+    }
+
+    Plotly.react('plymap', data, bhs.changeMapLayout());
+}
+
+blackHoleSuns.prototype.drawListSingle = function (entry) {
+    let list = {};
+    list.single = entry;
+    bhs.drawList(list);
+}
+
+blackHoleSuns.prototype.drawSingle = function (entry) {
+    let opt = bhs.extractMapOptions();
+    let out = initout();
+
+    let text = entry.addr + "<br>" + entry.sys + "<br>" + entry.reg;
+    if (entry.basename)
+        text += "<br>" + entry.basename;
+
+    pushentry(out, entry.xyzs, text);
+
+    let color;
+
+    if (entry.blackhole)
+        color = opt["clr-bh"];
+    else if (entry.deadzone)
+        color = opt["clr-dz"];
+    else if (entry.basename)
+        color = opt["clr-base"];
+    else
+        color = opt["clr-exit"];
+
+    Plotly.addTraces('plymap', makedata(opt, out, 10, color));
 }
 
 blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
     if (depth-- > 0) {
-        let list = bhs.findClose(xyz, up);
+        let list = bhs.findClose(opt, xyz, up);
 
         let keys = Object.keys(list);
         for (let i = 0; i < keys.length; ++i) {
             let d = list[keys[i]];
-            if (d.bh && d.xit && !bhs.mapped[d.bh.addr]) {
+            if (d.bh && d.exit && !bhs.mapped[d.bh.addr]) {
                 bhs.mapped[d.bh.addr] = true;
 
-                let out = {};
-                out.con = initout();
-                pushentry(out.con, d.bh.xyzs);
-                pushentry(out.con, d.xit.xyzs);
+                let out = initout();
+                pushentry(out, d.bh.xyzs);
+                pushentry(out, d.exit.xyzs);
 
-                Plotly.addTraces('plymap', makedata(opt, out.con, 4, opt["clr-bh"], opt["clr-con"], true));
+                Plotly.addTraces('plymap', makedata(opt, out, 4, opt["clr-bh"], opt["clr-con"], true));
 
-                bhs.drawChain(opt, d.xit.xyzs, depth);
+                bhs.drawChain(opt, d.exit.xyzs, depth);
                 bhs.drawChain(opt, d.bh.xyzs, depth, true);
             }
         }
     }
 }
 
-blackHoleSuns.prototype.findClose = function (xyz, up) {
+blackHoleSuns.prototype.findClose = function (opt, xyz, up) {
     let list = Object.keys(bhs.entries);
     let out = {};
 
     for (let i = 0; i < list.length; ++i) {
         let e = bhs.entries[list[i]];
 
-        if (e.bh && e.xit) {
-            if (!up && Math.abs(e.bh.xyzs.x - xyz.x) <= 1 && Math.abs(e.bh.xyzs.y - xyz.y) <= 1 && Math.abs(e.bh.xyzs.z - xyz.z) <= 1)
+        if (e.bh && e.exit) {
+            if (!up && Math.abs(e.bh.xyzs.x - xyz.x) <= opt.chainradius && Math.abs(e.bh.xyzs.y - xyz.y) <= opt.chainradius && Math.abs(e.bh.xyzs.z - xyz.z) <= opt.chainradius)
                 out[list[i]] = e;
-            if (up && Math.abs(e.xit.xyzs.x - xyz.x) <= 1 && Math.abs(e.xit.xyzs.y - xyz.y) <= 1 && Math.abs(e.xit.xyzs.z - xyz.z) <= 1)
+            if (up && Math.abs(e.exit.xyzs.x - xyz.x) <= opt.chainradius && Math.abs(e.exit.xyzs.y - xyz.y) <= opt.chainradius && Math.abs(e.exit.xyzs.z - xyz.z) <= opt.chainradius)
                 out[list[i]] = e;
         }
     }
@@ -1686,10 +1704,10 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
     return layout;
 }
 
-function pushentry(data, entry, label, alt) {
-    data.x.push(entry.x);
-    data.y.push(4095 - entry.z);
-    data.z.push(entry.y);
+function pushentry(data, xyz, label, alt) {
+    data.x.push(xyz.x);
+    data.y.push(4095 - xyz.z);
+    data.z.push(xyz.y);
     data.t.push(label);
     data.a.push(alt);
 };
@@ -1717,12 +1735,6 @@ function makedata(opt, out, size, color, linecolor, lines) {
         mode: 'markers',
         marker: {
             size: size,
-            line: {
-                color: color,
-                width: 1,
-                opacity: 1,
-
-            },
             color: color,
             opacity: 0.5,
         },

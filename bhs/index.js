@@ -163,22 +163,22 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         $(this).closest("[id|='pnl']").find("#id-glyph").html(bhs.addrToGlyph(addr));
 
         bhs.getEntry(addr, bhs.displaySingle, 0);
-        let e = {};
-        e.addr = addr;
-        e.xyzs = bhs.addressToXYZ(addr);
-        e.blackhole = true;
-        let min = [];
+        // let e = {};
+        // e.addr = addr;
+        // e.xyzs = bhs.addressToXYZ(addr);
+        // e.blackhole = true;
+        // let min = [];
 
-        let list = Object.keys(bhs.entries);
-        for (let i = 0; i < list.length; ++i) {
-            if (bhs.entries[list[i]].bh) {
-                let d = bhs.calcDist(e.addr, bhs.entries[list[i]].bh.addr);
-                min.push(d);
-            }
-        }
+        // let list = Object.keys(bhs.entries);
+        // for (let i = 0; i < list.length; ++i) {
+        //     if (bhs.entries[list[i]].bh) {
+        //         let d = bhs.calcDist(e.addr, bhs.entries[list[i]].bh.addr);
+        //         min.push(d);
+        //     }
+        // }
 
-        min.sort((a, b) => a - b);
-        bhs.draw3dmap(bhs.entries, e, min[10] / 400);
+        // min.sort((a, b) => a - b);
+        // bhs.drawSingle(bhs.entries);
 
         bhs.displayCalc();
     });
@@ -229,11 +229,11 @@ blackHoleSuns.prototype.displayListEntry = function (entry) {
         $("#" + panels[pnlBottom].id).hide();
     }
 
-    if (entry.xit) {
-        bhs.displaySingle(entry.xit, entry.bh ? pnlBottom : pnlTop);
+    if (entry.exit) {
+        bhs.displaySingle(entry.exit, entry.bh ? pnlBottom : pnlTop);
 
-        if (entry.xitbase)
-            bhs.displayBase(entry.xitbase, entry.bh ? pnlBottom : pnlTop);
+        if (entry.exitbase)
+            bhs.displayBase(entry.exitbase, entry.bh ? pnlBottom : pnlTop);
     }
 
     bhs.last = entry;
@@ -245,7 +245,7 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
         bhs.changeMapLayout(true, true);
     }
 
-    bhs.draw3dmap(bhs.entries, entry);
+    bhs.drawSingle(entry);
 
     let loc = $("#" + panels[idx].id);
 

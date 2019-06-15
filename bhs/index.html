@@ -61,7 +61,7 @@
 
     <div id="r2" class="container-fluid">
         <div class="row">
-            <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">About</a>
+            <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">About/FAQ</a>
             <a class="col-3 text-center h5 txt-def" href="galaxy.html">Totals</a>
             <!--a  class="col-3 text-center h5 txt-def" href="search.html">Search</a-->
 
@@ -86,10 +86,23 @@
                         <button id="darkmode" type="button" class="no-border text-center dropdown-item btn-def">
                             <h5>Dark Mode</h5>
                         </button>
+                        <button id="testmode" type="button"
+                            class="h5 no-border text-center dropdown-item btn-def hidden">
+                            Test Mode
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="footer" class="row border-top">
+        <a href="https://darc.blackholesuns.com/" class="col-3 text-center clr-creme h6">BHS DaRC Web</a>
+        <a href="https://guide.blackholesuns.com/" class="col-3 text-center clr-creme h6">Travel Guide</a>
+        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center clr-creme h6">Follow us on
+            Redit</a>
+        <a href="https://discord.blackholesuns.com/" class="col-4 text-center clr-creme h6">Talk to us on
+            Discord</a>
     </div>
 
     <div id="javascript">
@@ -149,7 +162,7 @@
         </div>
 
         <div class="row">
-            <div class="col-md-7 col-sm-9 col-14">
+            <div class="col-md-7 col-14">
                 <div class="card card-body pad-bottom">
 
                     <div id="panels"></div>
@@ -171,7 +184,7 @@
                 <br>
             </div>
 
-            <div class="col-md-7 col-sm-5 col-14">
+            <div class="col-md-7 col-14">
                 <div id="pnl-map" class="card card-body border bkg-def">
                     <div class="row">
                         <div id="mapcol" class="col-10">
@@ -184,44 +197,46 @@
                                     height="20"></a>
                             <br>
 
-                            <div id="mapkey" class="card card-body bkg-def border txt-def"></div>
-                            <br>
-                            <div class="row container">
+                            <div class="row">
+                                <div class="col-12 text-right">
                                 <button id="btn-redraw" type="button"
-                                    class="col-7 border btn btn-sm btn-def">Redraw</button>&nbsp;</div>
+                                    class="col-12 border btn btn-sm btn-def text-center">Redraw</button>&nbsp;
+                            </div></div>
                             <br>
-                  </div>
+                            <div class="row">
+                                <div id="btn-mapsettings" class="col-12 txt-def text-right">
+                                    <i class="fa fa-cog txt-def"></i>&nbsp;Settings
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="showmapkey" class="card card-body border bkg-def pad-bottom hidden">
+                        <div id="mapkey" class="row bkg-def txt-def"></div>
                     </div>
                     <br>
 
-                    <div id="mapoptions" class="card card-body bkg-def border"></div>
+                    <div id="showmapoptions" class="card no-border hidden">
+                        <div id="mapoptions" class="card card-body bkg-def border pad-bottom"></div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <br>
-
-        <div class="row">
-            <div class="col-md-7 col-sm-9 col-14">
-                <div id="entryTable" class="card pad-bottom"></div>
-                <br>
-            </div>
-
-            <div class="col-md-7 col-sm-5 col-14">
-                <div id="totals" class="card border pad-bottom"></div>
             </div>
         </div>
     </div>
     <br>
 
-    <div id="footer" class="row">
-        <a href="https://darc.blackholesuns.com/" class="col-3 text-center txt-def h5">BHS DaRC Web</a>
-        <a href="https://guide.blackholesuns.com/" class="col-3 text-center txt-def h5">Travel Guide</a>
-        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center txt-def h5">Follow us on
-            Redit</a>
-        <a href="https://discord.blackholesuns.com/" class="col-4 text-center txt-def h5">Talk to us on
-            Discord</a>
-    </div>
+    <div class="row">
+        <div class="col-md-7 col-14">
+            <div id="entryTable" class="card pad-bottom"></div>
+            <br>
+        </div>
 
+        <div class="col-md-7 col-14">
+            <div id="totals" class="card border pad-bottom"></div>
+        </div>
+    </div>
+    </div>
+    <br>
 </body>
 
 </html>

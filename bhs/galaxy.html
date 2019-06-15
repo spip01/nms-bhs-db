@@ -60,9 +60,9 @@
 
     <div id="r2" class="container-fluid">
         <div class="row">
-            <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">About</a>
+            <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">About/FAQ</a>
             <a class="col-3 text-center h5 txt-def" href="index.html">Input</a>
-            <a class="col-3 text-center h5 txt-def" href="search.html">Search</a>
+            <!--a class="col-3 text-center h5 txt-def" href="search.html">Search</a-->
 
             <div id="full-usermenu" class="container col-4">
                 <button id="login" type="button" class="text-center btn-def no-border h5">
@@ -83,10 +83,23 @@
                         <button id="darkmode" type="button" class="h5 no-border text-center dropdown-item btn-def">
                             Dark Mode
                         </button>
+                        <button id="testmode" type="button"
+                            class="h5 no-border text-center dropdown-item btn-def hidden">
+                            Test Mode
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="footer" class="row border-top">
+        <a href="https://darc.blackholesuns.com/" class="col-3 text-center clr-creme h6">BHS DaRC Web</a>
+        <a href="https://guide.blackholesuns.com/" class="col-3 text-center clr-creme h6">Travel Guide</a>
+        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center clr-creme h6">Follow us on
+            Redit</a>
+        <a href="https://discord.blackholesuns.com/" class="col-4 text-center clr-creme h6">Talk to us on
+            Discord</a>
     </div>
 
     <div id="javascript">
@@ -157,58 +170,46 @@
 
                 <div class="card card-body border pad-bottom bkg-def">
                     <div class="row">
-                        <div class="col-14">
-                            <div id="pnl-map" class="card card-body border bkg-def pad-bottom">
-                                <div id="plymap" style="max-width:1200px"></div>
-                            </div>
-                            <br>
-                        </div>
-
-                        <div class="col-14">
-                            <div class="row container">
-                                <button id="btn-redraw" type="button"
-                                    class="col-3 border btn btn-sm btn-def">Redraw</button>&nbsp;</div>
-                            <br>
-                            <div class="row">
-                                <div class="col-md-14 col-4">
-                                    <div id="mapkey" class="card card-body bkg-def border pad-bottom txt-def"></div>
-                                </div>
-
-                                <div class="col-md-3 col-1"></div>
-
-                                <div class="col-md-6 col-3">
-                                    <br>
-                                    <a id="maplogo" html="https://darc.blackholesuns.com" class="row">
-                                        <img id="logo" src="lBTK5EL.png" class="float-center" alt="BHS Logo"
-                                            height="20px" width="20px"></a>
-                                </div>
-                            </div>
-                            <br>
+                        <div id="pnl-map" class="card card-body border bkg-def pad-bottom">
+                            <div id="plymap" style="max-width:1200px"></div>
                         </div>
                     </div>
+                    <br>
 
-                    <div class="card no-border">
+                    <div class="row">
+                        <div class="col-6">
+                            <div id="btn-redraw" class="btn-sm btn border btn-def">Redraw </div>
+                        </div>
+                        <div id="maplogo" class="col-3">
+                            <a html="https://darc.blackholesuns.com">
+                                <img id="logo" src="lBTK5EL.png" class="float-center" alt="BHS Logo" height="20px"
+                                    width="20px">
+                            </a>
+                        </div>
+                        <div id="btn-mapsettings" class="col-5 text-right txt-def">
+                            <i class="fa fa-cog txt-def"></i>&nbsp;Settings
+                        </div>
+                    </div>
+                    <br>
+
+                    <div id="showmapkey" class="card card-body border bkg-def pad-bottom hidden">
+                        <div id="mapkey" class="row bkg-def txt-def"></div>
+                    </div>
+                    <br>
+
+                    <div id="showmapoptions" class="card no-border hidden">
                         <div id="mapoptions" class="card card-body bkg-def border pad-bottom"></div>
                     </div>
                 </div>
             </div>
         </div>
-        <br>
-
-        <div id="showentries" class="card">
-            <div id="entryTable" class="card border pad-bottom"></div>
-        </div>
     </div>
     <br>
 
-    <div id="footer" class="row">
-        <a href="https://darc.blackholesuns.com/" class="col-3 text-center txt-def h5">BHS DaRC Web</a>
-        <a href="https://guide.blackholesuns.com/" class="col-3 text-center txt-def h5">Travel Guide</a>
-        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center txt-def h5">Follow us on
-            Redit</a>
-        <a href="https://discord.blackholesuns.com/" class="col-4 text-center txt-def h5">Talk to us on Discord</a>
+    <div id="showentries" class="card">
+        <div id="entryTable" class="card border pad-bottom"></div>
     </div>
-
+    </div>
 </body>
 
 </html>
