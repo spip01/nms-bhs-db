@@ -1404,13 +1404,12 @@ blackHoleSuns.prototype.buildMap = function () {
         plot.on('plotly_click', function (e) {
             setTimeout(function () {
                 if (e.points.length > 0 && e.points[0].text) {
-                    if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
-                        let addr = bhs.addressToXYZ(e.points[0].text.slice(0, 19));
-                        let opt = bhs.extractMapOptions();
-                        bhs.mapped = {};
-                        bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1);
-                        delete bhs.mapped;
-                    }
+                    let addr = bhs.addressToXYZ(e.points[0].text.slice(0, 19));
+                    let opt = bhs.extractMapOptions();
+                    bhs.mapped = {};
+                    bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1);
+                    bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1, true);
+                    delete bhs.mapped;
 
                     if (window.location.pathname == "/index.html" || window.location.pathname == "/")
                         bhs.getEntry(e.points[0].text.slice(0, 19), bhs.displaySingle, 0);
