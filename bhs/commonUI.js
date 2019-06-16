@@ -1213,13 +1213,13 @@ blackHoleSuns.prototype.setMapOptions = function (entry) {
         opt.find("#inp-chaindepth").val(entry.mapoptions.chaindepth ? entry.mapoptions.chaindepth : 1);
         opt.find("#inp-chainradius").val(entry.mapoptions.chainradius ? entry.mapoptions.chainradius : 1);
 
-        opt.find("#ck-drawcon").prop("checked", entry.mapoptions.connection ? entry.mapoptions.connection : false);
-        opt.find("#ck-3dmap").prop("checked", entry.mapoptions.map3d ? entry.mapoptions.map3d : true);
-        opt.find("#ck-drawexits").prop("checked", entry.mapoptions.exit ? entry.mapoptions.exit : false);
-        opt.find("#ck-drawbase").prop("checked", entry.mapoptions.base ? entry.mapoptions.base : false);
-        opt.find("#ck-zoomreg").prop("checked", entry.mapoptions.zoomreg ? entry.mapoptions.zoomreg : false);
-        opt.find("#ck-addzero").prop("checked", entry.mapoptions.addzero ? entry.mapoptions.addzero : true);
-        opt.find("#ck-chain").prop("checked", entry.mapoptions.chain ? entry.mapoptions.chain : true);
+        opt.find("#ck-drawcon").prop("checked", typeof entry.mapoptions.connection !="undefined" ? entry.mapoptions.connection : false);
+        opt.find("#ck-3dmap").prop("checked", typeof entry.mapoptions.map3d !="undefined"? entry.mapoptions.map3d : true);
+        opt.find("#ck-drawexits").prop("checked", typeof entry.mapoptions.exit  !="undefined"? entry.mapoptions.exit : false);
+        opt.find("#ck-drawbase").prop("checked", typeof entry.mapoptions.base !="undefined" ? entry.mapoptions.base : false);
+        opt.find("#ck-zoomreg").prop("checked", typeof entry.mapoptions.zoomreg  !="undefined"? entry.mapoptions.zoomreg : false);
+        opt.find("#ck-addzero").prop("checked",typeof  entry.mapoptions.addzero !="undefined" ? entry.mapoptions.addzero : true);
+        opt.find("#ck-chain").prop("checked", typeof entry.mapoptions.chain !="undefined" ? entry.mapoptions.chain : true);
     } else {
         opt = $("#mapkey");
         for (let i = 0; i < colortable.length; ++i)
@@ -1404,6 +1404,9 @@ blackHoleSuns.prototype.buildMap = function () {
         plot.on('plotly_click', function (e) {
             setTimeout(function () {
                 if (e.points.length > 0 && e.points[0].text) {
+                    if (window.location.pathname == "/index.html" || window.location.pathname == "/")
+                        bhs.getEntry(e.points[0].text.slice(0, 19), bhs.displaySingle, 0);
+
                     let addr = bhs.addressToXYZ(e.points[0].text.slice(0, 19));
                     let opt = bhs.extractMapOptions();
                     bhs.mapped = {};
@@ -1411,8 +1414,6 @@ blackHoleSuns.prototype.buildMap = function () {
                     bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1, true);
                     delete bhs.mapped;
 
-                    if (window.location.pathname == "/index.html" || window.location.pathname == "/")
-                        bhs.getEntry(e.points[0].text.slice(0, 19), bhs.displaySingle, 0);
                 }
             }, 500);
         });
