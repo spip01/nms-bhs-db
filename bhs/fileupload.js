@@ -412,9 +412,10 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                     else if (entry[0].type.match(/base/i) || entry[2].addr == "0000:0000:0000:0000") {
                         let base = entry[2].sys ? entry[2].sys : entry[2].reg;
                         entry[2] = {};
-                        if (!base)
+                        if (!base) {
+                            log.log = bhs.filestatus("row: " + (i + 1) + " empty base name.", 0, log.log);
                             log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log);
-                        else {
+                        } else {
                             entry[2].basename = base;
                             entry[2].addr = entry[1].addr;
 
