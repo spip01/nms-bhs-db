@@ -571,6 +571,44 @@ blackHoleSuns.prototype.initTotals = function () {
     return t;
 }
 
+blackHoleSuns.prototype.findDuplicates = function () {
+    let ref = bhs.getStarsColRef();
+    ref.get().then(function (snapshot) {
+        for (let i = 0; i < snapshot.docs.length; ++i) {
+            if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "players")
+                continue;
+
+            let g = snapshot.docs[i].data()
+
+            for (let j = 0; j < platformList.length; ++j) {
+                let p = platformList[j];
+
+                let t = {};
+
+                let ref = bhs.getStarsColRef(g.name, p.name);
+                ref = ref.where("blackhole", "==", true);
+                ref.get().then(function (snapshot) {
+                    if (snapshot.size) {
+                        console.log(g.name + " " + p.name + " " + snapshot.size);
+                        for (let i = 0; i < snapshot.size; ++i) {
+                            let e = snapshot.docs[i].data();
+                            if (typeof t[e.connection] == "undefined")
+                                t[e.connection] = [];
+                            t[e.connection].push(e);
+                        }
+
+                        Object.keys(t).forEach(a => {
+                            if (t[a].length > 1)
+                                for (let i = 0; i < t[a].length; ++i)
+                                    console.log(a + " " + t[a][i].addr + " " + t[a][i].player);
+                        });
+                    }
+                });
+            }
+        }
+    });
+}
+
 blackHoleSuns.prototype.checkTotalsInit = function (t, entry) {
     if (typeof t == "undefined")
         t = {};

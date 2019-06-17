@@ -384,6 +384,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
 
 blackHoleSuns.prototype.save = async function () {
     $("#status").empty();
+    bhs.saveUser();
 
     if (await bhs.extractEntry(pnlTop)) {
         bhs.clearPanels();
