@@ -412,25 +412,29 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                     else if (entry[0].type.match(/base/i) || entry[2].addr == "0000:0000:0000:0000") {
                         let base = entry[2].sys ? entry[2].sys : entry[2].reg;
                         entry[2] = {};
-                        entry[2].basename = base;
-                        entry[2].addr = entry[1].addr;
+                        if (!base)
+                            log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log);
+                        else {
+                            entry[2].basename = base;
+                            entry[2].addr = entry[1].addr;
 
-                        if (entry[0].type.match(/visit/i))
-                            entry[2].owned = "visited";
-                        else if (entry[0].type.match(/station/i))
-                            entry[2].owned = "station";
-                        else
-                            entry[2].owned = "mine";
+                            if (entry[0].type.match(/visit/i))
+                                entry[2].owned = "visited";
+                            else if (entry[0].type.match(/station/i))
+                                entry[2].owned = "station";
+                            else
+                                entry[2].owned = "mine";
 
-                        entry[2] = mergeObjects(entry[2], entry[0]);
-                        entry[2] = mergeObjects(entry[2], entry[1]);
-                        await bhs.batchWriteBase(b, entry[2], check);
-                        await bhs.batchUpdate(b, entry[1], check); // don't overwrite bh info if it exists
+                            entry[2] = mergeObjects(entry[2], entry[0]);
+                            entry[2] = mergeObjects(entry[2], entry[1]);
+                            await bhs.batchWriteBase(b, entry[2], check);
+                            await bhs.batchUpdate(b, entry[1], check); // don't overwrite bh info if it exists
+                        }
                     } else if (entry[0].type.match(/single/i) || !entry[2].addr) {
                         await bhs.batchUpdate(b, entry[1], check); // don't overwrite bh info if it exists
 
                     } else {
-                        entry[1].deadzone = entry[0].type.match(/dead/i) || entry[2].addr == entry[1].addr;
+                        entry[1].deadzone = entry[0].type.match(/dead|dz/i) || entry[2].addr == entry[1].addr;
                         entry[1].blackhole = !entry[1].deadzone;
 
                         let str = "";
