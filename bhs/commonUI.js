@@ -1213,13 +1213,13 @@ blackHoleSuns.prototype.setMapOptions = function (entry) {
         opt.find("#inp-chaindepth").val(entry.mapoptions.chaindepth ? entry.mapoptions.chaindepth : 1);
         opt.find("#inp-chainradius").val(entry.mapoptions.chainradius ? entry.mapoptions.chainradius : 1);
 
-        opt.find("#ck-drawcon").prop("checked", typeof entry.mapoptions.connection !="undefined" ? entry.mapoptions.connection : false);
-        opt.find("#ck-3dmap").prop("checked", typeof entry.mapoptions.map3d !="undefined"? entry.mapoptions.map3d : true);
-        opt.find("#ck-drawexits").prop("checked", typeof entry.mapoptions.exit  !="undefined"? entry.mapoptions.exit : false);
-        opt.find("#ck-drawbase").prop("checked", typeof entry.mapoptions.base !="undefined" ? entry.mapoptions.base : false);
-        opt.find("#ck-zoomreg").prop("checked", typeof entry.mapoptions.zoomreg  !="undefined"? entry.mapoptions.zoomreg : false);
-        opt.find("#ck-addzero").prop("checked",typeof  entry.mapoptions.addzero !="undefined" ? entry.mapoptions.addzero : true);
-        opt.find("#ck-chain").prop("checked", typeof entry.mapoptions.chain !="undefined" ? entry.mapoptions.chain : true);
+        opt.find("#ck-drawcon").prop("checked", typeof entry.mapoptions.connection != "undefined" ? entry.mapoptions.connection : false);
+        opt.find("#ck-3dmap").prop("checked", typeof entry.mapoptions.map3d != "undefined" ? entry.mapoptions.map3d : true);
+        opt.find("#ck-drawexits").prop("checked", typeof entry.mapoptions.exit != "undefined" ? entry.mapoptions.exit : false);
+        opt.find("#ck-drawbase").prop("checked", typeof entry.mapoptions.base != "undefined" ? entry.mapoptions.base : false);
+        opt.find("#ck-zoomreg").prop("checked", typeof entry.mapoptions.zoomreg != "undefined" ? entry.mapoptions.zoomreg : false);
+        opt.find("#ck-addzero").prop("checked", typeof entry.mapoptions.addzero != "undefined" ? entry.mapoptions.addzero : true);
+        opt.find("#ck-chain").prop("checked", typeof entry.mapoptions.chain != "undefined" ? entry.mapoptions.chain : true);
     } else {
         opt = $("#mapkey");
         for (let i = 0; i < colortable.length; ++i)
@@ -1355,8 +1355,6 @@ blackHoleSuns.prototype.buildMap = function () {
     let keyloc = $("#mapkey");
     keyloc.empty();
 
-    $("#showmapkey").prepend(`<div class="row text-center"><div class="col-14 h5 txt-def">Key</div></div>`);
-
     colortable.forEach(c => {
         let h = /idname/g [Symbol.replace](key, c.id);
         h = /colorsel/g [Symbol.replace](h, c.color);
@@ -1435,6 +1433,8 @@ blackHoleSuns.prototype.buildMap = function () {
         // });
     });
 
+
+    $("#btn-mapsettings").unbind("click");
     $("#btn-mapsettings").click(function () {
         if ($("#showmapkey").is(":hidden")) {
             $("#showmapkey").show();
