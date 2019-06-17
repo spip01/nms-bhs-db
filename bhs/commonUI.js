@@ -3,7 +3,7 @@
 blackHoleSuns.prototype.doLoggedout = function () {
     if (bhs.clearPanels) bhs.clearPanels();
     bhs.user = bhs.userInit();
-    bhs.displayUser(bhs.user);
+    bhs.displayUser(bhs.user, true);
 
     $("#status").empty();
     $("#filestatus").empty();
@@ -15,20 +15,20 @@ blackHoleSuns.prototype.doLoggedout = function () {
 }
 
 blackHoleSuns.prototype.doLoggedin = function (user) {
-    bhs.displayUser(user);
+    bhs.displayUser(user, true);
 
     $("#save").removeClass("disabled");
     $("#save").removeAttr("disabled");
 }
 
-blackHoleSuns.prototype.displayUser = async function (user) {
+blackHoleSuns.prototype.displayUser = async function (user, force) {
     let ifindex = window.location.pathname == "/index.html" || window.location.pathname == "/";
     let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform);
 
     bhs.user = mergeObjects(bhs.user, user);
     bhs.contest = await bhs.getActiveContest();
 
-    if (changed) {
+    if (changed || force) {
         bhs.buildUserTable(bhs.user);
         bhs.buildMap();
         bhs.buildTotals();
@@ -1463,7 +1463,7 @@ blackHoleSuns.prototype.drawList = function (listEntry) {
             let out = initout();
             pushentry(out, entry.bh.xyzs, entry.bh.addr + "<br>" + entry.bh.sys + "<br>" + entry.bh.reg);
             pushentry(out, entry.exit.xyzs, entry.exit.addr + "<br>" + entry.exit.sys + "<br>" + entry.exit.reg);
-            data.push(makedata(opt, out, size, color));
+            data.push(makedata(opt, out, 4, opt["clr-bh"], opt["clr-con"]));
         } else {
             let t = Object.keys(entry);
             for (let i = 0; i < t.length; ++i) {

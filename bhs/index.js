@@ -99,9 +99,10 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                 </div>
 
                 <div id="id-isbase" class="row" style="display:none">
-                    <div class="col-3 h6 txt-inp-def">Name</div>
+                    <div class="col-2 h6 txt-inp-def">Name</div>
                     <input id="id-basename" class="rounded col-5">
-                    <div id="id-Owned" class="col-6"></div>
+                    <div id="id-Owned" class="col-3"></div>
+                    <button id="btn-delbase" type="button" class="col-2 btn-def btn btn-sm disabled" disabled>Delete Base</button>&nbsp;
                 </div>
 
                 <div id="id-pnl1-only" class="row">
@@ -211,6 +212,13 @@ blackHoleSuns.prototype.buildPanel = function (id) {
     loc.find("#btn-searchRegion").click(function () {
         bhs.getEntryByRegion(loc.find("#id-reg").val(), bhs.displaySingle, 0);
     });
+
+    loc.find("#btn-delbase").click(function () {
+        if (loc.find("#id-addr").val())
+            bhs.deleteBase(loc.find("#id-addr").val());
+        else
+            bhs.status("No address to delete");
+    });
 }
 
 blackHoleSuns.prototype.displayListEntry = function (entry) {
@@ -280,10 +288,14 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
 }
 
 blackHoleSuns.prototype.displayBase = function (entry, idx) {
-    $("#" + panels[idx].id + " #id-isbase").show();
-    $("#" + panels[idx].id + " #ck-hasbase").prop("checked", true);
-    $("#" + panels[idx].id + " #id-basename").val(entry.basename);
-    $("#" + panels[idx].id + " #btn-Owned").text(entry.owned);
+    let pnl = $("#" + panels[idx].id);
+    pnl.find("#id-isbase").show();
+    pnl.find("#ck-hasbase").prop("checked", true);
+    pnl.find("#id-basename").val(entry.basename);
+    pnl.find("#btn-Owned").text(entry.owned);
+
+    pnl.find("#btn-delbase").removeClass("disabled");
+    pnl.find("#btn-delbase").removeAttr("disabled");
 }
 
 blackHoleSuns.prototype.clearPanels = function () {
@@ -316,6 +328,9 @@ blackHoleSuns.prototype.clearPanel = function (d) {
     pnl.find("#id-fmcenter").hide();
     pnl.find("#id-traveled").hide();
     pnl.find("#id-tocenter").hide();
+
+    pnl.find("#btn-delbase").addClass("disabled");
+    pnl.find("#btn-delbase").prop("disabled", true);
 }
 
 blackHoleSuns.prototype.extractEntry = async function (idx) {

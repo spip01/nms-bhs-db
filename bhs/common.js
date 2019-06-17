@@ -37,8 +37,8 @@ function startUp() {
     bhs.init();
     bhs.initFirebase();
 
-    // if (document.domain == "localhost") 
-    //     starsCol = "stars6";
+    //  if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") 
+    //      starsCol = "stars6";
 
     if (starsCol != "stars5")
         $("body").css("background-color", "red");
@@ -51,14 +51,15 @@ function startUp() {
         bhs.logOut();
     });
 
-    if (document.domain == "localhost")
+    if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com")
         $("#testmode").show();
 
     $("#testmode").click(function () {
-        if (document.domain == "localhost") {
-            starsCol = "stars6";
-            $("body").css("background-color", "red");
-        }
+        starsCol = starsCol == "stars5"?"stars6":"stars5";
+        $("body").css("background-color", starsCol != "stars5"?"red":"black");
+        bhs.list = {};
+        bhs.loaded = {};
+        bhs.displayUser(bhs.user, true);
     });
 }
 
@@ -386,10 +387,10 @@ blackHoleSuns.prototype.getBase = function (entry, displayfcn, idx) {
     });
 }
 
-blackHoleSuns.prototype.deleteBase = function (entry) {
-    let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform, entry.addr);
+blackHoleSuns.prototype.deleteBase = function (addr) {
+    let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform, addr);
     ref.delete().then(function () {
-        bhs.status(entry.addr + " base deleted.", 2);
+        bhs.status(addr + " base deleted.", 2);
     });
 }
 
