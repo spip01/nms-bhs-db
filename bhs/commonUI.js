@@ -29,14 +29,14 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     bhs.contest = await bhs.getActiveContest();
 
     if (changed || force) {
-        bhs.buildUserTable(bhs.user);
-        bhs.buildMap();
         bhs.buildTotals();
+        bhs.getTotals(bhs.displayTotals);
 
-        bhs.displaySettings(bhs.user);
+        bhs.buildMap();
         bhs.setMapOptions(bhs.user);
 
-        bhs.getTotals(bhs.displayTotals);
+        bhs.buildUserTable(bhs.user);
+        bhs.displaySettings(bhs.user);
         bhs.getEntries(bhs.displayEntryList);
     }
 
@@ -647,7 +647,6 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
         cid = "id-player";
     } else if (id.match(/org/)) {
         bhs.displayUserTotals(entry, "itm2");
-        return;
     }
 
     let loc = $("#itm1");
@@ -676,6 +675,32 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
                     bhs.getEntries(bhs.displayEntryList, $(this).find("#id-uid").text().stripMarginWS(), galaxy, platform);
                 }
             });
+    }
+
+    loc = $("#itm2");
+    list = loc.children();
+    if (list.length > 0) {
+
+        if (fgal)
+            list.sort((a, b) => $(a).prop("id").toLowerCase() > $(b).prop("id").toLowerCase() ? 1 :
+                $(a).prop("id").toLowerCase() < $(b).prop("id").toLowerCase() ? -1 : 0);
+        else
+            list.sort((a, b) => parseInt($(a).find("#id-qty").text()) < parseInt($(b).find("#id-qty").text()) ? 1 :
+                parseInt($(a).find("#id-qty").text()) > parseInt($(b).find("#id-qty").text()) ? -1 : 0);
+
+        loc.empty();
+        for (var i = 0; i < list.length; i++) {
+            loc.append(list[i]);
+            if (fgal) {
+                loc.find("#" + $(list[i]).prop("id")).dblclick(function () {
+                    bhs.entries = {};
+                    let galaxy = $("#btn-Galaxy").text().stripNumber();
+                    let platform = $("#btn-Platform").text().stripMarginWS();
+                    $("#btn-Player").text("");
+                    bhs.getOrgEntries(bhs.displayEntryList, $(this).find("#id-names").text().stripMarginWS(), galaxy, platform);
+                });
+            }
+        }
     }
 
     if (entry.uid != bhs.user.uid)
@@ -1010,6 +1035,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
 
         mlist.append(h);
 
+        mlist.find("#item-" + lid).unbind("click");
         mlist.find("#item-" + lid).click(function () {
             if (bhs.user.uid) {
                 let name = $(this).text().stripMarginWS();
@@ -1342,6 +1368,7 @@ blackHoleSuns.prototype.buildMap = function () {
         </div>`;
 
     let opt = $("#mapoptions");
+    opt.empty();
     opt.html(settings);
 
     const key = `
@@ -1432,7 +1459,6 @@ blackHoleSuns.prototype.buildMap = function () {
         //     }
         // });
     });
-
 
     $("#btn-mapsettings").unbind("click");
     $("#btn-mapsettings").click(function () {

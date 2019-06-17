@@ -49,6 +49,7 @@ blackHoleSuns.prototype.buildFilePanel = function () {
 
     $("#panels").append(panel);
 
+    $("[id|='fbtn']").unbind("click");
     $("[id|='fbtn']").click(function () {
         if (bhs.fileSelected)
             bhs.readTextFile(bhs.fileSelected, $(this).prop("id"));
@@ -56,6 +57,7 @@ blackHoleSuns.prototype.buildFilePanel = function () {
             $("#filestatus").prepend("<h7>No file selected</h7>");
     });
 
+    $("#uploadedFile").unbind("change");
     $("#uploadedFile").change(function () {
         bhs.fileSelected = this;
     });

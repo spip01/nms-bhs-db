@@ -158,6 +158,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
     bhs.buildMenu(loc, "Economy", economyList);
     bhs.buildMenu(loc, "Owned", ownershipList);
 
+    loc.find("#id-addr").unbind("change");
     loc.find("#id-addr").change(function () {
         let addr = bhs.reformatAddress($(this).val());
         $(this).val(addr);
@@ -184,12 +185,14 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         bhs.displayCalc();
     });
 
+    loc.find("#id-addr").unbind("keyup");
     loc.find("#id-addr").keyup(function (event) {
         if (event.keyCode === 13) {
             $(this).change();
         }
     });
 
+    loc.find('#ck-hasbase').unbind("change");
     loc.find('#ck-hasbase').change(function () {
         let pnl = $(this).closest("[id|='pnl'");
 
@@ -201,6 +204,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
     $("#" + panels[pnlBottom].id + " #id-pnl1-only").hide();
 
+    loc.find('#ck-single, #ck-isdz').unbind("change");
     loc.find('#ck-single, #ck-isdz').change(function () {
         let pnl = $("#" + panels[pnlBottom].id);
         if ($(this).prop("checked"))
@@ -209,10 +213,12 @@ blackHoleSuns.prototype.buildPanel = function (id) {
             pnl.show();
     });
 
+    loc.find("#btn-searchRegion").unbind("click");
     loc.find("#btn-searchRegion").click(function () {
         bhs.getEntryByRegion(loc.find("#id-reg").val(), bhs.displaySingle, 0);
     });
 
+    loc.find("#btn-delbase").unbind("click");
     loc.find("#btn-delbase").click(function () {
         if (loc.find("#id-addr").val())
             bhs.deleteBase(loc.find("#id-addr").val());

@@ -55,8 +55,8 @@ function startUp() {
         $("#testmode").show();
 
     $("#testmode").click(function () {
-        starsCol = starsCol == "stars5"?"stars6":"stars5";
-        $("body").css("background-color", starsCol != "stars5"?"red":"black");
+        starsCol = starsCol == "stars5" ? "stars6" : "stars5";
+        $("body").css("background-color", starsCol != "stars5" ? "red" : "black");
         bhs.list = {};
         bhs.loaded = {};
         bhs.displayUser(bhs.user, true);
@@ -897,6 +897,24 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, uid, galaxy, pl
     if (displayFcn) {
         ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()));
         bhs.subscribe("entries", ref, bhs.dispEntryList, displayFcn);
+    }
+}
+
+blackHoleSuns.prototype.getOrgEntries = async function (displayFcn, name, galaxy, platform) {
+    galaxy = galaxy ? galaxy : bhs.user.galaxy;
+    platform = platform ? platform : bhs.user.platform;
+
+    if (bhs.loaded && bhs.loaded[galaxy] && bhs.loaded[galaxy][platform]) {
+        let list = Object.keys(bhs.list[galaxy][platform])
+        for (let i = 0; i < list.length; ++i) {
+            let e = bhs.list[galaxy][platform][list[i]];
+            let k = Object.keys(e);
+            if (e[k[0]].org == name)
+                bhs.entries[list[i]] = e;
+        }
+
+        if (displayFcn)
+            displayFcn(bhs.entries);
     }
 }
 
