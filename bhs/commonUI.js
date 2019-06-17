@@ -1460,7 +1460,7 @@ blackHoleSuns.prototype.drawList = function (listEntry) {
     for (let i = 0; i < k.length; ++i) {
         let entry = listEntry[k[i]];
         if (opt.connection && entry.bh && entry.exit) {
-            let out = initout(out);
+            let out = initout();
             pushentry(out, entry.bh.xyzs, entry.bh.addr + "<br>" + entry.bh.sys + "<br>" + entry.bh.reg);
             pushentry(out, entry.exit.xyzs, entry.exit.addr + "<br>" + entry.exit.sys + "<br>" + entry.exit.reg);
             data.push(makedata(opt, out, size, color));
