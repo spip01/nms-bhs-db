@@ -244,7 +244,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
         if (!check) {
             let ref = bhs.fs.collection("upload");
             let e = log;
-            e.contents = reader.result;
+            e.contents = allrows;
             ref.add(e);
         }
 
