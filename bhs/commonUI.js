@@ -485,9 +485,10 @@ blackHoleSuns.prototype.buildTotals = function () {
     const pnl = `
         <div class="card-header bkg-def">
             <div class="row">
-            <div class="col-7 h4 txt-def">Total Black Hole Entries</div>
-            <div id="contrib" class="col-7 clr-creme">Total contributors: </div>
-            <div id="cname" class="row clr-creme"></div>
+                <div class="col-7 h4 txt-def">Total Black Hole Entries</div>
+                <div id="contrib" class="col-7 clr-creme">Total contributors: </div>
+                <div id="cname" class="row clr-creme"></div>
+            </div>
         </div>
         <div class="card-body bkg-white">
             <label id="id-showall" class="row h6 txt-inp-def">
@@ -591,13 +592,9 @@ blackHoleSuns.prototype.buildTotals = function () {
 
     if (fgal) {
         tot.find("#id-showall").hide();
-        tot.find("#hdr0").hide();
-        tot.find("#itm0").hide();
         tot.find("#tgalaxy").show();
     } else if (findex) {
         tot.find("#id-showall").show();
-        tot.find("#hdr0").show();
-        tot.find("#itm0").show();
         tot.find("#tgalaxy").hide();
     }
 
