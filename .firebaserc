@@ -8,8 +8,8 @@
         "test": [
           "test-nms-bhs"
         ],
-        "finder": [
-          "finder-nms-bhs"
+        "nmsce": [
+          "nmsce-bhs"
         ]
       }
     },
@@ -21,14 +21,15 @@
         "bhs": [
           "nms-bhs"
         ],
-        "finder": [
-          "finder-nms-bhs"
+        "nmsce": [
+          "nmsce-bhs"
         ]
       }
     }
   },
   "projects": {
-    "dist": "nms-bhs",
+    "bhs": "nms-bhs",
     "test": "test-nms-bhs"
+    "nmsce": "nmsce-bhs"
   }
 }

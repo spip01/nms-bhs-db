@@ -29,8 +29,8 @@
       "**/node_modules/**"
     ]
   }, {
-    "target": "finder",
-    "public": "finder",
+    "target": "nmsce",
+    "public": "nmsce",
     "ignore": [
       "firebase.json",
       "**/.*",

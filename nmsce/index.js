@@ -185,12 +185,12 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         bhs.displayCalc();
     });
 
-    // loc.find("#id-addr").unbind("keyup");
-    // loc.find("#id-addr").keyup(function (event) {
-    //     if (event.keyCode === 13) {
-    //         $(this).change();
-    //     }
-    // });
+    loc.find("#id-addr").unbind("keyup");
+    loc.find("#id-addr").keyup(function (event) {
+        if (event.keyCode === 13) {
+            $(this).change();
+        }
+    });
 
     loc.find('#ck-hasbase').unbind("change");
     loc.find('#ck-hasbase').change(function () {
