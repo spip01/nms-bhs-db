@@ -174,6 +174,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
 
             // bhs.fixAllTotals();
             // bhs.listUsers();
+            // bhs.findDuplicates();
         });
     } else {
         $("#usermenu").hide();
@@ -1268,7 +1269,7 @@ blackHoleSuns.prototype.validateAddress = function (addr, ck) {
     else if (c.y > 0xff) error = "y > 00ff";
     else if (c.z > 0xfff) error = "z > 0fff";
     else if (c.s > 0x2ff) error = "system > 02ff";
-    else if (ck == "bh" && c.s != 0x79) error = 'BH system must be 0079';
+    else if (ck == "bh" && c.s != 0x79) error = 'BH system != 0079';
 
     return error;
 }
