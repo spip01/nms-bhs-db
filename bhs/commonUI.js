@@ -1232,7 +1232,7 @@ blackHoleSuns.prototype.setMapOptions = function (entry) {
             opt.find("#inp-" + minmaxtable[i].id).val(entry.mapoptions[minmaxtable[i].id] ? entry.mapoptions[minmaxtable[i].id] : minmaxtable[i].val);
 
         opt.find("#inp-ctrcord").val(entry.mapoptions.ctrcord ? entry.mapoptions.ctrcord : "07FF:007F:07FF:0000");
-        opt.find("#inp-ctrzoom").val(entry.mapoptions.ctrzoom ? entry.mapoptions.ctrzoom : 10);
+        opt.find("#inp-ctrzoom").val(entry.mapoptions.ctrzoom ? entry.mapoptions.ctrzoom : 5);
         opt.find("#inp-chaindepth").val(entry.mapoptions.chaindepth ? entry.mapoptions.chaindepth : 1);
         opt.find("#inp-chainradius").val(entry.mapoptions.chainradius ? entry.mapoptions.chainradius : 1);
 
@@ -1243,28 +1243,34 @@ blackHoleSuns.prototype.setMapOptions = function (entry) {
         opt.find("#ck-zoomreg").prop("checked", typeof entry.mapoptions.zoomreg != "undefined" ? entry.mapoptions.zoomreg : false);
         opt.find("#ck-addzero").prop("checked", typeof entry.mapoptions.addzero != "undefined" ? entry.mapoptions.addzero : true);
         opt.find("#ck-chain").prop("checked", typeof entry.mapoptions.chain != "undefined" ? entry.mapoptions.chain : true);
-    } else {
-        opt = $("#mapkey");
-        for (let i = 0; i < colortable.length; ++i)
-            opt.find("#sel-" + colortable[i].id).val(colortable[i].color);
+    } else
+        bhs.resetMapOptions();
+}
 
-        opt = $("#mapoptions");
-        for (let i = 0; i < minmaxtable.length; ++i)
-            opt.find("#inp-" + minmaxtable[i].id).val(minmaxtable[i].val);
+blackHoleSuns.prototype.resetMapOptions = function (entry) {
+    let findex = window.location.pathname == "/" || window.location.pathname == "/index.html";
+    let opt = $("#mapoptions");
 
-        opt.find("#inp-ctrcord").val("07FF:007F:07FF:0000");
-        opt.find("#inp-ctrzoom").val(10);
-        opt.find("#inp-chaindepth").val(1);
-        opt.find("#inp-chainradius").val(1);
+    opt = $("#mapkey");
+    for (let i = 0; i < colortable.length; ++i)
+        opt.find("#sel-" + colortable[i].id).val(colortable[i].color);
 
-        opt.find("#ck-drawcon").prop("checked", false);
-        opt.find("#ck-3dmap").prop("checked", true);
-        opt.find("#ck-drawexits").prop("checked", false);
-        opt.find("#ck-drawbase").prop("checked", false);
-        opt.find("#ck-zoomreg").prop("checked", false);
-        opt.find("#ck-addzero").prop("checked", true);
-        opt.find("#ck-chain").prop("checked", false);
-    }
+    opt = $("#mapoptions");
+    for (let i = 0; i < minmaxtable.length; ++i)
+        opt.find("#inp-" + minmaxtable[i].id).val(minmaxtable[i].val);
+
+    opt.find("#inp-ctrcord").val("07FF:007F:07FF:0000");
+    opt.find("#inp-ctrzoom").val(5);
+    opt.find("#inp-chaindepth").val(1);
+    opt.find("#inp-chainradius").val(1);
+
+    opt.find("#ck-drawcon").prop("checked", false);
+    opt.find("#ck-3dmap").prop("checked", true);
+    opt.find("#ck-drawexits").prop("checked", false);
+    opt.find("#ck-drawbase").prop("checked", false);
+    opt.find("#ck-zoomreg").prop("checked", false);
+    opt.find("#ck-addzero").prop("checked", true);
+    opt.find("#ck-chain").prop("checked", false);
 }
 
 blackHoleSuns.prototype.buildMap = function () {
@@ -1358,8 +1364,9 @@ blackHoleSuns.prototype.buildMap = function () {
 
         <div class="row">
             <button id="btn-mapsave" type="button" class="col-2 border btn btn-sm btn-def">Save</button>&nbsp;
+            <button id="btn-mapreset" type="button" class="col-2 border btn btn-sm btn-def">Reset</button>&nbsp;
             <div class="col-9 border">
-                <!--div id="id-chain" class="col-14 h6 clr-creme text-center">Click on Black Hole to select chain.</div-->
+                <div class="col-14 h6 clr-creme text-center">Click on map to select system & draw connections.</div>
                 <div class="col-14 h6 clr-creme text-center">Click on color box in map key to change colors. Then click redraw.</div>
             </div>
         </div>`;
@@ -1386,25 +1393,38 @@ blackHoleSuns.prototype.buildMap = function () {
         keyloc.append(h);
     });
 
+    $("#btn-redraw").unbind("click");
     $("#btn-redraw").click(function () {
         bhs.drawList(bhs.entries);
     });
 
+    $("#btn-mapsave").unbind("click");
     opt.find("#btn-mapsave").click(function () {
         bhs.updateUser({
             mapoptions: bhs.extractMapOptions()
         });
+        bhs.drawList(bhs.entries);
     });
 
-    for (let i = 0; i < minmaxtable.length; ++i)
+    $("#btn-mapreset").unbind("click");
+    opt.find("#btn-mapreset").click(function () {
+        bhs.resetMapOptions();
+        bhs.drawList(bhs.entries);
+    });
+
+    for (let i = 0; i < minmaxtable.length; ++i) {
+        $("#inp-" + minmaxtable[i].id).unbind("change");
         opt.find("#inp-" + minmaxtable[i].id).change(function () {
             bhs.changeMapLayout(true);
         });
+    }
 
+    $("#inp-ctrcord").unbind("change");
     opt.find("#inp-ctrcord").change(function () {
         bhs.changeMapLayout(true, true);
     });
 
+    $("#inp-ctrzoom").unbind("change");
     opt.find("#inp-ctrzoom").change(function () {
         bhs.changeMapLayout(true, true);
     });
@@ -1437,7 +1457,7 @@ blackHoleSuns.prototype.buildMap = function () {
                     delete bhs.mapped;
 
                 }
-            }, 500);
+            }, 1000);
         });
 
         // plot.on('plotly_hover', e => {
@@ -1486,7 +1506,7 @@ blackHoleSuns.prototype.drawList = function (listEntry) {
             let out = initout();
             pushentry(out, entry.bh.xyzs, entry.bh.addr + "<br>" + entry.bh.sys + "<br>" + entry.bh.reg);
             pushentry(out, entry.exit.xyzs, entry.exit.addr + "<br>" + entry.exit.sys + "<br>" + entry.exit.reg);
-            data.push(makedata(opt, out, 4, opt["clr-bh"], opt["clr-con"]));
+            data.push(makedata(opt, out, 4, opt["clr-bh"], opt["clr-con"], true));
         } else {
             let t = Object.keys(entry);
             for (let i = 0; i < t.length; ++i) {
@@ -1526,12 +1546,6 @@ blackHoleSuns.prototype.drawList = function (listEntry) {
     }
 
     Plotly.react('plymap', data, bhs.changeMapLayout());
-}
-
-blackHoleSuns.prototype.drawListSingle = function (entry) {
-    let list = {};
-    list.single = entry;
-    bhs.drawList(list);
 }
 
 blackHoleSuns.prototype.drawSingle = function (entry) {
@@ -1637,6 +1651,7 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
     let layout = {
         showlegend: false,
         paper_bgcolor: opt["clr-page"],
+        plot_bgcolor: opt["clr-bkg"],
         scene: {
             zaxis: {
                 backgroundcolor: opt["clr-bkg"],
