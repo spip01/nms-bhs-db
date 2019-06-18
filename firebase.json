@@ -28,14 +28,6 @@
       "**/.*",
       "**/node_modules/**"
     ]
-  }, {
-    "target": "nmsce",
-    "public": "nmsce",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ]
   }],
   "storage": {
     "rules": "storage.rules"

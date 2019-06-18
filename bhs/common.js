@@ -61,6 +61,13 @@ function startUp() {
         bhs.loaded = {};
         bhs.displayUser(bhs.user, true);
     });
+
+    if (document.domain == "localhost")
+        $("#recalc").show();
+
+    $("#recalc").click(function () {
+        bhs.fixAllTotals();
+    });
 }
 
 function blackHoleSuns() {

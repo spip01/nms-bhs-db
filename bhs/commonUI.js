@@ -1505,7 +1505,7 @@ blackHoleSuns.prototype.drawList = function (listEntry) {
     let o = Object.keys(out);
     for (let i = 0; i < o.length; ++i) {
         let color = opt["clr-bh"];
-        let size = 5;
+        let size = 6;
         switch (o[i]) {
             case "dz":
                 color = opt["clr-dz"];

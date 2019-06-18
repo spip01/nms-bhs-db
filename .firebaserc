@@ -7,9 +7,6 @@
         ],
         "test": [
           "test-nms-bhs"
-        ],
-        "nmsce": [
-          "nmsce-bhs"
         ]
       }
     },
@@ -20,9 +17,6 @@
         ],
         "bhs": [
           "nms-bhs"
-        ],
-        "nmsce": [
-          "nmsce-bhs"
         ]
       }
     }
@@ -30,6 +24,5 @@
   "projects": {
     "bhs": "nms-bhs",
     "test": "test-nms-bhs"
-    "nmsce": "nmsce-bhs"
   }
 }
