@@ -362,14 +362,14 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                             if (!doc.exists)
                                 log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " base system not found", 0, log.log);
                             else if (doc.data().uid != entry[0].uid)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " system uid " + doc.data().uid + " != current uid " + entry[0].uid, 0, log.log);
+                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log);
                         });
                         ref = bhs.getUsersColRef(entry[0].uid, entry[0].galaxy, entry[0].platform, entry[1].addr);
                         await ref.get().then(function (doc) {
                             if (!doc.exists)
                                 log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " base not found", 0, log.log);
                             else if (doc.data().uid != entry[0].uid)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " system uid " + doc.data().uid + " != current uid " + entry[0].uid, 0, log.log);
+                            log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log);
                         });
                     } else if (entry[0].type.match(/single/i) || !entry[2].addr) {
                         let ref = bhs.getStarsColRef(entry[0].galaxy, entry[0].platform, entry[1].addr);
@@ -377,7 +377,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                             if (!doc.exists)
                                 log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " single system not found", 0, log.log);
                             else if (doc.data().uid != entry[0].uid)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " system uid " + doc.data().uid + " != current uid " + entry[0].uid, 0, log.log);
+                            log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log);
                         });
                     } else {
                         let ref = bhs.getStarsColRef(entry[0].galaxy, entry[0].platform, entry[1].addr);
@@ -385,14 +385,14 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                             if (!doc.exists)
                                 log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " black hole system not found", 0, log.log);
                             else if (doc.data().uid != entry[0].uid)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " system uid " + doc.data().uid + " != current uid " + entry[0].uid, 0, log.log);
+                            log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log);
                         });
                         ref = bhs.getStarsColRef(entry[0].galaxy, entry[0].platform, entry[2].addr);
                         await ref.get().then(function (doc) {
                             if (!doc.exists)
                                 log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[2].addr + " exit system not found", 0, log.log);
                             else if (doc.data().uid != entry[0].uid)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " system uid " + doc.data().uid + " != current uid " + entry[0].uid, 0, log.log);
+                            log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log);
                         });
                     }
                 } else {
