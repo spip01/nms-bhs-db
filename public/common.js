@@ -844,15 +844,6 @@ blackHoleSuns.prototype.updateTotal = function (add, ref, reset) {
             transaction.set(ref, t);
         });
     });
-}).then(function() {
-    if (displayFcn)
-    displayFcn(entry, t);
-}).catch(function(error) {
-      console.log("Transaction failed: ", error);
-  let t = {};
-    t.totals = initfcn(entry);
-    ref.set(t);
-});
 }
 
 blackHoleSuns.prototype.getEntries = async function (displayFcn, uid, galaxy, platform) {
