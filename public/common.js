@@ -230,7 +230,7 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
     if (user._name == bhs.user._name)
         return;
 
-    if (user._name.match(/Unknown Traveler/i)||user._name == "_") {
+    if (user._name.match(/Unknown Traveler/i)) {
         $(loc).val(bhs.user._name);
         bhs.status("Player Name:" + user._name + " is restricted.", 0);
         return;
@@ -554,7 +554,7 @@ blackHoleSuns.prototype.fixAllTotals = async function () {
         }
     });
 
-   bhs.updateAllTotals(totals, true);
+    bhs.updateAllTotals(totals, true);
     console.log("done");
 }
 
@@ -797,6 +797,7 @@ blackHoleSuns.prototype.updateAllTotals = function (totals, reset) {
             for (let i = 0; i < olist.length; ++i) {
                 let t = {}
                 t[starsCol] = totals.orgs[olist[i]];
+                t[modified] = firebase.firestore.Timestamp.fromDate(new Date());
                 let ref = bhs.fs.collection("org").where("name", "==", olist[i]);
                 ref.get().then(function (snapshot) {
                     if (!snapshot.empty)
@@ -1058,10 +1059,6 @@ blackHoleSuns.prototype.getTotals = async function (displayFcn) {
     bhs.subscribe("userTotals", ref, displayFcn);
 
     ref = bhs.fs.collection("org");
-    if (fgal)
-        ref = ref.orderBy("name");
-    else
-        ref = ref.orderBy(starsCol + ".total", "desc");
     bhs.subscribe("orgs", ref, displayFcn);
 
     ref = bhs.fs.collection("contest");
@@ -1100,8 +1097,8 @@ blackHoleSuns.prototype.unsubscribe = function (m) {
 blackHoleSuns.prototype.validateUser = function (user) {
     let ok = true;
 
-    if (!user._name || user._name == "" || user._name == "_") {
-        bhs.status("Error: Missing player name. Changes not saved.", 0);
+    if (!user._name || user._name == "" || user._name.match(/unknown traveler/i)) {
+        bhs.status("Error: Missing or invalid player name. Changes not saved.", 0);
         ok = false;
     }
 
