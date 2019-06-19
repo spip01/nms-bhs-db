@@ -230,7 +230,7 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
     if (user._name == bhs.user._name)
         return;
 
-    if (user._name.match(/Unknown Traveler/i)||user._name == "_") {
+    if (user._name.match(/Unknown Traveler/i)||user._name.slice(0,1) == "_") {
         $(loc).val(bhs.user._name);
         bhs.status("Player Name:" + user._name + " is restricted.", 0);
         return;
@@ -1100,7 +1100,7 @@ blackHoleSuns.prototype.unsubscribe = function (m) {
 blackHoleSuns.prototype.validateUser = function (user) {
     let ok = true;
 
-    if (!user._name || user._name == "" || user._name == "_") {
+    if (!user._name || user._name == "" || user._name.slice(0,1) == "_") {
         bhs.status("Error: Missing player name. Changes not saved.", 0);
         ok = false;
     }

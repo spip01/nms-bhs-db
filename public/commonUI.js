@@ -641,7 +641,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
         bhs.displayPlayerTotals(entry, "itm1");
         return;
     } else if (id.match(/user/)) {
-        bhs.displayUserTotals(entry, "itm1");
+        bhs.displayUserTotals(entry, "itm1", true);
         cid = "id-player";
     } else if (id.match(/org/)) {
         bhs.displayUserTotals(entry, "itm2");
@@ -834,10 +834,10 @@ const totalsGalaxy = [{
     hformat: "col-2 text-center",
 }];
 
-blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
+blackHoleSuns.prototype.displayUserTotals = function (entry, id, bold) {
     let fgal = window.location.pathname == "/galaxy.html";
 
-    if (entry[starsCol] && entry[starsCol].total > 0 && entry._name != "_") {
+    if (entry[starsCol] && entry[starsCol].total > 0) {
         const userHdr = `<div id="u-idname" class="row">`;
         const userItms = `  <div id="idname" class="format">title</div>`;
         const userEnd = `</div>`;
@@ -851,7 +851,7 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
 
             totalsPlayers.forEach(function (x) {
                 let l = /idname/ [Symbol.replace](userItms, x.id);
-                l = /format/ [Symbol.replace](l, x.format);
+                l = /format/ [Symbol.replace](l, x.format +(bold?" font-weight-bold":""));
                 switch (x.title) {
                     case "Contributors":
                         h += /title/ [Symbol.replace](l, entry._name ? entry._name : entry.name);
