@@ -142,6 +142,15 @@ h7 {
     }
 }
 
+@font-face {
+    font-family: 'glyph';
+    src: url('NMS-Glyphs-Mono.ttf') format('truetype');
+}
+
+.glyph {
+    font-family: "glyph";
+}
+
 body {
     font-size: .75rem !important;
 }
@@ -154,7 +163,38 @@ body {
 
 [class|='col-'] {
     padding-left: 1px !important;
-    padding-right: 3px !important;
+    padding-right: 1px !important;
+}
+
+.nopadding {
+    padding: 0px !important;
+    margin: 0px !important;
+}
+
+.hidden {
+    display: none;
+}
+
+.nopadding-left {
+    padding-left: 0px !important;
+}
+
+#tip {
+    background-color: white;
+    border: 1px solid blue;
+    position: absolute;
+    left: -800px;
+    top: 100px;
+    font: 16px Arial;
+}
+
+.border-3 {
+    border-width: 3px !important;
+}
+
+.scroll {
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 .nav-text {
@@ -163,16 +203,77 @@ body {
     background-color: #f0fff0;
 }
 
+.clr-def {
+    color: black;
+}
+
+.bkg-def {
+    background-color: black;
+}
+
+.txt-def {
+    color: gold;
+    background-color: black;
+}
+
+.txt-inp-def {
+    color: blue;
+}
+
+.btn-def {
+    background-color: black;
+    color: gold;
+}
+
+.btn-def.disabled,
+.btn-def:disabled {
+    border: 0px;
+}
+
+.btn-def.focus,
+.btn-def:focus,
+.btn-def:not(:disabled):not(.disabled).active:focus,
+.btn-def:not(:disabled):not(.disabled):active:focus,
+.show>.btn-def.dropdown-toggle:focus {
+    box-shadow: 0 0 0 .2rem gold;
+    animation: pulse .1s 2;
+}
+
+.btn-def:not(:disabled):not(.disabled).hover,
+.btn-def:not(:disabled):not(.disabled):hover {
+    box-shadow: 0 0 0 .2rem gold;
+}
+
 .clr-dark-green {
     color: #008000;
+}
+
+.clr-creme {
+    color: #FFF8DC;
 }
 
 .clr-light-green {
     color: #e8ffe8;
 }
 
+.bkg-trans {
+    background-color: transparent;
+}
+
+.bkg-trans-1 {
+    background-color: rgba(255, 255, 255, .1);
+}
+
+.bkg-trans-2 {
+    background-color: rgba(255, 255, 255, .2);
+}
+
 .bkg-white {
     background-color: #ffffff;
+}
+
+.bkg-green {
+    background-color: green;
 }
 
 .bkg-light-green {
@@ -203,10 +304,6 @@ body {
     color: #008000;
     background-color: #e8ffe8;
     border-color: #008000;
-}
-
-[id|='btn']:hover {
-    background-color: #f8fff8;
 }
 
 .btn-green.disabled,
@@ -270,21 +367,3 @@ body {
     right: auto !important;
     left: auto !important;
 }
-
-body, html {
-    height: 100%;
-  }
-
-  .bg {
-    /* The image used */
-    background-image: url("/images/bhjump.jpg");
-  
-    /* Half height */
-    height: 50%;
-  
-    /* Center and scale the image nicely */
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-  }
-  

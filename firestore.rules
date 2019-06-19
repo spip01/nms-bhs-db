@@ -1,7 +1,52 @@
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read: if true;
+     match /{document=**} {
+      allow read: if false;
+      allow write: if false;
+  	}
+
+		match /admin/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write: if false;
+    }
+    
+    match /api/{document=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /contest/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write: if request.auth.uid != null;
+    }
+
+    match /stars5/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write: if request.auth.uid != null;
+    }
+    
+    match /stars6/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write: if request.auth.uid != null;
+    }
+    
+    match /upload/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write: if request.auth.uid != null;
+    }
+    
+    match /log/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write: if request.auth.uid != null;
+    }
+    
+    match /org/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write: if request.auth.uid != null;
+    }
+    
+    match /users/{document=**} {
+      allow read: if request.auth.uid != null;
       allow write: if request.auth.uid != null;
     }
   }

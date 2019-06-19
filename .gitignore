@@ -1,5 +1,7 @@
-/fuctions/
+/functions/
 /node_modules/
+/bhs/*console_files/
+/bhs/*console.html
 *.log
 bootstrap.min.css
 bootstrap.min.js
