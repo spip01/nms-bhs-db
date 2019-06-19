@@ -14,7 +14,7 @@
   },
   "hosting": [{
     "target": "bhs",
-    "public": "bhs",
+    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -22,7 +22,7 @@
     ]
   }, {
     "target": "test",
-    "public": "bhs",
+    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
