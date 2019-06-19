@@ -178,10 +178,6 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
 
             bhs.doLoggedin(user);
             bhs.navLoggedin();
-
-            // bhs.fixAllTotals();
-            // bhs.listUsers();
-            // bhs.findDuplicates();
         });
     } else {
         $("#usermenu").hide();
@@ -201,7 +197,7 @@ blackHoleSuns.prototype.init = function () {
 blackHoleSuns.prototype.userInit = function () {
     let user = {};
     user.uid = null;
-    user._name = "";
+    user._name = "_";
     user.platform = platformList[0].name;
     user.galaxy = galaxyList[0].name;
     user.assigned = false;
@@ -234,9 +230,9 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
     if (user._name == bhs.user._name)
         return;
 
-    if (user._name.match(/Unknown Traveler/i)) {
+    if (user._name.match(/Unknown Traveler/i)||user._name == "_") {
         $(loc).val(bhs.user._name);
-        bhs.status("Player Name:" + n + " is restricted.", 0);
+        bhs.status("Player Name:" + user._name + " is restricted.", 0);
         return;
     }
 
@@ -250,7 +246,7 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
     ref.get().then(async function (snapshot) {
         if (!snapshot.empty && snapshot.docs[0].data().uid != bhs.user.uid) {
             $(loc).val(bhs.user._name);
-            bhs.status("Player Name:" + n + " is already taken.", 0);
+            bhs.status("Player Name:" + user._name + " is already taken.", 0);
         } else {
             bhs.user = mergeObjects(bhs.user, user);
 
@@ -287,7 +283,7 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
                         await ref.get().then(async function (snapshot) {
                             for (let i = 0; i < snapshot.size; ++i) {
                                 await b.batch.update(snapshot.docs[i].ref, {
-                                    _name: n
+                                    _name: user._name
                                 });
                                 b = await bhs.checkBatchSize(b);
                             }
@@ -533,26 +529,32 @@ blackHoleSuns.prototype.fixAllTotals = async function () {
             for (let j = 0; j < platformList.length; ++j) {
                 let p = platformList[j];
 
+                let total = 0;
+
                 let ref = bhs.getStarsColRef(g.name, p.name);
                 ref = ref.where("blackhole", "==", true);
-                await ref.get().then(function (snapshot) {
+                await ref.get().then(async function (snapshot) {
                     console.log("bh " + g.name + "/" + p.name + " " + snapshot.size);
-                    for (let i = 0; i < snapshot.size; ++i)
-                        totals = bhs.incTotals(totals, snapshot.docs[i].data(), 1);
+                    for (let i = 0; i < snapshot.size; ++i) {
+                        let d = snapshot.docs[i].data();
+                        totals = bhs.incTotals(totals, d, 1);
+                    }
                 });
 
                 ref = bhs.getStarsColRef(g.name, p.name);
                 ref = ref.where("deadzone", "==", true);
-                await ref.get().then(function (snapshot) {
+                await ref.get().then(async function (snapshot) {
                     console.log("dz " + g.name + "/" + p.name + " " + snapshot.size);
-                    for (let i = 0; i < snapshot.size; ++i)
-                        totals = bhs.incTotals(totals, snapshot.docs[i].data(), 1);
+                    for (let i = 0; i < snapshot.size; ++i) {
+                        let d = snapshot.docs[i].data();
+                        totals = bhs.incTotals(totals, d, 1);
+                    }
                 });
             }
         }
     });
 
-    bhs.updateAllTotals(totals, true);
+   bhs.updateAllTotals(totals, true);
     console.log("done");
 }
 
@@ -1098,7 +1100,7 @@ blackHoleSuns.prototype.unsubscribe = function (m) {
 blackHoleSuns.prototype.validateUser = function (user) {
     let ok = true;
 
-    if (!user._name) {
+    if (!user._name || user._name == "" || user._name == "_") {
         bhs.status("Error: Missing player name. Changes not saved.", 0);
         ok = false;
     }

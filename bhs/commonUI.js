@@ -113,8 +113,8 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, true);
 
     $("#id-player").change(function () {
-        user = bhs.extractUser();
-        bhs.changeName(user);
+        let user = bhs.extractUser();
+        bhs.changeName("#id-player", user);
     });
 
     $("#id-player").keyup(function (event) {
@@ -836,7 +836,7 @@ const totalsGalaxy = [{
 blackHoleSuns.prototype.displayUserTotals = function (entry, id) {
     let fgal = window.location.pathname == "/galaxy.html";
 
-    if (entry[starsCol] && entry[starsCol].total > 0) {
+    if (entry[starsCol] && entry[starsCol].total > 0 && entry._name != "_") {
         const userHdr = `<div id="u-idname" class="row">`;
         const userItms = `  <div id="idname" class="format">title</div>`;
         const userEnd = `</div>`;
@@ -1051,11 +1051,13 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
 
 blackHoleSuns.prototype.saveUser = function () {
     let user = bhs.extractUser();
+    let ok;
 
-    if (bhs.validateUser(user)) {
+    if ((ok=bhs.validateUser(user))) {
         bhs.updateUser(user);
         bhs.displayUser(user);
     }
+    return ok;
 }
 
 blackHoleSuns.prototype.extractUser = function () {
@@ -1451,11 +1453,11 @@ blackHoleSuns.prototype.buildMap = function () {
 
                     let addr = bhs.addressToXYZ(e.points[0].text.slice(0, 19));
                     let opt = bhs.extractMapOptions();
+
                     bhs.mapped = {};
                     bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1);
                     bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1, true);
                     delete bhs.mapped;
-
                 }
             }, 1000);
         });
@@ -1649,6 +1651,7 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
     }
 
     let layout = {
+        hovermode: "closest",
         showlegend: false,
         paper_bgcolor: opt["clr-page"],
         plot_bgcolor: opt["clr-bkg"],
