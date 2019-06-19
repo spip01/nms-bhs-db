@@ -197,9 +197,9 @@ blackHoleSuns.prototype.init = function () {
 blackHoleSuns.prototype.userInit = function () {
     let user = {};
     user.uid = null;
-    user._name = "";
-    user.platform = "";
-    user.galaxy = "";
+    user._name = "_";
+    user.platform = platformList[0].name;
+    user.galaxy = galaxyList[0].name;
     user.assigned = false;
     user.org = "";
 

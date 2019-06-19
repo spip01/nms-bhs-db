@@ -28,7 +28,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     bhs.user = mergeObjects(bhs.user, user);
     bhs.contest = await bhs.getActiveContest();
 
-    if ((changed || force) && bhs.user.galaxy && bhs.user.platform) {
+    if (changed || force) {
         bhs.buildTotals();
         bhs.getTotals(bhs.displayTotals);
 
@@ -42,16 +42,15 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
 
     let pnl = $("#pnl-user");
     pnl.find("#id-player").val(bhs.user._name);
-    pnl.find("#btn-Player").text(bhs.user._name);
+    if (ifindex)
+        pnl.find("#btn-Player").text(bhs.user._name);
     pnl.find("#btn-Platform").text(bhs.user.platform);
     pnl.find("#btn-Organization").text(bhs.user.org);
 
-    if (bhs.user.galaxy) {
-        let i = galaxyList[bhs.getIndex(galaxyList, "name", bhs.user.galaxy)].number;
-        pnl.find("#btn-Galaxy").text(i + " " + bhs.user.galaxy);
-        pnl.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[i].color + ";");
-    } else
-        pnl.find("#btn-Galaxy").text("");
+    let l = galaxyList[bhs.getIndex(galaxyList, "name", bhs.user.galaxy)].number;
+    pnl.find("#btn-Galaxy").text(l + " " + bhs.user.galaxy);
+    let i = bhs.getIndex(galaxyList, "name", bhs.user.galaxy);
+    pnl.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[galaxyList[i].number].color + ";");
 
     $("#darkmode").click(function () {
         $("body .card").css("background-color", "black");
@@ -1054,7 +1053,7 @@ blackHoleSuns.prototype.saveUser = function () {
     let user = bhs.extractUser();
     let ok;
 
-    if ((ok = bhs.validateUser(user))) {
+    if ((ok=bhs.validateUser(user))) {
         bhs.updateUser(user);
         bhs.displayUser(user);
     }
