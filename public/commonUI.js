@@ -722,11 +722,12 @@ blackHoleSuns.prototype.displayUTotals = function (entry, cid) {
         else
             pnl.find("#" + totalsRows[rowAltPlatform].id).hide();
 
-        if (typeof entry.galaxy != "undefined" && typeof entry.galaxy[bhs.user.galaxy] != "undefined") {
-            if (typeof rowGalaxy != "undefined")
-                pnl.find("#" + totalsRows[rowGalaxy].id + " #" + cid).text(entry.galaxy[bhs.user.galaxy].total);
-            pnl.find("#" + totalsRows[rowGalaxyPlatform].id + " #" + cid).text(entry.galaxy[bhs.user.galaxy][bhs.user.platform]);
-        }
+        if (window.location.pathname == "/" || window.location.pathname == "/index.html")
+            if (typeof entry.galaxy != "undefined" && typeof entry.galaxy[bhs.user.galaxy] != "undefined") {
+                if (typeof rowGalaxy != "undefined")
+                    pnl.find("#" + totalsRows[rowGalaxy].id + " #" + cid).text(entry.galaxy[bhs.user.galaxy].total);
+                pnl.find("#" + totalsRows[rowGalaxyPlatform].id + " #" + cid).text(entry.galaxy[bhs.user.galaxy][bhs.user.platform]);
+            }
     }
 }
 
@@ -851,7 +852,7 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id, bold) {
 
             totalsPlayers.forEach(function (x) {
                 let l = /idname/ [Symbol.replace](userItms, x.id);
-                l = /format/ [Symbol.replace](l, x.format +(bold?" font-weight-bold":""));
+                l = /format/ [Symbol.replace](l, x.format + (bold ? " font-weight-bold" : ""));
                 switch (x.title) {
                     case "Contributors":
                         h += /title/ [Symbol.replace](l, entry._name ? entry._name : entry.name);
@@ -1130,35 +1131,39 @@ blackHoleSuns.prototype.displaySettings = function (entry) {
 var colortable = [{
     name: "Black Hole",
     id: "clr-bh",
-    color: "#00ffff"
+    color: "#00ffff",
+    size: 4,
 }, {
     name: "Exit",
     id: "clr-exit",
-    color: "#ffff00"
+    color: "#ffff00",
+    size: 2,
 }, {
     name: "Dead Zone",
     id: "clr-dz",
-    color: "#ff0000"
+    color: "#ff0000",
+    size: 2,
 }, {
     name: "Base",
     id: "clr-base",
-    color: "#00ff00"
+    color: "#00ff00",
+    size: 2,
 }, {
     name: "Connection",
     id: "clr-con",
-    color: "#0000ff"
+    color: "#0000ff",
 }, {
     name: "Map Bkg",
     id: "clr-bkg",
-    color: "#808080"
+    color: "#808080",
 }, {
     name: "Page Bkg",
     id: "clr-page",
-    color: "#c0c0c0"
+    color: "#c0c0c0",
 }, {
     name: "Grid",
     id: "clr-grid",
-    color: "#000000"
+    color: "#000000",
 }];
 
 const minmaxtable = [{
@@ -1191,8 +1196,10 @@ blackHoleSuns.prototype.extractMapOptions = function () {
     let c = {};
     let opt = $("#mapkey");
 
-    for (let i = 0; i < colortable.length; ++i)
+    for (let i = 0; i < colortable.length; ++i) {
         c[colortable[i].id] = opt.find("#sel-" + colortable[i].id).val();
+        c["inp-" + colortable[i].id] = opt.find("#inp-" + colortable[i].id).val();
+    }
 
     opt = $("#mapoptions");
     c.zoomsz = 5;
@@ -1206,7 +1213,7 @@ blackHoleSuns.prototype.extractMapOptions = function () {
 
     c.connection = opt.find("#ck-drawcon").prop("checked");
     c.map3d = opt.find("#ck-3dmap").prop("checked");
-    c.exit = opt.find("#ck-drawexits").prop("checked");
+    //c.exit = opt.find("#ck-drawexits").prop("checked");
     c.base = opt.find("#ck-drawbase").prop("checked");
     c.zoomreg = opt.find("#ck-zoomreg").prop("checked");
     c.addzero = opt.find("#ck-addzero").prop("checked");
@@ -1227,8 +1234,13 @@ blackHoleSuns.prototype.setMapOptions = function (entry) {
 
     if (typeof entry.mapoptions != "undefined") {
         opt = $("#mapkey");
-        for (let i = 0; i < colortable.length; ++i)
+        for (let i = 0; i < colortable.length; ++i) {
             opt.find("#sel-" + colortable[i].id).val(entry.mapoptions[colortable[i].id] ? entry.mapoptions[colortable[i].id] : colortable[i].color);
+            if (typeof colortable[i].size != "undefined") {
+                opt.find("#inp-" + colortable[i].id).val(entry.mapoptions["inp-" + colortable[i].id] ? entry.mapoptions["inp-" + colortable[i].id] : colortable[i].size);
+                opt.find("#inp-" + colortable[i].id).show();
+            }
+        }
 
         opt = $("#mapoptions");
         for (let i = 0; i < minmaxtable.length; ++i)
@@ -1255,8 +1267,13 @@ blackHoleSuns.prototype.resetMapOptions = function (entry) {
     let opt = $("#mapoptions");
 
     opt = $("#mapkey");
-    for (let i = 0; i < colortable.length; ++i)
+    for (let i = 0; i < colortable.length; ++i) {
         opt.find("#sel-" + colortable[i].id).val(colortable[i].color);
+        if (typeof colortable[i].size != "undefined") {
+            opt.find("#inp-" + colortable[i].id).val(colortable[i].size);
+            opt.find("#inp-" + colortable[i].id).show();
+        }
+    }
 
     opt = $("#mapoptions");
     for (let i = 0; i < minmaxtable.length; ++i)
@@ -1312,19 +1329,19 @@ blackHoleSuns.prototype.buildMap = function () {
             </div>
 
             <div class="col-8 border-left">
-                <label class="col-6 h6 txt-def">
+               <label class="col-5 h6 txt-def">
                     <input id="ck-3dmap" type="checkbox" checked>
                     3D Map
                 </label>
-                <label id="id-drawcon" class="col-7 h6 txt-def">
+                <label id="id-drawcon" class="col-8 h6 txt-def">
                     <input id="ck-drawcon" type="checkbox" checked>
                     Draw Connections
                 </label>
-                <label class="col-6 h6 txt-def">
+                <!--label class="col-8 h6 txt-def">
                     <input id="ck-drawexits" type="checkbox" checked>
                     Draw Exits
-                </label>
-                <label id="id-drawbase" class="col-7 h6 txt-def">
+                </label-->
+                <label id="id-drawbase" class="col-8 h6 txt-def">
                     <input id="ck-drawbase" type="checkbox" checked>
                     Draw Bases
                 </label>
@@ -1338,12 +1355,12 @@ blackHoleSuns.prototype.buildMap = function () {
                     <label class="col-8 h6 txt-def">
                         <input id="ck-chain" type="checkbox" checked>
                         Select Chain&nbsp;
-                        <input id="inp-chaindepth" type="number" class="rounded col-6 txt-def" min="0">
+                        <input id="inp-chaindepth" type="number" class="rounded col-7 txt-def" min="0">
                     </label> 
                     <label class="col-6 h6 txt-def">
                         Radius&nbsp;
-                        <input id="inp-chainradius" type="number" class="rounded col-7 txt-def" min="1">
-                    </label>
+                        <input id="inp-chainradius" type="number" class="rounded col-8 txt-def" min="1">
+                   </label>
                 </div>
             </div>
         </div>
@@ -1379,10 +1396,11 @@ blackHoleSuns.prototype.buildMap = function () {
     opt.html(settings);
 
     const key = `
-    <div class="col-4">
+    <div class="col-7">
         <div class="row">
-            <div id="idname" class="col-9 text-center">title</div>
-            <input id="sel-idname" class="col-5 bkg-def" style="border-color:black" type="color" value="colorsel">
+            <div id="idname" class="col-5 text-center">title</div>
+            <input id="sel-idname" class="col-4 bkg-def" style="border-color:black" type="color" value="colorsel">
+            <input id="inp-idname" type="number" class="rounded col-4 txt-def hidden" min="0" max="20">
         </div>
     </div>`;
 
@@ -1528,24 +1546,25 @@ blackHoleSuns.prototype.drawList = function (listEntry) {
     let o = Object.keys(out);
     for (let i = 0; i < o.length; ++i) {
         let color = opt["clr-bh"];
-        let size = 6;
+        let size = opt["inp-clr-bh"];
         switch (o[i]) {
             case "dz":
                 color = opt["clr-dz"];
-                size = 2;
+                size = opt["inp-clr-dz"];
                 break;
             case "exit":
                 color = opt["clr-exit"];
-                size = 2;
+                size = opt["inp-clr-exit"];
                 break;
             case "bhbase":
             case "exitbase":
                 color = opt["clr-base"];
-                size = 2;
+                size = opt["inp-clr-base"];
                 break;
         }
 
-        data.push(makedata(opt, out[o[i]], size, color));
+        if (size > 0)
+            data.push(makedata(opt, out[o[i]], size, color));
     }
 
     Plotly.react('plymap', data, bhs.changeMapLayout());
@@ -1708,13 +1727,24 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
                 showbackground: true,
                 range: [ystart, yend],
                 tickvals: [ystart, yctr, yend],
-                ticktext: [ystart.toString(16), yctr.toString(16), yend.toString(16)],
+                ticktext: [yend.toString(16), yctr.toString(16), ystart.toString(16)],
                 tickfont: {
                     color: opt["clr-grid"]
                 },
                 tickangle: 45,
             },
         },
+        // images: [{
+        //     x: 100,
+        //     y: 100,
+        //     sizex: 1000,
+        //     sizey: 1000,
+        //     source: "lBTK5EL.png",
+        //     xanchor: "right",
+        //     xref: "paper",
+        //     yanchor: "bottom",
+        //     yref: "paper"
+        // }]
     };
 
     if (opt.map3d) {
