@@ -964,7 +964,7 @@ blackHoleSuns.prototype.displayGTotals = function (entry, id, ifcontest) {
         }
     }
 
-    if (bhs.contest)
+    if (!bhs.contest)
         $("#totals #id-ctst").hide();
 }
 
