@@ -218,6 +218,7 @@ blackHoleSuns.prototype.navLoggedout = function () {
 
 blackHoleSuns.prototype.updateUser = function (user, ifnew) {
     mergeObjects(bhs.user, user);
+    delete bhs.user[starsCol];
 
     let ref = bhs.getUsersColRef(bhs.user.uid);
     if (ifnew)
