@@ -11,6 +11,7 @@
 
     <script src="env.js"></script>
 
+    <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-5"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -45,6 +46,7 @@
     <script src="/__/firebase/5.9.4/firebase-app.js"></script>
     <script src="/__/firebase/5.9.4/firebase-auth.js"></script>
     <script src="/__/firebase/5.9.4/firebase-firestore.js"></script>
+    <script src="/__/firebase/5.9.4/firebase-storage.js"></script>
     <script src="/__/firebase/init.js"></script>
 
     <script src="common.js"></script>
@@ -63,7 +65,7 @@
         <div class="row">
             <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">About/FAQ</a>
             <a class="col-3 text-center h5 txt-def" href="galaxy.html">Totals</a>
-            <!--a  class="col-3 text-center h5 txt-def" href="search.html">Search</a-->
+            <a  class="col-3 text-center h5 txt-def" href="search.html">Search</a>
 
             <div id="full-usermenu" class="container col-4">
                 <button id="login" type="button" class="text-center btn-def no-border h5">
@@ -79,7 +81,7 @@
                         </h5>
                     </button>
 
-                    <div class="dropdown-menu bkg-def">
+                    <div class="dropdown-menu bkg-def text-center">
                         <button id="logout" type="button" class="no-border text-center dropdown-item btn-def">
                             <h5>Logout</h5>
                         </button>
@@ -93,6 +95,7 @@
                         <button id="recalc" type="button" class="h5 no-border text-center dropdown-item btn-def hidden">
                             Recalc Totals
                         </button>
+                        <a id="admin" class="h5 no-border text-center dropdown-item btn-def hidden" href="admin.html">Admin</a>
                     </div>
                 </div>
             </div>
@@ -188,10 +191,10 @@
             </div>
 
             <div class="col-md-7 col-14">
-                <div id="pnl-map" class="card card-body border bkg-def">
+                <div class="card card-body border bkg-def">
                     <div class="row">
                         <div id="mapcol" class="col-11">
-                            <div id="plymap" style="max-width:1000px"></div>
+                            <div id="plymap"></div>
                         </div>
 
                         <div class="col-3">

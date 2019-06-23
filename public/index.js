@@ -5,7 +5,10 @@ $(document).ready(function () {
 
     bhs.last = [];
 
-    bhs.buildUserPanel();
+    let fadmin = window.location.pathname == "/admin.html";
+    if (!fadmin)
+        bhs.buildUserPanel();
+
     bhs.buildFilePanel();
 
     panels.forEach(function (p) {
@@ -405,7 +408,10 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
 
 blackHoleSuns.prototype.save = async function () {
     $("#status").empty();
-    bhs.saveUser();
+
+    let fadmin = window.location.pathname == "/admin.html";
+    if (!fadmin)
+        bhs.saveUser();
 
     if (await bhs.extractEntry(pnlTop)) {
         bhs.clearPanels();

@@ -10,7 +10,8 @@
 
     <script src="env.js"></script>
 
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-5"></script>
+      <!-- Global site tag (gtag.js) - Google Analytics -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-5"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
 
@@ -44,6 +45,7 @@
     <script src="/__/firebase/5.9.4/firebase-app.js"></script>
     <script src="/__/firebase/5.9.4/firebase-auth.js"></script>
     <script src="/__/firebase/5.9.4/firebase-firestore.js"></script>
+    <script src="/__/firebase/5.9.4/firebase-storage.js"></script>
     <script src="/__/firebase/init.js"></script>
 
     <script src="common.js"></script>
@@ -62,7 +64,7 @@
         <div class="row">
             <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">About/FAQ</a>
             <a class="col-3 text-center h5 txt-def" href="index.html">Input</a>
-            <!--a class="col-3 text-center h5 txt-def" href="search.html">Search</a-->
+            <a class="col-3 text-center h5 txt-def" href="search.html">Search</a>
 
             <div id="full-usermenu" class="container col-4">
                 <button id="login" type="button" class="text-center btn-def no-border h5">
@@ -170,8 +172,8 @@
 
                 <div class="card card-body border pad-bottom bkg-def">
                     <div class="row">
-                        <div id="pnl-map" class="card card-body border bkg-def pad-bottom">
-                            <div id="plymap" style="max-width:1200px"></div>
+                        <div id="mapcol" class="card card-body border bkg-def pad-bottom">
+                            <div id="plymap"></div>
                         </div>
                     </div>
                     <br>

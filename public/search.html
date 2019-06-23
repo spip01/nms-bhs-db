@@ -7,7 +7,6 @@
     <meta name="keywords" content="no man's sky,map,black hole">
     <meta name="author" content="Stephen Piper">
     <meta name="application-name" content="NMS-Black Hole Suns">
-    <link rel="shortcut icon" href="favicon.ico">
 
     <script src="env.js"></script>
 
@@ -46,15 +45,16 @@
     <script src="/__/firebase/5.9.4/firebase-app.js"></script>
     <script src="/__/firebase/5.9.4/firebase-auth.js"></script>
     <script src="/__/firebase/5.9.4/firebase-firestore.js"></script>
+    <script src="/__/firebase/5.9.4/firebase-storage.js"></script>
     <script src="/__/firebase/init.js"></script>
 
     <script src="common.js"></script>
     <script src="commonUI.js"></script>
-    <script src="fileupload.js"></script>
     <script src="search.js"></script>
 
     <link rel="stylesheet" type="text/css" href="local.css">
     <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
+    <link rel="shortcut icon" href="favicon.ico">
 </head>
 
 <body class="bkg-def">
@@ -62,7 +62,7 @@
 
     <div id="r2" class="container-fluid">
         <div class="row">
-            <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">About</a>
+            <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">About/FAQ</a>
             <a class="col-3 text-center h5 txt-def" href="index.html">Input</a>
             <a class="col-3 text-center h5 txt-def" href="galaxy.html">Totals</a>
 
@@ -74,23 +74,34 @@
                 <div id="usermenu" class="dropdown" style="display: none">
                     <button type="button" class="row text-center txt-def no-border dropdown-toggle h5"
                         data-toggle="dropdown">
-                        <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
-                        <h5 id="username">
-                            User
-                        </h5>
+                        <img id="userpic" class="h5" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
+                        <div id="username">User</div>
                     </button>
 
                     <div class="dropdown-menu bkg-def">
-                        <button id="logout" type="button" class="no-border text-center dropdown-item btn-def">
-                            <h5>Logout</h5>
+                        <button id="logout" type="button" class="h5 no-border text-center dropdown-item btn-def">
+                            Logout
                         </button>
-                        <button id="darkmode" type="button" class="no-border text-center dropdown-item btn-def">
-                            <h5>Dark Mode</h5>
+                        <button id="darkmode" type="button" class="h5 no-border text-center dropdown-item btn-def">
+                            Dark Mode
+                        </button>
+                        <button id="testmode" type="button"
+                            class="h5 no-border text-center dropdown-item btn-def hidden">
+                            Toggle Test DB
                         </button>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="footer" class="row border-top">
+        <a href="https://darc.blackholesuns.com/" class="col-3 text-center clr-creme h6">BHS DaRC Web</a>
+        <a href="https://guide.blackholesuns.com/" class="col-3 text-center clr-creme h6">Travel Guide</a>
+        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center clr-creme h6">Follow us on
+            Redit</a>
+        <a href="https://discord.blackholesuns.com/" class="col-4 text-center clr-creme h6">Talk to us on
+            Discord</a>
     </div>
 
     <div id="javascript">
@@ -144,79 +155,112 @@
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div id="loggedout" class="row text-danger h5">
-            <h4>This is the data entry page for the No Man's Sky Black Hole
+            <h4>This is the data display page for the No Man's Sky Black Hole
                 Suns project. Please login.
             </h4>
         </div>
 
-        <div class="row">
-            <div class="col-md-7 col-sm-9 col-14">
-                <div class="card card-body pad-bottom">
+        <div class="card card-body border pad-bottom">
+            <div id="pnl-user" class="card card-body border pad-bottom"></div>
+            <br>
 
-                    <div id="panels"></div>
+            <div class="card card-body border pad-bottom bkg-def">
+                <div class="row">
+                    <div class="col-9">
+                        <div id="mapcol" class="card card-body border bkg-def pad-bottom">
+                            <div id="plymap"></div>
+                        </div>
+                    </div>
+                    <div class="col-5">
+                        <div id="searchpnl" class="card border pad-bottom">
+                            <div class="card-header txt-def h5 text-center">
+                                Search
+                                <br>
+                                <h6>(searches topmost field completed)</h6>
+                            </div>
+                            <div class="card-body txt-def bkg-white">
+                                <div class="row">
+                                    <div class="col-6 h6 txt-inp-def">Coordinates&nbsp;</div>
+                                    <input id="id-addr" class="rounded col-8" placeholder="0000:0000:0000:0000">
+                                </div>
 
-                    <div id="entrybuttons" class="row">
-                        <div class="col-7">
-                            <div class="row">
-                                <button id="save" type="button" class="col-4 btn  btn-sm btn-def">Save</button>&nbsp;
-                                <button id="delete" type="button" class="col-4 btn  btn-sm btn-def disabled"
-                                    disabled>Delete</button>&nbsp;
-                                <button id="cancel" type="button"
-                                    class="col-4 btn btn-def  btn-sm">Cancel</button>&nbsp;
+                                <div class="row">
+                                    <div class="col-6 h6 txt-inp-def">System Name&nbsp;</div>
+                                    <input id="id-sys" class="rounded col-8">
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-6 h6 txt-inp-def">Region Name&nbsp;</div>
+                                    <input id="id-reg" class="rounded col-8">&nbsp;
+                                </div>
+
+                                <!--div class="row">
+                                    <div id="id-Lifeform" class="col-12"></div>
+                                </div-->
+
+                                <!--div class="row">
+                                    <div id="id-Economy" class="col-12"></div>
+                                </div-->
+                                <br>
+                                <div class="row">
+                                    <div class="col-4"></div>
+                                    <button id="btn-search" type="button"
+                                        class="col-6 border btn btn-sm btn-def">Search</button>&nbsp;
+                                </div>
                             </div>
                         </div>
-                        <div id="status" class="border col-7 text-danger scrollbar container-fluid"
-                            style="overflow-y: scroll; height: 40px"></div>
+                        <br>
+                        <div id="results" class="card border">
+                            <div class="card-header bkg-def txt-def h5 text-center">Results</div>
+                            <div id="resultsTable" class="card-body pad-bottom scrollbar container-fluid" style="overflow-y: scroll; height:240px"></div>
+                        </div>
                     </div>
                 </div>
                 <br>
-            </div>
 
-            <div class="col-md-7 col-sm-5 col-14">
-                <div id="pnl-map" class="card card-body border bkg-def">
-                    <div class="row">
-                        <div id="mapcol" class="col-10">
-                            <div id="plymap" style="max-width:1000px"></div>
+                <div class="row">
+                    <div class="col-5">
+                        <div class="card card-body no-bordr bkg-def">
+                            <div class="row">
+                                <div class="col-4">
+                                    <div class="row">
+                                        <div id="btn-redraw" class="text-center btn-sm btn border btn-def">Redraw </div>
+                                    </div>
+                                </div>
+                                <div id="maplogo" class="col-4">
+                                    <a html="https://darc.blackholesuns.com">
+                                        <img id="logo" src="lBTK5EL.png" class="float-center" alt="BHS Logo"
+                                            height="20px" width="20px">
+                                    </a>
+                                </div>
+                                <div id="btn-mapsettings" class="col-6 txt-def">
+                                    <i class="fa fa-cog txt-def"></i>&nbsp;Settings
+                                </div>
+                            </div>
                         </div>
+                        <br>
 
-                        <div class="col-4">
-                            <a id="maplogo" html="https://darc.blackholesuns.com" class="row">
-                                <img id="logo" src="lBTK5EL.png" class="float-left" alt="BHS Logo" width="20"
-                                    height="20"></a>
-                            <br>
-                            <br>
-
-                            <div id="mapkey" class="card card-body bkg-def border"></div>
+                        <div id="showmapkey" class="card border bkg-def pad-bottom hidden">
+                            <div class="card-header h5 txt-def">Key</div>
+                            <div id="mapkey" class="card-body txt-def"></div>
                         </div>
                     </div>
                     <br>
 
-                    <div id="mapoptions" class="card card-body bkg-def border"></div>
+                    <div class="col-9">
+                        <div id="showmapoptions" class="hidden">
+                            <div id="mapoptions" class="card card-body bkg-def border pad-bottom"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <br>
 
-        <div class="row">
-            <div class="col-md-7 col-sm-9 col-14">
-                <div id="entryTable" class="card pad-bottom"></div>
-                <br>
-            </div>
-
-            <div class="col-md-7 col-sm-5 col-14">
-                <div id="totals" class="card border pad-bottom"></div>
-            </div>
+        <div id="showentries" class="card">
+            <div id="entryTable" class="card border pad-bottom"></div>
         </div>
     </div>
-    <br>
-
-    <div id="footer" class="row">
-        <a href="https://darc.blackholesuns.com/" class="col-3 text-center txt-def h5">BHS DaRC Web</a>
-        <a href="https://guide.blackholesuns.com/" class="col-3 text-center txt-def h5">Travel Guide</a>
-        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center txt-def h5">Follow us on Redit</a>
-        <a href="https://discord.blackholesuns.com/" class="col-4 text-center txt-def h5">Talk to us on Discord</a>
-    </div>
-
 </body>
 
 </html>
