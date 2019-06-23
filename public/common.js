@@ -88,6 +88,7 @@ blackHoleSuns.prototype.initFirebase = function () {
 
     bhs.fbauth = firebase.auth();
     bhs.fs = firebase.firestore();
+    bhs.fbstorage = firebase.storage();
 
     firebase.auth().getRedirectResult().then(function (result) {
         if (result.credential) {
@@ -219,6 +220,7 @@ blackHoleSuns.prototype.navLoggedout = function () {
 
 blackHoleSuns.prototype.updateUser = function (user, ifnew) {
     mergeObjects(bhs.user, user);
+    delete bhs.user[starsCol];
 
     let ref = bhs.getUsersColRef(bhs.user.uid);
     if (ifnew)
@@ -798,7 +800,7 @@ blackHoleSuns.prototype.updateAllTotals = function (totals, reset) {
             for (let i = 0; i < olist.length; ++i) {
                 let t = {}
                 t[starsCol] = totals.orgs[olist[i]];
-                t[modified] = firebase.firestore.Timestamp.fromDate(new Date());
+                t.modified = firebase.firestore.Timestamp.fromDate(new Date());
                 let ref = bhs.fs.collection("org").where("name", "==", olist[i]);
                 ref.get().then(function (snapshot) {
                     if (!snapshot.empty)
@@ -1010,10 +1012,20 @@ blackHoleSuns.prototype.getOrgList = async function () {
         name: ""
     });
 
-    let ref = bhs.fs.collection("org").orderBy("name");
+    let ref = bhs.fs.collection("org").orderBy("_name");
     await ref.get().then(function (snapshot) {
-        for (let i = 0; i < snapshot.docs.length; ++i)
+        for (let i = 0; i < snapshot.size; ++i)
             bhs.orgList.push(snapshot.docs[i].data());
+    });
+}
+
+blackHoleSuns.prototype.getPoiList = async function () {
+    bhs.poiList = [];
+
+    let ref = bhs.fs.collection("poi").orderBy("_name");
+    await ref.get().then(function (snapshot) {
+        for (let i = 0; i < snapshot.size; ++i)
+            bhs.poiList.push(snapshot.docs[i].data());
     });
 }
 
@@ -1509,9 +1521,9 @@ const modeList = [{
 }, {
     name: "Survival",
 }, {
-    name: "Creative",
-}, {
     name: "Permadeath",
+}, {
+    name: "Creative",
 }];
 
 const economyList = [{
