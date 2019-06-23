@@ -45,7 +45,17 @@ service cloud.firestore {
       allow write: if request.auth.uid != null;
     }
     
+    match /poi/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write: if request.auth.uid != null;
+    }
+    
     match /users/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write: if request.auth.uid != null;
+    }
+    
+    match /coordex/{document=**} {
       allow read: if request.auth.uid != null;
       allow write: if request.auth.uid != null;
     }
