@@ -20,7 +20,7 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
     if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
         let ref = bhs.fs.doc("admin/" + bhs.user.uid);
         ref.get().then(function (doc) {
-            if (doc.exists && doc.data().role =="admin")
+            if (doc.exists && doc.data().role == "admin")
                 $("#admin").show();
         });
     }
@@ -28,7 +28,7 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
     if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
         let ref = bhs.fs.doc("admin/" + bhs.user.uid);
         ref.get().then(function (doc) {
-            if (doc.exists && (doc.data().role =="admin" || doc.data().role =="editor"))
+            if (doc.exists && (doc.data().role == "admin" || doc.data().role == "editor"))
                 $("#poiorg").show();
         });
     }
@@ -1032,7 +1032,7 @@ blackHoleSuns.prototype.displayGTotals = function (entry, id, ifcontest) {
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
-    if (list.length ==0)
+    if (!list || list.length == 0)
         return;
 
     let title = `        
@@ -1066,14 +1066,14 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
     l = /xs/ [Symbol.replace](l, vertical ? 13 : 7);
 
     h += /rgbcolor/ [Symbol.replace](l, "background-color: " + levelRgb[typeof list[0].number == "undefined" ? 0 : list[0].number]);
-    loc.find("#id-"+id).empty();
+    loc.find("#id-" + id).empty();
     loc.find("#id-" + id).append(h);
 
     let menu = loc.find("#menu-" + id);
     menu.append(hdr);
 
     let mlist = menu.find("#list");
-    
+
     for (let i = 0; i < list.length; ++i) {
         let lid = list[i].name.nameToId();
         h = /idname/ [Symbol.replace](item, lid);

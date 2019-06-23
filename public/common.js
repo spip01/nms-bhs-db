@@ -1515,6 +1515,16 @@ const platformList = [{
     match: /ps4/i
 }];
 
+const modeList = [{
+    name: "Normal",
+}, {
+    name: "Survival",
+}, {
+    name: "Permadeath",
+}, {
+    name: "Creative",
+}];
+
 const economyList = [{
     name: "Declining",
     number: 1

@@ -4,7 +4,18 @@ $(document).ready(function () {
     startUp();
     bhs.buildOrgPanel();
     bhs.buildPoiPanel();
+
+    let loc = $("#pnl-user");
+    bhs.buildMenu(loc, "Mode", modeList, bhs.selectMenu);
+    bhs.buildMenu(loc, "Platform", platformList, bhs.selectMenu);
+    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.selectMenu);
+
 });
+
+blackHoleSuns.prototype.selectMenu=function(){
+    let loc = $(this);
+    loc.closest("[id|='btn'").text(loc.text().stripNumber());
+}
 
 blackHoleSuns.prototype.buildOrgPanel = async function () {
     let loc = $("#orgPanel");
@@ -25,6 +36,16 @@ blackHoleSuns.prototype.buildOrgPanel = async function () {
         if (!e.link) delete e.link;
         e.addr = loc.find("#inp-orgaddr").val();
         if (!e.addr) delete e.addr;
+        else {
+            e.galaxy = $("#btn-Galaxy").text().stripNumber();
+            e.platform = $("#btn-Platform").text().stripMarginWS();
+            e.mode = $("#btn-Mode").text().stripMarginWS();
+
+            if (e.galaxy=="" || e.platform =="" || e.mode == "") {
+                bhs.statusOut("orgstatus", "Galaxy/Platform/Mode must be set.");
+                return;
+            }
+        }
 
         let file = loc.find("#inp-orglogo");
         if (file.length > 0 && file[0].files && file[0].files.length > 0) {
@@ -146,6 +167,16 @@ blackHoleSuns.prototype.buildPoiPanel = async function () {
         e.name = e._name;
         e.addr = loc.find("#inp-poiaddr").val();
         if (!e.addr) delete e.addr;
+        else {
+            e.galaxy = $("#btn-Galaxy").text().stripNumber();
+            e.platform = $("#btn-Platform").text().stripMarginWS();
+            e.mode = $("#btn-Mode").text().stripMarginWS();
+
+            if (e.galaxy=="" || e.platform =="" || e.mode == "") {
+                bhs.statusOut("poistatus", "Galaxy/Platform/Mode must be set.");
+                return;
+            }
+        }
 
         let file = loc.find("#inp-poipic");
         if (file.length > 0 && file[0].files && file[0].files.length > 0) {
