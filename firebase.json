@@ -18,10 +18,19 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "**/admin.*"
     ]
   }, {
     "target": "test",
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }, {
+    "target": "nmsce",
     "public": "public",
     "ignore": [
       "firebase.json",

@@ -200,6 +200,7 @@ blackHoleSuns.prototype.userInit = function () {
     user._name = "";
     user.platform = "";
     user.galaxy = "";
+    user.mode = "";
     user.assigned = false;
     user.org = "";
 
@@ -1501,6 +1502,16 @@ const platformList = [{
 }, {
     name: "PS4",
     match: /ps4/i
+}];
+
+const modeList = [{
+    name: "Normal",
+}, {
+    name: "Survival",
+}, {
+    name: "Creative",
+}, {
+    name: "Permadeath",
 }];
 
 const economyList = [{
