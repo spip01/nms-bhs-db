@@ -564,7 +564,7 @@ blackHoleSuns.prototype.buildTotals = function () {
 
     totalsRows.forEach(function (t) {
         if (t.where == "galaxy" && !fgal || t.where == "index" && !findex)
-            tot.find("#tgalaxy #" + t.id).hide();
+            tot.find("#itm0 #" + t.id).hide();
     });
 
     totalsGalaxy.forEach(function (t) {
@@ -717,9 +717,8 @@ blackHoleSuns.prototype.displayUTotals = function (entry, cid) {
     if (typeof entry != "undefined") {
         pnl.find("#" + totalsRows[rowTotal].id + " #" + cid).text(entry.total);
         pnl.find("#" + totalsRows[rowPlatform].id + " #" + cid).text(entry[bhs.user.platform]);
-        if (entry[bhs.user.platform == "PS4" ? "PC-XBox" : "PS4"])
-            pnl.find("#" + totalsRows[rowAltPlatform].id + " #" + cid).text(entry[bhs.user.platform == "PS4" ? "PC-XBox" : "PS4"]);
-        else
+        pnl.find("#" + totalsRows[rowAltPlatform].id + " #" + cid).text(entry[bhs.user.platform == "PS4" ? "PC-XBox" : "PS4"]);
+        if (window.location.pathname != "/galaxy.html")
             pnl.find("#" + totalsRows[rowAltPlatform].id).hide();
 
         if (window.location.pathname == "/" || window.location.pathname == "/index.html")
@@ -1131,12 +1130,12 @@ blackHoleSuns.prototype.displaySettings = function (entry) {
 var colortable = [{
     name: "Black Hole",
     id: "clr-bh",
-    color: "#00ffff",
-    size: 4,
+    color: "#ffffff",
+    size: 3,
 }, {
     name: "Exit",
     id: "clr-exit",
-    color: "#ffff00",
+    color: "#004080",
     size: 2,
 }, {
     name: "Dead Zone",
@@ -1151,19 +1150,19 @@ var colortable = [{
 }, {
     name: "Connection",
     id: "clr-con",
-    color: "#0000ff",
+    color: "#0000a0",
 }, {
     name: "Map Bkg",
     id: "clr-bkg",
-    color: "#808080",
+    color: "#000000",
 }, {
     name: "Page Bkg",
     id: "clr-page",
-    color: "#c0c0c0",
+    color: "#000000",
 }, {
     name: "Grid",
     id: "clr-grid",
-    color: "#000000",
+    color: "#c0c0c0",
 }];
 
 const minmaxtable = [{
@@ -1248,7 +1247,7 @@ blackHoleSuns.prototype.setMapOptions = function (entry) {
 
         opt.find("#inp-ctrcord").val(entry.mapoptions.ctrcord ? entry.mapoptions.ctrcord : "07FF:007F:07FF:0000");
         opt.find("#inp-ctrzoom").val(entry.mapoptions.ctrzoom ? entry.mapoptions.ctrzoom : 5);
-        opt.find("#inp-chaindepth").val(entry.mapoptions.chaindepth ? entry.mapoptions.chaindepth : 1);
+        opt.find("#inp-chaindepth").val(entry.mapoptions.chaindepth ? entry.mapoptions.chaindepth : 5);
         opt.find("#inp-chainradius").val(entry.mapoptions.chainradius ? entry.mapoptions.chainradius : 1);
 
         opt.find("#ck-drawcon").prop("checked", typeof entry.mapoptions.connection != "undefined" ? entry.mapoptions.connection : false);
@@ -1359,7 +1358,7 @@ blackHoleSuns.prototype.buildMap = function () {
                     </label> 
                     <label class="col-6 h6 txt-def">
                         Radius&nbsp;
-                        <input id="inp-chainradius" type="number" class="rounded col-8 txt-def" min="1">
+                        <input id="inp-chainradius" type="number" class="rounded col-8 txt-def" min="0">
                    </label>
                 </div>
             </div>
@@ -1367,7 +1366,7 @@ blackHoleSuns.prototype.buildMap = function () {
         <br>
         <div class="border-top">&nbsp;</div>
 
-        <div class="row">
+        <div id="zoomsection" class="row">
             <div class="h6 txt-def align-bottom">&nbsp;Zoom:&nbsp;</div>
             <label class="col-6 h6 txt-def">Coord&nbsp;
                 <input id="inp-ctrcord" type="text" class="rounded col-10 txt-def" placeholder="07FF:007F:07FF:0000">
@@ -1511,6 +1510,9 @@ blackHoleSuns.prototype.buildMap = function () {
 }
 
 blackHoleSuns.prototype.drawList = function (listEntry) {
+    if (!listEntry)
+        return;
+
     let findex = window.location.pathname == "/" || window.location.pathname == "/index.html";
 
     let opt = bhs.extractMapOptions();
@@ -1543,29 +1545,17 @@ blackHoleSuns.prototype.drawList = function (listEntry) {
         }
     }
 
-    let o = Object.keys(out);
-    for (let i = 0; i < o.length; ++i) {
-        let color = opt["clr-bh"];
-        let size = opt["inp-clr-bh"];
-        switch (o[i]) {
-            case "dz":
-                color = opt["clr-dz"];
-                size = opt["inp-clr-dz"];
-                break;
-            case "exit":
-                color = opt["clr-exit"];
-                size = opt["inp-clr-exit"];
-                break;
-            case "bhbase":
-            case "exitbase":
-                color = opt["clr-base"];
-                size = opt["inp-clr-base"];
-                break;
-        }
+    if (out.bh && opt["inp-clr-bh"] > 0)
+        data.push(makedata(opt, out.bh, opt["inp-clr-bh"], opt["clr-bh"]));
 
-        if (size > 0)
-            data.push(makedata(opt, out[o[i]], size, color));
-    }
+    if (out.exit && opt["inp-clr-exit"] > 0)
+        data.push(makedata(opt, out.exit, opt["inp-clr-exit"], opt["clr-exit"]));
+
+    if (out.bhbase && opt["inp-clr-base"] > 0)
+        data.push(makedata(opt, out.bhbase, opt["inp-clr-base"], opt["clr-base"]));
+
+    if (out.exitbase && opt["inp-clr-base"] > 0)
+        data.push(makedata(opt, out.exitbase, opt["inp-clr-base"], opt["clr-base"]));
 
     Plotly.react('plymap', data, bhs.changeMapLayout());
 }
@@ -1581,17 +1571,23 @@ blackHoleSuns.prototype.drawSingle = function (entry) {
     pushentry(out, entry.xyzs, text);
 
     let color;
+    let size;
 
-    if (entry.blackhole)
+    if (entry.blackhole) {
         color = opt["clr-bh"];
-    else if (entry.deadzone)
+        size = opt["inp-clr-bh"];
+    } else if (entry.deadzone) {
         color = opt["clr-dz"];
-    else if (entry.basename)
+        size = opt["inp-clr-dz"];
+    } else if (entry.basename) {
         color = opt["clr-base"];
-    else
+        size = opt["inp-clr-base"];
+    } else {
         color = opt["clr-exit"];
+        size = opt["inp-clr-exit"];
+    }
 
-    Plotly.addTraces('plymap', makedata(opt, out, 10, color));
+    Plotly.addTraces('plymap', makedata(opt, out, fsearch ? size : 10, color));
 }
 
 blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
@@ -1605,10 +1601,10 @@ blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
                 bhs.mapped[d.bh.addr] = true;
 
                 let out = initout();
-                pushentry(out, d.bh.xyzs);
-                pushentry(out, d.exit.xyzs);
+                pushentry(out, d.bh.xyzs, d.bh.addr + "<br>" + d.bh.sys + "<br>" + d.bh.reg);
+                pushentry(out, d.exit.xyzs, d.exit.addr + "<br>" + d.exit.sys + "<br>" + d.exit.reg);
 
-                Plotly.addTraces('plymap', makedata(opt, out, 5, opt["clr-bh"], opt["clr-con"], true));
+                Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"], opt["clr-bh"], opt["clr-con"], true));
 
                 bhs.drawChain(opt, d.exit.xyzs, depth);
                 bhs.drawChain(opt, d.bh.xyzs, depth, true);
@@ -1644,7 +1640,7 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
     let ystart, yctr, yend;
     let zstart, zctr, zend;
 
-    if (zoom) {
+    if (zoom && opt.ctrzoom) {
         xstart = ctr.x - opt.ctrzoom;
         xctr = ctr.x + parseInt(opt.ctrzoom / 2);
         xend = ctr.x + opt.ctrzoom;
