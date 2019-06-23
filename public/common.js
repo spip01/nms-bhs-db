@@ -1011,10 +1011,20 @@ blackHoleSuns.prototype.getOrgList = async function () {
         name: ""
     });
 
-    let ref = bhs.fs.collection("org").orderBy("name");
+    let ref = bhs.fs.collection("org").orderBy("_name");
     await ref.get().then(function (snapshot) {
-        for (let i = 0; i < snapshot.docs.length; ++i)
+        for (let i = 0; i < snapshot.size; ++i)
             bhs.orgList.push(snapshot.docs[i].data());
+    });
+}
+
+blackHoleSuns.prototype.getPoiList = async function () {
+    bhs.poiList = [];
+
+    let ref = bhs.fs.collection("poi").orderBy("_name");
+    await ref.get().then(function (snapshot) {
+        for (let i = 0; i < snapshot.size; ++i)
+            bhs.poiList.push(snapshot.docs[i].data());
     });
 }
 

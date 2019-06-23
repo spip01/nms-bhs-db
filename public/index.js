@@ -6,10 +6,10 @@ $(document).ready(function () {
     bhs.last = [];
 
     let fadmin = window.location.pathname == "/admin.html";
-    if (!fadmin)
+    if (!fadmin) {
         bhs.buildUserPanel();
-
-    bhs.buildFilePanel();
+        bhs.buildFilePanel();
+    }
 
     panels.forEach(function (p) {
         bhs.buildPanel(p.id);

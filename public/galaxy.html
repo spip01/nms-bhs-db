@@ -74,21 +74,32 @@
                 <div id="usermenu" class="dropdown" style="display: none">
                     <button type="button" class="row text-center txt-def no-border dropdown-toggle h5"
                         data-toggle="dropdown">
-                        <img id="userpic" class="h5" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
-                        <div id="username">User</div>
+                        <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
+                        <h5 id="username">
+                            User
+                        </h5>
                     </button>
 
                     <div class="dropdown-menu bkg-def">
-                        <button id="logout" type="button" class="h5 no-border text-center dropdown-item btn-def">
-                            Logout
+                        <button id="logout" type="button" class="no-border text-center dropdown-item btn-def">
+                            <h5>Logout</h5>
                         </button>
-                        <button id="darkmode" type="button" class="h5 no-border text-center dropdown-item btn-def">
-                            Dark Mode
+                        <button id="darkmode" type="button" class="no-border text-center dropdown-item btn-def">
+                            <h5>Dark Mode</h5>
                         </button>
                         <button id="testmode" type="button"
                             class="h5 no-border text-center dropdown-item btn-def hidden">
                             Toggle Test DB
                         </button>
+                        <button id="recalc" type="button" class="h5 no-border text-center dropdown-item btn-def hidden">
+                            Recalc Totals
+                        </button>
+                        <div class="text-center">
+                            <a id="admin" class="h5 no-border dropdown-item btn-def hidden" href="admin.html">Admin</a>
+                        </div>
+                        <div class="text-center"><a id="poiorg" class="h5 no-border dropdown-item btn-def hidden"
+                                href="poiorg.html">Enter POI &amp; Orgs</a>
+                        </div>
                     </div>
                 </div>
             </div>

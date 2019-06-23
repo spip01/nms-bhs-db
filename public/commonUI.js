@@ -20,8 +20,16 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
     if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
         let ref = bhs.fs.doc("admin/" + bhs.user.uid);
         ref.get().then(function (doc) {
-            if (doc.exists)
+            if (doc.exists && doc.data().role =="admin")
                 $("#admin").show();
+        });
+    }
+
+    if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
+        let ref = bhs.fs.doc("admin/" + bhs.user.uid);
+        ref.get().then(function (doc) {
+            if (doc.exists && (doc.data().role =="admin" || doc.data().role =="editor"))
+                $("#poiorg").show();
         });
     }
 
@@ -30,20 +38,23 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
 }
 
 blackHoleSuns.prototype.displayUser = async function (user, force) {
-    let ifadmin = window.location.pathname == "/admin.html";
+    let fadmin = window.location.pathname == "/admin.html";
+    let fpoiorg = window.location.pathname == "/poiorg.html";
     let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform);
 
     bhs.user = mergeObjects(bhs.user, user);
+
+    if (fpoiorg)
+        return;
+
     bhs.contest = await bhs.getActiveContest();
 
-    if ((changed || force) && bhs.user.galaxy && bhs.user.platform) {
+    if ((changed || force) && bhs.user.galaxy && bhs.user.platform && !fadmin) {
         bhs.buildTotals();
         bhs.getTotals(bhs.displayTotals);
 
-        if (!ifadmin) {
-            bhs.buildMap();
-            bhs.setMapOptions(bhs.user);
-        }
+        bhs.buildMap();
+        bhs.setMapOptions(bhs.user);
 
         bhs.buildUserTable(bhs.user);
         bhs.displaySettings(bhs.user);
@@ -1021,6 +1032,9 @@ blackHoleSuns.prototype.displayGTotals = function (entry, id, ifcontest) {
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
+    if (list.length ==0)
+        return;
+
     let title = `        
         <div class="row">
             <div class="col-md-medium col-sm-small col-xs h6 txt-inp-def">label</div>`;
