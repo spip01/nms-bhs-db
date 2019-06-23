@@ -2,16 +2,17 @@
 <html lang="en">
 
 <head>
-    <title>No Man's Sky Black Hole Suns</title>
-    <meta name="description" content="No Man's Sky Black Hole Suns">
-    <meta name="keywords" content="no man's sky,map,black hole">
+    <title>No Man's Sky Coordinate Exchange</title>
+    <meta name="description" content="No Man's Sky Coordinate Exchange">
+    <meta name="keywords" content="no man's sky,coordinate exchange">
     <meta name="author" content="Stephen Piper">
-    <meta name="application-name" content="NMS-Black Hole Suns">
+    <meta name="application-name" content="NMS-Coordinate Exchange">
     <link rel="shortcut icon" href="favicon.ico">
 
     <script src="env.js"></script>
 
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-5"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-6"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
 
@@ -20,7 +21,7 @@
         }
         gtag('js', new Date());
 
-        gtag('config', 'UA-66007591-5');
+        gtag('config', 'UA-66007591-6');
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -49,7 +50,6 @@
 
     <script src="common.js"></script>
     <script src="commonUI.js"></script>
-    <script src="fileupload.js"></script>
     <script src="index.js"></script>
 
     <link rel="stylesheet" type="text/css" href="local.css">
@@ -124,7 +124,7 @@
     <!--googleoff:all-->
     <div id="loginpnl" class="card bkg-def pad-bottom" style="display:none">
         <div class="card-header">
-            <div class="h4 txt-def text-center">Login to Black Hole Suns DB</div>
+            <div class="h4 txt-def text-center">Login to NMS Coordinate Exchange</div>
         </div>
         <div class="card-body">
             <div class="row">
@@ -159,9 +159,7 @@
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div id="loggedout" class="row text-danger h5">
-            <h4>This is the data entry page for the No Man's Sky Black Hole
-                Suns project. Please login.
-            </h4>
+            <h4>Welcome to No Man's Sky Coordinate Exchange. Please login.</h4>
         </div>
 
         <div class="row">
@@ -187,63 +185,23 @@
                 <br>
             </div>
 
-            <div class="col-md-7 col-14">
-                <div id="pnl-map" class="card card-body border bkg-def">
-                    <div class="row">
-                        <div id="mapcol" class="col-11">
-                            <div id="plymap" style="max-width:1000px"></div>
-                        </div>
-
-                        <div class="col-3">
-                            <a id="maplogo" html="https://darc.blackholesuns.com" class="row">
-                                <img id="logo" src="lBTK5EL.png" class="float-left" alt="BHS Logo" width="20"
-                                    height="20"></a>
-                            <br>
-
-                            <div class="row">
-                                <div class="col-12 text-right">
-                                    <button id="btn-redraw" type="button"
-                                        class="col-12 border btn btn-sm btn-def text-center">Redraw</button>&nbsp;
-                                </div>
-                            </div>
-                            <br>
-                            <div class="row">
-                                <div id="btn-mapsettings" class="col-12 txt-def text-right">
-                                    <i class="fa fa-cog txt-def"></i>&nbsp;Settings
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="showmapkey" class="card card-body border bkg-def pad-bottom hidden">
-                        <div class="row text-center">
-                            <div class="col-14 h5 txt-def">Key</div>
-                        </div>
-                        <div id="mapkey" class="row bkg-def txt-def"></div>
-                    </div>
-                    <br>
-
-                    <div id="showmapoptions" class="card no-border hidden">
-                        <div id="mapoptions" class="card card-body bkg-def border pad-bottom"></div>
-                    </div>
-                </div>
-            </div>
+            <div class="col-md-7 col-14"></div>
         </div>
         <br>
 
         <div class="row">
             <div class="col-md-7 col-14">
-                <div id="entryTable" class="card pad-bottom"></div>
+                <div id="nmsceTable" class="card pad-bottom"></div>
                 <br>
             </div>
 
             <div class="col-md-7 col-14">
-                <div id="totals" class="card border pad-bottom"></div>
+                <div id="nmsceTotals" class="card border pad-bottom"></div>
             </div>
         </div>
     </div>
     <br>
-    
+
 </body>
 
 </html>
