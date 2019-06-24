@@ -50,24 +50,6 @@ function startUp() {
     $("#logout").click(function () {
         bhs.logOut();
     });
-
-    if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com")
-        $("#testmode").show();
-
-    $("#testmode").click(function () {
-        starsCol = starsCol == "stars5" ? "stars6" : "stars5";
-        $("body").css("background-color", starsCol != "stars5" ? "red" : "black");
-        bhs.list = {};
-        bhs.loaded = {};
-        bhs.displayUser(bhs.user, true);
-    });
-
-    if (document.domain == "localhost")
-        $("#recalc").show();
-
-    $("#recalc").click(function () {
-        bhs.fixAllTotals();
-    });
 }
 
 function blackHoleSuns() {
@@ -156,7 +138,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
         $("#login").hide();
         $("#usermenu").show();
 
-        // let ref = bhs.fs.collection("users").where("_name","==","zeenewbian");
+        // let ref = bhs.fs.collection("users").where("_name","==","Kaboom443");
         // ref.get().then(function(snapshot){
         //     if (!snapshot.empty)
         //         user = snapshot.docs[0].data();
@@ -1007,9 +989,6 @@ blackHoleSuns.prototype.getUser = function (displayFcn) {
 
 blackHoleSuns.prototype.getOrgList = async function () {
     bhs.orgList = [];
-    bhs.orgList.push({
-        name: ""
-    });
 
     let ref = bhs.fs.collection("org").orderBy("_name");
     await ref.get().then(function (snapshot) {
@@ -1320,7 +1299,7 @@ String.prototype.stripID = function () {
 }
 
 String.prototype.stripMarginWS = function () {
-    return this.replace(/\s*([.*]?)[\n\r\s]*/, "$1");
+    return this.replace(/^\s*(.*)\s*$/g, "$1");
 }
 
 function stripNumber(val) {

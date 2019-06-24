@@ -1,284 +1,313 @@
 'use strict';
 
-$(document).ready(function () {
+$(document).ready(async function () {
     startUp();
-    bhs.buildOrgPanel();
-    bhs.buildPoiPanel();
 
-    let loc = $("#pnl-user");
-    bhs.buildMenu(loc, "Mode", modeList, bhs.selectMenu);
-    bhs.buildMenu(loc, "Platform", platformList, bhs.selectMenu);
-    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.selectMenu);
+    await bhs.getOrgList();
+    await bhs.getPoiList();
 
+    bhs.buildPanel("pnl-org", bhs.orgList);
+    bhs.buildPanel("pnl-poi", bhs.poiList);
 });
 
-blackHoleSuns.prototype.selectMenu=function(){
+blackHoleSuns.prototype.selectMenu = function () {
     let loc = $(this);
     loc.closest("[id|='btn'").text(loc.text().stripNumber());
 }
 
-blackHoleSuns.prototype.buildOrgPanel = async function () {
-    let loc = $("#orgPanel");
-    await bhs.getOrgList();
-    bhs.orgList.shift();
-    bhs.buildMenu(loc, "Org", bhs.orgList, bhs.selectOrg);
+blackHoleSuns.prototype.buildPanel = function (id, list) {
+    let pnl = $("#" + id);
 
-    $("#orgsave").click(function () {
-        let idx = bhs.getIndex(bhs.orgList, "_name", $("#btn-Org").text().stripMarginWS());
-        let o = {};
-        if (idx != -1)
-            o = bhs.orgList[idx];
+    let h = panel;
+    if (id == "pnl-org") {
+        h = /title/ [Symbol.replace](h, "Organizations");
+        h = /pictitle/ [Symbol.replace](h, "Logo");
+        h = /hsize/ [Symbol.replace](h, "120px");
+        h = /wsize/ [Symbol.replace](h, "120px");
+    } else {
+        h = /title/ [Symbol.replace](h, "Points of interest");
+        h = /pictitle/ [Symbol.replace](h, "Image");
+        h = /hsize/ [Symbol.replace](h, "90px");
+        h = /wsize/ [Symbol.replace](h, "160px");
+    }
 
-        let e = {};
-        e._name = loc.find("#inp-org").val();
-        e.name = e._name;
-        e.link = loc.find("#inp-orglink").val();
-        if (!e.link) delete e.link;
-        e.addr = loc.find("#inp-orgaddr").val();
-        if (!e.addr) delete e.addr;
-        else {
-            e.galaxy = $("#btn-Galaxy").text().stripNumber();
-            e.platform = $("#btn-Platform").text().stripMarginWS();
-            e.mode = $("#btn-Mode").text().stripMarginWS();
+    pnl.append(h);
 
-            if (e.galaxy=="" || e.platform =="" || e.mode == "") {
-                bhs.statusOut("orgstatus", "Galaxy/Platform/Mode must be set.");
-                return;
-            }
-        }
+    bhs.buildMenu(pnl, "Mode", modeList, bhs.selectMenu);
+    bhs.buildMenu(pnl, "Platform", platformList, bhs.selectMenu);
+    bhs.buildMenu(pnl, "Galaxy", galaxyList, bhs.selectMenu);
+    bhs.buildTable(pnl, list);
 
-        let file = loc.find("#inp-orglogo");
-        if (file.length > 0 && file[0].files && file[0].files.length > 0) {
-            if (o.logo)
-                e.logo = o.logo;
-            else {
-                let ext = file[0].files[0].name.replace(/.*(\..*)$/, "$1")
-                e.logo = "orgs/images/" + uuidv4() + ext;
-            }
+    if (id == "pnl-poi")
+        pnl.find("#id-link").hide();
 
-            bhs.fbstorage.ref().child(e.logo).put(file[0].files[0]).on('state_changed', function (snapshot) {
-                    var pct = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    let progress = $("#orgprogress");
-                    progress.show();
-                    progress.css("width", pct + "%");
-                },
-                function (error) {
-                    console.log(error);
-                },
-                function () {
-                    bhs.statusOut("orgstatus", "Upload complete.");
-                });
-        }
-
-        let ref = bhs.fs.collection("org");
-        ref = ref.where("_name", "==", o._name ? o._name : "_0_");
-
-        ref.get().then(function (snapshot) {
-            if (snapshot.size > 0) {
-                snapshot.docs[0].ref.update(e);
-                bhs.statusOut("orgstatus", e._name + " updated.");
-                bhs.orgList[idx] = e;
-            } else {
-                let ref = bhs.fs.collection("org");
-                ref.add(e);
-                bhs.statusOut("orgstatus", e._name + " added.");
-                bhs.orgList.push(e);
-            }
-
-            bhs.orgList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
-                a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0);
-
-            bhs.buildMenu(loc, "Org", bhs.orgList, bhs.selectOrg);
-
-            $("#btn-Org").text(e._name);
-        }).catch(function (error) {
-            console.log(error);
-        });
+    pnl.find("#inp-addr").change(function () {
+        let addr = bhs.reformatAddress($(this).val());
+        $(this).val(addr);
     });
 
-    $("#orgdelete").click(function () {
-        let idx = bhs.getIndex(bhs.orgList, "_name", $("#btn-Org").text().stripMarginWS());
-        let o = {};
-        if (idx != -1)
-            o = bhs.orgList[idx];
+    pnl.find("#id-table").height(pnl.find("#inputs").outerHeight());
+}
 
-        if (o.logo)
-            bhs.fbstorage.ref().child(o.logo).delete();
+blackHoleSuns.prototype.buildTable = function (pnl, list) {
+    let row = `
+        <div class="row text-nowrap" ondblclick="bhs.listDblclick(this)">
+            name
+        </div>`;
 
-        let ref = bhs.fs.collection("org");
-        ref = ref.where("_name", "==", o._name);
+    let h = "";
+    for (let i = 0; i < list.length; ++i) {
+        h += /name/ [Symbol.replace](row, list[i]._name);
+    }
+
+    pnl.find("#id-table").empty();
+    pnl.find("#id-table").append(h);
+}
+
+const panel = `
+<div class="card-header bkg-def txt-def h5">title</div>
+<div class="card-body">
+    <div class="row">
+        <div class="col-4">
+            <div id="id-table" class="border scrollbar container-fluid"
+                style="overflow-y: scroll; height: 300px"></div>
+        </div>
+
+        <div class="col-10">
+            <div id="inputs" class="card card-body border">
+                <div class="row">
+                    <div class="col-7">
+                        <div class="row">
+                            <div class="col-4 txt-inp-def h6">Name</div>
+                            <input id="inp-name" class="rounded col-9" type="text">
+                        </div>
+                        <div id="id-link" class="row">
+                            <div class="col-4 txt-inp-def h6">Link</div>
+                            <input id="inp-link" class="rounded col-9" type="text">
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="col-14 text-center">
+                                <img id="img-pic" height="hsize" width="wsize" />
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="col-7 border-left">
+                        <div class="row">
+                            <div class="col-4 txt-inp-def h6">Coord</div>
+                            <input id="inp-addr" class="rounded col-9" type="text" placeholder="0000:0000:0000:0000">
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div id="id-Platform" class="col-14 text-center"></div>
+                        </div>
+                        <div class="row">
+                            <div id="id-Galaxy" class="col-14 text-center"></div>
+                        </div>
+                        <div class="row">
+                            <div id="id-Mode" class="col-14 text-center"></div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+
+                <div class="row">
+                    <div class="col-3 txt-inp-def h6">pictitle</div>
+                    <input id="img-file" type="file" class="col-8 form-control form-control-sm"
+                        accept="image/png, image/jpeg">&nbsp;
+                </div>
+                <div id="progressbar" class="progress hidden">
+                    <div id="progress" class="progress-bar progress-bar-striped bg-success progress-bar-animated hidden"
+                        role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <br>
+                
+                <div class="row">
+                    <button id="btn-save" type="button" class="col-2 btn  btn-sm btn-def" onclick="bhs.save(this)">Save</button>&nbsp;
+                    <button id="btn-delete" type="button" class="col-2 btn  btn-sm btn-def disabled"
+                        disabled  onclick="bhs.delete(this)">Delete</button>&nbsp;
+                    <button id="btn-cancel" type="button" class="col-2 btn  btn-sm btn-def" onclick="bhs.cancel(this)">Cancel</button>&nbsp;
+                    <div id="status" class="col-7 border text-danger scrollbar container-fluid"
+                        style="overflow-y: scroll; height: 40px">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>`;
+
+var lastSel = null;
+
+blackHoleSuns.prototype.listDblclick = function (evt) {
+    let loc = $(evt);
+    if (lastSel)
+        $(lastSel).removeClass("bkg-light-green");
+    lastSel = loc;
+    $(lastSel).addClass("bkg-light-green");
+
+    let sel = loc.text().stripMarginWS();
+    let pnl = loc.closest("[id|='pnl']");
+    let pnlid = pnl.prop("id");
+    let list = pnlid == "pnl-org" ? bhs.orgList : bhs.poiList;
+
+    let idx = bhs.getIndex(list, "_name", sel);
+    let e = list[idx];
+
+    pnl.find("#inp-name").val(e._name);
+
+    if (pnlid == "pnl-org")
+        pnl.find("#inp-link").val(e.link);
+
+    if (e.addr) {
+        pnl.find("#inp-addr").val(e.addr);
+        pnl.find("#btn-Galaxy").text(e.galaxy);
+        pnl.find("#btn-Platform").text(e.platform);
+        pnl.find("#btn-Mode").text(e.mode);
+    }
+
+    pnl.find("#btn-save").text("Update");
+    pnl.find("#btn-delete").removeClass("disabled");
+    pnl.find("#btn-delete").removeAttr("disabled");
+
+    if (e.img) {
+        let ref = bhs.fbstorage.ref().child(e.img);
+        ref.getDownloadURL().then(function (url) {
+            pnl.find("#img-pic").attr("src", url);
+        }).catch(function (error) {
+            console.log(error);
+            pnl.find("#img-pic").removeAttr("src");
+        });
+    } else
+        pnl.find("#img-pic").removeAttr("src");
+}
+
+blackHoleSuns.prototype.save = function (evt) {
+    let pnl = $(evt).closest("[id|='pnl']");
+    let pnlid = pnl.prop("id");
+    let list = pnlid == "pnl-org" ? bhs.orgList : bhs.poiList;
+    let idx = -1;
+
+    if (lastSel)
+        idx = bhs.getIndex(list, "_name", $(lastSel).text().stripMarginWS());
+
+    let e = {};
+    e._name = pnl.find("#inp-name").val();
+    e.name = e._name;
+    e.link = pnl.find("#inp-link").val();
+    if (!e.link) delete e.link;
+
+    e.addr = pnl.find("#inp-addr").val();
+    if (e.addr) {
+        e.galaxy = pnl.find("#btn-Galaxy").text().stripNumber();
+        e.platform = pnl.find("#btn-Platform").text().stripMarginWS();
+        e.mode = pnl.find("#btn-Mode").text().stripMarginWS();
+
+        if (e.galaxy == "" || e.platform == "" || e.mode == "") {
+            bhs.statusOut(pnl, "Galaxy/Platform/Mode must be set.");
+            return;
+        }
+    } else
+        delete e.addr;
+
+    let file = pnl.find("#img-file");
+    if (file.length > 0 && file[0].files && file[0].files.length > 0) {
+        let ext = file[0].files[0].name.replace(/.*(\..*)$/, "$1")
+        e.img = pnlid + "/" + uuidv4() + ext;
+
+        let pb = pnl.find("#progressbar");
+        pb.show();
+
+        bhs.fbstorage.ref().child(e.img).put(file[0].files[0]).on('state_changed', function (snapshot) {
+                var pct = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                pb.css("width", pct + "%");
+            },
+            function (error) {
+                console.log(error);
+            },
+            function () {
+                bhs.statusOut(pnl, "Upload complete.");
+            });
+    }
+
+
+    let ref = bhs.fs.collection(pnlid == "pnl-org" ? "org" : "poi");
+    ref = ref.where("_name", "==", e._name ? e._name : uuidv4());
+
+    ref.get().then(function (snapshot) {
+        if (snapshot.size > 0) {
+            snapshot.docs[0].ref.update(e);
+            bhs.statusOut(pnl, e._name + " updated.");
+            list[idx] = e;
+        } else {
+            let ref = bhs.fs.collection(pnlid == "pnl-org" ? "org" : "poi");
+            ref.add(e);
+            bhs.statusOut(pnl, e._name + " added.");
+            list.push(e);
+        }
+
+        list.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
+            a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0);
+
+        bhs.buildTable(pnl, list);
+        bhs.cancel(pnl);
+    }).catch(function (error) {
+        console.log(error);
+    });
+}
+
+blackHoleSuns.prototype.delete = function (evt) {
+    let pnl = $(evt).closest("[id|='pnl']");
+    let pnlid = pnl.prop("id");
+    let list = pnlid == "pnl-org" ? bhs.orgList : bhs.poiList;
+
+    if (lastSel) {
+        let idx = bhs.getIndex(list, "_name", $(lastSel).text().stripMarginWS());
+        let e = list[idx];
+
+        if (e.img)
+            bhs.fbstorage.ref().child(e.img).delete();
+
+        let ref = bhs.fs.collection(pnlid == "pnl-org" ? "org" : "poi");
+        ref = ref.where("_name", "==", e._name);
         ref.get().then(function (snapshot) {
             if (snapshot.size)
                 snapshot.docs[0].ref.delete().then(async function () {
-                    bhs.statusOut("orgstatus", o._name + " deleted.");
+                    bhs.statusOut(pnl, e._name + " deleted.");
 
-                    bhs.orgList.splice(idx, 1);
-                    bhs.orgList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
+                    list.splice(idx, 1);
+                    list.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
                         a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0);
-                    bhs.buildMenu(loc, "Org", bhs.orgList, bhs.selectOrg);
 
-                    $("#orgdelete").addClass("disabled");
-                    $("#orgdelete").prop("disabled", true);
+                    bhs.buildTable(pnl, list);
+                    bhs.cancel(evt);
                 }).catch(function () {
                     console.log(error);
                 });
             else
-                bhs.statusOut("orgstatus", old + " not found.");
+                bhs.statusOut(pnl, e._name + " not found.");
         });
-    });
-
-    loc.find("#inp-orgaddr").change(function () {
-        let addr = bhs.reformatAddress($(this).val());
-        $(this).val(addr);
-    });
+    }
 }
 
-blackHoleSuns.prototype.selectOrg = function () {
-    let loc = $("#orgPanel");
-    let idx = bhs.getIndex(bhs.orgList, "_name", loc.find("#btn-Org").text().stripMarginWS());
-    let e = bhs.orgList[idx];
+blackHoleSuns.prototype.cancel = function (evt) {
+    let pnl = $(evt).closest("[id|='pnl']");
+    pnl.find("#inp-name").val("");
+    pnl.find("#inp-link").val("");
+    pnl.find("#inp-addr").val("")
+    pnl.find("#img-pic").removeAttr("src");
 
-    loc.find("#inp-org").val(e._name);
-    loc.find("#inp-orglink").val(e.link);
-    loc.find("#inp-orgaddr").val(e.addr);
+    pnl.find("#img-file").val("");
+    pnl.find("#progress").hide();
 
-    let ref = bhs.fbstorage.ref().child(e.logo);
-    ref.getDownloadURL().then(function (url) {
-        $("#img-orglogo").attr("src", url);
-    });
+    if (lastSel) {
+        $(lastSel).removeClass("bkg-light-green");
+        lastSel = null;
+    }
 
-    $("#orgdelete").removeClass("disabled");
-    $("#orgdelete").removeAttr("disabled");
-}
-
-blackHoleSuns.prototype.buildPoiPanel = async function () {
-    let loc = $("#poiPanel");
-    await bhs.getPoiList();
-    bhs.buildMenu(loc, "Poi", bhs.poiList, bhs.selectPoi);
-
-    $("#poisave").click(function () {
-        let idx = bhs.getIndex(bhs.poiList, "_name", $("#btn-Poi").text().stripMarginWS());
-        let o = {};
-        if (idx != -1)
-            o = bhs.poiList[idx];
-
-        let e = {};
-        e._name = loc.find("#inp-poi").val();
-        e.name = e._name;
-        e.addr = loc.find("#inp-poiaddr").val();
-        if (!e.addr) delete e.addr;
-        else {
-            e.galaxy = $("#btn-Galaxy").text().stripNumber();
-            e.platform = $("#btn-Platform").text().stripMarginWS();
-            e.mode = $("#btn-Mode").text().stripMarginWS();
-
-            if (e.galaxy=="" || e.platform =="" || e.mode == "") {
-                bhs.statusOut("poistatus", "Galaxy/Platform/Mode must be set.");
-                return;
-            }
-        }
-
-        let file = loc.find("#inp-poipic");
-        if (file.length > 0 && file[0].files && file[0].files.length > 0) {
-            if (o.pic)
-                e.pic = o.pic;
-            else {
-                let ext = file[0].files[0].name.replace(/.*(\..*)$/, "$1")
-                e.pic = "poi/images/" + uuidv4() + ext;
-            }
-
-            bhs.fbstorage.ref().child(e.pic).put(file[0].files[0]).on('state_changed', function (snapshot) {
-                    var pct = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    let progress = $("#poiprogress");
-                    progress.show();
-                    progress.css("width", pct + "%");
-                },
-                function (error) {
-                    console.log(error);
-                },
-                function () {
-                    bhs.statusOut("poistatus", "Upload complete.");
-                });
-        }
-
-        let ref = bhs.fs.collection("poi");
-        ref = ref.where("_name", "==", o._name ? o._name : "_0_");
-
-        ref.get().then(function (snapshot) {
-            if (snapshot.size > 0) {
-                snapshot.docs[0].ref.update(e);
-                bhs.statusOut("poistatus", e._name + " updated.");
-                bhs.poiList[idx] = e;
-            } else {
-                let ref = bhs.fs.collection("poi");
-                ref.add(e);
-                bhs.statusOut("poistatus", e._name + " added.");
-                bhs.poiList.push(e);
-            }
-
-            bhs.poiList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
-                a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0);
-
-            bhs.buildMenu(loc, "Poi", bhs.poiList, bhs.selectPoi);
-
-            $("#btn-Poi").text(e._name);
-        }).catch(function (error) {
-            console.log(error);
-        });
-    });
-
-    $("#poidelete").click(function () {
-        let idx = bhs.getIndex(bhs.poiList, "_name", $("#btn-Poi").text().stripMarginWS());
-        let o = {};
-        if (idx != -1)
-            o = bhs.poiList[idx];
-
-        if (o.pic)
-            bhs.fbstorage.ref().child(o.pic).delete();
-
-        let ref = bhs.fs.collection("poi");
-        ref = ref.where("_name", "==", o._name);
-        ref.get().then(function (snapshot) {
-            if (snapshot.size)
-                snapshot.docs[0].ref.delete().then(async function () {
-                    bhs.statusOut("poistatus", o._name + " deleted.");
-
-                    bhs.poiList.splice(idx, 1);
-                    bhs.poiList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
-                        a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0);
-                    bhs.buildMenu(loc, "Poi", bhs.poiList, bhs.selectPoi);
-
-                    $("#poidelete").addClass("disabled");
-                    $("#poidelete").prop("disabled", true);
-                }).catch(function () {
-                    console.log(error);
-                });
-            else
-                bhs.statusOut("poistatus", old + " not found.");
-        });
-    });
-
-    loc.find("#inp-poiaddr").change(function () {
-        let addr = bhs.reformatAddress($(this).val());
-        $(this).val(addr);
-    });
-}
-
-blackHoleSuns.prototype.selectPoi = function () {
-    let loc = $("#poiPanel");
-    let idx = bhs.getIndex(bhs.poiList, "_name", loc.find("#btn-Poi").text().stripMarginWS());
-    let e = bhs.poiList[idx];
-
-    loc.find("#inp-poi").val(e._name);
-    loc.find("#inp-poiaddr").val(e.addr);
-
-    let ref = bhs.fbstorage.ref().child(e.pic);
-    ref.getDownloadURL().then(function (url) {
-        $("#img-poipic").attr("src", url);
-    });
-
-    $("#poidelete").removeClass("disabled");
-    $("#poidelete").removeAttr("disabled");
+    pnl.find("#btn-save").text("Save");
+    pnl.find("#btn-delete").addClass("disabled");
+    pnl.find("#btn-delete").prop("disabled", true);
 }
 
 function uuidv4() {
@@ -287,6 +316,6 @@ function uuidv4() {
     )
 }
 
-blackHoleSuns.prototype.statusOut = function (id, str) {
-    $("#" + id).prepend("<h6>" + str + "</h6>");
+blackHoleSuns.prototype.statusOut = function (pnl, str) {
+    pnl.find("#status").prepend("<h6>" + str + "</h6>");
 }

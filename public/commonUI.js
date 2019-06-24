@@ -20,8 +20,23 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
     if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
         let ref = bhs.fs.doc("admin/" + bhs.user.uid);
         ref.get().then(function (doc) {
-            if (doc.exists && doc.data().role == "admin")
+            if (doc.exists && doc.data().role == "admin") {
                 $("#admin").show();
+                $("#recalc").show();
+                $("#testmode").show();
+
+                $("#recalc").click(function () {
+                    bhs.fixAllTotals();
+                });
+
+                $("#testmode").click(function () {
+                    starsCol = starsCol == "stars5" ? "stars6" : "stars5";
+                    $("body").css("background-color", starsCol != "stars5" ? "red" : "black");
+                    bhs.list = {};
+                    bhs.loaded = {};
+                    bhs.displayUser(bhs.user, true);
+                });
+            }
         });
     }
 
@@ -128,7 +143,10 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     $("#panels").prepend(panel);
     let loc = $("#pnl-user");
 
-    await bhs.getOrgList();
+    bhs.getOrgList();
+    bhs.orgList.unshift({
+        name: ""
+    });
 
     bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser);
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, true);
