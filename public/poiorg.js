@@ -51,7 +51,7 @@ blackHoleSuns.prototype.buildPanel = function (id, list) {
 
 blackHoleSuns.prototype.buildTable = function (pnl, list) {
     let row = `
-        <div class="row text-nowrap" ondblclick="bhs.listDblclick(this)">
+        <div class="row text-nowrap" onclick="bhs.listClick(this)">
             name
         </div>`;
 
@@ -68,12 +68,12 @@ const panel = `
 <div class="card-header bkg-def txt-def h5">title</div>
 <div class="card-body">
     <div class="row">
-        <div class="col-4">
+        <div class="col-md-4 col-14">
             <div id="id-table" class="border scrollbar container-fluid"
                 style="overflow-y: scroll; height: 300px"></div>
         </div>
 
-        <div class="col-10">
+        <div class="col-md-10 col-14">
             <div id="inputs" class="card card-body border">
                 <div class="row">
                     <div class="col-7">
@@ -139,7 +139,7 @@ const panel = `
 
 var lastSel = null;
 
-blackHoleSuns.prototype.listDblclick = function (evt) {
+blackHoleSuns.prototype.listClick = function (evt) {
     let loc = $(evt);
     if (lastSel)
         $(lastSel).removeClass("bkg-light-green");

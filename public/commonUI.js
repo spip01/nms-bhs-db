@@ -404,7 +404,7 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist, entry) {
         const lineHdr = `
         <div id="gpa" class="row">`;
         const line = `
-            <div id="idname" class="width" ondblclick="entryDblclk(this)">
+            <div id="idname" class="width" onclick="entryDblclk(this)">
                 <div id="bh-idname" class="row">bhdata</div>
                 <div id="x-idname" class="row">xdata</div>
             </div>`;
@@ -745,7 +745,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
     for (var i = 0; i < list.length; i++) {
         loc.append(list[i]);
         if ($(list[i]).find("#id-uid").length > 0)
-            loc.find("#" + $(list[i]).prop("id")).dblclick(function () {
+            loc.find("#" + $(list[i]).prop("id")).click(function () {
                 console.log($(this).find("#id-names").text().stripMarginWS() + " " + $(this).find("#id-uid").text().stripMarginWS());
                 if (fgal) {
                     bhs.entries = {};
@@ -772,7 +772,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
         for (var i = 0; i < list.length; i++) {
             loc.append(list[i]);
             if (fgal) {
-                loc.find("#" + $(list[i]).prop("id")).dblclick(function () {
+                loc.find("#" + $(list[i]).prop("id")).click(function () {
                     bhs.entries = {};
                     let galaxy = $("#btn-Galaxy").text().stripNumber();
                     let platform = $("#btn-Platform").text().stripMarginWS();
