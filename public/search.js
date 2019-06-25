@@ -89,18 +89,20 @@ blackHoleSuns.prototype.displayResults = function (found) {
     let row = `<div class="row">bh&nbsp;-&nbsp;exit</div>`;
     let h = "";
 
-    let list = Object.keys(found);
-    for (let i = 0; i < list.length; ++i) {
-        let l = row;
-        if (found[list[i]].bh || found[list[i]].exit) {
-            l = /bh/ [Symbol.replace](l, found[list[i]].bh ? found[list[i]].bh.addr : "");
-            l = /exit/ [Symbol.replace](l, found[list[i]].exit ? found[list[i]].exit.addr : "");
-        } else {
-            l = /bh/ [Symbol.replace](l, found[list[i]].addr ? found[list[i]].addr : "");
-            l = /&.*exit/ [Symbol.replace](l, "");
-        }
+    if (found.bh) {
+        let l = /bh/ [Symbol.replace](row, found.bh ? found.bh.addr : "");
+        h = /exit/ [Symbol.replace](l, found.exit ? found.exit.addr : "");
+    } else {
+        let list = Object.keys(found);
+        for (let i = 0; i < list.length; ++i) {
+            let l = row;
+            if (found[list[i]].bh) {
+                l = /bh/ [Symbol.replace](l, found[list[i]].bh ? found[list[i]].bh.addr : "");
+                l = /exit/ [Symbol.replace](l, found[list[i]].exit ? found[list[i]].exit.addr : "");
+            } 
 
-        h += l;
+            h += l;
+        }
     }
 
     $("#resultsTable").append(h);

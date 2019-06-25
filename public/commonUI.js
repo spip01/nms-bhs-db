@@ -1571,7 +1571,7 @@ blackHoleSuns.prototype.buildMap = function () {
 
                     bhs.mapped = {};
                     bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1);
-                    bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1, true);
+                    // bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1, true);
                     delete bhs.mapped;
                 }
             }, 1000);
@@ -1695,7 +1695,7 @@ blackHoleSuns.prototype.drawSingle = function (entry) {
         size = opt["inp-clr-exit"];
     }
 
-    Plotly.addTraces('plymap', makedata(opt, out, fsearch ? size : size * 2, color));
+    Plotly.addTraces('plymap', makedata(opt, out, fsearch ? size : 8, color));
 }
 
 blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
@@ -1705,8 +1705,7 @@ blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
         let keys = Object.keys(list);
         for (let i = 0; i < keys.length; ++i) {
             let d = list[keys[i]];
-            if (d.bh && d.exit && !bhs.mapped[d.bh.addr]) {
-                bhs.mapped[d.bh.addr] = true;
+            if (!bhs.mapped[d.bh.addr]) {
 
                 let out = initout();
                 pushentry(out, d.bh.xyzs, d.bh.addr + "<br>" + d.bh.sys + "<br>" + d.bh.reg);
@@ -1715,12 +1714,17 @@ blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
                 if (bhs.displayResults)
                     bhs.displayResults(d);
 
-                Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"], opt["clr-bh"], up?"#ff0000":opt["clr-con"], true));
-
-                bhs.drawChain(opt, d.exit.xyzs, depth);
-                bhs.drawChain(opt, d.bh.xyzs, depth, true);
+                Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"], opt["clr-bh"], up ? opt["clr-exit"] : opt["clr-con"], true));
+                bhs.mapped[d.bh.addr] = true;
             }
         }
+
+        for (let i = 0; i < keys.length; ++i) {
+            let d = list[keys[i]];
+            bhs.drawChain(opt, up ? d.bh.xyzs : d.exit.xyzs, depth);
+        }
+
+        bhs.drawChain(opt, xyz, depth, true);
     }
 }
 
