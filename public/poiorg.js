@@ -38,8 +38,13 @@ blackHoleSuns.prototype.buildPanel = function (id, list) {
     bhs.buildMenu(pnl, "Galaxy", galaxyList, bhs.selectMenu);
     bhs.buildTable(pnl, list);
 
-    if (id == "pnl-poi")
+    if (id == "pnl-poi") {
         pnl.find("#id-link").hide();
+        pnl.find("#platform-ckbox").hide();
+    } else {
+        pnl.find("#platform-menu").hide();
+        pnl.find("#mode-menu").hide();
+    }
 
     pnl.find("#inp-addr").change(function () {
         let addr = bhs.reformatAddress($(this).val());
@@ -99,13 +104,24 @@ const panel = `
                             <input id="inp-addr" class="rounded col-9" type="text" placeholder="0000:0000:0000:0000">
                         </div>
                         <br>
-                        <div class="row">
+                        <div id="platform-menu" class="row">
                             <div id="id-Platform" class="col-14 text-center"></div>
+                        </div>
+                        <div id="platform-ckbox" class="row">
+                            <div class="col-2"></div>
+                            <label class="col-4 h6 txt-inp-def">
+                                <input id="ck-pc-xbox" type="checkbox">
+                                PC-XBox
+                            </label>
+                            <label class="col-4 h6 txt-inp-def">
+                                <input id="ck-ps4" type="checkbox">
+                                PS4
+                            </label>
                         </div>
                         <div class="row">
                             <div id="id-Galaxy" class="col-14 text-center"></div>
                         </div>
-                        <div class="row">
+                        <div id="mode-menu" class="row">
                             <div id="id-Mode" class="col-14 text-center"></div>
                         </div>
                     </div>
@@ -161,6 +177,8 @@ blackHoleSuns.prototype.listClick = function (evt) {
 
     pnl.find("#inp-addr").val(e.addr);
     pnl.find("#btn-Galaxy").text(e.galaxy);
+    pnl.find("#ck-pc-xbox").prop("checked", e["PC-XBox"]);
+    pnl.find("#ck-ps4").prop("checked", e["PS4"]);
     pnl.find("#btn-Platform").text(e.platform);
     pnl.find("#btn-Mode").text(e.mode);
 
@@ -185,9 +203,12 @@ blackHoleSuns.prototype.save = function (evt) {
     let pnlid = pnl.prop("id");
     let list = pnlid == "pnl-org" ? bhs.orgList : bhs.poiList;
     let idx = -1;
+    let sel = "";
 
-    if (lastSel)
-        idx = bhs.getIndex(list, "_name", $(lastSel).text().stripMarginWS());
+    if (lastSel) {
+        sel = $(lastSel).text().stripMarginWS();
+        idx = bhs.getIndex(list, "_name",sel);
+    }
 
     let e = {};
     e._name = pnl.find("#inp-name").val();
@@ -198,10 +219,13 @@ blackHoleSuns.prototype.save = function (evt) {
     e.addr = pnl.find("#inp-addr").val();
     if (e.addr) {
         e.galaxy = pnl.find("#btn-Galaxy").text().stripNumber();
-        e.platform = pnl.find("#btn-Platform").text().stripMarginWS();
         e.mode = pnl.find("#btn-Mode").text().stripMarginWS();
+        e.platform = pnl.find("#btn-Platform").text().stripMarginWS();
+        if (e.platform == "") delete e.platform;
+        e["PC-XBox"] = pnl.find("#ck-pc-xbox").prop("checked");
+        e["PS4"] = pnl.find("#ck-ps4").prop("checked");
 
-        if (e.galaxy == "" || e.platform == "" || e.mode == "") {
+        if (e.galaxy == "" || (!e.platform && !e["PC-XBox"] && !e["PS4"]) || e.mode == "") {
             bhs.statusOut(pnl, "Galaxy/Platform/Mode must be set.");
             return;
         }
@@ -230,7 +254,7 @@ blackHoleSuns.prototype.save = function (evt) {
 
 
     let ref = bhs.fs.collection(pnlid == "pnl-org" ? "org" : "poi");
-    ref = ref.where("_name", "==", e._name ? e._name : uuidv4());
+    ref = ref.where("_name", "==", sel !="" ? sel : uuidv4());
 
     ref.get().then(function (snapshot) {
         if (snapshot.size > 0) {
@@ -296,6 +320,8 @@ blackHoleSuns.prototype.cancel = function (evt) {
     pnl.find("#btn-Galaxy").text("");
     pnl.find("#btn-Platform").text("");
     pnl.find("#btn-Mode").text("");
+    pnl.find("#ck-pc-xbox").prop("checked", false);
+    pnl.find("#ck-ps4").prop("checked", false);
     pnl.find("#img-pic").removeAttr("src");
 
     pnl.find("#img-file").val("");
