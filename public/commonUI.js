@@ -1299,7 +1299,7 @@ blackHoleSuns.prototype.extractMapOptions = function () {
     c.connection = opt.find("#ck-drawcon").prop("checked");
     c.map3d = opt.find("#ck-3dmap").prop("checked");
     //c.exit = opt.find("#ck-drawexits").prop("checked");
-    c.base = opt.find("#ck-drawbase").prop("checked");
+    //c.base = opt.find("#ck-drawbase").prop("checked");
     c.zoomreg = opt.find("#ck-zoomreg").prop("checked");
     c.addzero = opt.find("#ck-addzero").prop("checked");
     c.chain = opt.find("#ck-chain").prop("checked");
@@ -1344,8 +1344,8 @@ blackHoleSuns.prototype.setMapOptions = function (entry) {
 
         opt.find("#ck-drawcon").prop("checked", typeof entry.mapoptions.connection != "undefined" ? entry.mapoptions.connection : false);
         opt.find("#ck-3dmap").prop("checked", typeof entry.mapoptions.map3d != "undefined" ? entry.mapoptions.map3d : true);
-        opt.find("#ck-drawexits").prop("checked", typeof entry.mapoptions.exit != "undefined" ? entry.mapoptions.exit : false);
-        opt.find("#ck-drawbase").prop("checked", typeof entry.mapoptions.base != "undefined" ? entry.mapoptions.base : false);
+        //opt.find("#ck-drawexits").prop("checked", typeof entry.mapoptions.exit != "undefined" ? entry.mapoptions.exit : false);
+        //opt.find("#ck-drawbase").prop("checked", typeof entry.mapoptions.base != "undefined" ? entry.mapoptions.base : false);
         opt.find("#ck-zoomreg").prop("checked", typeof entry.mapoptions.zoomreg != "undefined" ? entry.mapoptions.zoomreg : false);
         opt.find("#ck-addzero").prop("checked", typeof entry.mapoptions.addzero != "undefined" ? entry.mapoptions.addzero : true);
         opt.find("#ck-chain").prop("checked", typeof entry.mapoptions.chain != "undefined" ? entry.mapoptions.chain : true);
@@ -1433,10 +1433,10 @@ blackHoleSuns.prototype.buildMap = function () {
                     <input id="ck-drawexits" type="checkbox" checked>
                     Draw Exits
                 </label-->
-                <label id="id-drawbase" class="col-8 h6 txt-def">
+                <!--label id="id-drawbase" class="col-8 h6 txt-def">
                     <input id="ck-drawbase" type="checkbox" checked>
                     Draw Bases
-                </label>
+                </label-->
 
                 <label id="id-zoomreg" class="col-14 h6 txt-def">
                     <input id="ck-zoomreg" type="checkbox" checked>
@@ -1695,7 +1695,7 @@ blackHoleSuns.prototype.drawSingle = function (entry) {
         size = opt["inp-clr-exit"];
     }
 
-    Plotly.addTraces('plymap', makedata(opt, out, fsearch ? size : 10, color));
+    Plotly.addTraces('plymap', makedata(opt, out, fsearch ? size : size * 2, color));
 }
 
 blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
@@ -1715,7 +1715,7 @@ blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
                 if (bhs.displayResults)
                     bhs.displayResults(d);
 
-                Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"], opt["clr-bh"], opt["clr-con"], true));
+                Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"], opt["clr-bh"], up?"#ff0000":opt["clr-con"], true));
 
                 bhs.drawChain(opt, d.exit.xyzs, depth);
                 bhs.drawChain(opt, d.bh.xyzs, depth, true);
@@ -1923,7 +1923,7 @@ function makedata(opt, out, size, color, linecolor, lines) {
         marker: {
             size: size,
             color: color,
-            opacity: 0.5,
+            opacity: 0.6,
         },
         type: opt.map3d ? "scatter3d" : "scatter",
         hoverinfo: 'text',
@@ -1934,7 +1934,7 @@ function makedata(opt, out, size, color, linecolor, lines) {
         line.line = {
             color: linecolor,
             width: 2,
-            opacity: 0.5,
+            opacity: 0.4,
         };
     }
 

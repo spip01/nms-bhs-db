@@ -159,12 +159,10 @@ blackHoleSuns.prototype.listClick = function (evt) {
     if (pnlid == "pnl-org")
         pnl.find("#inp-link").val(e.link);
 
-    if (e.addr) {
-        pnl.find("#inp-addr").val(e.addr);
-        pnl.find("#btn-Galaxy").text(e.galaxy);
-        pnl.find("#btn-Platform").text(e.platform);
-        pnl.find("#btn-Mode").text(e.mode);
-    }
+    pnl.find("#inp-addr").val(e.addr);
+    pnl.find("#btn-Galaxy").text(e.galaxy);
+    pnl.find("#btn-Platform").text(e.platform);
+    pnl.find("#btn-Mode").text(e.mode);
 
     pnl.find("#btn-save").text("Update");
     pnl.find("#btn-delete").removeClass("disabled");
@@ -294,7 +292,10 @@ blackHoleSuns.prototype.cancel = function (evt) {
     let pnl = $(evt).closest("[id|='pnl']");
     pnl.find("#inp-name").val("");
     pnl.find("#inp-link").val("");
-    pnl.find("#inp-addr").val("")
+    pnl.find("#inp-addr").val("");
+    pnl.find("#btn-Galaxy").text("");
+    pnl.find("#btn-Platform").text("");
+    pnl.find("#btn-Mode").text("");
     pnl.find("#img-pic").removeAttr("src");
 
     pnl.find("#img-file").val("");
