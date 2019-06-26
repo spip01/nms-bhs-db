@@ -225,8 +225,8 @@ blackHoleSuns.prototype.save = function (evt) {
         e["PC-XBox"] = pnl.find("#ck-pc-xbox").prop("checked");
         e["PS4"] = pnl.find("#ck-ps4").prop("checked");
 
-        if (e.galaxy == "" || (!e.platform && !e["PC-XBox"] && !e["PS4"]) || e.mode == "") {
-            bhs.statusOut(pnl, "Galaxy/Platform/Mode must be set.");
+        if (e.galaxy == "" || (!e.platform && !e["PC-XBox"] && !e["PS4"])) {
+            bhs.statusOut(pnl, "Galaxy/Platform must be set.");
             return;
         }
     } else
