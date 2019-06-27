@@ -155,6 +155,10 @@ body {
     font-size: .75rem !important;
 }
 
+.waiting {
+    cursor: progress !important;
+}
+
 .sticky {
     position: fixed;
     z-index: 1;

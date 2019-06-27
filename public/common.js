@@ -990,20 +990,26 @@ blackHoleSuns.prototype.getUser = function (displayFcn) {
 blackHoleSuns.prototype.getOrgList = async function () {
     bhs.orgList = [];
 
-    let ref = bhs.fs.collection("org").orderBy("_name");
-    await ref.get().then(function (snapshot) {
+    let ref = bhs.fs.collection("org")
+    await ref.get().then(async function (snapshot) {
         for (let i = 0; i < snapshot.size; ++i)
             bhs.orgList.push(snapshot.docs[i].data());
+        
+            await bhs.orgList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
+            a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0);
     });
 }
 
 blackHoleSuns.prototype.getPoiList = async function () {
     bhs.poiList = [];
 
-    let ref = bhs.fs.collection("poi").orderBy("_name");
-    await ref.get().then(function (snapshot) {
+    let ref = bhs.fs.collection("poi")
+    await ref.get().then(async function (snapshot) {
         for (let i = 0; i < snapshot.size; ++i)
             bhs.poiList.push(snapshot.docs[i].data());
+
+            await bhs.poiList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
+            a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0);
     });
 }
 

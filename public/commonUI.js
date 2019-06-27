@@ -143,7 +143,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     $("#panels").prepend(panel);
     let loc = $("#pnl-user");
 
-    bhs.getOrgList();
+    await bhs.getOrgList();
     bhs.orgList.unshift({
         name: ""
     });
@@ -1576,6 +1576,7 @@ blackHoleSuns.prototype.buildMap = function () {
                 }
             }, 1000);
         });
+        // plot.on('plotly_afterplot', function (e) {
 
         // plot.on('plotly_hover', e => {
         //     if (e.points.length > 0) {
@@ -1891,7 +1892,7 @@ blackHoleSuns.prototype.traceZero = function (addr) {
         let out = initout();
         pushentry(out, zero);
         pushentry(out, addr.xyzs);
-        Plotly.addTraces('plymap', makedata(opt, out, 5, opt["clr-bh"], opt["clr-con"], true));
+        Plotly.addTraces('plymap', makedata(opt, out, 5, opt["clr-bh"], opt["clr-dz"], true));
     }
 }
 
