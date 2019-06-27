@@ -24,6 +24,7 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
                 $("#admin").show();
                 $("#recalc").show();
                 $("#testmode").show();
+                $("#showContest").show();
 
                 $("#recalc").click(function () {
                     bhs.fixAllTotals();
@@ -62,7 +63,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     if (fpoiorg)
         return;
 
-    bhs.contest = await bhs.getActiveContest();
+    bhs.getActiveContest(bhs.displayContest);
 
     if ((changed || force) && bhs.user.galaxy && bhs.user.platform && !fadmin) {
         bhs.buildTotals();
@@ -180,6 +181,44 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
             $("#upload").hide();
         }
     });
+}
+
+blackHoleSuns.prototype.displayContest = function (contest) {
+    bhs.contest = contest;
+    var end = contest.end.toDate().getTime();
+    var start = contest.start.toDate().getTime();
+
+    let c = $("#contest");
+
+    if (!contest.hidden)
+        c.show();
+
+    var x = setInterval(function () {
+        var now = new Date().getTime();
+        var ends = end - now;
+        var starts = start - now;
+
+        if (starts > 0) {
+            var d = Math.floor(starts / (1000 * 60 * 60 * 24));
+            var h = Math.floor((starts % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var m = Math.floor((starts % (1000 * 60 * 60)) / (1000 * 60));
+            var s = Math.floor((starts % (1000 * 60)) / 1000);
+            let str = contest.name + " contest starts in: " + d + "d " + h + "h " + m + "m " + s + "s ";
+
+            c.html("<div class='col-14 text-center txt-def h4'>" + str + "</div>");
+        } else if (ends > 0) {
+            var d = Math.floor(ends / (1000 * 60 * 60 * 24));
+            var h = Math.floor((ends % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var m = Math.floor((ends % (1000 * 60 * 60)) / (1000 * 60));
+            var s = Math.floor((ends % (1000 * 60)) / 1000);
+            let str = contest.name + " contest time remaining: " + d + "d " + h + "h " + m + "m " + s + "s ";
+
+            c.html("<div class='col-14 text-center txt-def h4'>" + str + "</div>");
+        } else {
+            clearInterval(x);
+            c.html("<div class='col-14 text-center txt-def h6'>" + contest.name + " contest has ended</div>");
+        }
+    }, 1000);
 }
 
 const utTypeIdx = 0;
@@ -523,7 +562,7 @@ const totalsCol = [{
 }, {
     title: "Contest",
     id: "id-ctst",
-    format: "col-2 text-right",
+    format: "col-2 text-right hidden",
     where: "index",
 }, {
     title: "All",
@@ -532,7 +571,7 @@ const totalsCol = [{
 }, {
     title: "Contest",
     id: "id-contestall",
-    format: "col-2 text-right",
+    format: "col-2 text-right hidden",
 }];
 
 const rowTotal = 0;
@@ -614,7 +653,7 @@ blackHoleSuns.prototype.buildTotals = function () {
     totalsCol.forEach(function (t) {
         let l = /idname/ [Symbol.replace](totalsItems, t.id);
         l = /title/ [Symbol.replace](l, t.title);
-        h += /format/ [Symbol.replace](l, t.format + " ");
+        h += /format/ [Symbol.replace](l, t.format);
     });
     tot.find("#hdr0").append(h);
 
@@ -687,26 +726,11 @@ blackHoleSuns.prototype.buildTotals = function () {
         else
             bhs.clearAllUTotals(bhs.user);
     });
-
-    if (!bhs.contest) {
-        tot.find("#id-ctst").hide();
-        tot.find("#id-contestall").hide();
-    }
 }
 
 blackHoleSuns.prototype.displayTotals = function (entry, id) {
     let fgal = window.location.pathname == "/galaxy.html" || window.location.pathname == "/admin.html";
     let cid = "";
-
-    if (bhs.contest && bhs.contest.name) {
-        let now = firebase.firestore.Timestamp.fromDate(new Date());
-        let s = "<h5>Contest: \"" + bhs.contest.name + "\"; ";
-        s += " Starts: " + bhs.contest.start.toDate().toDateLocalTimeString() + "; ";
-        s += " Ends: " + bhs.contest.end.toDate().toDateLocalTimeString() + (now > bhs.contest.end ? " CLOSED" : "");
-        s += "</h5>";
-
-        $("#totals #cname").html(s);
-    }
 
     if (id.match(/totals/)) {
         cid = "id-totalsall";
@@ -714,9 +738,14 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
         if (fgal)
             bhs.displayGTotals(entry, "itmg");
     } else if (id.match(/contest/)) {
-        if (!bhs.contest)
-            return;
         cid = "id-contestall";
+
+        if (bhs.contest && !bhs.contest.hidden) {
+            let tot = $("#totals");
+            tot.find("[id='id-ctst']").removeClass("hidden");
+            tot.find("[id='id-contestall']").removeClass("hidden");
+        }
+
         if (fgal)
             bhs.displayGTotals(entry, "itmg", true);
     } else if (id.match(/players/)) {
@@ -788,7 +817,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
 
     bhs.displayUTotals(entry[starsCol], cid);
 
-    if (cid == "id-player" && entry[starsCol] && entry[starsCol].contest && bhs.contest) {
+    if (cid == "id-player" && entry[starsCol] && entry[starsCol].contest) {
         cid = "id-contest";
         bhs.displayUTotals(entry[starsCol].contest[bhs.contest.name], cid);
     }
@@ -863,8 +892,8 @@ const totalsPlayers = [{
 }, {
     title: "Contest",
     id: "id-ctst",
-    format: "col-2 text-right",
-    hformat: "col-2 text-center",
+    format: "col-2 text-right hidden",
+    hformat: "col-2 text-center hidden",
 }, {
     title: "Total",
     id: "id-qty",
@@ -880,8 +909,8 @@ const totalsOrgs = [{
 }, {
     title: "Contest",
     id: "id-ctst",
-    format: "col-2 text-right",
-    hformat: "col-2 text-center",
+    format: "col-2 text-right hidden",
+    hformat: "col-2 text-center hidden",
 }, {
     title: "Total",
     id: "id-qty",
@@ -912,8 +941,8 @@ const totalsGalaxy = [{
 }, {
     title: "Contest",
     id: "id-ctst",
-    format: "col-2 text-right",
-    hformat: "col-2 text-center",
+    format: "col-2 text-right hidden",
+    hformat: "col-2 text-center hidden",
 }];
 
 blackHoleSuns.prototype.displayUserTotals = function (entry, id, bold) {
@@ -944,18 +973,24 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id, bold) {
                     case "Contest":
                         let disq = false;
                         if (bhs.contest) {
-                            let d = Object.keys(bhs.contest.disq.orgs);
-                            for (let i = 0; i < d.length && !disq; ++i)
-                                if (bhs.contest.disq.orgs[d[i]] == entry.name)
-                                    disq = true;
+                            if (bhs.contest.disq && bhs.contest.disq.orgs) {
+                                let d = Object.keys(bhs.contest.disq.orgs);
+                                for (let i = 0; i < d.length && !disq; ++i)
+                                    if (bhs.contest.disq.orgs[d[i]] == entry.name)
+                                        disq = true;
+                            }
 
-                            d = Object.keys(bhs.contest.disq.users);
-                            for (let i = 0; i < d.length && !disq; ++i)
-                                if (bhs.contest.disq.users[d[i]].uid == entry.uid)
-                                    disq = true;
+                            if (bhs.contest.disq && bhs.contest.disq.users) {
+                                let d = Object.keys(bhs.contest.disq.users);
+                                for (let i = 0; i < d.length && !disq; ++i)
+                                    if (bhs.contest.disq.users[d[i]].uid == entry.uid)
+                                        disq = true;
+                            }
 
-                            h += /title/ [Symbol.replace](l, bhs.contest.name && entry[starsCol].contest ? disq ? "--" : entry[starsCol].contest[bhs.contest.name].total : "");
+                            h += /title/ [Symbol.replace](l, disq ? "--" : entry[starsCol].contest && entry[starsCol].contest[bhs.contest.name] ? entry[starsCol].contest[bhs.contest.name].total : "");
                         }
+                        else
+                            h += /title/ [Symbol.replace](l, "");
                         break;
                     case "Total":
                         h += /title/ [Symbol.replace](l, entry[starsCol].total);
@@ -968,15 +1003,10 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id, bold) {
             pnl.append(h);
         } else {
             player.find("#id-qty").text(entry[starsCol].total);
-            if (bhs.contest)
-                player.find("#id-ctst").text(bhs.contest.name && entry[starsCol].contest ? entry[starsCol].contest[bhs.contest.name].total : "");
+            if (bhs.contest && entry[starsCol].contest && entry[starsCol].contest[bhs.contest.name])
+                player.find("#id-ctst").text(entry[starsCol].contest && entry[starsCol].contest[bhs.contest.name] ? entry[starsCol].contest[bhs.contest.name].total : "");
         }
     }
-
-    $("#totals #id-uid").hide();
-
-    if (!bhs.contest)
-        $("#totals #id-ctst").hide();
 }
 
 blackHoleSuns.prototype.displayPlayerTotals = function (entry, id) {
@@ -1044,9 +1074,6 @@ blackHoleSuns.prototype.displayGTotals = function (entry, id, ifcontest) {
             }
         }
     }
-
-    if (!bhs.contest)
-        $("#totals #id-ctst").hide();
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {

@@ -116,7 +116,7 @@ blackHoleSuns.prototype.logIn = function () {
 
     $("#ldiscord").click(function () {});
 
-    $("#lredit").click(function () {});
+    $("#lreddit").click(function () {});
 }
 
 blackHoleSuns.prototype.logOut = function () {
@@ -475,17 +475,44 @@ blackHoleSuns.prototype.assignUid = async function (entry) {
     await bhs.checkBatchSize(b, true);
 }
 
-blackHoleSuns.prototype.getActiveContest = async function () {
-    let contest;
+blackHoleSuns.prototype.getActiveContest = function (displayFcn) {
+    bhs.contest = null;
+    let now = (new Date()).getTime();
 
     let ref = bhs.fs.collection("contest");
-    ref = ref.orderBy("end", "desc");
-    await ref.get().then(async function (snapshot) {
-        if (!snapshot.empty && !snapshot.docs[snapshot.size - 1].data().hidden)
-            contest = snapshot.docs[snapshot.size - 1].data();
+    ref = ref.orderBy("start");
+    ref.get().then(function (snapshot) {
+        for (let i = 0; i < snapshot.size; ++i) {
+            let d = snapshot.docs[i].data();
+            let start = d.start.toDate().getTime();
+            let end = d.end.toDate().getTime();
+            
+            if (start < now && end > now || start > now || i==snapshot.size-1) {
+                bhs.subscribe("act-ctst", snapshot.docs[i].ref, displayFcn);
+                break;
+            }
+        }
     });
+}
 
-    return contest;
+blackHoleSuns.prototype.toggleContest = function (displayFcn) {
+    let now = (new Date()).getTime();
+
+    let ref = bhs.fs.collection("contest");
+    ref = ref.orderBy("start");
+    ref.get().then(function (snapshot) {
+        for (let i = 0; i < snapshot.size; ++i) {
+            let d = snapshot.docs[i].data();
+            let start = d.start.toDate().getTime();
+            let end = d.end.toDate().getTime();
+            
+            if (start < now && end > now || start > now) {
+                d.hidden = !d.hidden;
+                snapshot.docs[i].ref.update(d);
+                break;
+            }
+        }
+    });
 }
 
 blackHoleSuns.prototype.listUsers = function () {
@@ -499,7 +526,6 @@ blackHoleSuns.prototype.listUsers = function () {
 }
 
 blackHoleSuns.prototype.fixAllTotals = async function () {
-    bhs.contest = await bhs.getActiveContest();
     let totals = bhs.checkTotalsInit();
 
     let ref = bhs.getStarsColRef();
@@ -512,8 +538,6 @@ blackHoleSuns.prototype.fixAllTotals = async function () {
 
             for (let j = 0; j < platformList.length; ++j) {
                 let p = platformList[j];
-
-                let total = 0;
 
                 let ref = bhs.getStarsColRef(g.name, p.name);
                 ref = ref.where("blackhole", "==", true);
@@ -891,7 +915,7 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, uid, galaxy, pl
 
     if (displayFcn) {
         ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()));
-        bhs.subscribe("entries", ref, bhs.dispEntryList, displayFcn);
+        bhs.subscribe("entries", ref, displayFcn);
     }
 }
 
@@ -946,7 +970,7 @@ blackHoleSuns.prototype.getBases = async function (displayFcn) {
         if (displayFcn) {
             let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform);
             ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()));
-            bhs.subscribe("bases", ref, bhs.dispBaseList, displayFcn);
+            bhs.subscribe("bases", ref, displayFcn);
         }
     });
 }
@@ -994,8 +1018,8 @@ blackHoleSuns.prototype.getOrgList = async function () {
     await ref.get().then(async function (snapshot) {
         for (let i = 0; i < snapshot.size; ++i)
             bhs.orgList.push(snapshot.docs[i].data());
-        
-            await bhs.orgList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
+
+        await bhs.orgList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
             a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0);
     });
 }
@@ -1008,7 +1032,7 @@ blackHoleSuns.prototype.getPoiList = async function () {
         for (let i = 0; i < snapshot.size; ++i)
             bhs.poiList.push(snapshot.docs[i].data());
 
-            await bhs.poiList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
+        await bhs.poiList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
             a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0);
     });
 }
@@ -1058,15 +1082,24 @@ blackHoleSuns.prototype.getTotals = async function (displayFcn) {
     ref = bhs.fs.collection("org");
     bhs.subscribe("orgs", ref, displayFcn);
 
+    let now = (new Date()).getTime();
     ref = bhs.fs.collection("contest");
-    ref = ref.orderBy("end", "desc");
+    ref = ref.orderBy("start");
     ref.get().then(function (snapshot) {
-        if (!snapshot.empty)
-            bhs.subscribe("contest", snapshot.docs[snapshot.size - 1].ref, displayFcn);
+        for (let i = 0; i < snapshot.size; ++i) {
+            let d = snapshot.docs[i].data();
+            let start = d.start.toDate().getTime();
+            let end = d.end.toDate().getTime();
+            
+            if (start < now && end > now || start > now || i==snapshot.size-1) {
+                bhs.subscribe("contest", snapshot.docs[i].ref, displayFcn);
+                break;
+            }
+        }
     });
 }
 
-blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn, pass) {
+blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn) {
     if (displayFcn) {
         bhs.unsubscribe(what);
         bhs.unsub[what] = ref.onSnapshot(function (snapshot) {
@@ -1074,7 +1107,7 @@ blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn, pass) {
                 displayFcn(snapshot.data(), snapshot.ref.path);
             else if (typeof snapshot.empty != "undefined" && !snapshot.empty)
                 snapshot.forEach(function (doc) {
-                    displayFcn(doc.data(), doc.ref.path, pass);
+                    displayFcn(doc.data(), doc.ref.path);
                 });
         });
     }
