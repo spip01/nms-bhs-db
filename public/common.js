@@ -1114,9 +1114,9 @@ blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn) {
         bhs.unsub[what] = ref.onSnapshot(function (snapshot) {
             if (snapshot.exists)
                 displayFcn(snapshot.data(), snapshot.ref.path);
-            else if (typeof snapshot.empty != "undefined" && !snapshot.empty)
-                snapshot.forEach(function (doc) {
-                    displayFcn(doc.data(), doc.ref.path);
+            else 
+                snapshot.docChanges().forEach(function (change) {
+                    displayFcn(change.doc.data(), change.doc.ref.path);
                 });
         });
     }
