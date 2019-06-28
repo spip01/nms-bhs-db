@@ -165,32 +165,9 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         $(this).closest("[id|='pnl']").find("#id-glyph").html(bhs.addrToGlyph(addr));
 
         bhs.getEntry(addr, bhs.displaySingle, 0);
-        // let e = {};
-        // e.addr = addr;
-        // e.xyzs = bhs.addressToXYZ(addr);
-        // e.blackhole = true;
-        // let min = [];
-
-        // let list = Object.keys(bhs.entries);
-        // for (let i = 0; i < list.length; ++i) {
-        //     if (bhs.entries[list[i]].bh) {
-        //         let d = bhs.calcDist(e.addr, bhs.entries[list[i]].bh.addr);
-        //         min.push(d);
-        //     }
-        // }
-
-        // min.sort((a, b) => a - b);
-        // bhs.drawSingle(bhs.entries);
-
+        
         bhs.displayCalc();
     });
-
-    // loc.find("#id-addr").unbind("keyup");
-    // loc.find("#id-addr").keyup(function (event) {
-    //     if (event.keyCode === 13) {
-    //         $(this).change();
-    //     }
-    // });
 
     loc.find('#ck-hasbase').unbind("change");
     loc.find('#ck-hasbase').change(function () {

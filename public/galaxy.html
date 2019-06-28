@@ -10,6 +10,7 @@
 
     <script src="env.js"></script>
 
+    <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-5"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -80,13 +81,6 @@
                         <button id="logout" type="button" class="h5 no-border text-center dropdown-item btn-def">
                             Logout
                         </button>
-                        <button id="darkmode" type="button" class="h5 no-border text-center dropdown-item btn-def">
-                            Dark Mode
-                        </button>
-                        <button id="testmode" type="button"
-                            class="h5 no-border text-center dropdown-item btn-def hidden">
-                            Toggle Test DB
-                        </button>
                     </div>
                 </div>
             </div>
@@ -97,7 +91,7 @@
         <a href="https://darc.blackholesuns.com/" class="col-3 text-center clr-creme h6">BHS DaRC Web</a>
         <a href="https://guide.blackholesuns.com/" class="col-3 text-center clr-creme h6">Travel Guide</a>
         <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center clr-creme h6">Follow us on
-            Redit</a>
+            Reddit</a>
         <a href="https://discord.blackholesuns.com/" class="col-4 text-center clr-creme h6">Talk to us on
             Discord</a>
     </div>
@@ -139,7 +133,7 @@
             </div>
             <div class="row">
                 <div class="col-5">&nbsp;</div>
-                <div id="lredit" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Redit</div>
+                <div id="lreddit" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Reddit</div>
             </div-->
         </div>
         <div class="card-footer">
@@ -170,8 +164,8 @@
 
                 <div class="card card-body border pad-bottom bkg-def">
                     <div class="row">
-                        <div id="pnl-map" class="card card-body border bkg-def pad-bottom">
-                            <div id="plymap" style="max-width:1200px"></div>
+                        <div id="mapcol" class="card card-body border bkg-def pad-bottom">
+                            <div id="plymap"></div>
                         </div>
                     </div>
                     <br>
@@ -206,12 +200,11 @@
                 </div>
             </div>
         </div>
-    </div>
-    <br>
+        <br>
 
-    <div id="showentries" class="card">
-        <div id="entryTable" class="card border pad-bottom"></div>
-    </div>
+        <div id="showentries" class="card">
+            <div id="entryTable" class="card border pad-bottom"></div>
+        </div>
     </div>
 </body>
 

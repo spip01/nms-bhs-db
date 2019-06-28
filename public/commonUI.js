@@ -26,7 +26,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform);
 
     bhs.user = mergeObjects(bhs.user, user);
-    bhs.contest = await bhs.getActiveContest();
+    bhs.getActiveContest(bhs.displayContest);
 
     if ((changed || force) && bhs.user.galaxy && bhs.user.platform) {
         bhs.buildTotals();
@@ -37,7 +37,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
 
         bhs.buildUserTable(bhs.user);
         bhs.displaySettings(bhs.user);
-        bhs.getEntries(bhs.displayEntryList);
+        bhs.getEntries(bhs.displayEntryList, bhs.displayEntry);
     }
 
     let pnl = $("#pnl-user");
@@ -108,6 +108,9 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     let loc = $("#pnl-user");
 
     await bhs.getOrgList();
+    bhs.orgList.unshift({
+        name: ""
+    });
 
     bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser);
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, true);
@@ -141,6 +144,44 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
             $("#upload").hide();
         }
     });
+}
+
+blackHoleSuns.prototype.displayContest = function (contest) {
+    bhs.contest = contest;
+    var end = contest.end.toDate().getTime();
+    var start = contest.start.toDate().getTime();
+
+    let c = $("#contest");
+
+    if (!contest.hidden)
+        c.show();
+
+    var x = setInterval(function () {
+        var now = new Date().getTime();
+        var ends = end - now;
+        var starts = start - now;
+
+        if (starts > 0) {
+            var d = Math.floor(starts / (1000 * 60 * 60 * 24));
+            var h = Math.floor((starts % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var m = Math.floor((starts % (1000 * 60 * 60)) / (1000 * 60));
+            var s = Math.floor((starts % (1000 * 60)) / 1000);
+            let str = contest.name + " contest starts in: " + d + "d " + h + "h " + m + "m " + s + "s ";
+
+            c.html("<div class='col-14 text-center txt-def h4'>" + str + "</div>");
+        } else if (ends > 0) {
+            var d = Math.floor(ends / (1000 * 60 * 60 * 24));
+            var h = Math.floor((ends % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var m = Math.floor((ends % (1000 * 60 * 60)) / (1000 * 60));
+            var s = Math.floor((ends % (1000 * 60)) / 1000);
+            let str = contest.name + " contest time remaining: " + d + "d " + h + "h " + m + "m " + s + "s ";
+
+            c.html("<div class='col-14 text-center txt-def h4'>" + str + "</div>");
+        } else {
+            clearInterval(x);
+            c.html("<div class='col-14 text-center txt-def h6'>" + contest.name + " contest has ended</div>");
+        }
+    }, 1000);
 }
 
 const utTypeIdx = 0;
@@ -265,6 +306,44 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
                 $("#userItems").find("#" + t.id).hide();
             }
         });
+
+        loc = $("#userHeader");
+        loc.find("#" + t.id).click(function () {
+            let id = $(this).prop("id");
+            let loc = $("#userItems");
+            let list = loc.children();
+
+            if (list.length > 0) {
+                list.sort((a, b) => {
+                    let abh = $(a).find("#" + id + " #bh-" + id).text().stripMarginWS().toLowerCase();
+                    let axit = $(a).find("#" + id + " #x-" + id).text().stripMarginWS().toLowerCase();
+                    let bbh = $(b).find("#" + id + " #bh-" + id).text().stripMarginWS().toLowerCase();
+                    let bxit = $(b).find("#" + id + " #x-" + id).text().stripMarginWS().toLowerCase();
+
+                    if (abh) {
+                        if (bbh)
+                            return abh > bbh ? 1 : abh < bbh ? -1 : 0;
+                        else
+                            return abh > bxit ? 1 : abh < bxit ? -1 : 0;
+                    } else {
+                        if (bbh)
+                            return axit > bbh ? 1 : axit < bbh ? -1 : 0;
+                        else
+                            return axit > bxit ? 1 : axit < bxit ? -1 : 0;
+                    }
+                });
+
+                loc.empty();
+                for (var i = 0; i < list.length; i++)
+                    loc.append(list[i]);
+
+                loc.find(".bkg-vlight-gray").removeClass("bkg-vlight-gray");
+
+                list = loc.children();
+                for (let i = 0; i < list; i += 2)
+                    $(list[i]).addClass("bkg-vlight-gray");
+            }
+        });
     });
 
     $("#btn-utSettings").click(function () {
@@ -316,93 +395,92 @@ blackHoleSuns.prototype.entriesToCsv = function () {
     return out;
 }
 
-blackHoleSuns.prototype.displayEntryList = function (entrylist, entry) {
-    if (!entrylist && !entry)
-        return;
-
+blackHoleSuns.prototype.displayEntryList = function (entrylist) {
     bhs.drawList(entrylist);
 
-    if (!entry) {
-        const lineHdr = `
+    const lineHdr = `
         <div id="gpa" class="row">`;
-        const line = `
-            <div id="idname" class="width" ondblclick="entryDblclk(this)">
+    const line = `
+            <div id="idname" class="width" onclick="entryDblclk(this)">
                 <div id="bh-idname" class="row">bhdata</div>
                 <div id="x-idname" class="row">xdata</div>
             </div>`;
-        const lineEnd = `
+    const lineEnd = `
         </div>`;
 
-        let h = "";
-        let alt = true;
+    let h = "";
+    let alt = true;
 
-        let keys = Object.keys(entrylist);
-        for (let i = 0; i < keys.length; ++i) {
-            let entry = entrylist[keys[i]];
-            h += /gpa/ [Symbol.replace](lineHdr, keys[i].nameToId());
-            let l = "";
-
-            for (let j = 0; j < userTable.length; ++j) {
-                let t = userTable[j];
-
-                l = /idname/g [Symbol.replace](line, t.id);
-                l = /width/g [Symbol.replace](l, t.format + (alt ? " bkg-vlight-gray" : ""));
-
-                if (t.calc) {
-                    l = /bhdata/ [Symbol.replace](l, entry.bh ? entry.bh.towardsCtr : "");
-                    l = /xdata/ [Symbol.replace](l, "");
-                } else if (t.id == "id-type") {
-                    l = /bhdata/ [Symbol.replace](l, entry.bh ? "BH" : entry.dz ? "DZ" : "");
-                    l = /xdata/ [Symbol.replace](l, "");
-                } else if (t.id == "id-base") {
-                    if (entry.bh && entry.bhbase)
-                        l = /bhdata/ [Symbol.replace](l, entry.bhbase[t.field]);
-                    else if (entry.dz && entry.dzbase)
-                        l = /bhdata/ [Symbol.replace](l, entry.dzbase[t.field]);
-                    else
-                        l = /bhdata/ [Symbol.replace](l, "");
-
-                    l = /xdata/ [Symbol.replace](l, entry.exitbase ? entry.exitbase[t.field] : "");
-                } else {
-                    if (entry.bh && entry.bh[t.field])
-                        l = /bhdata/ [Symbol.replace](l, entry.bh[t.field]);
-                    else if (entry.dz && entry.dz[t.field])
-                        l = /bhdata/ [Symbol.replace](l, entry.dz[t.field]);
-                    else
-                        l = /bhdata/ [Symbol.replace](l, "");
-
-                    l = /xdata/ [Symbol.replace](l, entry.exit && entry.exit[t.field] ? entry.exit[t.field] : "");
-                }
-
-                h += l;
-            }
-
-            alt = !alt;
-            h += lineEnd;
-        }
-
-        $("#userItems").empty();
-        $("#userItems").append(h);
-        bhs.displaySettings(bhs.user);
-    } else {
-        let id = (entry.bh ? entry.bh.connection : entry.dz ? entry.dz.addr : entry.exit.addr).nameToId();
-        let loc = $("#userItems #" + id);
+    let keys = Object.keys(entrylist);
+    for (let i = 0; i < keys.length; ++i) {
+        let entry = entrylist[keys[i]];
+        h += /gpa/ [Symbol.replace](lineHdr, keys[i].nameToId());
+        let l = "";
 
         for (let j = 0; j < userTable.length; ++j) {
             let t = userTable[j];
 
-            if (t.calc)
-                loc.find("#bh-" + t.id).text(entry.bh ? entry.bh.towardsCtr : "")
-            else if (t.id == "id-type")
-                loc.find("#bh-" + t.id).text(entry.bh ? "BH" : entry.dz ? "DZ" : "")
-            else {
-                if (entry.bh)
-                    loc.find("#bh-" + t.id).text(entry.bh[t.field] ? entry.bh[t.field] : "")
-                if (entry.dz)
-                    loc.find("#bh-" + t.id).text(entry.dz[t.field] ? entry.dz[t.field] : "")
-                if (entry.exit)
-                    loc.find("#x-" + t.id).text(entry.exit[t.field] ? entry.exit[t.field] : "")
+            l = /idname/g [Symbol.replace](line, t.id);
+            l = /width/g [Symbol.replace](l, t.format + (alt ? " bkg-vlight-gray" : ""));
+
+            if (t.calc) {
+                l = /bhdata/ [Symbol.replace](l, entry.bh ? entry.bh.towardsCtr : "");
+                l = /xdata/ [Symbol.replace](l, "");
+            } else if (t.id == "id-type") {
+                l = /bhdata/ [Symbol.replace](l, entry.bh ? "BH" : entry.dz ? "DZ" : "");
+                l = /xdata/ [Symbol.replace](l, "");
+            } else if (t.id == "id-base") {
+                if (entry.bh && entry.bhbase)
+                    l = /bhdata/ [Symbol.replace](l, entry.bhbase[t.field]);
+                else if (entry.dz && entry.dzbase)
+                    l = /bhdata/ [Symbol.replace](l, entry.dzbase[t.field]);
+                else
+                    l = /bhdata/ [Symbol.replace](l, "");
+
+                l = /xdata/ [Symbol.replace](l, entry.exitbase ? entry.exitbase[t.field] : "");
+            } else {
+                if (entry.bh && entry.bh[t.field])
+                    l = /bhdata/ [Symbol.replace](l, entry.bh[t.field]);
+                else if (entry.dz && entry.dz[t.field])
+                    l = /bhdata/ [Symbol.replace](l, entry.dz[t.field]);
+                else
+                    l = /bhdata/ [Symbol.replace](l, "");
+
+                l = /xdata/ [Symbol.replace](l, entry.exit && entry.exit[t.field] ? entry.exit[t.field] : "");
             }
+
+            h += l;
+        }
+
+        alt = !alt;
+        h += lineEnd;
+    }
+
+    $("#userItems").empty();
+    $("#userItems").append(h);
+    bhs.displaySettings(bhs.user);
+}
+
+blackHoleSuns.prototype.displayEntry = function (entry) {
+    bhs.drawSingle(entry);
+
+    let id = (entry.blackhole ? entry.connection : entry.addr).nameToId();
+    let loc = $("#userItems #" + id);
+
+    for (let j = 0; j < userTable.length; ++j) {
+        let t = userTable[j];
+
+        if (t.calc)
+            loc.find("#bh-" + t.id).text(entry.blackhole ? entry.towardsCtr : "")
+        else if (t.id == "id-type")
+            loc.find("#bh-" + t.id).text(entry.blackhole ? "BH" : entry.deadzone ? "DZ" : "")
+        else {
+            if (entry.blackhole)
+                loc.find("#bh-" + t.id).text(entry[t.field] ? entry[t.field] : "")
+            else if (entry.deadzone)
+                loc.find("#bh-" + t.id).text(entry[t.field] ? entry[t.field] : "")
+            else
+                loc.find("#x-" + t.id).text(entry[t.field] ? entry[t.field] : "")
         }
     }
 }
@@ -422,6 +500,10 @@ function entryDblclk(evt) {
         $("#delete").removeAttr("disabled");
 
         bhs.displayListEntry(e);
+    } else {
+        let l = {};
+        l[bhs.reformatAddress(id)] = e;
+        bhs.drawList(l);
     }
 }
 
@@ -441,7 +523,7 @@ const totalsCol = [{
 }, {
     title: "Contest",
     id: "id-ctst",
-    format: "col-2 text-right",
+    format: "col-2 text-right hidden",
     where: "index",
 }, {
     title: "All",
@@ -450,7 +532,7 @@ const totalsCol = [{
 }, {
     title: "Contest",
     id: "id-contestall",
-    format: "col-2 text-right",
+    format: "col-2 text-right hidden",
 }];
 
 const rowTotal = 0;
@@ -532,7 +614,7 @@ blackHoleSuns.prototype.buildTotals = function () {
     totalsCol.forEach(function (t) {
         let l = /idname/ [Symbol.replace](totalsItems, t.id);
         l = /title/ [Symbol.replace](l, t.title);
-        h += /format/ [Symbol.replace](l, t.format + " ");
+        h += /format/ [Symbol.replace](l, t.format);
     });
     tot.find("#hdr0").append(h);
 
@@ -605,26 +687,11 @@ blackHoleSuns.prototype.buildTotals = function () {
         else
             bhs.clearAllUTotals(bhs.user);
     });
-
-    if (!bhs.contest) {
-        tot.find("#id-ctst").hide();
-        tot.find("#id-contestall").hide();
-    }
 }
 
 blackHoleSuns.prototype.displayTotals = function (entry, id) {
     let fgal = window.location.pathname == "/galaxy.html";
     let cid = "";
-
-    if (bhs.contest && bhs.contest.name) {
-        let now = firebase.firestore.Timestamp.fromDate(new Date());
-        let s = "<h5>Contest: \"" + bhs.contest.name + "\"; ";
-        s += " Starts: " + bhs.contest.start.toDate().toDateLocalTimeString() + "; ";
-        s += " Ends: " + bhs.contest.end.toDate().toDateLocalTimeString() + (now > bhs.contest.end ? " CLOSED" : "");
-        s += "</h5>";
-
-        $("#totals #cname").html(s);
-    }
 
     if (id.match(/totals/)) {
         cid = "id-totalsall";
@@ -632,9 +699,14 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
         if (fgal)
             bhs.displayGTotals(entry, "itmg");
     } else if (id.match(/contest/)) {
-        if (!bhs.contest)
-            return;
         cid = "id-contestall";
+
+        if (bhs.contest && !bhs.contest.hidden) {
+            let tot = $("#totals");
+            tot.find("[id='id-ctst']").removeClass("hidden");
+            tot.find("[id='id-contestall']").removeClass("hidden");
+        }
+
         if (fgal)
             bhs.displayGTotals(entry, "itmg", true);
     } else if (id.match(/players/)) {
@@ -663,14 +735,14 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
     for (var i = 0; i < list.length; i++) {
         loc.append(list[i]);
         if ($(list[i]).find("#id-uid").length > 0)
-            loc.find("#" + $(list[i]).prop("id")).dblclick(function () {
+            loc.find("#" + $(list[i]).prop("id")).click(function () {
                 console.log($(this).find("#id-names").text().stripMarginWS() + " " + $(this).find("#id-uid").text().stripMarginWS());
                 if (fgal) {
                     bhs.entries = {};
                     let galaxy = $("#btn-Galaxy").text().stripNumber();
                     let platform = $("#btn-Platform").text().stripMarginWS();
                     $("#btn-Player").text($(this).find("#id-names").text().stripMarginWS());
-                    bhs.getEntries(bhs.displayEntryList, $(this).find("#id-uid").text().stripMarginWS(), galaxy, platform);
+                    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, $(this).find("#id-uid").text().stripMarginWS(), galaxy, platform);
                 }
             });
     }
@@ -690,7 +762,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
         for (var i = 0; i < list.length; i++) {
             loc.append(list[i]);
             if (fgal) {
-                loc.find("#" + $(list[i]).prop("id")).dblclick(function () {
+                loc.find("#" + $(list[i]).prop("id")).click(function () {
                     bhs.entries = {};
                     let galaxy = $("#btn-Galaxy").text().stripNumber();
                     let platform = $("#btn-Platform").text().stripMarginWS();
@@ -706,7 +778,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
 
     bhs.displayUTotals(entry[starsCol], cid);
 
-    if (cid == "id-player" && entry[starsCol] && entry[starsCol].contest && bhs.contest) {
+    if (cid == "id-player" && entry[starsCol] && entry[starsCol].contest) {
         cid = "id-contest";
         bhs.displayUTotals(entry[starsCol].contest[bhs.contest.name], cid);
     }
@@ -781,8 +853,8 @@ const totalsPlayers = [{
 }, {
     title: "Contest",
     id: "id-ctst",
-    format: "col-2 text-right",
-    hformat: "col-2 text-center",
+    format: "col-2 text-right hidden",
+    hformat: "col-2 text-center hidden",
 }, {
     title: "Total",
     id: "id-qty",
@@ -798,8 +870,8 @@ const totalsOrgs = [{
 }, {
     title: "Contest",
     id: "id-ctst",
-    format: "col-2 text-right",
-    hformat: "col-2 text-center",
+    format: "col-2 text-right hidden",
+    hformat: "col-2 text-center hidden",
 }, {
     title: "Total",
     id: "id-qty",
@@ -830,8 +902,8 @@ const totalsGalaxy = [{
 }, {
     title: "Contest",
     id: "id-ctst",
-    format: "col-2 text-right",
-    hformat: "col-2 text-center",
+    format: "col-2 text-right hidden",
+    hformat: "col-2 text-center hidden",
 }];
 
 blackHoleSuns.prototype.displayUserTotals = function (entry, id, bold) {
@@ -862,18 +934,23 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id, bold) {
                     case "Contest":
                         let disq = false;
                         if (bhs.contest) {
-                            let d = Object.keys(bhs.contest.disq.orgs);
-                            for (let i = 0; i < d.length && !disq; ++i)
-                                if (bhs.contest.disq.orgs[d[i]] == entry.name)
-                                    disq = true;
+                            if (bhs.contest.disq && bhs.contest.disq.orgs) {
+                                let d = Object.keys(bhs.contest.disq.orgs);
+                                for (let i = 0; i < d.length && !disq; ++i)
+                                    if (bhs.contest.disq.orgs[d[i]] == entry.name)
+                                        disq = true;
+                            }
 
-                            d = Object.keys(bhs.contest.disq.users);
-                            for (let i = 0; i < d.length && !disq; ++i)
-                                if (bhs.contest.disq.users[d[i]].uid == entry.uid)
-                                    disq = true;
+                            if (bhs.contest.disq && bhs.contest.disq.users) {
+                                let d = Object.keys(bhs.contest.disq.users);
+                                for (let i = 0; i < d.length && !disq; ++i)
+                                    if (bhs.contest.disq.users[d[i]].uid == entry.uid)
+                                        disq = true;
+                            }
 
-                            h += /title/ [Symbol.replace](l, bhs.contest.name && entry[starsCol].contest ? disq ? "--" : entry[starsCol].contest[bhs.contest.name].total : "");
-                        }
+                            h += /title/ [Symbol.replace](l, disq ? "--" : entry[starsCol].contest && entry[starsCol].contest[bhs.contest.name] ? entry[starsCol].contest[bhs.contest.name].total : "");
+                        } else
+                            h += /title/ [Symbol.replace](l, "");
                         break;
                     case "Total":
                         h += /title/ [Symbol.replace](l, entry[starsCol].total);
@@ -886,15 +963,10 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id, bold) {
             pnl.append(h);
         } else {
             player.find("#id-qty").text(entry[starsCol].total);
-            if (bhs.contest)
-                player.find("#id-ctst").text(bhs.contest.name && entry[starsCol].contest ? entry[starsCol].contest[bhs.contest.name].total : "");
+            if (bhs.contest && entry[starsCol].contest && entry[starsCol].contest[bhs.contest.name])
+                player.find("#id-ctst").text(entry[starsCol].contest && entry[starsCol].contest[bhs.contest.name] ? entry[starsCol].contest[bhs.contest.name].total : "");
         }
     }
-
-    $("#totals #id-uid").hide();
-
-    if (!bhs.contest)
-        $("#totals #id-ctst").hide();
 }
 
 blackHoleSuns.prototype.displayPlayerTotals = function (entry, id) {
@@ -962,12 +1034,12 @@ blackHoleSuns.prototype.displayGTotals = function (entry, id, ifcontest) {
             }
         }
     }
-
-    if (!bhs.contest)
-        $("#totals #id-ctst").hide();
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
+    if (!list || list.length == 0)
+        return;
+
     let title = `        
         <div class="row">
             <div class="col-md-medium col-sm-small col-xs h6 txt-inp-def">label</div>`;
@@ -999,6 +1071,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
     l = /xs/ [Symbol.replace](l, vertical ? 13 : 7);
 
     h += /rgbcolor/ [Symbol.replace](l, "background-color: " + levelRgb[typeof list[0].number == "undefined" ? 0 : list[0].number]);
+    loc.find("#id-" + id).empty();
     loc.find("#id-" + id).append(h);
 
     let menu = loc.find("#menu-" + id);
@@ -1213,7 +1286,7 @@ blackHoleSuns.prototype.extractMapOptions = function () {
     c.connection = opt.find("#ck-drawcon").prop("checked");
     c.map3d = opt.find("#ck-3dmap").prop("checked");
     //c.exit = opt.find("#ck-drawexits").prop("checked");
-    c.base = opt.find("#ck-drawbase").prop("checked");
+    //c.base = opt.find("#ck-drawbase").prop("checked");
     c.zoomreg = opt.find("#ck-zoomreg").prop("checked");
     c.addzero = opt.find("#ck-addzero").prop("checked");
     c.chain = opt.find("#ck-chain").prop("checked");
@@ -1223,13 +1296,19 @@ blackHoleSuns.prototype.extractMapOptions = function () {
 
 blackHoleSuns.prototype.setMapOptions = function (entry) {
     let findex = window.location.pathname == "/" || window.location.pathname == "/index.html";
+    let fsearch = window.location.pathname == "/search.html";
     let opt = $("#mapoptions");
 
     if (!findex) {
         opt.find("#id-drawbase").hide();
-        opt.find("#id-drawcon").hide();
         opt.find("#id-zoomreg").hide();
+
+        if (!fsearch)
+            opt.find("#id-drawcon").hide();
     }
+
+    if (fsearch)
+        opt.find("#zoomsection").hide();
 
     if (typeof entry.mapoptions != "undefined") {
         opt = $("#mapkey");
@@ -1252,8 +1331,8 @@ blackHoleSuns.prototype.setMapOptions = function (entry) {
 
         opt.find("#ck-drawcon").prop("checked", typeof entry.mapoptions.connection != "undefined" ? entry.mapoptions.connection : false);
         opt.find("#ck-3dmap").prop("checked", typeof entry.mapoptions.map3d != "undefined" ? entry.mapoptions.map3d : true);
-        opt.find("#ck-drawexits").prop("checked", typeof entry.mapoptions.exit != "undefined" ? entry.mapoptions.exit : false);
-        opt.find("#ck-drawbase").prop("checked", typeof entry.mapoptions.base != "undefined" ? entry.mapoptions.base : false);
+        //opt.find("#ck-drawexits").prop("checked", typeof entry.mapoptions.exit != "undefined" ? entry.mapoptions.exit : false);
+        //opt.find("#ck-drawbase").prop("checked", typeof entry.mapoptions.base != "undefined" ? entry.mapoptions.base : false);
         opt.find("#ck-zoomreg").prop("checked", typeof entry.mapoptions.zoomreg != "undefined" ? entry.mapoptions.zoomreg : false);
         opt.find("#ck-addzero").prop("checked", typeof entry.mapoptions.addzero != "undefined" ? entry.mapoptions.addzero : true);
         opt.find("#ck-chain").prop("checked", typeof entry.mapoptions.chain != "undefined" ? entry.mapoptions.chain : true);
@@ -1293,11 +1372,12 @@ blackHoleSuns.prototype.resetMapOptions = function (entry) {
 }
 
 blackHoleSuns.prototype.buildMap = function () {
-    let w = $("#plymap").width();
-    $("#plymap").prop("width", w);
-    $("#plymap").prop("height", w);
+    let fsearch = window.location.pathname == "/search.html";
+    let fadmin = window.location.pathname == "/admin.html";
+    if (fadmin)
+        return;
 
-    w = $("#maplogo").width();
+    let w = $("#maplogo").width();
     $("#logo").prop("width", w);
     $("#logo").prop("height", w);
 
@@ -1328,7 +1408,7 @@ blackHoleSuns.prototype.buildMap = function () {
             </div>
 
             <div class="col-8 border-left">
-               <label class="col-5 h6 txt-def">
+                <label class="col-5 h6 txt-def">
                     <input id="ck-3dmap" type="checkbox" checked>
                     3D Map
                 </label>
@@ -1340,10 +1420,10 @@ blackHoleSuns.prototype.buildMap = function () {
                     <input id="ck-drawexits" type="checkbox" checked>
                     Draw Exits
                 </label-->
-                <label id="id-drawbase" class="col-8 h6 txt-def">
+                <!--label id="id-drawbase" class="col-8 h6 txt-def">
                     <input id="ck-drawbase" type="checkbox" checked>
                     Draw Bases
-                </label>
+                </label-->
 
                 <label id="id-zoomreg" class="col-14 h6 txt-def">
                     <input id="ck-zoomreg" type="checkbox" checked>
@@ -1359,7 +1439,7 @@ blackHoleSuns.prototype.buildMap = function () {
                     <label class="col-6 h6 txt-def">
                         Radius&nbsp;
                         <input id="inp-chainradius" type="number" class="rounded col-8 txt-def" min="0">
-                   </label>
+                    </label>
                 </div>
             </div>
         </div>
@@ -1393,15 +1473,14 @@ blackHoleSuns.prototype.buildMap = function () {
     let opt = $("#mapoptions");
     opt.empty();
     opt.html(settings);
-
+    const col = '<div class="col-7">';
     const key = `
-    <div class="col-7">
-        <div class="row">
-            <div id="idname" class="col-5 text-center">title</div>
-            <input id="sel-idname" class="col-4 bkg-def" style="border-color:black" type="color" value="colorsel">
-            <input id="inp-idname" type="number" class="rounded col-4 txt-def hidden" min="0" max="20">
-        </div>
-    </div>`;
+    <div class="row">
+        <div id="idname" class="col-5 text-center">title</div>
+        <input id="sel-idname" class="col-4 bkg-def" style="border-color:black" type="color" value="colorsel">
+        <input id="inp-idname" type="number" class="rounded col-4 txt-def hidden" min="0" max="20">
+        </div>`;
+    const colend = `</div>`;
 
     let keyloc = $("#mapkey");
     keyloc.empty();
@@ -1410,11 +1489,16 @@ blackHoleSuns.prototype.buildMap = function () {
         let h = /idname/g [Symbol.replace](key, c.id);
         h = /colorsel/g [Symbol.replace](h, c.color);
         h = /title/g [Symbol.replace](h, c.name);
+
+        if (!fsearch)
+            h = col + h + colend;
+
         keyloc.append(h);
     });
 
     $("#btn-redraw").unbind("click");
     $("#btn-redraw").click(function () {
+        $("#resultsTable").empty();
         bhs.drawList(bhs.entries);
     });
 
@@ -1474,11 +1558,12 @@ blackHoleSuns.prototype.buildMap = function () {
 
                     bhs.mapped = {};
                     bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1);
-                    bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1, true);
+                    // bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1, true);
                     delete bhs.mapped;
                 }
             }, 1000);
         });
+        // plot.on('plotly_afterplot', function (e) {
 
         // plot.on('plotly_hover', e => {
         //     if (e.points.length > 0) {
@@ -1514,15 +1599,21 @@ blackHoleSuns.prototype.drawList = function (listEntry) {
         return;
 
     let findex = window.location.pathname == "/" || window.location.pathname == "/index.html";
+    let fsearch = window.location.pathname == "/search.html";
+    let fadmin = window.location.pathname == "/admin.html";
+
+    if (fadmin)
+        return;
 
     let opt = bhs.extractMapOptions();
-    if (!findex)
+    let k = Object.keys(listEntry);
+
+    if (!findex && !fsearch)
         opt.connection = false;
 
     let out = {};
     let data = [];
 
-    let k = Object.keys(listEntry);
     for (let i = 0; i < k.length; ++i) {
         let entry = listEntry[k[i]];
         if (opt.connection && entry.bh && entry.exit) {
@@ -1561,6 +1652,11 @@ blackHoleSuns.prototype.drawList = function (listEntry) {
 }
 
 blackHoleSuns.prototype.drawSingle = function (entry) {
+    let fsearch = window.location.pathname == "/search.html"||window.location.pathname == "/galaxy.html";
+    let fadmin = window.location.pathname == "/admin.html";
+    if (fadmin)
+        return;
+
     let opt = bhs.extractMapOptions();
     let out = initout();
 
@@ -1575,19 +1671,19 @@ blackHoleSuns.prototype.drawSingle = function (entry) {
 
     if (entry.blackhole) {
         color = opt["clr-bh"];
-        size = opt["inp-clr-bh"];
+        size = parseInt(opt["inp-clr-bh"]);
     } else if (entry.deadzone) {
         color = opt["clr-dz"];
-        size = opt["inp-clr-dz"];
+        size = parseInt(opt["inp-clr-dz"]);
     } else if (entry.basename) {
         color = opt["clr-base"];
-        size = opt["inp-clr-base"];
+        size = parseInt(opt["inp-clr-base"]);
     } else {
         color = opt["clr-exit"];
-        size = opt["inp-clr-exit"];
+        size = parseInt(opt["inp-clr-exit"]);
     }
 
-    Plotly.addTraces('plymap', makedata(opt, out, fsearch ? size : 10, color));
+    Plotly.addTraces('plymap', makedata(opt, out, fsearch ? size : size * 3, color));
 }
 
 blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
@@ -1597,19 +1693,26 @@ blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
         let keys = Object.keys(list);
         for (let i = 0; i < keys.length; ++i) {
             let d = list[keys[i]];
-            if (d.bh && d.exit && !bhs.mapped[d.bh.addr]) {
-                bhs.mapped[d.bh.addr] = true;
+            if (!bhs.mapped[d.bh.addr]) {
 
                 let out = initout();
                 pushentry(out, d.bh.xyzs, d.bh.addr + "<br>" + d.bh.sys + "<br>" + d.bh.reg);
                 pushentry(out, d.exit.xyzs, d.exit.addr + "<br>" + d.exit.sys + "<br>" + d.exit.reg);
 
-                Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"], opt["clr-bh"], opt["clr-con"], true));
+                if (bhs.displayResults)
+                    bhs.displayResults(d);
 
-                bhs.drawChain(opt, d.exit.xyzs, depth);
-                bhs.drawChain(opt, d.bh.xyzs, depth, true);
+                Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"], opt["clr-bh"], up ? opt["clr-exit"] : opt["clr-con"], true));
+                bhs.mapped[d.bh.addr] = true;
             }
         }
+
+        for (let i = 0; i < keys.length; ++i) {
+            let d = list[keys[i]];
+            bhs.drawChain(opt, up ? d.bh.xyzs : d.exit.xyzs, depth);
+        }
+
+        bhs.drawChain(opt, xyz, depth, true);
     }
 }
 
@@ -1632,6 +1735,8 @@ blackHoleSuns.prototype.findClose = function (opt, xyz, up) {
 };
 
 blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
+    let fsearch = window.location.pathname == "/search.html";
+
     let opt = bhs.extractMapOptions();
     let ctr = bhs.addressToXYZ(opt.ctrcord);
     ctr.z = 4096 - ctr.z;
@@ -1640,7 +1745,7 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
     let ystart, yctr, yend;
     let zstart, zctr, zend;
 
-    if (zoom && opt.ctrzoom) {
+    if (zoom && opt.ctrzoom && !fsearch) {
         xstart = ctr.x - opt.ctrzoom;
         xctr = ctr.x + parseInt(opt.ctrzoom / 2);
         xend = ctr.x + opt.ctrzoom;
@@ -1752,6 +1857,10 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
         };
     }
 
+    let w = Math.min($("#mapcol").width(), $(window).height());
+    layout.width = w;
+    layout.height = w;
+
     if (exec) Plotly.relayout('plymap', layout);
 
     return layout;
@@ -1770,7 +1879,7 @@ blackHoleSuns.prototype.traceZero = function (addr) {
         let out = initout();
         pushentry(out, zero);
         pushentry(out, addr.xyzs);
-        Plotly.addTraces('plymap', makedata(opt, out, 5, opt["clr-bh"], opt["clr-con"], true));
+        Plotly.addTraces('plymap', makedata(opt, out, 5, opt["clr-bh"], opt["clr-dz"], true));
     }
 }
 
@@ -1806,7 +1915,7 @@ function makedata(opt, out, size, color, linecolor, lines) {
         marker: {
             size: size,
             color: color,
-            opacity: 0.5,
+            opacity: 0.6,
         },
         type: opt.map3d ? "scatter3d" : "scatter",
         hoverinfo: 'text',
@@ -1817,7 +1926,7 @@ function makedata(opt, out, size, color, linecolor, lines) {
         line.line = {
             color: linecolor,
             width: 2,
-            opacity: 0.5,
+            opacity: 0.4,
         };
     }
 

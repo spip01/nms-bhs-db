@@ -133,7 +133,7 @@ blackHoleSuns.prototype.logIn = function () {
 
     $("#ldiscord").click(function () {});
 
-    $("#lredit").click(function () {});
+    $("#lreddit").click(function () {});
 }
 
 blackHoleSuns.prototype.logOut = function () {
@@ -155,7 +155,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
         $("#login").hide();
         $("#usermenu").show();
 
-        // let ref = bhs.fs.collection("users").where("_name","==","zeenewbian");
+        // let ref = bhs.fs.collection("users").where("_name","==","Kaboom443");
         // ref.get().then(function(snapshot){
         //     if (!snapshot.empty)
         //         user = snapshot.docs[0].data();
@@ -492,17 +492,44 @@ blackHoleSuns.prototype.assignUid = async function (entry) {
     await bhs.checkBatchSize(b, true);
 }
 
-blackHoleSuns.prototype.getActiveContest = async function () {
-    let contest;
+blackHoleSuns.prototype.getActiveContest = function (displayFcn) {
+    bhs.contest = null;
+    let now = (new Date()).getTime();
 
     let ref = bhs.fs.collection("contest");
-    ref = ref.orderBy("end", "desc");
-    await ref.get().then(async function (snapshot) {
-        if (!snapshot.empty && !snapshot.docs[snapshot.size - 1].data().hidden)
-            contest = snapshot.docs[snapshot.size - 1].data();
-    });
+    ref = ref.orderBy("start");
+    ref.get().then(function (snapshot) {
+        for (let i = 0; i < snapshot.size; ++i) {
+            let d = snapshot.docs[i].data();
+            let start = d.start.toDate().getTime();
+            let end = d.end.toDate().getTime();
 
-    return contest;
+            if (start < now && end > now || start > now || i==snapshot.size-1) {
+                bhs.subscribe("act-ctst", snapshot.docs[i].ref, displayFcn);
+                break;
+            }
+        }
+    });
+}
+
+blackHoleSuns.prototype.toggleContest = function (displayFcn) {
+    let now = (new Date()).getTime();
+
+    let ref = bhs.fs.collection("contest");
+    ref = ref.orderBy("start");
+    ref.get().then(function (snapshot) {
+        for (let i = 0; i < snapshot.size; ++i) {
+            let d = snapshot.docs[i].data();
+            let start = d.start.toDate().getTime();
+            let end = d.end.toDate().getTime();
+
+            if (start < now && end > now || start > now) {
+                d.hidden = !d.hidden;
+                snapshot.docs[i].ref.update(d);
+                break;
+            }
+        }
+    });
 }
 
 blackHoleSuns.prototype.listUsers = function () {
@@ -516,7 +543,6 @@ blackHoleSuns.prototype.listUsers = function () {
 }
 
 blackHoleSuns.prototype.fixAllTotals = async function () {
-    bhs.contest = await bhs.getActiveContest();
     let totals = bhs.checkTotalsInit();
 
     let ref = bhs.getStarsColRef();
@@ -529,8 +555,6 @@ blackHoleSuns.prototype.fixAllTotals = async function () {
 
             for (let j = 0; j < platformList.length; ++j) {
                 let p = platformList[j];
-
-                let total = 0;
 
                 let ref = bhs.getStarsColRef(g.name, p.name);
                 ref = ref.where("blackhole", "==", true);
@@ -555,7 +579,7 @@ blackHoleSuns.prototype.fixAllTotals = async function () {
         }
     });
 
-   bhs.updateAllTotals(totals, true);
+    bhs.updateAllTotals(totals, true);
     console.log("done");
 }
 
@@ -848,7 +872,7 @@ blackHoleSuns.prototype.updateTotal = function (add, ref, reset) {
     });
 }
 
-blackHoleSuns.prototype.getEntries = async function (displayFcn, uid, galaxy, platform) {
+blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, uid, galaxy, platform) {
     galaxy = galaxy ? galaxy : bhs.user.galaxy;
     platform = platform ? platform : bhs.user.platform;
     let complete = false;
@@ -906,9 +930,9 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, uid, galaxy, pl
         });
     }
 
-    if (displayFcn) {
+    if (singleDispFcn) {
         ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()));
-        bhs.subscribe("entries", ref, bhs.dispEntryList, displayFcn);
+        bhs.subscribe("entries", ref, singleDispFcn);
     }
 }
 
@@ -963,7 +987,7 @@ blackHoleSuns.prototype.getBases = async function (displayFcn) {
         if (displayFcn) {
             let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform);
             ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()));
-            bhs.subscribe("bases", ref, bhs.dispBaseList, displayFcn);
+            bhs.subscribe("bases", ref, displayFcn);
         }
     });
 }
@@ -1006,14 +1030,27 @@ blackHoleSuns.prototype.getUser = function (displayFcn) {
 
 blackHoleSuns.prototype.getOrgList = async function () {
     bhs.orgList = [];
-    bhs.orgList.push({
-        name: ""
-    });
 
-    let ref = bhs.fs.collection("org").orderBy("name");
-    await ref.get().then(function (snapshot) {
-        for (let i = 0; i < snapshot.docs.length; ++i)
+    let ref = bhs.fs.collection("org")
+    await ref.get().then(async function (snapshot) {
+        for (let i = 0; i < snapshot.size; ++i)
             bhs.orgList.push(snapshot.docs[i].data());
+
+        await bhs.orgList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
+            a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0);
+    });
+}
+
+blackHoleSuns.prototype.getPoiList = async function () {
+    bhs.poiList = [];
+
+    let ref = bhs.fs.collection("poi")
+    await ref.get().then(async function (snapshot) {
+        for (let i = 0; i < snapshot.size; ++i)
+            bhs.poiList.push(snapshot.docs[i].data());
+
+        await bhs.poiList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
+            a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0);
     });
 }
 
@@ -1062,15 +1099,24 @@ blackHoleSuns.prototype.getTotals = async function (displayFcn) {
     ref = bhs.fs.collection("org");
     bhs.subscribe("orgs", ref, displayFcn);
 
+    let now = (new Date()).getTime();
     ref = bhs.fs.collection("contest");
-    ref = ref.orderBy("end", "desc");
+    ref = ref.orderBy("start");
     ref.get().then(function (snapshot) {
-        if (!snapshot.empty)
-            bhs.subscribe("contest", snapshot.docs[snapshot.size - 1].ref, displayFcn);
+        for (let i = 0; i < snapshot.size; ++i) {
+            let d = snapshot.docs[i].data();
+            let start = d.start.toDate().getTime();
+            let end = d.end.toDate().getTime();
+
+            if (start < now && end > now || start > now || i==snapshot.size-1) {
+                bhs.subscribe("contest", snapshot.docs[i].ref, displayFcn);
+                break;
+            }
+        }
     });
 }
 
-blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn, pass) {
+blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn) {
     if (displayFcn) {
         bhs.unsubscribe(what);
         bhs.unsub[what] = ref.onSnapshot(function (snapshot) {
@@ -1078,7 +1124,7 @@ blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn, pass) {
                 displayFcn(snapshot.data(), snapshot.ref.path);
             else if (typeof snapshot.empty != "undefined" && !snapshot.empty)
                 snapshot.forEach(function (doc) {
-                    displayFcn(doc.data(), doc.ref.path, pass);
+                    displayFcn(doc.data(), doc.ref.path);
                 });
         });
     }
@@ -1309,7 +1355,7 @@ String.prototype.stripID = function () {
 }
 
 String.prototype.stripMarginWS = function () {
-    return this.replace(/\s*([.*]?)[\n\r\s]*/, "$1");
+    return this.replace(/^\s*(.*)\s*$/g, "$1");
 }
 
 function stripNumber(val) {
@@ -1502,6 +1548,16 @@ const platformList = [{
 }, {
     name: "PS4",
     match: /ps4/i
+}];
+
+const modeList = [{
+    name: "Normal",
+}, {
+    name: "Survival",
+}, {
+    name: "Permadeath",
+}, {
+    name: "Creative",
 }];
 
 const economyList = [{
