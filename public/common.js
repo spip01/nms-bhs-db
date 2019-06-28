@@ -486,8 +486,8 @@ blackHoleSuns.prototype.getActiveContest = function (displayFcn) {
             let d = snapshot.docs[i].data();
             let start = d.start.toDate().getTime();
             let end = d.end.toDate().getTime();
-            
-            if (start < now && end > now || start > now || i==snapshot.size-1) {
+
+            if (start < now && end > now || start > now || i == snapshot.size - 1) {
                 bhs.subscribe("act-ctst", snapshot.docs[i].ref, displayFcn);
                 break;
             }
@@ -505,7 +505,7 @@ blackHoleSuns.prototype.toggleContest = function (displayFcn) {
             let d = snapshot.docs[i].data();
             let start = d.start.toDate().getTime();
             let end = d.end.toDate().getTime();
-            
+
             if (start < now && end > now || start > now) {
                 d.hidden = !d.hidden;
                 snapshot.docs[i].ref.update(d);
@@ -850,12 +850,27 @@ blackHoleSuns.prototype.updateTotal = function (add, ref, reset) {
             else
                 t = bhs.addObjects(t, add);
 
+            let now = firebase.firestore.Timestamp.fromDate(new Date());
+
+            if (ref.id == "totals" && t[starsCol].total == 10000) {
+                t.milestone = {};
+                t.milestone["10000"] = {};
+                t.milestone["10000"].user = bhs.user._name;
+                t.milestone["10000"].time = now;
+            }
+
+            if (ref.id == "contest" && (contest.start.getTime() - now.getTime()) % 86400000) {
+                if (!t.daily)
+                    t.daily = {};
+                t.daily[((contest.start.getTime() - now.getTime()) % 86400000).toString()] = t[starsCol];
+            }
+
             transaction.set(ref, t);
         });
     });
 }
 
-blackHoleSuns.prototype.getEntries = async function (displayFcn, uid, galaxy, platform) {
+blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, uid, galaxy, platform) {
     galaxy = galaxy ? galaxy : bhs.user.galaxy;
     platform = platform ? platform : bhs.user.platform;
     let complete = false;
@@ -913,9 +928,9 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, uid, galaxy, pl
         });
     }
 
-    if (displayFcn) {
+    if (singleDispFcn) {
         ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()));
-        bhs.subscribe("entries", ref, displayFcn);
+        bhs.subscribe("entries", ref, singleDispFcn);
     }
 }
 
@@ -1057,12 +1072,6 @@ blackHoleSuns.prototype.getUserList = async function () {
     return list;
 }
 
-blackHoleSuns.prototype.getUsers = function (displayFcn) {
-    let ref = bhs.getUsersColRef();
-    ref = ref.orderBy(starsCol + ".total", "desc");
-    bhs.subscribe("users", ref, displayFcn);
-}
-
 blackHoleSuns.prototype.getTotals = async function (displayFcn) {
     let fgal = window.location.pathname == "/galaxy.html";
 
@@ -1090,8 +1099,8 @@ blackHoleSuns.prototype.getTotals = async function (displayFcn) {
             let d = snapshot.docs[i].data();
             let start = d.start.toDate().getTime();
             let end = d.end.toDate().getTime();
-            
-            if (start < now && end > now || start > now || i==snapshot.size-1) {
+
+            if (start < now && end > now || start > now || i == snapshot.size - 1) {
                 bhs.subscribe("contest", snapshot.docs[i].ref, displayFcn);
                 break;
             }

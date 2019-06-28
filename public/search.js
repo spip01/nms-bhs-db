@@ -82,24 +82,28 @@ blackHoleSuns.prototype.doSearch = function (type, what) {
     }
 
     bhs.displayResults(found);
-    bhs.drawList(found);
+    bhs.drawList(found, true);
 }
 
 blackHoleSuns.prototype.displayResults = function (found) {
-    let row = `<div class="row">bh&nbsp;-&nbsp;exit</div>`;
+    let bhrow = `<div class="row">bh&nbsp;-&nbsp;exit</div>`;
+    let exitrow = `<div class="row">exit</div>`;
     let h = "";
 
     if (found.bh) {
-        let l = /bh/ [Symbol.replace](row, found.bh ? found.bh.addr : "");
-        h = /exit/ [Symbol.replace](l, found.exit ? found.exit.addr : "");
+        h = /bh/ [Symbol.replace](bhrow, found.bh ? found.bh.addr : "");
+        h = /exit/ [Symbol.replace](h, found.exit ? found.exit.addr : "");
+    } else if (found.exit) {
+        h = /exit/ [Symbol.replace](exitrow, found.exit ? found.exit.addr : "");
     } else {
         let list = Object.keys(found);
         for (let i = 0; i < list.length; ++i) {
-            let l = row;
+            let l = "";
             if (found[list[i]].bh) {
-                l = /bh/ [Symbol.replace](l, found[list[i]].bh ? found[list[i]].bh.addr : "");
+                l = /bh/ [Symbol.replace](bhrow, found[list[i]].bh ? found[list[i]].bh.addr : "");
                 l = /exit/ [Symbol.replace](l, found[list[i]].exit ? found[list[i]].exit.addr : "");
-            } 
+            } else
+                l = /exit/ [Symbol.replace](exitrow, found[list[i]].exit ? found[list[i]].exit.addr : "");
 
             h += l;
         }

@@ -35,5 +35,5 @@ blackHoleSuns.prototype.select = function () {
     let uid = i != -1 ? bhs.usersList[i].uid : null;
     let galaxy = $("#btn-Galaxy").text().stripNumber();
     let platform = $("#btn-Platform").text().stripNumber();
-    bhs.getEntries(bhs.displayEntryList, uid, galaxy, platform);
+    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, uid, galaxy, platform);
 }

@@ -74,7 +74,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
 
         bhs.buildUserTable(bhs.user);
         bhs.displaySettings(bhs.user);
-        bhs.getEntries(bhs.displayEntryList);
+        bhs.getEntries(bhs.displayEntryList, bhs.displayEntry);
     }
 
     let pnl = $("#pnl-user");
@@ -432,94 +432,92 @@ blackHoleSuns.prototype.entriesToCsv = function () {
     return out;
 }
 
-blackHoleSuns.prototype.displayEntryList = function (entrylist, entry) {
-    if (!entrylist && !entry)
-        return;
+blackHoleSuns.prototype.displayEntryList = function (entrylist) {
+    bhs.drawList(entrylist);
 
-    if (window.location.pathname != "/admin.html" && window.location.pathname != "/search.html")
-        bhs.drawList(entrylist);
-
-    if (!entry) {
-        const lineHdr = `
-        <div id="gpa" class="row">`;
-        const line = `
-            <div id="idname" class="width" onclick="entryDblclk(this)">
-                <div id="bh-idname" class="row">bhdata</div>
-                <div id="x-idname" class="row">xdata</div>
+    const lineHdr = `
+            <div id="gpa" class="row">`;
+    const line = `
+                <div id="idname" class="width" onclick="entryDblclk(this)">
+                    <div id="bh-idname" class="row">bhdata</div>
+                    <div id="x-idname" class="row">xdata</div>
+                </div>`;
+    const lineEnd = `
             </div>`;
-        const lineEnd = `
-        </div>`;
 
-        let h = "";
-        let alt = true;
+    let h = "";
+    let alt = true;
 
-        let keys = Object.keys(entrylist);
-        for (let i = 0; i < keys.length; ++i) {
-            let entry = entrylist[keys[i]];
-            h += /gpa/ [Symbol.replace](lineHdr, keys[i].nameToId());
-            let l = "";
-
-            for (let j = 0; j < userTable.length; ++j) {
-                let t = userTable[j];
-
-                l = /idname/g [Symbol.replace](line, t.id);
-                l = /width/g [Symbol.replace](l, t.format + (alt ? " bkg-vlight-gray" : ""));
-
-                if (t.calc) {
-                    l = /bhdata/ [Symbol.replace](l, entry.bh ? entry.bh.towardsCtr : "");
-                    l = /xdata/ [Symbol.replace](l, "");
-                } else if (t.id == "id-type") {
-                    l = /bhdata/ [Symbol.replace](l, entry.bh ? "BH" : entry.dz ? "DZ" : "");
-                    l = /xdata/ [Symbol.replace](l, "");
-                } else if (t.id == "id-base") {
-                    if (entry.bh && entry.bhbase)
-                        l = /bhdata/ [Symbol.replace](l, entry.bhbase[t.field]);
-                    else if (entry.dz && entry.dzbase)
-                        l = /bhdata/ [Symbol.replace](l, entry.dzbase[t.field]);
-                    else
-                        l = /bhdata/ [Symbol.replace](l, "");
-
-                    l = /xdata/ [Symbol.replace](l, entry.exitbase ? entry.exitbase[t.field] : "");
-                } else {
-                    if (entry.bh && entry.bh[t.field])
-                        l = /bhdata/ [Symbol.replace](l, entry.bh[t.field]);
-                    else if (entry.dz && entry.dz[t.field])
-                        l = /bhdata/ [Symbol.replace](l, entry.dz[t.field]);
-                    else
-                        l = /bhdata/ [Symbol.replace](l, "");
-
-                    l = /xdata/ [Symbol.replace](l, entry.exit && entry.exit[t.field] ? entry.exit[t.field] : "");
-                }
-
-                h += l;
-            }
-
-            alt = !alt;
-            h += lineEnd;
-        }
-
-        $("#userItems").empty();
-        $("#userItems").append(h);
-        bhs.displaySettings(bhs.user);
-    } else {
-        let id = (entry.bh ? entry.bh.connection : entry.dz ? entry.dz.addr : entry.exit.addr).nameToId();
-        let loc = $("#userItems #" + id);
+    let keys = Object.keys(entrylist);
+    for (let i = 0; i < keys.length; ++i) {
+        let entry = entrylist[keys[i]];
+        h += /gpa/ [Symbol.replace](lineHdr, keys[i].nameToId());
+        let l = "";
 
         for (let j = 0; j < userTable.length; ++j) {
             let t = userTable[j];
 
-            if (t.calc)
-                loc.find("#bh-" + t.id).text(entry.bh ? entry.bh.towardsCtr : "")
-            else if (t.id == "id-type")
-                loc.find("#bh-" + t.id).text(entry.bh ? "BH" : entry.dz ? "DZ" : "")
-            else {
-                if (entry.bh)
-                    loc.find("#bh-" + t.id).text(entry.bh[t.field] ? entry.bh[t.field] : "")
-                if (entry.dz)
-                    loc.find("#bh-" + t.id).text(entry.dz[t.field] ? entry.dz[t.field] : "")
-                if (entry.exit)
-                    loc.find("#x-" + t.id).text(entry.exit[t.field] ? entry.exit[t.field] : "")
+            l = /idname/g [Symbol.replace](line, t.id);
+            l = /width/g [Symbol.replace](l, t.format + (alt ? " bkg-vlight-gray" : ""));
+
+            if (t.calc) {
+                l = /bhdata/ [Symbol.replace](l, entry.bh ? entry.bh.towardsCtr : "");
+                l = /xdata/ [Symbol.replace](l, "");
+            } else if (t.id == "id-type") {
+                l = /bhdata/ [Symbol.replace](l, entry.bh ? "BH" : entry.dz ? "DZ" : "");
+                l = /xdata/ [Symbol.replace](l, "");
+            } else if (t.id == "id-base") {
+                if (entry.bh && entry.bhbase)
+                    l = /bhdata/ [Symbol.replace](l, entry.bhbase[t.field]);
+                else if (entry.dz && entry.dzbase)
+                    l = /bhdata/ [Symbol.replace](l, entry.dzbase[t.field]);
+                else
+                    l = /bhdata/ [Symbol.replace](l, "");
+
+                l = /xdata/ [Symbol.replace](l, entry.exitbase ? entry.exitbase[t.field] : "");
+            } else {
+                if (entry.bh && entry.bh[t.field])
+                    l = /bhdata/ [Symbol.replace](l, entry.bh[t.field]);
+                else if (entry.dz && entry.dz[t.field])
+                    l = /bhdata/ [Symbol.replace](l, entry.dz[t.field]);
+                else
+                    l = /bhdata/ [Symbol.replace](l, "");
+
+                l = /xdata/ [Symbol.replace](l, entry.exit && entry.exit[t.field] ? entry.exit[t.field] : "");
             }
+
+            h += l;
+        }
+
+        alt = !alt;
+        h += lineEnd;
+    }
+
+    $("#userItems").empty();
+    $("#userItems").append(h);
+    bhs.displaySettings(bhs.user);
+}
+
+blackHoleSuns.prototype.displayEntry = function (entry) {
+    bhs.drawSingle(entry);
+
+    let id = (entry.blackhole ? entry.connection : entry.addr).nameToId();
+    let loc = $("#userItems #" + id);
+
+    for (let j = 0; j < userTable.length; ++j) {
+        let t = userTable[j];
+
+        if (t.calc)
+            loc.find("#bh-" + t.id).text(entry.blackhole ? entry.towardsCtr : "")
+        else if (t.id == "id-type")
+            loc.find("#bh-" + t.id).text(entry.blackhole ? "BH" : entry.deadzone ? "DZ" : "")
+        else {
+            if (entry.blackhole)
+                loc.find("#bh-" + t.id).text(entry[t.field] ? entry[t.field] : "")
+            else if (entry.deadzone)
+                loc.find("#bh-" + t.id).text(entry[t.field] ? entry[t.field] : "")
+            else
+                loc.find("#x-" + t.id).text(entry[t.field] ? entry[t.field] : "")
         }
     }
 }
@@ -781,7 +779,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
                     let galaxy = $("#btn-Galaxy").text().stripNumber();
                     let platform = $("#btn-Platform").text().stripMarginWS();
                     $("#btn-Player").text($(this).find("#id-names").text().stripMarginWS());
-                    bhs.getEntries(bhs.displayEntryList, $(this).find("#id-uid").text().stripMarginWS(), galaxy, platform);
+                    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, $(this).find("#id-uid").text().stripMarginWS(), galaxy, platform);
                 }
             });
     }
@@ -817,7 +815,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
 
     bhs.displayUTotals(entry[starsCol], cid);
 
-    if (cid == "id-player" && entry[starsCol] && entry[starsCol].contest) {
+    if (cid == "id-player" && bhs.contest && entry[starsCol] && entry[starsCol].contest) {
         cid = "id-contest";
         bhs.displayUTotals(entry[starsCol].contest[bhs.contest.name], cid);
     }
@@ -988,8 +986,7 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id, bold) {
                             }
 
                             h += /title/ [Symbol.replace](l, disq ? "--" : entry[starsCol].contest && entry[starsCol].contest[bhs.contest.name] ? entry[starsCol].contest[bhs.contest.name].total : "");
-                        }
-                        else
+                        } else
                             h += /title/ [Symbol.replace](l, "");
                         break;
                     case "Total":
@@ -1411,6 +1408,10 @@ blackHoleSuns.prototype.resetMapOptions = function (entry) {
     opt.find("#ck-chain").prop("checked", false);
 }
 
+blackHoleSuns.prototype.purgeMap = function () {
+    Plotly.purge('plymap');
+}
+
 blackHoleSuns.prototype.buildMap = function () {
     let fsearch = window.location.pathname == "/search.html";
     let fadmin = window.location.pathname == "/admin.html";
@@ -1539,6 +1540,7 @@ blackHoleSuns.prototype.buildMap = function () {
     $("#btn-redraw").unbind("click");
     $("#btn-redraw").click(function () {
         $("#resultsTable").empty();
+        bhs.purgeMap();
         bhs.drawList(bhs.entries);
     });
 
@@ -1634,15 +1636,13 @@ blackHoleSuns.prototype.buildMap = function () {
     });
 }
 
-blackHoleSuns.prototype.drawList = function (listEntry) {
-    if (!listEntry)
-        return;
+blackHoleSuns.prototype.drawList = function (listEntry, force) {
 
     let findex = window.location.pathname == "/" || window.location.pathname == "/index.html";
     let fsearch = window.location.pathname == "/search.html";
     let fadmin = window.location.pathname == "/admin.html";
 
-    if (fadmin)
+    if (!force && (fadmin || fsearch))
         return;
 
     let opt = bhs.extractMapOptions();
@@ -1692,7 +1692,7 @@ blackHoleSuns.prototype.drawList = function (listEntry) {
 }
 
 blackHoleSuns.prototype.drawSingle = function (entry) {
-    let fsearch = window.location.pathname == "/search.html";
+    let fsearch = window.location.pathname == "/search.html" || window.location.pathname == "/galaxy.html";
     let fadmin = window.location.pathname == "/admin.html";
     if (fadmin)
         return;
@@ -1711,19 +1711,19 @@ blackHoleSuns.prototype.drawSingle = function (entry) {
 
     if (entry.blackhole) {
         color = opt["clr-bh"];
-        size = opt["inp-clr-bh"];
+        size = parseInt(opt["inp-clr-bh"]);
     } else if (entry.deadzone) {
         color = opt["clr-dz"];
-        size = opt["inp-clr-dz"];
+        size = parseInt(opt["inp-clr-dz"]);
     } else if (entry.basename) {
         color = opt["clr-base"];
-        size = opt["inp-clr-base"];
+        size = parseInt(opt["inp-clr-base"]);
     } else {
         color = opt["clr-exit"];
-        size = opt["inp-clr-exit"];
+        size = parseInt(opt["inp-clr-exit"]);
     }
 
-    Plotly.addTraces('plymap', makedata(opt, out, fsearch ? size : 8, color));
+    Plotly.addTraces('plymap', makedata(opt, out, fsearch ? size : size * 3, color));
 }
 
 blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
