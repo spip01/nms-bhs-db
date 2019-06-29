@@ -1583,7 +1583,7 @@ blackHoleSuns.prototype.buildMap = function () {
                     // bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1, true);
                     delete bhs.mapped;
                 }
-            }, 1000);
+            }, 1500);
         });
         // plot.on('plotly_afterplot', function (e) {
 

@@ -66,7 +66,8 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
                 <div class="row">
                     <div class="col-4 h6 txt-inp-def">Portal&nbsp;</div>
-                    <div id="id-glyph" class="col-10 h4 txt-inp-def text-left glyph"></div>
+                    <div id="id-glyph" class="col-6 h4 txt-inp-def glyph"></div>
+                    <div id="id-hex" class="col-4 txt-inp-def"></div>
                 </div>
 
                 <div class="row">
@@ -165,7 +166,12 @@ blackHoleSuns.prototype.buildPanel = function (id) {
     loc.find("#id-addr").change(function () {
         let addr = bhs.reformatAddress($(this).val());
         $(this).val(addr);
-        $(this).closest("[id|='pnl']").find("#id-glyph").html(bhs.addrToGlyph(addr));
+
+        let glyph = bhs.addrToGlyph(addr);
+
+        let pnl = $(this).closest("[id|='pnl'");
+        pnl.find("#id-glyph").text(glyph);
+        pnl.find("#id-hex").text(glyph);
 
         bhs.getEntry(addr, bhs.displaySingle, 0);
 
@@ -245,7 +251,9 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
     let loc = $("#" + panels[idx].id);
 
     loc.find("#id-addr").val(entry.addr);
-    loc.find("#id-glyph").html(bhs.addrToGlyph(entry.addr));
+    let glyph = bhs.addrToGlyph(entry.addr);
+    loc.find("#id-glyph").text(glyph);
+    loc.find("#id-hex").text(glyph);
     loc.find("#id-sys").val(entry.sys);
     loc.find("#id-reg").val(entry.reg);
 
@@ -388,7 +396,7 @@ blackHoleSuns.prototype.save = async function () {
 
     let fadmin = window.location.pathname == "/admin.html";
     if (!fadmin)
-    bhs.saveUser();
+        bhs.saveUser();
 
     if (await bhs.extractEntry(pnlTop)) {
         bhs.clearPanels();
