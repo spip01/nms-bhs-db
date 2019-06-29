@@ -41,8 +41,8 @@ blackHoleSuns.prototype.select = function () {
 
 blackHoleSuns.prototype.buildSearchPanel = function () {
     let loc = $("#searchpnl");
-    bhs.buildMenu(loc, "Lifeform", lifeformList);
-    bhs.buildMenu(loc, "Economy", economyList);
+    //bhs.buildMenu(loc, "Lifeform", lifeformList);
+    //bhs.buildMenu(loc, "Economy", economyList);
 
     loc.find("#btn-search").click(function () {
         bhs.search();
@@ -54,6 +54,8 @@ blackHoleSuns.prototype.search = function () {
     let addr = loc.find("#id-addr").val();
     let sys = loc.find("#id-sys").val();
     let reg = loc.find("#id-reg").val();
+    let start = loc.find("#id-start").val();
+    let end = loc.find("#id-end").val();
     // let life = loc.find("#btn-Lifeform").text().stripNumber();
     // let econ = loc.find("#btn-Economy").text().stripNumber();
 
@@ -65,20 +67,28 @@ blackHoleSuns.prototype.search = function () {
         bhs.doSearch("sys", sys);
     else if (reg != "")
         bhs.doSearch("reg", reg);
+    else if (start != "" || end != "") {
+        start = start == "" ? 0 : firebase.firestore.Timestamp.fromDate(new Date(start)).seconds;
+        end = end == "" ? Number.MAX_SAFE_INTEGER : firebase.firestore.Timestamp.fromDate(new Date(end)).seconds
+
+        bhs.doSearch("created", start, end);
+    }
     // else if (life != "")
     //     bhs.doSearch("life", life);
     // else if (econ != "")
     //     bhs.doSearch("econ", econ);
 }
 
-blackHoleSuns.prototype.doSearch = function (type, what) {
+blackHoleSuns.prototype.doSearch = function (type, s1, s2) {
     let found = {};
     let list = Object.keys(bhs.entries);
     for (let i = 0; i < list.length; ++i) {
         let e = bhs.entries[list[i]];
-        if (e.bh && e.bh[type] == what || e.exit && e.exit[type] == what) {
+        if (type == "created") {
+            if (e.bh && e.bh[type].seconds > s1 && e.bh[type].seconds < s2)
+                found[list[i]] = e;
+        } else if (e.bh && e.bh[type] == s1 || e.exit && e.exit[type] == s1)
             found[list[i]] = e;
-        }
     }
 
     bhs.displayResults(found);
