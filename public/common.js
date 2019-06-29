@@ -161,6 +161,8 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
 
             bhs.doLoggedin(user);
             bhs.navLoggedin();
+
+            // bhs.searchTxt();
         });
     } else {
         $("#usermenu").hide();
@@ -522,6 +524,67 @@ blackHoleSuns.prototype.listUsers = function () {
             let d = snapshot.docs[i].data();
             console.log(snapshot.docs[i].id + " " + d._name);
         }
+    });
+}
+
+blackHoleSuns.prototype.searchTxt = async function () {
+    let scount = {};
+    let rcount = {};
+
+    let ref = bhs.getStarsColRef();
+    await ref.get().then(async function (snapshot) {
+        for (let i = 0; i < snapshot.docs.length; ++i) {
+            if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "players")
+                continue;
+
+            let g = snapshot.docs[i].data()
+
+            for (let j = 0; j < platformList.length; ++j) {
+                let p = platformList[j];
+
+                let ref = bhs.getStarsColRef(g.name, p.name);
+                await ref.get().then(async function (snapshot) {
+                    for (let i = 0; i < snapshot.size; ++i) {
+                        let d = snapshot.docs[i].data();
+
+                        if (!d.reg) {
+                            console.log(d);
+                            continue;
+                        }
+
+                        if (!d.sys) {
+                            console.log(d);
+                            continue;
+                        }
+
+                        let reg = d.reg.split(" ");
+                        let r = reg.length > 1 ? reg[reg.length - 1] : "";
+
+                        let sys = d.sys.split(" ");
+                        let s = sys.length > 1 ? sys[sys.length - 1] : "";
+
+                        if (r != "") {
+                            if (typeof rcount[r] == "undefined")
+                                rcount[r] = 0;
+                            ++rcount[r];
+                        }
+
+                        if (s != "") {
+                            if (typeof scount[s] == "undefined")
+                                scount[s] = 0;
+                            ++scount[s];
+                        }
+                    }
+                });
+            }
+        }
+    });
+
+    Object.keys(rcount).forEach(r=>{
+        console.log("reg "+r+" "+rcount[r]);
+    });
+    Object.keys(scount).forEach(s=>{
+        console.log("sys "+s+" "+scount[s]);
     });
 }
 
@@ -1114,7 +1177,7 @@ blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn) {
         bhs.unsub[what] = ref.onSnapshot(function (snapshot) {
             if (snapshot.exists)
                 displayFcn(snapshot.data(), snapshot.ref.path);
-            else 
+            else
                 snapshot.docChanges().forEach(function (change) {
                     displayFcn(change.doc.data(), change.doc.ref.path);
                 });
