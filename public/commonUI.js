@@ -89,26 +89,6 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
         pnl.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[i].color + ";");
     } else
         pnl.find("#btn-Galaxy").text("");
-
-    $("#darkmode").click(function () {
-        $("body .card").css("background-color", "black");
-        $("body .card").css("color", "gold");
-        $("body .card").css("border-color", "white");
-
-        $("body .txt-inp-def").css("background-color", "black");
-        $("body .txt-inp-def").css("color", "#7dcef6");
-
-        $("body .txt-def").css("background-color", "black");
-        $("body .txt-def").css("color", "gold");
-
-        $("body .bkg-vlight-gray").css("background-color", "#303030");
-        $("body .bkg-vlight-gray").css("color", "gold");
-
-        $("body input").css("background-color", "black");
-        $("body input").css("color", "gold");
-
-        $("body button").css("border-color", "white");
-    });
 }
 
 blackHoleSuns.prototype.buildUserPanel = async function () {
