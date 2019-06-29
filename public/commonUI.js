@@ -17,18 +17,55 @@ blackHoleSuns.prototype.doLoggedout = function () {
 blackHoleSuns.prototype.doLoggedin = function (user) {
     bhs.displayUser(user, true);
 
+    if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
+        let ref = bhs.fs.doc("admin/" + bhs.user.uid);
+        ref.get().then(function (doc) {
+            if (doc.exists && doc.data().role == "admin") {
+                $("#admin").show();
+                $("#recalc").show();
+                $("#testmode").show();
+                $("#showContest").show();
+
+                $("#recalc").click(function () {
+                    bhs.fixAllTotals();
+                });
+
+                $("#testmode").click(function () {
+                    starsCol = starsCol == "stars5" ? "stars6" : "stars5";
+                    $("body").css("background-color", starsCol != "stars5" ? "red" : "black");
+                    bhs.list = {};
+                    bhs.loaded = {};
+                    bhs.displayUser(bhs.user, true);
+                });
+            }
+        });
+    }
+
+    if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
+        let ref = bhs.fs.doc("admin/" + bhs.user.uid);
+        ref.get().then(function (doc) {
+            if (doc.exists && (doc.data().role == "admin" || doc.data().role == "editor"))
+                $("#poiorg").show();
+        });
+    }
+
     $("#save").removeClass("disabled");
     $("#save").removeAttr("disabled");
 }
 
 blackHoleSuns.prototype.displayUser = async function (user, force) {
-    let ifindex = window.location.pathname == "/index.html" || window.location.pathname == "/";
+    let fadmin = window.location.pathname == "/admin.html";
+    let fpoiorg = window.location.pathname == "/poiorg.html";
     let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform);
 
     bhs.user = mergeObjects(bhs.user, user);
+
+    if (fpoiorg)
+        return;
+
     bhs.getActiveContest(bhs.displayContest);
 
-    if ((changed || force) && bhs.user.galaxy && bhs.user.platform) {
+    if ((changed || force) && bhs.user.galaxy && bhs.user.platform && !fadmin) {
         bhs.buildTotals();
         bhs.getTotals(bhs.displayTotals);
 
@@ -486,7 +523,7 @@ blackHoleSuns.prototype.displayEntry = function (entry) {
 }
 
 function entryDblclk(evt) {
-    let ifgal = window.location.pathname == "/galaxy.html"
+    let ifgal = window.location.pathname == "/galaxy.html" || window.location.pathname == "/search.html";
 
     let id = $(evt).parent().prop("id");
     let e = bhs.entries[bhs.reformatAddress(id)];
@@ -563,7 +600,7 @@ const totalsRows = [{
 
 blackHoleSuns.prototype.buildTotals = function () {
     let findex = window.location.pathname == "/index.html" || window.location.pathname == "/";
-    let fgal = window.location.pathname == "/galaxy.html";
+    let fgal = window.location.pathname == "/galaxy.html" || window.location.pathname == "/admin.html";
 
     const pnl = `
         <div class="card-header bkg-def">
@@ -690,7 +727,7 @@ blackHoleSuns.prototype.buildTotals = function () {
 }
 
 blackHoleSuns.prototype.displayTotals = function (entry, id) {
-    let fgal = window.location.pathname == "/galaxy.html";
+    let fgal = window.location.pathname == "/galaxy.html" || window.location.pathname == "/admin.html";
     let cid = "";
 
     if (id.match(/totals/)) {
@@ -767,7 +804,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
                     let galaxy = $("#btn-Galaxy").text().stripNumber();
                     let platform = $("#btn-Platform").text().stripMarginWS();
                     $("#btn-Player").text("");
-                    bhs.getOrgEntries(bhs.displayEntryList, $(this).find("#id-names").text().stripMarginWS(), galaxy, platform);
+                    bhs.getOrgEntries(bhs.displayEntryList, bhs.displayEntry, $(this).find("#id-names").text().stripMarginWS(), galaxy, platform);
                 });
             }
         }
@@ -778,7 +815,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
 
     bhs.displayUTotals(entry[starsCol], cid);
 
-    if (cid == "id-player" && entry[starsCol] && entry[starsCol].contest) {
+    if (cid == "id-player" && bhs.contest && entry[starsCol] && entry[starsCol].contest) {
         cid = "id-contest";
         bhs.displayUTotals(entry[starsCol].contest[bhs.contest.name], cid);
     }
@@ -907,7 +944,7 @@ const totalsGalaxy = [{
 }];
 
 blackHoleSuns.prototype.displayUserTotals = function (entry, id, bold) {
-    let fgal = window.location.pathname == "/galaxy.html";
+    let fgal = window.location.pathname == "/galaxy.html" || window.location.pathname == "/admin.html";
 
     if (entry[starsCol] && entry[starsCol].total > 0) {
         const userHdr = `<div id="u-idname" class="row">`;
@@ -1371,6 +1408,10 @@ blackHoleSuns.prototype.resetMapOptions = function (entry) {
     opt.find("#ck-chain").prop("checked", false);
 }
 
+blackHoleSuns.prototype.purgeMap = function () {
+    Plotly.purge('plymap');
+}
+
 blackHoleSuns.prototype.buildMap = function () {
     let fsearch = window.location.pathname == "/search.html";
     let fadmin = window.location.pathname == "/admin.html";
@@ -1499,6 +1540,7 @@ blackHoleSuns.prototype.buildMap = function () {
     $("#btn-redraw").unbind("click");
     $("#btn-redraw").click(function () {
         $("#resultsTable").empty();
+        bhs.purgeMap();
         bhs.drawList(bhs.entries);
     });
 
@@ -1594,15 +1636,13 @@ blackHoleSuns.prototype.buildMap = function () {
     });
 }
 
-blackHoleSuns.prototype.drawList = function (listEntry) {
-    if (!listEntry)
-        return;
+blackHoleSuns.prototype.drawList = function (listEntry, force) {
 
     let findex = window.location.pathname == "/" || window.location.pathname == "/index.html";
     let fsearch = window.location.pathname == "/search.html";
     let fadmin = window.location.pathname == "/admin.html";
 
-    if (fadmin)
+    if (!force && (fadmin || fsearch))
         return;
 
     let opt = bhs.extractMapOptions();
@@ -1652,7 +1692,7 @@ blackHoleSuns.prototype.drawList = function (listEntry) {
 }
 
 blackHoleSuns.prototype.drawSingle = function (entry) {
-    let fsearch = window.location.pathname == "/search.html"||window.location.pathname == "/galaxy.html";
+    let fsearch = window.location.pathname == "/search.html" || window.location.pathname == "/galaxy.html";
     let fadmin = window.location.pathname == "/admin.html";
     if (fadmin)
         return;

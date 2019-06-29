@@ -7,10 +7,10 @@
     <meta name="keywords" content="no man's sky,map,black hole">
     <meta name="author" content="Stephen Piper">
     <meta name="application-name" content="NMS-Black Hole Suns">
+    <link rel="shortcut icon" href="favicon.ico">
 
     <script src="env.js"></script>
 
-    <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-5"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -50,21 +50,22 @@
 
     <script src="common.js"></script>
     <script src="commonUI.js"></script>
-    <script src="galaxy.js"></script>
+    <script src="index.js"></script>
+    <script src="admin.js"></script>
 
     <link rel="stylesheet" type="text/css" href="local.css">
     <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
-    <link rel="shortcut icon" href="favicon.ico">
 </head>
 
-<body class="bkg-def">
+<body class="bkg-green">
     <a href="https://darc.blackholesuns.com"><img src="nmsbhs_banner.jpg" alt="BHS Banner"></a>
 
     <div id="r2" class="container-fluid">
         <div class="row">
-            <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">About/FAQ</a>
-            <a class="col-3 text-center h5 txt-def" href="index.html">Input</a>
-            <a class="col-3 text-center h5 txt-def" href="search.html">Search</a>
+            <a class="col-2 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">FAQ</a>
+            <a class="col-2 text-center h5 txt-def" href="index.html">Input</a>
+            <a class="col-2 text-center h5 txt-def" href="galaxy.html">Totals</a>
+            <a class="col-2 text-center h5 txt-def" href="search.html">Search</a>
 
             <div id="full-usermenu" class="container col-4">
                 <button id="login" type="button" class="text-center btn-def no-border h5">
@@ -118,10 +119,9 @@
     <div id="javascript">
         <!--googleoff:all-->
         <div class="text-danger h6">
-            <p>Unfortunately, this page cannot function without javasript. Please add this site to your "allowed" sites.
-                For chrome it's located&nbsp;
-                <a href="chrome://settings/content/javascript">here</a></p>
-            <p>This error message can also be caused by a page loading error.</p>
+            Unfortunately, this page cannot function without javasript. Please add this site to your "allowed" sites.
+            For chrome it's located <a href="chrome://settings/content/javascript">here</a>. This error message can also
+            be caused by a page loading error.
         </div>
         <!--googleon:all-->
         <br>
@@ -164,67 +164,43 @@
     </div>
     <!--googleon:all-->
 
-    <div id="jssite" class="container-fluid pad-bottom" style="display:none">
+    <div id="jssite" class="container-fluid pad-bottom hidden">
         <div id="loggedout" class="row text-danger h5">
-            <h4>This is the data display page for the No Man's Sky Black Hole
+            <h4>This is the data entry page for the No Man's Sky Black Hole
                 Suns project. Please login.
             </h4>
         </div>
 
-        <div class="row">
-            <div class="col-md-7 col-14">
-                <div id="totals" class="card border pad-bottom"></div>
+        <div class="card card-body border pad-bottom">
+            <div id="pnl-user" class="card card-body pad-bottom">
+                <div class="row">
+                    <div id="id-Player" class="col-4 text-center"></div>
+                    <div id="id-Platform" class="col-4 text-center"></div>
+                    <div id="id-Galaxy" class="col-4 text-center"></div>
+                </div>
                 <br>
             </div>
 
-            <div class="col-md-7 col-14">
-                <div id="pnl-user" class="card card-body border pad-bottom"></div>
-                <br>
+            <div id="panels"></div>
+            <br>
 
-                <div class="card card-body border pad-bottom bkg-def">
+            <div id="entrybuttons" class="row">
+                <div class="col-7">
                     <div class="row">
-                        <div id="mapcol" class="card card-body border bkg-def pad-bottom">
-                            <div id="plymap"></div>
-                        </div>
-                    </div>
-                    <br>
-
-                    <div class="row">
-                        <div class="col-6">
-                            <div id="btn-redraw" class="btn-sm btn border btn-def">Redraw </div>
-                        </div>
-                        <div id="maplogo" class="col-3">
-                            <a html="https://darc.blackholesuns.com">
-                                <img id="logo" src="lBTK5EL.png" class="float-center" alt="BHS Logo" height="20px"
-                                    width="20px">
-                            </a>
-                        </div>
-                        <div id="btn-mapsettings" class="col-5 text-right txt-def">
-                            <i class="fa fa-cog txt-def"></i>&nbsp;Settings
-                        </div>
-                    </div>
-                    <br>
-
-                    <div id="showmapkey" class="card card-body border bkg-def pad-bottom hidden">
-                        <div class="row text-center">
-                            <div class="col-14 h5 txt-def">Key</div>
-                        </div>
-                        <div id="mapkey" class="row bkg-def txt-def"></div>
-                    </div>
-                    <br>
-
-                    <div id="showmapoptions" class="card no-border hidden">
-                        <div id="mapoptions" class="card card-body bkg-def border pad-bottom"></div>
+                        <button id="adminsave" type="button" class="col-4 btn  btn-sm btn-def">Save</button>&nbsp;
+                        <button id="admindelete" type="button" class="col-4 btn  btn-sm btn-def disabled"
+                            disabled>Delete</button>&nbsp;
+                        <button id="delete" type="button" class="hidden"></button>
+                        <button id="cancel" type="button" class="col-4 btn btn-def  btn-sm">Cancel</button>&nbsp;
                     </div>
                 </div>
+                <div id="status" class="border col-7 text-danger scrollbar container-fluid"
+                    style="overflow-y: scroll; height: 40px"></div>
             </div>
         </div>
-        <br>
-
-        <div id="showentries" class="card">
-            <div id="entryTable" class="card border pad-bottom"></div>
-        </div>
     </div>
+    <br>
+
 </body>
 
 </html>

@@ -5,8 +5,11 @@ $(document).ready(function () {
 
     bhs.last = [];
 
-    bhs.buildUserPanel();
-    bhs.buildFilePanel();
+    let fadmin = window.location.pathname == "/admin.html";
+    if (!fadmin) {
+        bhs.buildUserPanel();
+        bhs.buildFilePanel();
+    }
 
     panels.forEach(function (p) {
         bhs.buildPanel(p.id);
@@ -165,7 +168,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         $(this).closest("[id|='pnl']").find("#id-glyph").html(bhs.addrToGlyph(addr));
 
         bhs.getEntry(addr, bhs.displaySingle, 0);
-        
+
         bhs.displayCalc();
     });
 
@@ -382,6 +385,9 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
 
 blackHoleSuns.prototype.save = async function () {
     $("#status").empty();
+
+    let fadmin = window.location.pathname == "/admin.html";
+    if (!fadmin)
     bhs.saveUser();
 
     if (await bhs.extractEntry(pnlTop)) {

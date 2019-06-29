@@ -50,7 +50,7 @@
 
     <script src="common.js"></script>
     <script src="commonUI.js"></script>
-    <script src="galaxy.js"></script>
+    <script src="search.js"></script>
 
     <link rel="stylesheet" type="text/css" href="local.css">
     <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
@@ -62,9 +62,9 @@
 
     <div id="r2" class="container-fluid">
         <div class="row">
-            <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">About/FAQ</a>
-            <a class="col-3 text-center h5 txt-def" href="index.html">Input</a>
-            <a class="col-3 text-center h5 txt-def" href="search.html">Search</a>
+            <a class="col-2 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">FAQ</a>
+            <a class="col-2 text-center h5 txt-def" href="index.html">Input</a>
+            <a class="col-2 text-center h5 txt-def" href="galaxy.html">Totals</a>
 
             <div id="full-usermenu" class="container col-4">
                 <button id="login" type="button" class="text-center btn-def no-border h5">
@@ -171,50 +171,97 @@
             </h4>
         </div>
 
-        <div class="row">
-            <div class="col-md-7 col-14">
-                <div id="totals" class="card border pad-bottom"></div>
-                <br>
-            </div>
+        <div class="card card-body border pad-bottom">
+            <div id="pnl-user" class="card card-body border pad-bottom"></div>
+            <br>
 
-            <div class="col-md-7 col-14">
-                <div id="pnl-user" class="card card-body border pad-bottom"></div>
-                <br>
-
-                <div class="card card-body border pad-bottom bkg-def">
-                    <div class="row">
+            <div class="card card-body border pad-bottom bkg-def">
+                <div class="row">
+                    <div class="col-9">
                         <div id="mapcol" class="card card-body border bkg-def pad-bottom">
                             <div id="plymap"></div>
                         </div>
                     </div>
-                    <br>
+                    <div class="col-5">
+                        <div id="searchpnl" class="card border pad-bottom">
+                            <div class="card-header txt-def h5 text-center">
+                                Search
+                                <br>
+                                <h6>(searches topmost field completed)</h6>
+                            </div>
+                            <div class="card-body txt-def bkg-white">
+                                <div class="row">
+                                    <div class="col-6 h6 txt-inp-def">Coordinates&nbsp;</div>
+                                    <input id="id-addr" class="rounded col-8" placeholder="0000:0000:0000:0000">
+                                </div>
 
-                    <div class="row">
-                        <div class="col-6">
-                            <div id="btn-redraw" class="btn-sm btn border btn-def">Redraw </div>
+                                <div class="row">
+                                    <div class="col-6 h6 txt-inp-def">System Name&nbsp;</div>
+                                    <input id="id-sys" class="rounded col-8">
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-6 h6 txt-inp-def">Region Name&nbsp;</div>
+                                    <input id="id-reg" class="rounded col-8">&nbsp;
+                                </div>
+
+                                <!--div class="row">
+                                    <div id="id-Lifeform" class="col-12"></div>
+                                </div-->
+
+                                <!--div class="row">
+                                    <div id="id-Economy" class="col-12"></div>
+                                </div-->
+                                <br>
+                                <div class="row">
+                                    <div class="col-4"></div>
+                                    <button id="btn-search" type="button"
+                                        class="col-6 border btn btn-sm btn-def">Search</button>&nbsp;
+                                </div>
+                            </div>
                         </div>
-                        <div id="maplogo" class="col-3">
-                            <a html="https://darc.blackholesuns.com">
-                                <img id="logo" src="lBTK5EL.png" class="float-center" alt="BHS Logo" height="20px"
-                                    width="20px">
-                            </a>
+                        <br>
+                        <div id="results" class="card border">
+                            <div class="card-header bkg-def txt-def h5 text-center">Results</div>
+                            <div id="resultsTable" class="card-body pad-bottom scrollbar container-fluid" style="overflow-y: scroll; height:240px"></div>
                         </div>
-                        <div id="btn-mapsettings" class="col-5 text-right txt-def">
-                            <i class="fa fa-cog txt-def"></i>&nbsp;Settings
+                    </div>
+                </div>
+                <br>
+
+                <div class="row">
+                    <div class="col-5">
+                        <div class="card card-body no-bordr bkg-def">
+                            <div class="row">
+                                <div class="col-4">
+                                    <div class="row">
+                                        <div id="btn-redraw" class="text-center btn-sm btn border btn-def">Redraw </div>
+                                    </div>
+                                </div>
+                                <div id="maplogo" class="col-4">
+                                    <a html="https://darc.blackholesuns.com">
+                                        <img id="logo" src="lBTK5EL.png" class="float-center" alt="BHS Logo"
+                                            height="20px" width="20px">
+                                    </a>
+                                </div>
+                                <div id="btn-mapsettings" class="col-6 txt-def">
+                                    <i class="fa fa-cog txt-def"></i>&nbsp;Settings
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+
+                        <div id="showmapkey" class="card border bkg-def pad-bottom hidden">
+                            <div class="card-header h5 txt-def">Key</div>
+                            <div id="mapkey" class="card-body txt-def"></div>
                         </div>
                     </div>
                     <br>
 
-                    <div id="showmapkey" class="card card-body border bkg-def pad-bottom hidden">
-                        <div class="row text-center">
-                            <div class="col-14 h5 txt-def">Key</div>
+                    <div class="col-9">
+                        <div id="showmapoptions" class="hidden">
+                            <div id="mapoptions" class="card card-body bkg-def border pad-bottom"></div>
                         </div>
-                        <div id="mapkey" class="row bkg-def txt-def"></div>
-                    </div>
-                    <br>
-
-                    <div id="showmapoptions" class="card no-border hidden">
-                        <div id="mapoptions" class="card card-body bkg-def border pad-bottom"></div>
                     </div>
                 </div>
             </div>
