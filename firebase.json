@@ -19,7 +19,8 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**",
-      "**/admin.*"
+      "**/admin.*",
+      "**/poiorg.*"
     ]
   }, {
     "target": "test",
