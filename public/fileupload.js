@@ -228,6 +228,7 @@ Delete
 blackHoleSuns.prototype.readTextFile = function (f, id) {
     let file = f.files[0];
     let reader = new FileReader();
+
     $("#status").empty();
     $("#filestatus").empty();
 
@@ -235,20 +236,22 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
     let compare = id == "fbtn-compare";
 
     reader.onload = async function () {
-        let allrows = reader.result.split(/\r?\n|\r/);
+        let ext = file.name.replace(/.*(\..*)$/, "$1")
+        let name = "fileupload/" + uuidv4() + ext;
+
         let log = {
-            "_name": file.name,
-            "_player": bhs.user._name,
-            "_galaxy": bhs.user.galaxy,
-            "_platform": bhs.user.platform,
-            "_time": firebase.firestore.Timestamp.fromDate(new Date()),
+            player: bhs.user._name,
+            galaxy: bhs.user.galaxy,
+            platform: bhs.user.platform,
+            time: firebase.firestore.Timestamp.now(),
+            upload: file.name,
+            file: name,
         }
 
         if (!check) {
+            bhs.fbstorage.ref().child(name).put(file);
             let ref = bhs.fs.collection("upload");
-            let e = log;
-            e.contents = allrows;
-            ref.add(e);
+            ref.add(log);
         }
 
         let b = {};
@@ -256,6 +259,8 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
         b.batchcount = 0;
 
         log.log = "";
+
+        let allrows = reader.result.split(/\r?\n|\r/);
 
         let step = 1 / allrows.length * 100;
         let width = 1;
@@ -369,7 +374,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                             if (!doc.exists)
                                 log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " base not found", 0, log.log);
                             else if (doc.data().uid != entry[0].uid)
-                            log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log);
+                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log);
                         });
                     } else if (entry[0].type.match(/single/i) || !entry[2].addr) {
                         let ref = bhs.getStarsColRef(entry[0].galaxy, entry[0].platform, entry[1].addr);
@@ -377,7 +382,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                             if (!doc.exists)
                                 log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " single system not found", 0, log.log);
                             else if (doc.data().uid != entry[0].uid)
-                            log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log);
+                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log);
                         });
                     } else {
                         let ref = bhs.getStarsColRef(entry[0].galaxy, entry[0].platform, entry[1].addr);
@@ -385,14 +390,14 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                             if (!doc.exists)
                                 log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " black hole system not found", 0, log.log);
                             else if (doc.data().uid != entry[0].uid)
-                            log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log);
+                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log);
                         });
                         ref = bhs.getStarsColRef(entry[0].galaxy, entry[0].platform, entry[2].addr);
                         await ref.get().then(function (doc) {
                             if (!doc.exists)
                                 log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[2].addr + " exit system not found", 0, log.log);
                             else if (doc.data().uid != entry[0].uid)
-                            log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log);
+                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log);
                         });
                     }
                 } else {

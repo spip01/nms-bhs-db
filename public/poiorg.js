@@ -252,7 +252,6 @@ blackHoleSuns.prototype.save = function (evt) {
             });
     }
 
-
     let ref = bhs.fs.collection(pnlid == "pnl-org" ? "org" : "poi");
     ref = ref.where("_name", "==", sel !="" ? sel : uuidv4());
 
@@ -335,12 +334,6 @@ blackHoleSuns.prototype.cancel = function (evt) {
     pnl.find("#btn-save").text("Save");
     pnl.find("#btn-delete").addClass("disabled");
     pnl.find("#btn-delete").prop("disabled", true);
-}
-
-function uuidv4() {
-    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
-        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-    )
 }
 
 blackHoleSuns.prototype.statusOut = function (pnl, str) {
