@@ -151,10 +151,10 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
         ref.get().then(function (doc) {
             if (doc.exists) {
                 user = doc.data();
-                user.lasttime = firebase.firestore.Timestamp.fromDate(new Date());
+                user.lasttime = firebase.firestore.Timestamp.now();
                 bhs.updateUser(user);
             } else {
-                user.firsttime = firebase.firestore.Timestamp.fromDate(new Date());
+                user.firsttime = firebase.firestore.Timestamp.now();
                 user.lasttime = user.firsttime;
                 bhs.updateUser(user, true);
             }
@@ -332,7 +332,7 @@ blackHoleSuns.prototype.getEntryByConnection = function (addr, displayfcn, idx) 
 }
 
 blackHoleSuns.prototype.updateEntry = async function (entry) {
-    entry.modded = firebase.firestore.Timestamp.fromDate(new Date());
+    entry.modded = firebase.firestore.Timestamp.now();
     entry.version = "next";
     entry.xyzs = bhs.addressToXYZ(entry.addr);
     if (entry.connection)
@@ -359,7 +359,7 @@ blackHoleSuns.prototype.updateEntry = async function (entry) {
 }
 
 blackHoleSuns.prototype.updateBase = function (entry) {
-    entry.time = firebase.firestore.Timestamp.fromDate(new Date());
+    entry.time = firebase.firestore.Timestamp.now();
     entry.version = "next";
     entry.xyzs = bhs.addressToXYZ(entry.addr);
 
@@ -868,7 +868,7 @@ blackHoleSuns.prototype.updateAllTotals = function (totals, reset) {
             for (let i = 0; i < olist.length; ++i) {
                 let t = {}
                 t[starsCol] = totals.orgs[olist[i]];
-                t.modified = firebase.firestore.Timestamp.fromDate(new Date());
+                t.modified = firebase.firestore.Timestamp.now();
                 let ref = bhs.fs.collection("org").where("name", "==", olist[i]);
                 ref.get().then(function (snapshot) {
                     if (!snapshot.empty)
@@ -913,7 +913,7 @@ blackHoleSuns.prototype.updateTotal = function (add, ref, reset) {
             else
                 t = bhs.addObjects(t, add);
 
-            let now = firebase.firestore.Timestamp.fromDate(new Date());
+            let now = firebase.firestore.Timestamp.now();
 
             if (ref.id == "totals" && t[starsCol].total % 500 == 0) {
                 if (!t.milestone)

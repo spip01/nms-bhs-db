@@ -511,7 +511,7 @@ blackHoleSuns.prototype.batchWriteLog = async function (b, log, check) {
 blackHoleSuns.prototype.batchUpdate = async function (b, entry, check) {
     delete entry.type;
     delete entry.owned;
-    entry.modded = firebase.firestore.Timestamp.fromDate(new Date());
+    entry.modded = firebase.firestore.Timestamp.now();
     entry.xyzs = bhs.addressToXYZ(entry.addr);
     if (entry.connection)
         entry.conxyzs = bhs.addressToXYZ(entry.connection);
@@ -545,7 +545,7 @@ blackHoleSuns.prototype.batchUpdate = async function (b, entry, check) {
 blackHoleSuns.prototype.batchEdit = async function (b, entry, old, check) {
     delete entry.type;
     delete entry.owned;
-    entry.modded = firebase.firestore.Timestamp.fromDate(new Date());
+    entry.modded = firebase.firestore.Timestamp.now();
 
     let addr = old ? old : entry.addr;
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, addr);
@@ -610,7 +610,7 @@ blackHoleSuns.prototype.batchDeleteBase = async function (b, entry, check) {
 
 blackHoleSuns.prototype.batchWriteBase = async function (b, entry, check) {
     delete entry.type;
-    entry.modded = firebase.firestore.Timestamp.fromDate(new Date());
+    entry.modded = firebase.firestore.Timestamp.now();
     entry.xyzs = bhs.addressToXYZ(entry.addr);
     if (!check) {
         let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr);
