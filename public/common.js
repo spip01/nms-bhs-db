@@ -998,7 +998,7 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, 
     }
 }
 
-blackHoleSuns.prototype.getOrgEntries = async function (displayFcn, name, galaxy, platform) {
+blackHoleSuns.prototype.getOrgEntries = async function (displayFcn, singleFcn, name, galaxy, platform) {
     galaxy = galaxy ? galaxy : bhs.user.galaxy;
     platform = platform ? platform : bhs.user.platform;
 
