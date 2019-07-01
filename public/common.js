@@ -138,7 +138,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
         $("#login").hide();
         $("#usermenu").show();
 
-        // let ref = bhs.fs.collection("users").where("_name","==","Kaboom443");
+        // let ref = bhs.fs.collection("users").where("_name","==","wasim13dark");
         // ref.get().then(function(snapshot){
         //     if (!snapshot.empty)
         //         user = snapshot.docs[0].data();
@@ -580,11 +580,11 @@ blackHoleSuns.prototype.searchTxt = async function () {
         }
     });
 
-    Object.keys(rcount).forEach(r=>{
-        console.log("reg "+r+" "+rcount[r]);
+    Object.keys(rcount).forEach(r => {
+        console.log("reg " + r + " " + rcount[r]);
     });
-    Object.keys(scount).forEach(s=>{
-        console.log("sys "+s+" "+scount[s]);
+    Object.keys(scount).forEach(s => {
+        console.log("sys " + s + " " + scount[s]);
     });
 }
 
@@ -786,13 +786,31 @@ blackHoleSuns.prototype.incTotals = function (totals, entry, inc) {
             totals.orgs[entry.org] = bhs.incParts(totals.orgs[entry.org], entry, inc);
 
         if (bhs.contest && entry.created > bhs.contest.start && entry.created < bhs.contest.end) {
-            let contest = bhs.contest.name;
+            let disq = false;
+            if (bhs.contest) {
+                if (bhs.contest.disq && bhs.contest.disq.orgs) {
+                    let d = Object.keys(bhs.contest.disq.orgs);
+                    for (let i = 0; i < d.length && !disq; ++i)
+                        if (bhs.contest.disq.orgs[d[i]] == entry.name)
+                            disq = true;
+                }
 
-            totals.contest[contest] = bhs.incParts(totals.contest[contest], entry, inc);
-            totals.users[entry.uid].contest[contest] = bhs.incParts(totals.users[entry.uid].contest[contest], entry, inc);
+                if (bhs.contest.disq && bhs.contest.disq.users) {
+                    let d = Object.keys(bhs.contest.disq.users);
+                    for (let i = 0; i < d.length && !disq; ++i)
+                        if (bhs.contest.disq.users[d[i]].uid == entry.uid)
+                            disq = true;
+                }
+            }
+            if (!disq) {
+                let contest = bhs.contest.name;
 
-            if (entry.org)
-                totals.orgs[entry.org].contest[contest] = bhs.incParts(totals.orgs[entry.org].contest[contest], entry, inc);
+                totals.contest[contest] = bhs.incParts(totals.contest[contest], entry, inc);
+                totals.users[entry.uid].contest[contest] = bhs.incParts(totals.users[entry.uid].contest[contest], entry, inc);
+
+                if (entry.org)
+                    totals.orgs[entry.org].contest[contest] = bhs.incParts(totals.orgs[entry.org].contest[contest], entry, inc);
+            }
         }
     }
 
@@ -918,15 +936,16 @@ blackHoleSuns.prototype.updateTotal = function (add, ref, reset) {
             if (ref.id == "totals" && t[starsCol].total % 500 == 0) {
                 if (!t.milestone)
                     t.milestone = {};
-                t.milestone[(t[starsCol].total % 500).toString()] = {};
-                t.milestone[(t[starsCol].total % 500).toString()].user = bhs.user._name;
-                t.milestone[(t[starsCol].total % 500).toString()].time = now;
+                t.milestone[(t[starsCol].total).toString()] = {};
+                t.milestone[(t[starsCol].total).toString()].user = bhs.user._name;
+                t.milestone[(t[starsCol].total).toString()].time = now;
             }
 
-            if (ref.id == "contest" && (contest.start.getTime() - now.getTime()) % 86400000) {
-                if (!t.daily)
+            if (ref.path.match(/contest/)) {
+                if (typeof t.daily == "undefined")
                     t.daily = {};
-                t.daily[((contest.start.getTime() - now.getTime()) % 86400000).toString()] = t[starsCol];
+                let s = Math.trunc((now.toDate().getTime() - bhs.contest.start.toDate().getTime()) / 86400000).toString();
+                t.daily[s] = t[starsCol];
             }
 
             transaction.set(ref, t);
@@ -1040,12 +1059,12 @@ blackHoleSuns.prototype.addEntryList = function (entry, list) {
     return list;
 }
 
-blackHoleSuns.prototype.getBases = async function (displayFcn,singleDispFcn) {
+blackHoleSuns.prototype.getBases = async function (displayFcn, singleDispFcn) {
     let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform);
     await ref.get().then(async function (snapshot) {
         for (let i = 0; i < snapshot.size; ++i)
             bhs.entries = bhs.addBaseList(snapshot.docs[i].data(), bhs.entries)
-            
+
         if (singleDispFcn) {
             let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform);
             ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()));

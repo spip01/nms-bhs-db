@@ -531,7 +531,7 @@ const totalsItemsEnd = `</div>`;
 const totalsCol = [{
     title: "",
     id: "id-what",
-    format: "col-6",
+    format: "col-4",
 }, {
     title: "Player",
     id: "id-player",
@@ -545,11 +545,11 @@ const totalsCol = [{
 }, {
     title: "All",
     id: "id-totalsall",
-    format: "col-2 text-right",
+    format: "col-3 text-right",
 }, {
     title: "Contest",
     id: "id-contestall",
-    format: "col-2 text-right hidden",
+    format: "col-3 text-right hidden",
 }];
 
 const rowTotal = 0;
@@ -743,8 +743,14 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
         list.sort((a, b) => $(a).prop("id").toLowerCase() > $(b).prop("id").toLowerCase() ? 1 :
             $(a).prop("id").toLowerCase() < $(b).prop("id").toLowerCase() ? -1 : 0);
     else
-        list.sort((a, b) => parseInt($(a).find("#id-qty").text()) < parseInt($(b).find("#id-qty").text()) ? 1 :
-            parseInt($(a).find("#id-qty").text()) > parseInt($(b).find("#id-qty").text()) ? -1 : 0);
+        list.sort((a, b) => {
+            let x = $(a).find("#id-ctst").text().stripMarginWS();
+            let y = $(b).find("#id-ctst").text().stripMarginWS();
+            x = x == "" ? -2 : x == "--" ? -1 : parseInt(x);
+            y = y == "" ? -2 : y == "--" ? -1 : parseInt(y);
+
+            return y - x;
+        });
 
     $("#contrib").html("Total Contributors: " + list.length);
 
@@ -776,8 +782,14 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
             list.sort((a, b) => $(a).prop("id").toLowerCase() > $(b).prop("id").toLowerCase() ? 1 :
                 $(a).prop("id").toLowerCase() < $(b).prop("id").toLowerCase() ? -1 : 0);
         else
-            list.sort((a, b) => parseInt($(a).find("#id-qty").text()) < parseInt($(b).find("#id-qty").text()) ? 1 :
-                parseInt($(a).find("#id-qty").text()) > parseInt($(b).find("#id-qty").text()) ? -1 : 0);
+            list.sort((a, b) => {
+                let x = $(a).find("#id-ctst").text().stripMarginWS();
+                let y = $(b).find("#id-ctst").text().stripMarginWS();
+                x = x == "" ? -2 : x == "--" ? -1 : parseInt(x);
+                y = y == "" ? -2 : y == "--" ? -1 : parseInt(y);
+
+                return y - x;
+            });
 
         loc.empty();
         for (var i = 0; i < list.length; i++) {
@@ -794,7 +806,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
         }
     }
 
-    if (entry.uid != bhs.user.uid)
+    if (entry.uid != bhs.user.uid && cid != "id-contestall")
         return;
 
     bhs.displayUTotals(entry[starsCol], cid);
@@ -884,13 +896,13 @@ const totalsPlayers = [{
 }, {
     title: "Contest",
     id: "id-ctst",
-    format: "col-2 text-right hidden",
-    hformat: "col-2 text-center hidden",
+    format: "col-3 text-right hidden",
+    hformat: "col-3 text-center hidden",
 }, {
     title: "Total",
     id: "id-qty",
-    format: "col-2 text-right",
-    hformat: "col-2 text-center",
+    format: "col-3 text-right",
+    hformat: "col-3 text-center",
 }];
 
 const totalsOrgs = [{
@@ -901,13 +913,13 @@ const totalsOrgs = [{
 }, {
     title: "Contest",
     id: "id-ctst",
-    format: "col-2 text-right hidden",
-    hformat: "col-2 text-center hidden",
+    format: "col-3 text-right hidden",
+    hformat: "col-3 text-center hidden",
 }, {
     title: "Total",
     id: "id-qty",
-    format: "col-2 text-right",
-    hformat: "col-2 text-center",
+    format: "col-3 text-right",
+    hformat: "col-3 text-center",
 }];
 
 const totalsGalaxy = [{
@@ -915,6 +927,16 @@ const totalsGalaxy = [{
     id: "id-names",
     format: "col-5",
     hformat: "col-5",
+}, {
+    title: "Contest",
+    id: "id-ctst",
+    format: "col-2 text-right hidden",
+    hformat: "col-2 text-center hidden",
+}, {
+    title: "Total",
+    id: "id-qty",
+    format: "col-2 text-right",
+    hformat: "col-2 text-center",
 }, {
     title: "PC-XBox",
     id: "id-pct",
@@ -925,16 +947,6 @@ const totalsGalaxy = [{
     id: "id-ps4t",
     format: "col-2 text-right",
     hformat: "col-2 text-center",
-}, {
-    title: "Total",
-    id: "id-qty",
-    format: "col-2 text-right",
-    hformat: "col-2 text-center",
-}, {
-    title: "Contest",
-    id: "id-ctst",
-    format: "col-2 text-right hidden",
-    hformat: "col-2 text-center hidden",
 }];
 
 blackHoleSuns.prototype.displayUserTotals = function (entry, id, bold) {
