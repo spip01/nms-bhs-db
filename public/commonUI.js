@@ -79,6 +79,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
 
     let pnl = $("#pnl-user");
     pnl.find("#id-player").val(bhs.user._name);
+    pnl.find("#ck-xbox").prop("checked", typeof bhs.user.xbox == "undefined" ? false : bhs.user.xbox);
     pnl.find("#btn-Player").text(bhs.user._name);
     pnl.find("#btn-Platform").text(bhs.user.platform);
     pnl.find("#btn-Organization").text(bhs.user.org);
@@ -111,8 +112,12 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
             </div>
 
             <div class="row">
-                <div id="id-Organization" class="col-9"></div>
-                <label class="col-5 h5 text-right align-bottom">
+            <div id="id-Organization" class="col-md-7 col-14"></div>
+                <label class="col-md-3 col-7 h5 txt-inp-def text-right align-bottom">
+                    X-Box&nbsp;
+                    <input id="ck-xbox" type="checkbox">
+                </label>
+                <label class="col-md-3 col-7 h5 text-right align-bottom">
                     File Upload&nbsp;
                     <input id="ck-fileupload" type="checkbox">
                 </label>
@@ -138,10 +143,8 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
         bhs.changeName("#id-player", user);
     });
 
-    $("#id-player").keyup(function (event) {
-        if (event.keyCode === 13) {
-            $(this).change();
-        }
+    $("#ck-xbox").change(function () {
+        bhs.saveUser();
     });
 
     $("#ck-fileupload").change(function (event) {
@@ -207,28 +210,28 @@ const utAddrIdx = 1;
 var userTable = [{
     title: "Type",
     id: "id-type",
-    format: "col-2",
+    format: "col-sm-2 col-3",
     field: "blackhole",
 }, {
     title: "Coordinates",
     id: "id-addr",
     field: "addr",
-    format: "col-lg-3 col-md-4 col-sm-4 col-5"
+    format: "col-lg-3 col-md-4 col-sm-4 col-6"
 }, {
     title: "LY",
     id: "id-toctr",
-    format: "col-2",
+    format: "col-sm-2 col-3",
     calc: true
 }, {
     title: "System",
     id: "id-sys",
     field: "sys",
-    format: "col-3"
+    format: "col-sm-3 col-5"
 }, {
     title: "Region",
     id: "id-reg",
     field: "reg",
-    format: "col-3"
+    format: "col-sm-3 col-5"
 }, {
     title: "Lifeform",
     id: "id-life",
@@ -243,7 +246,7 @@ var userTable = [{
     title: "Base",
     id: "id-base",
     field: "basename",
-    format: "col-3",
+    format: "col-sm-3 col-4",
 }];
 
 blackHoleSuns.prototype.buildUserTable = function (entry) {
@@ -265,14 +268,14 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
             <div id="id-utlistsel" class="row"></div>
 
             <div class="row">
-                <button id="btn-saveListSettings" type="button" class="col-2 btn-def btn btn-sm">Save</button>&nbsp;
+                <button id="btn-saveListSettings" type="button" class="col-sm-2 col-4 btn-def btn btn-sm">Save</button>&nbsp;
 
-                <label id="id-export" class="col-7 text-right h6 txt-inp-def border-left" style="display:none">File Name&nbsp;
+                <label id="id-export" class="col-sm-8 col-14 text-right h6 txt-inp-def border-left" style="display:none">File Name&nbsp;
                     <input id="inp-exportfile" type="text" class="rounded col-10">
                 </label>
                 
-                <button id="btn-create" type="button" href="" class="col-2 btn-def btn btn-sm" style="display:none">Create</button>&nbsp;
-                <a id="btn-export" type="button" href="" class="col-2 btn-def btn btn-sm disabled" disabled style="display:none">Export</a>
+                <button id="btn-create" type="button" href="" class="col-sm-2 col-4 btn-def btn btn-sm" style="display:none">Create</button>&nbsp;
+                <a id="btn-export" type="button" href="" class="col-sm-2 col-4  btn-def btn btn-sm disabled" disabled style="display:none">Export</a>
             </div>
         </div>
         
@@ -282,7 +285,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
         </div>`;
 
     const ckbox = `            
-        <label class="col-4 h6 txt-inp-def">
+        <label class="col-sm-4 col-7 h6 txt-inp-def">
             <input id="ck-idname" type="checkbox" checked>
             title
         </label>`;
@@ -531,25 +534,25 @@ const totalsItemsEnd = `</div>`;
 const totalsCol = [{
     title: "",
     id: "id-what",
-    format: "col-4",
+    format: "col-sm-4 col-6",
 }, {
     title: "Player",
     id: "id-player",
-    format: " col-2 text-right",
-    where: "index",
-}, {
-    title: "Contest",
-    id: "id-ctst",
-    format: "col-2 text-right hidden",
+    format: "col-sm-2 col-4 text-right",
     where: "index",
 }, {
     title: "All",
     id: "id-totalsall",
-    format: "col-3 text-right",
+    format: "col-sm-2 col-4 text-right",
 }, {
     title: "Contest",
+    id: "id-ctst",
+    format: "col-sm-2 col-10 text-right hidden",
+    where: "index",
+}, {
+    title: "Ctst All",
     id: "id-contestall",
-    format: "col-3 text-right hidden",
+    format: "col-sm-2 col-4 text-right hidden",
 }];
 
 const rowTotal = 0;
@@ -562,18 +565,18 @@ const totalsRows = [{
     title: "Total BH",
     id: "id-totalBH",
 }, {
-    title: "Total[platform]",
+    title: "Total/platform",
     id: "id-totalBHP",
 }, {
-    title: "Total[altplatform]",
+    title: "Total/altplatform",
     id: "id-totalAHP",
     where: "galaxy",
 }, {
-    title: "Total[galaxy]",
+    title: "Total/galaxy",
     id: "id-totalBHG",
     where: "index",
 }, {
-    title: "Total[galaxy][platform]",
+    title: "Total/galaxy/platform",
     id: "id-totalBHGP",
     where: "index",
 }];
@@ -599,21 +602,21 @@ blackHoleSuns.prototype.buildTotals = function () {
             <div id="itm0"></div>
             <br>
             
-            <div id="tgalaxy" class="card card-body" style="display:none">
+            <div id="tgalaxy" class="card card-body nopadding" style="display:none">
                 <div id="hdrg" class="row border-bottom txt-def"></div>
-                <div id="itmg" class="scrollbar container-fluid" style="overflow-y: scroll; height:120px"></div>
+                <div id="itmg" class="scrollbar container-fluid nopadding" style="overflow-y: scroll; height:120px"></div>
             </div>
             <br>
 
-            <div class="card card-body">
+            <div class="card card-body nopadding">
                 <div id="hdr1" class="row border-bottom txt-def"></div>
-                <div id="itm1" class="scrollbar container-fluid" style="overflow-y: scroll; height:86px"></div>
+                <div id="itm1" class="scrollbar container-fluid nopadding" style="overflow-y: scroll; height:86px"></div>
             </div>
             <br>
 
-            <div class="card card-body">
+            <div class="card card-body nopadding">
                 <div id="hdr2" class="row border-bottom txt-def"></div>
-                <div id="itm2" class="scrollbar container-fluid" style="overflow-y: scroll; height:86px"></div>
+                <div id="itm2" class="scrollbar container-fluid nopadding" style="overflow-y: scroll; height:86px"></div>
             </div>
         </div>`;
 
@@ -876,8 +879,8 @@ blackHoleSuns.prototype.clearAllUTotals = function (entry) {
 const totalsPlayers = [{
     title: "Contributors",
     id: "id-names",
-    format: "col-7",
-    hformat: "col-7",
+    format: "col-sm-7 col-14",
+    hformat: "col-sm-7 col-14",
 }, {
     title: "u",
     id: "id-uid",
@@ -896,57 +899,57 @@ const totalsPlayers = [{
 }, {
     title: "Contest",
     id: "id-ctst",
-    format: "col-3 text-right hidden",
-    hformat: "col-3 text-center hidden",
+    format: "col-sm-3 col-8 text-right hidden",
+    hformat: "col-sm-3 col-8 text-right hidden",
 }, {
     title: "Total",
     id: "id-qty",
-    format: "col-3 text-right",
-    hformat: "col-3 text-center",
+    format: "col-sm-3 col-6 text-right",
+    hformat: "col-sm-3 col-6 text-right",
 }];
 
 const totalsOrgs = [{
     title: "Organization",
     id: "id-names",
-    format: "col-7",
-    hformat: "col-7",
+    format: "col-sm-7 col-14",
+    hformat: "col-sm-7 col-14",
 }, {
     title: "Contest",
     id: "id-ctst",
-    format: "col-3 text-right hidden",
-    hformat: "col-3 text-center hidden",
+    format: "col-sm-3 col-8 text-right hidden",
+    hformat: "col-sm-3 col-8 text-right hidden",
 }, {
     title: "Total",
     id: "id-qty",
-    format: "col-3 text-right",
-    hformat: "col-3 text-center",
+    format: "col-sm-3 col-6 text-right",
+    hformat: "col-sm-3 col-6 text-right",
 }];
 
 const totalsGalaxy = [{
     title: "Galaxy",
     id: "id-names",
-    format: "col-5",
-    hformat: "col-5",
+    format: "col-sm-5 col-14",
+    hformat: "col-sm-5 col-14",
 }, {
     title: "Contest",
     id: "id-ctst",
-    format: "col-2 text-right hidden",
-    hformat: "col-2 text-center hidden",
+    format: "col-sm-2 col-3 text-right hidden",
+    hformat: "col-sm-2 col-3 text-right hidden",
 }, {
     title: "Total",
     id: "id-qty",
-    format: "col-2 text-right",
-    hformat: "col-2 text-center",
+    format: "col-sm-2 col-3 text-right",
+    hformat: "col-sm-2 col-3 text-right",
 }, {
     title: "PC-XBox",
     id: "id-pct",
-    format: "col-2 text-right",
-    hformat: "col-2 text-center",
+    format: "col-sm-2 col-3 text-right",
+    hformat: "col-sm-2 col-3 text-right",
 }, {
     title: "PS4",
     id: "id-ps4t",
-    format: "col-2 text-right",
-    hformat: "col-2 text-center",
+    format: "col-sm-2 col-3 text-right",
+    hformat: "col-sm-2 col-3 text-right",
 }];
 
 blackHoleSuns.prototype.displayUserTotals = function (entry, id, bold) {
@@ -1193,6 +1196,7 @@ blackHoleSuns.prototype.extractUser = function () {
     u.platform = loc.find("#btn-Platform").text().stripNumber();
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber();
     u.org = loc.find("#btn-Organization").text().stripNumber();
+    u.xbox = loc.find("#ck-xbox").prop("checked");
 
     return u;
 }
@@ -1439,7 +1443,7 @@ blackHoleSuns.prototype.buildMap = function () {
     const settings = `
         <br>
         <div class="row">
-            <div id="id-mapinp" class="col-6">
+            <div id="id-mapinp" class="col-sm-6 col-14">
                 <div class="row">
                     <div class="col-1"></div>
                     <div class="col-5 txt-def">Min</div>
@@ -1460,31 +1464,24 @@ blackHoleSuns.prototype.buildMap = function () {
                     <input id="inp-ymin" type="number" class="rounded col-5 txt-def" min="0" max="255" value="0">
                     <input id="inp-ymax" type="number" class="rounded col-5 txt-def" min="0" max="255" value="255">
                 </div>
+                <br>
             </div>
 
-            <div class="col-8 border-left">
-                <label class="col-5 h6 txt-def">
-                    <input id="ck-3dmap" type="checkbox" checked>
-                    3D Map
-                </label>
-                <label id="id-drawcon" class="col-8 h6 txt-def">
-                    <input id="ck-drawcon" type="checkbox" checked>
-                    Draw Connections
-                </label>
-                <!--label class="col-8 h6 txt-def">
-                    <input id="ck-drawexits" type="checkbox" checked>
-                    Draw Exits
-                </label-->
-                <!--label id="id-drawbase" class="col-8 h6 txt-def">
-                    <input id="ck-drawbase" type="checkbox" checked>
-                    Draw Bases
-                </label-->
-
-                <label id="id-zoomreg" class="col-14 h6 txt-def">
-                    <input id="ck-zoomreg" type="checkbox" checked>
-                    Auto Zoom Reg Search (zoom radius)
-                </label>
-
+            <div class="col-sm-7 col-14 border-left">
+                <div class="row">
+                    <label class="col-sm-7 col-14 h6 txt-def">
+                        <input id="ck-3dmap" type="checkbox" checked>
+                        3D Map
+                    </label>
+                    <label id="id-drawcon" class="col-sm-7 col-14 h6 txt-def">
+                        <input id="ck-drawcon" type="checkbox" checked>
+                        Draw Connections
+                    </label>
+                    <label id="id-zoomreg" class="col-14 h6 txt-def">
+                        <input id="ck-zoomreg" type="checkbox" checked>
+                        Auto Zoom Reg Search (zoom radius)
+                    </label>
+                </div>
                 <div class="row">
                     <label class="col-8 h6 txt-def">
                         <input id="ck-chain" type="checkbox" checked>
@@ -1503,13 +1500,13 @@ blackHoleSuns.prototype.buildMap = function () {
 
         <div id="zoomsection" class="row">
             <div class="h6 txt-def align-bottom">&nbsp;Zoom:&nbsp;</div>
-            <label class="col-6 h6 txt-def">Coord&nbsp;
-                <input id="inp-ctrcord" type="text" class="rounded col-10 txt-def" placeholder="07FF:007F:07FF:0000">
+            <label class="col-sm-6 col-12 h6 txt-def">Coord&nbsp;
+                <input id="inp-ctrcord" type="text" class="rounded col-14 txt-def" placeholder="07FF:007F:07FF:0000">
             </label>
-            <label class="col-4 h6 txt-def">Radius&nbsp;
+            <label class="col-sm-4 col-7 h6 txt-def">Radius&nbsp;
                 <input id="inp-ctrzoom" type="number" class="rounded col-6 txt-def" min="0" max="2048">
             </label>
-            <label class="col-3 h6 txt-def">
+            <label class="col-sm-3 col-7 h6 txt-def">
             <input id="ck-addzero" type="checkbox" checked>
                 &nbsp;Add 0
             </label>
@@ -1517,8 +1514,12 @@ blackHoleSuns.prototype.buildMap = function () {
         <br>
 
         <div class="row">
-            <button id="btn-mapsave" type="button" class="col-2 border btn btn-sm btn-def">Save</button>&nbsp;
-            <button id="btn-mapreset" type="button" class="col-2 border btn btn-sm btn-def">Reset</button>&nbsp;
+            <div class="col-5">
+                <div class="row">
+                    <button id="btn-mapsave" type="button" class="col-7 border btn btn-sm btn-def">Save</button>&nbsp;
+                    <button id="btn-mapreset" type="button" class="col-7 border btn btn-sm btn-def">Reset</button>&nbsp;
+                </div>
+            </div>
             <div class="col-9 border">
                 <div class="col-14 h6 clr-creme text-center">Click on map to select system & draw connections.</div>
                 <div class="col-14 h6 clr-creme text-center">Click on color box in map key to change colors. Then click redraw.</div>
@@ -1528,12 +1529,12 @@ blackHoleSuns.prototype.buildMap = function () {
     let opt = $("#mapoptions");
     opt.empty();
     opt.html(settings);
-    const col = '<div class="col-7">';
+    const col = '<div class="col-sm-7 col-14">';
     const key = `
-    <div class="row">
-        <div id="idname" class="col-5 text-center">title</div>
-        <input id="sel-idname" class="col-4 bkg-def" style="border-color:black" type="color" value="colorsel">
-        <input id="inp-idname" type="number" class="rounded col-4 txt-def hidden" min="0" max="20">
+        <div class="row">
+            <div id="idname" class="col-5 text-center">title</div>
+            <input id="sel-idname" class="col-4 bkg-def" style="border-color:black" type="color" value="colorsel">
+            <input id="inp-idname" type="number" class="rounded col-5 text-right txt-def hidden" min="0" max="20">
         </div>`;
     const colend = `</div>`;
 
