@@ -59,6 +59,9 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
                         <div class="col-14 h6 txt-inp-def">Traveler</div>
                         <input id="id-player" class="rounded col-13 h5" type="text">
                     </div>
+                    <div class="row">
+                        <div id="id-Organization" class="col-9"></div>
+                    </div>
                 </div>
 
                 <div class="col-7">
@@ -648,7 +651,7 @@ blackHoleSuns.prototype.displayGTotals = function (entry, id, ifcontest) {
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
     let title = `        
         <div class="row">
-            <div class="col-md-medium col-sm-small col-xs h6 txt-inp-def">label</div>`;
+            <div id="id-menu" class="col-md-medium col-sm-small col-xs h6 txt-inp-def">label</div>`;
     let block = `
             <div id="menu-idname" class="col-md-medium col-sm-small col-xs dropdown">
                 <button id="btn-idname" class="btn border btn-sm dropdown-toggle" style="rgbcolor" type="button" data-toggle="dropdown"></button>
@@ -719,7 +722,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
                 btn.text(name);
 
                 if (changefcn)
-                    changefcn();
+                    changefcn(btn);
 
                 if ($(this).attr("style"))
                     btn.attr("style", $(this).attr("style"));

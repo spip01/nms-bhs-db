@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>No Man's Sky Coordinate Exchange</title>
+    <title>NMS Coordinate Exchange</title>
     <meta name="description" content="No Man's Sky Coordinate Exchange">
     <meta name="keywords" content="no man's sky,coordinate exchange">
     <meta name="author" content="Stephen Piper">
@@ -46,6 +46,7 @@
     <script src="/__/firebase/5.9.4/firebase-app.js"></script>
     <script src="/__/firebase/5.9.4/firebase-auth.js"></script>
     <script src="/__/firebase/5.9.4/firebase-firestore.js"></script>
+    <script src="/__/firebase/5.9.4/firebase-storage.js"></script>
     <script src="/__/firebase/init.js"></script>
 
     <script src="common.js"></script>
@@ -62,8 +63,6 @@
     <div id="r2" class="container-fluid">
         <div class="row">
             <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">About/FAQ</a>
-            <a class="col-3 text-center h5 txt-def" href="galaxy.html">Totals</a>
-            <!--a  class="col-3 text-center h5 txt-def" href="search.html">Search</a-->
 
             <div id="full-usermenu" class="container col-4">
                 <button id="login" type="button" class="text-center btn-def no-border h5">
@@ -83,9 +82,6 @@
                         <button id="logout" type="button" class="no-border text-center dropdown-item btn-def">
                             <h5>Logout</h5>
                         </button>
-                        <button id="recalc" type="button" class="h5 no-border text-center dropdown-item btn-def hidden">
-                            Recalc Totals
-                        </button>
                     </div>
                 </div>
             </div>
@@ -104,10 +100,9 @@
     <div id="javascript">
         <!--googleoff:all-->
         <div class="text-danger h6">
-            <p>Unfortunately, this page cannot function without javasript. Please add this site to your "allowed" sites.
-                For chrome it's located&nbsp;
-                <a href="chrome://settings/content/javascript">here</a></p>
-            <p>This error message can also be caused by a page loading error.</p>
+            Unfortunately, this page cannot function without javasript. Please add this site to your "allowed" sites.
+            For chrome it's located <a href="chrome://settings/content/javascript">here</a>
+            This error message can also be caused by a page loading error.
         </div>
         <!--googleon:all-->
         <br>
@@ -141,12 +136,6 @@
                 <div id="lredit" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Redit</div>
             </div-->
         </div>
-        <div class="card-footer">
-            <div class="row">
-                <div class="col-6">&nbsp;</div>
-                <div id="lcancel" class="h6 text-center col-2 btn-sm bkg-light-gray">Cancel</div>
-            </div>
-        </div>
     </div>
     <!--googleon:all-->
 
@@ -155,42 +144,48 @@
             <h4>Welcome to No Man's Sky Coordinate Exchange. Please login.</h4>
         </div>
 
-        <div class="row">
-            <div class="col-md-7 col-14">
-                <div class="card card-body pad-bottom">
+        <div class="card card-body pad-bottom bkg-def">
+            <div class="row">
+                <div class="col-md-7 col-14">
+                    <div id="panels" class="card card-body"></div>
+                    <br>
+                </div>
 
-                    <div id="panels"></div>
-
-                    <div id="entrybuttons" class="row">
-                        <div class="col-7">
-                            <div class="row">
-                                <button id="save" type="button" class="col-4 btn  btn-sm btn-def">Save</button>&nbsp;
-                                <button id="delete" type="button" class="col-4 btn  btn-sm btn-def disabled"
-                                    disabled>Delete</button>&nbsp;
-                                <button id="cancel" type="button"
-                                    class="col-4 btn btn-def  btn-sm">Cancel</button>&nbsp;
-                            </div>
+                <div class="col-md-7 col-14">
+                    <div class="card">
+                        <nav>
+                            <div class="nav nav-tabs" id="typeTabs" role="tablist">
+                        </nav>
+                        <div class="card-body">
+                            <div class="tab-content" id="typePanels"></div>
                         </div>
-                        <div id="status" class="border col-7 text-danger scrollbar container-fluid"
-                            style="overflow-y: scroll; height: 40px"></div>
+                    </div>
+                    <br>
+
+                    <div id="entrybuttons" class="card card-body">
+                        <div class="row">
+                            <div class="col-7">
+                                <div class="row">
+                                    <button id="save" type="button"
+                                        class="col-4 btn  btn-sm btn-def">Save</button>&nbsp;
+                                    <button id="delete" type="button" class="col-4 btn  btn-sm btn-def disabled"
+                                        disabled>Delete</button>&nbsp;
+                                    <button id="cancel" type="button"
+                                        class="col-4 btn btn-def  btn-sm">Cancel</button>&nbsp;
+                                </div>
+                            </div>
+                            <div id="status" class="border col-7 text-danger scrollbar container-fluid"
+                                style="overflow-y: scroll; height: 40px"></div>
+                        </div>
                     </div>
                 </div>
                 <br>
             </div>
-
-            <div class="col-md-7 col-14"></div>
         </div>
         <br>
 
         <div class="row">
-            <div class="col-md-7 col-14">
-                <div id="nmsceTable" class="card pad-bottom"></div>
-                <br>
-            </div>
-
-            <div class="col-md-7 col-14">
-                <div id="nmsceTotals" class="card border pad-bottom"></div>
-            </div>
+            <div id="nmsceTable" class="card pad-bottom"></div>
         </div>
     </div>
     <br>
