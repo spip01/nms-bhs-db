@@ -499,7 +499,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
 
 blackHoleSuns.prototype.batchWriteLog = async function (b, log, check) {
     if (log && check) {
-        let doc = log._name + "-" + log._time.seconds + "-" + log._time.nanoseconds;
+        let doc = log._name + "-" + log.time.seconds + "-" + log.time.nanoseconds;
         let ref = bhs.fs.collection("log").doc(doc);
         await b.batch.set(ref, log);
         b = await bhs.checkBatchSize(b);

@@ -46,6 +46,8 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
         ref.get().then(function (doc) {
             if (doc.exists && (doc.data().role == "admin" || doc.data().role == "editor"))
                 $("#poiorg").show();
+            if (doc.exists && doc.data().role == "admin")
+                $("#searchContest").show();
         });
     }
 

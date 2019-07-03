@@ -161,8 +161,6 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
 
             bhs.doLoggedin(user);
             bhs.navLoggedin();
-
-            // bhs.searchTxt();
         });
     } else {
         $("#usermenu").hide();
@@ -588,6 +586,48 @@ blackHoleSuns.prototype.searchTxt = async function () {
     });
 }
 
+blackHoleSuns.prototype.searchContest=function(){
+    let total = {};
+    total["PC"]={};
+    total["PC"].total=0;
+    total["PC"].tickets=0;
+    total["PC"].users=0;
+    total["XBox"]={};
+    total["XBox"].total=0;
+    total["XBox"].tickets=0;
+    total["XBox"].users=0;
+    total["PS4"]={};
+    total["PS4"].total=0;
+    total["PS4"].tickets=0;
+    total["PS4"].users=0;
+
+    let ref=bhs.getUsersColRef();
+    ref.get().then(function(snapshot){
+        for (let i=0; i<snapshot.size;++i){
+            let d = snapshot.docs[i].data();
+            if (d[starsCol]&&d[starsCol].contest && d[starsCol].contest[bhs.contest._name].total > 0) {
+                let platform = d.platform=="PC-XBox"?d.xbox?"XBox":"PC":"PS4";
+                let t = d[starsCol].contest[bhs.contest._name].total;
+                total[platform].total += t;
+                 ++total[platform].users;
+                
+                let tickets = Math.trunc(t / 10)+Math.trunc(t/100)*5;
+                total[platform].tickets += tickets;
+
+                if (tickets > 0)
+                    console.log(d._name+" "+platform+" "+tickets);
+            }
+        }
+
+        console.log("PC");
+        console.log(total["PC"]);
+        console.log("XBox");
+        console.log(total["XBox"]);
+        console.log("PS4");
+        console.log(total["PS4"]);
+    });
+}
+
 blackHoleSuns.prototype.fixAllTotals = async function () {
     let totals = bhs.checkTotalsInit();
 
@@ -932,14 +972,6 @@ blackHoleSuns.prototype.updateTotal = function (add, ref, reset) {
                 t = bhs.addObjects(t, add);
 
             let now = firebase.firestore.Timestamp.now();
-
-            if (ref.id == "totals" && t[starsCol].total % 500 == 0) {
-                if (!t.milestone)
-                    t.milestone = {};
-                t.milestone[(t[starsCol].total).toString()] = {};
-                t.milestone[(t[starsCol].total).toString()].user = bhs.user._name;
-                t.milestone[(t[starsCol].total).toString()].time = now;
-            }
 
             if (ref.path.match(/contest/)) {
                 if (typeof t.daily == "undefined")
@@ -1413,9 +1445,9 @@ blackHoleSuns.prototype.validateDist = function (entry, pstr, log) {
     let p = pstr ? pstr : "";
     if (nok = entry.dist < 3200)
         bhs.status(p + entry.addr + ` star in center void`, 0, log);
-    else if (nok = (entry.dist > 3500 && entry.towardsCtr < 0))
+    else if (nok = (entry.dist > 3600 && entry.towardsCtr < 0))
         bhs.status(p + entry.addr + " => " + entry.connection + ` distance < 0`, 0, log);
-    else if (nok = (entry.dist <= 3500 && entry.towardsCtr < -400))
+    else if (nok = (entry.dist <= 3600 && entry.towardsCtr < -400))
         bhs.status(p + entry.addr + " => " + entry.connection + ` distance < -400`, 0, log);
     else if (nok = (entry.towardsCtr > 21000 && entry.dist <= 819200))
         bhs.status(p + entry.addr + " => " + entry.connection + ` distance > 21000`, 0, log);
