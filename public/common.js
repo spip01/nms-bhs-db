@@ -626,6 +626,8 @@ blackHoleSuns.prototype.searchContest=function(){
         console.log("PS4");
         console.log(total["PS4"]);
     });
+
+    console.log(bhs.contest.daily);
 }
 
 blackHoleSuns.prototype.fixAllTotals = async function () {

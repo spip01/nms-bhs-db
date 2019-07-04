@@ -92,7 +92,11 @@ const panel = `
                         </div>
                         <br>
                         <div class="row">
-                            <div class="col-14 text-center">
+                            <label class="col-4 h6 txt-inp-def">
+                                <input id="ck-hide" type="checkbox">
+                                Hide
+                            </label>
+                            <div class="col-10 text-center">
                                 <img id="img-pic" height="hsize" width="wsize" />
                             </div>
                         </div>
@@ -179,6 +183,7 @@ blackHoleSuns.prototype.listClick = function (evt) {
     pnl.find("#btn-Galaxy").text(e.galaxy);
     pnl.find("#ck-pc-xbox").prop("checked", e["PC-XBox"]);
     pnl.find("#ck-ps4").prop("checked", e["PS4"]);
+    pnl.find("#ck-hide").prop("checked", typeof e.hide == "undefined" ? false: e.hide);
     pnl.find("#btn-Platform").text(e.platform);
     pnl.find("#btn-Mode").text(e.mode);
 
@@ -224,6 +229,7 @@ blackHoleSuns.prototype.save = function (evt) {
         if (e.platform == "") delete e.platform;
         e["PC-XBox"] = pnl.find("#ck-pc-xbox").prop("checked");
         e["PS4"] = pnl.find("#ck-ps4").prop("checked");
+        e["hide"] = pnl.find("#ck-hide").prop("checked");
 
         if (e.galaxy == "" || (!e.platform && !e["PC-XBox"] && !e["PS4"])) {
             bhs.statusOut(pnl, "Galaxy/Platform must be set.");
@@ -321,6 +327,7 @@ blackHoleSuns.prototype.cancel = function (evt) {
     pnl.find("#btn-Mode").text("");
     pnl.find("#ck-pc-xbox").prop("checked", false);
     pnl.find("#ck-ps4").prop("checked", false);
+    pnl.find("#ck-hide").prop("checked", false);
     pnl.find("#img-pic").removeAttr("src");
 
     pnl.find("#img-file").val("");
