@@ -20,39 +20,43 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
     if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
         let ref = bhs.fs.doc("admin/" + bhs.user.uid);
         ref.get().then(function (doc) {
-            if (doc.exists && doc.data().role == "admin") {
-                $("#admin").show();
-                $("#recalc").show();
-                $("#testmode").show();
-                $("#showContest").show();
+            if (doc.exists) {
+                bhs.role = doc.data().role;
 
-                $("#recalc").click(function () {
-                    bhs.fixAllTotals();
-                });
+                if (bhs.role == "admin" || bhs.role == "checker")
+                    $("#validate").show();
 
-                $("#testmode").click(function () {
-                    starsCol = starsCol == "stars5" ? "stars6" : "stars5";
-                    $("body").css("background-color", starsCol != "stars5" ? "red" : "black");
-                    bhs.list = {};
-                    bhs.loaded = {};
-                    bhs.displayUser(bhs.user, true);
-                });
+                if (bhs.role == "admin" || bhs.role == "editor")
+                    $("#poiorg").show();
+
+                if (bhs.role == "admin") {
+                    $("#searchContest").show();
+                    $("#admin").show();
+                    $("#recalc").show();
+                    $("#testmode").show();
+                    $("#showContest").show();
+                    if (document.domain == "localhost")
+                        $("#testing").show();
+                }
             }
-        });
-    }
-
-    if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
-        let ref = bhs.fs.doc("admin/" + bhs.user.uid);
-        ref.get().then(function (doc) {
-            if (doc.exists && (doc.data().role == "admin" || doc.data().role == "editor"))
-                $("#poiorg").show();
-            if (doc.exists && doc.data().role == "admin")
-                $("#searchContest").show();
         });
     }
 
     $("#save").removeClass("disabled");
     $("#save").removeAttr("disabled");
+}
+
+blackHoleSuns.prototype.testMode = function () {
+    starsCol = starsCol == "stars5" ? "stars6" : "stars5";
+    $("body").css("background-color", starsCol != "stars5" ? "red" : "black");
+    bhs.list = {};
+    bhs.loaded = {};
+    bhs.displayUser(bhs.user, true);
+}
+
+blackHoleSuns.prototype.setAdmin = function () {
+    bhs.admin = bhs.admin ? false : true;
+    $("body").css("background-color", bhs.admin ? "green" : "black");
 }
 
 blackHoleSuns.prototype.displayUser = async function (user, force) {
@@ -76,13 +80,12 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
 
         bhs.buildUserTable(bhs.user);
         bhs.displaySettings(bhs.user);
-        bhs.getEntries(bhs.displayEntryList, bhs.displayEntry);
+        //bhs.getEntries(bhs.displayEntryList, bhs.displayEntry);
     }
 
     let pnl = $("#pnl-user");
     pnl.find("#id-player").val(bhs.user._name);
     pnl.find("#ck-xbox").prop("checked", typeof bhs.user.xbox == "undefined" ? false : bhs.user.xbox);
-    pnl.find("#btn-Player").text(bhs.user._name);
     pnl.find("#btn-Platform").text(bhs.user.platform);
     pnl.find("#btn-Organization").text(bhs.user.org);
 
@@ -251,16 +254,25 @@ var userTable = [{
     format: "col-sm-3 col-4",
 }];
 
+blackHoleSuns.prototype.loadEntries = function(){
+    $("#resultsTable").empty();
+    bhs.purgeMap();
+    $("#userItems").empty();
+    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry);
+}
+
 blackHoleSuns.prototype.buildUserTable = function (entry) {
     const table = `
         <div class="card-header bkg-def">
             <div class="row">
-                <h4 class="col-13 txt-def">User Entries</h4>
+                <h4 class="col-6 txt-def">User Entries</h4>
+                <div id="lc-plat" class="col-4 txt-def h6"></div>
+                <div id="lc-gal" class="col-4 h6 txt-def"></div>
             </div>
             <div class="row">
-                <div id="lc-plat" class="col-4 txt-def h5"></div>
-                <div id="lc-gal" class="col-5 h5 txt-def"></div>
-                <div id="btn-utSettings" class="col-5 text-right txt-def">
+                <button id="btn-load" type="button"
+                    class="col-3 border btn btn-sm btn-def text-center" onclick="bhs.loadEntries()">Load</button>&nbsp;
+                <div id="btn-utSettings" class="col-10 align-vertical text-right txt-def">
                     <i class="fa fa-cog txt-def"></i>&nbsp;Settings
                 </div>
             </div>
@@ -306,8 +318,8 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
 
     let loc = $("#userHeader");
     loc.append(h);
-    $("#lc-plat").text(entry.platform);
-    $("#lc-gal").text(entry.galaxy);
+    loc.find("#lc-plat").text(entry.platform);
+    loc.find("#lc-gal").text(entry.galaxy);
 
     h = "";
     userTable.forEach(function (t) {
@@ -827,28 +839,44 @@ blackHoleSuns.prototype.sortTotals = function (evt) {
 }
 
 blackHoleSuns.prototype.clickUser = function (evt) {
+    let loc = $(evt).parent();
+    let id = loc.prop("id");
     let name = $(evt).parent().find("#id-names").text().stripMarginWS();
-    let uid = $(evt).parent().find("#id-uid").text().stripMarginWS();
-    console.log(name + " " + uid);
 
     if (window.location.pathname == "/galaxy.html") {
         bhs.entries = {};
-        let galaxy = $("#btn-Galaxy").text().stripNumber();
-        let platform = $("#btn-Platform").text().stripMarginWS();
-        $("#btn-Player").text($(evt).parent().find("#id-names").text().stripMarginWS());
-        bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, uid, galaxy, platform);
+
+        if (id=="itm-2") {
+            let galaxy = $("#btn-Galaxy").text().stripNumber();
+            let platform = $("#btn-Platform").text().stripNumber();
+            $("#btn-Player").text("");
+           bhs.getOrgEntries(bhs.displayEntryList, bhs.displayEntry, name, galaxy, platform);
+        }
+        else {
+            let uid = $(evt).parent().find("#id-uid").text().stripMarginWS();
+            let galaxy = $(evt).parent().find("#id-galaxy").text().stripMarginWS();
+            let platform =  $(evt).parent().find("#id-platform").text().stripMarginWS();
+        
+            console.log(name + " " + uid);
+
+            $("#btn-Galaxy").text(galaxy);
+            $("#btn-Platform").text(platform);
+            $("#btn-Player").text(name);
+
+            bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, uid, galaxy, platform);
+        }
     }
 }
 
 blackHoleSuns.prototype.clickGalaxy = function (evt) {
-    let galaxy = $(evt).parent().find("#id-names").text().stripMarginWS();
+    let galaxy = $(evt).parent().find("#id-names").text().stripNumber();
 
     // if (window.location.pathname == "/galaxy.html") {
     bhs.entries = {};
     $("#btn-Galaxy").text(galaxy);
     let platform = $("#btn-Platform").text().stripMarginWS();
     $("#btn-Player").text("");
-    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, "", galaxy, platform);
+    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, null, galaxy, platform);
     // }
 }
 
@@ -1584,14 +1612,15 @@ blackHoleSuns.prototype.buildMap = function () {
         keyloc.append(h);
     });
 
-    $("#btn-redraw").unbind("click");
-    $("#btn-redraw").click(function () {
+    let map = $("#map");
+    map.find("#btn-redraw").unbind("click");
+    map.find("#btn-redraw").click(function () {
         $("#resultsTable").empty();
         bhs.purgeMap();
         bhs.drawList(bhs.entries);
     });
 
-    $("#btn-mapsave").unbind("click");
+    opt.find("#btn-mapsave").unbind("click");
     opt.find("#btn-mapsave").click(function () {
         bhs.updateUser({
             mapoptions: bhs.extractMapOptions()

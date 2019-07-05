@@ -21,13 +21,13 @@ $(document).ready(function () {
 
     $("#delete").click(function () {
         $("#status").empty();
-        panels.forEach(function (p) {
-            bhs.deleteEntry($("#" + p.id + " #id-addr").val());
-        });
+        bhs.deleteEntry(bhs.last[pnlTop], bhs.admin && bhs.role == "admin");
+        bhs.deleteEntry(bhs.last[pnlBottom], bhs.admin && bhs.role == "admin");
     });
 
     $("#cancel").click(function () {
         bhs.displaySingle(bhs.last[pnlTop], pnlTop);
+        bhs.displaySingle(bhs.last[pnlBottom], pnlBottom);
     });
 })
 
@@ -110,17 +110,24 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                 </div>
 
                 <div id="id-pnl1-only" class="row">
-                    <div class="col-6">
+                    <div class="col-5">
                         <label class="h6 txt-inp-def">
                             <input id="ck-single" type="checkbox">
                             Single System
                         </label>
                     </div>
 
-                    <div class="col-6">
+                    <div class="col-5">
                         <label class="h6 txt-inp-def">
                             <input id="ck-isdz" type="checkbox">
                             Dead Zone
+                        </label>
+                    </div>
+
+                    <div id="validate" class="col-4 hidden">
+                        <label class="h6 txt-inp-def">
+                            <input id="ck-valid" type="checkbox">
+                            Validated
                         </label>
                     </div>
                 </div>
@@ -218,10 +225,10 @@ blackHoleSuns.prototype.displayListEntry = function (entry) {
         bhs.displaySingle(entry.bh, pnlTop);
     if (entry.dz)
         bhs.displaySingle(entry.dz, pnlTop);
-    if (entry.bh || entry.dz) {
-        if (entry.bhbase)
-            bhs.displayBase(entry.bhbase, pnlTop);
+    if (entry.bhbase)
+        bhs.displayBase(entry.bhbase, pnlTop);
 
+    if (entry.bh || entry.dz || entry.bhbase) {
         $("#" + panels[pnlTop].id + " #ck-single").prop("checked", false);
         $("#" + panels[pnlTop].id).show();
     } else {
@@ -229,22 +236,23 @@ blackHoleSuns.prototype.displayListEntry = function (entry) {
         $("#" + panels[pnlBottom].id).hide();
     }
 
-    if (entry.exit) {
+    if (entry.exit)
         bhs.displaySingle(entry.exit, entry.bh ? pnlBottom : pnlTop);
-
-        if (entry.exitbase)
-            bhs.displayBase(entry.exitbase, entry.bh ? pnlBottom : pnlTop);
-    }
-
-    bhs.last = entry;
+    if (entry.exitbase)
+        bhs.displayBase(entry.exitbase, entry.bh ? pnlBottom : pnlTop);
 }
 
 blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
+    if (!entry)
+        return;
+
     if (zoom) {
         $("#inp-ctrcord").val(entry.addr);
         bhs.changeMapLayout(true, true);
         bhs.traceZero(entry);
     }
+
+    bhs.last[idx] = entry;
 
     bhs.drawSingle(entry);
 
@@ -257,10 +265,11 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
     loc.find("#id-sys").val(entry.sys);
     loc.find("#id-reg").val(entry.reg);
 
-    loc.find("#id-by").html("<h6>" + entry._name ? entry._name : entry.player + "</h6>");
+    loc.find("#id-by").html("<h6>" + (entry._name ? entry._name : entry.player) + "</h6>");
 
     loc.find("#btn-Lifeform").text(entry.life);
     loc.find("#ck-isdz").prop("checked", entry.deadzone);
+    loc.find("#ck-valid").prop("checked", entry.valid);
 
     loc.find("#ck-hasbase").prop("checked", false);
     loc.find("#id-isbase").hide();
@@ -297,13 +306,13 @@ blackHoleSuns.prototype.clearPanels = function () {
         bhs.clearPanel(d.id);
     });
 
-    bhs.last = [];
-
     $("#delete").addClass("disabled");
     $("#delete").prop("disabled", true);
 }
 
 blackHoleSuns.prototype.clearPanel = function (d) {
+    bhs.last = [];
+
     let pnl = $("#" + d);
 
     pnl.find("input").each(function () {
@@ -332,29 +341,62 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
     let loc = pnl.find("#" + panels[idx].id);
 
     let entry = {};
+
     entry._name = bhs.user._name;
     entry.org = bhs.user.org;
     entry.uid = bhs.user.uid;
     entry.platform = bhs.user.platform;
     entry.galaxy = bhs.user.galaxy;
 
+    let lastentry = bhs.last[idx] ? bhs.last[idx] : null;
+
+    if (lastentry) {
+        let addr = loc.find("#id-addr").val();
+        if (lastentry.addr != addr) 
+            bhs.deleteEntry(lastentry, bhs.admin && bhs.role == "admin");
+
+        if (lastentry.uid != bhs.user.uid) {
+            if (bhs.role == "checker") {
+                entry = lastentry;
+                entry.valid = loc.find("#ck-valid").prop("checked");
+
+                await bhs.updateEntry(entry, true);
+                if (entry.blackhole)
+                    bhs.extractEntry(pnlBottom);
+                return;
+            }
+
+            if (bhs.admin && bhs.role == "admin") {
+                entry._name = lastentry._name;
+                entry.org = lastentry.org;
+                entry.uid = lastentry.uid;
+                entry.platform = lastentry.platform;
+                entry.galaxy = lastentry.galaxy;
+            }
+        }
+    }
+
     entry.addr = loc.find("#id-addr").val();
     entry.sys = loc.find("#id-sys").val();
     entry.reg = loc.find("#id-reg").val();
     entry.life = loc.find("#btn-Lifeform").text().stripNumber();
     entry.econ = loc.find("#btn-Economy").text().stripNumber();
-    let hasbase = loc.find("#ck-hasbase").prop("checked");
-    entry.dist = bhs.calcDist(entry.addr);
+    entry.valid = loc.find("#ck-valid").prop("checked");
 
+    entry.dist = bhs.calcDist(entry.addr);
+    entry.xyzs = bhs.addressToXYZ(entry.addr);
+
+    let hasbase = loc.find("#ck-hasbase").prop("checked");
     let single = loc.find("#ck-single").prop("checked");
+    let deadzone = loc.find("#ck-isdz").prop("checked");
 
     if (idx == pnlTop) {
-        if (loc.find("#ck-isdz").prop("checked"))
-            entry.deadzone = true;
+        entry.deadzone = deadzone;
 
-        if (!entry.deadzone && !single) {
+        if (!deadzone && !single) {
             entry.blackhole = true;
-            entry.connection = pnl.find("#" + panels[pnlBottom].id + " #id-addr").val();
+            entry.connection = pnl.find("#" + panels[pnlBottom].id + " #id-addr").val();;
+            entry.conxyzs = bhs.addressToXYZ(entry.connection);
             entry.towardsCtr = entry.dist - bhs.calcDist(entry.connection);
         }
     }
@@ -370,15 +412,15 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
 
         if (ok) {
             if (bhs.contest)
-                entry.contest = bhs.contest.name;
+                entry.contest = bhs.contest._name;
 
-            await bhs.updateEntry(entry, true);
+            await bhs.updateEntry(entry, bhs.admin && bhs.role == "admin");
 
             if (hasbase) {
                 entry.basename = loc.find("#id-basename").val();
                 entry.owned = loc.find("#btn-Owned").text().stripNumber();
                 entry.owned = entry.owned ? entry.owned : "mine";
-                await bhs.updateBase(entry, true)
+                await bhs.updateBase(entry)
             }
 
             if (entry.blackhole) {
@@ -398,10 +440,9 @@ blackHoleSuns.prototype.save = async function () {
     if (!fadmin)
         bhs.saveUser();
 
-    if (await bhs.extractEntry(pnlTop)) {
+    if (await bhs.extractEntry(pnlTop))
         bhs.clearPanels();
-        bhs.last = [];
-    }
+
 }
 
 blackHoleSuns.prototype.displayCalc = function () {

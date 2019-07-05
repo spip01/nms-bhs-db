@@ -86,29 +86,34 @@
                             <h5>Logout</h5>
                         </button>
                         <button id="testmode" type="button"
-                            class="h5 no-border text-center dropdown-item btn-def hidden">
+                            class="h5 no-border text-center dropdown-item btn-def hidden" onclick="bhs.testMode()">
                             Toggle Test DB
                         </button>
-                        <button id="recalc" type="button" class="h5 no-border text-center dropdown-item btn-def hidden">
+                        <button id="recalc" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
+                            onclick="bhs.fixAllTotals()">
                             Recalc Totals
                         </button>
-                        <div class="text-center">
-                            <a id="admin" class="h5 no-border dropdown-item btn-def hidden" href="admin.html">Admin</a>
-                        </div>
+                        <button id="admin" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
+                            onclick="bhs.setAdmin()">
+                            Admin Edit
+                        </button>
                         <div class="text-center">
                             <a id="poiorg" class="h5 no-border dropdown-item btn-def hidden" href="poiorg.html">Enter
                                 POI &amp; Orgs</a>
                         </div>
+                        <button id="searchContest" type="button"
+                            class="h5 no-border text-center dropdown-item btn-def hidden" onclick="bhs.searchContest()">
+                            Search Contest
+                        </button>
+                        <button id="testing" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
+                            onclick="bhs.testing()">
+                            testing
+                        </button>
                         <!-- <button id="showContest" type="button"
                             class="h5 no-border text-center dropdown-item btn-def hidden"
                             onclick="bhs.toggleContest(bhs.displayContest)">
                             Toggle Contest
                         </button> -->
-                         <button id="searchContest" type="button"
-                            class="h5 no-border text-center dropdown-item btn-def hidden"
-                            onclick="bhs.searchContest()">
-                            Search Contest
-                        </button>
                     </div>
                 </div>
             </div>
@@ -207,7 +212,7 @@
             </div>
 
             <div class="col-md-7 col-14">
-                <div class="card card-body border bkg-def">
+                <div id="map" class="card card-body border bkg-def">
                     <div class="row">
                         <div id="mapcol" class="col-sm-11 col-14">
                             <div id="plymap"></div>
@@ -226,7 +231,13 @@
                                         class="col-sm-8 col-14 border btn btn-sm btn-def text-center">Redraw</button>&nbsp;
                                 </div>
 
-                                <div id="btn-mapsettings" class="col-sm-14 col-5 txt-def text-right">
+                                <div class="col-sm-14 col-4 text-right">
+                                    <br>
+                                    <button id="btn-load" type="button"
+                                        class="col-sm-8 col-14 border btn btn-sm btn-def text-center" onclick="bhs.loadEntries()">Load</button>&nbsp;
+                                </div>
+
+                                <div id="btn-mapsettings" class="col-sm-14 col-14 txt-def text-right">
                                     <br>
                                     <i class="fa fa-cog txt-def"></i>&nbsp;Settings
                                 </div>

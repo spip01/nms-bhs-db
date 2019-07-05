@@ -220,7 +220,7 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
         return;
     }
 
-    if (user._name == "") {
+    if (typeof user._name == "undefined" || user._name == "") {
         $(loc).val(bhs.user._name);
         bhs.status("Empty Player Name.", 0);
         return;
@@ -329,29 +329,26 @@ blackHoleSuns.prototype.getEntryByConnection = function (addr, displayfcn, idx) 
     });
 }
 
-blackHoleSuns.prototype.updateEntry = async function (entry) {
+blackHoleSuns.prototype.updateEntry = async function (entry, admin) {
     entry.modded = firebase.firestore.Timestamp.now();
     entry.version = "next";
-    entry.xyzs = bhs.addressToXYZ(entry.addr);
-    if (entry.connection)
-        entry.conxyzs = bhs.addressToXYZ(entry.connection);
 
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
     await ref.get().then(async function (doc) {
         if (doc.exists) {
             let existing = doc.data();
-            if (existing.uid != entry.uid || typeof existing.uid == "undefined" && entry._name != existing.player) {
-                bhs.status(entry.addr + " can only be edited by " + entry._name ? entry._name : entry.player, 1);
+            if (existing.uid != bhs.user.uid && !admin) {
+                bhs.status(entry.addr + " can only be edited by " + existing._name, 1);
                 return;
             }
             entry = mergeObjects(existing, entry);
-        } else
+        } else {
             entry.created = entry.modded;
+            bhs.totals = bhs.incTotals(bhs.totals, entry);
+        }
 
         await ref.set(entry).then(function () {
             bhs.status(entry.addr + " saved.", 2);
-            if (!doc.exists)
-                bhs.totals = bhs.incTotals(bhs.totals, entry);
         });
     });
 }
@@ -415,25 +412,27 @@ blackHoleSuns.prototype.getStarsColRef = function (galaxy, platform, addr) {
     return ref;
 }
 
-blackHoleSuns.prototype.deleteEntry = async function (addr) {
-    let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform, addr);
-    await ref.get().then(async function (doc) {
-        if (!doc.exists)
-            bhs.status(addr + " doesn't exist for delete", 0);
-        else {
-            let d = doc.data();
-            if (d.uid == bhs.user.uid) {
-                await ref.delete().then(async function () {
-                    if (d.blackhole) {
-                        bhs.totals = bhs.incTotals(bhs.totals, d, -1);
-                        bhs.updateAllTotals(bhs.totals);
-                    }
-                    bhs.status(addr + " deleted", 2);
-                });
-            } else
-                bhs.status(addr + " can only be deleted by " + d._name ? d._name : d.player, 1);
-        }
-    });
+blackHoleSuns.prototype.deleteEntry = async function (entry, admin) {
+    if (entry) {
+        let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
+        await ref.get().then(async function (doc) {
+            if (!doc.exists)
+                bhs.status(entry.addr + " not found.", 0);
+            else {
+                let d = doc.data();
+                if (d.uid == bhs.user.uid || admin) {
+                    await ref.delete().then(async function () {
+                        if (d.blackhole) {
+                            bhs.totals = bhs.incTotals(bhs.totals, d, -1);
+                            bhs.updateAllTotals(bhs.totals);
+                        }
+                        bhs.status(entry.addr + " deleted", 2);
+                    });
+                } else
+                    bhs.status(entry.addr + " can only be deleted by " + d._name, 1);
+            }
+        });
+    }
 }
 
 blackHoleSuns.prototype.assignUid = async function (entry) {
@@ -586,36 +585,36 @@ blackHoleSuns.prototype.searchTxt = async function () {
     });
 }
 
-blackHoleSuns.prototype.searchContest=function(){
+blackHoleSuns.prototype.searchContest = function () {
     let total = {};
-    total["PC"]={};
-    total["PC"].total=0;
-    total["PC"].tickets=0;
-    total["PC"].users=0;
-    total["XBox"]={};
-    total["XBox"].total=0;
-    total["XBox"].tickets=0;
-    total["XBox"].users=0;
-    total["PS4"]={};
-    total["PS4"].total=0;
-    total["PS4"].tickets=0;
-    total["PS4"].users=0;
+    total["PC"] = {};
+    total["PC"].total = 0;
+    total["PC"].tickets = 0;
+    total["PC"].users = 0;
+    total["XBox"] = {};
+    total["XBox"].total = 0;
+    total["XBox"].tickets = 0;
+    total["XBox"].users = 0;
+    total["PS4"] = {};
+    total["PS4"].total = 0;
+    total["PS4"].tickets = 0;
+    total["PS4"].users = 0;
 
-    let ref=bhs.getUsersColRef();
-    ref.get().then(function(snapshot){
-        for (let i=0; i<snapshot.size;++i){
+    let ref = bhs.getUsersColRef();
+    ref.get().then(function (snapshot) {
+        for (let i = 0; i < snapshot.size; ++i) {
             let d = snapshot.docs[i].data();
-            if (d[starsCol]&&d[starsCol].contest && d[starsCol].contest[bhs.contest._name].total > 0) {
-                let platform = d.platform=="PC-XBox"?d.xbox?"XBox":"PC":"PS4";
+            if (d[starsCol] && d[starsCol].contest && d[starsCol].contest[bhs.contest._name].total > 0) {
+                let platform = d.platform == "PC-XBox" ? d.xbox ? "XBox" : "PC" : "PS4";
                 let t = d[starsCol].contest[bhs.contest._name].total;
                 total[platform].total += t;
-                 ++total[platform].users;
-                
-                let tickets = Math.trunc(t / 10)+Math.trunc(t/100)*5;
+                ++total[platform].users;
+
+                let tickets = Math.trunc(t / 10) + Math.trunc(t / 100) * 5;
                 total[platform].tickets += tickets;
 
                 if (tickets > 0)
-                    console.log(d._name+" "+platform+" "+tickets);
+                    console.log(d._name + ", " + platform + ", " + tickets);
             }
         }
 
@@ -695,42 +694,59 @@ blackHoleSuns.prototype.initTotals = function () {
     return t;
 }
 
-blackHoleSuns.prototype.findDuplicates = function () {
+blackHoleSuns.prototype.testing = async function () {
+    let t = {};
+    let newgal = [];
+
     let ref = bhs.getStarsColRef();
-    ref.get().then(function (snapshot) {
+    await ref.get().then(async function (snapshot) {
         for (let i = 0; i < snapshot.docs.length; ++i) {
             if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "players")
                 continue;
 
             let g = snapshot.docs[i].data()
+            if (typeof newgal[g] == "undefined")
+                newgal[g.name] = [];
 
             for (let j = 0; j < platformList.length; ++j) {
                 let p = platformList[j];
 
-                let t = {};
-
                 let ref = bhs.getStarsColRef(g.name, p.name);
                 ref = ref.where("blackhole", "==", true);
-                ref.get().then(function (snapshot) {
+                ref = ref.orderBy("modded");
+                ref = ref.limit(1);
+                await ref.get().then(async function (snapshot) {
                     if (snapshot.size) {
                         console.log(g.name + " " + p.name + " " + snapshot.size);
-                        for (let i = 0; i < snapshot.size; ++i) {
-                            let e = snapshot.docs[i].data();
-                            if (typeof t[e.connection] == "undefined")
-                                t[e.connection] = [];
-                            t[e.connection].push(e);
-                        }
+                        if (snapshot.size > 0 && snapshot.docs[0].data().modded >= bhs.contest.start)
+                            newgal[g.name][p.name] = snapshot.docs[0].data().modded.toDate();
 
-                        Object.keys(t).forEach(a => {
-                            if (t[a].length > 1)
-                                for (let i = 0; i < t[a].length; ++i)
-                                    console.log(a + " " + t[a][i].addr + " " + t[a][i].player);
-                        });
+                        // for (let i = 0; i < snapshot.size; ++i) {
+                        //     let e = snapshot.docs[i].data();
+                        //     if (typeof t[e.sys] == "undefined")
+                        //         t[e.sys] = [];
+                        //     t[e.sys].push(e);
+                        // }
                     }
                 });
             }
         }
     });
+
+    let l = Object.keys(t);
+    let dups = 0;
+    for (let j = 0; j < l.length; ++j) {
+        if (t[l[j]].length > 1) {
+            ++dups;
+            for (let i = 0; i < t[l[j]].length; ++i) {
+                let e = t[l[j]][i];
+                console.log(dups);
+                console.log(e.galaxy + " " + e.platform + " " + e.addr + " " + e._name);
+            }
+        }
+    }
+
+    console.log(newgal);
 }
 
 blackHoleSuns.prototype.checkTotalsInit = function (t, entry) {
@@ -818,7 +834,7 @@ blackHoleSuns.prototype.incTotals = function (totals, entry, inc) {
     totals = bhs.checkTotalsInit(totals, entry);
     inc = inc ? inc : 1;
 
-    if ((entry.blackhole || entry.deadzone) && (entry.player || entry._name)) {
+    if ((entry.blackhole || entry.deadzone)) {
         totals.totals = bhs.incParts(totals.totals, entry, inc);
         totals.galaxy[entry.galaxy] = bhs.incParts(totals.galaxy[entry.galaxy], entry, inc);
         if (entry.uid)

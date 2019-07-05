@@ -80,23 +80,35 @@
                         </h5>
                     </button>
 
-                    <div class="dropdown-menu bkg-def">
+                    <div class="dropdown-menu bkg-def text-center">
                         <button id="logout" type="button" class="no-border text-center dropdown-item btn-def">
                             <h5>Logout</h5>
                         </button>
                         <button id="testmode" type="button"
-                            class="h5 no-border text-center dropdown-item btn-def hidden">
+                            class="h5 no-border text-center dropdown-item btn-def hidden" onclick="bhs.testMode()">
                             Toggle Test DB
                         </button>
-                        <button id="recalc" type="button" class="h5 no-border text-center dropdown-item btn-def hidden">
+                        <button id="recalc" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
+                            onclick="bhs.fixAllTotals()">
                             Recalc Totals
                         </button>
+                        <button id="admin" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
+                            onclick="bhs.setAdmin()">
+                            Admin Edit
+                        </button>
                         <div class="text-center">
-                            <a id="admin" class="h5 no-border dropdown-item btn-def hidden" href="admin.html">Admin</a>
+                            <a id="poiorg" class="h5 no-border dropdown-item btn-def hidden" href="poiorg.html">Enter
+                                POI &amp; Orgs</a>
                         </div>
-                        <div class="text-center"><a id="poiorg" class="h5 no-border dropdown-item btn-def hidden"
-                                href="poiorg.html">Enter POI &amp; Orgs</a>
-                        </div>
+                        <button id="searchContest" type="button"
+                            class="h5 no-border text-center dropdown-item btn-def hidden" onclick="bhs.searchContest()">
+                            Search Contest
+                        </button>
+                        <!-- <button id="showContest" type="button"
+                            class="h5 no-border text-center dropdown-item btn-def hidden"
+                            onclick="bhs.toggleContest(bhs.displayContest)">
+                            Toggle Contest
+                        </button> -->
                     </div>
                 </div>
             </div>
@@ -187,20 +199,23 @@
                     <br>
 
                     <div class="row">
-                        <div class="col-6">
-                            <div id="btn-redraw" class="btn-sm btn border btn-def">Redraw </div>
-                        </div>
                         <div id="maplogo" class="col-3">
                             <a html="https://darc.blackholesuns.com">
                                 <img id="logo" src="lBTK5EL.png" class="float-center" alt="BHS Logo" height="20px"
                                     width="20px">
                             </a>
                         </div>
-                        <div id="btn-mapsettings" class="col-5 text-right txt-def">
+
+                        <div class="col-3">
+                            <div id="btn-redraw" class="btn-sm btn border btn-def">Redraw</div>
+                        </div>
+                        <div class="col-3">
+                            <div id="btn-load" class="btn-sm btn border btn-def" onclick="bhs.loadEntries()">Load</div>
+                        </div>
+                        <div class="col-4 txt-def">
                             <i class="fa fa-cog txt-def"></i>&nbsp;Settings
                         </div>
                     </div>
-                    <br>
 
                     <div id="showmapkey" class="card card-body border bkg-def pad-bottom hidden">
                         <div class="row text-center">

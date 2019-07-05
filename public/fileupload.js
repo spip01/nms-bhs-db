@@ -527,13 +527,13 @@ blackHoleSuns.prototype.batchUpdate = async function (b, entry, check) {
             }
         } else {
             let d = doc.data()
-            if (d.uid == entry.uid || typeof d.uid == "undefined" && entry._name == d.player) {
+            if (d.uid == entry.uid) {
                 if (!check) {
                     await b.batch.update(ref, entry);
                     bhs.filestatus(entry.addr + " updated", 2);
                 }
             } else
-                bhs.filestatus(entry.addr + " can only be edited by " + d._name ? d._name : d.player, 1);
+                bhs.filestatus(entry.addr + " can only be edited by " + d._name, 1);
         }
 
         b = await bhs.checkBatchSize(b);
@@ -578,14 +578,14 @@ blackHoleSuns.prototype.batchDelete = async function (b, entry, check) {
             bhs.filestatus(entry.addr + " doesn't exist for delete.", 0);
         else {
             let d = doc.data();
-            if (d.uid == entry.uid || typeof d.uid == "undefined" && entry._name == d.player) {
+            if (d.uid == entry.uid) {
                 if (!check)
                     await ref.delete().then(function () {
                         bhs.totals = bhs.incTotals(bhs.totals, entry, -1);
                         bhs.filestatus(entry.addr + " deleted", 2);
                     });
             } else
-                bhs.filestatus(entry.addr + " can only be edited by " + d._name ? d._name : d.player, 1);
+                bhs.filestatus(entry.addr + " can only be edited by " + d. _name, 1);
         }
     });
 
