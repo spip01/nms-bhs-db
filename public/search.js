@@ -81,6 +81,9 @@ blackHoleSuns.prototype.search = function () {
 
 blackHoleSuns.prototype.doSearch = function (type, s1, s2) {
     let found = {};
+    if (!bhs.entries)
+        bhs.select();
+        
     let list = Object.keys(bhs.entries);
     for (let i = 0; i < list.length; ++i) {
         let e = bhs.entries[list[i]];
