@@ -29,16 +29,10 @@ function startUp() {
     $("#javascript").empty();
     $("#jssite").show();
 
-    // loadHtml("https://nms-bhs.firebaseapp.com/navbar.html", "https://raw.githubusercontent.com/spip01/nms-bhs-db/testing/bhs/navbar.html", "#navbar");
-    // loadHtml("https://nms-bhs.firebaseapp.com/footer.html", "https://raw.githubusercontent.com/spip01/nms-bhs-db/testing/bhs/footer.html", "#footer");
-
     bhs = new blackHoleSuns();
 
     bhs.init();
     bhs.initFirebase();
-
-    //  if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") 
-    //      starsCol = "stars6";
 
     if (starsCol != "stars5")
         $("body").css("background-color", "red");
@@ -494,7 +488,7 @@ blackHoleSuns.prototype.getActiveContest = function (displayFcn) {
     });
 }
 
-blackHoleSuns.prototype.toggleContest = function (displayFcn) {
+blackHoleSuns.prototype.hideContest = function () {
     let now = (new Date()).getTime();
 
     let ref = bhs.fs.collection("contest");
@@ -506,7 +500,7 @@ blackHoleSuns.prototype.toggleContest = function (displayFcn) {
             let end = d.end.toDate().getTime();
 
             if (start < now && end > now || start > now) {
-                d.hidden = !d.hidden;
+                d.hidden = true;
                 snapshot.docs[i].ref.update(d);
                 break;
             }
@@ -696,7 +690,8 @@ blackHoleSuns.prototype.initTotals = function () {
 
 blackHoleSuns.prototype.testing = async function () {
     let t = {};
-    let newgal = [];
+    let now = firebase.firestore.Timestamp.fromDate(new Date(2019, 6, 5, 6, 26));
+    let then = firebase.firestore.Timestamp.fromDate(new Date(2019, 6, 5, 23, 6, 44));
 
     let ref = bhs.getStarsColRef();
     await ref.get().then(async function (snapshot) {
@@ -705,48 +700,34 @@ blackHoleSuns.prototype.testing = async function () {
                 continue;
 
             let g = snapshot.docs[i].data()
-            if (typeof newgal[g] == "undefined")
-                newgal[g.name] = [];
 
             for (let j = 0; j < platformList.length; ++j) {
                 let p = platformList[j];
 
                 let ref = bhs.getStarsColRef(g.name, p.name);
                 ref = ref.where("blackhole", "==", true);
-                ref = ref.orderBy("modded");
-                ref = ref.limit(1);
+                ref = ref.where("created", ">=", now);
+                ref = ref.where("created", "<=", then);
                 await ref.get().then(async function (snapshot) {
-                    if (snapshot.size) {
-                        console.log(g.name + " " + p.name + " " + snapshot.size);
-                        if (snapshot.size > 0 && snapshot.docs[0].data().modded >= bhs.contest.start)
-                            newgal[g.name][p.name] = snapshot.docs[0].data().modded.toDate();
+                    console.log(g.name + " " + p.name + " " + snapshot.size);
+                    for (let i = 0; i < snapshot.size; ++i) {
+                        let e = snapshot.docs[i].data();
 
-                        // for (let i = 0; i < snapshot.size; ++i) {
-                        //     let e = snapshot.docs[i].data();
-                        //     if (typeof t[e.sys] == "undefined")
-                        //         t[e.sys] = [];
-                        //     t[e.sys].push(e);
-                        // }
+                        if (typeof t[e._name] == "undefined")
+                            t[e._name] = 0;
+                        ++t[e._name];
+
+                        // if (typeof t[e.created.toDate().toTimeString()] == "undefined") {
+                        //     t[e.created.toDate().toTimeString()] ={}
+                        //     t[e.created.toDate().toTimeString()].name = e._name;
+                        // }                            
                     }
                 });
             }
         }
     });
 
-    let l = Object.keys(t);
-    let dups = 0;
-    for (let j = 0; j < l.length; ++j) {
-        if (t[l[j]].length > 1) {
-            ++dups;
-            for (let i = 0; i < t[l[j]].length; ++i) {
-                let e = t[l[j]][i];
-                console.log(dups);
-                console.log(e.galaxy + " " + e.platform + " " + e.addr + " " + e._name);
-            }
-        }
-    }
-
-    console.log(newgal);
+    console.log(t);
 }
 
 blackHoleSuns.prototype.checkTotalsInit = function (t, entry) {

@@ -254,7 +254,7 @@ var userTable = [{
     format: "col-sm-3 col-4",
 }];
 
-blackHoleSuns.prototype.loadEntries = function(){
+blackHoleSuns.prototype.loadEntries = function () {
     $("#resultsTable").empty();
     bhs.purgeMap();
     $("#userItems").empty();
@@ -723,13 +723,23 @@ blackHoleSuns.prototype.buildTotals = function () {
     });
 }
 
+// let printing = false;
+
 blackHoleSuns.prototype.displayTotals = function (entry, id) {
     let fgal = window.location.pathname == "/galaxy.html" || window.location.pathname == "/admin.html";
     let cid = "";
 
+    if (!bhs.contest || bhs.contest.hidden) {
+        let tot = $("#totals");
+        tot.find("[id='id-ctst']").addClass("hidden");
+        tot.find("[id='id-contestall']").addClass("hidden");
+    }
+
     if (id.match(/totals/)) {
         cid = "id-totalsall";
         bhs.displayUTotals(entry[starsCol], cid);
+        // if ((printing = entry[starsCol].total > 14950 && entry[starsCol].total < 15050)) 
+        //     console.log(entry[starsCol].total + " " + firebase.firestore.Timestamp.now().toDate().toTimeString());
         if (fgal)
             bhs.displayGTotals(entry, "itm-g");
     } else if (id.match(/contest/)) {
@@ -739,6 +749,9 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
             let tot = $("#totals");
             tot.find("[id='id-ctst']").removeClass("hidden");
             tot.find("[id='id-contestall']").removeClass("hidden");
+
+            if (firebase.firestore.Timestamp.now() > bhs.contest.end)
+                bhs.hideContest();
         }
 
         if (fgal)
@@ -747,6 +760,8 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
         bhs.displayPlayerTotals(entry, "itm-1");
         return;
     } else if (id.match(/user/)) {
+        // if (typeof entry[starsCol] != "undefined" && printing)
+        //     console.log(entry._name + " " + entry[starsCol].total + " " + firebase.firestore.Timestamp.now().toDate().toTimeString());
         bhs.displayUserTotals(entry, "itm-1", true);
         cid = "id-player";
     } else if (id.match(/org/)) {
@@ -846,17 +861,16 @@ blackHoleSuns.prototype.clickUser = function (evt) {
     if (window.location.pathname == "/galaxy.html") {
         bhs.entries = {};
 
-        if (id=="itm-2") {
+        if (id == "itm-2") {
             let galaxy = $("#btn-Galaxy").text().stripNumber();
             let platform = $("#btn-Platform").text().stripNumber();
             $("#btn-Player").text("");
-           bhs.getOrgEntries(bhs.displayEntryList, bhs.displayEntry, name, galaxy, platform);
-        }
-        else {
+            bhs.getOrgEntries(bhs.displayEntryList, bhs.displayEntry, name, galaxy, platform);
+        } else {
             let uid = $(evt).parent().find("#id-uid").text().stripMarginWS();
             let galaxy = $(evt).parent().find("#id-galaxy").text().stripMarginWS();
-            let platform =  $(evt).parent().find("#id-platform").text().stripMarginWS();
-        
+            let platform = $(evt).parent().find("#id-platform").text().stripMarginWS();
+
             console.log(name + " " + uid);
 
             $("#btn-Galaxy").text(galaxy);
