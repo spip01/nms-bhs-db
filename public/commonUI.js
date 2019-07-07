@@ -119,7 +119,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
             <div class="row">
             <div id="id-Organization" class="col-md-7 col-14"></div>
                 <label class="col-md-3 col-7 h5 txt-inp-def text-right align-bottom">
-                    X-Box&nbsp;
+                    XBox&nbsp;
                     <input id="ck-xbox" type="checkbox">
                 </label>
                 <label class="col-md-3 col-7 h5 text-right align-bottom">
@@ -723,8 +723,6 @@ blackHoleSuns.prototype.buildTotals = function () {
     });
 }
 
-// let printing = false;
-
 blackHoleSuns.prototype.displayTotals = function (entry, id) {
     let fgal = window.location.pathname == "/galaxy.html" || window.location.pathname == "/admin.html";
     let cid = "";
@@ -738,8 +736,6 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
     if (id.match(/totals/)) {
         cid = "id-totalsall";
         bhs.displayUTotals(entry[starsCol], cid);
-        // if ((printing = entry[starsCol].total > 14950 && entry[starsCol].total < 15050)) 
-        //     console.log(entry[starsCol].total + " " + firebase.firestore.Timestamp.now().toDate().toTimeString());
         if (fgal)
             bhs.displayGTotals(entry, "itm-g");
     } else if (id.match(/contest/)) {
@@ -760,8 +756,6 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
         bhs.displayPlayerTotals(entry, "itm-1");
         return;
     } else if (id.match(/user/)) {
-        // if (typeof entry[starsCol] != "undefined" && printing)
-        //     console.log(entry._name + " " + entry[starsCol].total + " " + firebase.firestore.Timestamp.now().toDate().toTimeString());
         bhs.displayUserTotals(entry, "itm-1", true);
         cid = "id-player";
     } else if (id.match(/org/)) {
