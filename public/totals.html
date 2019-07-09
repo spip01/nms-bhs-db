@@ -50,7 +50,7 @@
 
     <script src="common.js"></script>
     <script src="commonUI.js"></script>
-    <script src="galaxy.js"></script>
+    <script src="totals.js"></script>
 
     <link rel="stylesheet" type="text/css" href="local.css">
     <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
@@ -190,7 +190,7 @@
                 <div id="pnl-user" class="card card-body border pad-bottom"></div>
                 <br>
 
-                <div class="card card-body border pad-bottom bkg-def">
+                <div id="map" class="card card-body border pad-bottom bkg-def">
                     <div class="row">
                         <div id="mapcol" class="card card-body border bkg-def pad-bottom">
                             <div id="plymap"></div>
@@ -212,7 +212,7 @@
                         <div class="col-3">
                             <div id="btn-load" class="btn-sm btn border btn-def" onclick="bhs.loadEntries()">Load</div>
                         </div>
-                        <div class="col-4 txt-def">
+                        <div id="btn-mapsettings" class="col-4 txt-def">
                             <i class="fa fa-cog txt-def"></i>&nbsp;Settings
                         </div>
                     </div>
@@ -233,9 +233,9 @@
         </div>
         <br>
 
-        <div id="showentries" class="card">
+        <!--div id="showentries" class="card">
             <div id="entryTable" class="card border pad-bottom"></div>
-        </div>
+        </div-->
     </div>
 </body>
 

@@ -16,6 +16,8 @@ blackHoleSuns.prototype.doLoggedout = function () {
 
 blackHoleSuns.prototype.doLoggedin = function (user) {
     bhs.displayUser(user, true);
+    bhs.role = null;
+    bhs.admin = null;
 
     if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
         let ref = bhs.fs.doc("admin/" + bhs.user.uid);
@@ -30,13 +32,14 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
                     $("#poiorg").show();
 
                 if (bhs.role == "admin") {
-                    $("#searchContest").show();
                     $("#admin").show();
                     $("#recalc").show();
                     $("#testmode").show();
-                    $("#showContest").show();
-                    if (document.domain == "localhost")
+                    if (document.domain == "localhost") {
                         $("#testing").show();
+                        $("#searchContest").show();
+                        $("#showContest").show();
+                    }
                 }
             }
         });
@@ -60,8 +63,8 @@ blackHoleSuns.prototype.setAdmin = function () {
 }
 
 blackHoleSuns.prototype.displayUser = async function (user, force) {
-    let fadmin = window.location.pathname == "/admin.html";
     let fpoiorg = window.location.pathname == "/poiorg.html";
+    let ftotals = window.location.pathname == "/totals.html";
     let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform);
 
     bhs.user = mergeObjects(bhs.user, user);
@@ -71,16 +74,18 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
 
     bhs.getActiveContest(bhs.displayContest);
 
-    if ((changed || force) && bhs.user.galaxy && bhs.user.platform && !fadmin) {
+    if ((changed || force) && bhs.user.galaxy && bhs.user.platform) {
         bhs.buildTotals();
         bhs.getTotals(bhs.displayTotals);
 
         bhs.buildMap();
         bhs.setMapOptions(bhs.user);
 
-        bhs.buildUserTable(bhs.user);
-        bhs.displaySettings(bhs.user);
-        //bhs.getEntries(bhs.displayEntryList, bhs.displayEntry);
+        if (!ftotals) {
+            bhs.buildUserTable(bhs.user);
+            bhs.displaySettings(bhs.user);
+            //bhs.getEntries(bhs.displayEntryList, bhs.displayEntry);
+        }
     }
 
     let pnl = $("#pnl-user");
@@ -432,6 +437,9 @@ blackHoleSuns.prototype.entriesToCsv = function () {
 blackHoleSuns.prototype.displayEntryList = function (entrylist) {
     bhs.drawList(entrylist);
 
+    if (window.location.pathname == "/totals.html")
+        return;
+
     const lineHdr = `
         <div id="gpa" class="row">`;
     const line = `
@@ -498,6 +506,9 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist) {
 blackHoleSuns.prototype.displayEntry = function (entry) {
     bhs.drawSingle(entry);
 
+    if (window.location.pathname == "/totals.html")
+        return;
+
     let id = (entry.blackhole ? entry.connection : entry.addr).nameToId();
     let loc = $("#userItems #" + id);
 
@@ -520,12 +531,12 @@ blackHoleSuns.prototype.displayEntry = function (entry) {
 }
 
 function entryDblclk(evt) {
-    let ifgal = window.location.pathname == "/galaxy.html" || window.location.pathname == "/search.html";
+    let iftotals = window.location.pathname == "/totals.html" || window.location.pathname == "/search.html";
 
     let id = $(evt).parent().prop("id");
     let e = bhs.entries[bhs.reformatAddress(id)];
 
-    if (!ifgal) {
+    if (!iftotals) {
         $('html, body').animate({
             scrollTop: ($('#panels').offset().top)
         }, 0);
@@ -597,7 +608,7 @@ const totalsRows = [{
 
 blackHoleSuns.prototype.buildTotals = function () {
     let findex = window.location.pathname == "/index.html" || window.location.pathname == "/";
-    let fgal = window.location.pathname == "/galaxy.html" || window.location.pathname == "/admin.html";
+    let ftotals = window.location.pathname == "/totals.html";
 
     const pnl = `
         <div class="card-header bkg-def">
@@ -679,7 +690,7 @@ blackHoleSuns.prototype.buildTotals = function () {
     });
 
     totalsRows.forEach(function (t) {
-        if (t.where == "galaxy" && !fgal || t.where == "index" && !findex)
+        if (t.where == "galaxy" && !ftotals || t.where == "index" && !findex)
             tot.find("#itm-0 #" + t.id).hide();
     });
 
@@ -707,7 +718,7 @@ blackHoleSuns.prototype.buildTotals = function () {
         tot.find("#hdr-2").append(l);
     });
 
-    if (fgal) {
+    if (ftotals) {
         tot.find("#id-showall").hide();
         tot.find("#tgalaxy").show();
     } else if (findex) {
@@ -724,33 +735,26 @@ blackHoleSuns.prototype.buildTotals = function () {
 }
 
 blackHoleSuns.prototype.displayTotals = function (entry, id) {
-    let fgal = window.location.pathname == "/galaxy.html" || window.location.pathname == "/admin.html";
+    let ftotals = window.location.pathname == "/totals.html";
     let cid = "";
 
-    if (!bhs.contest || bhs.contest.hidden) {
-        let tot = $("#totals");
+    let tot = $("#totals");
+    if ((!bhs.contest || bhs.contest.hidden) /*&& document.domain != "localhost"*/ ) {
         tot.find("[id='id-ctst']").addClass("hidden");
         tot.find("[id='id-contestall']").addClass("hidden");
+    } else {
+        tot.find("[id='id-ctst']").removeClass("hidden");
+        tot.find("[id='id-contestall']").removeClass("hidden");
     }
 
     if (id.match(/totals/)) {
         cid = "id-totalsall";
         bhs.displayUTotals(entry[starsCol], cid);
-        if (fgal)
+        if (ftotals)
             bhs.displayGTotals(entry, "itm-g");
     } else if (id.match(/contest/)) {
         cid = "id-contestall";
-
-        if (bhs.contest && !bhs.contest.hidden) {
-            let tot = $("#totals");
-            tot.find("[id='id-ctst']").removeClass("hidden");
-            tot.find("[id='id-contestall']").removeClass("hidden");
-
-            if (firebase.firestore.Timestamp.now() > bhs.contest.end)
-                bhs.hideContest();
-        }
-
-        if (fgal)
+        if (ftotals)
             bhs.displayGTotals(entry, "itm-g", true);
     } else if (id.match(/players/)) {
         bhs.displayPlayerTotals(entry, "itm-1");
@@ -765,13 +769,13 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
     let loc = $("#itm-1");
     var list = loc.children();
 
-    if (fgal)
+    if (ftotals)
         list.sort((a, b) => $(a).prop("id").toLowerCase() > $(b).prop("id").toLowerCase() ? 1 :
             $(a).prop("id").toLowerCase() < $(b).prop("id").toLowerCase() ? -1 : 0);
     else
         list.sort((a, b) => {
-            let x = $(a).find("#id-ctst").text().stripMarginWS();
-            let y = $(b).find("#id-ctst").text().stripMarginWS();
+            let x = $(a).find("#id-qty").text().stripMarginWS();
+            let y = $(b).find("#id-qty").text().stripMarginWS();
             x = x == "" ? -2 : x == "--" ? -1 : parseInt(x);
             y = y == "" ? -2 : y == "--" ? -1 : parseInt(y);
 
@@ -789,13 +793,13 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
     list = loc.children();
     if (list.length > 0) {
 
-        if (fgal)
+        if (ftotals)
             list.sort((a, b) => $(a).prop("id").toLowerCase() > $(b).prop("id").toLowerCase() ? 1 :
                 $(a).prop("id").toLowerCase() < $(b).prop("id").toLowerCase() ? -1 : 0);
         else
             list.sort((a, b) => {
-                let x = $(a).find("#id-ctst").text().stripMarginWS();
-                let y = $(b).find("#id-ctst").text().stripMarginWS();
+                let x = $(a).find("#id-qty").text().stripMarginWS();
+                let y = $(b).find("#id-qty").text().stripMarginWS();
                 x = x == "" ? -2 : x == "--" ? -1 : parseInt(x);
                 y = y == "" ? -2 : y == "--" ? -1 : parseInt(y);
 
@@ -852,7 +856,7 @@ blackHoleSuns.prototype.clickUser = function (evt) {
     let id = loc.prop("id");
     let name = $(evt).parent().find("#id-names").text().stripMarginWS();
 
-    if (window.location.pathname == "/galaxy.html") {
+    if (window.location.pathname == "/totals.html") {
         bhs.entries = {};
 
         if (id == "itm-2") {
@@ -879,7 +883,7 @@ blackHoleSuns.prototype.clickUser = function (evt) {
 blackHoleSuns.prototype.clickGalaxy = function (evt) {
     let galaxy = $(evt).parent().find("#id-names").text().stripNumber();
 
-    // if (window.location.pathname == "/galaxy.html") {
+    // if (window.location.pathname == "/totals.html") {
     bhs.entries = {};
     $("#btn-Galaxy").text(galaxy);
     let platform = $("#btn-Platform").text().stripMarginWS();
@@ -894,7 +898,7 @@ blackHoleSuns.prototype.displayUTotals = function (entry, cid) {
         pnl.find("#" + totalsRows[rowTotal].id + " #" + cid).text(entry.total);
         pnl.find("#" + totalsRows[rowPlatform].id + " #" + cid).text(entry[bhs.user.platform]);
         pnl.find("#" + totalsRows[rowAltPlatform].id + " #" + cid).text(entry[bhs.user.platform == "PS4" ? "PC-XBox" : "PS4"]);
-        if (window.location.pathname != "/galaxy.html")
+        if (window.location.pathname != "/totals.html")
             pnl.find("#" + totalsRows[rowAltPlatform].id).hide();
 
         if (window.location.pathname == "/" || window.location.pathname == "/index.html")
@@ -1021,7 +1025,7 @@ const totalsGalaxy = [{
 }];
 
 blackHoleSuns.prototype.displayUserTotals = function (entry, id, bold) {
-    let fgal = window.location.pathname == "/galaxy.html" || window.location.pathname == "/admin.html";
+    let ftotals = window.location.pathname == "/totals.html";
 
     let disq = false;
     if (bhs.contest) {
@@ -1500,9 +1504,6 @@ blackHoleSuns.prototype.purgeMap = function () {
 
 blackHoleSuns.prototype.buildMap = function () {
     let fsearch = window.location.pathname == "/search.html";
-    let fadmin = window.location.pathname == "/admin.html";
-    if (fadmin)
-        return;
 
     let w = $("#maplogo").width();
     $("#logo").prop("width", w);
@@ -1724,9 +1725,8 @@ blackHoleSuns.prototype.drawList = function (listEntry, force) {
 
     let findex = window.location.pathname == "/" || window.location.pathname == "/index.html";
     let fsearch = window.location.pathname == "/search.html";
-    let fadmin = window.location.pathname == "/admin.html";
 
-    if (!force && (fadmin || fsearch))
+    if (!force && fsearch)
         return;
 
     let opt = bhs.extractMapOptions();
@@ -1776,10 +1776,7 @@ blackHoleSuns.prototype.drawList = function (listEntry, force) {
 }
 
 blackHoleSuns.prototype.drawSingle = function (entry) {
-    let fsearch = window.location.pathname == "/search.html" || window.location.pathname == "/galaxy.html";
-    let fadmin = window.location.pathname == "/admin.html";
-    if (fadmin)
-        return;
+    let fsearch = window.location.pathname == "/search.html" || window.location.pathname == "/totals.html";
 
     let opt = bhs.extractMapOptions();
     let out = initout();

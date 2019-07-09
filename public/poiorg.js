@@ -104,8 +104,10 @@ const panel = `
                     <br>
                     <div class="col-7 border-left">
                         <div class="row">
-                            <div class="col-4 txt-inp-def h6">Coord</div>
-                            <input id="inp-addr" class="rounded col-9" type="text" placeholder="0000:0000:0000:0000">
+                            <div class="col-3 txt-inp-def h6">Coord</div>
+                            <input id="inp-addr" class="rounded col-5" type="text" placeholder="0000:0000:0000:0000">
+                            <div class="col-3 txt-inp-def h6">Planet</div>
+                            <input id="inp-planet" class="rounded col-3" type="number" value=0 min=0>
                         </div>
                         <br>
                         <div id="platform-menu" class="row">
@@ -180,10 +182,11 @@ blackHoleSuns.prototype.listClick = function (evt) {
         pnl.find("#inp-link").val(e.link);
 
     pnl.find("#inp-addr").val(e.addr);
+    pnl.find("#inp-planet").val(typeof e.planet == "undefined" ? 0 : e.planet);
     pnl.find("#btn-Galaxy").text(e.galaxy);
     pnl.find("#ck-pc-xbox").prop("checked", e["PC-XBox"]);
     pnl.find("#ck-ps4").prop("checked", e["PS4"]);
-    pnl.find("#ck-hide").prop("checked", typeof e.hide == "undefined" ? false: e.hide);
+    pnl.find("#ck-hide").prop("checked", typeof e.hide == "undefined" ? false : e.hide);
     pnl.find("#btn-Platform").text(e.platform);
     pnl.find("#btn-Mode").text(e.mode);
 
@@ -212,7 +215,7 @@ blackHoleSuns.prototype.save = function (evt) {
 
     if (lastSel) {
         sel = $(lastSel).text().stripMarginWS();
-        idx = bhs.getIndex(list, "_name",sel);
+        idx = bhs.getIndex(list, "_name", sel);
     }
 
     let e = {};
@@ -223,6 +226,9 @@ blackHoleSuns.prototype.save = function (evt) {
 
     e.addr = pnl.find("#inp-addr").val();
     if (e.addr) {
+        if (pnlid == "pnl-poi")
+            e.planet = pnl.find("#inp-planet").val();
+
         e.galaxy = pnl.find("#btn-Galaxy").text().stripNumber();
         e.mode = pnl.find("#btn-Mode").text().stripMarginWS();
         e.platform = pnl.find("#btn-Platform").text().stripMarginWS();
@@ -259,7 +265,7 @@ blackHoleSuns.prototype.save = function (evt) {
     }
 
     let ref = bhs.fs.collection(pnlid == "pnl-org" ? "org" : "poi");
-    ref = ref.where("_name", "==", sel !="" ? sel : uuidv4());
+    ref = ref.where("_name", "==", sel != "" ? sel : uuidv4());
 
     ref.get().then(function (snapshot) {
         if (snapshot.size > 0) {
@@ -322,6 +328,7 @@ blackHoleSuns.prototype.cancel = function (evt) {
     pnl.find("#inp-name").val("");
     pnl.find("#inp-link").val("");
     pnl.find("#inp-addr").val("");
+    pnl.find("#inp-planet").val(0);
     pnl.find("#btn-Galaxy").text("");
     pnl.find("#btn-Platform").text("");
     pnl.find("#btn-Mode").text("");

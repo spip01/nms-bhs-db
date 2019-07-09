@@ -5,11 +5,8 @@ $(document).ready(function () {
 
     bhs.last = [];
 
-    let fadmin = window.location.pathname == "/admin.html";
-    if (!fadmin) {
-        bhs.buildUserPanel();
-        bhs.buildFilePanel();
-    }
+    bhs.buildUserPanel();
+    bhs.buildFilePanel();
 
     panels.forEach(function (p) {
         bhs.buildPanel(p.id);
@@ -127,7 +124,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     <div id="validate" class="col-4 hidden">
                         <label class="h6 txt-inp-def">
                             <input id="ck-valid" type="checkbox">
-                            Validated
+                            Verified
                         </label>
                     </div>
                 </div>
@@ -341,37 +338,30 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
     let loc = pnl.find("#" + panels[idx].id);
 
     let entry = {};
-
-    entry._name = bhs.user._name;
-    entry.org = bhs.user.org;
-    entry.uid = bhs.user.uid;
-    entry.platform = bhs.user.platform;
-    entry.galaxy = bhs.user.galaxy;
-
     let lastentry = bhs.last[idx] ? bhs.last[idx] : null;
+
+    if (!lastentry || lastentry.uid == bhs.user.uid) {
+        entry._name = bhs.user._name;
+        entry.org = bhs.user.org;
+        entry.uid = bhs.user.uid;
+        entry.platform = bhs.user.platform;
+        entry.galaxy = bhs.user.galaxy;
+    }
 
     if (lastentry) {
         let addr = loc.find("#id-addr").val();
-        if (lastentry.addr != addr) 
+        if (lastentry.addr != addr)
             bhs.deleteEntry(lastentry, bhs.admin && bhs.role == "admin");
 
         if (lastentry.uid != bhs.user.uid) {
-            if (bhs.role == "checker") {
+            if (bhs.role == "checker" || bhs.role == "admin") {
                 entry = lastentry;
                 entry.valid = loc.find("#ck-valid").prop("checked");
 
-                await bhs.updateEntry(entry, true);
-                if (entry.blackhole)
-                    bhs.extractEntry(pnlBottom);
-                return;
-            }
-
-            if (bhs.admin && bhs.role == "admin") {
-                entry._name = lastentry._name;
-                entry.org = lastentry.org;
-                entry.uid = lastentry.uid;
-                entry.platform = lastentry.platform;
-                entry.galaxy = lastentry.galaxy;
+                if (bhs.role == "checker") {
+                    await bhs.updateEntry(entry, true);
+                    return;
+                }
             }
         }
     }
@@ -436,8 +426,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
 blackHoleSuns.prototype.save = async function () {
     $("#status").empty();
 
-    let fadmin = window.location.pathname == "/admin.html";
-    if (!fadmin)
+    if (!bhs.admin)
         bhs.saveUser();
 
     if (await bhs.extractEntry(pnlTop))
