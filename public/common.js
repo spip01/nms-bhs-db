@@ -65,6 +65,7 @@ blackHoleSuns.prototype.initFirebase = function () {
     bhs.fbauth = firebase.auth();
     bhs.fs = firebase.firestore();
     bhs.fbstorage = firebase.storage();
+    bhs.fs.enablePersistence();
 
     firebase.auth().getRedirectResult().then(function (result) {
         if (result.credential) {
@@ -579,58 +580,6 @@ blackHoleSuns.prototype.searchTxt = async function () {
     });
 }
 
-blackHoleSuns.prototype.searchContest = async function () {
-    let count = 0;
-
-    let b = {};
-    b.batch = bhs.fs.batch();
-    b.batchcount = 0;
-
-    let ref = bhs.fs.collection("upload");
-    await ref.get().then(async function (snapshot) {
-        for (let i = 0; i < snapshot.size; ++i) {
-            let e = snapshot.docs[i].data();
-            if (e.time > bhs.contest.start) {
-                if (e.upload == "black_holes.csv")
-
-                    await bhs.fbstorage.ref().child(e.file).getDownloadURL().then(async function (url) {
-                        let xhr = new XMLHttpRequest();
-                        xhr.responseType = 'blob';
-                        xhr.onload = async function (event) {
-                            let blob = xhr.response;
-                            let text = await (new Response(blob)).text();
-                            let rows = text.split(/\r?\n|\r/);
-                            let rehab = rows[0] == "bh-address,bh-system,bh-region,bh-econ,bh-life,exit-address,exit-system,exit-region,exit-econ,exit-life";
-                            if (rehab) {
-                                for (let i = 1; i < rows.length; ++i) {
-                                    let row = rows[i].split(/[,\t]/);
-                                    let ref = bhs.getStarsColRef(e.galaxy, e.platform, row[0]);
-                                    await ref.get().then(async function (doc) {
-                                        if (doc.exists) {
-                                            if (!doc.data().valid) {
-                                                await b.batch.update(doc.ref, {
-                                                    valid: true
-                                                });
-                                                b = await bhs.checkBatchSize(b);
-                                                ++count;
-                                            }
-                                        } else
-                                            console.log(row[0]);
-                                    });
-                                }
-                            }
-                        };
-                        xhr.open('GET', url);
-                        xhr.send();
-                    });
-            }
-        }
-    });
-
-    await bhs.checkBatchSize(b);
-    console.log(count);
-}
-
 var timer;
 blackHoleSuns.prototype.scheduleTotals = function () {
     timer = setInterval(function () {
@@ -706,52 +655,55 @@ blackHoleSuns.prototype.initTotals = function () {
 
 blackHoleSuns.prototype.testing = async function () {
     let t = {};
-    let err = "";
     let start = 15000;
-    let end = 80000;
-    let startOffset = 8500;
-    let count = 0;
+    let startOffset = 8600;
+    let max = bhs.calcDist("07FF:007F:0000:0000");
 
-    let ref = bhs.getStarsColRef();
+    // let ref = bhs.getStarsColRef();
+    // await ref.get().then(async function (snapshot) {
+    //     for (let i = 0; i < snapshot.docs.length; ++i) {
+    //         if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "players")
+    //             continue;
+
+    //         let g = snapshot.docs[i].data()
+
+    // for (let j = 0; j < platformList.length; ++j) {
+    //     let p = platformList[j];
+
+    let ref = bhs.getStarsColRef("Euclid", "PC-XBox");
+    ref = ref.where("blackhole", "==", true);
     await ref.get().then(async function (snapshot) {
-        for (let i = 0; i < snapshot.docs.length; ++i) {
-            if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "players")
-                continue;
+        console.log("Euclid " + snapshot.size);
+        for (let i = 0; i < snapshot.size; ++i) {
+            let e = snapshot.docs[i].data();
 
-            let g = snapshot.docs[i].data()
+            let r = e.dist;
+            let x = bhs.calcDist(e.connection);
 
-            for (let j = 0; j < platformList.length; ++j) {
-                let p = platformList[j];
+            let c = r - start + startOffset;
 
-                let ref = bhs.getStarsColRef(g.name, p.name);
-                ref = ref.where("blackhole", "==", true);
-                await ref.get().then(async function (snapshot) {
-                    //console.log(g.name + " " + p.name + " " + snapshot.size);
-                    for (let i = 0; i < snapshot.size; ++i) {
-                        let e = snapshot.docs[i].data();
+            if (r > 7500 && r < max && Math.abs(x - c) > 2000) {
+                console.log(e.addr);
+                list[e.connection] = {};
+                list[e.connection].bh = e;
+                list[e.connection].bh.calc = c;
+                list[e.connection].bh.actual = x;
 
-                        if ((err = validateExitAddress(e.connection)) != "")
-                            console.log(e.galaxy + " " + e.platform + " " + e.addr + " " + e._name + " " + err);
-
-                        if ((err = validateBHAddress(e.addr)) != "")
-                            console.log(e.galaxy + " " + e.platform + " " + e.addr + " " + e._name + " " + err);
-
-                        // let r = e.dist;
-                        // let x = bhs.calcDist(e.connection);
-
-                        // if (r > start && r < end) {
-                        //     let c = r - start + startOffset;
-                        //     let dif = Math.abs((c - x) / c) * 100;
-                        //     if (dif > 3) {
-                        //         console.log(e.galaxy + " " + e.platform + " " + e.addr + " " + e._name);
-                        //     }
-                        // }
+                let ref = bhs.getStarsColRef("Euclid", "PC-XBox", e.connection);
+                await ref.get().then(doc => {
+                    if (doc.exists) {
+                        list[e.connection].exit = doc.data();
                     }
                 });
             }
         }
     });
-    console.log("done");
+    // }
+    // }
+    // });
+
+    console.log("done", Object.keys(list).length);
+    bhs.drawList(list);
 }
 
 blackHoleSuns.prototype.checkTotalsInit = function (t, entry) {

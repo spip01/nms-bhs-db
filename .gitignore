@@ -1,4 +1,3 @@
-/functions/
 /node_modules/
 /bhs/*console_files/
 /bhs/*console.html
@@ -8,7 +7,8 @@ bootstrap.min.js
 *.env
 env.js
 *.cache
-
+/.firebase/
+/.vscode/
 .metadata
 
 # Windows image file caches

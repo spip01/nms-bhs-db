@@ -23,8 +23,7 @@ $(document).ready(function () {
     });
 
     $("#cancel").click(function () {
-        bhs.displaySingle(bhs.last[pnlTop], pnlTop);
-        bhs.displaySingle(bhs.last[pnlBottom], pnlBottom);
+        bhs.clearPanels();
     });
 })
 

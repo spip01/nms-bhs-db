@@ -32,9 +32,14 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
                     $("#poiorg").show();
 
                 if (bhs.role == "admin") {
+                    $("#id-export").show();
+                    $("#btn-create").show();
+                    $("#btn-export").show();
+
                     $("#admin").show();
                     $("#recalc").show();
                     $("#testmode").show();
+
                     if (document.domain == "localhost") {
                         $("#testing").show();
                         $("#searchContest").show();
@@ -90,7 +95,6 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
 
     let pnl = $("#pnl-user");
     pnl.find("#id-player").val(bhs.user._name);
-    pnl.find("#ck-xbox").prop("checked", typeof bhs.user.xbox == "undefined" ? false : bhs.user.xbox);
     pnl.find("#btn-Platform").text(bhs.user.platform);
     pnl.find("#btn-Organization").text(bhs.user.org);
 
@@ -122,11 +126,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
             </div>
 
             <div class="row">
-            <div id="id-Organization" class="col-md-7 col-14"></div>
-                <label class="col-md-3 col-7 h5 txt-inp-def text-right align-bottom">
-                    XBox&nbsp;
-                    <input id="ck-xbox" type="checkbox">
-                </label>
+                <div id="id-Organization" class="col-md-7 col-14"></div>
                 <label class="col-md-3 col-7 h5 text-right align-bottom">
                     File Upload&nbsp;
                     <input id="ck-fileupload" type="checkbox">
@@ -151,10 +151,6 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     $("#id-player").change(function () {
         let user = bhs.extractUser();
         bhs.changeName("#id-player", user);
-    });
-
-    $("#ck-xbox").change(function () {
-        bhs.saveUser();
     });
 
     $("#ck-fileupload").change(function (event) {
@@ -398,25 +394,19 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
         });
     });
 
-    if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
-        $("#id-export").show();
-        $("#btn-create").show();
-        $("#btn-export").show();
+    $("#btn-create").click(function () {
+        var text = bhs.entriesToCsv();
 
-        $("#btn-create").click(function () {
-            var text = bhs.entriesToCsv();
-
-            var data = new Blob([text], {
-                type: 'text/plain'
-            });
-            var url = window.URL.createObjectURL(data);
-            document.getElementById('btn-export').href = url;
-
-            $("#btn-export").prop("download", $("#inp-exportfile").val());
-            $("#btn-export").removeClass("disabled");
-            $("#btn-export").removeAttr("disabled");
+        var data = new Blob([text], {
+            type: 'text/plain'
         });
-    }
+        var url = window.URL.createObjectURL(data);
+        document.getElementById('btn-export').href = url;
+
+        $("#btn-export").prop("download", $("#inp-exportfile").val());
+        $("#btn-export").removeClass("disabled");
+        $("#btn-export").removeAttr("disabled");
+    });
 }
 
 blackHoleSuns.prototype.entriesToCsv = function () {
@@ -1268,7 +1258,6 @@ blackHoleSuns.prototype.extractUser = function () {
     u.platform = loc.find("#btn-Platform").text().stripNumber();
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber();
     u.org = loc.find("#btn-Organization").text().stripNumber();
-    u.xbox = loc.find("#ck-xbox").prop("checked");
 
     return u;
 }
@@ -1499,7 +1488,55 @@ blackHoleSuns.prototype.resetMapOptions = function (entry) {
 }
 
 blackHoleSuns.prototype.purgeMap = function () {
-    Plotly.purge('plymap');
+    //Plotly.purge('plymap');
+    let zero = {
+        x: 2048,
+        y: 128,
+        z: 2048,
+    };
+
+    let opt = bhs.extractMapOptions();
+    let layout = bhs.changeMapLayout();
+    let data = [];
+    let out = initout();
+    pushentry(out, zero);
+    data.push(makedata(opt, out, 6, "#ffffff"));
+
+    Plotly.newPlot('plymap', data, layout).then(plot => {
+        plot.on('plotly_click', function (e) {
+            setTimeout(function () {
+                if (e.points.length > 0 && e.points[0].text) {
+                    if (window.location.pathname == "/index.html" || window.location.pathname == "/")
+                        bhs.getEntry(e.points[0].text.slice(0, 19), bhs.displaySingle, 0);
+
+                    let addr = bhs.addressToXYZ(e.points[0].text.slice(0, 19));
+                    let opt = bhs.extractMapOptions();
+
+                    bhs.mapped = {};
+                    bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1);
+                    // bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1, true);
+                    delete bhs.mapped;
+                }
+            }, 1500);
+        });
+        // plot.on('plotly_afterplot', function (e) {
+
+        // plot.on('plotly_hover', e => {
+        //     if (e.points.length > 0) {
+        //         let d = e.points[0].data;
+        //         let xyz = d.altdata[e.points[0].pointNumber];
+        //         if (xyz) {
+        //             //Plotly.Fx.hover('plymap', {yval:[xyz.z], xval:[xyz.x], zval:[xyz.y] },["xyz"]);
+        //             // for (let i = 0; i < d.x.length; ++i) {
+        //                 // if (d.x[i] == xyz.x && d.y[i] == xyz.z && d.z[i] == xyz.y)
+        //                     Plotly.restyle('plymap', {
+        //                         "marker.size": 8
+        //                     }, {y:[xyz.z], x:[xyz.x], z:[xyz.y] })
+        //             // }
+        //         }
+        //     }
+        // });
+    });
 }
 
 blackHoleSuns.prototype.buildMap = function () {
@@ -1660,54 +1697,7 @@ blackHoleSuns.prototype.buildMap = function () {
         bhs.changeMapLayout(true, true);
     });
 
-    let zero = {
-        x: 2048,
-        y: 128,
-        z: 2048,
-    };
-
-    opt = bhs.extractMapOptions();
-    let layout = bhs.changeMapLayout();
-    let data = [];
-    let out = initout();
-    pushentry(out, zero);
-    data.push(makedata(opt, out, 6, "#ffffff"));
-
-    Plotly.newPlot('plymap', data, layout).then(plot => {
-        plot.on('plotly_click', function (e) {
-            setTimeout(function () {
-                if (e.points.length > 0 && e.points[0].text) {
-                    if (window.location.pathname == "/index.html" || window.location.pathname == "/")
-                        bhs.getEntry(e.points[0].text.slice(0, 19), bhs.displaySingle, 0);
-
-                    let addr = bhs.addressToXYZ(e.points[0].text.slice(0, 19));
-                    let opt = bhs.extractMapOptions();
-
-                    bhs.mapped = {};
-                    bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1);
-                    // bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1, true);
-                    delete bhs.mapped;
-                }
-            }, 1500);
-        });
-        // plot.on('plotly_afterplot', function (e) {
-
-        // plot.on('plotly_hover', e => {
-        //     if (e.points.length > 0) {
-        //         let d = e.points[0].data;
-        //         let xyz = d.altdata[e.points[0].pointNumber];
-        //         if (xyz) {
-        //             //Plotly.Fx.hover('plymap', {yval:[xyz.z], xval:[xyz.x], zval:[xyz.y] },["xyz"]);
-        //             // for (let i = 0; i < d.x.length; ++i) {
-        //                 // if (d.x[i] == xyz.x && d.y[i] == xyz.z && d.z[i] == xyz.y)
-        //                     Plotly.restyle('plymap', {
-        //                         "marker.size": 8
-        //                     }, {y:[xyz.z], x:[xyz.x], z:[xyz.y] })
-        //             // }
-        //         }
-        //     }
-        // });
-    });
+    bhs.purgeMap();
 
     $("#btn-mapsettings").unbind("click");
     $("#btn-mapsettings").click(function () {
@@ -1722,7 +1712,6 @@ blackHoleSuns.prototype.buildMap = function () {
 }
 
 blackHoleSuns.prototype.drawList = function (listEntry, force) {
-
     let findex = window.location.pathname == "/" || window.location.pathname == "/index.html";
     let fsearch = window.location.pathname == "/search.html";
 
@@ -1751,6 +1740,9 @@ blackHoleSuns.prototype.drawList = function (listEntry, force) {
                 out[t[i]] = initout(out[t[i]]);
                 let e = entry[t[i]];
                 let text = e.addr + "<br>" + e.sys + "<br>" + e.reg;
+
+                if (e.calc)
+                    text += "<br>" + e.dist + " " + e.calc + " " + e.actual + " " + (e.calc - e.actual);
 
                 if (t[i].match(/base/))
                     text += "<br>" + e.basename;
