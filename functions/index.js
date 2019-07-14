@@ -1,10 +1,37 @@
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
+const cors = require('cors')({origin: true})
 admin.initializeApp()
 
-// exports.helloWorld = functions.https.onRequest((request, response) => {
-//     response.send("Hello from Firebase!")
-// })
+exports.getTotalsHTML = functions.https.onRequest((request, response) => {
+    admin.firestore().doc("users/" + request.query.uid).get().then(doc => {
+        if (doc.exists) {
+            let h = `<div class="row"><div class="col-4">Total</div><div class="col-3">` + doc.data().stars5.total + `</div></div>`
+            response.send(h)
+            return 1
+        } else {
+            response.status(500).send(request.query.uid + " not found")
+            return 0
+        }
+    }).catch(err => {
+        response.status(500).send(err)
+        return 0
+    })
+})
+
+exports.getTotals = functions.https.onCall((data, context) => {
+    admin.firestore().doc("users/" + context.params.uid).get().then(doc => {
+        if (doc.exists) {
+            let h = `<div class="row"><div class="col-4">Total</div><div class="col-3">` + doc.data().stars5.total + `</div></div>`
+            return h
+        } else {
+            console.log(context.params.uid + " not found")
+            return null
+        }
+    }).catch(err => {
+        return null
+    })
+})
 
 exports.createSystem = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
     .onCreate((doc, context) => {
@@ -22,7 +49,7 @@ exports.createSystem = functions.firestore.document("stars5/{galaxy}/{platform}/
             return updateTotal(t, ref)
         }
 
-        return false
+        return 0
     })
 
 function updateTotal(add, ref, reset) {

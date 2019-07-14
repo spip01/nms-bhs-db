@@ -156,6 +156,12 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
 
             bhs.doLoggedin(user);
             bhs.navLoggedin();
+
+            var gettotals = firebase.functions().httpsCallable('getTotals');
+            gettotals({uid:user.uid}).then(function(result) {
+              console.log(result.data.text)
+            });
+            
         });
     } else {
         $("#usermenu").hide();
@@ -850,7 +856,7 @@ blackHoleSuns.prototype.incPart = function (t, entry, inc) {
     return t;
 }
 
-blackHoleSuns.prototype.addObjects = function (o, n) {
+function addObjects (o, n) {
     if (typeof n != "object") {
         if (typeof n == "number") {
             if (typeof o == "undefined")
@@ -864,7 +870,7 @@ blackHoleSuns.prototype.addObjects = function (o, n) {
         let l = Object.keys(n);
         for (let i = 0; i < l.length; ++i) {
             let x = l[i];
-            o[x] = bhs.addObjects(o[x], n[x]);
+            o[x] = addObjects(o[x], n[x]);
         }
     }
 
@@ -947,7 +953,7 @@ blackHoleSuns.prototype.updateTotal = function (add, ref, reset) {
             if (reset)
                 t = mergeObjects(t, add);
             else
-                t = bhs.addObjects(t, add);
+                t = addObjects(t, add);
 
             let now = firebase.firestore.Timestamp.now();
 
