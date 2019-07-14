@@ -659,51 +659,54 @@ blackHoleSuns.prototype.testing = async function () {
     let startOffset = 8600;
     let max = bhs.calcDist("07FF:007F:0000:0000");
 
-    // let ref = bhs.getStarsColRef();
-    // await ref.get().then(async function (snapshot) {
-    //     for (let i = 0; i < snapshot.docs.length; ++i) {
-    //         if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "players")
-    //             continue;
-
-    //         let g = snapshot.docs[i].data()
-
-    // for (let j = 0; j < platformList.length; ++j) {
-    //     let p = platformList[j];
-
-    let ref = bhs.getStarsColRef("Euclid", "PC-XBox");
-    ref = ref.where("blackhole", "==", true);
+    let ref = bhs.getStarsColRef();
     await ref.get().then(async function (snapshot) {
-        console.log("Euclid " + snapshot.size);
-        for (let i = 0; i < snapshot.size; ++i) {
-            let e = snapshot.docs[i].data();
+        for (let i = 0; i < snapshot.docs.length; ++i) {
+            if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "players")
+                continue;
 
-            let r = e.dist;
-            let x = bhs.calcDist(e.connection);
+            let g = snapshot.docs[i].data()
 
-            let c = r - start + startOffset;
+            for (let j = 0; j < platformList.length; ++j) {
+                let p = platformList[j];
 
-            if (r > 7500 && r < max && Math.abs(x - c) > 2000) {
-                console.log(e.addr);
-                list[e.connection] = {};
-                list[e.connection].bh = e;
-                list[e.connection].bh.calc = c;
-                list[e.connection].bh.actual = x;
+                let ref = bhs.getStarsColRef(g.name, p.name);
+                ref = ref.where("blackhole", "==", true);
+                await ref.get().then(async function (snapshot) {
+                    // console.log("Euclid " + snapshot.size);
+                    for (let i = 0; i < snapshot.size; ++i) {
+                        let e = snapshot.docs[i].data();
 
-                let ref = bhs.getStarsColRef("Euclid", "PC-XBox", e.connection);
-                await ref.get().then(doc => {
-                    if (doc.exists) {
-                        list[e.connection].exit = doc.data();
+                        if (e.conxyzs.s > 0x78)
+                            console.log(e.galaxy + "," + e.platform + "," + e.addr + "," + e._name);
+
+                        // let r = e.dist;
+                        // let x = bhs.calcDist(e.connection);
+
+                        // let c = r - start + startOffset;
+
+                        // if (r > 7500 && r < max && Math.abs(x - c) > 2000) {
+                        //     console.log(e.addr);
+                        //     list[e.connection] = {};
+                        //     list[e.connection].bh = e;
+                        //     list[e.connection].bh.calc = c;
+                        //     list[e.connection].bh.actual = x;
+
+                        //     let ref = bhs.getStarsColRef("Euclid", "PC-XBox", e.connection);
+                        //     await ref.get().then(doc => {
+                        //         if (doc.exists) {
+                        //             list[e.connection].exit = doc.data();
+                        //         }
+                        //     });
+                        // }
                     }
                 });
             }
         }
     });
-    // }
-    // }
-    // });
 
-    console.log("done", Object.keys(list).length);
-    bhs.drawList(list);
+    console.log("done");
+    // bhs.drawList(list);
 }
 
 blackHoleSuns.prototype.checkTotalsInit = function (t, entry) {
@@ -1413,6 +1416,7 @@ blackHoleSuns.prototype.validateAddress = function (addr, ck) {
     else if (ck == "bh" && c.s != 0x79) error = ck + " system " + c.y.toString(16) + ' != 79';
     else if (ck == "exit" && c.y < 0x7B) error = ck + " y " + c.y.toString(16) + ' < 7b';
     else if (ck == "exit" && c.y > 0x83) error = ck + " y " + c.y.toString(16) + ' > 83';
+    else if (ck == "exit" && c.s > 0x78) error = ck + " system " + c.s.toString(16) + ' > 78';
 
     return error;
 }
