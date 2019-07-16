@@ -330,6 +330,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
 
     loc = $("#id-utlistsel");
     loc.append(h);
+    let userhdrloc = $("#userHeader");
 
     userTable.forEach(function (t) {
         loc.find("#ck-" + t.id).change(function () {
@@ -342,8 +343,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
             }
         });
 
-        loc = $("#userHeader");
-        loc.find("#" + t.id).click(function () {
+        userhdrloc.find("#" + t.id).click(function () {
             let id = $(this).prop("id");
             let loc = $("#userItems");
             let list = loc.children();
@@ -589,7 +589,7 @@ const totalsRows = [{
 }, {
     title: "Total/galaxy",
     id: "id-totalBHG",
-    where: "index",
+    where: "galaxy",
 }, {
     title: "Total/galaxy/platform",
     id: "id-totalBHGP",
@@ -1040,7 +1040,7 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id, bold) {
         const userEnd = `</div>`;
 
         let pnl = $("#totals #" + id);
-        let rid = typeof entry._name != "undefined" ? entry._name.nameToId() : entry.name ? entry.name.nameToId() : "-";
+        let rid = typeof entry._name != "undefined"? entry._name.nameToId() : entry.name ? entry.name.nameToId() : "-";
         let player = pnl.find("#u-" + rid);
 
         if (player.length == 0) {

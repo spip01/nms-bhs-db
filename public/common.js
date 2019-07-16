@@ -157,11 +157,35 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
             bhs.doLoggedin(user);
             bhs.navLoggedin();
 
-            var gettotals = firebase.functions().httpsCallable('getTotals');
-            gettotals({uid:user.uid}).then(function(result) {
-              console.log(result.data.text)
-            });
-            
+            if (document.domain == "localhost") {
+                var getDARC = firebase.functions().httpsCallable('getDARC');
+                getDARC()
+                .then(function (result) {
+                    console.log(result.data);
+                })
+                .catch(function (err) {
+                    console.log(err);
+                });
+                // var gettotals = firebase.functions().httpsCallable('getTotals');
+                // gettotals({
+                //     view: "users"
+                // })
+                // .then(function (result) {
+                //     console.log(result.data.html);
+                // })
+                // .catch(function (err) {
+                //     console.log(err);
+                // });
+                // gettotals({
+                //     view: "org"
+                // })
+                // .then(function (result) {
+                //     console.log(result.data.html);
+                // })
+                // .catch(function (err) {
+                //     console.log(err);
+                // });
+    }
         });
     } else {
         $("#usermenu").hide();
@@ -245,6 +269,7 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
                             bhs.user.assigned = true;
                             await bhs.assignUid(bhs.user);
                         }
+                        bhs.user.assigned = true;
                     }
                 });
             }
@@ -856,7 +881,7 @@ blackHoleSuns.prototype.incPart = function (t, entry, inc) {
     return t;
 }
 
-function addObjects (o, n) {
+function addObjects(o, n) {
     if (typeof n != "object") {
         if (typeof n == "number") {
             if (typeof o == "undefined")

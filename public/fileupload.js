@@ -93,7 +93,7 @@ blackHoleSuns.prototype.buildFileList = function () {
                 $("#filelist").append(h);
 
                 var data = new Blob([d.contents], {
-                    type: 'text/plain'
+                    type: 'text/csv'
                 });
                 var url = window.URL.createObjectURL(data);
                 document.getElementById('id-' + d._name.nameToId() + d._time.seconds).href = url;

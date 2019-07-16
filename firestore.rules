@@ -20,6 +20,11 @@ service cloud.firestore {
       allow write: if request.auth.uid != null;
     }
 
+    match /bhs/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write: if false;
+    }
+
     match /stars5/{document=**} {
       allow read: if request.auth.uid != null;
       allow write: if request.auth.uid != null;
