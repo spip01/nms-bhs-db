@@ -190,6 +190,31 @@
                         <div id="mapcol" class="card card-body border bkg-def pad-bottom">
                             <div id="plymap"></div>
                         </div>
+                        <br>
+                        <div class="row">
+                            <div class="col-7">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <button id="btn-redraw" type="button"
+                                            class="text-center btn-sm btn border btn-def">Redraw
+                                        </button>
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="row container">
+                                    <div id="btn-mapsettings" class="txt-def">
+                                        <i class="fa fa-cog txt-def"></i>&nbsp;Settings
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="maplogo" class="col-5">
+                                <a html="https://darc.blackholesuns.com">
+                                    <img id="logo" src="lBTK5EL.png" class="float-center" alt="BHS Logo" height="20px"
+                                        width="20px" style="max-width:100px; max-height:100px">
+                                </a>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-5">
                         <div id="searchpnl" class="card border pad-bottom">
@@ -241,7 +266,10 @@
                         </div>
                         <br>
                         <div id="results" class="card border">
-                            <div class="card-header bkg-def txt-def h5 text-center">Results</div>
+                            <div class="card-header bkg-def txt-def h5 text-center">
+                                Results
+                                <div id="res-total" class="h6"></div>
+                            </div>
                             <div id="resultsTable" class="card-body pad-bottom scrollbar container-fluid"
                                 style="overflow-y: scroll; height:240px"></div>
                         </div>
@@ -251,26 +279,6 @@
 
                 <div id="map" class="row">
                     <div class="col-5">
-                        <div class="card card-body no-bordr bkg-def">
-                            <div class="row">
-                                <div class="col-4">
-                                    <div class="row">
-                                        <div id="btn-redraw" class="text-center btn-sm btn border btn-def">Redraw </div>
-                                    </div>
-                                </div>
-                                <div id="maplogo" class="col-4">
-                                    <a html="https://darc.blackholesuns.com">
-                                        <img id="logo" src="lBTK5EL.png" class="float-center" alt="BHS Logo"
-                                            height="20px" width="20px">
-                                    </a>
-                                </div>
-                                <div id="btn-mapsettings" class="col-6 txt-def">
-                                    <i class="fa fa-cog txt-def"></i>&nbsp;Settings
-                                </div>
-                            </div>
-                        </div>
-                        <br>
-
                         <div id="showmapkey" class="card border bkg-def pad-bottom hidden">
                             <div class="card-header h5 txt-def">Key</div>
                             <div id="mapkey" class="card-body txt-def"></div>

@@ -65,7 +65,9 @@ blackHoleSuns.prototype.initFirebase = function () {
     bhs.fbauth = firebase.auth();
     bhs.fs = firebase.firestore();
     bhs.fbstorage = firebase.storage();
-    bhs.fs.enablePersistence();
+    bhs.fs.enablePersistence({
+        synchronizeTabs: true
+    });
 
     firebase.auth().getRedirectResult().then(function (result) {
         if (result.credential) {
@@ -158,14 +160,15 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
             bhs.navLoggedin();
 
             if (document.domain == "localhost") {
-                var getDARC = firebase.functions().httpsCallable('getDARC');
-                getDARC()
-                .then(function (result) {
-                    console.log(result.data);
-                })
-                .catch(function (err) {
-                    console.log(err);
-                });
+                // var getDARC = firebase.functions().httpsCallable('getDARC');
+                // getDARC()
+                // .then(function (result) {
+                //     console.log(result.data);
+                // })
+                // .catch(function (err) {
+                //     console.log(err);
+                // });
+
                 // var gettotals = firebase.functions().httpsCallable('getTotals');
                 // gettotals({
                 //     view: "users"
@@ -185,7 +188,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
                 // .catch(function (err) {
                 //     console.log(err);
                 // });
-    }
+            }
         });
     } else {
         $("#usermenu").hide();
@@ -1062,18 +1065,19 @@ blackHoleSuns.prototype.getOrgEntries = async function (displayFcn, singleFcn, n
     galaxy = galaxy ? galaxy : bhs.user.galaxy;
     platform = platform ? platform : bhs.user.platform;
 
-    if (bhs.loaded && bhs.loaded[galaxy] && bhs.loaded[galaxy][platform]) {
-        let list = Object.keys(bhs.list[galaxy][platform])
-        for (let i = 0; i < list.length; ++i) {
-            let e = bhs.list[galaxy][platform][list[i]];
-            let k = Object.keys(e);
-            if (e[k[0]].org == name)
-                bhs.entries[list[i]] = e;
-        }
+    if (!bhs.loaded || !bhs.loaded[galaxy] || !bhs.loaded[galaxy][platform])
+        await bhs.getEntries(displayFcn, singleFcn, null, galaxy, platform)
 
-        if (displayFcn)
-            displayFcn(bhs.entries);
+    let list = Object.keys(bhs.list[galaxy][platform])
+    for (let i = 0; i < list.length; ++i) {
+        let e = bhs.list[galaxy][platform][list[i]];
+        let k = Object.keys(e);
+        if (e[k[0]].org == name)
+            bhs.entries[list[i]] = e;
     }
+
+    if (displayFcn)
+        displayFcn(bhs.entries);
 }
 
 blackHoleSuns.prototype.dispEntryList = function (entry, id, displayFcn) {

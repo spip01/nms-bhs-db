@@ -99,17 +99,20 @@ blackHoleSuns.prototype.doSearch = function (type, s1, s2) {
 }
 
 blackHoleSuns.prototype.displayResults = function (found) {
-    let bhrow = `<div class="row">bh&nbsp;-&nbsp;exit</div>`;
-    let exitrow = `<div class="row">exit</div>`;
+    const bhrow = `<div class="row">bh&nbsp;-&nbsp;exit</div>`;
+    const exitrow = `<div class="row">exit</div>`;
     let h = "";
 
     if (found.bh) {
+        $("#res-total").text("found = 1");
         h = /bh/ [Symbol.replace](bhrow, found.bh ? found.bh.addr : "");
         h = /exit/ [Symbol.replace](h, found.exit ? found.exit.addr : "");
     } else if (found.exit) {
         h = /exit/ [Symbol.replace](exitrow, found.exit ? found.exit.addr : "");
     } else {
         let list = Object.keys(found);
+        $("#res-total").text("found = "+list.length);
+
         for (let i = 0; i < list.length; ++i) {
             let l = "";
             if (found[list[i]].bh) {

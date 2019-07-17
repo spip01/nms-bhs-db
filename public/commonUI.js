@@ -89,12 +89,11 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
         if (!ftotals) {
             bhs.buildUserTable(bhs.user);
             bhs.displaySettings(bhs.user);
-            //bhs.getEntries(bhs.displayEntryList, bhs.displayEntry);
         }
     }
 
     let pnl = $("#pnl-user");
-    pnl.find("#id-player").val(bhs.user._name);
+    pnl.find("#id-Player").val(bhs.user._name);
     pnl.find("#btn-Platform").text(bhs.user.platform);
     pnl.find("#btn-Organization").text(bhs.user.org);
 
@@ -112,8 +111,8 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
             <div class="row">
                 <div class="col-7">
                     <div class="row">
-                        <div class="col-14 h6 txt-inp-def">Traveler</div>
-                        <input id="id-player" class="rounded col-13 h5" type="text">
+                        <div class="col-14 h6 txt-inp-def">Player Name</div>
+                        <input id="id-Player" class="rounded col-13 h5" type="text">
                     </div>
                 </div>
 
@@ -148,9 +147,9 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, true);
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, true);
 
-    $("#id-player").change(function () {
+    $("#id-Player").change(function () {
         let user = bhs.extractUser();
-        bhs.changeName("#id-player", user);
+        bhs.changeName("#id-Player", user);
     });
 
     $("#ck-fileupload").change(function (event) {
@@ -259,14 +258,19 @@ blackHoleSuns.prototype.loadEntries = function () {
     $("#resultsTable").empty();
     bhs.purgeMap();
     $("#userItems").empty();
-    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry);
+
+    let fsearch = window.location.pathname == "/search.html" || window.location.pathname == "/totals.html";
+    if (fsearch)
+        blackHoleSuns.prototype.select()
+    else
+        bhs.getEntries(bhs.displayEntryList, bhs.displayEntry);
 }
 
 blackHoleSuns.prototype.buildUserTable = function (entry) {
     const table = `
         <div class="card-header bkg-def">
             <div class="row">
-                <h4 class="col-6 txt-def">User Entries</h4>
+                <h4 class="col-6 txt-def">System List</h4>
                 <div id="lc-plat" class="col-4 txt-def h6"></div>
                 <div id="lc-gal" class="col-4 h6 txt-def"></div>
             </div>
@@ -844,15 +848,16 @@ blackHoleSuns.prototype.sortTotals = function (evt) {
 blackHoleSuns.prototype.clickUser = function (evt) {
     let loc = $(evt).parent();
     let id = loc.prop("id");
+    let pnlid = loc.parent().prop("id");
     let name = $(evt).parent().find("#id-names").text().stripMarginWS();
 
     if (window.location.pathname == "/totals.html") {
         bhs.entries = {};
 
-        if (id == "itm-2") {
+        if (pnlid == "itm-2") {
             let galaxy = $("#btn-Galaxy").text().stripNumber();
             let platform = $("#btn-Platform").text().stripNumber();
-            $("#btn-Player").text("");
+            $("#btn-Player").text(id.stripID());
             bhs.getOrgEntries(bhs.displayEntryList, bhs.displayEntry, name, galaxy, platform);
         } else {
             let uid = $(evt).parent().find("#id-uid").text().stripMarginWS();
@@ -1040,7 +1045,7 @@ blackHoleSuns.prototype.displayUserTotals = function (entry, id, bold) {
         const userEnd = `</div>`;
 
         let pnl = $("#totals #" + id);
-        let rid = typeof entry._name != "undefined"? entry._name.nameToId() : entry.name ? entry.name.nameToId() : "-";
+        let rid = typeof entry._name != "undefined" ? entry._name.nameToId() : entry.name ? entry.name.nameToId() : "-";
         let player = pnl.find("#u-" + rid);
 
         if (player.length == 0) {
