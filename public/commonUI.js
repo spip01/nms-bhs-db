@@ -416,20 +416,25 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
 blackHoleSuns.prototype.entriesToCsv = function () {
     let out = "bh coord,sys,reg,life,econ,exit coord,sys,reg,life,econ\n";
 
-    let entries = Object.keys(bhs.entries);
-    for (let i = 0; i < entries.length; ++i) {
-        let e = bhs.entries[entries[i]];
+    let list = $("#userItems").children();
+    for (let i = 0; i < list.length; ++i) {
+        let loc = list[i];
+        let addr = /-/g [Symbol.replace]($(loc).prop("id"), ":");
+        let e = bhs.entries[addr];
         if (e.bh && e.exit) {
             out += e.bh.addr + "," + e.bh.sys + "," + e.bh.reg + "," + e.bh.life + "," + e.bh.econ + ",";
             out += e.exit.addr + "," + e.exit.sys + "," + e.exit.reg + "," + e.exit.life + "," + e.exit.econ + "\n";
         }
+
     }
+
 
     return out;
 }
 
-blackHoleSuns.prototype.displayEntryList = function (entrylist) {
-    bhs.drawList(entrylist);
+blackHoleSuns.prototype.displayEntryList = function (entrylist, force) {
+    bhs.drawList(entrylist, force);
+    $("#userItems").empty();
 
     if (window.location.pathname == "/totals.html")
         return;
@@ -492,7 +497,6 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist) {
         h += lineEnd;
     }
 
-    $("#userItems").empty();
     $("#userItems").append(h);
     bhs.displaySettings(bhs.user);
 }
@@ -1668,7 +1672,10 @@ blackHoleSuns.prototype.buildMap = function () {
     map.find("#btn-redraw").click(function () {
         $("#resultsTable").empty();
         bhs.purgeMap();
-        bhs.drawList(bhs.entries);
+
+        let fsearch = window.location.pathname == "/search.html";
+        if (!fsearch)
+            bhs.drawList(bhs.entries);
     });
 
     opt.find("#btn-mapsave").unbind("click");
