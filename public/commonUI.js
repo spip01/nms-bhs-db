@@ -560,7 +560,7 @@ const totalsCol = [{
     format: "col-sm-4 col-6",
 }, {
     title: "Player",
-    id: "id-player",
+    id: "id-Player",
     format: "col-sm-2 col-4 text-right",
     where: "index",
 }, {
@@ -759,7 +759,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
         return;
     } else if (id.match(/user/)) {
         bhs.displayUserTotals(entry, "itm-1", true);
-        cid = "id-player";
+        cid = "id-Player";
     } else if (id.match(/org/)) {
         bhs.displayUserTotals(entry, "itm-2");
     }
@@ -814,7 +814,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
 
     bhs.displayUTotals(entry[starsCol], cid);
 
-    if (cid == "id-player" && bhs.contest && entry[starsCol] && entry[starsCol].contest) {
+    if (cid == "id-Player" && bhs.contest && entry[starsCol] && entry[starsCol].contest) {
         cid = "id-contest";
         bhs.displayUTotals(entry[starsCol].contest[bhs.contest.name], cid);
     }
@@ -1263,7 +1263,7 @@ blackHoleSuns.prototype.extractUser = function () {
     let loc = $("#pnl-user");
     let u = {};
 
-    u._name = loc.find("#id-player").val();
+    u._name = loc.find("#id-Player").val();
     u.platform = loc.find("#btn-Platform").text().stripNumber();
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber();
     u.org = loc.find("#btn-Organization").text().stripNumber();
