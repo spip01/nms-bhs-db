@@ -688,6 +688,16 @@ blackHoleSuns.prototype.initTotals = function () {
 }
 
 blackHoleSuns.prototype.testing = async function () {
+    var getDARC = firebase.functions().httpsCallable('getDARC');
+    getDARC()
+        .then(function (result) {
+            console.log(result.data);
+        })
+        .catch(function (err) {
+            console.log(err);
+        });
+    return
+
     let t = {};
     let start = 15000;
     let startOffset = 8600;

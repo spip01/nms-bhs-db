@@ -1,9 +1,17 @@
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
+var serviceAccount = require("./nms-bhs-8025d3f3c02d.json");
 const cors = require('cors')({
     origin: true
 })
-admin.initializeApp()
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+})
+
+const runtimeOpts = {
+    timeoutSeconds: 300
+}
 
 // https://us-central1-nms-bhs.cloudfunctions.net/getTotalsHTML?uid=SV14SdNbzRbfW8NRbNQpTRJ7y612
 exports.getTotalsHTML = functions.https.onRequest((request, response) => {
@@ -11,14 +19,33 @@ exports.getTotalsHTML = functions.https.onRequest((request, response) => {
         if (doc.exists) {
             let h = `<div class="row"><div class="col-4">Total</div><div class="col-3">` + doc.data().stars5.total + `</div></div>`
             response.send(h)
-            return 1
         } else {
             response.status(500).send(request.query.uid + " not found")
-            return 0
         }
     }).catch(err => {
         response.status(500).send(err)
-        return 0
+    })
+})
+
+// https://us-central1-nms-bhs.cloudfunctions.net/getDARCFile?g=Euclid&p=PC-XBox
+exports.getDARCFile = functions.https.onRequest((request, response) => {
+    const path = require('path');
+    const fs = require('fs');
+    const os = require('os');
+
+    cors(request, response, () => {
+        const bucket = admin.storage().bucket("nms-bhs.appspot.com")
+
+        let fname = 'darc/' + request.query.g + "-" + request.query.p + ".txt"
+        console.log(fname)
+        let f = bucket.file(fname)
+
+        f.download((err, contents) => {
+            if (err) {
+                response.status(500).send(err)
+            } else
+                response.send(contents)
+        })
     })
 })
 
@@ -38,33 +65,65 @@ exports.getTotals = functions.https.onCall((data, context) => {
     // })
 })
 
-exports.getDARC = functions.https.onCall((data, context) => {
-    let l = "bh,region,system,exit\n"
 
-    let ref = admin.firestore().collection("stars5/Euclid/PC-XBox")
-    ref = ref.where("blackhole", "==", true)
+//[0,"PC","0000:0000:0000:0079","Thoslo Quadrant","SAS.A83","0FFE:007E:0082:003D","Vasika Boundary","Uscarlen"]
+exports.getDARC = functions.https.onCall(async (data, context) => {
+    const bucket = admin.storage().bucket("nms-bhs.appspot.com")
 
-    return ref.get().then(snapshot => {
-        console.log("get "+snapshot.size)
+    try {
+        let ref = admin.firestore().collection("stars5")
+        await ref.listDocuments().then(async docrefs => {
+            for (let gref of docrefs) {
+                if (gref.id === "totals" || gref.id === "players")
+                    continue;
 
-        for (let i = 0; i < snapshot.size; ++i) {
-            let e = snapshot.docs[i].data()
-            l += e.addr + "," + e.reg + "," + e.sys + "," + e.connection + "\n"
-        }
+                await gref.listCollections().then(async colrefs => {
+                    for (let pref of colrefs) {
+                        let fname = 'darc/' + gref.id + "-" + pref.id + ".txt"
+                        let f = bucket.file(fname)
+                        let s = f.createWriteStream({
+                            public: true,
+                            gzip: true
+                        })
 
-        const bucket = admin.storage().bucket("nms-bhs.appspot.com")
-        return bucket.file('darc/euclid-pc.csv').createWriteStream().end(l)
-    }).then(() => {
-        console.log("done")
+                        let time = new Date().getTime();
+
+                        ref = pref.where("blackhole", "==", true)
+                        await ref.get().then(async snapshot => {
+                            console.log(gref.id, pref.id, snapshot.size, new Date().getTime() - time)
+
+                            for (let doc of snapshot.docs) {
+                                let e = doc.data()
+
+                                let ref = pref.doc(e.connection)
+                                let c = await ref.get().then(doc => {
+                                    return doc.exists ? doc.data() : null
+                                })
+
+                                if (c)
+                                    s.write('[' + gref.id + ',"' + pref.id + '","' + e.addr + '","' + e.reg + '","' + e.sys + '","' + c.addr + '","' + c.reg + '","' + c.sys + '"]\n')
+                                else
+                                    console.log(gref.id, pref.id, e.addr, e.connection, "not found")
+                            }
+                        })
+
+                        s.end()
+                        console.log("done", new Date().getTime() - time)
+                    }
+                })
+            }
+        })
+
         return {
             ok: true
         }
-    }).catch(err => {
+    } catch (err) {
         console.log(err)
+
         return {
             err: err
         }
-    })
+    }
 })
 
 var html = {}
