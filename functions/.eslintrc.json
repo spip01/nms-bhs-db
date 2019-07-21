@@ -8,6 +8,8 @@
   ],
   "extends": "eslint:recommended",
   "rules": {
+    "no-unreachable": 0,
+
     // Removed rule "disallow the use of console" from recommended eslint rules
     "no-console": "off",
 

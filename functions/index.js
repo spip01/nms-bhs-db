@@ -27,11 +27,11 @@ exports.getTotalsHTML = functions.https.onRequest((request, response) => {
     })
 })
 
-// https://us-central1-nms-bhs.cloudfunctions.net/getDARCFile?g=Euclid&p=PC-XBox
-exports.getDARCFile = functions.https.onRequest((request, response) => {
-    const path = require('path');
-    const fs = require('fs');
-    const os = require('os');
+// https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Calypso&p=PC-XBox
+exports.getDARC = functions.https.onRequest((request, response) => {
+    // const path = require('path');
+    // const fs = require('fs');
+    // const os = require('os');
 
     cors(request, response, () => {
         const bucket = admin.storage().bucket("nms-bhs.appspot.com")
@@ -45,6 +45,48 @@ exports.getDARCFile = functions.https.onRequest((request, response) => {
                 response.status(500).send(err)
             } else
                 response.send(contents)
+        })
+    })
+})
+
+// https://us-central1-nms-bhs.cloudfunctions.net/getGPList
+exports.getGPList = functions.https.onRequest((request, response) => {
+    cors(request, response, () => {
+        let ref = admin.firestore().collection("stars5")
+        ref.listDocuments().then(async docrefs => {
+            let e = ""
+
+            for (let gref of docrefs) {
+                if (gref.id === "totals" || gref.id === "players")
+                    continue;
+
+                e += '["' + gref.id + '"'
+
+                await gref.listCollections().then(async colrefs => {
+                    for (let pref of colrefs)
+                        e += ',"' + pref.id + '"'
+                })
+                e += ']\n'
+            }
+
+            response.send(e)
+        })
+    })
+})
+
+// https://us-central1-nms-bhs.cloudfunctions.net/getPOI
+exports.getPOI = functions.https.onRequest((request, response) => {
+    cors(request, response, () => {
+        let ref = admin.firestore().collection("poi")
+        ref.get().then(async snapshot => {
+            let e = ""
+
+            for (let doc of snapshot.docs) {
+                let d = doc.data()
+                e += '["' + d._name + '","' + d.galaxy + '","' + d.platform + '","' + d.addr + '","' + d.planet + '","' + d.mode + '","' + d.img + '"]\n'
+            }
+
+            response.send(e)
         })
     })
 })
@@ -67,7 +109,7 @@ exports.getTotals = functions.https.onCall((data, context) => {
 
 
 //[0,"PC","0000:0000:0000:0079","Thoslo Quadrant","SAS.A83","0FFE:007E:0082:003D","Vasika Boundary","Uscarlen"]
-exports.getDARC = functions.https.onCall(async (data, context) => {
+exports.genDARC = functions.https.onCall(async (data, context) => {
     const bucket = admin.storage().bucket("nms-bhs.appspot.com")
 
     try {
@@ -79,36 +121,66 @@ exports.getDARC = functions.https.onCall(async (data, context) => {
 
                 await gref.listCollections().then(async colrefs => {
                     for (let pref of colrefs) {
+                        let modded
                         let fname = 'darc/' + gref.id + "-" + pref.id + ".txt"
-                        let f = bucket.file(fname)
-                        let s = f.createWriteStream({
-                            public: true,
-                            gzip: true
-                        })
-
-                        let time = new Date().getTime();
 
                         ref = pref.where("blackhole", "==", true)
+                        ref = ref.orderBy("modded", "desc")
+                        ref = ref.limit(1)
                         await ref.get().then(async snapshot => {
-                            console.log(gref.id, pref.id, snapshot.size, new Date().getTime() - time)
-
-                            for (let doc of snapshot.docs) {
-                                let e = doc.data()
-
-                                let ref = pref.doc(e.connection)
-                                let c = await ref.get().then(doc => {
-                                    return doc.exists ? doc.data() : null
-                                })
-
-                                if (c)
-                                    s.write('[' + gref.id + ',"' + pref.id + '","' + e.addr + '","' + e.reg + '","' + e.sys + '","' + c.addr + '","' + c.reg + '","' + c.sys + '"]\n')
-                                else
-                                    console.log(gref.id, pref.id, e.addr, e.connection, "not found")
-                            }
+                            modded = snapshot.docs[0].data().modded.toDate().getTime()
                         })
 
-                        s.end()
-                        console.log("done", new Date().getTime() - time)
+                        let f = bucket.file(fname)
+                        let needupdate = await f.exists()
+                            .then(exists => {
+                                return !exists
+                            })
+                            .catch(err => {
+                                return err ? true : false
+                            })
+
+                        needupdate = needupdate || await f.getMetadata()
+                            .then(data => {
+                                const metadata = data[0];
+                                return new Date(metadata.updated).getTime() < modded
+                            })
+                            .catch(err => {
+                                return err ? true : false
+                            })
+
+                        if (needupdate) {
+                            console.log(fname)
+
+                            let s = f.createWriteStream({
+                                public: true,
+                                gzip: true
+                            })
+
+                            let time = new Date().getTime();
+
+                            ref = pref.where("blackhole", "==", true)
+                            await ref.get().then(async snapshot => {
+                                console.log(gref.id, pref.id, snapshot.size, new Date().getTime() - time)
+
+                                for (let doc of snapshot.docs) {
+                                    let e = doc.data()
+
+                                    let ref = pref.doc(e.connection)
+                                    let c = await ref.get().then(doc => {
+                                        return doc.exists ? doc.data() : null
+                                    })
+
+                                    if (c)
+                                        s.write('["' + gref.id + '","' + pref.id + '","' + e.addr + '","' + e.reg + '","' + e.sys + '","' + c.addr + '","' + c.reg + '","' + c.sys + '"]\n')
+                                    else
+                                        console.log(gref.id, pref.id, e.addr, e.connection, "not found")
+                                }
+                            })
+
+                            s.end()
+                            console.log("done", new Date().getTime() - time)
+                        }
                     }
                 })
             }
