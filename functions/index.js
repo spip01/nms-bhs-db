@@ -9,10 +9,6 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 })
 
-const runtimeOpts = {
-    timeoutSeconds: 300
-}
-
 // https://us-central1-nms-bhs.cloudfunctions.net/getTotalsHTML?uid=SV14SdNbzRbfW8NRbNQpTRJ7y612
 exports.getTotalsHTML = functions.https.onRequest((request, response) => {
     admin.firestore().doc("users/" + request.query.uid).get().then(doc => {
@@ -29,23 +25,14 @@ exports.getTotalsHTML = functions.https.onRequest((request, response) => {
 
 // https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Calypso&p=PC-XBox
 exports.getDARC = functions.https.onRequest((request, response) => {
-    // const path = require('path');
-    // const fs = require('fs');
-    // const os = require('os');
-
     cors(request, response, () => {
         const bucket = admin.storage().bucket("nms-bhs.appspot.com")
 
         let fname = 'darc/' + request.query.g + "-" + request.query.p + ".txt"
         console.log(fname)
         let f = bucket.file(fname)
-
-        f.download((err, contents) => {
-            if (err) {
-                response.status(500).send(err)
-            } else
-                response.send(contents)
-        })
+        let s = f.createReadStream()
+        s.pipe(response)
     })
 })
 
@@ -93,18 +80,6 @@ exports.getPOI = functions.https.onRequest((request, response) => {
 
 exports.getTotals = functions.https.onCall((data, context) => {
     return buildTotalsView(data.view)
-
-    // return admin.firestore().doc("users/" + data.uid).get().then(doc => {
-    //     if (doc.exists) {
-    //         return {html:h}
-    //     } else {
-    //         console.log(data.uid + " not found")
-    //         return {err:"not found"}
-    //     }
-    // }).catch(err => {
-    //     console.log(err)
-    //     return {err:err}
-    // })
 })
 
 
@@ -157,6 +132,10 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
                                 gzip: true
                             })
 
+                            s.on('finish', () => {
+                                console.log(fname + " saved.");
+                            });
+
                             let time = new Date().getTime();
 
                             ref = pref.where("blackhole", "==", true)
@@ -197,6 +176,34 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
         }
     }
 })
+
+function addEntryToFile(e) {
+    const bucket = admin.storage().bucket("nms-bhs.appspot.com")
+    //const fs = require('fs');
+
+    let tname = 'tmp/' + e.galaxy + "-" + e.platform + ".txt"
+    let dname = 'darc/' + e.galaxy + "-" + e.platform + ".txt"
+
+    let t = bucket.file(tname)
+    let ts = t.createWriteStream({
+        public: true,
+        gzip: true
+    })
+    ts.on("finish", () => {
+        t.move(dname)
+    })
+
+    let d = bucket.file(dname)
+    let ds = d.createReadStream()
+    ds.on("end", () => {
+        ts.write('["' + e.galaxy + '","' + e.platform + '","' + e.addr + '","' + e.reg + '","' + e.sys + '","' + e.connection + '","",""]\n')
+        ts.end()
+    })
+
+    ds.pipe(ts, {
+        end: false
+    })
+}
 
 var html = {}
 
@@ -297,7 +304,7 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
     .onCreate((doc, context) => {
         const e = doc.data()
         if (e.blackhole && typeof e.connection !== "undefined" || e.deadzone) {
-            console.log(e._name + " " + e.org + " " + e.galaxy + " " + e.platform + " " + e.addr)
+            console.log(e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
 
             let t = {}
             t = {}
@@ -321,7 +328,7 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
                 }, ref)
             }
 
-            return 1
+            addEntryToFile(e)
         }
 
         return 0
