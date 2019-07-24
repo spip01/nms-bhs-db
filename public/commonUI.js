@@ -100,7 +100,8 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     if (bhs.user.galaxy) {
         let i = galaxyList[bhs.getIndex(galaxyList, "name", bhs.user.galaxy)].number;
         pnl.find("#btn-Galaxy").text(i + " " + bhs.user.galaxy);
-        pnl.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[i].color + ";");
+        if (typeof bhs.galaxyInfo[i] != "undefined")
+            pnl.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[i].color + ";");
     } else
         pnl.find("#btn-Galaxy").text("");
 }

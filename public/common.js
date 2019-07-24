@@ -1502,7 +1502,7 @@ function stripNumber(val) {
 }
 
 String.prototype.stripNumber = function () {
-    return this.replace(/\s*\d*\.*\s*(\D*)\s*/, "$1");
+    return this.replace(/\s*-?\d*\.*\s*(\D*)\s*/, "$1");
 }
 
 function formatEcon(val) {

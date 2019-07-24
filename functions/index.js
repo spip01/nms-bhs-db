@@ -82,7 +82,6 @@ exports.getTotals = functions.https.onCall((data, context) => {
     return buildTotalsView(data.view)
 })
 
-
 //[0,"PC","0000:0000:0000:0079","Thoslo Quadrant","SAS.A83","0FFE:007E:0082:003D","Vasika Boundary","Uscarlen"]
 exports.genDARC = functions.https.onCall(async (data, context) => {
     const bucket = admin.storage().bucket("nms-bhs.appspot.com")
@@ -179,7 +178,6 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
 
 function addEntryToFile(e) {
     const bucket = admin.storage().bucket("nms-bhs.appspot.com")
-    //const fs = require('fs');
 
     let tname = 'tmp/' + e.galaxy + "-" + e.platform + ".txt"
     let dname = 'darc/' + e.galaxy + "-" + e.platform + ".txt"
@@ -194,15 +192,26 @@ function addEntryToFile(e) {
     })
 
     let d = bucket.file(dname)
-    let ds = d.createReadStream()
-    ds.on("end", () => {
-        ts.write('["' + e.galaxy + '","' + e.platform + '","' + e.addr + '","' + e.reg + '","' + e.sys + '","' + e.connection + '","",""]\n')
-        ts.end()
-    })
+    return d.exists()
+        .then(exists => {
+            if (exists) {
+                let ds = d.createReadStream()
+                ds.on("end", () => {
+                    ts.write('["' + e.galaxy + '","' + e.platform + '","' + e.addr + '","' + e.reg + '","' + e.sys + '","' + e.connection + '","",""]\n')
+                    ts.end()
+                })
 
-    ds.pipe(ts, {
-        end: false
-    })
+                ds.pipe(ts, {
+                    end: false
+                })
+            } else {
+                ts.write('["' + e.galaxy + '","' + e.platform + '","' + e.addr + '","' + e.reg + '","' + e.sys + '","' + e.connection + '","",""]\n')
+                ts.end()
+            }
+        })
+        .catch(err => {
+            console.log(err)
+        })
 }
 
 var html = {}
@@ -302,38 +311,69 @@ function buildTotalsView(view) {
 
 exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
     .onCreate((doc, context) => {
+        let p = []
         const e = doc.data()
+
         if (e.blackhole && typeof e.connection !== "undefined" || e.deadzone) {
-            console.log(e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-
-            let t = {}
-            t = {}
-            t[e.platform] = 1
-            t.galaxy = {}
-            t.galaxy[e.galaxy] = {}
-            t.galaxy[e.galaxy][e.platform] = 1
-
-            let ref = admin.firestore().doc("bhs/totals")
-            updateTotal(t, ref)
-
-            ref = admin.firestore().doc("bhs/users")
-            updateTotal({
-                [e._name]: t
-            }, ref)
-
-            if (e.org !== "") {
-                ref = admin.firestore().doc("bhs/orgs")
-                updateTotal({
-                    [e.org]: t
-                }, ref)
-            }
-
-            addEntryToFile(e)
+            console.log("create " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+            p.push(applyTotals(e, 1))
+            p.push(addEntryToFile(e))
         }
 
-        return 0
+        p.push(saveChange(e, "create"))
+        return Promise.all(p)
     })
 
+exports.systemUpdate = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
+    .onUpdate((doc, context) => {
+        const e = doc.data()
+        return saveChange(e, "update")
+    })
+
+exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
+    .onDelete((doc, context) => {
+        let p = []
+        const e = doc.data()
+        if (e.blackhole && typeof e.connection !== "undefined" || e.deadzone) {
+            console.log("delete " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+            p.push(applyTotals(e, -1))
+        }
+
+        p.push(saveChange(e, "delete"))
+        return Promise.all(p)
+    })
+
+function applyTotals(e, add) {
+    let p = []
+    let t = {}
+    t = {}
+    t[e.platform] = add
+    t.galaxy = {}
+    t.galaxy[e.galaxy] = {}
+    t.galaxy[e.galaxy][e.platform] = add
+
+    ref = admin.firestore().doc("bhs/users")
+    p.push(updateTotal({
+        [e._name]: t
+    }, ref))
+
+    if (e.org !== "") {
+        ref = admin.firestore().doc("bhs/orgs")
+        p.push(updateTotal({
+            [e.org]: t
+        }, ref))
+    }
+
+    ref = admin.firestore().doc("bhs/totals")
+    p.push(updateTotal(t, ref))
+    return Promise.all(p)
+}
+
+function saveChange(e, edit) {
+    e.edit = edit
+    let path = "edits/" + e.galaxy + "/" + e.platform + "/" + e.addr
+    return admin.firestore().doc(path).set(e)
+}
 
 function updateTotal(add, ref, reset) {
     return admin.firestore().runTransaction(transaction => {
@@ -348,10 +388,9 @@ function updateTotal(add, ref, reset) {
             else
                 t = addObjects(t, add)
 
-            return transaction.set(ref, t)
+            transaction.set(ref, t)
         }).catch(err => {
             console.log(err)
-            return false
         })
     })
 }
