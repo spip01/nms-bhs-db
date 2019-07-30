@@ -295,9 +295,9 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
 
         if (!found) {
             log.log = bhs.filestatus("Missing required column labels.", 0, log.log);
-            await bhs.batchWriteLog(b, log.log, check);
+            await bhs.fBatchWriteLog(b, log.log, check);
             if (!check)
-                await bhs.checkBatchSize(b, true);
+                await bhs.fCheckBatchSize(b, true);
             return;
         }
 
@@ -409,13 +409,13 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                     entry[2].dist = bhs.calcDist(entry[2].addr);
 
                     if (entry[0].type.match(/edit/i))
-                        await bhs.batchEdit(b, entry[1], entry[2].addr ? entry[2].addr : null, check);
+                        await bhs.fBatchEdit(b, entry[1], entry[2].addr ? entry[2].addr : null, check);
 
                     else if (entry[0].type.match(/delete base/i))
-                        await bhs.batchDeleteBase(b, entry[1], check);
+                        await bhs.fBatchDeleteBase(b, entry[1], check);
 
                     else if (entry[0].type.match(/delete/i))
-                        await bhs.batchDelete(b, entry[1], check);
+                        await bhs.fBatchDelete(b, entry[1], check);
 
                     else if (entry[0].type.match(/base/i) || entry[2].addr == "0000:0000:0000:0000") {
                         let base = entry[2].sys ? entry[2].sys : entry[2].reg;
@@ -436,11 +436,11 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
 
                             entry[2] = mergeObjects(entry[2], entry[0]);
                             entry[2] = mergeObjects(entry[2], entry[1]);
-                            await bhs.batchWriteBase(b, entry[2], check);
-                            await bhs.batchUpdate(b, entry[1], check); // don't overwrite bh info if it exists
+                            await bhs.fBatchWriteBase(b, entry[2], check);
+                            await bhs.fBatchUpdate(b, entry[1], check); // don't overwrite bh info if it exists
                         }
                     } else if (entry[0].type.match(/single/i) || !entry[2].addr) {
-                        await bhs.batchUpdate(b, entry[1], check); // don't overwrite bh info if it exists
+                        await bhs.fBatchUpdate(b, entry[1], check); // don't overwrite bh info if it exists
 
                     } else {
                         entry[1].deadzone = entry[0].type.match(/dead|dz/i) || entry[2].addr == entry[1].addr;
@@ -456,6 +456,8 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
 
                             if (ok && entry[1].blackhole) {
                                 entry[1].connection = entry[2].addr;
+                                entry[1].consys = entry[2].sys;
+                                entry[1].conreg = entry[2].reg;
                                 entry[1].towardsCtr = entry[1].dist - entry[2].dist;
                                 if ((str = validateExitAddress(entry[2].addr))) {
                                     log.log = bhs.filestatus("row: " + (i + 1) + " invalid exit address (" + str + ") " + entry[1].addr, 0, log.log);
@@ -468,9 +470,9 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                                 log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log);
 
                             if (ok) {
-                                await bhs.batchUpdate(b, entry[1], check); // don't overwrite existing base or creation dates
+                                await bhs.fBatchUpdate(b, entry[1], check); // don't overwrite existing base or creation dates
                                 if (entry[1].blackhole)
-                                    await bhs.batchUpdate(b, entry[2], check);
+                                    await bhs.fBatchUpdate(b, entry[2], check);
                             }
                         }
                     }
@@ -478,17 +480,9 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
             }
         }
 
-        await bhs.batchWriteLog(b, log, check);
+        await bhs.fBatchWriteLog(b, log, check);
         if (!check)
-            await bhs.checkBatchSize(b, true);
-
-        progress.css("width", 100 + "%");
-        progress.text("commit");
-
-        if (!check) {
-            await bhs.updateAllTotals(bhs.totals);
-            bhs.totals = {};
-        }
+            await bhs.fCheckBatchSize(b, true);
 
         progress.css("width", 100 + "%");
         progress.text("done");
@@ -497,18 +491,18 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
     reader.readAsText(file);
 }
 
-blackHoleSuns.prototype.batchWriteLog = async function (b, log, check) {
+blackHoleSuns.prototype.fBatchWriteLog = async function (b, log, check) {
     if (log && check) {
         let doc = log._name + "-" + log.time.seconds + "-" + log.time.nanoseconds;
         let ref = bhs.fs.collection("log").doc(doc);
         await b.batch.set(ref, log);
-        b = await bhs.checkBatchSize(b);
+        b = await bhs.fCheckBatchSize(b);
     }
 
     return b;
 }
 
-blackHoleSuns.prototype.batchUpdate = async function (b, entry, check) {
+blackHoleSuns.prototype.fBatchUpdate = async function (b, entry, check) {
     delete entry.type;
     delete entry.owned;
     entry.modded = firebase.firestore.Timestamp.now();
@@ -522,7 +516,6 @@ blackHoleSuns.prototype.batchUpdate = async function (b, entry, check) {
             entry.created = entry.modded;
             if (!check) {
                 await b.batch.set(ref, entry);
-                bhs.totals = bhs.incTotals(bhs.totals, entry);
                 bhs.filestatus(entry.addr + " added", 2);
             }
         } else {
@@ -536,13 +529,13 @@ blackHoleSuns.prototype.batchUpdate = async function (b, entry, check) {
                 bhs.filestatus(entry.addr + " can only be edited by " + d._name, 1);
         }
 
-        b = await bhs.checkBatchSize(b);
+        b = await bhs.fCheckBatchSize(b);
     });
 
     return b;
 }
 
-blackHoleSuns.prototype.batchEdit = async function (b, entry, old, check) {
+blackHoleSuns.prototype.fBatchEdit = async function (b, entry, old, check) {
     delete entry.type;
     delete entry.owned;
     entry.modded = firebase.firestore.Timestamp.now();
@@ -563,7 +556,7 @@ blackHoleSuns.prototype.batchEdit = async function (b, entry, old, check) {
                 await b.batch.set(ref, entry);
 
                 bhs.filestatus(entry.addr + " edited", 2);
-                b = await bhs.checkBatchSize(b);
+                b = await bhs.fCheckBatchSize(b);
             }
         }
     });
@@ -571,7 +564,7 @@ blackHoleSuns.prototype.batchEdit = async function (b, entry, old, check) {
     return b;
 }
 
-blackHoleSuns.prototype.batchDelete = async function (b, entry, check) {
+blackHoleSuns.prototype.fBatchDelete = async function (b, entry, check) {
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
     await ref.get().then(async function (doc) {
         if (!doc.exists)
@@ -581,25 +574,23 @@ blackHoleSuns.prototype.batchDelete = async function (b, entry, check) {
             if (d.uid == entry.uid) {
                 if (!check)
                     await ref.delete().then(function () {
-                        bhs.totals = bhs.incTotals(bhs.totals, entry, -1);
                         bhs.filestatus(entry.addr + " deleted", 2);
                     });
             } else
-                bhs.filestatus(entry.addr + " can only be edited by " + d. _name, 1);
+                bhs.filestatus(entry.addr + " can only be edited by " + d._name, 1);
         }
     });
 
     return b;
 }
 
-blackHoleSuns.prototype.batchDeleteBase = async function (b, entry, check) {
+blackHoleSuns.prototype.fBatchDeleteBase = async function (b, entry, check) {
     let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr);
     await ref.get().then(async function (doc) {
         if (!doc.exists)
             bhs.filestatus(entry.addr + " base doesn't exist for delete.", 0);
         else if (!check) {
             await ref.delete().then(function () {
-                bhs.totals = bhs.incTotals(bhs.totals, entry, -1);
                 bhs.filestatus(entry.addr + " base deleted", 2);
             });
         }
@@ -608,7 +599,7 @@ blackHoleSuns.prototype.batchDeleteBase = async function (b, entry, check) {
     return b;
 }
 
-blackHoleSuns.prototype.batchWriteBase = async function (b, entry, check) {
+blackHoleSuns.prototype.fBatchWriteBase = async function (b, entry, check) {
     delete entry.type;
     entry.modded = firebase.firestore.Timestamp.now();
     entry.xyzs = bhs.addressToXYZ(entry.addr);
@@ -616,10 +607,23 @@ blackHoleSuns.prototype.batchWriteBase = async function (b, entry, check) {
         let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr);
         await b.batch.set(ref, entry);
         bhs.filestatus(entry.addr + " base saved.", 2);
-        b = await bhs.checkBatchSize(b);
+        b = await bhs.fCheckBatchSize(b);
     }
 
     return b;
+}
+
+blackHoleSuns.prototype.fCheckBatchSize = async function (b, flush) {
+    if (flush && b.batchcount > 0 || ++b.batchcount == 500) {
+        console.log("commit " + b.batchcount);
+        return await b.batch.commit().then(async () => {
+            b.batch = await bhs.fs.batch();
+            b.batchcount = 0;
+            return b
+        })
+    }
+
+    return b
 }
 
 blackHoleSuns.prototype.filestatus = function (str, lvl, buf) {

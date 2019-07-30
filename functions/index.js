@@ -9,20 +9,6 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 })
 
-// https://us-central1-nms-bhs.cloudfunctions.net/getTotalsHTML?uid=SV14SdNbzRbfW8NRbNQpTRJ7y612
-exports.getTotalsHTML = functions.https.onRequest((request, response) => {
-    admin.firestore().doc("users/" + request.query.uid).get().then(doc => {
-        if (doc.exists) {
-            let h = `<div class="row"><div class="col-4">Total</div><div class="col-3">` + doc.data().stars5.total + `</div></div>`
-            response.send(h)
-        } else {
-            response.status(500).send(request.query.uid + " not found")
-        }
-    }).catch(err => {
-        response.status(500).send(err)
-    })
-})
-
 // https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Calypso&p=PC-XBox
 exports.getDARC = functions.https.onRequest((request, response) => {
     cors(request, response, () => {
@@ -41,22 +27,26 @@ exports.getGPList = functions.https.onRequest((request, response) => {
     cors(request, response, () => {
         let ref = admin.firestore().collection("stars5")
         ref.listDocuments().then(async docrefs => {
-            let e = ""
+            let out = ""
 
             for (let gref of docrefs) {
                 if (gref.id === "totals" || gref.id === "players")
                     continue;
 
-                e += '["' + gref.id + '"'
+                let e = []
+                e.push(gref.id)
 
                 await gref.listCollections().then(async colrefs => {
                     for (let pref of colrefs)
-                        e += ',"' + pref.id + '"'
+                        e.push(pref.id)
                 })
-                e += ']\n'
+
+                let o = stringify(e)
+                if (o)
+                    out += o
             }
 
-            response.send(e)
+            response.send(out)
         })
     })
 })
@@ -70,7 +60,7 @@ exports.getPOI = functions.https.onRequest((request, response) => {
 
             for (let doc of snapshot.docs) {
                 let d = doc.data()
-                e += '["' + d._name + '","' + d.galaxy + '","' + d.platform + '","' + d.addr + '","' + d.planet + '","' + d.mode + '","' + d.img + '"]\n'
+                e += JSON.stringify([d._name, d.galaxy, d.platform, d.addr, d.planet, d.mode, d.img]) + "\n"
             }
 
             response.send(e)
@@ -78,235 +68,252 @@ exports.getPOI = functions.https.onRequest((request, response) => {
     })
 })
 
-exports.getTotals = functions.https.onCall((data, context) => {
-    return buildTotalsView(data.view)
-})
-
 //[0,"PC","0000:0000:0000:0079","Thoslo Quadrant","SAS.A83","0FFE:007E:0082:003D","Vasika Boundary","Uscarlen"]
 exports.genDARC = functions.https.onCall(async (data, context) => {
     const bucket = admin.storage().bucket("nms-bhs.appspot.com")
 
-    try {
-        let ref = admin.firestore().collection("stars5")
-        await ref.listDocuments().then(async docrefs => {
-            for (let gref of docrefs) {
-                if (gref.id === "totals" || gref.id === "players")
-                    continue;
+    let ref = admin.firestore().collection("stars5")
+    return ref.listDocuments().then(docrefs => {
+        let p = []
 
-                await gref.listCollections().then(async colrefs => {
-                    for (let pref of colrefs) {
-                        let modded
-                        let fname = 'darc/' + gref.id + "-" + pref.id + ".txt"
+        for (let gref of docrefs) {
+            if (gref.id === "totals" || gref.id === "players")
+                continue;
 
-                        ref = pref.where("blackhole", "==", true)
-                        ref = ref.orderBy("modded", "desc")
-                        ref = ref.limit(1)
-                        await ref.get().then(async snapshot => {
-                            modded = snapshot.docs[0].data().modded.toDate().getTime()
+            p.push(gref.listCollections().then(async colrefs => {
+                let p = []
+
+                for (let pref of colrefs) {
+                    let fname = 'darc/' + pref.parent.id + "-" + pref.id + ".txt"
+
+                    ref = pref.where("blackhole", "==", true)
+                    ref = ref.orderBy("modded", "desc")
+                    ref = ref.limit(1)
+                    let modded = await ref.get().then(async snapshot => {
+                        return snapshot.docs[0].data().modded.toDate().getTime()
+                    })
+
+                    let f = bucket.file(fname)
+                    let needupdate = await f.exists()
+                        .then(data => {
+                            return !data[0]
+                        })
+                        .catch(err => {
+                            return err ? true : false
                         })
 
-                        let f = bucket.file(fname)
-                        let needupdate = await f.exists()
-                            .then(exists => {
-                                return !exists
-                            })
-                            .catch(err => {
-                                return err ? true : false
-                            })
+                    needupdate = needupdate || await f.getMetadata()
+                        .then(data => {
+                            const metadata = data[0];
+                            return new Date(metadata.updated).getTime() < modded
+                        })
+                        .catch(err => {
+                            return err ? true : false
+                        })
 
-                        needupdate = needupdate || await f.getMetadata()
-                            .then(data => {
-                                const metadata = data[0];
-                                return new Date(metadata.updated).getTime() < modded
-                            })
-                            .catch(err => {
-                                return err ? true : false
-                            })
+                    if (needupdate) {
+                        ref = pref.where("blackhole", "==", true)
+                        p.push(ref.get().then(async snapshot => {
+                            let p = []
 
-                        if (needupdate) {
-                            console.log(fname)
+                            if (snapshot.size > 0) {
+                                let e = snapshot.docs[0].data()
+                                let fname = 'darc/' + e.galaxy + "-" + e.platform + ".txt"
 
-                            let s = f.createWriteStream({
-                                public: true,
-                                gzip: true
-                            })
+                                console.log(e.galaxy, e.platform, snapshot.size)
 
-                            s.on('finish', () => {
-                                console.log(fname + " saved.");
-                            });
+                                let f = bucket.file(fname)
+                                let s = f.createWriteStream({
+                                    gzip: true,
+                                })
 
-                            let time = new Date().getTime();
-
-                            ref = pref.where("blackhole", "==", true)
-                            await ref.get().then(async snapshot => {
-                                console.log(gref.id, pref.id, snapshot.size, new Date().getTime() - time)
+                                p.push(new Promise((resolve, reject) => {
+                                    s.on('finish', () => {
+                                        console.log(fname, snapshot.size, "finished")
+                                        resolve(fname, snapshot.size)
+                                    })
+                                }))
 
                                 for (let doc of snapshot.docs) {
                                     let e = doc.data()
 
-                                    let ref = pref.doc(e.connection)
-                                    let c = await ref.get().then(doc => {
-                                        return doc.exists ? doc.data() : null
-                                    })
-
-                                    if (c)
-                                        s.write('["' + gref.id + '","' + pref.id + '","' + e.addr + '","' + e.reg + '","' + e.sys + '","' + c.addr + '","' + c.reg + '","' + c.sys + '"]\n')
-                                    else
-                                        console.log(gref.id, pref.id, e.addr, e.connection, "not found")
+                                    let out = stringify(e)
+                                    if (out)
+                                        s.write(out)
                                 }
+
+                                s.end()
+                            }
+
+                            return Promise.all(p).then((r) => {
+                                return (r)
                             })
-
-                            s.end()
-                            console.log("done", new Date().getTime() - time)
-                        }
-                    }
-                })
-            }
-        })
-
-        return {
-            ok: true
-        }
-    } catch (err) {
-        console.log(err)
-
-        return {
-            err: err
-        }
-    }
-})
-
-function addEntryToFile(e) {
-    const bucket = admin.storage().bucket("nms-bhs.appspot.com")
-
-    let tname = 'tmp/' + e.galaxy + "-" + e.platform + ".txt"
-    let dname = 'darc/' + e.galaxy + "-" + e.platform + ".txt"
-
-    let t = bucket.file(tname)
-    let ts = t.createWriteStream({
-        public: true,
-        gzip: true
-    })
-    ts.on("finish", () => {
-        t.move(dname)
-    })
-
-    let d = bucket.file(dname)
-    return d.exists()
-        .then(exists => {
-            if (exists) {
-                let ds = d.createReadStream()
-                ds.on("end", () => {
-                    ts.write('["' + e.galaxy + '","' + e.platform + '","' + e.addr + '","' + e.reg + '","' + e.sys + '","' + e.connection + '","",""]\n')
-                    ts.end()
-                })
-
-                ds.pipe(ts, {
-                    end: false
-                })
-            } else {
-                ts.write('["' + e.galaxy + '","' + e.platform + '","' + e.addr + '","' + e.reg + '","' + e.sys + '","' + e.connection + '","",""]\n')
-                ts.end()
-            }
-        })
-        .catch(err => {
-            console.log(err)
-        })
-}
-
-var html = {}
-
-function buildTotalsView(view) {
-    if (typeof html[view] !== "undefined")
-        return {
-            html: html[view]
-        }
-
-    html[view] = ""
-
-    const userHdr = `<div id="u-idname" class="row">`
-    const userItms = `  <div id="idname" class="format" onclick="bhs.clickUser(this)">title</div>`
-    const userEnd = `</div>`
-
-    const totalsPlayers = [{
-        title: "Contributors",
-        id: "id-names",
-        format: "col-sm-7 col-14",
-        hformat: "col-sm-7 col-14",
-    }, {
-        title: "u",
-        id: "id-uid",
-        format: "col-1 hidden",
-        hformat: "col-1 hidden",
-    }, {
-        title: "g",
-        id: "id-galaxy",
-        format: "col-1 hidden",
-        hformat: "col-1 hidden",
-    }, {
-        title: "p",
-        id: "id-platform",
-        format: "col-1 hidden",
-        hformat: "col-1 hidden",
-    }, {
-        title: "Contest",
-        id: "id-ctst",
-        format: "col-sm-3 col-8 text-right hidden",
-        hformat: "col-sm-3 col-8 text-right hidden",
-    }, {
-        title: "Total",
-        id: "id-qty",
-        format: "col-sm-3 col-6 text-right",
-        hformat: "col-sm-3 col-6 text-right",
-    }]
-
-    return admin.firestore().collection(view).get()
-        .then(snapshot => {
-            for (let i = 0; i < snapshot.size; ++i) {
-                let e = snapshot.docs[i].data()
-
-                if (typeof e.stars5 !== "undefined") {
-                    let rid = typeof e._name !== "undefined" ? nameToId(e._name) : e.name ? nameToId(e.name) : "-"
-                    let h = /idname/ [Symbol.replace](userHdr, rid)
-
-                    for (let i = 0; i < totalsPlayers.length; ++i) {
-                        let x = totalsPlayers[i]
-
-                        let l = /idname/ [Symbol.replace](userItms, x.id)
-                        l = /format/ [Symbol.replace](l, x.format /* + (bold ? " font-weight-bold" : "")*/ )
-                        switch (x.title) {
-                            case "Contributors":
-                                h += /title/ [Symbol.replace](l, typeof e._name !== "undefined" ? e._name : e.name)
-                                break
-                            case "u":
-                                h += /title/ [Symbol.replace](l, typeof e.uid !== "undefined" ? e.uid : "")
-                                break
-                            case "g":
-                                h += /title/ [Symbol.replace](l, typeof e.galaxy !== "undefined" ? e.galaxy : "")
-                                break
-                            case "p":
-                                h += /title/ [Symbol.replace](l, typeof e.platform !== "undefined" ? e.platform : "")
-                                break
-                            case "Total":
-                                h += /title/ [Symbol.replace](l, e.stars5.total)
-                                break
-                        }
+                        }))
                     }
 
-                    h += userEnd
-                    html[view] += h
                 }
-            }
 
+                return Promise.all(p).then((r) => {
+                    return (r)
+                })
+            }))
+        }
+
+        return Promise.all(p).then((r) => {
             return {
-                html: html[view]
+                ok: r
             }
         }).catch(err => {
-            console.log(err)
+            console.log("error", err)
             return {
                 err: err
             }
         })
+    })
+})
+
+function stringify(e) {
+    if (typeof e.consys !== "undefined" && typeof e.conreg !== "undefined")
+        return JSON.stringify([e.galaxy, e.platform, e.addr, e.reg, e.sys, e.connection, e.conreg, e.consys]) + "\n"
+
+    console.log(e.galaxy, e.platform, e.addr, e.connection, "consys/conreg not found")
+    return null
+}
+
+// exports.updateDARC = (event, callback) => {
+exports.updateDARC = functions.https.onCall(async (data, context) => {
+    const bucket = admin.storage().bucket("nms-bhs.appspot.com")
+    const readline = require('readline')
+
+    let ref = admin.firestore().collection("edits")
+    let docrefs = await ref.listDocuments().then(docrefs => {
+        return docrefs
+    })
+
+    let p = []
+
+    for (let gref of docrefs) {
+        let colrefs = await gref.listCollections().then(colrefs => {
+            return colrefs
+        })
+
+        for (let pref of colrefs) {
+            let onlyCreated = true;
+
+            let edits = await pref.get().then(async snapshot => {
+                let edits = {}
+
+                for (let i = 0; i < snapshot.size; ++i) {
+                    let e = snapshot.docs[i].data()
+                    edits[e.addr] = e
+                    edits[addr].ref = snapshot.docs[i].ref
+
+                    if (e.edits !== "created")
+                        onlyCreated = false;
+                }
+
+                return edits
+            })
+
+            console.log(gref.id + ' ' + pref.id + " " + Object.keys(edits).length)
+
+            let tname = 'tmp/' + gref.id + "-" + pref.id + ".txt"
+            let tf = bucket.file(tname)
+            let ts = tf.createWriteStream({
+                gzip: true
+            })
+
+            let dname = 'darc/' + gref.id + "-" + pref.id + ".txt"
+            let df = bucket.file(dname)
+
+            let exists = await df.exists()
+                .then(data => {
+                    return data[0]
+                }).catch(err => {
+                    console.log("error", err)
+                    return false
+                })
+
+            if (exists) {
+                let ds = df.createReadStream()
+
+                if (onlyCreated) {
+                    console.log("append", dname)
+                    ds.pipe(ts, {
+                        end: false
+                    })
+                    appendEdits(ts, edits)
+                } else {
+                    console.log("exists", dname)
+
+                    let rd = readline.createInterface({
+                        input: ds
+                    })
+
+                    rd.on("line", line => {
+                        let addr = line.replace(/.*?((?:[0-9A-F]{4}:){3}[0-9A-F]{4}).*/, "$1")
+
+                        if (typeof edits[addr] !== "undefined") {
+                            let e = edits[addr]
+                            if (e.edit === "update") {
+                                console.log("update", e.bhaddr)
+                                let out = stringify(e)
+                                if (out)
+                                    ts.write(out)
+                            } else
+                                console.log("delete", e.bhaddr)
+
+                            e.ref.delete()
+                            delete edits[addr]
+                        } else
+                            ts.write(line + "\n")
+                    })
+
+                    rd.on("close", () => {
+                        console.log(dname, "close")
+                        appendEdits(ts, edits)
+                    })
+
+                }
+            } else {
+                console.log("!exists", dname)
+                appendEdits(ts, edits)
+            }
+
+            p.push(new Promise((resolve, reject) => {
+                ts.on('finish', () => {
+                    console.log("finish", tname)
+                    tf.move(dname).then(() => {
+                        resolve()
+                    }).catch(err => {
+                        reject(err)
+                    })
+                })
+            }))
+        }
+    }
+
+    return Promise.all(p).then(() => {
+        return {
+            ok: true
+        }
+    }).catch(err => {
+        return {
+            err: err
+        }
+    })
+})
+
+function appendEdits(ts, edits) {
+    for (let l of Object.keys(edits)) {
+        let e = edits[l]
+        console.log("add " + e.addr)
+        let out = stringify(e)
+        if (out)
+            ts.write(out)
+        e.ref.delete()
+    }
+    ts.end()
 }
 
 exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
@@ -315,64 +322,157 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
         const e = doc.data()
 
         if (e.blackhole && typeof e.connection !== "undefined" || e.deadzone) {
+            let t = incTotals(e, 1)
+            p.push(applyAllTotals(t))
+
             console.log("create " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-            p.push(applyTotals(e, 1))
-            p.push(addEntryToFile(e))
+            p.push(saveChange(e, "create"))
         }
 
-        p.push(saveChange(e, "create"))
         return Promise.all(p)
     })
 
 exports.systemUpdate = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
-    .onUpdate((doc, context) => {
-        const e = doc.data()
-        return saveChange(e, "update")
+    .onUpdate((change, context) => {
+        const e = change.after.data()
+
+        if (e.blackhole && typeof e.connection !== "undefined" || e.deadzone) {
+            console.log("update " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+            return saveChange(e, "update")
+        }
     })
 
 exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
     .onDelete((doc, context) => {
         let p = []
         const e = doc.data()
+
         if (e.blackhole && typeof e.connection !== "undefined" || e.deadzone) {
+            let t = incTotals(e, -1)
+            p.push(applyAllTotals(t))
+
             console.log("delete " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-            p.push(applyTotals(e, -1))
+            p.push(saveChange(e, "delete"))
         }
 
-        p.push(saveChange(e, "delete"))
         return Promise.all(p)
     })
 
-function applyTotals(e, add) {
-    let p = []
-    let t = {}
-    t = {}
-    t[e.platform] = add
-    t.galaxy = {}
-    t.galaxy[e.galaxy] = {}
-    t.galaxy[e.galaxy][e.platform] = add
-
-    ref = admin.firestore().doc("bhs/users")
-    p.push(updateTotal({
-        [e._name]: t
-    }, ref))
-
-    if (e.org !== "") {
-        ref = admin.firestore().doc("bhs/orgs")
-        p.push(updateTotal({
-            [e.org]: t
-        }, ref))
-    }
-
-    ref = admin.firestore().doc("bhs/totals")
-    p.push(updateTotal(t, ref))
-    return Promise.all(p)
-}
-
 function saveChange(e, edit) {
     e.edit = edit
-    let path = "edits/" + e.galaxy + "/" + e.platform + "/" + e.addr
-    return admin.firestore().doc(path).set(e)
+    return admin.firestore().doc("edits/" + e.galaxy + "/" + e.platform + "/" + e.addr).set(e)
+}
+
+exports.recalcTotals = functions.https.onCall(async (data, context) => {
+    let p = []
+
+    let ref = admin.firestore().collection("stars5")
+    let docrefs = await ref.listDocuments().then(docrefs => {
+        return docrefs
+    })
+
+    for (let gref of docrefs) {
+        let colrefs = await gref.listCollections().then(colrefs => {
+            return colrefs
+        })
+
+        for (let pref of colrefs) {
+            let ref = pref.where("blackhole", "==", true)
+            p.push(ref.get().then(snapshot => {
+                if (snapshot.size > 0) {
+                    console.log("bh", snapshot.docs[0].ref.path, snapshot.size)
+                    let totals = {}
+                    for (let e of snapshot.docs)
+                        totals = incTotals(e.data(), 1, totals)
+                    return totals
+                }
+            }))
+
+            ref = pref.where("deadzone", "==", true)
+            p.push(ref.get().then(snapshot => {
+                if (snapshot.size > 0) {
+                    let totals = {}
+                    for (let e of snapshot.docs)
+                        totals = incTotals(e.data(), 1, totals)
+                    return totals
+                }
+            }))
+        }
+    }
+
+    return Promise.all(p).then((totals) => {
+        let sum = {}
+        for (let t of totals)
+            sum = addObjects(sum, t)
+
+        return applyAllTotals(sum, true)
+    }).catch(err => {
+        return {
+            err: err.text
+        }
+    })
+})
+
+function incTotals(e, add, total, contest) {
+    let t = {}
+    t[e.platform] = add
+    t.Galaxies = {}
+    t.Galaxies[e.galaxy] = {}
+    t.Galaxies[e.galaxy][e.platform] = add
+
+    if (typeof total === "undefined")
+        total = {}
+    if (typeof total.Players === "undefined")
+        total.Players = {}
+    if (typeof total.Organizations === "undefined")
+        total.Organizations = {}
+    // if (typeof total.contest === "undefined")
+    //     total.contest = {}
+
+    total = addObjects(total, t)
+    total.Players[e._name] = addObjects(total.Players[e._name], t)
+
+    if (typeof e.org !== "undefined" && e.org !== "")
+        total.Organizations[e.org] = addObjects(total.Organizations[e.org], t)
+
+    // if (typeof contest === "undefined" && typeof e.contest !== "undefined" && e.contest !== "")
+    //     total.contest[e.contest] = incTotals(e, add, totals.contest[e.contest], true)
+
+    return total
+}
+
+function applyAllTotals(totals, reset) {
+    let p = []
+
+    // ref = admin.firestore().doc("bhs/contest"+ **Object.keys[totals.contest])
+    // p.push(updateTotal(totals.contest[**], ref, reset))
+    // delete totals.contest
+
+    let ref = admin.firestore().doc("bhs/Organizations")
+    p.push(updateTotal(totals.Organizations, ref, reset))
+    delete totals.Organizations
+
+    ref = admin.firestore().doc("bhs/Players")
+    p.push(updateTotal(totals.Players, ref, reset))
+    delete totals.Players
+
+    ref = admin.firestore().doc("bhs/Galaxies")
+    p.push(updateTotal(totals.Galaxies, ref, reset))
+    delete totals.Galaxies
+
+    ref = admin.firestore().doc("bhs/Totals")
+    p.push(updateTotal(totals, ref, reset))
+
+    return Promise.all(p).then(() => {
+            return {
+                totals: totals
+            }
+        })
+        .catch(err => {
+            return {
+                err: err.text
+            }
+        })
 }
 
 function updateTotal(add, ref, reset) {
@@ -380,20 +480,103 @@ function updateTotal(add, ref, reset) {
         return transaction.get(ref).then(doc => {
             let t = {}
 
-            if (doc.exists)
-                t = doc.data()
-
-            if (reset)
-                t = mergeObjects(t, add)
+            if (reset || !doc.exists)
+                t = add
             else
-                t = addObjects(t, add)
+                t = addObjects(doc.data(), add)
 
-            transaction.set(ref, t)
-        }).catch(err => {
-            console.log(err)
+            return transaction.set(ref, t)
         })
     })
 }
+
+exports.getTotals = functions.https.onCall((data, context) => {
+    const totScrollPnl = `  <div id="scroll-idname" class="card card-body nopadding">`
+    const totHdr = `              <div id="hdr-idname" class="row border-bottom txt-def">`
+    const totItm = `              <div id="itm-idname" class="scrollbar container-fluid nopadding" style="overflow-y: scroll; height:124px">`
+    const totItms = `                  <div id="idname" class="format" onclick="bhs.sortTotals(this)">title</div>`
+
+    const userHdr = `               <div id="u-idname" class="row">`
+    const userItms = `                  <div id="idname" class="format" onclick="bhs.clickUser(this)">title</div>`
+
+    const divEnd = `</div>`
+
+    const totalsColumns = [{
+        id: "id-Name",
+        format: "col-sm-4 col-14",
+    }, {
+        title: "Total",
+        id: "id-Total",
+        format: "col-sm-3 col-7 text-right",
+    }, {
+        title: "PC-XBox",
+        id: "id-PC-XBox",
+        format: "col-sm-3 col-3 text-right",
+    }, {
+        title: "PS4",
+        id: "id-PS4",
+        format: "col-sm-3 col-3 text-right",
+    }]
+
+    let html = /idname/ [Symbol.replace](totScrollPnl, data.view)
+    html += /idname/ [Symbol.replace](totHdr, data.view)
+
+    for (let i of Object.keys(totalsColumns)) {
+        let h = totalsColumns[i]
+
+        l = /idname/ [Symbol.replace](totItms, h.id)
+        l = /title/ [Symbol.replace](l, h.id === "id-Name" ? data.view : h.title)
+        html += /format/ [Symbol.replace](l, h.format)
+    }
+    html += divEnd
+
+    html += /idname/ [Symbol.replace](totItm, data.view)
+
+    return admin.firestore().doc("bhs/" + data.view).get().then(doc => {
+        if (doc.exists) {
+            let all = doc.data()
+
+            for (let i of Object.keys(all)) {
+                let e = all[i]
+
+                let rid = nameToId(i)
+                let h = /idname/ [Symbol.replace](userHdr, rid)
+
+                for (let x of totalsColumns) {
+                    let l = /idname/ [Symbol.replace](userItms, x.id)
+                    l = /format/ [Symbol.replace](l, x.format + (data.view === "Players" ? " font-weight-bold" : ""))
+                    switch (x.id) {
+                        case "id-Name":
+                            if (data.view === "Galaxies")
+                                i = galaxyList[getIndex(galaxyList, "name", i)].number + " " + i
+                            h += /title/ [Symbol.replace](l, i)
+                            break
+                        case "id-Total":
+                            var t = typeof e["PC-XBox"] === "undefined" ? 0 : e["PC-XBox"]
+                            t += typeof e["PS4"] === "undefined" ? 0 : e["PS4"]
+                            h += /title/ [Symbol.replace](l, t)
+                            break
+                        case "id-PS4":
+                            h += /title/ [Symbol.replace](l, typeof e["PS4"] === "undefined" ? 0 : e["PS4"])
+                            break
+                        case "id-PC-XBox":
+                            h += /title/ [Symbol.replace](l, typeof e["PC-XBox"] === "undefined" ? 0 : e["PC-XBox"])
+                            break
+                    }
+                }
+
+                h += divEnd
+                html += h
+            }
+        }
+
+        html += divEnd + divEnd + "<br>"
+
+        return {
+            html: html
+        }
+    })
+})
 
 function mergeObjects(o, n) {
     if (typeof n !== "object") {
@@ -410,7 +593,6 @@ function mergeObjects(o, n) {
 
     return o
 }
-
 
 function addObjects(o, n) {
     if (typeof n !== "object") {
@@ -437,3 +619,806 @@ function nameToId(str) {
     let id = /[^a-z0-9_-]/ig [Symbol.replace](str, "-");
     return id;
 }
+
+function getIndex(list, field, id) {
+    if (!id)
+        return -1;
+
+    return list.map(x => {
+        return typeof x[field] === "string" ? x[field].toLowerCase() : x[field];
+    }).indexOf(id.toLowerCase());
+}
+
+const galaxyList = [{
+    name: "Euclid",
+    number: 1
+}, {
+    name: "Hilbert Dimension",
+    number: 2
+}, {
+    name: "Calypso",
+    number: 3
+}, {
+    name: "Hesperius Dimension",
+    number: 4
+}, {
+    name: "Hyades",
+    number: 5
+}, {
+    name: "Ickjamatew",
+    number: 6
+}, {
+    name: "Budullangr",
+    number: 7
+}, {
+    name: "Kikolgallr",
+    number: 8
+}, {
+    name: "Eltiensleen",
+    number: 9
+}, {
+    name: "Eissentam",
+    number: 10
+}, {
+    name: "Elkupalos",
+    number: 11
+}, {
+    name: "Aptarkaba",
+    number: 12
+}, {
+    name: "Ontiniangp",
+    number: 13
+}, {
+    name: "Odiwagiri",
+    number: 14
+}, {
+    name: "Ogtialabi",
+    number: 15
+}, {
+    name: "Muhacksonto",
+    number: 16
+}, {
+    name: "Hitonskyer",
+    number: 17
+}, {
+    name: "Rerasmutul",
+    number: 18
+}, {
+    name: "Isdoraijung",
+    number: 19
+}, {
+    name: "Doctinawyra",
+    number: 20
+}, {
+    name: "Loychazinq",
+    number: 21
+}, {
+    name: "Zukasizawa",
+    number: 22
+}, {
+    name: "Ekwathore",
+    number: 23
+}, {
+    name: "Yeberhahne",
+    number: 24
+}, {
+    name: "Twerbetek",
+    number: 25
+}, {
+    name: "Sivarates",
+    number: 26
+}, {
+    name: "Eajerandal",
+    number: 27
+}, {
+    name: "Aldukesci",
+    number: 28
+}, {
+    name: "Wotyarogii",
+    number: 29
+}, {
+    name: "Sudzerbal",
+    number: 30
+}, {
+    name: "Maupenzhay",
+    number: 31
+}, {
+    name: "Sugueziume",
+    number: 32
+}, {
+    name: "Brogoweldian",
+    number: 33
+}, {
+    name: "Ehbogdenbu",
+    number: 34
+}, {
+    name: "Ijsenufryos",
+    number: 35
+}, {
+    name: "Nipikulha",
+    number: 36
+}, {
+    name: "Autsurabin",
+    number: 37
+}, {
+    name: "Lusontrygiamh",
+    number: 38
+}, {
+    name: "Rewmanawa",
+    number: 39
+}, {
+    name: "Ethiophodhe",
+    number: 40
+}, {
+    name: "Urastrykle",
+    number: 41
+}, {
+    name: "Xobeurindj",
+    number: 42
+}, {
+    name: "Oniijialdu",
+    number: 43
+}, {
+    name: "Wucetosucc",
+    number: 44
+}, {
+    name: "Ebyeloofdud",
+    number: 45
+}, {
+    name: "Odyavanta",
+    number: 46
+}, {
+    name: "Milekistri",
+    number: 47
+}, {
+    name: "Waferganh",
+    number: 48
+}, {
+    name: "Agnusopwit",
+    number: 49
+}, {
+    name: "Teyaypilny",
+    number: 50
+}, {
+    name: "Zalienkosm",
+    number: 51
+}, {
+    name: "Ladgudiraf",
+    number: 52
+}, {
+    name: "Mushonponte",
+    number: 53
+}, {
+    name: "Amsentisz",
+    number: 54
+}, {
+    name: "Fladiselm",
+    number: 55
+}, {
+    name: "Laanawemb",
+    number: 56
+}, {
+    name: "Ilkerloor",
+    number: 57
+}, {
+    name: "Davanossi",
+    number: 58
+}, {
+    name: "Ploehrliou",
+    number: 59
+}, {
+    name: "Corpinyaya",
+    number: 60
+}, {
+    name: "Leckandmeram",
+    number: 61
+}, {
+    name: "Quulngais",
+    number: 62
+}, {
+    name: "Nokokipsechl",
+    number: 63
+}, {
+    name: "Rinblodesa",
+    number: 64
+}, {
+    name: "Loydporpen",
+    number: 65
+}, {
+    name: "Ibtrevskip",
+    number: 66
+}, {
+    name: "Elkowaldb",
+    number: 67
+}, {
+    name: "Heholhofsko",
+    number: 68
+}, {
+    name: "Yebrilowisod",
+    number: 69
+}, {
+    name: "Husalvangewi",
+    number: 70
+}, {
+    name: "Ovna'uesed",
+    number: 71
+}, {
+    name: "Bahibusey",
+    number: 72
+}, {
+    name: "Nuybeliaure",
+    number: 73
+}, {
+    name: "Doshawchuc",
+    number: 74
+}, {
+    name: "Ruckinarkh",
+    number: 75
+}, {
+    name: "Thorettac",
+    number: 76
+}, {
+    name: "Nuponoparau",
+    number: 77
+}, {
+    name: "Moglaschil",
+    number: 78
+}, {
+    name: "Uiweupose",
+    number: 79
+}, {
+    name: "Nasmilete",
+    number: 80
+}, {
+    name: "Ekdaluskin",
+    number: 81
+}, {
+    name: "Hakapanasy",
+    number: 82
+}, {
+    name: "Dimonimba",
+    number: 83
+}, {
+    name: "Cajaccari",
+    number: 84
+}, {
+    name: "Olonerovo",
+    number: 85
+}, {
+    name: "Umlanswick",
+    number: 86
+}, {
+    name: "Henayliszm",
+    number: 87
+}, {
+    name: "Utzenmate",
+    number: 88
+}, {
+    name: "Umirpaiya",
+    number: 89
+}, {
+    name: "Paholiang",
+    number: 90
+}, {
+    name: "Iaereznika",
+    number: 91
+}, {
+    name: "Yudukagath",
+    number: 92
+}, {
+    name: "Boealalosnj",
+    number: 93
+}, {
+    name: "Yaevarcko",
+    number: 94
+}, {
+    name: "Coellosipp",
+    number: 95
+}, {
+    name: "Wayndohalou",
+    number: 96
+}, {
+    name: "Smoduraykl",
+    number: 97
+}, {
+    name: "Apmaneessu",
+    number: 98
+}, {
+    name: "Hicanpaav",
+    number: 99
+}, {
+    name: "Akvasanta",
+    number: 100
+}, {
+    name: "Tuychelisaor",
+    number: 101
+}, {
+    name: "Rivskimbe",
+    number: 102
+}, {
+    name: "Daksanquix",
+    number: 103
+}, {
+    name: "Kissonlin",
+    number: 104
+}, {
+    name: "Aediabiel",
+    number: 105
+}, {
+    name: "Ulosaginyik",
+    number: 106
+}, {
+    name: "Roclaytonycar",
+    number: 107
+}, {
+    name: "Kichiaroa",
+    number: 108
+}, {
+    name: "Irceauffey",
+    number: 109
+}, {
+    name: "Nudquathsenfe",
+    number: 110
+}, {
+    name: "Getaizakaal",
+    number: 111
+}, {
+    name: "Hansolmien",
+    number: 112
+}, {
+    name: "Bloytisagra",
+    number: 113
+}, {
+    name: "Ladsenlay",
+    number: 114
+}, {
+    name: "Luyugoslasr",
+    number: 115
+}, {
+    name: "Ubredhatk",
+    number: 116
+}, {
+    name: "Cidoniana",
+    number: 117
+}, {
+    name: "Jasinessa",
+    number: 118
+}, {
+    name: "Torweierf",
+    number: 119
+}, {
+    name: "Saffneckm",
+    number: 120
+}, {
+    name: "Thnistner",
+    number: 121
+}, {
+    name: "Dotusingg",
+    number: 122
+}, {
+    name: "Luleukous",
+    number: 123
+}, {
+    name: "Jelmandan",
+    number: 124
+}, {
+    name: "Otimanaso",
+    number: 125
+}, {
+    name: "Enjaxusanto",
+    number: 126
+}, {
+    name: "Sezviktorew",
+    number: 127
+}, {
+    name: "Zikehpm",
+    number: 128
+}, {
+    name: "Bephembah",
+    number: 129
+}, {
+    name: "Broomerrai",
+    number: 130
+}, {
+    name: "Meximicka",
+    number: 131
+}, {
+    name: "Venessika",
+    number: 132
+}, {
+    name: "Gaiteseling",
+    number: 133
+}, {
+    name: "Zosakasiro",
+    number: 134
+}, {
+    name: "Drajayanes",
+    number: 135
+}, {
+    name: "Ooibekuar",
+    number: 136
+}, {
+    name: "Urckiansi",
+    number: 137
+}, {
+    name: "Dozivadido",
+    number: 138
+}, {
+    name: "Emiekereks",
+    number: 139
+}, {
+    name: "Meykinunukur",
+    number: 140
+}, {
+    name: "Kimycuristh",
+    number: 141
+}, {
+    name: "Roansfien",
+    number: 142
+}, {
+    name: "Isgarmeso",
+    number: 143
+}, {
+    name: "Daitibeli",
+    number: 144
+}, {
+    name: "Gucuttarik",
+    number: 145
+}, {
+    name: "Enlaythie",
+    number: 146
+}, {
+    name: "Drewweste",
+    number: 147
+}, {
+    name: "Akbulkabi",
+    number: 148
+}, {
+    name: "Homskiw",
+    number: 149
+}, {
+    name: "Zavainlani",
+    number: 150
+}, {
+    name: "Jewijkmas",
+    number: 151
+}, {
+    name: "Itlhotagra",
+    number: 152
+}, {
+    name: "Podalicess",
+    number: 153
+}, {
+    name: "Hiviusauer",
+    number: 154
+}, {
+    name: "Halsebenk",
+    number: 155
+}, {
+    name: "Puikitoac",
+    number: 156
+}, {
+    name: "Gaybakuaria",
+    number: 157
+}, {
+    name: "Grbodubhe",
+    number: 158
+}, {
+    name: "Rycempler",
+    number: 159
+}, {
+    name: "Indjalala",
+    number: 160
+}, {
+    name: "Fontenikk",
+    number: 161
+}, {
+    name: "Pasycihelwhee",
+    number: 162
+}, {
+    name: "Ikbaksmit",
+    number: 163
+}, {
+    name: "Telicianses",
+    number: 164
+}, {
+    name: "Oyleyzhan",
+    number: 165
+}, {
+    name: "Uagerosat",
+    number: 166
+}, {
+    name: "Impoxectin",
+    number: 167
+}, {
+    name: "Twoodmand",
+    number: 168
+}, {
+    name: "Hilfsesorbs",
+    number: 169
+}, {
+    name: "Ezdaranit",
+    number: 170
+}, {
+    name: "Wiensanshe",
+    number: 171
+}, {
+    name: "Ewheelonc",
+    number: 172
+}, {
+    name: "Litzmantufa",
+    number: 173
+}, {
+    name: "Emarmatosi",
+    number: 174
+}, {
+    name: "Mufimbomacvi",
+    number: 175
+}, {
+    name: "Wongquarum",
+    number: 176
+}, {
+    name: "Hapirajua",
+    number: 177
+}, {
+    name: "Igbinduina",
+    number: 178
+}, {
+    name: "Wepaitvas",
+    number: 179
+}, {
+    name: "Sthatigudi",
+    number: 180
+}, {
+    name: "Yekathsebehn",
+    number: 181
+}, {
+    name: "Ebedeagurst",
+    number: 182
+}, {
+    name: "Nolisonia",
+    number: 183
+}, {
+    name: "Ulexovitab",
+    number: 184
+}, {
+    name: "Iodhinxois",
+    number: 185
+}, {
+    name: "Irroswitzs",
+    number: 186
+}, {
+    name: "Bifredait",
+    number: 187
+}, {
+    name: "Beiraghedwe",
+    number: 188
+}, {
+    name: "Yeonatlak",
+    number: 189
+}, {
+    name: "Cugnatachh",
+    number: 190
+}, {
+    name: "Nozoryenki",
+    number: 191
+}, {
+    name: "Ebralduri",
+    number: 192
+}, {
+    name: "Evcickcandj",
+    number: 193
+}, {
+    name: "Ziybosswin",
+    number: 194
+}, {
+    name: "Heperclait",
+    number: 195
+}, {
+    name: "Sugiuniam",
+    number: 196
+}, {
+    name: "Aaseertush",
+    number: 197
+}, {
+    name: "Uglyestemaa",
+    number: 198
+}, {
+    name: "Horeroedsh",
+    number: 199
+}, {
+    name: "Drundemiso",
+    number: 200
+}, {
+    name: "Ityanianat",
+    number: 201
+}, {
+    name: "Purneyrine",
+    number: 202
+}, {
+    name: "Dokiessmat",
+    number: 203
+}, {
+    name: "Nupiacheh",
+    number: 204
+}, {
+    name: "Dihewsonj",
+    number: 205
+}, {
+    name: "Rudrailhik",
+    number: 206
+}, {
+    name: "Tweretnort",
+    number: 207
+}, {
+    name: "Snatreetze",
+    number: 208
+}, {
+    name: "Iwunddaracos",
+    number: 209
+}, {
+    name: "Digarlewena",
+    number: 210
+}, {
+    name: "Erquagsta",
+    number: 211
+}, {
+    name: "Logovoloin",
+    number: 212
+}, {
+    name: "Boyaghosganh",
+    number: 213
+}, {
+    name: "Kuolungau",
+    number: 214
+}, {
+    name: "Pehneldept",
+    number: 215
+}, {
+    name: "Yevettiiqidcon",
+    number: 216
+}, {
+    name: "Sahliacabru",
+    number: 217
+}, {
+    name: "Noggalterpor",
+    number: 218
+}, {
+    name: "Chmageaki",
+    number: 219
+}, {
+    name: "Veticueca",
+    number: 220
+}, {
+    name: "Vittesbursul",
+    number: 221
+}, {
+    name: "Nootanore",
+    number: 222
+}, {
+    name: "Innebdjerah",
+    number: 223
+}, {
+    name: "Kisvarcini",
+    number: 224
+}, {
+    name: "Cuzcogipper",
+    number: 225
+}, {
+    name: "Pamanhermonsu",
+    number: 226
+}, {
+    name: "Brotoghek",
+    number: 227
+}, {
+    name: "Mibittara",
+    number: 228
+}, {
+    name: "Huruahili",
+    number: 229
+}, {
+    name: "Raldwicarn",
+    number: 230
+}, {
+    name: "Ezdartlic",
+    number: 231
+}, {
+    name: "Badesclema",
+    number: 232
+}, {
+    name: "Isenkeyan",
+    number: 233
+}, {
+    name: "Iadoitesu",
+    number: 234
+}, {
+    name: "Yagrovoisi",
+    number: 235
+}, {
+    name: "Ewcomechio",
+    number: 236
+}, {
+    name: "Inunnunnoda",
+    number: 237
+}, {
+    name: "Dischiutun",
+    number: 238
+}, {
+    name: "Yuwarugha",
+    number: 239
+}, {
+    name: "Ialmendra",
+    number: 240
+}, {
+    name: "Reponudrle",
+    number: 241
+}, {
+    name: "Rinjanagrbo",
+    number: 242
+}, {
+    name: "Zeziceloh",
+    number: 243
+}, {
+    name: "Oeileutasc",
+    number: 244
+}, {
+    name: "Zicniijinis",
+    number: 245
+}, {
+    name: "Dugnowarilda",
+    number: 246
+}, {
+    name: "Neuxoisan",
+    number: 247
+}, {
+    name: "Ilmenhorn",
+    number: 248
+}, {
+    name: "Rukwatsuku",
+    number: 249
+}, {
+    name: "Nepitzaspru",
+    number: 250
+}, {
+    name: "Chcehoemig",
+    number: 251
+}, {
+    name: "Haffneyrin",
+    number: 252
+}, {
+    name: "Uliciawai",
+    number: 253
+}, {
+    name: "Tuhgrespod",
+    number: 254
+}, {
+    name: "Iousongola",
+    number: 255
+}, {
+    name: "Odyalutai",
+    number: 256
+}, {
+    name: "Yilsrussimil",
+    number: 257
+}, {
+    name: "Loqvishess",
+    number: -6
+}, {
+    name: "Enyokudohkiw",
+    number: -5
+}, {
+    name: "Helqvishap",
+    number: -4
+}, {
+    name: "Usgraikik",
+    number: -3
+}, {
+    name: "Hiteshamij",
+    number: -2
+}, {
+    name: "Uewamoisow",
+    number: -1
+}, {
+    name: "Pequibanu",
+    number: -0
+}];

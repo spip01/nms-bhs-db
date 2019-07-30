@@ -384,8 +384,11 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
 
         if (!deadzone && !single) {
             entry.blackhole = true;
-            entry.connection = pnl.find("#" + panels[pnlBottom].id + " #id-addr").val();;
+            let loc = pnl.find("#" + panels[pnlBottom].id)
+            entry.connection = loc.find("#id-addr").val()
             entry.conxyzs = bhs.addressToXYZ(entry.connection);
+            entry.consys = loc.find("#id-sys").val()
+            entry.conreg = loc.find("#id-reg").val()
             entry.towardsCtr = entry.dist - bhs.calcDist(entry.connection);
         }
     }
@@ -410,11 +413,6 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
                 entry.owned = loc.find("#btn-Owned").text().stripNumber();
                 entry.owned = entry.owned ? entry.owned : "mine";
                 await bhs.updateBase(entry)
-            }
-
-            if (entry.blackhole) {
-                bhs.updateAllTotals(bhs.totals);
-                bhs.totals = {};
             }
         }
     }
