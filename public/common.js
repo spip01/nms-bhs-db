@@ -625,67 +625,7 @@ blackHoleSuns.prototype.genDARC = async function () {
     return
 }
 
-blackHoleSuns.prototype.rewriteDB = async function () {
-    let ref = bhs.getStarsColRef();
-    await ref.get().then(async snapshot => {
-        let pr = []
-
-        for (let i = 0; i < snapshot.docs.length; ++i) {
-            if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "players")
-                continue
-
-            let g = snapshot.docs[i].data()
-
-            for (let j = 0; j < platformList.length; ++j) {
-                let ref = bhs.getStarsColRef(g.name, platformList[j].name);
-                ref = ref.where("blackhole", "==", true)
-                pr.push(ref.get().then(snapshot => {
-                    if (snapshot.size > 0) {
-                        console.log(snapshot.docs[0].ref.parent.path, snapshot.size)
-
-                        let pr = [];
-                        for (let i = 0; i < snapshot.size; ++i) {
-                            let e = snapshot.docs[i].data()
-
-                            let ref = bhs.getStarsColRef(e.galaxy, e.platform, e.connection)
-                            pr.push(ref.get().then(doc => {
-                                if (doc.exists) {
-                                    let c = doc.data()
-                                    if (typeof c.sys !== "undefined" && typeof c.reg !== "undefined" &&
-                                        (e.consys != c.sys || e.conreg != c.reg)) {
-                                        e.consys = c.sys
-                                        e.conreg = c.reg
-                                        delete e.valid
-
-                                        return snapshot.docs[i].ref.set(e)
-                                    }
-                                } else
-                                    console.log(e.galaxy, e.platform, e.addr, e.connection, "error")
-                            }))
-                        }
-
-                        return Promise.all(pr).then(res => {
-                            console.log("finish "+snapshot.docs[0].ref.parent.path+" "+res.length)
-                            return res
-                        })
-                    }
-                }))
-            }
-        }
-
-        await Promise.all(pr).then((res) => {
-            console.log("done "+res.length)
-            return res
-        })
-    })
-}
-
 blackHoleSuns.prototype.testing = async function () {
-    let t = {}
-    let start = 15000
-    let startOffset = 8600
-    let max = bhs.calcDist("07FF:007F:0000:0000")
-
     let ref = bhs.getStarsColRef();
     await ref.get().then(async snapshot => {
         let pr = []
@@ -698,29 +638,16 @@ blackHoleSuns.prototype.testing = async function () {
 
             for (let j = 0; j < platformList.length; ++j) {
                 let ref = bhs.getStarsColRef(g.name, platformList[j].name);
-                ref = ref.where("blackhole", "==", true)
+                ref = ref.where("_name", "==", "turbolife")
                 pr.push(ref.get().then(async snapshot => {
-                    if (snapshot.size > 0) {
-                        console.log(snapshot.docs[0].ref.parent.path, snapshot.size)
 
-                        let r = e.dist
-                        let x = bhs.calcDist(e.connection)
+                    for (let i of snapshot.docs) {
+                        let e = i.data()
 
-                        let c = r - start + startOffset
-
-                        if (r > 7500 && r < max && Math.abs(x - c) > 2000) {
-                            console.log(e.addr)
-                            list[e.connection] = {}
-                            list[e.connection].bh = e
-                            list[e.connection].bh.calc = c
-                            list[e.connection].bh.actual = x
-
-                            let ref = bhs.getStarsColRef("Euclid", "PC-XBox", e.connection);
-                            await ref.get().then(doc => {
-                                if (doc.exists) {
-                                    list[e.connection].exit = doc.data()
-                                }
-                            })
+                        if (e._name.match(/.*turbolife.*/i)) {
+                            e._name = "Turbo Life"
+                            console.log("." + e._name + ".", e.galaxy, e.platform, e.addr)
+                            i.ref.set(e)
                         }
                     }
                 }))
@@ -728,11 +655,114 @@ blackHoleSuns.prototype.testing = async function () {
         }
 
         await Promise.all(pr).then((res) => {
-            console.log("done "+res.length)
+            console.log("done")
             return res
         })
     })
 }
+
+// blackHoleSuns.prototype.testing = async function () {
+//     let ref = bhs.getStarsColRef();
+//     await ref.get().then(async snapshot => {
+//             let pr = []
+
+//             for (let i = 0; i < snapshot.docs.length; ++i) {
+//                 if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "players")
+//                     continue
+
+//                 let g = snapshot.docs[i].data()
+
+//                 for (let j = 0; j < platformList.length; ++j) {
+//                     let ref = bhs.getStarsColRef(g.name, platformList[j].name);
+//                     ref = ref.where("blackhole", "==", true)
+//                     pr.push(ref.get().then(async snapshot => {
+//                             if (snapshot.size > 0) {
+//                                 console.log(snapshot.docs[0].ref.parent.path, snapshot.size)
+
+//                                 for (let i = 0; i < snapshot.size; ++i) {
+//                                     let e = snapshot.docs[i].data()
+
+//                                     let ref = bhs.getStarsColRef(e.galaxy, e.platform, e.connection)
+//                                     await ref.get().then(async doc => {
+//                                         if (doc.exists) {
+//                                             let c = doc.data()
+//                                             if (typeof c.sys !== "undefined" && typeof c.reg !== "undefined" &&
+//                                                 (e.consys != c.sys || e.conreg != c.reg)) {
+//                                                 e.consys = c.sys
+//                                                 e.conreg = c.reg
+//                                                 delete e.valid
+
+//                                                 await snapshot.docs[i].ref.set(e)
+//                                             }
+//                                         } else
+//                                             console.log(e.galaxy, e.platform, e.addr, e.connection, "error")
+//                                     })
+//                             }
+//                         }
+//                     }))
+//             }
+//         }
+
+//         await Promise.all(pr).then((res) => {
+//             console.log("done " + res.length)
+//             return res
+//         })
+//     })
+// }
+
+// blackHoleSuns.prototype.testing = async function () {
+//     let t = {}
+//     let start = 15000
+//     let startOffset = 8600
+//     let max = bhs.calcDist("07FF:007F:0000:0000")
+
+//     let ref = bhs.getStarsColRef();
+//     await ref.get().then(async snapshot => {
+//         let pr = []
+
+//         for (let i = 0; i < snapshot.docs.length; ++i) {
+//             if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "players")
+//                 continue
+
+//             let g = snapshot.docs[i].data()
+
+//             for (let j = 0; j < platformList.length; ++j) {
+//                 let ref = bhs.getStarsColRef(g.name, platformList[j].name);
+//                 ref = ref.where("blackhole", "==", true)
+//                 pr.push(ref.get().then(async snapshot => {
+//                     if (snapshot.size > 0) {
+//                         console.log(snapshot.docs[0].ref.parent.path, snapshot.size)
+
+//                         let r = e.dist
+//                         let x = bhs.calcDist(e.connection)
+
+//                         let c = r - start + startOffset
+
+//                         if (r > 7500 && r < max && Math.abs(x - c) > 2000) {
+//                             console.log(e.addr)
+//                             list[e.connection] = {}
+//                             list[e.connection].bh = e
+//                             list[e.connection].bh.calc = c
+//                             list[e.connection].bh.actual = x
+
+//                             let ref = bhs.getStarsColRef("Euclid", "PC-XBox", e.connection);
+//                             await ref.get().then(doc => {
+//                                 if (doc.exists) {
+//                                     list[e.connection].exit = doc.data()
+//                                 }
+//                             })
+//                         }
+//                     }
+//                 }))
+//             }
+//         }
+
+//         await Promise.all(pr).then((res) => {
+//             console.log("done "+res.length)
+//             return res
+//         })
+//     })
+// }
 
 blackHoleSuns.prototype.recalcTotals = function () {
     var recalcTotals = firebase.functions().httpsCallable('recalcTotals');
@@ -970,22 +1000,45 @@ blackHoleSuns.prototype.getUserList = async function () {
 }
 
 blackHoleSuns.prototype.getTotals = async function (displayFcn, dispHtml) {
+    let findex = window.location.pathname == "/index.html" || window.location.pathname == "/";
     let ftotals = window.location.pathname == "/totals.html";
-    const totalsReg = ["Galaxies", "Players", "Organizations"]
+    let fsearch = window.location.pathname == "/search.html";
+
+    if (fsearch)
+        return;
+
     var t = firebase.functions().httpsCallable('getTotals');
 
-    totalsReg.forEach(r => {
-        if (r != "Galaxies" || ftotals)
-            t({
-                view: r
+    if (ftotals) {
+        t({
+                view: "Galaxies"
             })
             .then(function (result) {
-                dispHtml(result.data.html, r)
+                dispHtml(result.data.html, "Galaxies")
             })
-            .catch(function (err) {
-                console.log(err)
-            });
-    })
+    }
+
+    t({
+            view: "Players"
+        })
+        .then(function (result) {
+            dispHtml(result.data.html, "Players")
+        })
+
+    t({
+            view: "Organizations"
+        })
+        .then(function (result) {
+            dispHtml(result.data.html, "Organizations")
+        })
+
+    if (findex) {
+        let ref = bhs.fs.doc("bhs/Players")
+        bhs.subscribe("tot-players", ref, displayFcn)
+    }
+
+    let ref = bhs.fs.doc("bhs/Totals")
+    bhs.subscribe("tot-totals", ref, displayFcn)
 }
 
 blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn) {
@@ -993,12 +1046,12 @@ blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn) {
         bhs.unsubscribe(what);
         bhs.unsub[what] = ref.onSnapshot(function (snapshot) {
             if (snapshot.exists)
-                displayFcn(snapshot.data(), snapshot.ref.path);
+                displayFcn(snapshot.data(), snapshot.ref.path)
             else
                 snapshot.docChanges().forEach(function (change) {
                     displayFcn(change.doc.data(), change.doc.ref.path);
-                });
-        });
+                })
+        })
     }
 }
 

@@ -557,7 +557,7 @@ const totalsCol = [{
     where: "index",
 }, {
     title: "All",
-    id: "id-totalsall",
+    id: "id-Total",
     format: "col-sm-2 col-4 text-right",
 }, {
     title: "Contest",
@@ -589,7 +589,7 @@ const totalsRows = [{
 }, {
     title: "Total/galaxy",
     id: "id-totalBHG",
-    where: "galaxy",
+    where: "index",
 }, {
     title: "Total/galaxy/platform",
     id: "id-totalBHGP",
@@ -609,7 +609,7 @@ blackHoleSuns.prototype.buildTotals = function () {
             </div>
         </div>
         <div id="subpanel" class="card-body bkg-white">
-            <label id="id-showall" class="row h6 txt-inp-def">
+            <label id="id-showall" class="row h6 txt-inp-def hidden">
                 Show All&nbsp;
                 <input id="ck-showall" type="checkbox">
             </label>
@@ -656,28 +656,100 @@ blackHoleSuns.prototype.buildTotals = function () {
     });
 
     totalsRows.forEach(function (t) {
-        if (t.where == "galaxy" && !ftotals || t.where == "index" && !findex)
-            tot.find("#itm-Player #" + t.id).hide();
+        if (t.where == "index" && !findex)
+            tot.find("#itm-Player #" + t.id).hide()
     });
-
-    if (ftotals) {
-        tot.find("#id-showall").hide();
-        tot.find("#tgalaxy").show();
-    } else if (findex) {
-        tot.find("#id-showall").show();
-        tot.find("#tgalaxy").hide();
+    
+    if (findex) {
+        tot.find("#id-showall").show()
+        tot.find("#ck-showall").change(function () {
+            if ($(this).prop("checked")) {
+                $("[id|='gal']").show()
+                $("#totals").find("#id-totalBHGP").css("border-bottom", "1px solid black");
+            } else {
+                $("[id|='gal']").hide()
+                $("#totals").find("#id-totalBHGP").css("border-bottom", "0px");
+            }
+        });
     }
-
-    tot.find("#ck-showall").change(function () {
-        if ($(this).prop("checked"))
-            bhs.displayAllUTotals(bhs.user);
-        else
-            bhs.clearAllUTotals(bhs.user);
-    });
 }
 
-blackHoleSuns.prototype.displayTotalsHtml = function (html) {
+blackHoleSuns.prototype.displayTotals = function (e, refpath) {
+    let findex = window.location.pathname == "/index.html" || window.location.pathname == "/";
+
+    const addPlatforms = e => {
+        let t = 0
+        if (typeof e["PC-XBox"] === "number")
+            t += e["PC-XBox"]
+        if (typeof e["PS4"] === "number")
+            t += e["PS4"]
+        return t
+    }
+
+    let tot = $("#totals")
+    let colid 
+
+    if (refpath === "bhs/Players") {
+        e = e[bhs.user._name]
+        colid = "id-Player"
+    }
+    else    
+        colid = "id-Total"
+
+    for (let rid of totalsRows) {
+        let loc = tot.find("#" + rid.id).find("#" + colid)
+
+        switch (rid.id) {
+            case "id-totalBH":
+                loc.text(addPlatforms(e))
+                break
+            case "id-totalBHP":
+                loc.text(e[bhs.user.platform])
+                break
+            case "id-totalAHP":
+                loc.text(e[bhs.user.platform === "PC-XBox" ? "PS4" : "PC-XBox"])
+                break
+            case "id-totalBHG":
+                loc.text(addPlatforms(e.galaxies[bhs.user.galaxy]))
+                break
+            case "id-totalBHGP":
+                loc.text(e.galaxies[bhs.user.galaxy][bhs.user.platform])
+                break
+        }
+    }
+
+    if (findex) {
+        let pnl = $("#itm-Player");
+        let html = ""
+
+        for (let g of Object.keys(e.galaxies)) {
+            for (let p of Object.keys(e.galaxies[g])) {
+                let id = "gal-" + g.nameToId() + "-" + p;
+                let h = /idname/ [Symbol.replace](totalsItemsHdr, id);
+                h = />/ [Symbol.replace](h, " style='display:none'>");
+
+                let t = /galaxy/ [Symbol.replace](totalsRows[rowGalaxyPlatform].title, g);
+                t = /platform/ [Symbol.replace](t, p);
+
+                let l = /title/ [Symbol.replace](totalsItems, t);
+                h += /format/ [Symbol.replace](l, totalsCol[0].format);
+
+                l = /title/ [Symbol.replace](totalsItems, e.galaxies[g][p]);
+                h += /format/ [Symbol.replace](l, totalsCol[1].format);
+
+                html += h + totalsItemsEnd;
+            }
+        }
+
+        pnl.append(html);
+    }
+}
+
+blackHoleSuns.prototype.displayTotalsHtml = function (html, p) {
     $("#subpanel").append(html)
+
+    if (p === "Players")
+        $("#contrib").text("Total contributors: " + $("#itm-Players").children().length)
 }
 
 blackHoleSuns.prototype.sortTotals = function (evt) {
@@ -719,7 +791,7 @@ blackHoleSuns.prototype.sortTotals = function (evt) {
 }
 
 blackHoleSuns.prototype.clickUser = function (evt) {
-return
+    return
     let loc = $(evt).parent();
     let id = loc.prop("id");
     let pnlid = loc.parent().prop("id");

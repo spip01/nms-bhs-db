@@ -206,7 +206,7 @@ exports.updateDARC = functions.https.onCall(async (data, context) => {
                 for (let i = 0; i < snapshot.size; ++i) {
                     let e = snapshot.docs[i].data()
                     edits[e.addr] = e
-                    edits[addr].ref = snapshot.docs[i].ref
+                    edits[e.addr].ref = snapshot.docs[i].ref
 
                     if (e.edits !== "created")
                         onlyCreated = false;
@@ -332,15 +332,18 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
         return Promise.all(p)
     })
 
-exports.systemUpdate = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
-    .onUpdate((change, context) => {
-        const e = change.after.data()
+// exports.systemUpdate = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
+//     .onUpdate((change, context) => {
+//         let p = []
+//         const e = change.after.data()
 
-        if (e.blackhole && typeof e.connection !== "undefined" || e.deadzone) {
-            console.log("update " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-            return saveChange(e, "update")
-        }
-    })
+//         if (e.blackhole && typeof e.connection !== "undefined" || e.deadzone) {
+//             console.log("update " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+//             p.push( saveChange(e, "update"))
+//         }
+
+//         return Promise.all(p)
+//     })
 
 exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
     .onDelete((doc, context) => {
@@ -416,9 +419,9 @@ exports.recalcTotals = functions.https.onCall(async (data, context) => {
 function incTotals(e, add, total, contest) {
     let t = {}
     t[e.platform] = add
-    t.Galaxies = {}
-    t.Galaxies[e.galaxy] = {}
-    t.Galaxies[e.galaxy][e.platform] = add
+    t.galaxies = {}
+    t.galaxies[e.galaxy] = {}
+    t.galaxies[e.galaxy][e.platform] = add
 
     if (typeof total === "undefined")
         total = {}
@@ -455,10 +458,6 @@ function applyAllTotals(totals, reset) {
     ref = admin.firestore().doc("bhs/Players")
     p.push(updateTotal(totals.Players, ref, reset))
     delete totals.Players
-
-    ref = admin.firestore().doc("bhs/Galaxies")
-    p.push(updateTotal(totals.Galaxies, ref, reset))
-    delete totals.Galaxies
 
     ref = admin.firestore().doc("bhs/Totals")
     p.push(updateTotal(totals, ref, reset))
@@ -532,19 +531,23 @@ exports.getTotals = functions.https.onCall((data, context) => {
 
     html += /idname/ [Symbol.replace](totItm, data.view)
 
-    return admin.firestore().doc("bhs/" + data.view).get().then(doc => {
+    let db = data.view === "Galaxies" ? "Totals" : data.view
+
+    return admin.firestore().doc("bhs/" + db).get().then(doc => {
         if (doc.exists) {
             let all = doc.data()
 
+            if (data.view === "Galaxies")
+                all = all.galaxies
+
             for (let i of Object.keys(all)) {
                 let e = all[i]
-
                 let rid = nameToId(i)
                 let h = /idname/ [Symbol.replace](userHdr, rid)
 
                 for (let x of totalsColumns) {
                     let l = /idname/ [Symbol.replace](userItms, x.id)
-                    l = /format/ [Symbol.replace](l, x.format + (data.view === "Players" ? " font-weight-bold" : ""))
+                    l = /format/ [Symbol.replace](l, x.format)
                     switch (x.id) {
                         case "id-Name":
                             if (data.view === "Galaxies")
