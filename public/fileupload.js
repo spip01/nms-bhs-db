@@ -447,33 +447,36 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                         entry[1].blackhole = !entry[1].deadzone;
 
                         let str = "";
-                        if (entry[1].blackhole || entry[1].deadzone) {
-                            if ((str = validateBHAddress(entry[1].addr))) {
-                                log.log = bhs.filestatus("row: " + (i + 1) + " invalid black hole address (" + str + ") " + entry[1].addr, 0, log.log);
+                        if ((str = validateBHAddress(entry[1].addr))) {
+                            log.log = bhs.filestatus("row: " + (i + 1) + " invalid black hole address (" + str + ") " + entry[1].addr, 0, log.log);
+                            log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log);
+                            ok = false;
+                        }
+
+                        if (ok && !entry[1].deadzone) {
+                            entry[1].connection = entry[2].addr;
+                            entry[1].x.addr = entry[2].addr;
+                            entry[1].x.dist = bhs.calcDist(entry[2].addr)
+                            entry[1].x.sys = entry[2].sys;
+                            entry[1].x.reg = entry[2].reg;
+                            entry[1].x.life = typeof entry[2].life !== "undefined" ? entry[2].life : "";
+                            entry[1].x.econ =typeof entry[2].econ !== "undefined"  ? entry[2].econ : "";
+
+                            entry[1].towardsCtr = entry[1].dist - entry[2].dist;
+                            if ((str = validateExitAddress(entry[2].addr))) {
+                                log.log = bhs.filestatus("row: " + (i + 1) + " invalid exit address (" + str + ") " + entry[1].addr, 0, log.log);
                                 log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log);
                                 ok = false;
                             }
+                        }
 
-                            if (ok && entry[1].blackhole) {
-                                entry[1].connection = entry[2].addr;
-                                entry[1].consys = entry[2].sys;
-                                entry[1].conreg = entry[2].reg;
-                                entry[1].towardsCtr = entry[1].dist - entry[2].dist;
-                                if ((str = validateExitAddress(entry[2].addr))) {
-                                    log.log = bhs.filestatus("row: " + (i + 1) + " invalid exit address (" + str + ") " + entry[1].addr, 0, log.log);
-                                    log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log);
-                                    ok = false;
-                                }
-                            }
+                        if (ok && !(ok = bhs.validateDist(entry[1], "row: " + (i + 1) + " ", 0, log.log)))
+                            log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log);
 
-                            if (ok && !(ok = bhs.validateDist(entry[1], "row: " + (i + 1) + " ", 0, log.log)))
-                                log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log);
-
-                            if (ok) {
-                                await bhs.fBatchUpdate(b, entry[1], check); // don't overwrite existing base or creation dates
-                                if (entry[1].blackhole)
-                                    await bhs.fBatchUpdate(b, entry[2], check);
-                            }
+                        if (ok) {
+                            await bhs.fBatchUpdate(b, entry[1], check); // don't overwrite existing base or creation dates
+                            if (entry[1].blackhole)
+                                await bhs.fBatchUpdate(b, entry[2], check);
                         }
                     }
                 }
@@ -508,7 +511,7 @@ blackHoleSuns.prototype.fBatchUpdate = async function (b, entry, check) {
     entry.modded = firebase.firestore.Timestamp.now();
     entry.xyzs = bhs.addressToXYZ(entry.addr);
     if (entry.connection)
-        entry.conxyzs = bhs.addressToXYZ(entry.connection);
+        entry.x.xyzs = bhs.addressToXYZ(entry.connection);
 
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
     await ref.get().then(async function (doc) {

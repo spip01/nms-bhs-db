@@ -30,9 +30,6 @@ exports.getGPList = functions.https.onRequest((request, response) => {
             let out = ""
 
             for (let gref of docrefs) {
-                if (gref.id === "totals" || gref.id === "players")
-                    continue;
-
                 let e = []
                 e.push(gref.id)
 
@@ -77,9 +74,6 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
         let p = []
 
         for (let gref of docrefs) {
-            if (gref.id === "totals" || gref.id === "players")
-                continue;
-
             p.push(gref.listCollections().then(async colrefs => {
                 let p = []
 
@@ -173,10 +167,10 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
 })
 
 function stringify(e) {
-    if (typeof e.consys !== "undefined" && typeof e.conreg !== "undefined")
-        return JSON.stringify([e.galaxy, e.platform, e.addr, e.reg, e.sys, e.connection, e.conreg, e.consys]) + "\n"
+    if (typeof e.x.sys !== "undefined" && typeof e.x.reg !== "undefined")
+        return JSON.stringify([e.galaxy, e.platform, e.addr, e.reg, e.sys, e.x.addr, e.x.reg, e.x.sys]) + "\n"
 
-    console.log(e.galaxy, e.platform, e.addr, e.connection, "consys/conreg not found")
+    console.log(e.galaxy, e.platform, e.addr, e.x.addr, "x.sys/x.reg not found")
     return null
 }
 
@@ -273,7 +267,6 @@ exports.updateDARC = functions.https.onCall(async (data, context) => {
                         console.log(dname, "close")
                         appendEdits(ts, edits)
                     })
-
                 }
             } else {
                 console.log("!exists", dname)
@@ -321,41 +314,59 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
         let p = []
         const e = doc.data()
 
-        if (e.blackhole && typeof e.connection !== "undefined" || e.deadzone) {
+        if (e.blackhole || e.deadzone) {
             let t = incTotals(e, 1)
             p.push(applyAllTotals(t))
 
             console.log("create " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
             p.push(saveChange(e, "create"))
+
+            p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
+                update: e.modded
+            }, {
+                merge: true
+            }))
         }
 
         return Promise.all(p)
     })
 
-// exports.systemUpdate = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
-//     .onUpdate((change, context) => {
-//         let p = []
-//         const e = change.after.data()
+exports.systemUpdate = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
+    .onUpdate((change, context) => {
+        let p = []
+        const e = change.after.data()
 
-//         if (e.blackhole && typeof e.connection !== "undefined" || e.deadzone) {
-//             console.log("update " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-//             p.push( saveChange(e, "update"))
-//         }
+        if (e.blackhole || e.deadzone) {
+            console.log("update " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+            p.push( saveChange(e, "update"))
+        }
 
-//         return Promise.all(p)
-//     })
+        p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
+            update: e.modded
+        }, {
+            merge: true
+        }))
+
+        return Promise.all(p)
+    })
 
 exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
     .onDelete((doc, context) => {
         let p = []
         const e = doc.data()
 
-        if (e.blackhole && typeof e.connection !== "undefined" || e.deadzone) {
+        if (e.blackhole || e.deadzone) {
             let t = incTotals(e, -1)
             p.push(applyAllTotals(t))
 
             console.log("delete " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
             p.push(saveChange(e, "delete"))
+
+            p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
+                update: admin.firestore.FieldValue.serverTimestamp()
+            }, {
+                merge: true
+            }))
         }
 
         return Promise.all(p)
@@ -365,6 +376,96 @@ function saveChange(e, edit) {
     e.edit = edit
     return admin.firestore().doc("edits/" + e.galaxy + "/" + e.platform + "/" + e.addr).set(e)
 }
+
+exports.backupBHS = functions.https.onCall((data, context) => {
+    let p = []
+
+    let ref = admin.firestore().collection("stars5")
+    let s5Refs = ref.listDocuments().then(docrefs => {
+        return docrefs
+    })
+
+    for (let s5ref of s5Refs) {
+        p.push(s5ref.get().then(async (doc) => {
+            let p = []
+            let s5 = doc.data()
+
+            let s6ref = admin.firestore().collection("stars6").doc(gdoc.id)
+            let s6 = s6ref.get().then(doc => {
+                return doc.exists ? doc.data() : null
+            })
+
+            if (s6 === null || s5.update > s6.backup) {
+                let s5PRefs = await s5ref.listDocuments().then(docrefs => {
+                    return docrefs
+                })
+
+                for (let pref of s5PRefs) {
+                    let ref = pref.were("modded", ">", s6.backup)
+                    p.push(ref.get().then(async snapshot => {
+                        if (snapshot.size > 0) {
+                            console.log(snapshot.docs[0].ref.parent.path + " " + snapshot.size)
+
+                            let b = await admin.firestore().batch()
+                            let c = 0
+                            let t = 0
+
+                            for (let doc of snapshot.docs) {
+                                if (++c > 450) {
+                                    t += c
+                                    await b.commit()
+                                    b = await admin.firestore().batch()
+                                    c = 0
+                                }
+
+                                let ref = admin.firestore().doc(doc.path.replace(/stars5(.*)/, "stars6$1"))
+                                await b.set(ref, doc.data())
+                            }
+
+                            if (c > 0)
+                                await b.commit()
+
+                            t += c
+                            return snapshot.docs[0].ref.parent.path + " " + t
+                        }
+                    }))
+                }
+
+                if (!s6) {
+                    s6 = {}
+                    s6.name = s5.name
+                    s6.number = s5.number
+                }
+
+                s6.backup = s5.update
+                p.push(s6ref.set(s6).then(ref => {
+                    console.log(ref.path + " " + s6.backup.toDate().toString())
+                    return ref.path + " " + s6.backup.toDate().toString()
+                }))
+            }
+
+            return Promise.all(p).then(res => {
+                return {
+                    res: res
+                }
+            }).catch(err => {
+                return {
+                    err: err.text
+                }
+            })
+        }))
+    }
+
+    return Promise.all(p).then(res => {
+        return {
+            res: res
+        }
+    }).catch(err => {
+        return {
+            err: err.text
+        }
+    })
+})
 
 exports.recalcTotals = functions.https.onCall(async (data, context) => {
     let p = []

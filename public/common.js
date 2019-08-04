@@ -261,9 +261,6 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
             await ref.get().then(async function (snapshot) {
                 for (let i = 0; i < snapshot.size; ++i) {
                     let doc = snapshot.docs[i];
-                    if (doc.id == "totals" || doc.id == "players")
-                        continue;
-
                     let g = doc.data();
 
                     for (let k = 0; k < platformList.length; ++k) {
@@ -271,7 +268,7 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
                         ref = ref.where("uid", "==", bhs.user.uid);
                         await ref.get().then(async function (snapshot) {
                             for (let i = 0; i < snapshot.size; ++i) {
-                                await bhs.batchUpdate(snapshot.docs[i].ref, {
+                                await snapshot.docs[i].ref.update({
                                     _name: user._name
                                 });
                             }
@@ -281,7 +278,7 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
             });
 
             ref = bhs.getUsersColRef(bhs.user.uid);
-            await bhs.batchUpdate(ref, bhs.user, true);
+            await ref.update(bhs.user);
         }
     });
 }
@@ -522,9 +519,6 @@ blackHoleSuns.prototype.searchTxt = async function () {
     let ref = bhs.getStarsColRef();
     await ref.get().then(async function (snapshot) {
         for (let i = 0; i < snapshot.docs.length; ++i) {
-            if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "players")
-                continue;
-
             let g = snapshot.docs[i].data()
 
             for (let j = 0; j < platformList.length; ++j) {
@@ -576,31 +570,6 @@ blackHoleSuns.prototype.searchTxt = async function () {
     });
 }
 
-let gbatch = null
-
-blackHoleSuns.prototype.startBatch = function () {
-    gbatch = {}
-    gbatch.batch = bhs.fs.batch();
-    gbatch.batchcount = 0;
-}
-
-blackHoleSuns.prototype.batchUpdate = function (ref, e, flush) {
-    bhs.checkBatchSize(flush);
-    gbatch.batch.update(ref, e);
-}
-
-blackHoleSuns.prototype.checkBatchSize = async function (flush) {
-    if (gbatch)
-        if (flush && gbatch.batchcount > 0 || ++gbatch.batchcount === 500) {
-            console.log("commit " + gbatch.batchcount);
-            await gbatch.batch.commit().then(async () => {
-                bhs.startBatch()
-            })
-        }
-    else
-        bhs.startBatch()
-}
-
 blackHoleSuns.prototype.updateDARC = async function () {
     var updateDARC = firebase.functions().httpsCallable('updateDARC');
     updateDARC()
@@ -626,29 +595,70 @@ blackHoleSuns.prototype.genDARC = async function () {
 }
 
 blackHoleSuns.prototype.testing = async function () {
-    let ref = bhs.getStarsColRef();
+    let ref = bhs.fs.collection("stars6")
     await ref.get().then(async snapshot => {
         let pr = []
 
-        for (let i = 0; i < snapshot.docs.length; ++i) {
-            if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "players")
-                continue
-
-            let g = snapshot.docs[i].data()
-
-            for (let j = 0; j < platformList.length; ++j) {
-                let ref = bhs.getStarsColRef(g.name, platformList[j].name);
-                ref = ref.where("_name", "==", "turbolife")
+        for (let gdoc of snapshot.docs) {
+            for (let p of platformList) {
+                let ref = gdoc.ref.collection(p.name);
                 pr.push(ref.get().then(async snapshot => {
+                    if (snapshot.size > 0) {
+                        console.log(snapshot.docs[0].ref.parent.path, snapshot.size)
 
-                    for (let i of snapshot.docs) {
-                        let e = i.data()
+                        let count = 0
+                        let b = bhs.fs.batch()
 
-                        if (e._name.match(/.*turbolife.*/i)) {
-                            e._name = "Turbo Life"
-                            console.log("." + e._name + ".", e.galaxy, e.platform, e.addr)
-                            i.ref.set(e)
+                        for (let doc of snapshot.docs) {
+                            let e = doc.data()
+
+                            let ref = bhs.fs.doc("stars5/" + e.galaxy + "/" + e.platform + "/" + e.addr)
+                            await ref.get().then(doc => {
+                                if (!doc.exists) {
+                                    e.sys = typeof e.sys != "undefined" ? e.sys : ""
+                                    e.reg = typeof e.reg != "undefined" ? e.reg : ""
+                                    e.life = typeof e.life != "undefined" ? e.life : ""
+                                    e.econ = typeof e.econ != "undefined" ? e.econ : ""
+                                    e.blackhole = typeof e.blackhole != "undefined" ? e.blackhole : false
+                                    e.deadzone = typeof e.deadzone != "undefined" ? e.deadzone : false
+
+                                    delete e.conxyzs
+                                    delete e.valid
+                                    delete e.contest
+                                    delete e.sun
+                                    delete e.conflict
+
+                                    if (++count >= 450) {
+                                        b.commit().then(async () => {
+                                            console.log(ref.path, count)
+                                        })
+
+                                        count = 0
+                                        b = bhs.fs.batch()
+                                    }
+
+                                    b.set(ref, e)
+                                }
+                            })
                         }
+
+                        return b.commit().then(async () => {
+                            let doc = snapshot.docs[0]
+                            let e = doc.data();
+
+                            console.log("commit", doc.ref.parent.path, count)
+
+                            let s5ref = bhs.fs.doc("stars5/" + e.galaxy)
+                            let s6ref = bhs.fs.doc("stars6/" + e.galaxy)
+
+                            return s6ref.get().then(async doc => {
+                                if (doc.exists) {
+                                    let e = doc.data();
+                                    e.update = e.backup
+                                    return s5ref.set(e)
+                                }
+                            })
+                        })
                     }
                 }))
             }
@@ -656,61 +666,11 @@ blackHoleSuns.prototype.testing = async function () {
 
         await Promise.all(pr).then((res) => {
             console.log("done")
-            return res
         })
     })
 }
 
-// blackHoleSuns.prototype.testing = async function () {
-//     let ref = bhs.getStarsColRef();
-//     await ref.get().then(async snapshot => {
-//             let pr = []
-
-//             for (let i = 0; i < snapshot.docs.length; ++i) {
-//                 if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "players")
-//                     continue
-
-//                 let g = snapshot.docs[i].data()
-
-//                 for (let j = 0; j < platformList.length; ++j) {
-//                     let ref = bhs.getStarsColRef(g.name, platformList[j].name);
-//                     ref = ref.where("blackhole", "==", true)
-//                     pr.push(ref.get().then(async snapshot => {
-//                             if (snapshot.size > 0) {
-//                                 console.log(snapshot.docs[0].ref.parent.path, snapshot.size)
-
-//                                 for (let i = 0; i < snapshot.size; ++i) {
-//                                     let e = snapshot.docs[i].data()
-
-//                                     let ref = bhs.getStarsColRef(e.galaxy, e.platform, e.connection)
-//                                     await ref.get().then(async doc => {
-//                                         if (doc.exists) {
-//                                             let c = doc.data()
-//                                             if (typeof c.sys !== "undefined" && typeof c.reg !== "undefined" &&
-//                                                 (e.consys != c.sys || e.conreg != c.reg)) {
-//                                                 e.consys = c.sys
-//                                                 e.conreg = c.reg
-//                                                 delete e.valid
-
-//                                                 await snapshot.docs[i].ref.set(e)
-//                                             }
-//                                         } else
-//                                             console.log(e.galaxy, e.platform, e.addr, e.connection, "error")
-//                                     })
-//                             }
-//                         }
-//                     }))
-//             }
-//         }
-
-//         await Promise.all(pr).then((res) => {
-//             console.log("done " + res.length)
-//             return res
-//         })
-//     })
-// }
-
-// blackHoleSuns.prototype.testing = async function () {
+// blackHoleSuns.prototype.checkDistance = async function () {
 //     let t = {}
 //     let start = 15000
 //     let startOffset = 8600
@@ -721,9 +681,6 @@ blackHoleSuns.prototype.testing = async function () {
 //         let pr = []
 
 //         for (let i = 0; i < snapshot.docs.length; ++i) {
-//             if (snapshot.docs[i].id == "totals" || snapshot.docs[i].id == "players")
-//                 continue
-
 //             let g = snapshot.docs[i].data()
 
 //             for (let j = 0; j < platformList.length; ++j) {

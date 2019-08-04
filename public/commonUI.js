@@ -25,9 +25,6 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
             if (doc.exists) {
                 bhs.role = doc.data().role;
 
-                if (bhs.role == "admin" || bhs.role == "checker")
-                    $("#validate").show();
-
                 if (bhs.role == "admin" || bhs.role == "editor")
                     $("#poiorg").show();
 
@@ -43,7 +40,6 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
 
                     if (document.domain == "localhost") {
                         $("#testing").show();
-                        // $("#showContest").show();
                     }
                 }
             }

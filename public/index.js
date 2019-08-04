@@ -385,10 +385,16 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
         if (!deadzone && !single) {
             entry.blackhole = true;
             let loc = pnl.find("#" + panels[pnlBottom].id)
+
             entry.connection = loc.find("#id-addr").val()
-            entry.conxyzs = bhs.addressToXYZ(entry.connection);
-            entry.consys = loc.find("#id-sys").val()
-            entry.conreg = loc.find("#id-reg").val()
+            entry.x.addr = entry.connection
+            entry.x.dist = bhs.calcDist(entry.x.addr)
+            entry.x.xyzs = bhs.addressToXYZ(entry.connection);
+            entry.x.sys = loc.find("#id-sys").val()
+            entry.x.reg = loc.find("#id-reg").val()
+            entry.x.life = loc.find("#btn-Lifeform").text().stripNumber();
+            entry.x.econ = loc.find("#btn-Economy").text().stripNumber();
+
             entry.towardsCtr = entry.dist - bhs.calcDist(entry.connection);
         }
     }
@@ -428,7 +434,6 @@ blackHoleSuns.prototype.save = async function () {
 
     if (await bhs.extractEntry(pnlTop))
         bhs.clearPanels();
-
 }
 
 blackHoleSuns.prototype.displayCalc = function () {
