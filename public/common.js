@@ -788,9 +788,10 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, 
         if (!bhs.list[galaxy][platform])
             bhs.list[galaxy][platform] = {};
 
-        await ref.get().then(async function (snapshot) {
+        let bhref = ref.where("blackhole", "==", true)
+        await bhref.get().then(async function (snapshot) {
             for (let i = 0; i < snapshot.size; ++i)
-                bhs.list[galaxy][platform] = bhs.addEntryList(snapshot.docs[i].data(), bhs.list[galaxy][platform]);
+                bhs.list[galaxy][platform][snapshot.docs[i].data().addr] = snapshot.docs[i].data()
 
             bhs.entries = bhs.list[galaxy][platform];
 
@@ -836,30 +837,6 @@ blackHoleSuns.prototype.getOrgEntries = async function (displayFcn, singleFcn, n
         displayFcn(bhs.entries);
 }
 
-blackHoleSuns.prototype.dispEntryList = function (entry, id, displayFcn) {
-    bhs.entries = bhs.addEntryList(entry, bhs.entries);
-    bhs.list[entry.galaxy][entry.platform] = bhs.addEntryList(entry, bhs.list[entry.galaxy][entry.platform]);
-    displayFcn(bhs.entries);
-}
-
-blackHoleSuns.prototype.addEntryList = function (entry, list) {
-    if (entry.blackhole) {
-        if (typeof list[entry.connection] == "undefined")
-            list[entry.connection] = {};
-        list[entry.connection].bh = entry;
-    } else if (entry.deadzone) {
-        if (typeof list[entry.addr] == "undefined")
-            list[entry.addr] = {};
-        list[entry.addr].dz = entry;
-    } else {
-        if (typeof list[entry.addr] == "undefined")
-            list[entry.addr] = {};
-        list[entry.addr].exit = entry;
-    }
-
-    return list;
-}
-
 blackHoleSuns.prototype.getBases = async function (displayFcn, singleDispFcn) {
     let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform);
     await ref.get().then(async function (snapshot) {
@@ -875,27 +852,21 @@ blackHoleSuns.prototype.getBases = async function (displayFcn, singleDispFcn) {
 }
 
 blackHoleSuns.prototype.addBaseList = function (entry, list) {
-    if (typeof list[entry.addr] != "undefined")
-        list[entry.addr].exitbase = entry;
-    else {
-        let keys = Object.keys(list);
-        let k = 0;
-        for (; k < keys.length; ++k) {
-            if (list[keys[k]].bh && list[keys[k]].bh.addr == entry.addr) {
-                list[keys[k]].bhbase = entry;
-                break;
-            }
-            if (list[keys[k]].dz && list[keys[k]].dz.addr == entry.addr) {
-                list[keys[k]].bhbase = entry;
-                break;
+    if (typeof list[entry.addr] == "undefined") {
+        let found = false
+        for (let k of Object.keys(list)) {
+            let e = list[k]
+            if (e.connection == entry.addr) {
+                found = true
+                e.x.basename = entry.basename
+                break
             }
         }
 
-        if (k == keys.length) {
-            list[entry.addr] = {}
-            list[entry.addr].exitbase = entry;
-        }
-    }
+        if (!found)
+            list[entry.addr] = entry
+    } else
+        list[entry.addr].basename = entry.basename
 
     return list;
 }
@@ -989,13 +960,17 @@ blackHoleSuns.prototype.getTotals = async function (displayFcn, dispHtml) {
             dispHtml(result.data.html, "Organizations")
         })
 
+    let ref = bhs.fs.doc("bhs/Totals")
+    bhs.subscribe("tot-totals", ref, displayFcn)
+
+    ref = bhs.fs.doc("bhs/Organizations")
+    bhs.subscribe("tot-orgs", ref, displayFcn)
+
     if (findex) {
-        let ref = bhs.fs.doc("bhs/Players")
+        ref = bhs.fs.doc("bhs/Players")
         bhs.subscribe("tot-players", ref, displayFcn)
     }
 
-    let ref = bhs.fs.doc("bhs/Totals")
-    bhs.subscribe("tot-totals", ref, displayFcn)
 }
 
 blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn) {

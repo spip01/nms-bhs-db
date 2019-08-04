@@ -410,9 +410,9 @@ blackHoleSuns.prototype.entriesToCsv = function () {
         let loc = list[i];
         let addr = /-/g [Symbol.replace]($(loc).prop("id"), ":");
         let e = bhs.entries[addr];
-        if (e.bh && e.exit) {
-            out += e.bh.addr + "," + e.bh.sys + "," + e.bh.reg + "," + e.bh.life + "," + e.bh.econ + ",";
-            out += e.exit.addr + "," + e.exit.sys + "," + e.exit.reg + "," + e.exit.life + "," + e.exit.econ + "\n";
+        if (e.bh && e.x) {
+            out += e.addr + "," + e.sys + "," + e.reg + "," + e.life + "," + e.econ + ",";
+            out += e.x.addr + "," + e.x.sys + "," + e.x.reg + "," + e.x.life + "," + e.x.econ + "\n";
         }
 
     }
@@ -453,29 +453,17 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist, force) {
             l = /width/g [Symbol.replace](l, t.format + (alt ? " bkg-vlight-gray" : ""));
 
             if (t.calc) {
-                l = /bhdata/ [Symbol.replace](l, entry.bh ? entry.bh.towardsCtr : "");
+                l = /bhdata/ [Symbol.replace](l, entry.towardsCtr ? entry.towardsCtr : "");
                 l = /xdata/ [Symbol.replace](l, "");
             } else if (t.id == "id-type") {
-                l = /bhdata/ [Symbol.replace](l, entry.bh ? "BH" : entry.dz ? "DZ" : "");
+                l = /bhdata/ [Symbol.replace](l, entry.blackhole ? "BH" : entry.deadzone ? "DZ" : "");
                 l = /xdata/ [Symbol.replace](l, "");
             } else if (t.id == "id-base") {
-                if (entry.bh && entry.bhbase)
-                    l = /bhdata/ [Symbol.replace](l, entry.bhbase[t.field]);
-                else if (entry.dz && entry.dzbase)
-                    l = /bhdata/ [Symbol.replace](l, entry.dzbase[t.field]);
-                else
-                    l = /bhdata/ [Symbol.replace](l, "");
-
-                l = /xdata/ [Symbol.replace](l, entry.exitbase ? entry.exitbase[t.field] : "");
+                l = /bhdata/ [Symbol.replace](l, entry.basename ? entry.basename : "");
+                l = /xdata/ [Symbol.replace](l, entry.x && entry.x.basename ? entry.x.basename : "");
             } else {
-                if (entry.bh && entry.bh[t.field])
-                    l = /bhdata/ [Symbol.replace](l, entry.bh[t.field]);
-                else if (entry.dz && entry.dz[t.field])
-                    l = /bhdata/ [Symbol.replace](l, entry.dz[t.field]);
-                else
-                    l = /bhdata/ [Symbol.replace](l, "");
-
-                l = /xdata/ [Symbol.replace](l, entry.exit && entry.exit[t.field] ? entry.exit[t.field] : "");
+                l = /bhdata/ [Symbol.replace](l, entry[t.field] ? entry[t.field] : "");
+                l = /xdata/ [Symbol.replace](l, entry.x && entry.x[t.field] ? entry.x[t.field] : "");
             }
 
             h += l;
@@ -569,8 +557,7 @@ const totalsCol = [{
 const rowTotal = 0;
 const rowPlatform = 1;
 const rowAltPlatform = 2;
-const rowGalaxy = 3;
-const rowGalaxyPlatform = 4;
+const rowGalaxyPlatform = 3;
 
 const totalsRows = [{
     title: "Total BH",
@@ -582,10 +569,6 @@ const totalsRows = [{
     title: "Total/altplatform",
     id: "id-totalAHP",
     where: "galaxy",
-}, {
-    title: "Total/galaxy",
-    id: "id-totalBHG",
-    where: "index",
 }, {
     title: "Total/galaxy/platform",
     id: "id-totalBHGP",
@@ -654,8 +637,10 @@ blackHoleSuns.prototype.buildTotals = function () {
     totalsRows.forEach(function (t) {
         if (t.where == "index" && !findex)
             tot.find("#itm-Player #" + t.id).hide()
+        if (t.where == "galaxy" && !ftotals)
+            tot.find("#itm-Player #" + t.id).hide()
     });
-    
+
     if (findex) {
         tot.find("#id-showall").show()
         tot.find("#ck-showall").change(function () {
@@ -673,6 +658,9 @@ blackHoleSuns.prototype.buildTotals = function () {
 blackHoleSuns.prototype.displayTotals = function (e, refpath) {
     let findex = window.location.pathname == "/index.html" || window.location.pathname == "/";
 
+    if (refpath === "bhs/Organizations")
+        return
+
     const addPlatforms = e => {
         let t = 0
         if (typeof e["PC-XBox"] === "number")
@@ -683,13 +671,12 @@ blackHoleSuns.prototype.displayTotals = function (e, refpath) {
     }
 
     let tot = $("#totals")
-    let colid 
+    let colid
 
     if (refpath === "bhs/Players") {
         e = e[bhs.user._name]
         colid = "id-Player"
-    }
-    else    
+    } else
         colid = "id-Total"
 
     for (let rid of totalsRows) {
@@ -1403,44 +1390,56 @@ blackHoleSuns.prototype.drawList = function (listEntry, force) {
         opt.connection = false;
 
     let out = {};
+    out.bh = initout();
+    out.dz = initout();
+    out.x = initout();
+    out.base = initout();
+
     let data = [];
 
     for (let i = 0; i < k.length; ++i) {
-        let entry = listEntry[k[i]];
-        if (opt.connection && entry.bh && entry.exit) {
+        let e = listEntry[k[i]];
+        if (opt.connection && e.x) {
             let out = initout();
-            pushentry(out, entry.bh.xyzs, entry.bh.addr + "<br>" + entry.bh.sys + "<br>" + entry.bh.reg);
-            pushentry(out, entry.exit.xyzs, entry.exit.addr + "<br>" + entry.exit.sys + "<br>" + entry.exit.reg);
+            pushentry(out, e.xyzs, e.addr + "<br>" + e.sys + "<br>" + e.reg);
+            pushentry(out, e.x.xyzs, e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg);
             data.push(makedata(opt, out, 4, opt["clr-bh"], opt["clr-con"], true));
         } else {
-            let t = Object.keys(entry);
-            for (let i = 0; i < t.length; ++i) {
-                out[t[i]] = initout(out[t[i]]);
-                let e = entry[t[i]];
-                let text = e.addr + "<br>" + e.sys + "<br>" + e.reg;
+            let text = e.addr + "<br>" + e.sys + "<br>" + e.reg
 
-                if (e.calc)
-                    text += "<br>" + e.dist + " " + e.calc + " " + e.actual + " " + (e.calc - e.actual);
+            if (e.basename)
+                text += "<br>" + e.basename
 
-                if (t[i].match(/base/))
-                    text += "<br>" + e.basename;
+            if (e.blackhole) {
+                pushentry(out.bh, e.xyzs, text);
 
-                pushentry(out[t[i]], e.xyzs, text);
-            }
+                text = e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg
+                if (e.x.basename)
+                    text += "<br>" + e.x.basename
+
+                pushentry(out.x, e.x.xyzs, text);
+            } else if (e.deadzone)
+                pushentry(out.dz, e.xyzs, text);
+            else if (e.basename)
+                pushentry(out.base, e.xyzs, text);
+            else if (e.x && e.x.basename)
+                pushentry(out.base, e.x.xyzs, text + "<br>" + e.x.basename);
+            else
+                pushentry(out.x, e.xyzs, text);
         }
     }
 
-    if (out.bh && opt["inp-clr-bh"] > 0)
+    if (out.bh.x.length > 0 && opt["inp-clr-bh"] > 0)
         data.push(makedata(opt, out.bh, opt["inp-clr-bh"], opt["clr-bh"]));
 
-    if (out.exit && opt["inp-clr-exit"] > 0)
-        data.push(makedata(opt, out.exit, opt["inp-clr-exit"], opt["clr-exit"]));
+    if (out.dz.x.length > 0 && opt["inp-clr-dz"] > 0)
+        data.push(makedata(opt, out.dz, opt["inp-clr-dz"], opt["clr-dz"]));
 
-    if (out.bhbase && opt["inp-clr-base"] > 0)
-        data.push(makedata(opt, out.bhbase, opt["inp-clr-base"], opt["clr-base"]));
+    if (out.x.x.length > 0 && opt["inp-clr-exit"] > 0)
+        data.push(makedata(opt, out.x, opt["inp-clr-exit"], opt["clr-exit"]));
 
-    if (out.exitbase && opt["inp-clr-base"] > 0)
-        data.push(makedata(opt, out.exitbase, opt["inp-clr-base"], opt["clr-base"]));
+    if (out.base.x.length > 0 && opt["inp-clr-base"] > 0)
+        data.push(makedata(opt, out.base, opt["inp-clr-base"], opt["clr-base"]));
 
     Plotly.react('plymap', data, bhs.changeMapLayout());
 }
@@ -1451,30 +1450,34 @@ blackHoleSuns.prototype.drawSingle = function (entry) {
     let opt = bhs.extractMapOptions();
     let out = initout();
 
-    let text = entry.addr + "<br>" + entry.sys + "<br>" + entry.reg;
-    if (entry.basename)
-        text += "<br>" + entry.basename;
+    let text = e.addr + "<br>" + e.sys + "<br>" + e.reg
+    if (e.basename)
+        text += "<br>" + e.basename
 
-    pushentry(out, entry.xyzs, text);
+    if (e.blackhole) {
+        pushentry(out, e.xyzs, text);
+        Plotly.addTraces('plymap', makedata(opt, out, parseInt(opt["inp-clr-bh"]), opt["clr-bh"]));
 
-    let color;
-    let size;
+        text = e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg
+        if (e.x.basename)
+            text += "<br>" + e.x.basename
 
-    if (entry.blackhole) {
-        color = opt["clr-bh"];
-        size = parseInt(opt["inp-clr-bh"]);
-    } else if (entry.deadzone) {
-        color = opt["clr-dz"];
-        size = parseInt(opt["inp-clr-dz"]);
-    } else if (entry.basename) {
-        color = opt["clr-base"];
-        size = parseInt(opt["inp-clr-base"]);
+        out = {}
+        pushentry(out, e.x.xyzs, text);
+        Plotly.addTraces('plymap', makedata(opt, out, parseInt(opt["inp-clr-exit"]), opt["clr-exit"]));
+    } else if (e.deadzone) {
+        pushentry(out.dz, e.xyzs, text);
+        Plotly.addTraces('plymap', makedata(opt, out, parseInt(opt["inp-clr-dz"]), opt["clr-dz"]));
+    } else if (e.basename) {
+        pushentry(out.base, e.xyzs, text);
+        Plotly.addTraces('plymap', makedata(opt, out, parseInt(opt["inp-clr-base"]), opt["clr-base"]));
+    } else if (e.x && e.x.basename) {
+        pushentry(out.base, e.x.xyzs, text + "<br>" + e.x.basename);
+        Plotly.addTraces('plymap', makedata(opt, out, parseInt(opt["inp-clr-base"]), opt["clr-base"]));
     } else {
-        color = opt["clr-exit"];
-        size = parseInt(opt["inp-clr-exit"]);
+        pushentry(out.x, e.xyzs, text);
+        Plotly.addTraces('plymap', makedata(opt, out, parseInt(opt["inp-clr-exit"]), opt["clr-exit"]));
     }
-
-    Plotly.addTraces('plymap', makedata(opt, out, fsearch ? size : size * 3, color));
 }
 
 blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
@@ -1484,23 +1487,23 @@ blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
         let keys = Object.keys(list);
         for (let i = 0; i < keys.length; ++i) {
             let d = list[keys[i]];
-            if (!bhs.mapped[d.bh.addr]) {
+            if (!bhs.mapped[d.addr]) {
 
                 let out = initout();
-                pushentry(out, d.bh.xyzs, d.bh.addr + "<br>" + d.bh.sys + "<br>" + d.bh.reg);
-                pushentry(out, d.exit.xyzs, d.exit.addr + "<br>" + d.exit.sys + "<br>" + d.exit.reg);
+                pushentry(out, d.xyzs, d.addr + "<br>" + d.sys + "<br>" + d.reg);
+                pushentry(out, d.x.xyzs, d.x.addr + "<br>" + d.x.sys + "<br>" + d.x.reg);
 
                 if (bhs.displayResults)
                     bhs.displayResults(d);
 
                 Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"], opt["clr-bh"], up ? opt["clr-exit"] : opt["clr-con"], true));
-                bhs.mapped[d.bh.addr] = true;
+                bhs.mapped[d.addr] = true;
             }
         }
 
         for (let i = 0; i < keys.length; ++i) {
             let d = list[keys[i]];
-            bhs.drawChain(opt, up ? d.bh.xyzs : d.exit.xyzs, depth);
+            bhs.drawChain(opt, up ? d.xyzs : d.x.xyzs, depth);
         }
 
         bhs.drawChain(opt, xyz, depth, true);
@@ -1514,10 +1517,10 @@ blackHoleSuns.prototype.findClose = function (opt, xyz, up) {
     for (let i = 0; i < list.length; ++i) {
         let e = bhs.entries[list[i]];
 
-        if (e.bh && e.exit) {
-            if (!up && Math.abs(e.bh.xyzs.x - xyz.x) <= opt.chainradius && Math.abs(e.bh.xyzs.y - xyz.y) <= opt.chainradius && Math.abs(e.bh.xyzs.z - xyz.z) <= opt.chainradius)
+        if (e.bh && e.x) {
+            if (!up && Math.abs(e.xyzs.x - xyz.x) <= opt.chainradius && Math.abs(e.xyzs.y - xyz.y) <= opt.chainradius && Math.abs(e.xyzs.z - xyz.z) <= opt.chainradius)
                 out[list[i]] = e;
-            if (up && Math.abs(e.exit.xyzs.x - xyz.x) <= opt.chainradius && Math.abs(e.exit.xyzs.y - xyz.y) <= opt.chainradius && Math.abs(e.exit.xyzs.z - xyz.z) <= opt.chainradius)
+            if (up && Math.abs(e.x.xyzs.x - xyz.x) <= opt.chainradius && Math.abs(e.x.xyzs.y - xyz.y) <= opt.chainradius && Math.abs(e.x.xyzs.z - xyz.z) <= opt.chainradius)
                 out[list[i]] = e;
         }
     }
