@@ -455,6 +455,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
 
                         if (ok && !entry[1].deadzone) {
                             entry[1].connection = entry[2].addr;
+                            entry[1].x = {}
                             entry[1].x.addr = entry[2].addr;
                             entry[1].x.dist = bhs.calcDist(entry[2].addr)
                             entry[1].x.sys = entry[2].sys;

@@ -387,6 +387,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
             let loc = pnl.find("#" + panels[pnlBottom].id)
 
             entry.connection = loc.find("#id-addr").val()
+            entry.x = {}
             entry.x.addr = entry.connection
             entry.x.dist = bhs.calcDist(entry.x.addr)
             entry.x.xyzs = bhs.addressToXYZ(entry.connection);
