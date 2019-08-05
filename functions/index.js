@@ -138,23 +138,23 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
                                 s.end()
                             }
 
-                            return Promise.all(p).then((r) => {
-                                return (r)
+                            return Promise.all(p).then(res => {
+                                return res
                             })
                         }))
                     }
 
                 }
 
-                return Promise.all(p).then((r) => {
-                    return (r)
+                return Promise.all(p).then(res => {
+                    return res
                 })
             }))
         }
 
-        return Promise.all(p).then((r) => {
+        return Promise.all(p).then(res => {
             return {
-                ok: r
+                ok: res
             }
         }).catch(err => {
             console.log("error", err)
