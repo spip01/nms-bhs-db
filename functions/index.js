@@ -317,16 +317,16 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
         if (e.blackhole || e.deadzone) {
             let t = incTotals(e, 1)
             p.push(applyAllTotals(t))
-
-            console.log("create " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-            p.push(saveChange(e, "create"))
-
-            p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
-                update: e.modded
-            }, {
-                merge: true
-            }))
         }
+
+        console.log("create " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+        p.push(saveChange(e, "create"))
+
+        p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
+            update: e.modded
+        }, {
+            merge: true
+        }))
 
         return Promise.all(p)
     })
@@ -336,10 +336,8 @@ exports.systemUpdate = functions.firestore.document("stars5/{galaxy}/{platform}/
         let p = []
         const e = change.after.data()
 
-        if (e.blackhole || e.deadzone) {
-            console.log("update " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-            p.push( saveChange(e, "update"))
-        }
+        p.push(saveChange(e, "update"))
+        console.log("update " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
 
         p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
             update: e.modded
@@ -358,16 +356,16 @@ exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/
         if (e.blackhole || e.deadzone) {
             let t = incTotals(e, -1)
             p.push(applyAllTotals(t))
-
-            console.log("delete " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-            p.push(saveChange(e, "delete"))
-
-            p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
-                update: admin.firestore.FieldValue.serverTimestamp()
-            }, {
-                merge: true
-            }))
         }
+
+        console.log("delete " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+        p.push(saveChange(e, "delete"))
+
+        p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
+            update: admin.firestore.FieldValue.serverTimestamp()
+        }, {
+            merge: true
+        }))
 
         return Promise.all(p)
     })
