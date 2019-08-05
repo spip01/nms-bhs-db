@@ -38,9 +38,7 @@ exports.getGPList = functions.https.onRequest((request, response) => {
                         e.push(pref.id)
                 })
 
-                let o = stringify(e)
-                if (o)
-                    out += o
+                out += JSON.stringify(e)+"\n"
             }
 
             response.send(out)
@@ -90,18 +88,22 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
                     let f = bucket.file(fname)
                     let needupdate = await f.exists()
                         .then(data => {
+                            console.log(fname + " " + data[0])
                             return !data[0]
                         })
                         .catch(err => {
+                            console.log(fname + " " + err)
                             return err ? true : false
                         })
 
                     needupdate = needupdate || await f.getMetadata()
                         .then(data => {
                             const metadata = data[0];
+                            console.log(fname + " " + new Date(metadata.updated).toString())
                             return new Date(metadata.updated).getTime() < modded
                         })
                         .catch(err => {
+                            console.log(fname + " " + err)
                             return err ? true : false
                         })
 
@@ -124,12 +126,13 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
                                 p.push(new Promise((resolve, reject) => {
                                     s.on('finish', () => {
                                         console.log(fname, snapshot.size, "finished")
-                                        resolve(fname, snapshot.size)
+                                        resolve(fname + " " + snapshot.size)
                                     })
                                 }))
 
                                 for (let doc of snapshot.docs) {
                                     let e = doc.data()
+                                    e = await checkOldEntry(e, doc.ref)
 
                                     let out = stringify(e)
                                     if (out)
@@ -166,12 +169,53 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
     })
 })
 
-function stringify(e) {
-    if (typeof e.x.sys !== "undefined" && typeof e.x.reg !== "undefined")
-        return JSON.stringify([e.galaxy, e.platform, e.addr, e.reg, e.sys, e.x.addr, e.x.reg, e.x.sys]) + "\n"
+// Elkupalos PS4 050E:0083:0532:0079 x not defined
+// Eissentam PC-XBox 0904:007D:074A:0079 x not defined
+async function checkOldEntry(e, eref) {
+    if (typeof e.x === "undefined") {
+        let ref = admin.firestore().doc("stars5").doc(e.galaxy).collection(e.platform).doc(e.connection)
+        e = await ref.get().then(async doc => {
+            if (doc.exists) {
+                let c = doc.data()
+                c.blackhole = false
+                c.deadzone = false
 
-    console.log(e.galaxy, e.platform, e.addr, e.x.addr, "x.sys/x.reg not found")
-    return null
+                await doc.ref.set(c)
+
+                e.x = {}
+                e.x.sys = typeof c.sys !== "undefined" ? c.sys : ""
+                e.x.reg = typeof c.reg !== "undefined" ? c.reg : ""
+                e.x.life = typeof c.life !== "undefined" ? c.life : ""
+                e.x.econ = typeof c.econ !== "undefined" ? c.econ : ""
+                e.x.addr = c.addr
+                e.x.dist = c.dist
+                e.x.xyzs = c.xyzs
+
+                delete e.conxyzs
+                delete e.valid
+
+                await eref.set(e)
+                console.log("fixed " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+                return e
+            }
+        })
+    }
+
+    return e
+}
+
+function stringify(e) {
+    if (typeof e.x === "undefined") {
+        console.log(e.galaxy, e.platform, e.addr, "x not defined")
+        return null
+    }
+
+    if (typeof e.sys === "undefined" && typeof e.reg === "undefined") {
+        console.log(e.galaxy, e.platform, e.addr, "sys/reg not found")
+        return null
+    }
+
+    return JSON.stringify([e.galaxy, e.platform, e.addr, e.reg, e.sys, e.x.addr, typeof e.x.reg !== "undefined" ? e.x.reg : "", typeof e.x.sys !== "undefined" ? e.x.sys : ""]) + "\n"
 }
 
 // exports.updateDARC = (event, callback) => {
@@ -202,7 +246,7 @@ exports.updateDARC = functions.https.onCall(async (data, context) => {
                     edits[e.addr] = e
                     edits[e.addr].ref = snapshot.docs[i].ref
 
-                    if (e.edits !== "created")
+                    if (e["created"])
                         onlyCreated = false;
                 }
 
@@ -310,13 +354,14 @@ function appendEdits(ts, edits) {
 }
 
 exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
-    .onCreate((doc, context) => {
+    .onCreate(async (doc, context) => {
         let p = []
-        const e = doc.data()
+        let e = doc.data()
 
         if (e.blackhole || e.deadzone) {
             let t = incTotals(e, 1)
             p.push(applyAllTotals(t))
+            e = await checkOldEntry(e, doc.ref)
         }
 
         console.log("create " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
@@ -371,8 +416,10 @@ exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/
     })
 
 function saveChange(e, edit) {
-    e.edit = edit
-    return admin.firestore().doc("edits/" + e.galaxy + "/" + e.platform + "/" + e.addr).set(e)
+    e[edit] = admin.firestore.FieldValue.serverTimestamp()
+    return admin.firestore().doc("edits/" + e.galaxy + "/" + e.platform + "/" + e.addr).set(e, {
+        merge: true
+    })
 }
 
 exports.backupBHS = functions.https.onCall((data, context) => {

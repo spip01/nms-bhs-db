@@ -132,9 +132,8 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
         $("#userpic").attr('src', profilePicUrl || '/images/body_image.png');
         $("#username").text(userName);
 
-        $("#login").hide();
-        $("#usermenu").show();
-
+        bhs.navLoggedin();
+    
         // let ref = bhs.fs.collection("users").where("_name","==","wasim13dark");
         // ref.get().then(function(snapshot){
         //     if (!snapshot.empty)
@@ -156,27 +155,23 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
                 bhs.updateUser(user, true);
             }
 
-            bhs.doLoggedin(user);
-            bhs.navLoggedin();
+           bhs.doLoggedin(user);
 
-            if (document.domain == "localhost") {
-                // var getDARC = firebase.functions().httpsCallable('getDARC');
-                // getDARC()
+            // if (document.domain == "localhost") {
+                // var t = firebase.functions().httpsCallable('getDARC');
+                // t()
                 // .then(function (result) {
                 //     console.log(result.data);
                 // })
                 // .catch(function (err) {
                 //     console.log(err);
                 // });
-            }
+            // }
         });
     } else {
-        $("#usermenu").hide();
-        $("#login").show();
-
+        bhs.navLoggedout();
         bhs.user = bhs.userInit();
         bhs.doLoggedout();
-        bhs.navLoggedout();
     }
 }
 
@@ -200,11 +195,15 @@ blackHoleSuns.prototype.userInit = function () {
 blackHoleSuns.prototype.navLoggedin = function () {
     $("#loggedout").hide();
     $("#loggedin").show();
+    $("#login").hide();
+    $("#usermenu").show();
 }
 
 blackHoleSuns.prototype.navLoggedout = function () {
     $("#loggedout").show();
     $("#loggedin").hide();
+     $("#login").show();
+   $("#usermenu").hide();
 }
 
 blackHoleSuns.prototype.updateUser = function (user, ifnew) {
