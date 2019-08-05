@@ -217,25 +217,19 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 }
 
 blackHoleSuns.prototype.displayListEntry = function (entry) {
-    if (entry.bh)
-        bhs.displaySingle(entry.bh, pnlTop);
-    if (entry.dz)
-        bhs.displaySingle(entry.dz, pnlTop);
-    if (entry.bhbase)
-        bhs.displayBase(entry.bhbase, pnlTop);
+    bhs.displaySingle(entry, pnlTop);
 
-    if (entry.bh || entry.dz || entry.bhbase) {
+    if (entry.blackhole) {
+        bhs.displaySingle(entry.x, pnlBottom);
+
         $("#" + panels[pnlTop].id + " #ck-single").prop("checked", false);
         $("#" + panels[pnlTop].id).show();
+        $("#" + panels[pnlBottom].id).show();
     } else {
-        $("#" + panels[pnlBottom].id + " #ck-single").prop("checked", true);
+        $("#" + panels[pnlTop].id + " #ck-single").prop("checked", true);
+        $("#" + panels[pnlTop].id).show();
         $("#" + panels[pnlBottom].id).hide();
     }
-
-    if (entry.exit)
-        bhs.displaySingle(entry.exit, entry.bh ? pnlBottom : pnlTop);
-    if (entry.exitbase)
-        bhs.displayBase(entry.exitbase, entry.bh ? pnlBottom : pnlTop);
 }
 
 blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
@@ -267,8 +261,20 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
     loc.find("#ck-isdz").prop("checked", entry.deadzone);
     loc.find("#ck-valid").prop("checked", entry.valid);
 
-    loc.find("#ck-hasbase").prop("checked", false);
-    loc.find("#id-isbase").hide();
+    if (entry.basename) {
+        loc.find("#id-basename").val(entry.basename);
+        loc.find("#btn-Owned").text(entry.owned);
+
+        loc.find("#ck-hasbase").prop("checked", true);
+        loc.find("#id-isbase").show();
+        loc.find("#btn-delbase").removeClass("disabled");
+        loc.find("#btn-delbase").removeAttr("disabled");
+    } else {
+        loc.find("#ck-hasbase").prop("checked", false);
+        loc.find("#id-isbase").hide();
+        loc.find("#btn-delbase").addClass("disabled");
+        loc.find("#btn-delbase").prop("disabled", true);
+    }
 
     if (entry.econ) {
         let l = economyList[bhs.getIndex(economyList, "name", entry.econ)].number;
@@ -284,17 +290,6 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
 
     $("#delete").removeClass("disabled");
     $("#delete").removeAttr("disabled");
-}
-
-blackHoleSuns.prototype.displayBase = function (entry, idx) {
-    let pnl = $("#" + panels[idx].id);
-    pnl.find("#id-isbase").show();
-    pnl.find("#ck-hasbase").prop("checked", true);
-    pnl.find("#id-basename").val(entry.basename);
-    pnl.find("#btn-Owned").text(entry.owned);
-
-    pnl.find("#btn-delbase").removeClass("disabled");
-    pnl.find("#btn-delbase").removeAttr("disabled");
 }
 
 blackHoleSuns.prototype.clearPanels = function () {

@@ -364,12 +364,6 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
                 loc.empty();
                 for (var i = 0; i < list.length; i++)
                     loc.append(list[i]);
-
-                loc.find(".bkg-vlight-gray").removeClass("bkg-vlight-gray");
-
-                list = loc.children();
-                for (let i = 0; i < list; i += 2)
-                    $(list[i]).addClass("bkg-vlight-gray");
             }
         });
     });
@@ -430,7 +424,7 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist, force) {
     const lineHdr = `
         <div id="gpa" class="row">`;
     const line = `
-            <div id="idname" class="width" onclick="entryDblclk(this)">
+            <div id="idname" class="width border-bottom" onclick="entryDblclk(this)">
                 <div id="bh-idname" class="row">bhdata</div>
                 <div id="x-idname" class="row">xdata</div>
             </div>`;
@@ -438,7 +432,6 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist, force) {
         </div>`;
 
     let h = "";
-    let alt = true;
 
     let keys = Object.keys(entrylist);
     for (let i = 0; i < keys.length; ++i) {
@@ -450,7 +443,7 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist, force) {
             let t = userTable[j];
 
             l = /idname/g [Symbol.replace](line, t.id);
-            l = /width/g [Symbol.replace](l, t.format + (alt ? " bkg-vlight-gray" : ""));
+            l = /width/g [Symbol.replace](l, t.format);
 
             if (t.calc) {
                 l = /bhdata/ [Symbol.replace](l, entry.towardsCtr ? entry.towardsCtr : "");
@@ -469,7 +462,6 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist, force) {
             h += l;
         }
 
-        alt = !alt;
         h += lineEnd;
     }
 
@@ -656,7 +648,10 @@ blackHoleSuns.prototype.buildTotals = function () {
 }
 
 blackHoleSuns.prototype.displayTotals = function (e, refpath) {
-    let findex = window.location.pathname == "/index.html" || window.location.pathname == "/";
+    let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
+    let ftotals = window.location.pathname == "/totals.html"
+
+    bhs.updateTotalsListView(e, refpath)
 
     if (refpath === "bhs/Organizations")
         return
@@ -725,6 +720,36 @@ blackHoleSuns.prototype.displayTotals = function (e, refpath) {
         }
 
         pnl.append(html);
+    }
+}
+
+blackHoleSuns.prototype.updateTotalsListView = function (e, refpath) {
+    let p = refpath.replace(/.*\/(.*)/, "$1")
+    let loc = $("#scroll-" + p)
+
+    if (loc.length > 0) {
+        for (let k of Object.keys(e)) {
+            if (k === "PS4" || k === "PC-XBox")
+                continue
+
+            let uloc = loc.find("#u-" + k.nameToId())
+            if (uloc.length > 0) {
+                let u = e[k]
+                let t = typeof u["PC-XBox"] != "undefined" ? u["PC-XBox"] : 0
+                t += typeof u["PS4"] != "undefined" ? u["PS4"] : 0
+
+                if (parseInt(uloc.find("#id-Total").text()) != t) {
+                    uloc.addClass("font-weight-bold")
+                    uloc.find("#id-Total").text(t)
+
+                    if (typeof u["PC-XBox"] != "undefined")
+                        uloc.find("#id-PC-XBox").text(u["PC-XBox"])
+
+                    if (typeof u["PS4"] != "undefined")
+                        uloc.find("#id-PS4").text(u["PS4"])
+                }
+            }
+        }
     }
 }
 
@@ -1161,7 +1186,7 @@ blackHoleSuns.prototype.purgeMap = function () {
     let layout = bhs.changeMapLayout();
     let data = [];
     let out = initout();
-    pushentry(out, zero);
+    pushentry(out, zero, "Galactic Center");
     data.push(makedata(opt, out, 6, "#ffffff"));
 
     Plotly.newPlot('plymap', data, layout).then(plot => {
@@ -1176,28 +1201,10 @@ blackHoleSuns.prototype.purgeMap = function () {
 
                     bhs.mapped = {};
                     bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1);
-                    // bhs.drawChain(opt, addr, opt.chain ? opt.chaindepth : 1, true);
                     delete bhs.mapped;
                 }
             }, 1500);
         });
-        // plot.on('plotly_afterplot', function (e) {
-
-        // plot.on('plotly_hover', e => {
-        //     if (e.points.length > 0) {
-        //         let d = e.points[0].data;
-        //         let xyz = d.altdata[e.points[0].pointNumber];
-        //         if (xyz) {
-        //             //Plotly.Fx.hover('plymap', {yval:[xyz.z], xval:[xyz.x], zval:[xyz.y] },["xyz"]);
-        //             // for (let i = 0; i < d.x.length; ++i) {
-        //                 // if (d.x[i] == xyz.x && d.y[i] == xyz.z && d.z[i] == xyz.y)
-        //                     Plotly.restyle('plymap', {
-        //                         "marker.size": 8
-        //                     }, {y:[xyz.z], x:[xyz.x], z:[xyz.y] })
-        //             // }
-        //         }
-        //     }
-        // });
     });
 }
 
@@ -1444,7 +1451,7 @@ blackHoleSuns.prototype.drawList = function (listEntry, force) {
     Plotly.react('plymap', data, bhs.changeMapLayout());
 }
 
-blackHoleSuns.prototype.drawSingle = function (entry) {
+blackHoleSuns.prototype.drawSingle = function (e) {
     let fsearch = window.location.pathname == "/search.html" || window.location.pathname == "/totals.html";
 
     let opt = bhs.extractMapOptions();
@@ -1462,20 +1469,20 @@ blackHoleSuns.prototype.drawSingle = function (entry) {
         if (e.x.basename)
             text += "<br>" + e.x.basename
 
-        out = {}
+        out = initout();
         pushentry(out, e.x.xyzs, text);
         Plotly.addTraces('plymap', makedata(opt, out, parseInt(opt["inp-clr-exit"]), opt["clr-exit"]));
     } else if (e.deadzone) {
-        pushentry(out.dz, e.xyzs, text);
+        pushentry(out, e.xyzs, text);
         Plotly.addTraces('plymap', makedata(opt, out, parseInt(opt["inp-clr-dz"]), opt["clr-dz"]));
     } else if (e.basename) {
-        pushentry(out.base, e.xyzs, text);
+        pushentry(out, e.xyzs, text);
         Plotly.addTraces('plymap', makedata(opt, out, parseInt(opt["inp-clr-base"]), opt["clr-base"]));
     } else if (e.x && e.x.basename) {
-        pushentry(out.base, e.x.xyzs, text + "<br>" + e.x.basename);
+        pushentry(out, e.x.xyzs, text + "<br>" + e.x.basename);
         Plotly.addTraces('plymap', makedata(opt, out, parseInt(opt["inp-clr-base"]), opt["clr-base"]));
     } else {
-        pushentry(out.x, e.xyzs, text);
+        pushentry(out, e.xyzs, text);
         Plotly.addTraces('plymap', makedata(opt, out, parseInt(opt["inp-clr-exit"]), opt["clr-exit"]));
     }
 }
@@ -1671,18 +1678,17 @@ blackHoleSuns.prototype.traceZero = function (addr) {
         };
 
         let out = initout();
-        pushentry(out, zero);
+        pushentry(out, zero, "Galactic Center");
         pushentry(out, addr.xyzs);
         Plotly.addTraces('plymap', makedata(opt, out, 5, opt["clr-bh"], opt["clr-dz"], true));
     }
 }
 
-function pushentry(data, xyz, label, alt) {
-    data.x.push(xyz.x);
-    data.y.push(4095 - xyz.z);
-    data.z.push(xyz.y);
-    data.t.push(label);
-    data.a.push(alt);
+function pushentry(out, xyz, label) {
+    out.x.push(xyz.x);
+    out.y.push(4095 - xyz.z);
+    out.z.push(xyz.y);
+    out.t.push(label);
 };
 
 function initout(out) {
@@ -1692,7 +1698,6 @@ function initout(out) {
         out.y = [];
         out.z = [];
         out.t = [];
-        out.a = [];
     }
 
     return out;
@@ -1704,7 +1709,6 @@ function makedata(opt, out, size, color, linecolor, lines) {
         y: out.y,
         z: out.z,
         text: out.t,
-        altdata: out.a,
         mode: 'markers',
         marker: {
             size: size,

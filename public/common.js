@@ -341,10 +341,12 @@ blackHoleSuns.prototype.updateEntry = async function (entry, admin) {
                 bhs.status(entry.addr + " can only be edited by " + existing._name, 1);
                 return;
             }
+            
             entry = mergeObjects(existing, entry);
         } else
             entry.created = entry.modded;
 
+        let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
         await ref.set(entry).then(function () {
             bhs.status(entry.addr + " saved.", 2);
         });
@@ -859,14 +861,17 @@ blackHoleSuns.prototype.addBaseList = function (entry, list) {
             if (e.connection == entry.addr) {
                 found = true
                 e.x.basename = entry.basename
+                e.x.owned = entry.owned
                 break
             }
         }
 
         if (!found)
             list[entry.addr] = entry
-    } else
+    } else {
         list[entry.addr].basename = entry.basename
+        list[entry.addr].owned = entry.owned
+    }
 
     return list;
 }
