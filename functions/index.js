@@ -38,7 +38,7 @@ exports.getGPList = functions.https.onRequest((request, response) => {
                         e.push(pref.id)
                 })
 
-                out += JSON.stringify(e)+"\n"
+                out += JSON.stringify(e) + "\n"
             }
 
             response.send(out)
@@ -88,22 +88,18 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
                     let f = bucket.file(fname)
                     let needupdate = await f.exists()
                         .then(data => {
-                            console.log(fname + " " + data[0])
                             return !data[0]
                         })
                         .catch(err => {
-                            console.log(fname + " " + err)
                             return err ? true : false
                         })
 
                     needupdate = needupdate || await f.getMetadata()
                         .then(data => {
                             const metadata = data[0];
-                            console.log(fname + " " + new Date(metadata.updated).toString())
                             return new Date(metadata.updated).getTime() < modded
                         })
                         .catch(err => {
-                            console.log(fname + " " + err)
                             return err ? true : false
                         })
 
@@ -169,11 +165,9 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
     })
 })
 
-// Elkupalos PS4 050E:0083:0532:0079 x not defined
-// Eissentam PC-XBox 0904:007D:074A:0079 x not defined
 async function checkOldEntry(e, eref) {
     if (typeof e.x === "undefined") {
-        let ref = admin.firestore().doc("stars5").doc(e.galaxy).collection(e.platform).doc(e.connection)
+        let ref = admin.firestore().doc("stars5/" + e.galaxy + "/" + e.platform + "/" + e.connection)
         e = await ref.get().then(async doc => {
             if (doc.exists) {
                 let c = doc.data()
@@ -196,8 +190,9 @@ async function checkOldEntry(e, eref) {
 
                 await eref.set(e)
                 console.log("fixed " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-                return e
             }
+
+            return e
         })
     }
 
