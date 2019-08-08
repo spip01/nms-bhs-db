@@ -1,9 +1,9 @@
-'use strict';
+'use strict'
 
 $(document).ready(function () {
-    startUp();
-    bhs.buildSelectPanel();
-});
+    startUp()
+    bhs.buildSelectPanel()
+})
 
 blackHoleSuns.prototype.buildSelectPanel = async function () {
     const panel = `
@@ -14,29 +14,29 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
                 <div id="id-Galaxy" class="col-3 text-center"></div>
                 <div id="id-Version" class="col-3 text-center hidden"></div>
             </div>
-        <br>`;
+        <br>`
 
-    $("#pnl-user").append(panel);
-    let loc = $("#pnl-user #sel");
+    $("#pnl-user").append(panel)
+    let loc = $("#pnl-user #sel")
 
-    bhs.usersList = await bhs.getUserList();
+    bhs.usersList = await bhs.getUserList()
     bhs.usersList.unshift({
         name: "",
         uid: null
-    });
+    })
 
-    bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select, true);
-    bhs.buildMenu(loc, "Platform", platformList, bhs.select, true);
-    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.select, true);
-    bhs.buildMenu(loc, "Version", versionList, bhs.select, true);
+    bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select, true)
+    bhs.buildMenu(loc, "Platform", platformList, bhs.select, true)
+    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.select, true)
+    bhs.buildMenu(loc, "Version", versionList, bhs.select, true)
 }
 
 blackHoleSuns.prototype.select = function () {
-    bhs.entries = {};
-    let i = bhs.getIndex(bhs.usersList, "name", $("#btn-Player").text().stripNumber());
-    let uid = i != -1 ? bhs.usersList[i].uid : null;
-    let galaxy = $("#btn-Galaxy").text().stripNumber();
-    let platform = $("#btn-Platform").text().stripNumber();
-    let version = $("#btn-Version").text().stripNumber();
-    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, uid, galaxy, platform, version);
+    bhs.entries = {}
+    let i = bhs.getIndex(bhs.usersList, "name", $("#btn-Player").text().stripNumber())
+    let uid = i != -1 ? bhs.usersList[i].uid : null
+    let galaxy = $("#btn-Galaxy").text().stripNumber()
+    let platform = $("#btn-Platform").text().stripNumber()
+    let version = $("#btn-Version").text().stripNumber()
+    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, uid, galaxy, platform, version)
 }

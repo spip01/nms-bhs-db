@@ -1,10 +1,10 @@
-'use strict';
+'use strict'
 
 $(document).ready(function () {
-    startUp();
-    bhs.buildSelectPanel();
-    bhs.buildSearchPanel();
-});
+    startUp()
+    bhs.buildSelectPanel()
+    bhs.buildSearchPanel()
+})
 
 blackHoleSuns.prototype.buildSelectPanel = async function () {
     const panel = `
@@ -15,88 +15,88 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
                 <div id="id-Galaxy" class="col-4 text-center"></div>
                 <div id="id-Version" class="col-4 text-center hidden"></div>
             </div>
-        <br>`;
+        <br>`
 
-    $("#pnl-user").append(panel);
-    let loc = $("#pnl-user #sel");
+    $("#pnl-user").append(panel)
+    let loc = $("#pnl-user #sel")
 
-    bhs.usersList = await bhs.getUserList();
+    bhs.usersList = await bhs.getUserList()
     bhs.usersList.unshift({
         name: "",
         uid: null
-    });
+    })
 
-    bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select);
-    bhs.buildMenu(loc, "Platform", platformList, bhs.select);
-    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.select);
-    bhs.buildMenu(loc, "Version", versionList, bhs.select);
+    bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select)
+    bhs.buildMenu(loc, "Platform", platformList, bhs.select)
+    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.select)
+    bhs.buildMenu(loc, "Version", versionList, bhs.select)
 }
 
 blackHoleSuns.prototype.select = function () {
-    bhs.entries = {};
-    let i = bhs.getIndex(bhs.usersList, "name", $("#btn-Player").text().stripNumber());
-    let uid = i != -1 ? bhs.usersList[i].uid : null;
-    let galaxy = $("#btn-Galaxy").text().stripNumber();
-    let platform = $("#btn-Platform").text().stripNumber();
-    let version = $("#btn-Version").text().stripNumber();
-    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, uid, galaxy, platform, version);
+    bhs.entries = {}
+    let i = bhs.getIndex(bhs.usersList, "name", $("#btn-Player").text().stripNumber())
+    let uid = i != -1 ? bhs.usersList[i].uid : null
+    let galaxy = $("#btn-Galaxy").text().stripNumber()
+    let platform = $("#btn-Platform").text().stripNumber()
+    let version = $("#btn-Version").text().stripNumber()
+    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, uid, galaxy, platform, version)
 }
 
 blackHoleSuns.prototype.buildSearchPanel = function () {
-    let loc = $("#searchpnl");
-    //bhs.buildMenu(loc, "Lifeform", lifeformList);
-    //bhs.buildMenu(loc, "Economy", economyList);
+    let loc = $("#searchpnl")
+    //bhs.buildMenu(loc, "Lifeform", lifeformList)
+    //bhs.buildMenu(loc, "Economy", economyList)
 
     loc.find("#btn-search").click(function () {
-        bhs.search();
-    });
+        bhs.search()
+    })
 }
 
 blackHoleSuns.prototype.search = function () {
-    let loc = $("#searchpnl");
-    let addr = loc.find("#id-addr").val();
-    let sys = loc.find("#id-sys").val();
-    let reg = loc.find("#id-reg").val();
-    let start = loc.find("#id-start").val();
-    let end = loc.find("#id-end").val();
-    // let life = loc.find("#btn-Lifeform").text().stripNumber();
-    // let econ = loc.find("#btn-Economy").text().stripNumber();
+    let loc = $("#searchpnl")
+    let addr = loc.find("#id-addr").val()
+    let sys = loc.find("#id-sys").val()
+    let reg = loc.find("#id-reg").val()
+    let start = loc.find("#id-start").val()
+    let end = loc.find("#id-end").val()
+    // let life = loc.find("#btn-Lifeform").text().stripNumber()
+    // let econ = loc.find("#btn-Economy").text().stripNumber()
 
     if (addr != "") {
-        addr = bhs.reformatAddress(addr);
-        loc.find("#id-addr").val(addr);
-        bhs.doSearch("addr", addr);
+        addr = bhs.reformatAddress(addr)
+        loc.find("#id-addr").val(addr)
+        bhs.doSearch("addr", addr)
     } else if (sys != "")
-        bhs.doSearch("sys", sys);
+        bhs.doSearch("sys", sys)
     else if (reg != "")
-        bhs.doSearch("reg", reg);
+        bhs.doSearch("reg", reg)
     else if (start != "" || end != "") {
-        start = start == "" ? 0 : firebase.firestore.Timestamp.fromDate(new Date(start)).seconds;
+        start = start == "" ? 0 : firebase.firestore.Timestamp.fromDate(new Date(start)).seconds
         end = end == "" ? Number.MAX_SAFE_INTEGER : firebase.firestore.Timestamp.fromDate(new Date(end)).seconds
 
-        bhs.doSearch("created", start, end);
+        bhs.doSearch("created", start, end)
     }
     // else if (life != "")
-    //     bhs.doSearch("life", life);
+    //     bhs.doSearch("life", life)
     // else if (econ != "")
-    //     bhs.doSearch("econ", econ);
+    //     bhs.doSearch("econ", econ)
 }
 
 blackHoleSuns.prototype.doSearch = function (type, s1, s2) {
-    let found = {};
+    let found = {}
     if (!bhs.entries)
-        bhs.select();
+        bhs.select()
         
-    let list = Object.keys(bhs.entries);
+    let list = Object.keys(bhs.entries)
     for (let i = 0; i < list.length; ++i) {
-        let e = bhs.entries[list[i]];
+        let e = bhs.entries[list[i]]
         if (e.blackhole)
         if (type == "created") {
             if (e[type].seconds > s1 && e[type].seconds < s2)
-                found[list[i]] = e;
+                found[list[i]] = e
         } else if (e[type] == s1 || e.x[type] == s1)
-            found[list[i]] = e;
+            found[list[i]] = e
     }
 
-    bhs.displayEntryList(found, true);
+    bhs.displayEntryList(found, true)
 }
