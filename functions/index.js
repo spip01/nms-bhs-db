@@ -1,6 +1,6 @@
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
-var serviceAccount = require("./nms-bhs-8025d3f3c02d.json");
+var serviceAccount = require("./nms-bhs-8025d3f3c02d.json")
 const cors = require('cors')({
     origin: true
 })
@@ -135,7 +135,7 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
 
                     needupdate = needupdate || await f.getMetadata()
                         .then(data => {
-                            const metadata = data[0];
+                            const metadata = data[0]
                             return new Date(metadata.updated).getTime() < modded
                         })
                         .catch(err => {
@@ -277,7 +277,7 @@ async function doUpdateDARC() {
         })
 
         for (let pref of colrefs) {
-            let onlyCreated = true;
+            let onlyCreated = true
 
             let edits = await pref.get().then(async snapshot => {
                 let edits = {}
@@ -295,14 +295,14 @@ async function doUpdateDARC() {
 
                     switch (t) {
                         case updt:
-                            edits[e.addr].last = "update";
+                            edits[e.addr].last = "update"
                             break
                         case del:
-                            edits[e.addr].last = "delete";
+                            edits[e.addr].last = "delete"
                             break
                         case create:
                         default:
-                            edits[e.addr].last = "create";
+                            edits[e.addr].last = "create"
                             break
                     }
                 }
@@ -823,17 +823,17 @@ function addObjects(o, n) {
 }
 
 function nameToId(str) {
-    let id = /[^a-z0-9_-]/ig [Symbol.replace](str, "-");
-    return id;
+    let id = /[^a-z0-9_-]/ig [Symbol.replace](str, "-")
+    return id
 }
 
 function getIndex(list, field, id) {
     if (!id)
-        return -1;
+        return -1
 
     return list.map(x => {
-        return typeof x[field] === "string" ? x[field].toLowerCase() : x[field];
-    }).indexOf(id.toLowerCase());
+        return typeof x[field] === "string" ? x[field].toLowerCase() : x[field]
+    }).indexOf(id.toLowerCase())
 }
 
 const galaxyList = [{
@@ -1628,4 +1628,4 @@ const galaxyList = [{
 }, {
     name: "Pequibanu",
     number: -0
-}];
+}]
