@@ -9,6 +9,15 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 })
 
+
+ /**************************
+https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Bad%20Wolf&g=Calypso&p=PC-XBox
+https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Euclid&p=PC-XBox
+https://us-central1-nms-bhs.cloudfunctions.net/getGPList
+https://us-central1-nms-bhs.cloudfunctions.net/getPOI
+****************************/
+
+
 // https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Calypso&p=PC-XBox
 exports.getDARC = functions.https.onRequest((request, response) => {
     cors(request, response, () => {
@@ -59,6 +68,36 @@ exports.getPOI = functions.https.onRequest((request, response) => {
             }
 
             response.send(e)
+        })
+    })
+})
+
+// https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Bad%20Wolf&g=Calypso&p=PC-XBox
+exports.getBases = functions.https.onRequest((request, response) => {
+    cors(request, response, () => {
+        let ref = admin.firestore().collection("users/")
+        ref = ref.where("_name", "==", request.query.u)
+
+        ref.get().then(async snapshot => {
+            if (snapshot.size > 0) {
+                ref = snapshot.docs[0].ref.collection("stars5/" + request.query.g + "/" + request.query.p)
+                await ref.get().then(snapshot => {
+                    let o = ""
+
+                    if (snapshot.size > 0)
+                        console.log(snapshot.docs[0].ref.parent.path, snapshot.size)
+
+                    for (let doc of snapshot.docs) {
+                        let e = doc.data()
+                        o += JSON.stringify([e.galaxy, e.platform, e.addr, e.basename]) + "\n"
+                    }
+
+                    response.send(o)
+                })
+            } else {
+                console.log(request.query.u, "not found")
+                response.send("")
+            }
         })
     })
 })
@@ -213,8 +252,15 @@ function stringify(e) {
     return JSON.stringify([e.galaxy, e.platform, e.addr, e.reg, e.sys, e.x.addr, typeof e.x.reg !== "undefined" ? e.x.reg : "", typeof e.x.sys !== "undefined" ? e.x.sys : ""]) + "\n"
 }
 
-// exports.updateDARC = (event, callback) => {
+// exports.scheduleUpdateDARC = functions.pubsub.schedule('every 15 minutes').onRun((context) => {
+//     return doUpdateDARC()
+// })
+
 exports.updateDARC = functions.https.onCall(async (data, context) => {
+    return doUpdateDARC()
+})
+
+async function doUpdateDARC() {
     const bucket = admin.storage().bucket("nms-bhs.appspot.com")
     const readline = require('readline')
 
@@ -241,14 +287,30 @@ exports.updateDARC = functions.https.onCall(async (data, context) => {
                     edits[e.addr] = e
                     edits[e.addr].ref = snapshot.docs[i].ref
 
-                    if (e["created"])
-                        onlyCreated = false;
+                    let updt = typeof e.update === "undefined" ? 0 : e.update.seconds
+                    let del = typeof e.delete === "undefined" ? 0 : e.delete.seconds
+                    let create = typeof e.create === "undefined" ? 0 : e.create.seconds
+
+                    let t = Math.max(updt, del, create)
+
+                    switch (t) {
+                        case updt:
+                            edits[e.addr].last = "update";
+                            break
+                        case del:
+                            edits[e.addr].last = "delete";
+                            break
+                        case create:
+                        default:
+                            edits[e.addr].last = "create";
+                            break
+                    }
                 }
 
                 return edits
             })
 
-            console.log(gref.id + ' ' + pref.id + " " + Object.keys(edits).length)
+            console.log(gref.id, pref.id, Object.keys(edits).length)
 
             let tname = 'tmp/' + gref.id + "-" + pref.id + ".txt"
             let tf = bucket.file(tname)
@@ -270,15 +332,6 @@ exports.updateDARC = functions.https.onCall(async (data, context) => {
             if (exists) {
                 let ds = df.createReadStream()
 
-                if (onlyCreated) {
-                    console.log("append", dname)
-                    ds.pipe(ts, {
-                        end: false
-                    })
-                    appendEdits(ts, edits)
-                } else {
-                    console.log("exists", dname)
-
                     let rd = readline.createInterface({
                         input: ds
                     })
@@ -288,13 +341,14 @@ exports.updateDARC = functions.https.onCall(async (data, context) => {
 
                         if (typeof edits[addr] !== "undefined") {
                             let e = edits[addr]
-                            if (e.edit === "update") {
-                                console.log("update", e.bhaddr)
+                            if (edits[addr].last === "delete")
+                                console.log("delete", e.galaxy, e.platform, e.addr)
+                            else {
+                                console.log("update", e.galaxy, e.platform, e.addr)
                                 let out = stringify(e)
                                 if (out)
                                     ts.write(out)
-                            } else
-                                console.log("delete", e.bhaddr)
+                            }
 
                             e.ref.delete()
                             delete edits[addr]
@@ -307,14 +361,10 @@ exports.updateDARC = functions.https.onCall(async (data, context) => {
                         appendEdits(ts, edits)
                     })
                 }
-            } else {
-                console.log("!exists", dname)
-                appendEdits(ts, edits)
-            }
 
             p.push(new Promise((resolve, reject) => {
                 ts.on('finish', () => {
-                    console.log("finish", tname)
+                    console.log(dname, "finished")
                     tf.move(dname).then(() => {
                         resolve()
                     }).catch(err => {
@@ -334,17 +384,18 @@ exports.updateDARC = functions.https.onCall(async (data, context) => {
             err: err
         }
     })
-})
+}
 
 function appendEdits(ts, edits) {
     for (let l of Object.keys(edits)) {
         let e = edits[l]
-        console.log("add " + e.addr)
+        console.log("add", e.galaxy, e.platform, e.addr)
         let out = stringify(e)
         if (out)
             ts.write(out)
         e.ref.delete()
     }
+
     ts.end()
 }
 
@@ -356,11 +407,12 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
         if (e.blackhole || e.deadzone) {
             let t = incTotals(e, 1)
             p.push(applyAllTotals(t))
-            e = await checkOldEntry(e, doc.ref)
-        }
 
-        console.log("create " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-        p.push(saveChange(e, "create"))
+            e = await checkOldEntry(e, doc.ref)
+
+            console.log("create " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+            p.push(saveChange(e, "create"))
+        }
 
         p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
             update: e.modded
@@ -372,18 +424,29 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
     })
 
 exports.systemUpdate = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
-    .onUpdate((change, context) => {
+    .onUpdate(async (change, context) => {
+        var deepEqual = require('deep-equal')
+
         let p = []
-        const e = change.after.data()
+        let e = change.after.data()
+        delete e.modded
+        let b = change.before.data()
+        delete b.modded
 
-        p.push(saveChange(e, "update"))
-        console.log("update " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+        if (!deepEqual(e, b)) {
+            if (e.blackhole || e.deadzone) {
+                e = await checkOldEntry(e, change.after.ref)
 
-        p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
-            update: e.modded
-        }, {
-            merge: true
-        }))
+                console.log("update " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+                p.push(saveChange(e, "update"))
+            }
+
+            p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
+                update: e.modded
+            }, {
+                merge: true
+            }))
+        }
 
         return Promise.all(p)
     })
@@ -396,10 +459,10 @@ exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/
         if (e.blackhole || e.deadzone) {
             let t = incTotals(e, -1)
             p.push(applyAllTotals(t))
-        }
 
-        console.log("delete " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-        p.push(saveChange(e, "delete"))
+            console.log("delete " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+            p.push(saveChange(e, "delete"))
+        }
 
         p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
             update: admin.firestore.FieldValue.serverTimestamp()

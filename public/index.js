@@ -340,6 +340,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
         entry.uid = bhs.user.uid;
         entry.platform = bhs.user.platform;
         entry.galaxy = bhs.user.galaxy;
+        entry.version = typeof bhs.user.version !== "undefined" && bhs.user.version ? bhs.user.version : "next";
     }
 
     if (lastentry) {
@@ -424,11 +425,12 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
 
 blackHoleSuns.prototype.save = async function () {
     $("#status").empty();
+    let ok = true
 
     if (!bhs.admin)
-        bhs.saveUser();
+        ok = bhs.saveUser();
 
-    if (await bhs.extractEntry(pnlTop))
+    if (ok && await bhs.extractEntry(pnlTop))
         bhs.clearPanels();
 }
 

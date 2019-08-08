@@ -13,6 +13,7 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
                 <div id="id-Player" class="col-4 text-center"></div>
                 <div id="id-Platform" class="col-4 text-center"></div>
                 <div id="id-Galaxy" class="col-4 text-center"></div>
+                <div id="id-Version" class="col-4 text-center hidden"></div>
             </div>
         <br>`;
 
@@ -28,6 +29,7 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
     bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select);
     bhs.buildMenu(loc, "Platform", platformList, bhs.select);
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.select);
+    bhs.buildMenu(loc, "Version", versionList, bhs.select);
 }
 
 blackHoleSuns.prototype.select = function () {
@@ -36,7 +38,8 @@ blackHoleSuns.prototype.select = function () {
     let uid = i != -1 ? bhs.usersList[i].uid : null;
     let galaxy = $("#btn-Galaxy").text().stripNumber();
     let platform = $("#btn-Platform").text().stripNumber();
-    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, uid, galaxy, platform);
+    let version = $("#btn-Version").text().stripNumber();
+    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, uid, galaxy, platform, version);
 }
 
 blackHoleSuns.prototype.buildSearchPanel = function () {
@@ -87,10 +90,11 @@ blackHoleSuns.prototype.doSearch = function (type, s1, s2) {
     let list = Object.keys(bhs.entries);
     for (let i = 0; i < list.length; ++i) {
         let e = bhs.entries[list[i]];
+        if (e.blackhole)
         if (type == "created") {
-            if (e.bh && e.bh[type].seconds > s1 && e.bh[type].seconds < s2)
+            if (e[type].seconds > s1 && e[type].seconds < s2)
                 found[list[i]] = e;
-        } else if (e.bh && e.bh[type] == s1 || e.exit && e.exit[type] == s1)
+        } else if (e[type] == s1 || e.x[type] == s1)
             found[list[i]] = e;
     }
 

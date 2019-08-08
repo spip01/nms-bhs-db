@@ -133,7 +133,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
         $("#username").text(userName);
 
         bhs.navLoggedin();
-    
+
         // let ref = bhs.fs.collection("users").where("_name","==","wasim13dark");
         // ref.get().then(function(snapshot){
         //     if (!snapshot.empty)
@@ -155,17 +155,17 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
                 bhs.updateUser(user, true);
             }
 
-           bhs.doLoggedin(user);
+            bhs.doLoggedin(user);
 
             // if (document.domain == "localhost") {
-                // var t = firebase.functions().httpsCallable('getDARC');
-                // t()
-                // .then(function (result) {
-                //     console.log(result.data);
-                // })
-                // .catch(function (err) {
-                //     console.log(err);
-                // });
+            // var t = firebase.functions().httpsCallable('getDARC');
+            // t()
+            // .then(function (result) {
+            //     console.log(result.data);
+            // })
+            // .catch(function (err) {
+            //     console.log(err);
+            // });
             // }
         });
     } else {
@@ -202,8 +202,8 @@ blackHoleSuns.prototype.navLoggedin = function () {
 blackHoleSuns.prototype.navLoggedout = function () {
     $("#loggedout").show();
     $("#loggedin").hide();
-     $("#login").show();
-   $("#usermenu").hide();
+    $("#login").show();
+    $("#usermenu").hide();
 }
 
 blackHoleSuns.prototype.updateUser = function (user, ifnew) {
@@ -330,7 +330,6 @@ blackHoleSuns.prototype.getEntryByConnection = function (addr, displayfcn, idx) 
 
 blackHoleSuns.prototype.updateEntry = async function (entry, admin) {
     entry.modded = firebase.firestore.Timestamp.now();
-    entry.version = "next";
 
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr);
     await ref.get().then(async function (doc) {
@@ -340,7 +339,7 @@ blackHoleSuns.prototype.updateEntry = async function (entry, admin) {
                 bhs.status(entry.addr + " can only be edited by " + existing._name, 1);
                 return;
             }
-            
+
             entry = mergeObjects(existing, entry);
         } else
             entry.created = entry.modded;
@@ -354,7 +353,6 @@ blackHoleSuns.prototype.updateEntry = async function (entry, admin) {
 
 blackHoleSuns.prototype.updateBase = function (entry) {
     entry.time = firebase.firestore.Timestamp.now();
-    entry.version = "next";
     entry.xyzs = bhs.addressToXYZ(entry.addr);
 
     let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr);
@@ -699,9 +697,9 @@ blackHoleSuns.prototype.testing = async function () {
 //                         if (r > 7500 && r < max && Math.abs(x - c) > 2000) {
 //                             console.log(e.addr)
 //                             list[e.connection] = {}
-//                             list[e.connection].bh = e
-//                             list[e.connection].bh.calc = c
-//                             list[e.connection].bh.actual = x
+//                            *** list[e.connection].bh = e
+//                            *** list[e.connection].bh.calc = c
+//                            *** list[e.connection].bh.actual = x
 
 //                             let ref = bhs.getStarsColRef("Euclid", "PC-XBox", e.connection);
 //                             await ref.get().then(doc => {
@@ -754,13 +752,17 @@ function addObjects(o, n) {
     return o;
 }
 
-blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, uid, galaxy, platform) {
+blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, uid, galaxy, platform, version) {
     galaxy = galaxy ? galaxy : bhs.user.galaxy;
     platform = platform ? platform : bhs.user.platform;
     let complete = false;
 
     let ifindex = window.location.pathname == "/index.html" || window.location.pathname == "/";
     let ref = bhs.getStarsColRef(galaxy, platform);
+
+    if (bhs.user.version || version)
+        ref = ref.where("version", "==", version ? version : bhs.user.version);
+
     if (uid || ifindex) {
         ref = ref.where("uid", "==", uid ? uid : bhs.user.uid);
     } else
@@ -1019,6 +1021,11 @@ blackHoleSuns.prototype.validateUser = function (user) {
         bhs.status("Error: Missing platform. Changes not saved.", 0);
         ok = false;
     }
+
+    // if (ok && !user.version) {
+    //     bhs.status("Error: Missing Version. Changes not saved.", 0);
+    //     ok = false;
+    // }
 
     return ok;
 }
@@ -1418,6 +1425,12 @@ const platformList = [{
 }, {
     name: "PS4",
     match: /ps4/i
+}];
+
+const versionList = [{
+    name: "next",
+}, {
+    name: "Beyond",
 }];
 
 const modeList = [{

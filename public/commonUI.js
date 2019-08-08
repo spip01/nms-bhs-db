@@ -84,6 +84,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     pnl.find("#id-Player").val(bhs.user._name);
     pnl.find("#btn-Platform").text(bhs.user.platform);
     pnl.find("#btn-Organization").text(bhs.user.org);
+    pnl.find("#btn-Version").text(typeof bhs.user.version === "undefined" ? bhs.user.version : "");
 
     if (bhs.user.galaxy) {
         let i = galaxyList[bhs.getIndex(galaxyList, "name", bhs.user.galaxy)].number;
@@ -107,17 +108,20 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
 
                 <div class="col-7">
                     <div class="row">
-                        <div id="id-Platform" class="col-7"></div>
-                        <div id="id-Galaxy" class="col-7"></div>
+                        <div id="id-Organization"></div>
                     </div>
                 </div>
             </div>
 
             <div class="row">
-                <div id="id-Organization" class="col-md-7 col-14"></div>
-                <label class="col-md-3 col-7 h5 text-right align-bottom">
-                    File Upload&nbsp;
+                <div class="col-1"></div>
+                <div id="id-Platform" class="col-3"></div>
+                <div id="id-Galaxy" class="col-3"></div>
+                <div id="id-Version" class="col-3 hidden"></div>
+
+                <label class="col-4 h5 text-right align-bottom">
                     <input id="ck-fileupload" type="checkbox">
+                    &nbsp;File Upload
                 </label>
             </div>
         </div>
@@ -132,7 +136,8 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
         name: ""
     });
 
-    bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser);
+    bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser, true);
+    bhs.buildMenu(loc, "Version", versionList, bhs.saveUser, true);
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, true);
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, true);
 
@@ -404,7 +409,7 @@ blackHoleSuns.prototype.entriesToCsv = function () {
         let loc = list[i];
         let addr = /-/g [Symbol.replace]($(loc).prop("id"), ":");
         let e = bhs.entries[addr];
-        if (e.bh && e.x) {
+        if (e.blackhole) {
             out += e.addr + "," + e.sys + "," + e.reg + "," + e.life + "," + e.econ + ",";
             out += e.x.addr + "," + e.x.sys + "," + e.x.reg + "," + e.x.life + "," + e.x.econ + "\n";
         }
@@ -930,10 +935,9 @@ blackHoleSuns.prototype.saveUser = function () {
     let user = bhs.extractUser();
     let ok;
 
-    if ((ok = bhs.validateUser(user))) {
+    if ((ok = bhs.validateUser(user))) 
         bhs.updateUser(user);
-        bhs.displayUser(user);
-    }
+
     return ok;
 }
 
@@ -945,6 +949,7 @@ blackHoleSuns.prototype.extractUser = function () {
     u.platform = loc.find("#btn-Platform").text().stripNumber();
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber();
     u.org = loc.find("#btn-Organization").text().stripNumber();
+    u.version = loc.find("#btn-Version").text().stripNumber();
 
     return u;
 }
@@ -1524,7 +1529,7 @@ blackHoleSuns.prototype.findClose = function (opt, xyz, up) {
     for (let i = 0; i < list.length; ++i) {
         let e = bhs.entries[list[i]];
 
-        if (e.bh && e.x) {
+        if (e.blackhole) {
             if (!up && Math.abs(e.xyzs.x - xyz.x) <= opt.chainradius && Math.abs(e.xyzs.y - xyz.y) <= opt.chainradius && Math.abs(e.xyzs.z - xyz.z) <= opt.chainradius)
                 out[list[i]] = e;
             if (up && Math.abs(e.x.xyzs.x - xyz.x) <= opt.chainradius && Math.abs(e.x.xyzs.y - xyz.y) <= opt.chainradius && Math.abs(e.x.xyzs.z - xyz.z) <= opt.chainradius)
