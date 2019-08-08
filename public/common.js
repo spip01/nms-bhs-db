@@ -1,18 +1,7 @@
 'use strict';
 
 var bhs;
-/*
-ui.start('#firebaseui-auth-container', {
-    signInOptions: [
-        // List of OAuth providers supported.
-        firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-        firebase.auth.EmailAuthProvider.PROVIDER_ID,
-        //firebase.auth.FacebookAuthProvider.PROVIDER_ID,
-        //firebase.auth.TwitterAuthProvider.PROVIDER_ID,
-        firebase.auth.GithubAuthProvider.PROVIDER_ID
-    ],
-});
-*/
+
 const fbconfig = {
     apiKey: FIREBASE_API,
     authDomain: "nms-bhs.firebaseapp.com",
