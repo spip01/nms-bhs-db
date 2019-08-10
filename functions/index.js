@@ -494,7 +494,7 @@ exports.backupBHS = functions.https.onCall((data, context) => {
             let s5 = doc.data()
 
             let s6ref = admin.firestore().collection("stars6").doc(gdoc.id)
-            let s6 = s6ref.get().then(doc => {
+            let s6 = await s6ref.get().then(doc => {
                 return doc.exists ? doc.data() : null
             })
 

@@ -136,9 +136,11 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
         ref.get().then(function (doc) {
             if (doc.exists) {
                 user = doc.data()
+                user.displayName = userName
                 user.lasttime = firebase.firestore.Timestamp.now()
                 bhs.updateUser(user)
             } else {
+                user.displayName = userName
                 user.firsttime = firebase.firestore.Timestamp.now()
                 user.lasttime = user.firsttime
                 bhs.updateUser(user, true)
