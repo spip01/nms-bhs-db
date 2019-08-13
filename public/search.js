@@ -1,6 +1,6 @@
 'use strict'
 
-$(document).ready(function () {
+$(document).ready(() => {
     startUp()
     bhs.buildSelectPanel()
     bhs.buildSearchPanel()
@@ -44,10 +44,7 @@ blackHoleSuns.prototype.select = function () {
 
 blackHoleSuns.prototype.buildSearchPanel = function () {
     let loc = $("#searchpnl")
-    //bhs.buildMenu(loc, "Lifeform", lifeformList)
-    //bhs.buildMenu(loc, "Economy", economyList)
-
-    loc.find("#btn-search").click(function () {
+    loc.find("#btn-search").click(() => {
         bhs.search()
     })
 }
@@ -59,8 +56,6 @@ blackHoleSuns.prototype.search = function () {
     let reg = loc.find("#id-reg").val()
     let start = loc.find("#id-start").val()
     let end = loc.find("#id-end").val()
-    // let life = loc.find("#btn-Lifeform").text().stripNumber()
-    // let econ = loc.find("#btn-Economy").text().stripNumber()
 
     if (addr != "") {
         addr = bhs.reformatAddress(addr)
@@ -76,25 +71,21 @@ blackHoleSuns.prototype.search = function () {
 
         bhs.doSearch("created", start, end)
     }
-    // else if (life != "")
-    //     bhs.doSearch("life", life)
-    // else if (econ != "")
-    //     bhs.doSearch("econ", econ)
 }
 
 blackHoleSuns.prototype.doSearch = function (type, s1, s2) {
     let found = {}
     if (!bhs.entries)
         bhs.select()
-        
+
     let list = Object.keys(bhs.entries)
     for (let i = 0; i < list.length; ++i) {
         let e = bhs.entries[list[i]]
         if (e.blackhole)
-        if (type == "created") {
-            if (e[type].seconds > s1 && e[type].seconds < s2)
-                found[list[i]] = e
-        } else if (e[type] == s1 || e.x[type] == s1)
+            if (type == "created") {
+                if (e[type].seconds > s1 && e[type].seconds < s2)
+                    found[list[i]] = e
+            } else if (e[type] == s1 || e.x[type] == s1)
             found[list[i]] = e
     }
 

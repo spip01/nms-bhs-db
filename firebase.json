@@ -18,9 +18,7 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**",
-      "**/admin.*",
-      "**/poiorg.*"
+      "**/node_modules/**"
     ]
   }, {
     "target": "test",

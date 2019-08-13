@@ -7,8 +7,8 @@ admin.initializeApp({
 
 function main(next) {
     admin.auth().listUsers(1000, next)
-        .then(function (list) {
-            list.users.forEach(function (user) {
+        .then(list => {
+            list.users.forEach(user => {
                 if (typeof user.email === "undefined") {
                     admin.auth().deleteUser(user.uid)
                     console.log(user.uid)
@@ -19,7 +19,7 @@ function main(next) {
                 listAllUsers(list.pageToken);
             }
         })
-        .catch(function (error) {
+        .catch(error => {
             console.log('Error listing users:', error);
         })
 }

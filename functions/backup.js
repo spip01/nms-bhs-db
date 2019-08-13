@@ -21,7 +21,7 @@ function main() {
 
             ref.listCollections().then(refs => {
                 refs.forEach(ref => {
-                    if (typeof g.backup != "undefined")
+                    if (typeof g.backup !== "undefined")
                         ref.where("modded", ">", g.backup)
 
                     ref.get().then(snapshot => {

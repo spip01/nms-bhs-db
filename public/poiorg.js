@@ -232,7 +232,8 @@ blackHoleSuns.prototype.save = function (evt) {
         e.galaxy = pnl.find("#btn-Galaxy").text().stripNumber()
         e.mode = pnl.find("#btn-Mode").text().stripMarginWS()
         e.platform = pnl.find("#btn-Platform").text().stripMarginWS()
-        if (e.platform == "") delete e.platform
+        if (e.platform == "")
+            delete e.platform
         e["PC-XBox"] = pnl.find("#ck-pc-xbox").prop("checked")
         e["PS4"] = pnl.find("#ck-ps4").prop("checked")
         e["hide"] = pnl.find("#ck-hide").prop("checked")

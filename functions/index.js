@@ -10,7 +10,7 @@ admin.initializeApp({
 })
 
 
- /**************************
+/**************************
 https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Bad%20Wolf&g=Calypso&p=PC-XBox
 https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Euclid&p=PC-XBox
 https://us-central1-nms-bhs.cloudfunctions.net/getGPList
@@ -332,35 +332,35 @@ async function doUpdateDARC() {
             if (exists) {
                 let ds = df.createReadStream()
 
-                    let rd = readline.createInterface({
-                        input: ds
-                    })
+                let rd = readline.createInterface({
+                    input: ds
+                })
 
-                    rd.on("line", line => {
-                        let addr = line.replace(/.*?((?:[0-9A-F]{4}:){3}[0-9A-F]{4}).*/, "$1")
+                rd.on("line", line => {
+                    let addr = line.replace(/.*?((?:[0-9A-F]{4}:){3}[0-9A-F]{4}).*/, "$1")
 
-                        if (typeof edits[addr] !== "undefined") {
-                            let e = edits[addr]
-                            if (edits[addr].last === "delete")
-                                console.log("delete", e.galaxy, e.platform, e.addr)
-                            else {
-                                console.log("update", e.galaxy, e.platform, e.addr)
-                                let out = stringify(e)
-                                if (out)
-                                    ts.write(out)
-                            }
+                    if (typeof edits[addr] !== "undefined") {
+                        let e = edits[addr]
+                        if (edits[addr].last === "delete")
+                            console.log("delete", e.galaxy, e.platform, e.addr)
+                        else {
+                            console.log("update", e.galaxy, e.platform, e.addr)
+                            let out = stringify(e)
+                            if (out)
+                                ts.write(out)
+                        }
 
-                            e.ref.delete()
-                            delete edits[addr]
-                        } else
-                            ts.write(line + "\n")
-                    })
+                        e.ref.delete()
+                        delete edits[addr]
+                    } else
+                        ts.write(line + "\n")
+                })
 
-                    rd.on("close", () => {
-                        console.log(dname, "close")
-                        appendEdits(ts, edits)
-                    })
-                }
+                rd.on("close", () => {
+                    console.log(dname, "close")
+                    appendEdits(ts, edits)
+                })
+            }
 
             p.push(new Promise((resolve, reject) => {
                 ts.on('finish', () => {
@@ -403,6 +403,13 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
     .onCreate(async (doc, context) => {
         let p = []
         let e = doc.data()
+
+        if (typeof e.created === "undefined") {
+            e.created = e.modded
+            doc.ref.set(e, {
+                modded: true
+            })
+        }
 
         if (e.blackhole || e.deadzone) {
             let t = incTotals(e, 1)

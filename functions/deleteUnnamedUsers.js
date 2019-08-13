@@ -24,7 +24,7 @@ function main(next) {
                 main(list.pageToken);
             }
         })
-        .catch(function (error) {
+        .catch(error => {
             console.log('Error listing users:', error);
         })
 }
