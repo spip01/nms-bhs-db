@@ -18,7 +18,6 @@ blackHoleSuns.prototype.buildFilePanel = function () {
                     <input type="file" id="uploadedFile" class="form-control form-control-sm" accept=".csv">
                 </div>
                 <button id="fbtn-check" type="button" class="col-2 btn btn-sm btn-def">Check</button>&nbsp
-                <button id="fbtn-compare" type="button" class="col-2 btn btn-sm btn-def">Compare</button>&nbsp
                 <button id="fbtn-submit" type="button" class="col-2 btn btn-sm btn-def">Submit</button>&nbsp
             </div>
             <br>
@@ -35,16 +34,10 @@ blackHoleSuns.prototype.buildFilePanel = function () {
                     <input id="ck-verbose" type="checkbox">
                     Verbose
                 </label>
-                <label class="col-7 h6 txt-inp-def">
-                    <input id="ck-vverbose" type="checkbox">
-                    Very Verbose
-                </label>
             </div>
 
             <div id="filestatus" class="card card-body text-danger scrollbar container-fluid" style="overflow-y: scroll; height:100px"></div>
-            <br>
-            <div id="filelist" class="card card-body scrollbar container-fluid" style="overflow-y: scroll; height:100px; display:none"></div>
-            </div>
+        </div>
     </div>`
 
     $("#panels").append(panel)
@@ -64,42 +57,6 @@ blackHoleSuns.prototype.buildFilePanel = function () {
     $("#uploadedFile").change(function () {
         bhs.fileSelected = this
     })
-
-    // if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com")
-    //     $("#filelist").show()
-}
-
-blackHoleSuns.prototype.buildFileList = function () {
-    if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
-        const file = `
-        <div class="row border-bottom">
-        <div class="col-14">fname</div>
-        <div class="col-3">galaxy</div>
-        <div class="col-3">platform</div>
-        <div class="col-4">date</div>
-        <a id="id-idname" class="btn-def btn btn-sm col-2" download="fname" href="">Download</a>
-        </div>`
-
-        let ref = bhs.fs.collection("upload")
-        ref = ref.where("_player", "==", bhs.user._name)
-        ref.get().then(function (snapshot) {
-            for (let i = 0; i < snapshot.size; ++i) {
-                let d = snapshot.docs[i].data()
-                let h = /fname/g [Symbol.replace](file, d._name)
-                h = /galaxy/ [Symbol.replace](h, d._galaxy)
-                h = /platform/ [Symbol.replace](h, d._platform)
-                h = /date/ [Symbol.replace](h, d._time.toDate().toDateLocalTimeString())
-                h = /idname/ [Symbol.replace](h, d._name.nameToId() + d._time.seconds)
-                $("#filelist").append(h)
-
-                var data = new Blob([d.contents], {
-                    type: 'text/csv'
-                })
-                var url = window.URL.createObjectURL(data)
-                document.getElementById('id-' + d._name.nameToId() + d._time.seconds).href = url
-            }
-        })
-    }
 }
 
 const inpCoordIdx = 5
@@ -225,6 +182,10 @@ Edit
 Delete
 */
 
+var batch
+var count = 0
+var log = {}
+
 blackHoleSuns.prototype.readTextFile = function (f, id) {
     let file = f.files[0]
     let reader = new FileReader()
@@ -232,33 +193,22 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
     $("#status").empty()
     $("#filestatus").empty()
 
-    let check = id == "fbtn-check" || id == "fbtn-compare"
-    let compare = id == "fbtn-compare"
+    let check = id == "fbtn-check"
 
     reader.onload = async function () {
-        let ext = file.name.replace(/.*(\..*)$/, "$1")
-        let name = "fileupload/" + uuidv4() + ext
-
-        let log = {
-            player: bhs.user._name,
-            galaxy: bhs.user.galaxy,
-            platform: bhs.user.platform,
-            time: firebase.firestore.Timestamp.now(),
-            upload: file.name,
-            file: name,
-        }
-
-        if (!check) {
-            bhs.fbstorage.ref().child(name).put(file)
-            let ref = bhs.fs.collection("upload")
-            ref.add(log)
-        }
-
-        let b = {}
-        b.batch = bhs.fs.batch()
-        b.batchcount = 0
-
+        log._name = bhs.user._name
+        log.galaxy = bhs.user.galaxy
+        log.platform = bhs.user.platform
+        log.time = firebase.firestore.Timestamp.now()
+        log.file = file.name
+        log.path = "fileupload/" + uuidv4() + file.name.replace(/.*(\..*)$/, "$1")
         log.log = ""
+
+        if (!check)
+            bhs.fbstorage.ref().child(log.path).put(file)
+
+        batch = bhs.fs.batch()
+        count = 0
 
         let allrows = reader.result.split(/\r?\n|\r/)
 
@@ -294,16 +244,15 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
         }
 
         if (!found) {
-            log.log = bhs.filestatus("Missing required column labels.", 0, log.log)
-            await bhs.fBatchWriteLog(b, log.log, check)
-            if (!check)
-                await bhs.fCheckBatchSize(b, true)
+            bhs.filestatus("Missing required column labels.", 0)
+            await bhs.fWriteLog(check)
             return
         }
 
         var entry = []
+        let ok = true
 
-        for (let ok = true, i = k; i < allrows.length && ok; ++i, ok = true) {
+        for (let i = k; i < allrows.length && ok; ++i, ok = true) {
             entry[1] = {}
             entry[2] = {}
 
@@ -313,9 +262,9 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
             entry[0].uid = bhs.user.uid
             entry[0].galaxy = bhs.user.galaxy
             entry[0].platform = bhs.user.platform
-            entry[0].type = "x"
-            entry[0].owned = "x"
-            entry[0].version = "next"
+            entry[0].type = ""
+            entry[0].owned = "mine"
+            entry[0].version = bhs.user.version
             if (bhs.contest)
                 entry[0].contest = bhs.contest.name
 
@@ -336,8 +285,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                         let val = importTable[j].checkval
                         if (importTable[j].required || importTable[j].checkreq &&
                             importTable[j].checkreq(entry[importTable[grp].group][importTable[val].field])) {
-                            log.log = bhs.filestatus("row: " + (i + 1) + " missing " + importTable[j].match, 0, log.log)
-                            log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log)
+                            bhs.filestatus("row: " + (i + 1) + " missing " + importTable[j].match, 0)
                             ok = false
                         }
                     } else {
@@ -352,141 +300,79 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
 
                         if (!ok) {
                             let s = importTable[j].group == 1 ? "bh " : importTable[j].group == 2 ? "exit " : ""
-                            log.log = bhs.filestatus("row: " + (i + 1) + " invalid value " + s + importTable[j].match + " " + entry[importTable[j].group][importTable[j].field], 0, log.log)
-                            log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log)
+                            bhs.filestatus("row: " + (i + 1) + " invalid value " + s + importTable[j].match + " " + entry[importTable[j].group][importTable[j].field], 0)
                         }
                     }
                 }
             }
 
             if (ok) {
-                if (compare) {
-                    if (entry[0].type.match(/base/i) || entry[2].addr == "0000:0000:0000:0000") {
-                        let ref = bhs.getStarsColRef(entry[0].galaxy, entry[0].platform, entry[1].addr)
-                        await ref.get().then(function (doc) {
-                            if (!doc.exists)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " base system not found", 0, log.log)
-                            else if (doc.data().uid != entry[0].uid)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log)
-                        })
-                        ref = bhs.getUsersColRef(entry[0].uid, entry[0].galaxy, entry[0].platform, entry[1].addr)
-                        await ref.get().then(function (doc) {
-                            if (!doc.exists)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " base not found", 0, log.log)
-                            else if (doc.data().uid != entry[0].uid)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log)
-                        })
-                    } else if (entry[0].type.match(/single/i) || !entry[2].addr) {
-                        let ref = bhs.getStarsColRef(entry[0].galaxy, entry[0].platform, entry[1].addr)
-                        await ref.get().then(function (doc) {
-                            if (!doc.exists)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " single system not found", 0, log.log)
-                            else if (doc.data().uid != entry[0].uid)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log)
-                        })
+                entry[1] = mergeObjects(entry[1], entry[0])
+                entry[2] = mergeObjects(entry[2], entry[0])
+
+                if (entry[0].type.match(/edit/i)) {
+                    bhs.filestatus("row: " + (i + 1) + " editing disabled.", 0)
+                    //     if (typeof entry[2].addr === "undefined")
+                    //         bhs.filestatus("row: " + (i + 1) + " no edit address.", 0)
+                    //     else
+                    //         ok = await bhs.fBatchEdit(entry[1], entry[2].addr, check)
+                    // xxx save both
+                } else if (entry[0].type.match(/delete base/i))
+                    ok = await bhs.fBatchDeleteBase(entry[1], check)
+
+                else if (entry[0].type.match(/delete/i))
+                    ok = await bhs.fBatchDelete(entry[1], check)
+
+                else if (entry[0].type.match(/base/i) || entry[2].addr == "0000:0000:0000:0000") {
+                    let basename = entry[2].sys ? entry[2].sys : entry[2].reg
+                    if (!basename) {
+                        bhs.filestatus("row: " + (i + 1) + " Base name required.", 0)
                     } else {
-                        let ref = bhs.getStarsColRef(entry[0].galaxy, entry[0].platform, entry[1].addr)
-                        await ref.get().then(function (doc) {
-                            if (!doc.exists)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " black hole system not found", 0, log.log)
-                            else if (doc.data().uid != entry[0].uid)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log)
-                        })
-                        ref = bhs.getStarsColRef(entry[0].galaxy, entry[0].platform, entry[2].addr)
-                        await ref.get().then(function (doc) {
-                            if (!doc.exists)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[2].addr + " exit system not found", 0, log.log)
-                            else if (doc.data().uid != entry[0].uid)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " addr " + entry[1].addr + " creator " + doc.data()._name + " != current player " + entry[0]._name, 0, log.log)
-                        })
-                    }
-                } else {
-
-                    entry[1] = mergeObjects(entry[1], entry[0])
-                    entry[2] = mergeObjects(entry[2], entry[0])
-
-                    entry[1].dist = bhs.calcDist(entry[1].addr)
-                    entry[2].dist = bhs.calcDist(entry[2].addr)
-
-                    if (entry[0].type.match(/edit/i))
-                        await bhs.fBatchEdit(b, entry[1], entry[2].addr ? entry[2].addr : null, check)
-
-                    else if (entry[0].type.match(/delete base/i))
-                        await bhs.fBatchDeleteBase(b, entry[1], check)
-
-                    else if (entry[0].type.match(/delete/i))
-                        await bhs.fBatchDelete(b, entry[1], check)
-
-                    else if (entry[0].type.match(/base/i) || entry[2].addr == "0000:0000:0000:0000") {
-                        let base = entry[2].sys ? entry[2].sys : entry[2].reg
                         entry[2] = {}
-                        if (!base) {
-                            log.log = bhs.filestatus("row: " + (i + 1) + " empty base name.", 0, log.log)
-                            log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log)
-                        } else {
-                            entry[2].basename = base
-                            entry[2].addr = entry[1].addr
+                        entry[2].basename = basename
 
-                            if (entry[0].type.match(/visit/i))
-                                entry[2].owned = "visited"
-                            else if (entry[0].type.match(/station/i))
-                                entry[2].owned = "station"
-                            else
-                                entry[2].owned = "mine"
+                        if (entry[0].type.match(/v.*/i))
+                            entry[2].owned = "visited"
+                        else if (entry[0].type.match(/s.*/i))
+                            entry[2].owned = "station"
+                        else
+                            entry[2].owned = "mine"
 
-                            entry[2] = mergeObjects(entry[2], entry[0])
-                            entry[2] = mergeObjects(entry[2], entry[1])
-                            await bhs.fBatchWriteBase(b, entry[2], check)
-                            await bhs.fBatchUpdate(b, entry[1], check); // don't overwrite bh info if it exists
-                        }
-                    } else if (entry[0].type.match(/single/i) || !entry[2].addr) {
-                        await bhs.fBatchUpdate(b, entry[1], check); // don't overwrite bh info if it exists
-
-                    } else {
-                        entry[1].deadzone = entry[0].type.match(/dead|dz/i) || entry[2].addr == entry[1].addr
-                        entry[1].blackhole = !entry[1].deadzone
-
-                        let str = ""
-                        if ((str = validateBHAddress(entry[1].addr))) {
-                            log.log = bhs.filestatus("row: " + (i + 1) + " invalid black hole address (" + str + ") " + entry[1].addr, 0, log.log)
-                            log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log)
-                            ok = false
-                        }
-
-                        if (ok && !entry[1].deadzone) {
-                            entry[1].connection = entry[2].addr
-                            entry[1].x = {}
-                            entry[1].x.addr = entry[2].addr
-                            entry[1].x.dist = bhs.calcDist(entry[2].addr)
-                            entry[1].x.sys = entry[2].sys
-                            entry[1].x.reg = entry[2].reg
-                            entry[1].x.life = typeof entry[2].life !== "undefined" ? entry[2].life : ""
-                            entry[1].x.econ =typeof entry[2].econ !== "undefined"  ? entry[2].econ : ""
-
-                            entry[1].towardsCtr = entry[1].dist - entry[2].dist
-                            if ((str = validateExitAddress(entry[2].addr))) {
-                                log.log = bhs.filestatus("row: " + (i + 1) + " invalid exit address (" + str + ") " + entry[1].addr, 0, log.log)
-                                log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log)
-                                ok = false
-                            }
-                        }
-
-                        if (ok && !(ok = bhs.validateDist(entry[1], "row: " + (i + 1) + " ", 0, log.log)))
-                            log.log = bhs.filestatus("row: " + (i + 1) + " " + allrows[i], 2, log.log)
-
-                        if (ok) {
-                            await bhs.fBatchUpdate(b, entry[1], check); // don't overwrite existing base or creation dates
-                            if (entry[1].blackhole)
-                                await bhs.fBatchUpdate(b, entry[2], check)
-                        }
+                        entry[2] = mergeObjects(entry[2], entry[0])
+                        entry[2] = mergeObjects(entry[2], entry[1])
+                        ok = await bhs.fBatchUpdate(entry[2], null, check, i);
                     }
+                } else if (entry[0].type.match(/single/i) || !entry[2].addr) {
+                    ok = await bhs.fBatchUpdate(entry[1], null, check, i);
+
+                } else {
+                    entry[1].deadzone = entry[0].type.match(/dead|dz/i) || entry[2].addr == entry[1].addr
+                    entry[1].blackhole = !entry[1].deadzone
+
+                    let str = validateBHAddress(entry[1].addr)
+                    if (str != "") {
+                        bhs.filestatus("row: " + (i + 1) + " invalid black hole address (" + str + ") " + entry[1].addr, 0)
+                        ok = false
+                    }
+
+                    if (ok && !entry[1].deadzone && (str = validateExitAddress(entry[2].addr)) != "") {
+                        bhs.filestatus("row: " + (i + 1) + " invalid exit address (" + str + ") " + entry[1].addr, 0)
+                        ok = false
+                    }
+
+                    let err = bhs.validateDist(entry[1])
+                    if (ok && err != "")
+                        bhs.filestatus("row: " + (i + 1) + " invalid distance (" + err + ") " + entry[1].addr, 0)
+                    else
+                        ok = await bhs.fBatchUpdate(entry[1], entry[2], check, i)
                 }
             }
         }
 
-        await bhs.fBatchWriteLog(b, log, check)
-        if (!check)
-            await bhs.fCheckBatchSize(b, true)
+        if (!check) {
+            await bhs.fWriteLog()
+            await bhs.fCheckBatchSize(true)
+        }
 
         progress.css("width", 100 + "%")
         progress.text("done")
@@ -495,147 +381,179 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
     reader.readAsText(file)
 }
 
-blackHoleSuns.prototype.fBatchWriteLog = async function (b, log, check) {
-    if (log && check) {
-        let doc = log._name + "-" + log.time.seconds + "-" + log.time.nanoseconds
-        let ref = bhs.fs.collection("log").doc(doc)
-        await b.batch.set(ref, log)
-        b = await bhs.fCheckBatchSize(b)
+blackHoleSuns.prototype.fWriteLog = async function (check) {
+    if (log.log != "" && !check)
+        bhs.fs.collection("log").add(log)
+}
+
+blackHoleSuns.prototype.fBatchUpdate = async function (entry, exit, check, i) {
+    if (check)
+        return true
+
+    let err = bhs.validateEntry(entry)
+    if (err != "") {
+        bhs.filestatus("row: " + (i + 1) + " black hole (" + err + ") " + entry.addr, 0)
+        return
     }
 
-    return b
-}
+    if (exit) {
+        let err = bhs.validateEntry(exit)
+        if (err != "") {
+            bhs.filestatus("row: " + (i + 1) + " exit (" + err + ") " + entry.addr, 0)
+            return
+        }
+    }
 
-blackHoleSuns.prototype.fBatchUpdate = async function (b, entry, check) {
     delete entry.type
     delete entry.owned
-    entry.modded = firebase.firestore.Timestamp.now()
     entry.xyzs = bhs.addressToXYZ(entry.addr)
-    if (entry.connection)
-        entry.x.xyzs = bhs.addressToXYZ(entry.connection)
+    entry.dist = bhs.calcDist(entry.addr)
 
-    let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
-    await ref.get().then(async function (doc) {
-        if (!doc.exists) {
-            entry.created = entry.modded
-            if (!check) {
-                await b.batch.set(ref, entry)
-                bhs.filestatus(entry.addr + " added", 2)
-            }
-        } else {
-            let d = doc.data()
-            if (d.uid == entry.uid) {
-                if (!check) {
-                    await b.batch.update(ref, entry)
-                    bhs.filestatus(entry.addr + " updated", 2)
-                }
-            } else
-                bhs.filestatus(entry.addr + " can only be edited by " + d._name, 1)
-        }
+    if (entry.blackhole && exit) {
+        entry.connection = exit.addr
+        exit.dist = bhs.calcDist(exit.addr)
+        entry.towardsCtr = entry.dist - exit.dist
 
-        b = await bhs.fCheckBatchSize(b)
-    })
+        entry.x = {}
+        entry.x.addr = exit.addr
+        entry.x.xyzs = bhs.addressToXYZ(exit.addr)
+        entry.x.dist = exit.dist
+        entry.x.sys = exit.sys
+        entry.x.reg = exit.reg
+        entry.x.life = typeof exit.life !== "undefined" ? exit.life : ""
+        entry.x.econ = typeof exit.econ !== "undefined" ? exit.econ : ""
+    }
 
-    return b
-}
-
-blackHoleSuns.prototype.fBatchEdit = async function (b, entry, old, check) {
-    delete entry.type
-    delete entry.owned
     entry.modded = firebase.firestore.Timestamp.now()
 
-    let addr = old ? old : entry.addr
-    let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, addr)
-    await ref.get().then(async function (doc) {
-        if (!doc.exists) {
-            bhs.filestatus(entry.addr + " doesn't exist for edit.", 1)
-        } else {
-            if (!check) {
-                if (old) {
-                    let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, addr)
-                    await ref.delete()
-                }
-
-                let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
-                await b.batch.set(ref, entry)
-
-                bhs.filestatus(entry.addr + " edited", 2)
-                b = await bhs.fCheckBatchSize(b)
-            }
-        }
-    })
-
-    return b
-}
-
-blackHoleSuns.prototype.fBatchDelete = async function (b, entry, check) {
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
-    await ref.get().then(async function (doc) {
-        if (!doc.exists)
-            bhs.filestatus(entry.addr + " doesn't exist for delete.", 0)
-        else {
-            let d = doc.data()
-            if (d.uid == entry.uid) {
-                if (!check)
-                    await ref.delete().then(function () {
-                        bhs.filestatus(entry.addr + " deleted", 2)
-                    })
-            } else
-                bhs.filestatus(entry.addr + " can only be edited by " + d._name, 1)
-        }
+    batch.set(ref, entry, {
+        merge: true
     })
+    let ok = await bhs.fCheckBatchSize()
 
-    return b
+    if (ok && entry.blackhole && exit) {
+        exit.modded = firebase.firestore.Timestamp.now()
+
+        let ref = bhs.getStarsColRef(exit.galaxy, exit.platform, exit.addr)
+        batch.set(ref, exit, {
+            merge: true
+        })
+        ok = await bhs.fCheckBatchSize()
+    }
+
+    return ok
 }
 
-blackHoleSuns.prototype.fBatchDeleteBase = async function (b, entry, check) {
+// blackHoleSuns.prototype.fBatchEdit = async function (b, entry, old, check) {
+//     delete entry.type
+//     delete entry.owned
+//     entry.modded = firebase.firestore.Timestamp.now()
+
+//     let ok = true
+
+//     if (check) {
+//         let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, old)
+//         await ref.get().then(function (doc) {
+//             if (!doc.exists)
+//                 bhs.filestatus(entry.addr + " doesn't exist for edit.", 1)
+//         }).catch(err=>{
+        //     bhs.filestatus("ERROR: "+err.code, 0)
+        //     console.log(err)
+        // })
+//     } else {
+//         let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, old)
+//         batch.delete(ref)
+//         ok = await bhs.fCheckBatchSize()
+
+//         if (ok) {
+//             let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
+//             batch.set(ref, entry)
+
+//             bhs.filestatus(entry.addr + " edited", 1)
+//             ok = await bhs.fCheckBatchSize()
+//         }
+//     }
+
+//     return ok
+// }
+
+blackHoleSuns.prototype.fBatchDelete = async function (entry, check) {
+    let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
+
+    if (check) {
+        await ref.get().then(function (doc) {
+            if (!doc.exists)
+                bhs.filestatus(entry.addr + " doesn't exist for delete.", 0)
+        }).catch(err=>{
+            bhs.filestatus("ERROR: "+err.code, 0)
+            console.log(err)
+        })
+    } else {
+        batch.delete(ref)
+        return await bhs.fCheckBatchSize()
+    }
+
+    return true
+}
+
+blackHoleSuns.prototype.fBatchDeleteBase = async function (entry, check) {
     let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr)
-    await ref.get().then(async function (doc) {
-        if (!doc.exists)
-            bhs.filestatus(entry.addr + " base doesn't exist for delete.", 0)
-        else if (!check) {
-            await ref.delete().then(function () {
-                bhs.filestatus(entry.addr + " base deleted", 2)
-            })
-        }
-    })
 
-    return b
-}
-
-blackHoleSuns.prototype.fBatchWriteBase = async function (b, entry, check) {
-    delete entry.type
-    entry.modded = firebase.firestore.Timestamp.now()
-    entry.xyzs = bhs.addressToXYZ(entry.addr)
-    if (!check) {
-        let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr)
-        await b.batch.set(ref, entry)
-        bhs.filestatus(entry.addr + " base saved.", 2)
-        b = await bhs.fCheckBatchSize(b)
+    if (check) {
+        await ref.get().then(function (doc) {
+            if (!doc.exists)
+                bhs.filestatus(entry.addr + " base doesn't exist for delete.", 0)
+        }).catch(err=>{
+            bhs.filestatus("ERROR: "+err.code, 0)
+            console.log(err)
+        })
+    } else {
+        batch.delete(ref)
+        return await bhs.fCheckBatchSize()
     }
 
-    return b
+    return true
 }
 
-blackHoleSuns.prototype.fCheckBatchSize = async function (b, flush) {
-    if (flush && b.batchcount > 0 || ++b.batchcount == 500) {
-        console.log("commit " + b.batchcount)
-        return await b.batch.commit().then(async () => {
-            b.batch = await bhs.fs.batch()
-            b.batchcount = 0
-            return b
+blackHoleSuns.prototype.fBatchWriteBase = async function (entry, check) {
+    if (!check) {
+        delete entry.type
+        entry.modded = firebase.firestore.Timestamp.now()
+        entry.xyzs = bhs.addressToXYZ(entry.addr)
+
+        let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr)
+        batch.set(ref, entry, {
+            merge: true
+        })
+        bhs.filestatus(entry.addr + " base saved.", 1)
+        return await bhs.fCheckBatchSize()
+    }
+
+    return true
+}
+
+blackHoleSuns.prototype.fCheckBatchSize = async function (flush) {
+    if (flush && count > 0 || ++count > 500) {
+        return await batch.commit().then(() => {
+            bhs.filestatus("Commited " + count, 1)
+            batch = bhs.fs.batch()
+            count = 0
+            return true
+        }).catch(err => {
+            bhs.filestatus("ERROR: " + err.code, 0)
+            console.log(err)
+            return false
         })
     }
 
-    return b
+    return true
 }
 
-blackHoleSuns.prototype.filestatus = function (str, lvl, buf) {
-    if (typeof buf != "undefined")
-        buf += bhs.user._name + " " + str + ";"
+blackHoleSuns.prototype.filestatus = function (str, lvl) {
+    if (lvl == 0)
+        log.log += str + "\n"
 
-    if (lvl == 0 || $("#ck-verbose").prop("checked") && lvl == 1 || $("#ck-vverbose").prop("checked") && lvl == 2)
+    if (lvl == 0 || $("#ck-verbose").prop("checked") && lvl == 1)
         $("#filestatus").append("<h6>" + str + "</h6>")
-
-    return buf
 }

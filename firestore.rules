@@ -1,68 +1,90 @@
+rules_version = '2'
+
 service cloud.firestore {
   match /databases/{database}/documents {
      match /{document=**} {
-      allow read: if false;
-      allow write: if false;
+      allow read, write: if false
   	}
 
 		match /admin/{document=**} {
-      allow read: if request.auth.uid != null;
-      allow write: if false;
+      allow read: if isLoggedIn(request)
     }
-    
-    match /api/{document=**} {
-      allow read: if false;
-      allow write: if false;
+
+		match /bhs/{document=**} {
+      allow read: if true
     }
-    
+
     match /contest/{document=**} {
-      allow read: if request.auth.uid != null;
-      allow write: if request.auth.uid != null;
+      allow read: if isLoggedIn(request)
+      allow write: if hasRole(database, request, ["admin"])
     }
 
-    match /bhs/{document=**} {
-      allow read: if request.auth.uid != null;
-      allow write: if false;
-    }
-
+    // 01BA:007C:0B08:0079
     match /stars5/{document=**} {
-      allow read: if request.auth.uid != null;
-      allow write: if request.auth.uid != null;
+      allow read: if isLoggedIn(request)
+      allow create: if hasRole(database, request, ["admin"]) // if isLoggedIn(request)
+      allow update: if isOwner(request, resource) || modsFields5(request, resource) || isAdmin(database, request)
+      allow delete: if isOwner(request, resource) || isAdmin(database, request)
     }
-    
-    match /stars6/{document=**} {
-      allow read: if request.auth.uid != null;
-      allow write: if request.auth.uid != null;
-    }
-    
-    match /upload/{document=**} {
-      allow read: if request.auth.uid != null;
-      allow write: if request.auth.uid != null;
-    }
-    
+
     match /log/{document=**} {
-      allow read: if request.auth.uid != null;
-      allow write: if request.auth.uid != null;
+      allow write: if isLoggedIn(request)
     }
-    
+
     match /org/{document=**} {
-      allow read: if request.auth.uid != null;
-      allow write: if request.auth.uid != null;
+      allow read: if isLoggedIn(request)
+      allow write: if hasRole(database, request, ["editor", "admin"])
     }
-    
+
     match /poi/{document=**} {
-      allow read: if request.auth.uid != null;
-      allow write: if request.auth.uid != null;
+      allow read: if isLoggedIn(request)
+      allow write: if hasRole(database, request, ["editor", "admin"])
     }
-    
+
     match /users/{document=**} {
-      allow read: if request.auth.uid != null;
-      allow write: if request.auth.uid != null;
+      allow read: if isOwner(request, resource)
+      allow create: if isLoggedIn(request)
+      allow update: if isOwner(request, resource)
     }
-    
+
     match /coordex/{document=**} {
-      allow read: if request.auth.uid != null;
-      allow write: if request.auth.uid != null;
+      allow read: if isLoggedIn(request)
+      allow create: if isLoggedIn(request)
+      allow update: if isOwner(request, resource) || modsFieldsCE(request, resource) || isAdmin(database, request)
+      allow delete: if isOwner(request, resource) || isAdmin(database, request)
     }
   }
+}
+
+function isLoggedIn(req) {
+  return req.auth.uid != null
+}
+
+function isOwner(req, res) {
+  return req.auth.uid == res.data.uid
+}
+
+function hasRole(db, req, roles) {
+  return get(/databases/$(db)/documents/admin/$(req.auth.uid)).data.roles.hasAny(roles)
+}
+
+function isAdmin(db, req) {
+  return get(/databases/$(db)/documents/admin/$(req.auth.uid)).data.roles.hasAny(["admin"]) &&
+    get(/databases/$(db)/documents/users/$(req.auth.uid)).data.role == "admin"
+}
+
+function modsFields5(req, res) {
+  return modsField(req, res, "valid") ||  modsField(req, res, "invalid") || addsField(req, res, "life") || addsField(req, res, "econ")
+}
+
+function modsFieldsCE(req, res) {
+  return modsField(req, res, "valid") ||  modsField(req, res, "invalid") || modsField(req, res, "count")
+}
+
+function modsField(req, res, field) {
+   return req.data[field] != res.data[field]
+}
+
+function addsField(req, res, field) {
+   return req.data[field] != null && res.data[field] == null
 }

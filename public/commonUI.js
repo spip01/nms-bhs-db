@@ -1,7 +1,9 @@
 'use strict'
 
 blackHoleSuns.prototype.doLoggedout = function () {
-    if (bhs.clearPanels) bhs.clearPanels()
+    if (bhs.clearPanels)
+        bhs.clearPanels()
+
     bhs.user = bhs.userInit()
     bhs.displayUser(bhs.user, true)
 
@@ -15,20 +17,18 @@ blackHoleSuns.prototype.doLoggedout = function () {
 }
 
 blackHoleSuns.prototype.doLoggedin = function (user) {
-    bhs.displayUser(user, true)
-    bhs.role = null
-    bhs.admin = null
+    bhs.getUser(bhs.displayUser)
 
     if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
         let ref = bhs.fs.doc("admin/" + bhs.user.uid)
-        ref.get().then(function (doc) {
+        ref.get().then(doc => {
             if (doc.exists) {
-                bhs.role = doc.data().role
+                let role = doc.data().roles
 
-                if (bhs.role == "admin" || bhs.role == "editor")
+                if (role.includes("editor") || role.includes("admin"))
                     $("#poiorg").show()
 
-                if (bhs.role == "admin") {
+                if (role.includes("admin")) {
                     $("#id-export").show()
                     $("#btn-create").show()
                     $("#btn-export").show()
@@ -43,6 +43,9 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
                     }
                 }
             }
+        }).catch(err => {
+            bhs.status("ERROR: " + err.code)
+            console.log(err)
         })
     }
 
@@ -50,19 +53,20 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
     $("#save").removeAttr("disabled")
 }
 
-blackHoleSuns.prototype.setAdmin = function () {
-    bhs.admin = bhs.admin ? false : true
-    $("body").css("background-color", bhs.admin ? "green" : "black")
+blackHoleSuns.prototype.setAdmin = async function () {
+    bhs.updateUser({
+        role: bhs.user.role === "admin" ? "user" : "admin"
+    })
 }
 
 blackHoleSuns.prototype.displayUser = async function (user, force) {
-    let fpoiorg = window.location.pathname == "/poiorg.html"
+    let fpoi = window.location.pathname == "/poiorg.html"
     let ftotals = window.location.pathname == "/totals.html"
     let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform)
 
     bhs.user = mergeObjects(bhs.user, user)
 
-    if (fpoiorg)
+    if (fpoi)
         return
 
     bhs.getActiveContest(bhs.displayContest)
@@ -80,11 +84,13 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
         }
     }
 
+    $("body").css("background-color", bhs.user.role === "admin" ? "green" : "black")
+
     let pnl = $("#pnl-user")
     pnl.find("#id-Player").val(bhs.user._name)
     pnl.find("#btn-Platform").text(bhs.user.platform)
     pnl.find("#btn-Organization").text(bhs.user.org)
-    pnl.find("#btn-Version").text(typeof bhs.user.version === "undefined" ? bhs.user.version : "")
+    pnl.find("#btn-Version").text(typeof bhs.user.version !== "undefined" ? bhs.user.version : "")
 
     if (bhs.user.galaxy) {
         let i = galaxyList[bhs.getIndex(galaxyList, "name", bhs.user.galaxy)].number
@@ -117,7 +123,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
                 <div class="col-1"></div>
                 <div id="id-Platform" class="col-3"></div>
                 <div id="id-Galaxy" class="col-3"></div>
-                <div id="id-Version" class="col-3 hidden"></div>
+                <div id="id-Version" class="col-3"></div>
 
                 <label class="col-4 h5 text-right align-bottom">
                     <input id="ck-fileupload" type="checkbox">
@@ -141,22 +147,20 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, true)
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, true)
 
-    $("#id-Player").change(function () {
+    $("#id-Player").change(() => {
         let user = bhs.extractUser()
         bhs.changeName("#id-Player", user)
     })
 
     $("#ck-fileupload").change(function (event) {
         if ($(this).prop("checked")) {
-            panels.forEach(function (p) {
+            panels.forEach(p => {
                 $("#" + p.id).hide()
             })
             $("#entrybuttons").hide()
             $("#upload").show()
-
-            //bhs.buildFileList()
         } else {
-            panels.forEach(function (p) {
+            panels.forEach(p => {
                 $("#" + p.id).show()
             })
             $("#entrybuttons").show()
@@ -175,7 +179,7 @@ blackHoleSuns.prototype.displayContest = function (contest) {
     if (!contest.hidden)
         c.show()
 
-    var x = setInterval(function () {
+    var x = setInterval(() => {
         var now = new Date().getTime()
         var ends = end - now
         var starts = start - now
@@ -254,7 +258,7 @@ blackHoleSuns.prototype.loadEntries = function () {
 
     let fsearch = window.location.pathname == "/search.html" || window.location.pathname == "/totals.html"
     if (fsearch)
-        blackHoleSuns.prototype.select()
+        bhs.select()
     else
         bhs.getEntries(bhs.displayEntryList, bhs.displayEntry)
 }
@@ -308,7 +312,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
     const line = `<div id="idname" class="width h6">title</div>`
 
     let h = ""
-    userTable.forEach(function (t) {
+    userTable.forEach(t => {
         let l = /idname/ [Symbol.replace](line, t.id)
         l = /width/ [Symbol.replace](l, t.format)
         h += /title/ [Symbol.replace](l, t.title)
@@ -320,7 +324,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
     loc.find("#lc-gal").text(entry.galaxy)
 
     h = ""
-    userTable.forEach(function (t) {
+    userTable.forEach(t => {
         let l = /idname/ [Symbol.replace](ckbox, t.id)
         h += /title/ [Symbol.replace](l, t.title)
     })
@@ -329,7 +333,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
     loc.append(h)
     let userhdrloc = $("#userHeader")
 
-    userTable.forEach(function (t) {
+    userTable.forEach(t => {
         loc.find("#ck-" + t.id).change(function () {
             if ($(this).prop("checked")) {
                 $("#userHeader").find("#" + t.id).show()
@@ -372,20 +376,20 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
         })
     })
 
-    $("#btn-utSettings").click(function () {
+    $("#btn-utSettings").click(() => {
         if ($("#utSettings").is(":hidden"))
             $("#utSettings").show()
         else
             $("#utSettings").hide()
     })
 
-    $("#btn-saveListSettings").click(function () {
+    $("#btn-saveListSettings").click(() => {
         bhs.updateUser({
             settings: bhs.extractSettings()
         })
     })
 
-    $("#btn-create").click(function () {
+    $("#btn-create").click(() => {
         var text = bhs.entriesToCsv()
 
         var data = new Blob([text], {
@@ -473,8 +477,8 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist, force) {
     bhs.displaySettings(bhs.user)
 }
 
-blackHoleSuns.prototype.displayEntry = function (entry) {
-    bhs.drawSingle(entry)
+blackHoleSuns.prototype.displayEntry = function (entry, zoom) {
+    bhs.drawSingle(entry, zoom)
 
     if (window.location.pathname == "/totals.html")
         return
@@ -604,21 +608,21 @@ blackHoleSuns.prototype.buildTotals = function () {
 
     let h = ""
 
-    totalsCol.forEach(function (t) {
+    totalsCol.forEach(t => {
         let l = /idname/ [Symbol.replace](totalsItems, t.id)
         l = /title/ [Symbol.replace](l, t.title)
         h += /format/ [Symbol.replace](l, t.format)
     })
     tot.find("#hdr-Player").append(h)
 
-    totalsRows.forEach(function (x) {
+    totalsRows.forEach(x => {
         let t = /altplatform/ [Symbol.replace](x.title, bhs.user.platform != "PS4" ? "PS4" : "PC-XBox")
         t = /platform/ [Symbol.replace](t, bhs.user.platform)
         t = /galaxy/ [Symbol.replace](t, bhs.user.galaxy)
 
         let h = /idname/ [Symbol.replace](totalsItemsHdr, x.id)
 
-        totalsCol.forEach(function (y) {
+        totalsCol.forEach(y => {
             let l = /idname/ [Symbol.replace](totalsItems, y.id)
             l = /title/ [Symbol.replace](l, t)
             h += /format/ [Symbol.replace](l, y.format)
@@ -630,7 +634,7 @@ blackHoleSuns.prototype.buildTotals = function () {
         tot.find("#itm-Player").append(h)
     })
 
-    totalsRows.forEach(function (t) {
+    totalsRows.forEach(t => {
         if (t.where == "index" && !findex)
             tot.find("#itm-Player #" + t.id).hide()
         if (t.where == "galaxy" && !ftotals)
@@ -662,9 +666,9 @@ blackHoleSuns.prototype.displayTotals = function (e, refpath) {
 
     const addPlatforms = e => {
         let t = 0
-        if (typeof e["PC-XBox"] === "number")
+        if (typeof e["PC-XBox"] !== "undefined")
             t += e["PC-XBox"]
-        if (typeof e["PS4"] === "number")
+        if (typeof e["PS4"] !== "undefined")
             t += e["PS4"]
         return t
     }
@@ -674,6 +678,8 @@ blackHoleSuns.prototype.displayTotals = function (e, refpath) {
 
     if (refpath === "bhs/Players") {
         e = e[bhs.user._name]
+        if (typeof e === "undefined")
+            return;
         colid = "id-Player"
     } else
         colid = "id-Total"
@@ -839,8 +845,9 @@ blackHoleSuns.prototype.clickGalaxy = function (evt) {
     bhs.entries = {}
     $("#btn-Galaxy").text(galaxy)
     let platform = $("#btn-Platform").text().stripMarginWS()
+    let version = $("#btn-Version").text().stripMarginWS()
     $("#btn-Player").text("")
-    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, null, galaxy, platform)
+    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, null, galaxy, platform, version)
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
@@ -930,12 +937,12 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
     }
 }
 
-blackHoleSuns.prototype.saveUser = function () {
+blackHoleSuns.prototype.saveUser = async function (batch) {
     let user = bhs.extractUser()
-    let ok
+    let ok = bhs.validateUser(user)
 
-    if ((ok = bhs.validateUser(user)))
-        bhs.updateUser(user)
+    if (ok)
+        ok = await bhs.updateUser(user, batch)
 
     return ok
 }
@@ -1202,12 +1209,12 @@ blackHoleSuns.prototype.purgeMap = function () {
 
     Plotly.newPlot('plymap', data, layout).then(plot => {
         plot.on('plotly_click', function (e) {
-            setTimeout(function () {
+            setTimeout(() => {
                 if (e.points.length > 0 && e.points[0].text) {
                     let addr = e.points[0].text.slice(0, 19)
 
                     if (window.location.pathname == "/index.html" || window.location.pathname == "/")
-                        bhs.getEntry(addr, bhs.displaySingle, 0)
+                        bhs.getEntry(addr, bhs.displayListEntry)
 
                     let opt = bhs.extractMapOptions()
                     let xyz = bhs.addressToXYZ(addr)
@@ -1343,7 +1350,7 @@ blackHoleSuns.prototype.buildMap = function () {
 
     let map = $("#map")
     map.find("#btn-redraw").unbind("click")
-    map.find("#btn-redraw").click(function () {
+    map.find("#btn-redraw").click(() => {
         bhs.purgeMap()
 
         let fsearch = window.location.pathname == "/search.html"
@@ -1352,7 +1359,7 @@ blackHoleSuns.prototype.buildMap = function () {
     })
 
     opt.find("#btn-mapsave").unbind("click")
-    opt.find("#btn-mapsave").click(function () {
+    opt.find("#btn-mapsave").click(() => {
         bhs.updateUser({
             mapoptions: bhs.extractMapOptions()
         })
@@ -1360,32 +1367,32 @@ blackHoleSuns.prototype.buildMap = function () {
     })
 
     $("#btn-mapreset").unbind("click")
-    opt.find("#btn-mapreset").click(function () {
+    opt.find("#btn-mapreset").click(() => {
         bhs.resetMapOptions()
         bhs.drawList(bhs.entries)
     })
 
     for (let i = 0; i < minmaxtable.length; ++i) {
         $("#inp-" + minmaxtable[i].id).unbind("change")
-        opt.find("#inp-" + minmaxtable[i].id).change(function () {
+        opt.find("#inp-" + minmaxtable[i].id).change(() => {
             bhs.changeMapLayout(true)
         })
     }
 
     $("#inp-ctrcord").unbind("change")
-    opt.find("#inp-ctrcord").change(function () {
+    opt.find("#inp-ctrcord").change(() => {
         bhs.changeMapLayout(true, true)
     })
 
     $("#inp-ctrzoom").unbind("change")
-    opt.find("#inp-ctrzoom").change(function () {
+    opt.find("#inp-ctrzoom").change(() => {
         bhs.changeMapLayout(true, true)
     })
 
     bhs.purgeMap()
 
     $("#btn-mapsettings").unbind("click")
-    $("#btn-mapsettings").click(function () {
+    $("#btn-mapsettings").click(() => {
         if ($("#showmapkey").is(":hidden")) {
             $("#showmapkey").show()
             $("#showmapoptions").show()

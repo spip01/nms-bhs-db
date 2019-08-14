@@ -1,6 +1,6 @@
 'use strict'
 
-$(document).ready(async function () {
+$(document).ready(async () => {
     startUp()
 
     await bhs.getOrgList()
@@ -196,9 +196,9 @@ blackHoleSuns.prototype.listClick = function (evt) {
 
     if (e.img) {
         let ref = bhs.fbstorage.ref().child(e.img)
-        ref.getDownloadURL().then(function (url) {
+        ref.getDownloadURL().then(url => {
             pnl.find("#img-pic").attr("src", url)
-        }).catch(function (error) {
+        }).catch(error => {
             console.log(error)
             pnl.find("#img-pic").removeAttr("src")
         })
@@ -206,19 +206,20 @@ blackHoleSuns.prototype.listClick = function (evt) {
         pnl.find("#img-pic").removeAttr("src")
 }
 
-blackHoleSuns.prototype.save = function (evt) {
+blackHoleSuns.prototype.save = async function (evt) {
     let pnl = $(evt).closest("[id|='pnl']")
     let pnlid = pnl.prop("id")
     let list = pnlid == "pnl-org" ? bhs.orgList : bhs.poiList
     let idx = -1
     let sel = ""
 
+    let e = {}
     if (lastSel) {
         sel = $(lastSel).text().stripMarginWS()
         idx = bhs.getIndex(list, "_name", sel)
+        e = mergeObjects(e, list[idx])
     }
 
-    let e = {}
     e._name = pnl.find("#inp-name").val()
     e.name = e._name
     e.link = pnl.find("#inp-link").val()
@@ -266,31 +267,33 @@ blackHoleSuns.prototype.save = function (evt) {
     }
 
     let ref = bhs.fs.collection(pnlid == "pnl-org" ? "org" : "poi")
-    ref = ref.where("_name", "==", sel != "" ? sel : uuidv4())
+    if (idx != -1)
+        ref = ref.doc(list[idx].id)
+    else {
+        ref = ref.doc()
+        e.id = ref.id
+    }
 
-    ref.get().then(function (snapshot) {
-        if (snapshot.size > 0) {
-            snapshot.docs[0].ref.update(e)
-            bhs.statusOut(pnl, e._name + " updated.")
-            list[idx] = e
-        } else {
-            let ref = bhs.fs.collection(pnlid == "pnl-org" ? "org" : "poi")
-            ref.add(e)
-            bhs.statusOut(pnl, e._name + " added.")
+    await ref.set(e, {
+        merge: true
+    }).then(() => {
+        bhs.statusOut(pnl, e._name + " updated.")
+
+        if (idx == -1)
             list.push(e)
-        }
 
         list.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
             a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0)
 
         bhs.buildTable(pnl, list)
         bhs.cancel(pnl)
-    }).catch(function (error) {
-        console.log(error)
+    }).catch(err => {
+        bhs.statusOut(pnl, "ERROR: " + err.code)
+        console.log(err)
     })
 }
 
-blackHoleSuns.prototype.delete = function (evt) {
+blackHoleSuns.prototype.delete = async function (evt) {
     let pnl = $(evt).closest("[id|='pnl']")
     let pnlid = pnl.prop("id")
     let list = pnlid == "pnl-org" ? bhs.orgList : bhs.poiList
@@ -302,24 +305,19 @@ blackHoleSuns.prototype.delete = function (evt) {
         if (e.img)
             bhs.fbstorage.ref().child(e.img).delete()
 
-        let ref = bhs.fs.collection(pnlid == "pnl-org" ? "org" : "poi")
-        ref = ref.where("_name", "==", e._name)
-        ref.get().then(function (snapshot) {
-            if (snapshot.size)
-                snapshot.docs[0].ref.delete().then(async function () {
-                    bhs.statusOut(pnl, e._name + " deleted.")
+        let ref = bhs.fs.collection(pnlid == "pnl-org" ? "org" : "poi").doc(e.id)
+        await ref.delete().then(() => {
+            bhs.statusOut(pnl, e._name + " deleted.")
 
-                    list.splice(idx, 1)
-                    list.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
-                        a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0)
+            list.splice(idx, 1)
+            list.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
+                a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0)
 
-                    bhs.buildTable(pnl, list)
-                    bhs.cancel(evt)
-                }).catch(function () {
-                    console.log(error)
-                })
-            else
-                bhs.statusOut(pnl, e._name + " not found.")
+            bhs.buildTable(pnl, list)
+            bhs.cancel(evt)
+        }).catch(err => {
+            bhs.statusOut(pnl, "ERROR: " + err.code)
+            console.log(err)
         })
     }
 }

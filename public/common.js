@@ -26,11 +26,11 @@ function startUp() {
     if (starsCol != "stars5")
         $("body").css("background-color", "red")
 
-    $("#login").click(function () {
+    $("#login").click(() => {
         bhs.logIn()
     })
 
-    $("#logout").click(function () {
+    $("#logout").click(() => {
         bhs.logOut()
     })
 }
@@ -58,14 +58,14 @@ blackHoleSuns.prototype.initFirebase = function () {
         synchronizeTabs: true
     })
 
-    firebase.auth().getRedirectResult().then(function (result) {
+    firebase.auth().getRedirectResult().then(result => {
         if (result.credential) {
             var token = result.credential.accessToken
         }
 
         var user = result.user
         bhs.onAuthStateChanged(user)
-    }).catch(function (error) {
+    }).catch(error => {
         var errorCode = error.code
         var errorMessage = error.message
         var email = error.email
@@ -81,28 +81,28 @@ blackHoleSuns.prototype.logIn = function () {
     $("#loginpnl").show()
     $("#jssite").hide()
 
-    $("#lcancel").click(function () {
+    $("#lcancel").click(() => {
         $("#loginpnl").hide()
         $("#jssite").show()
     })
 
-    $("#lgoogle").click(function () {
+    $("#lgoogle").click(() => {
         var provider = new firebase.auth.GoogleAuthProvider()
         provider.addScope('profile')
         provider.addScope('email')
         firebase.auth().signInWithRedirect(provider)
     })
 
-    $("#lgithub").click(async function () {
+    $("#lgithub").click(async () => {
         var provider = new firebase.auth.GithubAuthProvider()
         firebase.auth().signInWithRedirect(provider)
     })
 
-    $("#ltwitch").click(function () {})
+    $("#ltwitch").click(() => {})
 
-    $("#ldiscord").click(function () {})
+    $("#ldiscord").click(() => {})
 
-    $("#lreddit").click(function () {})
+    $("#lreddit").click(() => {})
 }
 
 blackHoleSuns.prototype.logOut = function () {
@@ -130,34 +130,38 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
 
         //      bhs.doLoggedin(user)
         //      bhs.navLoggedin()
+        // }).catch(err=>{
+        //     console.log(err)
         // })
 
         let ref = bhs.getUsersColRef(usr.uid)
-        ref.get().then(function (doc) {
-            if (doc.exists) {
+        ref.get().then(doc => {
+            if (doc.exists)
                 user = doc.data()
-                user.displayName = userName
-                user.lasttime = firebase.firestore.Timestamp.now()
-                bhs.updateUser(user)
-            } else {
-                user.displayName = userName
+            else
                 user.firsttime = firebase.firestore.Timestamp.now()
-                user.lasttime = user.firsttime
-                bhs.updateUser(user, true)
-            }
+
+            user.email = usr.email
+            user.displayName = usr.displayName
+            user.role = "user"
+            user.lasttime = firebase.firestore.Timestamp.now()
+
+            bhs.updateUser(user)
 
             bhs.doLoggedin(user)
 
             // if (document.domain == "localhost") {
             // var t = firebase.functions().httpsCallable('getDARC')
             // t()
-            // .then(function (result) {
+            // .then(result => {
             //     console.log(result.data)
             // })
-            // .catch(function (err) {
+            // .catch(err => {
             //     console.log(err)
             // })
             // }
+        }).catch(err => {
+            console.log(err)
         })
     } else {
         bhs.navLoggedout()
@@ -174,6 +178,7 @@ blackHoleSuns.prototype.init = function () {
 blackHoleSuns.prototype.userInit = function () {
     let user = {}
     user.uid = null
+    user.role = "user"
     user._name = ""
     user.platform = ""
     user.galaxy = ""
@@ -197,15 +202,27 @@ blackHoleSuns.prototype.navLoggedout = function () {
     $("#usermenu").hide()
 }
 
-blackHoleSuns.prototype.updateUser = function (user, ifnew) {
-    mergeObjects(bhs.user, user)
-    delete bhs.user[starsCol]
-
+blackHoleSuns.prototype.updateUser = async function (user, batch) {
+    bhs.user = mergeObjects(bhs.user, user)
     let ref = bhs.getUsersColRef(bhs.user.uid)
-    if (ifnew)
-        ref.set(bhs.user)
-    else
-        ref.update(bhs.user)
+
+    if (batch) {
+        batch.set(ref, bhs.user, {
+            merge: true
+        })
+        return true
+    } else
+        return await ref.set(bhs.user, {
+            merge: true
+        }).then(() => {
+            return true
+        }).catch(err => {
+            if (bhs.status)
+                bhs.status("ERROR: " + err)
+
+            console.log(err)
+            return false
+        })
 }
 
 blackHoleSuns.prototype.changeName = function (loc, user) {
@@ -214,251 +231,234 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
 
     if (user._name.match(/Unknown Traveler/i)) {
         $(loc).val(bhs.user._name)
-        bhs.status("Player Name:" + user._name + " is restricted.", 0)
+        bhs.status("Player Name:" + user._name + " is restricted.")
         return
     }
 
     if (typeof user._name == "undefined" || user._name == "") {
         $(loc).val(bhs.user._name)
-        bhs.status("Empty Player Name.", 0)
+        bhs.status("Player Name Required.")
         return
     }
 
     let ref = bhs.getUsersColRef().where("_name", "==", user._name)
-    ref.get().then(async function (snapshot) {
+    ref.get().then(async snapshot => {
         if (!snapshot.empty && snapshot.docs[0].data().uid != bhs.user.uid) {
             $(loc).val(bhs.user._name)
             bhs.status("Player Name:" + user._name + " is already taken.", 0)
         } else {
-            bhs.user = mergeObjects(bhs.user, user)
-
-            if (!bhs.user.assigned) {
-                let ref = bhs.getStarsColRef("players")
-                await ref.get().then(async function (doc) {
-                    if (doc.exists) {
-                        let d = doc.data()
-                        if (typeof d[bhs.user._name] != "undefined") {
-                            bhs.user[starsCol] = d[bhs.user._name]
-                            bhs.user.assigned = true
-                            await bhs.assignUid(bhs.user)
-                        }
-                        bhs.user.assigned = true
-                    }
-                })
-            }
-
-            let ref = bhs.getStarsColRef().where("totals.total", ">", 0)
-            await ref.get().then(async function (snapshot) {
-                for (let i = 0; i < snapshot.size; ++i) {
-                    let doc = snapshot.docs[i]
-                    let g = doc.data()
-
-                    for (let k = 0; k < platformList.length; ++k) {
-                        let ref = bhs.getStarsColRef(g.name, platformList[k].name)
-                        ref = ref.where("uid", "==", bhs.user.uid)
-                        await ref.get().then(async function (snapshot) {
-                            for (let i = 0; i < snapshot.size; ++i) {
-                                await snapshot.docs[i].ref.update({
-                                    _name: user._name
-                                })
-                            }
-                        })
-                    }
-                }
-            })
-
-            ref = bhs.getUsersColRef(bhs.user.uid)
-            await ref.update(bhs.user)
+            bhs.assignUid(bhs.user, user)
+            bhs.updateUser(user)
         }
+    }).catch(err => {
+        console.log(err)
     })
 }
 
-blackHoleSuns.prototype.getEntry = function (addr, displayfcn, idx) {
+blackHoleSuns.prototype.getEntry = function (addr, displayfcn) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform, addr)
-    ref.get().then(function (doc) {
+    ref.get().then(async doc => {
         if (doc.exists) {
             let d = doc.data()
-            displayfcn(d, d.blackhole ? 0 : 1)
+            let e = null
 
-            if (idx == 0) {
-                if (!d.blackhole)
-                    bhs.getEntryByConnection(d.addr, displayfcn, 1)
-                else
-                    bhs.getEntry(d.connection, displayfcn, 1)
-            }
+            if (!d.blackhole)
+                e = await bhs.getEntryByConnection(d.addr)
+
+            displayfcn(e ? e : d)
         }
+    }).catch(err => {
+        console.log(err)
     })
 }
 
-blackHoleSuns.prototype.getEntryByRegion = function (reg, displayfcn, idx) {
+blackHoleSuns.prototype.getEntryByRegion = async function (reg, displayfcn) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform)
     ref = ref.where("reg", "==", reg)
-    ref.get().then(function (snapshot) {
+    await ref.get().then(async snapshot => {
         if (!snapshot.empty) {
-            let d = snapshot.docs[0].data()
-            displayfcn(d, d.blackhole ? 0 : 1, $("#ck-zoomreg").prop("checked"))
+            let d
+            let e = null
 
-            if (idx == 0) {
-                if (!d.blackhole)
-                    bhs.getEntryByConnection(d.addr, displayfcn, 1)
-                else
-                    bhs.getEntry(d.connection, displayfcn, 1)
+            for (let doc of snapshot.docs) {
+                d = doc.data()
+                if (d.blackhole)
+                    break
             }
+
+            if (!d.blackhole)
+                e = await bhs.getEntryByConnection(d.addr)
+
+            displayfcn(e ? e : d, $("#ck-zoomreg").prop("checked"))
         }
+    }).catch(err => {
+        console.log(err)
     })
 }
 
-blackHoleSuns.prototype.getEntryByConnection = function (addr, displayfcn, idx) {
+blackHoleSuns.prototype.getEntryByConnection = async function (addr) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform)
     ref = ref.where("connection", "==", addr)
-    ref.get().then(function (snapshot) {
+
+    return await ref.get().then(snapshot => {
         if (!snapshot.empty) {
-            let d = snapshot.docs[0].data()
-            displayfcn(d, 0)
-        }
+            return snapshot.docs[0].data()
+        } else
+            return null
+    }).catch(err => {
+        console.log(err)
+        return null
     })
 }
 
-blackHoleSuns.prototype.updateEntry = async function (entry, admin) {
+blackHoleSuns.prototype.updateEntry = async function (entry, batch) {
     entry.modded = firebase.firestore.Timestamp.now()
 
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
-    await ref.get().then(async function (doc) {
-        if (doc.exists) {
-            let existing = doc.data()
-            if (existing.uid != bhs.user.uid && !admin) {
-                bhs.status(entry.addr + " can only be edited by " + existing._name, 1)
-                return
-            }
-
-            entry = mergeObjects(existing, entry)
-        } else
-            entry.created = entry.modded
-
-        let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
-        await ref.set(entry).then(function () {
-            bhs.status(entry.addr + " saved.", 2)
+    if (batch)
+        batch.set(ref, entry, {
+            merge: true
         })
-    })
+    else
+        await ref.set(entry, {
+            merge: true
+        }).then(() => {
+            bhs.status(entry.addr + " saved.")
+        }).catch(err => {
+            bhs.status("ERROR: " + err.code)
+            console.log(err)
+        })
 }
 
-blackHoleSuns.prototype.updateBase = function (entry) {
+blackHoleSuns.prototype.updateBase = async function (entry, batch) {
     entry.time = firebase.firestore.Timestamp.now()
-    entry.xyzs = bhs.addressToXYZ(entry.addr)
 
     let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr)
-    ref.set(entry).then(function () {
-        bhs.status(entry.addr + " base saved.", 2)
-    })
+    if (batch)
+        batch.set(ref, entry, {
+            merge: true
+        })
+    else
+        await ref.set(entry, {
+            merge: true
+        }).then(() => {
+            bhs.status(entry.addr + " base saved.")
+        }).catch(err => {
+            bhs.status("ERROR: " + err.code)
+            console.log(err)
+        })
 }
 
-blackHoleSuns.prototype.getBase = function (entry, displayfcn, idx) {
-    let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr)
-    ref.get().then(function (doc) {
-        if (doc.exists)
-            displayfcn(doc.data(), idx)
-    })
-}
-
-blackHoleSuns.prototype.deleteBase = function (addr) {
-    let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform, addr)
-    ref.delete().then(function () {
-        bhs.status(addr + " base deleted.", 2)
-    })
-}
-
-blackHoleSuns.prototype.getUsersColRef = function (uid, galaxy, platform, addr) {
-    let ref = bhs.fs.collection(usersCol)
-    if (uid) {
-        ref = ref.doc(uid)
-        if (galaxy) {
-            ref = ref.collection(starsCol).doc(galaxy)
-            if (platform) {
-                ref = ref.collection(platform)
-                if (addr) {
-                    ref = ref.doc(addr)
-                }
-            }
-        }
+blackHoleSuns.prototype.deleteBase = async function (addr, batch) {
+    if (addr) {
+        let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform, addr)
+        if (batch)
+            batch.delete(ref)
+        else
+            await ref.delete().then(() => {
+                bhs.status(addr + " base deleted.")
+            }).catch(err => {
+                bhs.status("ERROR: " + err.code)
+                console.log(err)
+            })
     }
-
-    return ref
 }
 
-blackHoleSuns.prototype.getStarsColRef = function (galaxy, platform, addr) {
-    let ref = bhs.fs.collection(starsCol)
-    if (galaxy) {
-        ref = ref.doc(galaxy)
-        if (platform) {
-            ref = ref.collection(platform)
-            if (addr) {
-                ref = ref.doc(addr)
-            }
-        }
-    }
-
-    return ref
-}
-
-blackHoleSuns.prototype.deleteEntry = async function (entry, admin) {
+blackHoleSuns.prototype.deleteEntry = async function (entry, batch) {
     if (entry) {
         let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
-        await ref.get().then(async function (doc) {
-            if (!doc.exists)
-                bhs.status(entry.addr + " not found.", 0)
-            else {
-                let d = doc.data()
-                if (d.uid == bhs.user.uid || admin) {
-                    await ref.delete().then(async function () {
-                        bhs.status(entry.addr + " deleted", 2)
-                    })
-                } else
-                    bhs.status(entry.addr + " can only be deleted by " + d._name, 1)
-            }
-        })
+        if (batch)
+            batch.delete(ref)
+        else
+            await ref.delete().then(() => {
+                bhs.status(entry.addr + " deleted.")
+            }).catch(err => {
+                bhs.status("ERROR: " + err.code)
+                console.log(err)
+            })
     }
 }
 
-blackHoleSuns.prototype.assignUid = async function (entry) {
+blackHoleSuns.prototype.assignUid = async function (user, newuser) {
     let updt = {}
-    updt.uid = entry.uid
-    updt._name = entry._name
+    updt._name = newuser._name
+    updt.uid = newuser.uid
 
     let ref = bhs.getStarsColRef()
-    ref = ref.where("totals.total", ">", 0)
-    await ref.get().then(async function (snapshot) {
-        for (let i = 0; i < snapshot.docs.length; ++i) {
-            if (snapshot.docs[i].id != "totals") {
-                let g = snapshot.docs[i].data()
+    return await ref.get().then(snapshot => {
+        for (let doc of snapshot.docs) {
+            let g = doc.data()
+            let pr = []
 
-                for (let j = 0; j < platformList.length; ++j) {
-                    let p = platformList[j]
+            for (let p of platformList) {
+                let ref = bhs.getStarsColRef(g.name, p.name)
+                ref = ref.where("_name", "==", user._name)
 
-                    let ref = bhs.getStarsColRef(g.name, p.name)
-                    ref = ref.where("player", "==", entry._name)
-                    await ref.get().then(async function (snapshot) {
-                        if (!snapshot.empty) {
-                            console.log(g.name + " " + p.name + " " + entry._name + " " + snapshot.size)
+                pr.push(ref.get().then(snapshot => {
+                    let pr = []
 
-                            for (let k = 0; k < snapshot.size; ++k)
-                                await bhs.batchUpdate(snapshot.docs[k].ref, updt)
+                    if (!snapshot.empty) {
+                        console.log(g.name + " " + p.name + " " + user._name + " " + snapshot.size)
+
+                        let c = 0
+                        let b = bhs.fs.batch()
+
+                        for (let doc of snapshot.docs) {
+                            if (++c > 250) {
+                                pr.push(b.commit().then(() => {
+                                    console.log("commit " + c)
+                                }).catch(err => {
+                                    bhs.status("ERROR: " + err.code)
+                                }))
+
+                                c = 0
+                                b = bhs.fs.batch()
+                            }
+
+                            b.update(doc.ref, updt)
                         }
-                    })
-                }
-            }
-        }
-    })
 
-    await bhs.checkBatchSize(true)
+                        if (c > 0)
+                            pr.push(b.commit().then(() => {
+                                console.log("commit " + c)
+                            }).catch(err => {
+                                bhs.status("ERROR: " + err.code)
+                                console.log(err)
+                            }))
+                    }
+
+                    return Promise.all(pr).then(() => {
+                        console.log("finish g/p")
+                    }).catch(err => {
+                        bhs.status("ERROR: " + err.code)
+                        console.log(err)
+                    })
+                }).catch(err => {
+                    console.log(err)
+                }))
+            }
+
+            return Promise.all(pr).then(() => {
+                console.log("done")
+            }).catch(err => {
+                bhs.status("ERROR: " + err.code)
+                console.log(err)
+            })
+        }
+    }).catch(err => {
+        console.log(err)
+    })
 }
 
 blackHoleSuns.prototype.getActiveContest = function (displayFcn) {
     bhs.contest = null
+    return
+
     let now = (new Date()).getTime()
 
     let ref = bhs.fs.collection("contest")
     ref = ref.orderBy("start")
-    ref.get().then(function (snapshot) {
+    ref.get().then(snapshot => {
         for (let i = 0; i < snapshot.size; ++i) {
             let d = snapshot.docs[i].data()
             let start = d.start.toDate().getTime()
@@ -469,6 +469,8 @@ blackHoleSuns.prototype.getActiveContest = function (displayFcn) {
                 break
             }
         }
+    }).catch(err => {
+        console.log(err)
     })
 }
 
@@ -477,7 +479,7 @@ blackHoleSuns.prototype.hideContest = function () {
 
     let ref = bhs.fs.collection("contest")
     ref = ref.orderBy("start")
-    ref.get().then(function (snapshot) {
+    ref.get().then(snapshot => {
         for (let i = 0; i < snapshot.size; ++i) {
             let d = snapshot.docs[i].data()
             let start = d.start.toDate().getTime()
@@ -489,84 +491,18 @@ blackHoleSuns.prototype.hideContest = function () {
                 break
             }
         }
-    })
-}
-
-blackHoleSuns.prototype.listUsers = function () {
-    let ref = bhs.getUsersColRef()
-    ref.get().then(function (snapshot) {
-        for (let i = 0; i < snapshot.size; ++i) {
-            let d = snapshot.docs[i].data()
-            console.log(snapshot.docs[i].id + " " + d._name)
-        }
-    })
-}
-
-blackHoleSuns.prototype.searchTxt = async function () {
-    let scount = {}
-    let rcount = {}
-
-    let ref = bhs.getStarsColRef()
-    await ref.get().then(async function (snapshot) {
-        for (let i = 0; i < snapshot.docs.length; ++i) {
-            let g = snapshot.docs[i].data()
-
-            for (let j = 0; j < platformList.length; ++j) {
-                let p = platformList[j]
-
-                let ref = bhs.getStarsColRef(g.name, p.name)
-                await ref.get().then(async function (snapshot) {
-                    for (let i = 0; i < snapshot.size; ++i) {
-                        let d = snapshot.docs[i].data()
-
-                        if (!d.reg) {
-                            console.log(d)
-                            continue
-                        }
-
-                        if (!d.sys) {
-                            console.log(d)
-                            continue
-                        }
-
-                        let reg = d.reg.split(" ")
-                        let r = reg.length > 1 ? reg[reg.length - 1] : ""
-
-                        let sys = d.sys.split(" ")
-                        let s = sys.length > 1 ? sys[sys.length - 1] : ""
-
-                        if (r != "") {
-                            if (typeof rcount[r] == "undefined")
-                                rcount[r] = 0
-                            ++rcount[r]
-                        }
-
-                        if (s != "") {
-                            if (typeof scount[s] == "undefined")
-                                scount[s] = 0
-                            ++scount[s]
-                        }
-                    }
-                })
-            }
-        }
-    })
-
-    Object.keys(rcount).forEach(r => {
-        console.log("reg " + r + " " + rcount[r])
-    })
-    Object.keys(scount).forEach(s => {
-        console.log("sys " + s + " " + scount[s])
+    }).catch(err => {
+        console.log(err)
     })
 }
 
 blackHoleSuns.prototype.updateDARC = async function () {
     var updateDARC = firebase.functions().httpsCallable('updateDARC')
     updateDARC()
-        .then(function (result) {
+        .then(result => {
             console.log(result.data)
         })
-        .catch(function (err) {
+        .catch(err => {
             console.log(err)
         })
     return
@@ -575,89 +511,13 @@ blackHoleSuns.prototype.updateDARC = async function () {
 blackHoleSuns.prototype.genDARC = async function () {
     var genDARC = firebase.functions().httpsCallable('genDARC')
     genDARC()
-        .then(function (result) {
+        .then(result => {
             console.log(result.data)
         })
-        .catch(function (err) {
+        .catch(err => {
             console.log(err)
         })
     return
-}
-
-blackHoleSuns.prototype.testing = async function () {
-    let ref = bhs.fs.collection("stars6")
-    await ref.get().then(async snapshot => {
-        let pr = []
-
-        for (let gdoc of snapshot.docs) {
-            for (let p of platformList) {
-                let ref = gdoc.ref.collection(p.name)
-                pr.push(ref.get().then(async snapshot => {
-                    if (snapshot.size > 0) {
-                        console.log(snapshot.docs[0].ref.parent.path, snapshot.size)
-
-                        let count = 0
-                        let b = bhs.fs.batch()
-
-                        for (let doc of snapshot.docs) {
-                            let e = doc.data()
-
-                            let ref = bhs.fs.doc("stars5/" + e.galaxy + "/" + e.platform + "/" + e.addr)
-                            await ref.get().then(doc => {
-                                if (!doc.exists) {
-                                    e.sys = typeof e.sys != "undefined" ? e.sys : ""
-                                    e.reg = typeof e.reg != "undefined" ? e.reg : ""
-                                    e.life = typeof e.life != "undefined" ? e.life : ""
-                                    e.econ = typeof e.econ != "undefined" ? e.econ : ""
-                                    e.blackhole = typeof e.blackhole != "undefined" ? e.blackhole : false
-                                    e.deadzone = typeof e.deadzone != "undefined" ? e.deadzone : false
-
-                                    delete e.conxyzs
-                                    delete e.valid
-                                    delete e.contest
-                                    delete e.sun
-                                    delete e.conflict
-
-                                    if (++count >= 450) {
-                                        b.commit().then(async () => {
-                                            console.log(ref.path, count)
-                                        })
-
-                                        count = 0
-                                        b = bhs.fs.batch()
-                                    }
-
-                                    b.set(ref, e)
-                                }
-                            })
-                        }
-
-                        return b.commit().then(async () => {
-                            let doc = snapshot.docs[0]
-                            let e = doc.data()
-
-                            console.log("commit", doc.ref.parent.path, count)
-
-                            let s5ref = bhs.fs.doc("stars5/" + e.galaxy)
-                            let s6ref = bhs.fs.doc("stars6/" + e.galaxy)
-
-                            return s6ref.get().then(async doc => {
-                                if (doc.exists) {
-                                    let e = doc.data()
-                                    e.update = e.backup
-                                    return s5ref.set(e)
-                                }
-                            })
-                        })
-                    }
-                }))
-            }
-        }
-
-        await Promise.all(pr).then((res) => {
-            console.log("done")
-        })
-    })
 }
 
 // blackHoleSuns.prototype.checkDistance = async function () {
@@ -697,10 +557,14 @@ blackHoleSuns.prototype.testing = async function () {
 //                                 if (doc.exists) {
 //                                     list[e.connection].exit = doc.data()
 //                                 }
-//                             })
+//                             }).catch(err=>{
+//     console.log(err)
+// })
 //                         }
 //                     }
-//                 }))
+//                 }).catch(err=>{
+//     console.log(err)
+// }))
 //             }
 //         }
 
@@ -708,39 +572,20 @@ blackHoleSuns.prototype.testing = async function () {
 //             console.log("done "+res.length)
 //             return res
 //         })
-//     })
+//     }).catch(err=>{
+//     console.log(err)
+// })
 // }
 
 blackHoleSuns.prototype.recalcTotals = function () {
     var recalcTotals = firebase.functions().httpsCallable('recalcTotals')
     recalcTotals()
-        .then(function (result) {
+        .then(result => {
             console.log(result.data)
         })
-        .catch(function (err) {
+        .catch(err => {
             console.log(err)
         })
-}
-
-function addObjects(o, n) {
-    if (typeof n != "object") {
-        if (typeof n == "number") {
-            if (typeof o == "undefined")
-                o = 0
-            o += n
-        } else if (typeof n != "undefined")
-            o = n
-    } else if (n) {
-        if (typeof o == "undefined")
-            o = {}
-        let l = Object.keys(n)
-        for (let i = 0; i < l.length; ++i) {
-            let x = l[i]
-            o[x] = addObjects(o[x], n[x])
-        }
-    }
-
-    return o
 }
 
 blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, uid, galaxy, platform, version) {
@@ -751,8 +596,8 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, 
     let ifindex = window.location.pathname == "/index.html" || window.location.pathname == "/"
     let ref = bhs.getStarsColRef(galaxy, platform)
 
-    if (bhs.user.version || version)
-        ref = ref.where("version", "==", version ? version : bhs.user.version)
+    // if (bhs.user.version || version)
+    //     ref = ref.where("version", "==", version ? version : bhs.user.version)
 
     if (uid || ifindex) {
         ref = ref.where("uid", "==", uid ? uid : bhs.user.uid)
@@ -771,9 +616,6 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, 
             }
         } else
             bhs.entries = bhs.list[galaxy][platform]
-
-        if (displayFcn)
-            displayFcn(bhs.entries)
     } else {
         if (!bhs.list)
             bhs.list = {}
@@ -783,7 +625,7 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, 
             bhs.list[galaxy][platform] = {}
 
         let bhref = ref.where("blackhole", "==", true)
-        await bhref.get().then(async function (snapshot) {
+        await bhref.get().then(async snapshot => {
             for (let i = 0; i < snapshot.size; ++i)
                 bhs.list[galaxy][platform][snapshot.docs[i].data().addr] = snapshot.docs[i].data()
 
@@ -800,11 +642,13 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, 
 
             if (ifindex)
                 await blackHoleSuns.prototype.getBases(displayFcn, singleDispFcn)
-
-            if (displayFcn)
-                displayFcn(bhs.entries)
+        }).catch(err => {
+            console.log(err)
         })
     }
+
+    if (displayFcn)
+        displayFcn(bhs.entries)
 
     if (singleDispFcn) {
         ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()))
@@ -833,15 +677,19 @@ blackHoleSuns.prototype.getOrgEntries = async function (displayFcn, singleFcn, n
 
 blackHoleSuns.prototype.getBases = async function (displayFcn, singleDispFcn) {
     let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform)
-    await ref.get().then(async function (snapshot) {
+    ref = ref.where("uid", "==", bhs.user.uid)
+    await ref.get().then(async snapshot => {
         for (let i = 0; i < snapshot.size; ++i)
             bhs.entries = bhs.addBaseList(snapshot.docs[i].data(), bhs.entries)
 
         if (singleDispFcn) {
             let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform)
             ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()))
+            ref = ref.where("uid", "==", bhs.user.uid)
             bhs.subscribe("bases", ref, singleDispFcn)
         }
+    }).catch(err => {
+        console.log(err)
     })
 }
 
@@ -868,60 +716,65 @@ blackHoleSuns.prototype.addBaseList = function (entry, list) {
     return list
 }
 
-blackHoleSuns.prototype.dispBaseList = function (entry, id, displayFcn) {
-    bhs.entries = bhs.addBaseList(entry, bhs.entries)
-    displayFcn(bhs.entries)
-}
-
 blackHoleSuns.prototype.getUser = function (displayFcn) {
     let ref = bhs.getUsersColRef(bhs.user.uid)
     bhs.subscribe("user", ref, displayFcn)
 }
 
-blackHoleSuns.prototype.getOrgList = async function () {
+blackHoleSuns.prototype.getOrgList = function () {
     bhs.orgList = []
 
     let ref = bhs.fs.collection("org")
-    await ref.get().then(async function (snapshot) {
-        for (let i = 0; i < snapshot.size; ++i)
-            bhs.orgList.push(snapshot.docs[i].data())
+    return ref.get().then(snapshot => {
+        for (let doc of snapshot.docs) {
+            let d = doc.data()
+            d.id = doc.id
+            bhs.orgList.push(d)
+        }
 
-        await bhs.orgList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
+        bhs.orgList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
             a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0)
+    }).catch(err => {
+        console.log(err)
     })
 }
 
-blackHoleSuns.prototype.getPoiList = async function () {
+blackHoleSuns.prototype.getPoiList = function () {
     bhs.poiList = []
 
     let ref = bhs.fs.collection("poi")
-    await ref.get().then(async function (snapshot) {
-        for (let i = 0; i < snapshot.size; ++i)
-            bhs.poiList.push(snapshot.docs[i].data())
+    return ref.get().then(snapshot => {
+        for (let doc of snapshot.docs) {
+            let d = doc.data()
+            d.id = doc.id
+            bhs.poiList.push(d)
+        }
 
-        await bhs.poiList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
+        bhs.poiList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
             a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0)
+    }).catch(err => {
+        console.log(err)
     })
 }
 
 blackHoleSuns.prototype.getUserList = async function () {
-    let list = []
+    let ref = bhs.fs.doc("bhs/Players")
+    return await ref.get().then(doc => {
+        let list = []
+        if (doc.exists) {
+            let d = doc.data()
 
-    let ref = bhs.fs.collection("users").orderBy("_name")
-    await ref.get().then(function (snapshot) {
-        for (let i = 0; i < snapshot.docs.length; ++i) {
-            let d = snapshot.docs[i].data()
-            if (d._name != "" && d[starsCol] && d[starsCol].total > 0) {
-                let u = {
-                    name: d._name,
-                    uid: d.uid
-                }
-                list.push(u)
+            for (let u of Object.keys(d)) {
+                list.push({
+                    name: u,
+                })
             }
         }
-    })
 
-    return list
+        return list
+    }).catch(err => {
+        console.log(err)
+    })
 }
 
 blackHoleSuns.prototype.getTotals = async function (displayFcn, dispHtml) {
@@ -934,26 +787,25 @@ blackHoleSuns.prototype.getTotals = async function (displayFcn, dispHtml) {
 
     var t = firebase.functions().httpsCallable('getTotals')
 
-    if (ftotals) {
+    if (ftotals)
         t({
-                view: "Galaxies"
-            })
-            .then(function (result) {
-                dispHtml(result.data.html, "Galaxies")
-            })
-    }
+            view: "Galaxies"
+        })
+        .then(result => {
+            dispHtml(result.data.html, "Galaxies")
+        })
 
     t({
             view: "Players"
         })
-        .then(function (result) {
+        .then(result => {
             dispHtml(result.data.html, "Players")
         })
 
     t({
             view: "Organizations"
         })
-        .then(function (result) {
+        .then(result => {
             dispHtml(result.data.html, "Organizations")
         })
 
@@ -967,19 +819,20 @@ blackHoleSuns.prototype.getTotals = async function (displayFcn, dispHtml) {
         ref = bhs.fs.doc("bhs/Players")
         bhs.subscribe("tot-players", ref, displayFcn)
     }
-
 }
 
 blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn) {
     if (displayFcn) {
         bhs.unsubscribe(what)
-        bhs.unsub[what] = ref.onSnapshot(function (snapshot) {
+        bhs.unsub[what] = ref.onSnapshot(snapshot => {
             if (snapshot.exists)
                 displayFcn(snapshot.data(), snapshot.ref.path)
             else
-                snapshot.docChanges().forEach(function (change) {
+                snapshot.docChanges().forEach(change => {
                     displayFcn(change.doc.data(), change.doc.ref.path)
                 })
+        }, err => {
+            console.log(err)
         })
     }
 }
@@ -993,6 +846,39 @@ blackHoleSuns.prototype.unsubscribe = function (m) {
             delete bhs.unsub[x]
         }
     }
+}
+
+blackHoleSuns.prototype.getUsersColRef = function (uid, galaxy, platform, addr) {
+    let ref = bhs.fs.collection(usersCol)
+    if (uid) {
+        ref = ref.doc(uid)
+        if (galaxy) {
+            ref = ref.collection(starsCol).doc(galaxy)
+            if (platform) {
+                ref = ref.collection(platform)
+                if (addr) {
+                    ref = ref.doc(addr)
+                }
+            }
+        }
+    }
+
+    return ref
+}
+
+blackHoleSuns.prototype.getStarsColRef = function (galaxy, platform, addr) {
+    let ref = bhs.fs.collection(starsCol)
+    if (galaxy) {
+        ref = ref.doc(galaxy)
+        if (platform) {
+            ref = ref.collection(platform)
+            if (addr) {
+                ref = ref.doc(addr)
+            }
+        }
+    }
+
+    return ref
 }
 
 blackHoleSuns.prototype.validateUser = function (user) {
@@ -1013,10 +899,10 @@ blackHoleSuns.prototype.validateUser = function (user) {
         ok = false
     }
 
-    // if (ok && !user.version) {
-    //     bhs.status("Error: Missing Version. Changes not saved.", 0)
-    //     ok = false
-    // }
+    if (ok && !user.version) {
+        bhs.status("Error: Missing Version. Changes not saved.", 0)
+        ok = false
+    }
 
     return ok
 }
@@ -1035,18 +921,29 @@ blackHoleSuns.prototype.validateEntry = function (entry) {
         ok = false
     }
 
+    if (ok && (entry.sys.includes("<") || entry.sys.includes(">"))) {
+        error += "Invalid system name '" + entry.sys + "'. "
+        ok = false
+    }
+
     if (ok && !entry.reg) {
         error += "Missing region name. "
         ok = false
     }
 
+    if (ok && (entry.reg.includes("<") || entry.reg.includes(">"))) {
+        error += "Invalid region name '" + entry.reg + "'. "
+        ok = false
+    }
+
+
     let str
-    if (ok && !entry.blackhole && !entry.deadzone && (str = validateExitAddress(entry.addr))) {
+    if (ok && !entry.blackhole && !entry.deadzone && (str = validateExitAddress(entry.addr)) != "") {
         error += "Invalid exit address. (" + str + ") "
         ok = false
     }
 
-    if (ok && (entry.blackhole || entry.deadzone) && (str = validateBHAddress(entry.addr))) {
+    if (ok && (entry.blackhole || entry.deadzone) && (str = validateBHAddress(entry.addr)) != "") {
         error += "Invalid black hole address. (" + str + ") "
         ok = false
     }
@@ -1054,7 +951,7 @@ blackHoleSuns.prototype.validateEntry = function (entry) {
     if (!ok)
         bhs.status("Error: " + error + "Changes not saved.", 0)
 
-    return ok
+    return error
 }
 
 function loadHtml(url, alturl, selector) {
@@ -1069,11 +966,11 @@ function loadHtml(url, alturl, selector) {
             $("#jssite").css("margin-top", navbarheight + "px")
             $("#loginpnl").css("margin-top", navbarheight + "px")
 
-            $("#login").click(function () {
+            $("#login").click(() => {
                 bhs.logIn()
             })
 
-            $("#logout").click(function () {
+            $("#logout").click(() => {
                 bhs.logOut()
             })
         }
@@ -1116,6 +1013,27 @@ function mergeObjects(o, n) {
         for (let i = 0; i < l.length; ++i) {
             let x = l[i]
             o[x] = mergeObjects(o[x], n[x])
+        }
+    }
+
+    return o
+}
+
+function addObjects(o, n) {
+    if (typeof n != "object") {
+        if (typeof n == "number") {
+            if (typeof o == "undefined")
+                o = 0
+            o += n
+        } else if (typeof n != "undefined")
+            o = n
+    } else if (n) {
+        if (typeof o == "undefined")
+            o = {}
+        let l = Object.keys(n)
+        for (let i = 0; i < l.length; ++i) {
+            let x = l[i]
+            o[x] = addObjects(o[x], n[x])
         }
     }
 
@@ -1183,6 +1101,7 @@ function validateExitAddress(addr) {
 blackHoleSuns.prototype.validateAddress = function (addr, ck) {
     let c = bhs.addressToXYZ(addr)
     let error = ""
+
     if (c.x > 0xfff) error = "x " + c.x.toString(16) + " > fff"
     else if (c.y > 0xff) error = "y " + c.y.toString(16) + " > ff"
     else if (c.z > 0xfff) error = "z " + c.z.toString(16) + " > fff"
@@ -1195,19 +1114,15 @@ blackHoleSuns.prototype.validateAddress = function (addr, ck) {
     return error
 }
 
-blackHoleSuns.prototype.validateDist = function (entry, pstr, log) {
-    let nok = false
-    let p = pstr ? pstr : ""
-    if (nok = entry.dist < 3200)
-        bhs.status(p + entry.addr + ` star in center void`, 0, log)
-    else if (nok = (entry.dist > 3600 && entry.towardsCtr < 0))
-        bhs.status(p + entry.addr + " => " + entry.connection + ` distance < 0`, 0, log)
-    else if (nok = (entry.dist <= 3600 && entry.towardsCtr < -400))
-        bhs.status(p + entry.addr + " => " + entry.connection + ` distance < -400`, 0, log)
-    else if (nok = (entry.towardsCtr > 21000 && entry.dist <= 819200))
-        bhs.status(p + entry.addr + " => " + entry.connection + ` distance > 21000`, 0, log)
+blackHoleSuns.prototype.validateDist = function (entry) {
+    let error = ""
 
-    return !nok
+    if (entry.dist < 3200) error = entry.addr + " star in center void"
+    else if (entry.dist > 3600 && entry.towardsCtr < 0) error = entry.addr + " => " + entry.connection + " distance < 0"
+    else if (entry.dist <= 3600 && entry.towardsCtr < -400) error = entry.addr + " => " + entry.connection + ` distance < -400`
+    else if (entry.dist <= 819200 && entry.towardsCtr > 21000) error = entry.addr + " => " + entry.connection + ` distance > 21000`
+
+    return error
 }
 
 blackHoleSuns.prototype.makeBHAddress = function (addr) {
@@ -1270,7 +1185,7 @@ blackHoleSuns.prototype.getIndex = function (list, field, id) {
     if (!id)
         return -1
 
-    return list.map(function (x) {
+    return list.map(x => {
         return typeof x[field] == "string" ? x[field].toLowerCase() : x[field]
     }).indexOf(id.toLowerCase())
 }

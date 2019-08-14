@@ -1,6 +1,6 @@
 'use strict'
 
-$(document).ready(function () {
+$(document).ready(() => {
     startUp()
 
     bhs.last = []
@@ -8,21 +8,42 @@ $(document).ready(function () {
     bhs.buildUserPanel()
     bhs.buildFilePanel()
 
-    panels.forEach(function (p) {
+    panels.forEach(p => {
         bhs.buildPanel(p.id)
     })
 
-    $("#save").click(function () {
+    $("#save").click(() => {
         bhs.save()
     })
 
-    $("#delete").click(function () {
+    $("#delete").click(async () => {
         $("#status").empty()
-        bhs.deleteEntry(bhs.last[pnlTop], bhs.admin && bhs.role == "admin")
-        bhs.deleteEntry(bhs.last[pnlBottom], bhs.admin && bhs.role == "admin")
+        let b = bhs.fs.batch()
+
+        bhs.deleteEntry(bhs.last[pnlTop], b)
+        if (bhs.last[pnlTop].basename)
+            bhs.deleteBase(bhs.last[pnlTop].addr, b)
+
+        bhs.status("deleting " + bhs.last[pnlTop].addr)
+
+        if (bhs.last[pnlTop].blackhole) {
+            bhs.deleteEntry(bhs.last[pnlBottom], b)
+
+            if (bhs.last[pnlBottom].basename)
+                bhs.deleteBase(bhs.last[pnlBottom].addr, b)
+
+            bhs.status("deleting " + bhs.last[pnlBottom].addr)
+        }
+
+        await b.commit().then(() => {
+            bhs.status("Delete successful.")
+        }).catch(err => {
+            bhs.status("ERROR: " + err.code)
+            console.log(err)
+        })
     })
 
-    $("#cancel").click(function () {
+    $("#cancel").click(() => {
         bhs.clearPanels()
     })
 })
@@ -86,9 +107,20 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     <div class="col-1">&nbsp;</div>
                     <div id="id-Lifeform" class="col-11"></div>
                 </div>
-                <div class="row">
+                <div class="row border-bottom">
                     <div class="col-1">&nbsp;</div>
                     <div id="id-Economy" class="col-11"></div>
+                </div>
+
+                <div id="row-valid" class="row border-bottom">
+                    <label class="radio col-5 h6 txt-inp-def">
+                        <input id="btn-valid" type="radio" name="validradio">
+                        BH Pair Confirmed
+                    </label>
+                    <label class="radio col-4 h6 txt-inp-def">
+                        <input id="btn-invalid" type="radio" name="validradio">
+                        Broken
+                    </label>
                 </div>
 
                 <div class="row">
@@ -117,13 +149,6 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                         <label class="h6 txt-inp-def">
                             <input id="ck-isdz" type="checkbox">
                             Dead Zone
-                        </label>
-                    </div>
-
-                    <div id="validate" class="col-4 hidden">
-                        <label class="h6 txt-inp-def">
-                            <input id="ck-valid" type="checkbox">
-                            Verified
                         </label>
                     </div>
                 </div>
@@ -176,7 +201,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         pnl.find("#id-glyph").text(glyph)
         pnl.find("#id-hex").text(glyph)
 
-        bhs.getEntry(addr, bhs.displaySingle, 0)
+        bhs.getEntry(addr, bhs.displayListEntry)
 
         bhs.displayCalc()
     })
@@ -203,24 +228,22 @@ blackHoleSuns.prototype.buildPanel = function (id) {
     })
 
     loc.find("#btn-searchRegion").unbind("click")
-    loc.find("#btn-searchRegion").click(function () {
-        bhs.getEntryByRegion(loc.find("#id-reg").val(), bhs.displaySingle, 0)
+    loc.find("#btn-searchRegion").click(() => {
+        bhs.getEntryByRegion(loc.find("#id-reg").val(), bhs.displayListEntry)
     })
 
     loc.find("#btn-delbase").unbind("click")
-    loc.find("#btn-delbase").click(function () {
-        if (loc.find("#id-addr").val())
-            bhs.deleteBase(loc.find("#id-addr").val())
-        else
-            bhs.status("No address to delete")
+    loc.find("#btn-delbase").click(() => {
+        let addr = loc.find("#id-addr").val()
+        bhs.deleteBase(addr)
     })
 }
 
-blackHoleSuns.prototype.displayListEntry = function (entry) {
-    bhs.displaySingle(entry, pnlTop)
+blackHoleSuns.prototype.displayListEntry = function (entry, zoom) {
+    bhs.displaySingle(entry, pnlTop, zoom)
 
     if (entry.blackhole) {
-        bhs.displaySingle(entry.x, pnlBottom)
+        bhs.displaySingle(entry.x, pnlBottom, zoom)
 
         $("#" + panels[pnlTop].id + " #ck-single").prop("checked", false)
         $("#" + panels[pnlTop].id).show()
@@ -243,6 +266,10 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
     }
 
     bhs.last[idx] = entry
+    if (idx === pnlBottom) {
+        bhs.last[idx].galaxy = bhs.user.galaxy
+        bhs.last[idx].platform = bhs.user.platform
+    }
 
     bhs.drawSingle(entry)
 
@@ -255,11 +282,16 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
     loc.find("#id-sys").val(entry.sys)
     loc.find("#id-reg").val(entry.reg)
 
-    loc.find("#id-by").html("<h6>" + (entry._name ? entry._name : entry.player) + "</h6>")
+    if (idx == 0)
+        loc.find("#id-by").html("<h6>" + entry._name + "</h6>")
+    else {
+        loc.find("#id-byrow").hide()
+    }
 
     loc.find("#btn-Lifeform").text(entry.life)
     loc.find("#ck-isdz").prop("checked", entry.deadzone)
-    loc.find("#ck-valid").prop("checked", entry.valid)
+    loc.find("#btn-valid").prop("checked", entry.valid)
+    loc.find("#btn-invalid").prop("checked", entry.invalid)
 
     if (entry.basename) {
         loc.find("#id-basename").val(entry.basename)
@@ -290,10 +322,13 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
 
     $("#delete").removeClass("disabled")
     $("#delete").removeAttr("disabled")
+
+    if (entry.blackhole)
+        loc.find("#row-valid").show()
 }
 
 blackHoleSuns.prototype.clearPanels = function () {
-    panels.forEach(function (d) {
+    panels.forEach(d => {
         bhs.clearPanel(d.id)
     })
 
@@ -323,16 +358,35 @@ blackHoleSuns.prototype.clearPanel = function (d) {
     pnl.find("#id-traveled").hide()
     pnl.find("#id-tocenter").hide()
 
+    pnl.find("#id-by").text("")
+
     pnl.find("#btn-delbase").addClass("disabled")
     pnl.find("#btn-delbase").prop("disabled", true)
+
+    pnl.find("#row-valid").hide()
 }
 
-blackHoleSuns.prototype.extractEntry = async function (idx) {
+blackHoleSuns.prototype.extractEntry = async function (idx, batch) {
     let pnl = $("#panels")
     let loc = pnl.find("#" + panels[idx].id)
 
     let entry = {}
     let lastentry = bhs.last[idx] ? bhs.last[idx] : null
+
+    if (lastentry) {
+        entry = mergeObjects(entry, lastentry)
+
+        let addr = loc.find("#id-addr").val()
+        if (lastentry.addr != addr) {
+            bhs.deleteEntry(lastentry, batch)
+            bhs.status("change address " + lastentry.addr)
+
+            if (listentry.basename) {
+                bhs.deleteBase(lastentry.addr, batch)
+                bhs.status("change base address" + lastentry.addr)
+            }
+        }
+    }
 
     if (!lastentry || lastentry.uid == bhs.user.uid) {
         entry._name = bhs.user._name
@@ -343,30 +397,11 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
         entry.version = typeof bhs.user.version !== "undefined" && bhs.user.version ? bhs.user.version : "next"
     }
 
-    if (lastentry) {
-        let addr = loc.find("#id-addr").val()
-        if (lastentry.addr != addr)
-            bhs.deleteEntry(lastentry, bhs.admin && bhs.role == "admin")
-
-        if (lastentry.uid != bhs.user.uid) {
-            if (bhs.role == "checker" || bhs.role == "admin") {
-                entry = lastentry
-                entry.valid = loc.find("#ck-valid").prop("checked")
-
-                if (bhs.role == "checker") {
-                    await bhs.updateEntry(entry, true)
-                    return
-                }
-            }
-        }
-    }
-
     entry.addr = loc.find("#id-addr").val()
     entry.sys = loc.find("#id-sys").val()
     entry.reg = loc.find("#id-reg").val()
     entry.life = loc.find("#btn-Lifeform").text().stripNumber()
     entry.econ = loc.find("#btn-Economy").text().stripNumber()
-    entry.valid = loc.find("#ck-valid").prop("checked")
 
     entry.dist = bhs.calcDist(entry.addr)
     entry.xyzs = bhs.addressToXYZ(entry.addr)
@@ -375,47 +410,53 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
     let single = loc.find("#ck-single").prop("checked")
     let deadzone = loc.find("#ck-isdz").prop("checked")
 
+    let bhloc = pnl.find("#" + panels[pnlTop].id)
+    entry.valid = bhloc.find("#btn-valid").prop("checked")
+    entry.invalid = bhloc.find("#btn-invalid").prop("checked")
+
     if (idx == pnlTop) {
         entry.deadzone = deadzone
 
         if (!deadzone && !single) {
             entry.blackhole = true
-            let loc = pnl.find("#" + panels[pnlBottom].id)
 
-            entry.connection = loc.find("#id-addr").val()
+            let xloc = pnl.find("#" + panels[pnlBottom].id)
+
+            entry.connection = xloc.find("#id-addr").val()
             entry.x = {}
             entry.x.addr = entry.connection
             entry.x.dist = bhs.calcDist(entry.x.addr)
             entry.x.xyzs = bhs.addressToXYZ(entry.connection)
-            entry.x.sys = loc.find("#id-sys").val()
-            entry.x.reg = loc.find("#id-reg").val()
-            entry.x.life = loc.find("#btn-Lifeform").text().stripNumber()
-            entry.x.econ = loc.find("#btn-Economy").text().stripNumber()
+            entry.x.sys = xloc.find("#id-sys").val()
+            entry.x.reg = xloc.find("#id-reg").val()
+            entry.x.life = xloc.find("#btn-Lifeform").text().stripNumber()
+            entry.x.econ = xloc.find("#btn-Economy").text().stripNumber()
 
             entry.towardsCtr = entry.dist - bhs.calcDist(entry.connection)
         }
     }
 
-    let ok = true
-    if (ok = bhs.validateEntry(entry)) {
-        if (entry.blackhole) {
-            ok = bhs.validateDist(entry)
+    let ok = bhs.validateEntry(entry) === ""
 
-            if (ok)
-                ok = bhs.extractEntry(pnlBottom)
-        }
+    if (ok) {
+        ok = bhs.validateDist(entry) === ""
+
+        if (entry.blackhole && ok)
+            ok = bhs.extractEntry(pnlBottom, batch)
 
         if (ok) {
             if (bhs.contest)
                 entry.contest = bhs.contest._name
 
-            await bhs.updateEntry(entry, bhs.admin && bhs.role == "admin")
+            bhs.updateEntry(entry, batch)
+            bhs.status("save " + entry.addr)
 
             if (hasbase) {
                 entry.basename = loc.find("#id-basename").val()
                 entry.owned = loc.find("#btn-Owned").text().stripNumber()
                 entry.owned = entry.owned ? entry.owned : "mine"
-                await bhs.updateBase(entry)
+                bhs.updateBase(entry, batch)
+                bhs.status("save base " + entry.addr)
             }
         }
     }
@@ -425,13 +466,21 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
 
 blackHoleSuns.prototype.save = async function () {
     $("#status").empty()
-    let ok = true
 
-    if (!bhs.admin)
-        ok = bhs.saveUser()
+    let batch = bhs.fs.batch()
 
-    if (ok && await bhs.extractEntry(pnlTop))
-        bhs.clearPanels()
+    let ok = await bhs.saveUser(batch)
+
+    if (ok)
+        ok = bhs.extractEntry(pnlTop, batch)
+
+    if (ok)
+        await batch.commit().then(() => {
+            bhs.status("Save Successful")
+        }).catch(err => {
+            bhs.status("Error: " + err.code)
+            console.log(err)
+        })
 }
 
 blackHoleSuns.prototype.displayCalc = function () {
@@ -463,7 +512,7 @@ blackHoleSuns.prototype.displayCalc = function () {
         entry.connection = connection
         entry.dist = tdist
         entry.towardsCtr = tdist - bdist
-        if (!bhs.validateDist(entry))
+        if (bhs.validateDist(entry) !== "")
             bottom.find("#id-tocenter").addClass("text-danger")
         else
             bottom.find("#id-tocenter").removeClass("text-danger")
@@ -471,6 +520,5 @@ blackHoleSuns.prototype.displayCalc = function () {
 }
 
 blackHoleSuns.prototype.status = function (str) {
-    $("#status").append("<h6>" + str + "</h6>")
-    $("#filestatus").append("<h6>" + str + "</h6>")
+    $("#status").prepend("<h6>" + str + "</h6>")
 }
