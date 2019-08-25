@@ -37,6 +37,7 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
                     $("#recalc").show()
                     $("#updateDARC").show()
                     $("#genDARC").show()
+                    $("#backupBHS").show()
 
                     if (document.domain == "localhost") {
                         $("#testing").show()
@@ -90,7 +91,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     pnl.find("#id-Player").val(bhs.user._name)
     pnl.find("#btn-Platform").text(bhs.user.platform)
     pnl.find("#btn-Organization").text(bhs.user.org)
-    pnl.find("#btn-Version").text(typeof bhs.user.version !== "undefined" ? bhs.user.version : "")
+    // pnl.find("#btn-Version").text(typeof bhs.user.version !== "undefined" ? bhs.user.version : "")
 
     if (bhs.user.galaxy) {
         let i = galaxyList[bhs.getIndex(galaxyList, "name", bhs.user.galaxy)].number
@@ -123,7 +124,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
                 <div class="col-1"></div>
                 <div id="id-Platform" class="col-3"></div>
                 <div id="id-Galaxy" class="col-3"></div>
-                <div id="id-Version" class="col-3"></div>
+                <div id="id-Version" class="col-3 hidden"></div>
 
                 <label class="col-4 h5 text-right align-bottom">
                     <input id="ck-fileupload" type="checkbox">
@@ -143,7 +144,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     })
 
     bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser, true)
-    bhs.buildMenu(loc, "Version", versionList, bhs.saveUser, true)
+    // bhs.buildMenu(loc, "Version", versionList, bhs.saveUser, true)
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, true)
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, true)
 
@@ -845,9 +846,8 @@ blackHoleSuns.prototype.clickGalaxy = function (evt) {
     bhs.entries = {}
     $("#btn-Galaxy").text(galaxy)
     let platform = $("#btn-Platform").text().stripMarginWS()
-    let version = $("#btn-Version").text().stripMarginWS()
     $("#btn-Player").text("")
-    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, null, galaxy, platform, version)
+    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, null, galaxy, platform)
 }
 
 blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
@@ -955,7 +955,7 @@ blackHoleSuns.prototype.extractUser = function () {
     u.platform = loc.find("#btn-Platform").text().stripNumber()
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber()
     u.org = loc.find("#btn-Organization").text().stripNumber()
-    u.version = loc.find("#btn-Version").text().stripNumber()
+    u.version = "beyond" // loc.find("#btn-Version").text().stripNumber()
 
     return u
 }

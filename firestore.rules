@@ -22,7 +22,7 @@ service cloud.firestore {
     // 01BA:007C:0B08:0079
     match /stars5/{document=**} {
       allow read: if isLoggedIn(request)
-      allow create: if hasRole(database, request, ["admin"]) // if isLoggedIn(request)
+      allow create: if isLoggedIn(request)
       allow update: if isOwner(request, resource) || modsFields5(request, resource) || isAdmin(database, request)
       allow delete: if isOwner(request, resource) || isAdmin(database, request)
     }

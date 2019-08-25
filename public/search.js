@@ -13,7 +13,6 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
                 <div id="id-Player" class="col-4 text-center"></div>
                 <div id="id-Platform" class="col-4 text-center"></div>
                 <div id="id-Galaxy" class="col-4 text-center"></div>
-                <div id="id-Version" class="col-4 text-center hidden"></div>
             </div>
         <br>`
 
@@ -29,7 +28,6 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
     bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select)
     bhs.buildMenu(loc, "Platform", platformList, bhs.select)
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.select)
-    bhs.buildMenu(loc, "Version", versionList, bhs.select)
 }
 
 blackHoleSuns.prototype.select = function () {
@@ -38,8 +36,7 @@ blackHoleSuns.prototype.select = function () {
     let uid = i != -1 ? bhs.usersList[i].uid : null
     let galaxy = $("#btn-Galaxy").text().stripNumber()
     let platform = $("#btn-Platform").text().stripNumber()
-    let version = $("#btn-Version").text().stripNumber()
-    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, uid, galaxy, platform, version)
+    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, uid, galaxy, platform)
 }
 
 blackHoleSuns.prototype.buildSearchPanel = function () {

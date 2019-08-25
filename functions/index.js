@@ -252,7 +252,7 @@ function stringify(e) {
     return JSON.stringify([e.galaxy, e.platform, e.addr, e.reg, e.sys, e.x.addr, typeof e.x.reg !== "undefined" ? e.x.reg : "", typeof e.x.sys !== "undefined" ? e.x.sys : ""]) + "\n"
 }
 
-// exports.scheduleUpdateDARC = functions.pubsub.schedule('every 15 minutes').onRun((context) => {
+// exports.scheduleUpdateDARC = functions.pubsub.schedule('every 1 hour').onRun((context) => {
 //     return doUpdateDARC()
 // })
 
@@ -415,16 +415,17 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
             let t = incTotals(e, 1)
             p.push(applyAllTotals(t))
 
-            e = await checkOldEntry(e, doc.ref)
+            if (e.blackhole) {
+                e = await checkOldEntry(e, doc.ref)
 
-            console.log("create " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-            p.push(saveChange(e, "create"))
+                console.log("create " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+                p.push(saveChange(e, "create"))
+            }
         }
 
         p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
-            update: e.modded
-        }, {
-            merge: true
+            name: e.galaxy,
+            number: galaxyList[getIndex(galaxyList, "name", e.galaxy)].number + " " + i
         }))
 
         return Promise.all(p)
@@ -436,23 +437,27 @@ exports.systemUpdate = functions.firestore.document("stars5/{galaxy}/{platform}/
 
         let p = []
         let e = change.after.data()
-        delete e.modded
-        let b = change.before.data()
-        delete b.modded
 
-        if (!deepEqual(e, b)) {
-            if (e.blackhole || e.deadzone) {
-                e = await checkOldEntry(e, change.after.ref)
+        if (e.blackhole) {
+            delete e.modded
+            let b = change.before.data()
+            delete b.modded
 
-                console.log("update " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-                p.push(saveChange(e, "update"))
+            if (!deepEqual(e, b)) {
+                let e = change.after.data()
+                if (e.blackhole || e.deadzone) {
+                    e = await checkOldEntry(e, change.after.ref)
+
+                    console.log("update " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+                    p.push(saveChange(e, "update"))
+                }
+
+                p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
+                    update: e.modded
+                }, {
+                    merge: true
+                }))
             }
-
-            p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
-                update: e.modded
-            }, {
-                merge: true
-            }))
         }
 
         return Promise.all(p)
@@ -467,103 +472,135 @@ exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/
             let t = incTotals(e, -1)
             p.push(applyAllTotals(t))
 
-            console.log("delete " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-            p.push(saveChange(e, "delete"))
+            if (e.blackhole) {
+                console.log("delete " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+                p.push(saveChange(e, "delete"))
+            }
         }
-
-        p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
-            update: admin.firestore.FieldValue.serverTimestamp()
-        }, {
-            merge: true
-        }))
 
         return Promise.all(p)
     })
 
 function saveChange(e, edit) {
-    e[edit] = admin.firestore.FieldValue.serverTimestamp()
-    return admin.firestore().doc("edits/" + e.galaxy + "/" + e.platform + "/" + e.addr).set(e, {
-        merge: true
-    })
+    e.what = edit
+    e.time = admin.firestore.FieldValue.serverTimestamp()
+    return admin.firestore().doc("edits/" + e.time.toDate().getTime()).set(e)
 }
 
-exports.backupBHS = functions.https.onCall((data, context) => {
+// exports.schedulebackupBHS = functions.pubsub.schedule('every 1 day').onRun((context) => {
+//     return doBackup()
+// })
+
+exports.backupBHS = functions.https.onCall(async (data, context) => {
+    return doBackup()
+})
+
+async function doBackup() {
     let p = []
 
     let ref = admin.firestore().collection("stars5")
-    let s5Refs = ref.listDocuments().then(docrefs => {
+    let s5GRefs = await ref.listDocuments().then(docrefs => {
         return docrefs
     })
 
-    for (let s5ref of s5Refs) {
-        p.push(s5ref.get().then(async (doc) => {
-            let p = []
-            let s5 = doc.data()
-
-            let s6ref = admin.firestore().collection("stars6").doc(gdoc.id)
-            let s6 = await s6ref.get().then(doc => {
-                return doc.exists ? doc.data() : null
+    for (let s5Gref of s5GRefs) {
+        await s5Gref.get().then(async s5Gdoc => {
+            let s6GRef = admin.firestore().collection("stars6").doc(s5Gdoc.id)
+            let s6Gdoc = await s6GRef.get().then(doc => {
+                return doc.exists ? doc : null
             })
 
-            if (s6 === null || s5.update > s6.backup) {
-                let s5PRefs = await s5ref.listDocuments().then(docrefs => {
+            let s5PRefs = await s5Gdoc.ref.listCollections().then(colrefs => {
+                return colrefs
+            })
+
+            let s5 = s5Gdoc.data()
+            let s6 = s6Gdoc ? s6Gdoc.data() : null
+
+            for (let s5Pref of s5PRefs) {
+                let ref = s5Pref
+                if (s6 && s6.backup)
+                    ref = ref.where("modded", ">", s6.backup)
+
+                p.push(ref.get().then(async snapshot => {
+                    if (snapshot.size > 0) {
+                        console.log(snapshot.docs[0].ref.parent.path + " " + snapshot.size)
+
+                        let p = []
+                        let b = admin.firestore().batch()
+                        let c = 0
+
+                        for (let doc of snapshot.docs) {
+                            let d = doc.data()
+
+                            if (++c > 500) {
+                                p.push(b.commit().then(() => {
+                                    console.log("commit", c)
+                                }).catch(err => {
+                                    console.log(err)
+                                }))
+
+                                b = admin.firestore().batch()
+                                c = 0
+                            }
+
+                            let ref = admin.firestore().doc(doc.ref.path.replace(/stars5(.*)/, "stars6$1"))
+                            b.set(ref, d)
+                        }
+
+                        if (c > 0)
+                            p.push(b.commit().then(() => {
+                                console.log("commit", c)
+                            }).catch(err => {
+                                console.log(err)
+                            }))
+
+                        return Promise.all(p).then(res => {
+                            return res
+                        }).catch(err => {
+                            console.log(err)
+                            return err
+                        })
+                    }
+                }))
+
+                let s5docList = await s5Pref.listDocuments().then(docrefs => {
+                    let list = []
+                    for (let docs of docrefs)
+                        list[docs.id] = true
+                    return list
+                })
+
+                ref = admin.firestore().collection(s5Pref.path.replace(/stars5(.*)/, "stars6$1"))
+                let s6docRefs = await ref.listDocuments().then(docrefs => {
                     return docrefs
                 })
 
-                for (let pref of s5PRefs) {
-                    let ref = pref.were("modded", ">", s6.backup)
-                    p.push(ref.get().then(async snapshot => {
-                        if (snapshot.size > 0) {
-                            console.log(snapshot.docs[0].ref.parent.path + " " + snapshot.size)
-
-                            let b = await admin.firestore().batch()
-                            let c = 0
-                            let t = 0
-
-                            for (let doc of snapshot.docs) {
-                                if (++c > 450) {
-                                    t += c
-                                    await b.commit()
-                                    b = await admin.firestore().batch()
-                                    c = 0
-                                }
-
-                                let ref = admin.firestore().doc(doc.path.replace(/stars5(.*)/, "stars6$1"))
-                                await b.set(ref, doc.data())
-                            }
-
-                            if (c > 0)
-                                await b.commit()
-
-                            t += c
-                            return snapshot.docs[0].ref.parent.path + " " + t
-                        }
-                    }))
+                for (let s6doc of s6docRefs) {
+                    if (typeof s5docList[s6doc.id] === "undefined") {
+                        console.log(s6doc.path, "delete")
+                        p.push(s6doc.delete().then(() => {
+                            return true
+                        }).catch((err) => {
+                            return err
+                        }))
+                    }
                 }
-
-                if (!s6) {
-                    s6 = {}
-                    s6.name = s5.name
-                    s6.number = s5.number
-                }
-
-                s6.backup = s5.update
-                p.push(s6ref.set(s6).then(ref => {
-                    console.log(ref.path + " " + s6.backup.toDate().toString())
-                    return ref.path + " " + s6.backup.toDate().toString()
-                }))
             }
 
-            return Promise.all(p).then(res => {
-                return {
-                    res: res
-                }
+            s6 = {}
+            s6.name = s5.name
+            s6.number = s5.number
+            s6.backup = admin.firestore.FieldValue.serverTimestamp()
+
+            let ref = admin.firestore().doc("stars6/" + s6.name)
+            p.push(ref.set(s6).then(() => {
+                return true
             }).catch(err => {
-                return {
-                    err: err.text
-                }
-            })
-        }))
+                console.log(err)
+                return err
+            }))
+        })
     }
 
     return Promise.all(p).then(res => {
@@ -575,7 +612,7 @@ exports.backupBHS = functions.https.onCall((data, context) => {
             err: err.text
         }
     })
-})
+}
 
 exports.recalcTotals = functions.https.onCall(async (data, context) => {
     let p = []

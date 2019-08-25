@@ -114,7 +114,6 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
     if (usr) {
         let profilePicUrl = usr.photoURL
         let userName = usr.displayName
-
         let user = bhs.userInit()
         user.uid = usr.uid
 
@@ -147,7 +146,6 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
             user.lasttime = firebase.firestore.Timestamp.now()
 
             bhs.updateUser(user)
-
             bhs.doLoggedin(user)
 
             // if (document.domain == "localhost") {
@@ -161,7 +159,14 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
             // })
             // }
         }).catch(err => {
-            console.log(err)
+            user.email = usr.email
+            user.displayName = usr.displayName
+            user.role = "user"
+            user.lasttime = firebase.firestore.Timestamp.now()
+            user.firsttime = user.lasttime
+
+            bhs.updateUser(user)
+            bhs.doLoggedin(user)
         })
     } else {
         bhs.navLoggedout()
@@ -520,6 +525,18 @@ blackHoleSuns.prototype.genDARC = async function () {
     return
 }
 
+blackHoleSuns.prototype.backupBHS = async function () {
+    var backupBHS = firebase.functions().httpsCallable('backupBHS')
+    backupBHS()
+        .then(result => {
+            console.log(result.data)
+        })
+        .catch(err => {
+            console.log(err)
+        })
+    return
+}
+
 // blackHoleSuns.prototype.checkDistance = async function () {
 //     let t = {}
 //     let start = 15000
@@ -577,6 +594,40 @@ blackHoleSuns.prototype.genDARC = async function () {
 // })
 // }
 
+blackHoleSuns.prototype.testing = async function () {
+    let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform)
+    ref = ref.where("blackhole", "==", true)
+    let map = await ref.get().then(async snapshot => {
+        let map = {}
+
+        for (let doc of snapshot.docs) {
+            let s1 = doc.data()
+
+            for (let doc of snapshot.docs) {
+                let s2 = doc.data()
+                let d = bhs.calcDistXYZ(s1.x.xyzs, s2.xyzs)
+
+                if (d > 0 && d < 0x400) {
+                    if (typeof map[s1.x.addr] === "undefined")
+                        map[s1.x.addr] = []
+                    while (typeof map[s1.x.addr][d] !== "undefined")
+                        d++
+
+                    map[s1.x.addr][d] = s2.addr
+                }
+            }
+        }
+
+        return map
+    })
+
+    let s = JSON.stringify(map)
+
+    let start = bhs.addressToXYZ("01D8:007C:04DD:0021")
+    let end = bhs.addressToXYZ("0C1A:007C:030F:0027")
+
+}
+
 blackHoleSuns.prototype.recalcTotals = function () {
     var recalcTotals = firebase.functions().httpsCallable('recalcTotals')
     recalcTotals()
@@ -588,16 +639,13 @@ blackHoleSuns.prototype.recalcTotals = function () {
         })
 }
 
-blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, uid, galaxy, platform, version) {
+blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, uid, galaxy, platform) {
     galaxy = galaxy ? galaxy : bhs.user.galaxy
     platform = platform ? platform : bhs.user.platform
     let complete = false
 
     let ifindex = window.location.pathname == "/index.html" || window.location.pathname == "/"
     let ref = bhs.getStarsColRef(galaxy, platform)
-
-    // if (bhs.user.version || version)
-    //     ref = ref.where("version", "==", version ? version : bhs.user.version)
 
     if (uid || ifindex) {
         ref = ref.where("uid", "==", uid ? uid : bhs.user.uid)
@@ -896,11 +944,6 @@ blackHoleSuns.prototype.validateUser = function (user) {
 
     if (ok && !user.platform) {
         bhs.status("Error: Missing platform. Changes not saved.", 0)
-        ok = false
-    }
-
-    if (ok && !user.version) {
-        bhs.status("Error: Missing Version. Changes not saved.", 0)
         ok = false
     }
 
@@ -1263,22 +1306,18 @@ blackHoleSuns.prototype.addrToGlyph = function (addr) {
 }
 
 blackHoleSuns.prototype.calcDist = function (addr, addr2) {
-    if (!addr)
-        return addr
-
     let cord = bhs.addressToXYZ(addr)
     let cord2 = addr2 ? bhs.addressToXYZ(addr2) : {
         x: 0x7ff,
         y: 0x7f,
         z: 0x7ff
     }
-    let d = parseInt(Math.sqrt(Math.pow(cord2.x - cord.x, 2) + Math.pow(cord2.y - cord.y, 2) + Math.pow(cord2.z - cord.z, 2)) * 400)
-    return d
+
+    return parseInt(Math.sqrt(Math.pow(cord2.x - cord.x, 2) + Math.pow(cord2.y - cord.y, 2) + Math.pow(cord2.z - cord.z, 2)) * 400)
 }
 
-blackHoleSuns.prototype.calcXYZDist = function (xyz1, xyz2) {
-    let d = parseInt(Math.sqrt(Math.pow(xyz1.x - xyz2.x, 2) + Math.pow(xyz1.y - xyz2.y, 2) + Math.pow(xyz1.z - xyz2.z, 2)))
-    return d
+blackHoleSuns.prototype.calcDistXYZ = function (xyz1, xyz2) {
+    return parseInt(Math.sqrt(Math.pow(xyz1.x - xyz2.x, 2) + Math.pow(xyz1.y - xyz2.y, 2) + Math.pow(xyz1.z - xyz2.z, 2)))
 }
 
 Date.prototype.toDateLocalTimeString = function () {
@@ -1336,7 +1375,7 @@ const platformList = [{
 const versionList = [{
     name: "next",
 }, {
-    name: "Beyond",
+    name: "beyond",
 }]
 
 const modeList = [{

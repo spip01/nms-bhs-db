@@ -323,7 +323,7 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
     $("#delete").removeClass("disabled")
     $("#delete").removeAttr("disabled")
 
-    if (entry.blackhole)
+    if (entry.blackhole && bhs.user.uid != entry.uid)
         loc.find("#row-valid").show()
 }
 
@@ -394,7 +394,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx, batch) {
         entry.uid = bhs.user.uid
         entry.platform = bhs.user.platform
         entry.galaxy = bhs.user.galaxy
-        entry.version = typeof bhs.user.version !== "undefined" && bhs.user.version ? bhs.user.version : "next"
+        entry.version = "beyond" // typeof bhs.user.version !== "undefined" && bhs.user.version ? bhs.user.version : "beyond"
     }
 
     entry.addr = loc.find("#id-addr").val()
