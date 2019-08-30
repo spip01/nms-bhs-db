@@ -11,7 +11,7 @@ admin.initializeApp({
 
 
 /**************************
-https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Bad%20Wolf&g=Calypso&p=PC-XBox
+https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Bad%20Wolf&g=Euclid&p=PC-XBox
 https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Euclid&p=PC-XBox
 https://us-central1-nms-bhs.cloudfunctions.net/getGPList
 https://us-central1-nms-bhs.cloudfunctions.net/getPOI
@@ -249,12 +249,12 @@ function stringify(e) {
         return null
     }
 
-    return JSON.stringify([e.galaxy, e.platform, e.addr, e.reg, e.sys, e.x.addr, typeof e.x.reg !== "undefined" ? e.x.reg : "", typeof e.x.sys !== "undefined" ? e.x.sys : ""]) + "\n"
+    return JSON.stringify([e.addr, e.reg, e.sys, e.x.addr, typeof e.x.reg !== "undefined" ? e.x.reg : "", typeof e.x.sys !== "undefined" ? e.x.sys : ""]) + "\n"
 }
 
-// exports.scheduleUpdateDARC = functions.pubsub.schedule('every 1 hour').onRun((context) => {
-//     return doUpdateDARC()
-// })
+exports.scheduleUpdateDARC = functions.pubsub.schedule("0 * * * *").onRun((context) => {
+    return doUpdateDARC()
+})
 
 exports.updateDARC = functions.https.onCall(async (data, context) => {
     return doUpdateDARC()
@@ -265,138 +265,129 @@ async function doUpdateDARC() {
     const readline = require('readline')
 
     let ref = admin.firestore().collection("edits")
-    let docrefs = await ref.listDocuments().then(docrefs => {
-        return docrefs
-    })
+    return ref.get().then(async snapshot => {
+        let edits = {}
 
-    let p = []
+        for (let doc of snapshot.docs) {
+            let e = doc.data()
 
-    for (let gref of docrefs) {
-        let colrefs = await gref.listCollections().then(colrefs => {
-            return colrefs
-        })
+            if (typeof edits[e.galaxy] === "undefined")
+                edits[e.galaxy] = {}
+            if (typeof edits[e.galaxy][e.platform] === "undefined")
+                edits[e.galaxy][e.platform] = {}
+            if (typeof edits[e.galaxy][e.platform][e.addr] === "undefined")
+                edits[e.galaxy][e.platform][e.addr] = {}
 
-        for (let pref of colrefs) {
-            let onlyCreated = true
+            e.ref = doc.ref
+            edits[e.galaxy][e.platform][e.addr][doc.id] = e
+        }
 
-            let edits = await pref.get().then(async snapshot => {
-                let edits = {}
+        let p = []
+        for (let gal of Object.keys(edits))
+            for (let plat of Object.keys(edits[gal])) {
+                let elist = edits[gal][plat]
 
-                for (let i = 0; i < snapshot.size; ++i) {
-                    let e = snapshot.docs[i].data()
-                    edits[e.addr] = e
-                    edits[e.addr].ref = snapshot.docs[i].ref
-
-                    let updt = typeof e.update === "undefined" ? 0 : e.update.seconds
-                    let del = typeof e.delete === "undefined" ? 0 : e.delete.seconds
-                    let create = typeof e.create === "undefined" ? 0 : e.create.seconds
-
-                    let t = Math.max(updt, del, create)
-
-                    switch (t) {
-                        case updt:
-                            edits[e.addr].last = "update"
-                            break
-                        case del:
-                            edits[e.addr].last = "delete"
-                            break
-                        case create:
-                        default:
-                            edits[e.addr].last = "create"
-                            break
-                    }
-                }
-
-                return edits
-            })
-
-            console.log(gref.id, pref.id, Object.keys(edits).length)
-
-            let tname = 'tmp/' + gref.id + "-" + pref.id + ".txt"
-            let tf = bucket.file(tname)
-            let ts = tf.createWriteStream({
-                gzip: true
-            })
-
-            let dname = 'darc/' + gref.id + "-" + pref.id + ".txt"
-            let df = bucket.file(dname)
-
-            let exists = await df.exists()
-                .then(data => {
-                    return data[0]
-                }).catch(err => {
-                    console.log("error", err)
-                    return false
+                let tname = 'tmp/' + gal + "-" + plat + ".txt"
+                let tf = bucket.file(tname)
+                let ts = tf.createWriteStream({
+                    gzip: true
                 })
 
-            if (exists) {
-                let ds = df.createReadStream()
+                let dname = 'darc/' + gal + "-" + plat + ".txt"
+                let df = bucket.file(dname)
 
-                let rd = readline.createInterface({
-                    input: ds
-                })
+                let exists = await df.exists()
+                    .then(data => {
+                        return data[0]
+                    }).catch(() => {
+                        return false
+                    })
 
-                rd.on("line", line => {
-                    let addr = line.replace(/.*?((?:[0-9A-F]{4}:){3}[0-9A-F]{4}).*/, "$1")
+                if (exists) {
+                    let ds = df.createReadStream()
+                    let rd = readline.createInterface({
+                        input: ds
+                    })
 
-                    if (typeof edits[addr] !== "undefined") {
-                        let e = edits[addr]
-                        if (edits[addr].last === "delete")
-                            console.log("delete", e.galaxy, e.platform, e.addr)
-                        else {
-                            console.log("update", e.galaxy, e.platform, e.addr)
-                            let out = stringify(e)
-                            if (out)
-                                ts.write(out)
-                        }
+                    rd.on("line", line => {
+                        let addr = line.replace(/.*?((?:[0-9A-F]{4}:){3}[0-9A-F]{4}).*/, "$1")
+                        if (applyEdits(ts, elist[addr]))
+                            delete elist[addr]
+                        else
+                            ts.write(line + "\n")
+                    })
 
-                        e.ref.delete()
-                        delete edits[addr]
-                    } else
-                        ts.write(line + "\n")
-                })
+                    rd.on("close", () => {
+                        appendEdits(ts, elist)
+                    })
 
-                rd.on("close", () => {
-                    console.log(dname, "close")
-                    appendEdits(ts, edits)
-                })
+                } else
+                    appendEdits(ts, elist)
+
+                p.push(new Promise((resolve, reject) => {
+                    ts.on('finish', () => {
+                        tf.move(dname).then(() => {
+                            resolve()
+                        }).catch(err => {
+                            reject(err)
+                        })
+                    })
+                }))
             }
 
-            p.push(new Promise((resolve, reject) => {
-                ts.on('finish', () => {
-                    console.log(dname, "finished")
-                    tf.move(dname).then(() => {
-                        resolve()
-                    }).catch(err => {
-                        reject(err)
-                    })
-                })
-            }))
-        }
-    }
-
-    return Promise.all(p).then(() => {
-        return {
-            ok: true
-        }
-    }).catch(err => {
-        return {
-            err: err
-        }
+        return Promise.all(p).then(() => {
+            return {
+                ok: true
+            }
+        }).catch(err => {
+            return {
+                err: err
+            }
+        })
     })
 }
 
-function appendEdits(ts, edits) {
-    for (let l of Object.keys(edits)) {
-        let e = edits[l]
-        console.log("add", e.galaxy, e.platform, e.addr)
-        let out = stringify(e)
-        if (out)
-            ts.write(out)
-        e.ref.delete()
-    }
+function appendEdits(ts, elist) {
+    for (let a of Object.keys(elist))
+        applyEdits(ts, elist[a])
 
     ts.end()
+}
+
+function applyEdits(ts, elist) {
+    if (typeof elist !== "undefined") {
+        let line = null
+
+        for (let t of Object.keys(elist)) {
+            let ed = elist[t]
+
+            let ref = ed.ref
+            delete ed.ref
+            
+            switch (ed.what) {
+                case "delete":
+                    console.log("delete",ed.addr)
+                    line = null
+                    break
+                case "update":
+                case "create":
+                    delete ed.what
+                    line = stringify(ed)
+                    break
+            }
+
+            ref.delete()
+        }
+
+        if (line) {
+            console.log(line)
+            ts.write(line + "\n")
+        }
+
+        return true
+    }
+
+    return false
 }
 
 exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
@@ -425,7 +416,8 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
 
         p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
             name: e.galaxy,
-            number: galaxyList[getIndex(galaxyList, "name", e.galaxy)].number + " " + i
+            number: galaxyList[getIndex(galaxyList, "name", e.galaxy)].number,
+            update: e.modded
         }))
 
         return Promise.all(p)
@@ -476,6 +468,12 @@ exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/
                 console.log("delete " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
                 p.push(saveChange(e, "delete"))
             }
+
+            p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
+                update: e.modded
+            }, {
+                merge: true
+            }))
         }
 
         return Promise.all(p)
@@ -483,134 +481,86 @@ exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/
 
 function saveChange(e, edit) {
     e.what = edit
-    e.time = admin.firestore.FieldValue.serverTimestamp()
+    e.time = admin.firestore.Timestamp.fromDate(new Date());
     return admin.firestore().doc("edits/" + e.time.toDate().getTime()).set(e)
 }
 
-// exports.schedulebackupBHS = functions.pubsub.schedule('every 1 day').onRun((context) => {
-//     return doBackup()
-// })
+exports.scheduleBackupBHS = functions.pubsub.schedule('0 2 * * *').onRun(context => {
+    return doBackup()
+})
 
 exports.backupBHS = functions.https.onCall(async (data, context) => {
     return doBackup()
 })
 
-async function doBackup() {
+function backupCols(ref, now) {
     let p = []
+    const bucket = admin.storage().bucket("staging.nms-bhs.appspot.com")
 
-    let ref = admin.firestore().collection("stars5")
-    let s5GRefs = await ref.listDocuments().then(docrefs => {
-        return docrefs
-    })
+    p.push(ref.get().then(snapshot => {
+        if (!snapshot.empty) {
+            const path = /\//g [Symbol.replace](snapshot.query.path, "-")
+            const fname = "backup/" + now + "/" + path + ".json"
+            //console.log(fname)
 
-    for (let s5Gref of s5GRefs) {
-        await s5Gref.get().then(async s5Gdoc => {
-            let s6GRef = admin.firestore().collection("stars6").doc(s5Gdoc.id)
-            let s6Gdoc = await s6GRef.get().then(doc => {
-                return doc.exists ? doc : null
+            let f = bucket.file(fname)
+            let fs = f.createWriteStream({
+                gzip: true,
             })
 
-            let s5PRefs = await s5Gdoc.ref.listCollections().then(colrefs => {
-                return colrefs
-            })
+            for (let doc of snapshot.docs)
+                fs.write(JSON.stringify(doc.data()) + "\n")
 
-            let s5 = s5Gdoc.data()
-            let s6 = s6Gdoc ? s6Gdoc.data() : null
+            fs.end()
 
-            for (let s5Pref of s5PRefs) {
-                let ref = s5Pref
-                if (s6 && s6.backup)
-                    ref = ref.where("modded", ">", s6.backup)
+            return fname + " done"
+        } else
+            return snapshot.query.path + " empty"
+    }))
 
-                p.push(ref.get().then(async snapshot => {
-                    if (snapshot.size > 0) {
-                        console.log(snapshot.docs[0].ref.parent.path + " " + snapshot.size)
+    p.push(ref.listDocuments().then(refs => {
+        let p = []
+        for (let ref of refs) {
+            p.push(ref.listCollections().then(refs => {
+                let p = []
+                for (let ref of refs)
+                    p.push(backupCols(ref, now))
 
-                        let p = []
-                        let b = admin.firestore().batch()
-                        let c = 0
-
-                        for (let doc of snapshot.docs) {
-                            let d = doc.data()
-
-                            if (++c > 500) {
-                                p.push(b.commit().then(() => {
-                                    console.log("commit", c)
-                                }).catch(err => {
-                                    console.log(err)
-                                }))
-
-                                b = admin.firestore().batch()
-                                c = 0
-                            }
-
-                            let ref = admin.firestore().doc(doc.ref.path.replace(/stars5(.*)/, "stars6$1"))
-                            b.set(ref, d)
-                        }
-
-                        if (c > 0)
-                            p.push(b.commit().then(() => {
-                                console.log("commit", c)
-                            }).catch(err => {
-                                console.log(err)
-                            }))
-
-                        return Promise.all(p).then(res => {
-                            return res
-                        }).catch(err => {
-                            console.log(err)
-                            return err
-                        })
-                    }
-                }))
-
-                let s5docList = await s5Pref.listDocuments().then(docrefs => {
-                    let list = []
-                    for (let docs of docrefs)
-                        list[docs.id] = true
-                    return list
+                return Promise.all(p).then(res => {
+                    return res
+                }).catch(err => {
+                    return err
                 })
-
-                ref = admin.firestore().collection(s5Pref.path.replace(/stars5(.*)/, "stars6$1"))
-                let s6docRefs = await ref.listDocuments().then(docrefs => {
-                    return docrefs
-                })
-
-                for (let s6doc of s6docRefs) {
-                    if (typeof s5docList[s6doc.id] === "undefined") {
-                        console.log(s6doc.path, "delete")
-                        p.push(s6doc.delete().then(() => {
-                            return true
-                        }).catch((err) => {
-                            return err
-                        }))
-                    }
-                }
-            }
-
-            s6 = {}
-            s6.name = s5.name
-            s6.number = s5.number
-            s6.backup = admin.firestore.FieldValue.serverTimestamp()
-
-            let ref = admin.firestore().doc("stars6/" + s6.name)
-            p.push(ref.set(s6).then(() => {
-                return true
-            }).catch(err => {
-                console.log(err)
-                return err
             }))
+        }
+
+        return Promise.all(p).then(res => {
+            return res
+        }).catch(err => {
+            return err
         })
-    }
+    }))
 
     return Promise.all(p).then(res => {
-        return {
-            res: res
-        }
+        return res
     }).catch(err => {
-        return {
-            err: err.text
-        }
+        return err
+    })
+}
+
+function doBackup() {
+    const now = new Date().getTime()
+
+    return admin.firestore().listCollections().then(refs => {
+        let p = []
+        for (let ref of refs)
+            p.push(backupCols(ref, now))
+
+        return Promise.all(p).then(res => {
+            //console.log(res)
+        }).catch(err => {
+            console.log(err)
+        })
     })
 }
 

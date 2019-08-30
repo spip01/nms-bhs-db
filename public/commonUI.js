@@ -1415,7 +1415,7 @@ blackHoleSuns.prototype.drawSingle = function (e) {
     if (e.blackhole)
         pushentry(out, e.x.xyzs, e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg)
 
-    Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"] * 2, opt["clr-bh"], opt["clr-exit"], true))
+    Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"] * 2, opt["clr-bh"], e.blackhole ? opt["clr-exit"] : null))
 }
 
 blackHoleSuns.prototype.drawList = function (listEntry, force) {
@@ -1446,7 +1446,7 @@ blackHoleSuns.prototype.drawList = function (listEntry, force) {
             let out = initout()
             pushentry(out, e.xyzs, e.addr + "<br>" + e.sys + "<br>" + e.reg)
             pushentry(out, e.x.xyzs, e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg)
-            data.push(makedata(opt, out, 4, opt["clr-bh"], opt["clr-con"], true))
+            data.push(makedata(opt, out, 4, opt["clr-bh"], opt["clr-con"]))
         } else {
             let text = e.addr + "<br>" + e.sys + "<br>" + e.reg
 
@@ -1522,7 +1522,7 @@ blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
                 if (bhs.displayResults)
                     bhs.displayResults(d)
 
-                Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"], opt["clr-bh"], up ? opt["clr-exit"] : opt["clr-con"], true))
+                Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"], opt["clr-bh"], up ? opt["clr-exit"] : opt["clr-con"]))
 
                 bhs.drawChain(opt, up ? d.xyzs : d.x.xyzs, depth)
             }
@@ -1697,7 +1697,7 @@ blackHoleSuns.prototype.traceZero = function (addr) {
         let out = initout()
         pushentry(out, zero, "Galactic Center")
         pushentry(out, addr.xyzs)
-        Plotly.addTraces('plymap', makedata(opt, out, 5, opt["clr-bh"], opt["clr-dz"], true))
+        Plotly.addTraces('plymap', makedata(opt, out, 5, opt["clr-bh"], opt["clr-dz"]))
     }
 }
 
@@ -1721,7 +1721,7 @@ function initout(out) {
     return out
 }
 
-function makedata(opt, out, size, color, linecolor, lines) {
+function makedata(opt, out, size, color, linecolor) {
     let line = {
         x: out.x,
         y: out.y,
@@ -1737,7 +1737,7 @@ function makedata(opt, out, size, color, linecolor, lines) {
         hoverinfo: 'text',
     }
 
-    if (lines) {
+    if (linecolor) {
         line.mode = 'lines+markers'
         line.line = {
             color: linecolor,

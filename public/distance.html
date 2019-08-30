@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>No Man's Sky Black Hole Suns</title>
+    <meta name="description" content="No Man's Sky Black Hole Suns">
+    <meta name="keywords" content="no man's sky,map,black hole">
+    <meta name="author" content="Stephen Piper">
+    <meta name="application-name" content="NMS-Black Hole Suns">
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <script src="env.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-5"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-66007591-5');
+    </script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+    </script>
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <script src="distance.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="local.css">
+</head>
+
+<body class="bkg-def">
+    <a href="https://darc.blackholesuns.com"><img src="nmsbhs_banner.jpg" alt="BHS Banner"></a>
+
+    <div id="r2" class="container-fluid">
+        <div class="row">
+            <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">FAQ</a>
+            <a class="col-3 text-center h5 txt-def" href="index.html">Input</a>
+            <a class="col-3 text-center h5 txt-def" href="totals.html">Totals</a>
+            <a class="col-3 text-center h5 txt-def" href="search.html">Search</a>
+        </div>
+    </div>
+
+    <div class="row border-top">
+        <a href="https://darc.blackholesuns.com/" class="col-3 text-center clr-creme h6">BHS DaRC</a>
+        <a href="https://guide.blackholesuns.com/" class="col-3 text-center clr-creme h6">Travel Guide</a>
+        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-3 text-center clr-creme h6">Follow us on
+            Reddit</a>
+        <a href="https://discord.blackholesuns.com/" class="col-3 text-center clr-creme h6">Talk to us on
+            Discord</a>
+    </div>
+
+    <div id="javascript">
+        <!--googleoff:all-->
+        <div class="text-danger h6">
+            <p>Unfortunately, this page cannot function without javasript. Please add this site to your "allowed" sites.
+                For chrome it's located&nbsp;
+                <a href="chrome://settings/content/javascript">here</a></p>
+            <p>This error message can also be caused by a page loading error.</p>
+        </div>
+        <!--googleon:all-->
+        <br>
+    </div>
+    <br>
+
+    <div id="jssite" class="container-fluid pad-bottom" style="display:none">
+        <div class="card card-body pad-bottom">
+            <div class="row">
+                <div class="col-3 h6 txt-inp-def">Start Coordinates</div>
+                <input id="id-saddr" class="rounded col-4" placeholder="0000:0000:0000:0000" onchange="dispAddr(this)">
+            </div>
+            <div class="row">
+                <div class="col-1 h6 txt-inp-def">&nbsp;</div>
+                <div class="col-2 h6 txt-inp-def">Portal Glyphs</div>
+                <div id="id-sglyph" class="col-8 h3 txt-inp-def glyph"></div>
+            </div>
+            <div class="row">
+                <div class="col-1 h6 txt-inp-def">&nbsp;</div>
+                <div class="col-2 h6 txt-inp-def">Portal Hex</div>
+                    <div id="id-shex" class="col-8 txt-inp-def"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-3 h6 txt-inp-def">End Coordinates</div>
+                <input id="id-eaddr" class="rounded col-4" placeholder="0000:0000:0000:0000" onchange="dispAddr(this)">
+            </div>
+            <div class="row">
+                <div class="col-1 h6 txt-inp-def">&nbsp;</div>
+                <div class="col-2 h6 txt-inp-def">Portal Glyphs</div>
+                <div id="id-eglyph" class="col-8 h3 txt-inp-def glyph"></div>
+            </div>
+            <div class="row">
+                <div class="col-1 h6 txt-inp-def">&nbsp;</div>
+                    <div class="col-2 h6 txt-inp-def">Portal Hex</div>
+                    <div id="id-ehex" class="col-8 txt-inp-def"></div>
+            </div>
+            <br>
+
+            <div class="row border-top">
+                <div class="col-3 h6 txt-inp-def">Distance</div>
+                <div id="id-dist" class="col-7 txt-inp-def"></div>
+            </div>
+            <br>
+
+            <div class="row border-top">
+                <div class="col-3 h6 txt-inp-def">Jump Range</div>
+                <input id="id-range" type="number" class="col-3 rounded" value=2500 onchange="dispAddr(this)">
+            </div>
+            <div class="row">
+                <div class="col-3 h6 txt-inp-def">Jumps</div>
+                <div id="id-jumps" class="col-7 txt-inp-def"></div>
+            </div>
+        </div>
+        <br>
+        <div id="mapcol" class="card card-body pad-bottom">
+            <div id="plymap"></div>
+        </div>
+    </div>
+</body>
+
+</html>
