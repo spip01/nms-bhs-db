@@ -186,7 +186,7 @@ blackHoleSuns.prototype.listClick = function (evt) {
     pnl.find("#btn-Galaxy").text(e.galaxy)
     pnl.find("#ck-pc-xbox").prop("checked", e["PC-XBox"])
     pnl.find("#ck-ps4").prop("checked", e["PS4"])
-    pnl.find("#ck-hide").prop("checked", typeof e.hide == "undefined" ? false : e.hide)
+    pnl.find("#ck-hide").prop("checked", typeof e.hide === "undefined" ? false : e.hide)
     pnl.find("#btn-Platform").text(e.platform)
     pnl.find("#btn-Mode").text(e.mode)
 
@@ -222,6 +222,7 @@ blackHoleSuns.prototype.save = async function (evt) {
 
     e._name = pnl.find("#inp-name").val()
     e.name = e._name
+    e.hide = pnl.find("#ck-hide").prop("checked")
     e.link = pnl.find("#inp-link").val()
     if (!e.link) delete e.link
 
@@ -237,7 +238,6 @@ blackHoleSuns.prototype.save = async function (evt) {
             delete e.platform
         e["PC-XBox"] = pnl.find("#ck-pc-xbox").prop("checked")
         e["PS4"] = pnl.find("#ck-ps4").prop("checked")
-        e["hide"] = pnl.find("#ck-hide").prop("checked")
 
         if (e.galaxy == "" || (!e.platform && !e["PC-XBox"] && !e["PS4"])) {
             bhs.statusOut(pnl, "Galaxy/Platform must be set.")

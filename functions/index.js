@@ -12,6 +12,7 @@ admin.initializeApp({
 
 /**************************
 https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Bad%20Wolf&g=Euclid&p=PC-XBox
+https://us-central1-nms-bhs.cloudfunctions.net/getBasesStart?u=Bad%20Wolf&g=Euclid&p=PC-XBox&s=0000:1111:2222:3333
 https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Euclid&p=PC-XBox
 https://us-central1-nms-bhs.cloudfunctions.net/getGPList
 https://us-central1-nms-bhs.cloudfunctions.net/getPOI
@@ -72,7 +73,7 @@ exports.getPOI = functions.https.onRequest((request, response) => {
     })
 })
 
-// https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Bad%20Wolf&g=Calypso&p=PC-XBox
+// https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Bad%20Wolf&g=Euclid&p=PC-XBox
 exports.getBases = functions.https.onRequest((request, response) => {
     cors(request, response, () => {
         let ref = admin.firestore().collection("users/")
@@ -89,7 +90,38 @@ exports.getBases = functions.https.onRequest((request, response) => {
 
                     for (let doc of snapshot.docs) {
                         let e = doc.data()
-                        o += JSON.stringify([e.galaxy, e.platform, e.addr, e.basename]) + "\n"
+                        o += JSON.stringify([e.addr, e.basename]) + "\n"
+                    }
+
+                    response.send(o)
+                })
+            } else {
+                console.log(request.query.u, "not found")
+                response.send("")
+            }
+        })
+    })
+})
+
+// https://us-central1-nms-bhs.cloudfunctions.net/getBasesStart?u=Bad%20Wolf&g=Euclid&p=PC-XBox&s=0000:1111:2222:3333
+exports.getBasesStart = functions.https.onRequest((request, response) => {
+    cors(request, response, () => {
+        let ref = admin.firestore().collection("users/")
+        ref = ref.where("_name", "==", request.query.u)
+        let start = reformatAddress(request.query.s)
+
+        ref.get().then(async snapshot => {
+            if (snapshot.size > 0) {
+                ref = snapshot.docs[0].ref.collection("stars5/" + request.query.g + "/" + request.query.p)
+                await ref.get().then(snapshot => {
+                    let o = ""
+
+                    if (snapshot.size > 0)
+                        console.log(snapshot.docs[0].ref.parent.path, snapshot.size)
+
+                    for (let doc of snapshot.docs) {
+                        let e = doc.data()
+                        o += JSON.stringify([start, "", "", e.addr, "Teleport To", e.basename]) + "\n"
                     }
 
                     response.send(o)
@@ -493,15 +525,13 @@ exports.backupBHS = functions.https.onCall(async (data, context) => {
     return doBackup()
 })
 
-function backupCols(ref, now) {
-    let p = []
+async function backupCols(ref, now) {
     const bucket = admin.storage().bucket("staging.nms-bhs.appspot.com")
 
-    p.push(ref.get().then(snapshot => {
+    await ref.get().then(snapshot => {
         if (!snapshot.empty) {
             const path = /\//g [Symbol.replace](snapshot.query.path, "-")
             const fname = "backup/" + now + "/" + path + ".json"
-            //console.log(fname)
 
             let f = bucket.file(fname)
             let fs = f.createWriteStream({
@@ -513,54 +543,32 @@ function backupCols(ref, now) {
 
             fs.end()
 
-            return fname + " done"
-        } else
-            return snapshot.query.path + " empty"
-    }))
+            console.log(fname)
+        }
+    })
 
-    p.push(ref.listDocuments().then(refs => {
-        let p = []
+    let p = []
+    await ref.listDocuments().then(async refs => {
         for (let ref of refs) {
-            p.push(ref.listCollections().then(refs => {
-                let p = []
+            await ref.listCollections().then(refs => {
                 for (let ref of refs)
                     p.push(backupCols(ref, now))
-
-                return Promise.all(p).then(res => {
-                    return res
-                }).catch(err => {
-                    return err
-                })
-            }))
+            })
         }
-
-        return Promise.all(p).then(res => {
-            return res
-        }).catch(err => {
-            return err
-        })
-    }))
-
-    return Promise.all(p).then(res => {
-        return res
-    }).catch(err => {
-        return err
     })
+
+    return p
 }
 
 function doBackup() {
-    const now = new Date().getTime()
+    const now = new Date().toDateLocalTimeString()
 
     return admin.firestore().listCollections().then(refs => {
         let p = []
         for (let ref of refs)
             p.push(backupCols(ref, now))
 
-        return Promise.all(p).then(res => {
-            //console.log(res)
-        }).catch(err => {
-            console.log(err)
-        })
+        return Promise.all(p)
     })
 }
 
@@ -828,6 +836,36 @@ function getIndex(list, field, id) {
     return list.map(x => {
         return typeof x[field] === "string" ? x[field].toLowerCase() : x[field]
     }).indexOf(id.toLowerCase())
+}
+
+Date.prototype.toDateLocalTimeString = function () {
+    let date = this
+    return date.getFullYear() +
+        "-" + ten(date.getMonth() + 1) +
+        "-" + ten(date.getDate()) +
+        " " + ten(date.getHours()) +
+        ":" + ten(date.getMinutes()) +
+        ":" + ten(date.getSeconds())
+}
+
+function ten(i) {
+    return i < 10 ? '0' + i : i
+}
+
+function reformatAddress (addr) {
+    let str = /[^0-9A-F]+/g [Symbol.replace](addr.toUpperCase(), ":")
+    str = str[0] === ":" ? str.slice(1) : str
+    let out = ""
+
+    for (let i = 0; i < 4; ++i) {
+        let idx = str.indexOf(":")
+        let end = idx > 4 || idx === -1 ? 4 : idx
+        let s = str.slice(0, end)
+        str = str.slice(end + (idx <= 4 && idx >= 0 ? 1 : 0))
+        out += "0000".slice(0, 4 - s.length) + s + (i < 3 ? ":" : "")
+    }
+
+    return out
 }
 
 const galaxyList = [{

@@ -6,15 +6,13 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 })
 
-function backupCols(ref, now) {
-    let p = []
+async function backupCols(ref, now) {
     const bucket = admin.storage().bucket("staging.nms-bhs.appspot.com")
 
-    p.push(ref.get().then(snapshot => {
+    await ref.get().then(snapshot => {
         if (!snapshot.empty) {
             const path = /\//g [Symbol.replace](snapshot.query.path, "-")
             const fname = "backup/" + now + "/" + path + ".json"
-            console.log(fname)
 
             let f = bucket.file(fname)
             let fs = f.createWriteStream({
@@ -26,57 +24,47 @@ function backupCols(ref, now) {
 
             fs.end()
 
-            return fname + " done"
-        } else
-            return snapshot.query.path + " empty"
-    }))
+            console.log(fname)
+        }
+    })
 
-    p.push(ref.listDocuments().then(refs => {
-        let p = []
+    let p = []
+    await ref.listDocuments().then(async refs => {
         for (let ref of refs) {
-            p.push(ref.listCollections().then(refs => {
-                let p = []
+            await ref.listCollections().then(refs => {
                 for (let ref of refs)
                     p.push(backupCols(ref, now))
-
-                return Promise.all(p).then(res => {
-                    return res
-                }).catch(err => {
-                    return err
-                })
-            }))
+            })
         }
-
-        return Promise.all(p).then(res => {
-            return res
-        }).catch(err => {
-            return err
-        })
-    }))
-
-    return Promise.all(p).then(res => {
-        return res
-    }).catch(err => {
-        return err
     })
+
+    return p
 }
 
-async function main() {
-    const now = new Date().getTime()
+async function doBackup() {
+    const now = new Date().toDateLocalTimeString()
 
-    await admin.firestore().listCollections().then(async refs => {
+    await admin.firestore().listCollections().then(refs => {
         let p = []
         for (let ref of refs)
             p.push(backupCols(ref, now))
 
-        await Promise.all(p).then(res => {
-            //console.log(res)
-        }).catch(err => {
-            console.log(err)
-        })
+        return Promise.all(p)
     })
-
-    console.log(new Date().getTime() - now)
 }
 
-main()
+Date.prototype.toDateLocalTimeString = function () {
+    let date = this
+    return date.getFullYear() +
+        "-" + ten(date.getMonth() + 1) +
+        "-" + ten(date.getDate()) +
+        " " + ten(date.getHours()) +
+        ":" + ten(date.getMinutes()) +
+        ":" + ten(date.getSeconds())
+}
+
+function ten(i) {
+    return i < 10 ? '0' + i : i
+}
+
+doBackup()

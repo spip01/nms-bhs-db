@@ -56,7 +56,7 @@
 
     <div class="row border-top">
         <a href="https://darc.blackholesuns.com/" class="col-3 text-center clr-creme h6">BHS DaRC</a>
-        <a href="https://guide.blackholesuns.com/" class="col-3 text-center clr-creme h6">Travel Guide</a>
+        <a href="https://navguide.blackholesuns.com/" class="col-3 text-center clr-creme h6">Navigation Guide</a>
         <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-3 text-center clr-creme h6">Follow us on
             Reddit</a>
         <a href="https://discord.blackholesuns.com/" class="col-3 text-center clr-creme h6">Talk to us on
@@ -79,54 +79,63 @@
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div class="card card-body pad-bottom">
             <div class="row">
-                <div class="col-3 h6 txt-inp-def">Start Coordinates</div>
-                <input id="id-saddr" class="rounded col-4" placeholder="0000:0000:0000:0000" onchange="dispAddr(this)">
-            </div>
-            <div class="row">
-                <div class="col-1 h6 txt-inp-def">&nbsp;</div>
-                <div class="col-2 h6 txt-inp-def">Portal Glyphs</div>
-                <div id="id-sglyph" class="col-8 h3 txt-inp-def glyph"></div>
-            </div>
-            <div class="row">
-                <div class="col-1 h6 txt-inp-def">&nbsp;</div>
-                <div class="col-2 h6 txt-inp-def">Portal Hex</div>
-                    <div id="id-shex" class="col-8 txt-inp-def"></div>
-            </div>
+                <div class="col-lg-7 col-12">
+                    <div class="card card-body pad-bottom">
+                        <div class="row">
+                            <div class="col-md-3 col-5 h6 txt-inp-def">Start Coordinates</div>
+                            <input id="id-saddr" class="rounded col-md-4 col-7" placeholder="0000:0000:0000:0000"
+                                onchange="dispAddr(this)">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2 col-4 h6 text-right txt-inp-def">Portal</div>
+                            <div class="col-md-10 col-8">
+                                <div class="row">
+                                    <div id="id-sglyph" class="col-md-8 col-12 h3 txt-inp-def glyph"></div>
+                                    <div id="id-shex" class="col-md-4 col-12 txt-inp-def"></div>
+                                </div>
+                            </div>
+                        </div>
 
-            <div class="row">
-                <div class="col-3 h6 txt-inp-def">End Coordinates</div>
-                <input id="id-eaddr" class="rounded col-4" placeholder="0000:0000:0000:0000" onchange="dispAddr(this)">
-            </div>
-            <div class="row">
-                <div class="col-1 h6 txt-inp-def">&nbsp;</div>
-                <div class="col-2 h6 txt-inp-def">Portal Glyphs</div>
-                <div id="id-eglyph" class="col-8 h3 txt-inp-def glyph"></div>
-            </div>
-            <div class="row">
-                <div class="col-1 h6 txt-inp-def">&nbsp;</div>
-                    <div class="col-2 h6 txt-inp-def">Portal Hex</div>
-                    <div id="id-ehex" class="col-8 txt-inp-def"></div>
-            </div>
-            <br>
+                        <div class="row">
+                            <div class="col-md-3 col-5 h6 txt-inp-def">End Coordinates</div>
+                            <input id="id-eaddr" class="rounded col-md-4 col-7" placeholder="0000:0000:0000:0000"
+                                onchange="dispAddr(this)">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2 col-4 h6 text-right txt-inp-def">Portal</div>
+                            <div class="col-md-10 col-8">
+                                <div class="row">
+                                    <div id="id-eglyph" class="col-md-8 col-12 h3 txt-inp-def glyph"></div>
+                                    <div id="id-ehex" class="col-md-4 col-12 txt-inp-def"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-            <div class="row border-top">
-                <div class="col-3 h6 txt-inp-def">Distance</div>
-                <div id="id-dist" class="col-7 txt-inp-def"></div>
-            </div>
-            <br>
+                    <div class="row border-top">
+                        <div class="col-5 h6 txt-inp-def">Distance</div>
+                        <div id="id-dist" class="col-5 txt-inp-def"></div>
+                    </div>
+                    <br>
 
-            <div class="row border-top">
-                <div class="col-3 h6 txt-inp-def">Jump Range</div>
-                <input id="id-range" type="number" class="col-3 rounded" value=2500 onchange="dispAddr(this)">
+                    <div class="row border-top">
+                        <div class="col-5 h6 txt-inp-def">Jump Range</div>
+                        <input id="id-range" type="number" class="col-4 rounded" value=2500 onchange="dispAddr(this)">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-5 h6 txt-inp-def">Jumps</div>
+                        <div id="id-jumps" class="col-5 txt-inp-def"></div>
+                    </div>
+                    <br>
+                </div>
+
+                <div class="col-lg-5 col-12">
+                    <div class="card card-body pad-bottom">
+                        <div id="plymap"></div>
+                    </div>
+                </div>
             </div>
-            <div class="row">
-                <div class="col-3 h6 txt-inp-def">Jumps</div>
-                <div id="id-jumps" class="col-7 txt-inp-def"></div>
-            </div>
-        </div>
-        <br>
-        <div id="mapcol" class="card card-body pad-bottom">
-            <div id="plymap"></div>
         </div>
     </div>
 </body>

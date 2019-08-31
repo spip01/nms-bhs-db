@@ -1326,7 +1326,8 @@ Date.prototype.toDateLocalTimeString = function () {
         "-" + ten(date.getMonth() + 1) +
         "-" + ten(date.getDate()) +
         " " + ten(date.getHours()) +
-        ":" + ten(date.getMinutes())
+        ":" + ten(date.getMinutes()) +
+        ":" + ten(date.getSeconds())
 }
 
 function ten(i) {

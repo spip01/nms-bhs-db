@@ -184,7 +184,7 @@ function changeMapLayout(exec, zoom) {
         t: 0
     }
 
-    let w = 400 // Math.min($("#mapcol").width(), $(window).height())
+    let w = Math.min($("#plymap").width()-8, 400)
     layout.width = w
     layout.height = w
 
