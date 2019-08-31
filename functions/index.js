@@ -9,15 +9,15 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 })
 
-
-/**************************
+/***************************
+ 
 https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Bad%20Wolf&g=Euclid&p=PC-XBox
 https://us-central1-nms-bhs.cloudfunctions.net/getBasesStart?u=Bad%20Wolf&g=Euclid&p=PC-XBox&s=0000:1111:2222:3333
 https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Euclid&p=PC-XBox
 https://us-central1-nms-bhs.cloudfunctions.net/getGPList
 https://us-central1-nms-bhs.cloudfunctions.net/getPOI
-****************************/
 
+****************************/
 
 // https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Calypso&p=PC-XBox
 exports.getDARC = functions.https.onRequest((request, response) => {
