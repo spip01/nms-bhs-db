@@ -1565,15 +1565,15 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
 
     if (zoom && opt.ctrzoom && !fsearch) {
         xstart = ctr.x - opt.ctrzoom
-        xctr = ctr.x + parseInt(opt.ctrzoom / 2)
+        xctr = ctr.x
         xend = ctr.x + opt.ctrzoom
 
         ystart = ctr.z - opt.ctrzoom
-        yctr = ctr.z + parseInt(opt.ctrzoom / 2)
+        yctr = ctr.z
         yend = ctr.z + opt.ctrzoom
 
         zstart = ctr.y - opt.ctrzoom
-        zctr = ctr.y + parseInt(opt.ctrzoom / 2)
+        zctr = ctr.y
         zend = ctr.y + opt.ctrzoom
     } else {
         xstart = opt.xmin
@@ -1588,6 +1588,21 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
         yctr = opt.zmin + parseInt((opt.zmax - opt.zmin) / 2) - 1
         yend = opt.zmax - 1
     }
+
+    if (xstart < 0)
+        xstart = 0
+    if (xend > 4095)
+        xend = 4095
+
+    if (ystart < 0)
+        ystart = 0
+    if (yend > 4095)
+        yend = 4095
+
+    if (zstart < 0)
+        zstart = 0
+    if (zend > 255)
+        zend = 255
 
     let layout = {
         hovermode: "closest",

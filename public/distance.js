@@ -28,11 +28,28 @@ function dispAddr(evt) {
         let dist = calcDist(saddr, eaddr)
         $("#id-dist").text(dist + " ly")
 
+        let xzAngle = calcAngle(saddr, eaddr, "x", "z")
+        $("#id-angle").text(xzAngle + " deg")
+
         if (range !== "")
             $("#id-jumps").text(parseInt(dist / range))
 
-        mapPoints(saddr, eaddr)
+        mapPoints("plot3d", saddr, eaddr)
     }
+}
+
+function calcAngle(saddr, eaddr, xp, yp) {
+    let zero = xyzToAddress({
+        x: 2048,
+        y: 128,
+        z: 2048,
+    })
+
+    let a = calcDist(zero, eaddr, xp, yp)
+    let c = calcDist(saddr, eaddr, xp, yp)
+    let b = calcDist(saddr, zero, xp, yp)
+
+    return parseInt(Math.acos((a * a - b * b - c * c) / (-2 * b * c)) * 180 / Math.PI)
 }
 
 function reformatAddress(addr) {
@@ -91,25 +108,77 @@ function addressToXYZ(addr) {
     return out
 }
 
-function calcDist(addr, addr2) {
+function xyzToAddress(xyz) {
+    let x = xyz.x.toString(16)
+    let z = xyz.y.toString(16)
+    let y = xyz.z.toString(16)
+
+    let addr = x + "." + y + "." + z + "." + "0"
+    return reformatAddress(addr)
+}
+
+function calcDist(addr, addr2, axis1, axis2) {
     let cord = addressToXYZ(addr)
     let cord2 = addressToXYZ(addr2)
 
-    return parseInt(Math.sqrt(Math.pow(cord2.x - cord.x, 2) + Math.pow(cord2.y - cord.y, 2) + Math.pow(cord2.z - cord.z, 2)) * 400)
+    if (axis1)
+        return parseInt(Math.sqrt(Math.pow(cord2[axis1] - cord[axis1], 2) + Math.pow(cord2[axis2] - cord[axis2], 2)))
+    else
+        return parseInt(Math.sqrt(Math.pow(cord2.x - cord.x, 2) + Math.pow(cord2.y - cord.y, 2) + Math.pow(cord2.z - cord.z, 2)) * 400)
 }
 
-function changeMapLayout(exec, zoom) {
-    const xstart = 0
-    const xctr = 2048
-    const xend = 4095
+var tglZoom = false
 
-    const zstart = 0
-    const zctr = 128
-    const zend = 255
+function zoom() {
+    tglZoom = !tglZoom
+    Plotly.relayout('plot3d', changeMapLayout(tglZoom, $("#id-saddr").val(), $("#id-eaddr").val()))
+}
 
-    const ystart = 0
-    const yctr = 2048
-    const yend = 4095
+function changeMapLayout(zoom, saddr, eaddr) {
+    let xstart = 0
+    let xctr = 2048
+    let xend = 4095
+
+    let zstart = 0
+    let zctr = 128
+    let zend = 255
+
+    let ystart = 0
+    let yctr = 2048
+    let yend = 4095
+
+    if (zoom) {
+        let sxyz = addressToXYZ(saddr)
+        let d = parseInt(calcDist(saddr, eaddr) / 400)
+
+        xctr = sxyz.x
+        yctr = 4095 - sxyz.z
+        zctr = sxyz.y
+
+        xstart = xctr - d
+        xend = xctr + d
+
+        ystart = yctr - d
+        yend = yctr + d
+
+        zstart = zctr - d
+        zend = zctr + d
+
+        if (xstart < 0)
+            xstart = 0
+        if (xend > 4095)
+            xend = 4095
+
+        if (ystart < 0)
+            ystart = 0
+        if (yend > 4095)
+            yend = 4095
+
+        if (zstart < 0)
+            zstart = 0
+        if (zend > 255)
+            zend = 255
+    }
 
     let layout = {
         hovermode: "closest",
@@ -184,14 +253,14 @@ function changeMapLayout(exec, zoom) {
         t: 0
     }
 
-    let w = Math.min($("#plymap").width()-8, 400)
+    let w = Math.min($("#plot3d").width() - 8, 400)
     layout.width = w
     layout.height = w
 
     return layout
 }
 
-function mapPoints(saddr, eaddr) {
+function mapPoints(plot, saddr, eaddr, axis1, axis2) {
     let zero = {
         x: 2048,
         y: 128,
@@ -205,18 +274,26 @@ function mapPoints(saddr, eaddr) {
     let out = initout()
     pushentry(out, zero, "Galactic Center")
     pushentry(out, sxyz)
-    data.push(makedata(out, 5, "#ffffff", "#e0e0e0"))
+    data.push(makedata(out, 5, "#ffffff", "#e0e0e0", axis1, axis2))
 
     out = initout()
     pushentry(out, sxyz, saddr)
     pushentry(out, exyz, eaddr)
-    data.push(makedata(out, 5, "#00ff00", "#ff4040"))
+    data.push(makedata(out, 5, "#00ff00", "#ff4040", axis1, axis2))
 
     out = initout()
     pushentry(out, exyz, eaddr)
-    data.push(makedata(out, 5, "#ff0000"))
+    data.push(makedata(out, 5, "#ff0000", null, axis1, axis2))
 
-    Plotly.newPlot('plymap', data, changeMapLayout())
+    let layout = changeMapLayout()
+
+    if (axis1) {
+        layout.width = 200
+        layout.height = 200
+    }
+
+    Plotly.newPlot(plot, data, layout)
+    tglZoom = false
 }
 
 function pushentry(out, xyz, label) {
@@ -236,10 +313,10 @@ function initout(out) {
     return out
 }
 
-function makedata(out, size, color, linecolor) {
+function makedata(out, size, color, linecolor, axis1, axis2) {
     let line = {
-        x: out.x,
-        y: out.y,
+        x: axis1 ? out[axis1] : out.x,
+        y: axis2 ? out[axis2] : out.y,
         z: out.z,
         text: out.t,
         mode: 'markers',
@@ -248,7 +325,7 @@ function makedata(out, size, color, linecolor) {
             color: color,
             opacity: 0.6,
         },
-        type: "scatter3d",
+        type: axis1 ? "scatter" : "scatter3d",
         hoverinfo: 'text',
     }
 
