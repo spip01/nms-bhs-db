@@ -81,56 +81,58 @@
             <div class="row">
                 <div class="col-lg-7 col-12">
                     <div class="card card-body pad-bottom">
-                        <div class="row">
-                            <div class="col-md-3 col-5 h6 txt-inp-def">Start Coordinates</div>
-                            <input id="id-saddr" class="rounded col-md-4 col-7" placeholder="0000:0000:0000:0000"
-                                onchange="dispAddr(this)">
-                        </div>
-                        <div class="row">
-                            <div class="col-md-2 col-4 h6 text-right txt-inp-def">Portal</div>
-                            <div class="col-md-10 col-8">
-                                <div class="row">
-                                    <div id="id-sglyph" class="col-md-8 col-12 h3 txt-inp-def glyph"></div>
-                                    <div id="id-shex" class="col-md-4 col-12 txt-inp-def"></div>
+                        <div class="card card-body pad-bottom">
+                            <div class="row">
+                                <div class="col-md-3 col-5 h6 txt-inp-def">Start Coordinates</div>
+                                <input id="id-saddr" class="rounded col-md-4 col-7" placeholder="0000:0000:0000:0000"
+                                    onchange="dispAddr(this)">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2 col-4 h6 text-right txt-inp-def">Portal</div>
+                                <div class="col-md-10 col-8">
+                                    <div class="row">
+                                        <div id="id-sglyph" class="col-md-8 col-12 h3 txt-inp-def glyph"></div>
+                                        <div id="id-shex" class="col-md-4 col-12 txt-inp-def"></div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="row">
-                            <div class="col-md-3 col-5 h6 txt-inp-def">End Coordinates</div>
-                            <input id="id-eaddr" class="rounded col-md-4 col-7" placeholder="0000:0000:0000:0000"
-                                onchange="dispAddr(this)">
-                        </div>
-                        <div class="row">
-                            <div class="col-md-2 col-4 h6 text-right txt-inp-def">Portal</div>
-                            <div class="col-md-10 col-8">
-                                <div class="row">
-                                    <div id="id-eglyph" class="col-md-8 col-12 h3 txt-inp-def glyph"></div>
-                                    <div id="id-ehex" class="col-md-4 col-12 txt-inp-def"></div>
+                            <div class="row">
+                                <div class="col-md-3 col-5 h6 txt-inp-def">End Coordinates</div>
+                                <input id="id-eaddr" class="rounded col-md-4 col-7" placeholder="0000:0000:0000:0000"
+                                    onchange="dispAddr(this)">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2 col-4 h6 text-right txt-inp-def">Portal</div>
+                                <div class="col-md-10 col-8">
+                                    <div class="row">
+                                        <div id="id-eglyph" class="col-md-8 col-12 h3 txt-inp-def glyph"></div>
+                                        <div id="id-ehex" class="col-md-4 col-12 txt-inp-def"></div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <br>
-
-                    <div class="card card-body pad-bottom">
-                        <div class="row">
-                            <div class="col-md-3 col-5 h6 txt-inp-def">Distance</div>
-                            <div id="id-dist" class="col-md-3 col-5 txt-inp-def"></div>
-                            <div class="col-md-3 col-5 h6 txt-inp-def">X-Z Plane Angle</div>
-                            <div id="id-angle" class="col-md-3 col-5 txt-inp-def"></div>
                         </div>
                         <br>
 
-                        <div class="row">
-                            <div class="col-md-3 col-5 h6 txt-inp-def">Jump Range</div>
-                            <input id="id-range" type="number" class="rounded col-md-4 col-7" value=2500
-                                onchange="dispAddr(this)">
-                        </div>
+                        <div class="card card-body pad-bottom">
+                            <div class="row">
+                                <div class="col-md-3 col-5 h6 txt-inp-def">Distance</div>
+                                <div id="id-dist" class="col-md-3 col-5 txt-inp-def"></div>
+                                <div class="col-md-3 col-5 h6 txt-inp-def">X-Z Plane Angle</div>
+                                <div id="id-angle" class="col-md-3 col-5 txt-inp-def"></div>
+                            </div>
+                            <br>
 
-                        <div class="row">
-                            <div class="col-md-3 col-5 h6 txt-inp-def">Jumps</div>
-                            <div id="id-jumps" class="col-5 txt-inp-def"></div>
+                            <div class="row">
+                                <div class="col-md-3 col-5 h6 txt-inp-def">Jump Range</div>
+                                <input id="id-range" type="number" class="rounded col-md-4 col-7" value=2500
+                                    onchange="dispAddr(this)">
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3 col-5 h6 txt-inp-def">Jumps</div>
+                                <div id="id-jumps" class="col-5 txt-inp-def"></div>
+                            </div>
                         </div>
                     </div>
                     <br>
@@ -138,7 +140,9 @@
 
                 <div class="col-lg-5 col-12">
                     <div class="card card-body pad-bottom">
-                        <div id="plot3d"></div>
+                        <div class="card card-body pad-bottom">
+                            <div id="plot3d"></div>
+                        </div>
                         <br>
                         <button type="button" class="col-6 border btn btn-sm btn-def text-center"
                             onclick="zoom()">Toggle Zoom</button>
