@@ -300,6 +300,10 @@ body {
     background-color: #ffffff;
 }
 
+.clr-white {
+    color: #ffffff;
+}
+
 .card-title {
     color: #008000;
 }
