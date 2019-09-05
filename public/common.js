@@ -1130,7 +1130,7 @@ String.prototype.stripColons = function () {
 }
 
 function validateAddress(addr, ck) {
-    return bhs.validateAddress(addr, ck) == ""
+    return bhs.validateAddress(addr, ck) === ""
 }
 
 function validateBHAddress(addr) {

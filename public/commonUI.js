@@ -71,11 +71,11 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
         return
 
     bhs.getActiveContest(bhs.displayContest)
+    bhs.buildTotals()
+    bhs.getTotals(bhs.displayTotals, bhs.displayTotalsHtml)
+
 
     if ((changed || force) && bhs.user.galaxy && bhs.user.platform) {
-        bhs.buildTotals()
-        bhs.getTotals(bhs.displayTotals, bhs.displayTotalsHtml)
-
         bhs.buildMap()
         bhs.setMapOptions(bhs.user)
 
@@ -91,7 +91,6 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     pnl.find("#id-Player").val(bhs.user._name)
     pnl.find("#btn-Platform").text(bhs.user.platform)
     pnl.find("#btn-Organization").text(bhs.user.org)
-    // pnl.find("#btn-Version").text(typeof bhs.user.version !== "undefined" ? bhs.user.version : "")
 
     if (bhs.user.galaxy) {
         let i = galaxyList[bhs.getIndex(galaxyList, "name", bhs.user.galaxy)].number
@@ -132,8 +131,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
                 </label>
             </div>
         </div>
-    </div>
-    <br>`
+        <br>`
 
     $("#panels").prepend(panel)
     let loc = $("#pnl-user")
@@ -659,6 +657,9 @@ blackHoleSuns.prototype.buildTotals = function () {
 blackHoleSuns.prototype.displayTotals = function (e, refpath) {
     let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
     let ftotals = window.location.pathname == "/totals.html"
+
+    if (bhs.user.galaxy === "" || bhs.user.platform === "")
+        return
 
     bhs.updateTotalsListView(e, refpath)
 
