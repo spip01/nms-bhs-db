@@ -13,30 +13,40 @@ admin.initializeApp({
  
 https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Bad%20Wolf&g=Euclid&p=PC-XBox
 https://us-central1-nms-bhs.cloudfunctions.net/getBasesStart?u=Bad%20Wolf&g=Euclid&p=PC-XBox&s=0000:1111:2222:3333
-https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Euclid&p=PC-XBox
+https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Calypso&p=PC-XBox
 https://us-central1-nms-bhs.cloudfunctions.net/getGPList
 https://us-central1-nms-bhs.cloudfunctions.net/getPOI
 
 ****************************/
 
 // https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Calypso&p=PC-XBox
+// ["0000:0000:0000:0079","Thoslo Quadrant","SAS.A83","0FFE:007E:0082:003D","Vasika Boundary","Uscarlen"]
 exports.getDARC = functions.https.onRequest((request, response) => {
-    cors(request, response, () => {
+    return cors(request, response, () => {
         const bucket = admin.storage().bucket("nms-bhs.appspot.com")
 
         let fname = 'darc/' + request.query.g + "-" + request.query.p + ".txt"
         console.log(fname)
         let f = bucket.file(fname)
-        let s = f.createReadStream()
-        s.pipe(response)
+        return f.exists().then(data => {
+                if (data[0]) {
+                    let s = f.createReadStream()
+                    s.pipe(response)
+                } else
+                    response.status(503).send(request.query.g + "/" + request.query.p + " not found")
+            })
+            .catch(err => {
+                response.status(503).send(err.code)
+            })
     })
 })
 
 // https://us-central1-nms-bhs.cloudfunctions.net/getGPList
+// ["Aptarkaba","PC-XBox","PS4"] ["Ontiniangp","PS4"] 
 exports.getGPList = functions.https.onRequest((request, response) => {
-    cors(request, response, () => {
+    return cors(request, response, () => {
         let ref = admin.firestore().collection("stars5")
-        ref.listDocuments().then(async docrefs => {
+        return ref.listDocuments().then(async docrefs => {
             let out = ""
 
             for (let gref of docrefs) {
@@ -51,90 +61,112 @@ exports.getGPList = functions.https.onRequest((request, response) => {
                 out += JSON.stringify(e) + "\n"
             }
 
-            response.send(out)
+            response.status(200).send(out)
+        }).catch(err => {
+            response.status(503).send(err.code)
         })
     })
 })
 
 // https://us-central1-nms-bhs.cloudfunctions.net/getPOI
+// ["Farpoint Station","Euclid","PC-XBox","0803:0078:0800:0089","2","Normal","pnl-poi/4d78b946-94ae-4a54-ba95-c28fe7060d1c.jpg"] 
 exports.getPOI = functions.https.onRequest((request, response) => {
-    cors(request, response, () => {
+    return cors(request, response, () => {
         let ref = admin.firestore().collection("poi")
-        ref.get().then(async snapshot => {
+        return ref.get().then(snapshot => {
             let e = ""
 
-            for (let doc of snapshot.docs) {
-                let d = doc.data()
-                e += JSON.stringify([d._name, d.galaxy, d.platform, d.addr, d.planet, d.mode, d.img]) + "\n"
-            }
+            if (snapshot.size) {
+                for (let doc of snapshot.docs) {
+                    let d = doc.data()
+                    e += JSON.stringify([d._name, d.galaxy, d.platform, d.addr, d.planet, d.mode, d.img]) + "\n"
+                }
 
-            response.send(e)
+                response.status(200).send(e)
+            } else
+                response.status(503).send("poi not found")
+        }).catch(err => {
+            response.status(503).send(err.code)
         })
     })
 })
 
 // https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Bad%20Wolf&g=Euclid&p=PC-XBox
+// ["0803:0078:0800:0089","Hub3 - Farpoint Station"]
 exports.getBases = functions.https.onRequest((request, response) => {
-    cors(request, response, () => {
+    return cors(request, response, () => {
         let ref = admin.firestore().collection("users/")
         ref = ref.where("_name", "==", request.query.u)
 
-        ref.get().then(async snapshot => {
+        return ref.get().then(snapshot => {
             if (snapshot.size > 0) {
                 ref = snapshot.docs[0].ref.collection("stars5/" + request.query.g + "/" + request.query.p)
-                await ref.get().then(snapshot => {
+                return ref.get().then(snapshot => {
                     let o = ""
 
-                    if (snapshot.size > 0)
+                    if (snapshot.size > 0) {
                         console.log(snapshot.docs[0].ref.parent.path, snapshot.size)
 
-                    for (let doc of snapshot.docs) {
-                        let e = doc.data()
-                        o += JSON.stringify([e.addr, e.basename]) + "\n"
-                    }
+                        for (let doc of snapshot.docs) {
+                            let e = doc.data()
+                            o += JSON.stringify([e.addr, e.basename]) + "\n"
+                        }
 
-                    response.send(o)
+                        response.status(200).send(o)
+                    } else {
+                        response.status(503).send(request.query.g + "/" + request.query.p + " not found")
+                    }
+                }).catch(err => {
+                    response.status(503).send(err.code)
                 })
             } else {
-                console.log(request.query.u, "not found")
-                response.send("")
+                response.status(503).send(request.query.u + " not found")
             }
+        }).catch(err => {
+            response.status(503).send(err.code)
         })
     })
 })
 
 // https://us-central1-nms-bhs.cloudfunctions.net/getBasesStart?u=Bad%20Wolf&g=Euclid&p=PC-XBox&s=0000:1111:2222:3333
+// ["0000:1111:2222:3333","","","0133:0083:08D5:0025","Teleport To","9 701"]
 exports.getBasesStart = functions.https.onRequest((request, response) => {
-    cors(request, response, () => {
+    return cors(request, response, () => {
         let ref = admin.firestore().collection("users/")
         ref = ref.where("_name", "==", request.query.u)
         let start = reformatAddress(request.query.s)
 
-        ref.get().then(async snapshot => {
+        return ref.get().then(snapshot => {
             if (snapshot.size > 0) {
                 ref = snapshot.docs[0].ref.collection("stars5/" + request.query.g + "/" + request.query.p)
-                await ref.get().then(snapshot => {
+                return ref.get().then(snapshot => {
                     let o = ""
 
-                    if (snapshot.size > 0)
+                    if (snapshot.size > 0) {
                         console.log(snapshot.docs[0].ref.parent.path, snapshot.size)
 
-                    for (let doc of snapshot.docs) {
-                        let e = doc.data()
-                        o += JSON.stringify([start, "", "", e.addr, "Teleport To", e.basename]) + "\n"
-                    }
+                        for (let doc of snapshot.docs) {
+                            let e = doc.data()
+                            o += JSON.stringify([start, "", "", e.addr, "Teleport To", e.basename]) + "\n"
+                        }
 
-                    response.send(o)
+                        response.status(200).send(o)
+                    } else {
+                        response.status(503).send(request.query.g + "/" + request.query.p + " not found")
+                    }
+                }).catch(err => {
+                    response.status(503).send(err.code)
                 })
             } else {
-                console.log(request.query.u, "not found")
-                response.send("")
+                response.status(503).send(request.query.u + " not found")
             }
+        }).catch(err => {
+            response.status(503).send(err.code)
         })
     })
 })
 
-//[0,"PC","0000:0000:0000:0079","Thoslo Quadrant","SAS.A83","0FFE:007E:0082:003D","Vasika Boundary","Uscarlen"]
+// ["0000:0000:0000:0079","Thoslo Quadrant","SAS.A83","0FFE:007E:0082:003D","Vasika Boundary","Uscarlen"]
 exports.genDARC = functions.https.onCall(async (data, context) => {
     const bucket = admin.storage().bucket("nms-bhs.appspot.com")
 
@@ -395,14 +427,15 @@ function applyEdits(ts, elist) {
 
             let ref = ed.ref
             delete ed.ref
-            
+
             switch (ed.what) {
                 case "delete":
-                    console.log("delete",ed.addr)
+                    console.log("delete", ed.addr)
                     line = null
                     break
                 case "update":
                 case "create":
+                    console.log(ed.what, ed.addr)
                     delete ed.what
                     line = stringify(ed)
                     break
@@ -852,7 +885,7 @@ function ten(i) {
     return i < 10 ? '0' + i : i
 }
 
-function reformatAddress (addr) {
+function reformatAddress(addr) {
     let str = /[^0-9A-F]+/g [Symbol.replace](addr.toUpperCase(), ":")
     str = str[0] === ":" ? str.slice(1) : str
     let out = ""

@@ -8,7 +8,6 @@
   ],
   "extends": "eslint:recommended",
   "rules": {
-    "no-extend-native": 0,
     "no-unreachable": 0,
 
     // Removed rule "disallow the use of console" from recommended eslint rules
@@ -54,7 +53,7 @@
     "no-eval": 2,
 
     // Warn against extending native types
-    "no-extend-native": 1,
+    "no-extend-native": 0,
 
     // Warn against unnecessary calls to .bind()
     "no-extra-bind": 1,
