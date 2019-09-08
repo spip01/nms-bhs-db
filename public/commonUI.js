@@ -92,22 +92,6 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
         let user = bhs.extractUser()
         bhs.changeName("#id-Player", user)
     })
-
-    $("#ck-fileupload").change(function (event) {
-        if ($(this).prop("checked")) {
-            panels.forEach(p => {
-                $("#" + p.id).hide()
-            })
-            $("#entrybuttons").hide()
-            $("#upload").show()
-        } else {
-            panels.forEach(p => {
-                $("#" + p.id).show()
-            })
-            $("#entrybuttons").show()
-            $("#upload").hide()
-        }
-    })
 }
 
 const utAddrIdx = 0
@@ -159,13 +143,6 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
 
             <div class="row">
                 <button id="btn-saveListSettings" type="button" class="col-2 btn-def btn btn-sm">Save</button>&nbsp
-
-                <label id="id-export" class="col-7 text-right h6 txt-inp-def border-left" style="display:none">File Name&nbsp
-                    <input id="inp-exportfile" type="text" class="rounded col-10">
-                </label>
-                
-                <button id="btn-create" type="button" href="" class="col-2 btn-def btn btn-sm" style="display:none">Create</button>&nbsp
-                <a id="btn-export" type="button" href="" class="col-2 btn-def btn btn-sm disabled" disabled style="display:none">Export</a>
             </div>
         </div>
         
