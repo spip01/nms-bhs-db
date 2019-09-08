@@ -93,7 +93,7 @@ blackHoleSuns.prototype.logIn = function () {
         firebase.auth().signInWithRedirect(provider)
     })
 
-    $("#lgithub").click(async () => {
+    $("#lgithub").click(() => {
         var provider = new firebase.auth.GithubAuthProvider()
         firebase.auth().signInWithRedirect(provider)
     })
@@ -318,6 +318,9 @@ blackHoleSuns.prototype.getEntryByConnection = async function (addr) {
 
 blackHoleSuns.prototype.updateEntry = async function (entry, batch) {
     entry.modded = firebase.firestore.Timestamp.now()
+
+    if (typeof entry.created === "undefined")
+        entry.created = firebase.firestore.Timestamp.now()
 
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
     if (batch)
@@ -950,7 +953,7 @@ blackHoleSuns.prototype.validateUser = function (user) {
     return ok
 }
 
-blackHoleSuns.prototype.validateEntry = function (entry) {
+blackHoleSuns.prototype.validateEntry = function (entry, nobh) {
     let ok = true
     let error = ""
 
@@ -981,14 +984,21 @@ blackHoleSuns.prototype.validateEntry = function (entry) {
 
 
     let str
-    if (ok && !entry.blackhole && !entry.deadzone && (str = validateExitAddress(entry.addr)) != "") {
-        error += "Invalid exit address. (" + str + ") "
-        ok = false
-    }
+    if (nobh) {
+        if (ok && (str = validateAddress(entry.addr)) != "") {
+            error += "Invalid address. (" + str + ") "
+            ok = false
+        }
+    } else {
+        if (ok && !entry.blackhole && !entry.deadzone && (str = validateExitAddress(entry.addr)) != "") {
+            error += "Invalid exit address. (" + str + ") "
+            ok = false
+        }
 
-    if (ok && (entry.blackhole || entry.deadzone) && (str = validateBHAddress(entry.addr)) != "") {
-        error += "Invalid black hole address. (" + str + ") "
-        ok = false
+        if (ok && (entry.blackhole || entry.deadzone) && (str = validateBHAddress(entry.addr)) != "") {
+            error += "Invalid black hole address. (" + str + ") "
+            ok = false
+        }
     }
 
     if (!ok)
@@ -1041,7 +1051,7 @@ function loadFile(url, alturl, fctn) {
     //         else if (alturl)
     //             loadFile(alturl, null, fctn)
     //     }
-    // }
+    // } 
     // xhttp.open("GET", url, true)
     // xhttp.send()
 }
@@ -1130,7 +1140,7 @@ String.prototype.stripColons = function () {
 }
 
 function validateAddress(addr, ck) {
-    return bhs.validateAddress(addr, ck) == ""
+    return bhs.validateAddress(addr, ck) === ""
 }
 
 function validateBHAddress(addr) {

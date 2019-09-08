@@ -1,30 +1,30 @@
 'use strict'
 
-$(document).ready(()=> {
+$(document).ready(() => {
     startUp()
 
     bhs.last = []
 
     bhs.buildUserPanel()
 
-    panels.forEach(p=> {
+    panels.forEach(p => {
         bhs.buildPanel(p.id)
     })
 
     bhs.buildTypePanels()
 
-    $("#save").click(()=> {
+    $("#save").click(() => {
         bhs.save()
     })
 
-    $("#delete").click(()=> {
+    $("#delete").click(() => {
         $("#status").empty()
-        panels.forEach(p=> {
+        panels.forEach(p => {
             bhs.deleteEntry($("#" + p.id + " #id-addr").val())
         })
     })
 
-    $("#cancel").click(()=> {
+    $("#cancel").click(() => {
         bhs.displaySingle(bhs.last[pnlTop], pnlTop)
     })
 })
@@ -91,7 +91,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
     bhs.buildMenu(loc, "Economy", economyList)
 
     loc.find("#id-addr").unbind("change")
-    loc.find("#id-addr").change(()=> {
+    loc.find("#id-addr").change(function () {
         let addr = bhs.reformatAddress($(this).val())
         $(this).val(addr)
         $(this).closest("[id|='pnl']").find("#id-glyph").html(bhs.addrToGlyph(addr))
@@ -131,7 +131,7 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
 }
 
 blackHoleSuns.prototype.clearPanels = function () {
-    panels.forEach(d=> {
+    panels.forEach(d => {
         bhs.clearPanel(d.id)
     })
 
@@ -144,19 +144,16 @@ blackHoleSuns.prototype.clearPanels = function () {
 blackHoleSuns.prototype.clearPanel = function (d) {
     let pnl = $("#" + d)
 
-    pnl.find("input").each(()=> {
+    pnl.find("input").each(() => {
         $(this).val("")
     })
 
-    pnl.find("[id|='menu']").each(()=> {
+    pnl.find("[id|='menu']").each(() => {
         $(this).find("[id|='btn']").text("")
     })
 }
 
-blackHoleSuns.prototype.extractEntry = async function (idx) {
-    let pnl = $("#panels")
-    let loc = pnl.find("#" + panels[idx].id)
-
+blackHoleSuns.prototype.extractEntry = async function (batch) {
     let entry = {}
     entry._name = bhs.user._name
     entry.org = bhs.user.org
@@ -164,18 +161,79 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
     entry.platform = bhs.user.platform
     entry.galaxy = bhs.user.galaxy
 
+    let loc = $("#pnl-S1")
     entry.addr = loc.find("#id-addr").val()
     entry.sys = loc.find("#id-sys").val()
     entry.reg = loc.find("#id-reg").val()
     entry.life = loc.find("#btn-Lifeform").text().stripNumber()
     entry.econ = loc.find("#btn-Economy").text().stripNumber()
 
-    let ok = true
-    if (ok = bhs.validateEntry(entry)) {
-        await bhs.updateEntry(entry, true)
+    let ok = bhs.validateEntry(entry, true) === ""
+    if (ok) {
+        //bhs.updateEntry(entry, batch)
 
-        // bhs.updateAllTotals(bhs.totals)
-        // bhs.totals = {}
+        let tab = $("#typeTabs .active").prop("id").stripID()
+        let pnl = $("#typePanels #pnl-" + tab)
+        entry.type = tab
+
+        let list = pnl.find(":input")
+        for (let loc of list) {
+            if ($(loc).is(":visible")) {
+                let id = loc.id.stripID()
+                let r = $(loc).closest("[id|='row']")
+                let data = r.data()
+
+                if (typeof data === "undefined")
+                    continue
+
+                switch (data.type) {
+                    case "num":
+                    case "string":
+                        entry[id] = $(loc).val()
+                        break
+                    case "menu":
+                        entry[id] = $(loc).text()
+                        break
+                    case "cklist":
+                        if ($(loc).prop("checked")) {
+                            let aid = $(r).prop("id").stripID()
+                            if (typeof entry[aid] === "undefined")
+                                entry[aid] = []
+                            entry[aid].push(id)
+                        }
+                        break
+                    case "checkbox":
+                        entry[id] = $(loc).prop("checked")
+                        break
+                    case "img":
+                        let canvas = $(loc).closest("#img-" + id).find("#id-canvas")[0]
+                        if (typeof canvas === "undefined")
+                            entry[id] = ""
+                        else {
+                            if (typeof entry[id] === "undefined")
+                                entry[id] = "nmsce/" + uuidv4() + ".jpg"
+
+                            await canvas.toBlob(async blob => {
+                                await bhs.fbstorage.ref().child(entry[id]).put(blob)
+                            }, "image/jpeg", .7)
+                        }
+                }
+
+                if (data.req)
+                    if (typeof entry[id] === "undefined" ||
+                        (data.type === "string" || data.type === "menu") && entry[id] === "" ||
+                        data.type === "num" && entry[id] === -1 ||
+                        data.type === "img" && entry[id] === "") {
+
+                        bhs.status(id + " required. Entry not saved.", 0)
+                        ok = false
+                        break
+                    }
+            }
+        }
+
+        if (ok)
+            bhs.updateNmsce(entry, batch)
     }
 
     return ok
@@ -183,12 +241,22 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
 
 blackHoleSuns.prototype.save = async function () {
     $("#status").empty()
-    bhs.saveUser()
 
-    if (await bhs.extractEntry(pnlTop)) {
-        bhs.clearPanels()
-        bhs.last = []
-    }
+    let batch = bhs.fs.batch()
+
+    let ok = bhs.saveUser(batch)
+
+    if (ok)
+        ok = await bhs.extractEntry(batch)
+
+    if (ok)
+        await batch.commit().then(() => {
+            bhs.status("Save Successful")
+            console.log("Save Successful")
+        }).catch(err => {
+            bhs.status("Error: " + err.code)
+            console.log(err)
+        })
 }
 
 blackHoleSuns.prototype.status = function (str) {
@@ -205,55 +273,79 @@ blackHoleSuns.prototype.buildTypePanels = function () {
         <div class="col-1" data-toggle="tooltip" data-html="true" data-placement="bottom" title="ttext">
             <i class="far fa-question-circle"></i>
         </div>`
+    const tBlank = `
+        <div class="col-sm-7 col-14"></div>`
     const tString = `
         <div class="col-sm-7 col-14">
-            <div id="row-idname" class="row">
+            <div id="row-idname" data-type="string" data-req="ifreq" class="row">
                 <div class="col-md-5 col-3 h6 txt-inp-def">title</div>
                 <input id="id-idname" class="rounded col-md-8 col-9">
             </div>
         </div>`
+    const tLongString = `
+        <div class="col-14">
+            <div id="row-idname" data-type="string" data-req="ifreq" class="row">
+                <div class="col-md-3 col-2 h6 txt-inp-def">title</div>
+                <input id="id-idname" class="rounded col-md-10 col-11">
+            </div>
+        </div>`
     const tNumber = `
         <div class="col-sm-7 col-14">
-            <div id="row-idname" class="row">
+            <div id="row-idname" data-type="num" data-req="ifreq" class="row">
                 <div class="col-md-5 col-3 h6 txt-inp-def">title</div>
-                <input id="id-idname" type="number" class="rounded col-4" min=0 max=range value=0>
+                <input id="id-idname" type="number" class="rounded col-4" min=-1 max=range value=-1>
             </div>
         </div>`
     const tList = `
         <div id="list-idname" class="col-sm-7 col-14">
-            <div id="row-idname" class="row">
+            <div id="row-idname" data-type="menu" data-req="ifreq" class="row">
                 <div id="id-idname" class="col-6"></div>
             </div>
         </div>`
     const tCkList = `
-        <div class="col-14 border hidden">
-            <div id="cklist-idname" class="row"></div>
+        <div id="slist-idname" class="col-14 border-top border-bottom hidden">
+            <div id="row-idname" data-type="cklist" data-req="ifreq" class="row"></div>
         </div>`
-    const tCkItm = `
-        <label id="id-idname" class="col-sm-3 col-4">
+    const tCkLstItm = `
+        <label id="id-idname" class="col-sm-3 col-4 h6 txt-inp-def">
             title&nbsp
             <input id="ck-idname" type="checkbox">
         </label>`
+    const tCkItem = `
+        <div id="row-idname" data-type="checkbox" data-req="false" class=col-sm-7 col-14">
+            <label id="id-idname" class="h6 txt-inp-def">
+                title&nbsp
+                <input id="ck-idname" type="checkbox">
+            </label>
+        </div>`
     const tSubList = `
         <div id="slist-idname" class="col-sm-7 col-14 hidden">
-            <div id="row-idname" class="row">
+            <div id="row-idname" data-type="menu" data-req="ifreq" class="row">
                 <div id="id-idname" class="col-12"></div>
             </div>
         </div>`
     const tImg = `
         <div id="img-idname" class="col-14">
-            <div id="row-idname" class="row">
+            <div id="row-idname" data-type="img" data-req="ifreq" class="row">
                 <div class="col-md-3 col-2 txt-inp-def h6">title</div>
                 <input id="id-idname" type="file" class="col-7 form-control form-control-sm" 
                     accept="image/*" name="files[]" onchange="loadCanvasWithInputFile(this)">&nbsp
             </div>
-            <div class="container noborder pad-bottom">
+            <br>
+            <div class="container pad-bottom">
                 <div id="imgtable" class="row"></div>    
             </div>
       </div>`
 
     let tabs = $("#typeTabs")
     let pnl = $("#typePanels")
+
+    let appenditem = (itm, add, title, id, req) => {
+        let l = /title/ [Symbol.replace](add, title + (req ? `&nbsp;<font style="color:red">*</font>&nbsp;` : ""))
+        l = /idname/g [Symbol.replace](l, id)
+        l = /ifreq/ [Symbol.replace](l, req ? true : false)
+        itm.append(l)
+    }
 
     objectList.forEach(obj => {
         let id = obj.name.nameToId()
@@ -272,23 +364,16 @@ blackHoleSuns.prototype.buildTypePanels = function () {
             for (let i = 0; i < obj.fields.length; ++i) {
                 let f = obj.fields[i]
                 let l = ""
-                let req = f.required ? `&nbsp;<font style="color:red">*</font>&nbsp;` : ""
                 let id = f.name.nameToId()
 
                 switch (f.type) {
-                    case "number":
-                        l = /title/ [Symbol.replace](tNumber, f.name + req)
-                        l = /range/ [Symbol.replace](l, f.range)
-                        l = /idname/g [Symbol.replace](l, id)
-                        itm.append(l)
-                        break
                     case "menu":
-                        l = /idname/g [Symbol.replace](tList, id)
-                        itm.append(l)
+                        appenditem(itm, tList, "", id, f.required)
                         let lst = itm.find("#list-" + id)
                         bhs.buildMenu(lst, f.name, f.list, f.sublist ? bhs.selectSublist : null)
-                        if (req != "")
-                            lst.find("#id-menu").html(f.name + req)
+
+                        if (f.required)
+                            lst.find("#id-menu").html(f.name + `&nbsp;<font style="color:red">*</font>&nbsp;`)
 
                         if (f.sublist) {
                             for (let k = 0; k < f.list.length; ++k) {
@@ -301,22 +386,23 @@ blackHoleSuns.prototype.buildTypePanels = function () {
                                     if (slist) {
                                         if (f.sublist[j].type == "menu") {
                                             l = /idname/ [Symbol.replace](tSubList, (t.name + "-" + f.sublist[j].name).nameToId())
-                                            l = /idname/g [Symbol.replace](l, f.sublist[j].name.nameToId())
-                                            itm.append(l)
+                                            appenditem(itm, l, "", f.sublist[j].name.nameToId(), f.sublist[j].required)
+
                                             sub = itm.find("#slist-" + (t.name + "-" + f.sublist[j].name).nameToId())
                                             bhs.buildMenu(sub, f.sublist[j].name, slist)
+
                                             if (f.sublist[j].required)
-                                                sub.find("#id-menu").html("<div>" + f.sublist[j].name + `&nbsp;<font style="color:red">*</font>&nbsp;<\div>`)
+                                                sub.find("#id-menu").html(f.sublist[j].name + `&nbsp;<font style="color:red">*</font>&nbsp;`)
+
                                         } else if (f.sublist[j].type == "checkbox") {
                                             l = /idname/ [Symbol.replace](tCkList, (t.name + "-" + f.sublist[j].name).nameToId())
-                                            l = /idname/g [Symbol.replace](l, f.sublist[j].name.nameToId())
-                                            itm.append(l)
-                                            sub = itm.find("#cklist-" + f.sublist[j].name.nameToId())
-                                            for (let m = 0; m < slist.length; ++m) {
-                                                l = /idname/g [Symbol.replace](tCkItm, slist[m].name.nameToId())
-                                                l = /title/ [Symbol.replace](l, slist[m].name)
-                                                sub.append(l)
-                                            }
+                                            appenditem(itm, l, "", f.sublist[j].name.nameToId(), false)
+
+                                            sub = itm.find("#slist-" + (t.name + "-" + f.sublist[j].name).nameToId())
+                                            sub = sub.find("#row-" + f.sublist[j].name.nameToId())
+
+                                            for (let m = 0; m < slist.length; ++m)
+                                                appenditem(sub, tCkLstItm, slist[m].name, slist[m].name.nameToId())
                                         }
 
                                         if (f.sublist[j].ttip) {
@@ -329,15 +415,24 @@ blackHoleSuns.prototype.buildTypePanels = function () {
                         }
                         break
 
+                    case "number":
+                        l = /range/ [Symbol.replace](tNumber, f.range)
+                        appenditem(itm, l, f.name, id, f.required)
+                        break
                     case "img":
-                        l = /title/ [Symbol.replace](tImg, f.name + req)
-                        l = /idname/g [Symbol.replace](l, id)
-                        itm.append(l)
+                        appenditem(itm, tImg, f.name, id, f.required)
+                        break
+                    case "checkbox":
+                        appenditem(itm, tCkItem, f.name, id, f.required)
                         break
                     case "string":
-                        l = /title/ [Symbol.replace](tString, f.name + req)
-                        l = /idname/g [Symbol.replace](l, id)
-                        itm.append(l)
+                        appenditem(itm, tString, f.name, id, f.required)
+                        break
+                    case "long string":
+                        appenditem(itm, tLongString, f.name, id, f.required)
+                        break
+                    case "blank":
+                        itm.append(tBlank)
                         break
                 }
 
@@ -369,10 +464,8 @@ blackHoleSuns.prototype.selectSublist = function (btn) {
 
     pnl.find("[id|='slist']").hide()
 
-    for (let i = 0; i < sub.length; ++i) {
+    for (let i = 0; i < sub.length; ++i)
         pnl.find("#slist-" + (t + "-" + sub[i].name).nameToId()).show()
-        pnl.find("#ckpnl-" + (t + "-" + sub[i].name).nameToId()).show()
-    }
 }
 
 let imgcanvas = document.createElement('canvas')
@@ -383,14 +476,14 @@ function loadCanvasWithInputFile(evt) {
             <div id="img-idname" class="col-md-8 col-10">
                 <canvas id="id-canvas" class="border"></canvas>
                 <div class="row">
-                    <button onclick="redditShare()"><img src="download.png" style="width:20px; height:20px" title="Share to reddit" alt="Share to reddit"></button>
+                    <button onclick="redditShare(this)"><img src="reddit.png" style="width:20px; height:20px" title="Share to reddit" alt="Share to reddit"></button>
                 </div>
             </div>
             <div id="info-idname" class="col-md-6 col-4 txt-inp-def">
                 <div id="sec-name" class="row">
                     <label class="col-11">
                         <input id="ck-name" type="checkbox" onchange="addText(this)">
-                        Traveler Name&nbsp
+                        Player Name&nbsp
                     </label>
                     <input id="sel-name" class="col-2 bkg-def" style="border-color:black" onchange="setColor(this)" type="color" value="#ffffff">
                     <div id="id-name" class="col-10"></div>
@@ -422,7 +515,7 @@ function loadCanvasWithInputFile(evt) {
                     <div id="id-galaxy" class="col-10"></div>
                     <input id="size-galaxy" class="col-5" onchange="setSize(this)" type="number" value=16 min=0>
                 </div>
-                <div  id="sec-objinfo" class="row"> 
+                <!--div  id="sec-objinfo" class="row"> 
                     <label class="col-11">
                         <input id="ck-objinfo" type="checkbox" onchange="addText(this)">
                         Object Info&nbsp
@@ -430,7 +523,7 @@ function loadCanvasWithInputFile(evt) {
                     <input id="sel-objinfo" class="col-2 bkg-def" style="border-color:black" onchange="setColor(this)" type="color" value="#ffffff">
                     <div id="id-objinfo" class="col-10"></div>
                     <input id="size-objinfo" class="col-5" onchange="setSize(this)" type="number" value=16 min=0>
-                </div>
+                </div-->
            </div>    
         </div>`
 
@@ -451,16 +544,16 @@ function loadCanvasWithInputFile(evt) {
         selectedText = -1
 
         img = img.find("#id-canvas")
-        img.mousedown(e=> {
+        img.mousedown(e => {
             handleMouseDown(e)
         })
-        img.mousemove(e=> {
+        img.mousemove(e => {
             handleMouseMove(e)
         })
-        img.mouseup(e=> {
+        img.mouseup(e => {
             handleMouseUp(e)
         })
-        img.mouseout(e=> {
+        img.mouseout(e => {
             handleMouseOut(e)
         })
 
@@ -485,7 +578,7 @@ function loadCanvasWithInputFile(evt) {
                     ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
                 }
 
-                logo.src = "/image0.png"
+                logo.src = "/nmsce.png"
             }
 
             img.src = reader.result
@@ -541,10 +634,10 @@ function addText(evt) {
                 break
         }
 
-        let txtctx = txtcanvas.getContext("2d")
-        txtctx.font = text.fontsize + "pt " + text.font
-        txtctx.fillStyle = text.color
-        text.width = txtctx.measureText(text.text).width
+        let ctx = txtcanvas.getContext("2d")
+        ctx.font = text.fontsize + "px " + text.font
+        ctx.fillStyle = text.color
+        text.width = ctx.measureText(text.text).width
         text.height = text.fontsize
         texts.push(text)
     } else {
@@ -569,7 +662,7 @@ function setFont(btn) {
         if (texts[i].sub == id) {
             texts[i].font = font
 
-            ctx.font = texts[i].fontsize + "pt " + font
+            ctx.font = texts[i].fontsize + "px " + font
             texts[i].width = ctx.measureText(texts[i].text).width
             texts[i].height = texts[i].fontsize
         }
@@ -603,7 +696,7 @@ function setSize(evt) {
         if (texts[i].sub == id) {
             texts[i].fontsize = parseInt($(evt).val())
 
-            ctx.font = texts[i].fontsize + "pt " + texts[i].font
+            ctx.font = texts[i].fontsize + "px " + texts[i].font
             texts[i].width = ctx.measureText(texts[i].text).width
             texts[i].height = texts[i].fontsize
         }
@@ -615,32 +708,32 @@ function setSize(evt) {
 }
 
 function drawText() {
-    let txtctx = txtcanvas.getContext("2d")
-    txtctx.clearRect(0, 0, txtcanvas.width, txtcanvas.height)
+    let ctx = txtcanvas.getContext("2d")
+    ctx.clearRect(0, 0, txtcanvas.width, txtcanvas.height)
 
     for (var i = 0; i < texts.length; i++) {
         var text = texts[i]
         if (text.sub == "glyph") {
-            txtctx.fillStyle = text.color
-            txtctx.fillRect(text.x - 2, text.y - text.height - 2, text.width + 4, text.height + 4)
-            txtctx.fillStyle = "#000000"
-            txtctx.fillRect(text.x - 1, text.y - text.height - 1, text.width + 2, text.height + 2)
+            ctx.fillStyle = text.color
+            ctx.fillRect(text.x - 2, text.y - text.height - 2, text.width + 4, text.height + 4)
+            ctx.fillStyle = "#000000"
+            ctx.fillRect(text.x - 1, text.y - text.height - 1, text.width + 2, text.height + 2)
         }
 
-        txtctx.font = text.fontsize + "pt " + text.font
-        txtctx.fillStyle = text.color
-        txtctx.fillText(text.text, text.x, text.y)
+        ctx.font = text.fontsize + "px " + text.font
+        ctx.fillStyle = text.color
+        ctx.fillText(text.text, text.x, text.y)
     }
 }
 
-function redditShare() {
+function redditShare(evt) {
     let canvas = document.getElementById("id-canvas")
 
-    canvas.toBlob(blob=> {
+    canvas.toBlob(blob => {
         let name = "temp/" + uuidv4() + ".jpg"
-        bhs.fbstorage.ref().child(name).put(blob).then(()=> {
-            bhs.fbstorage.ref().child(name).getDownloadURL().then(url=> {
-                let u = 'https://reddit.com/submit?url=' + url; // /%/g [Symbol.replace](url, "&37;")
+        bhs.fbstorage.ref().child(name).put(blob).then(() => {
+            bhs.fbstorage.ref().child(name).getDownloadURL().then(url => {
+                let u = 'https://reddit.com/' + url
                 window.open(u)
             })
         })
@@ -716,34 +809,49 @@ const shipList = [{
         T1 - 15-19 slots<br>
         T2 - 20-29 slots<br>
         T3 - 30-38 slots`,
-    classTtip: `
-        S - 55-60% damage, 15-25% shield<br>
-        A - 35-50% damage, 15-20% shield<br>
-        B - 15-30% damage, 5-10% shield<br>
-        C - 5-10% damage`,
+    // classTtip: `
+    //     S - 55-60% damage, 15-25% shield<br>
+    //     A - 35-50% damage, 15-20% shield<br>
+    //     B - 15-30% damage, 5-10% shield<br>
+    //     C - 5-10% damage`,
     subType: [{
         name: "Needle Nose"
     }, {
         name: "Long Nose"
     }, {
         name: "Short Nose"
+    }, {
+        name: "Barrel Nose"
+    }, {
+        name: "Rasa"
     }, ],
     features: [{
         name: "Droid"
     }, {
         name: "Halo"
+    }, {
+        name: "X-Wing"
     }, ]
 }, {
     name: "Hauler",
+    subType: [{
+        name: "Tilt Wing"
+    }, {
+        name: "Fan Wing"
+    }, {
+        name: "Baller"
+    }, {
+        name: "Box"
+    }, ],
     slotTtip: `
         T1 - 15-19 slots<br>
         T2 - 20-29 slots<br>
         T3 - 30-38 slots`,
-    classTtip: `
-        S - 55-60% damage, 15-25% shield<br>
-        A - 35-50% damage, 15-20% shield<br>
-        B - 15-30% damage, 5-10% shield<br>
-        C - 5-10% damage`,
+    // classTtip: `
+    //     S - 55-60% damage, 15-25% shield<br>
+    //     A - 35-50% damage, 15-20% shield<br>
+    //     B - 15-30% damage, 5-10% shield<br>
+    //     C - 5-10% damage`,
 }, {
     name: "Shuttle",
     slotList: [{
@@ -754,22 +862,22 @@ const shipList = [{
     slotTtip: `
         T1 - 18-23 slots<br>
         T2 - 19-28 slots`,
-    classTtip: `
-        S - 55-60% damage, 15-25% shield<br>
-        A - 35-50% damage, 15-20% shield<br>
-        B - 15-30% damage, 5-10% shield<br>
-        C - 5-10% damage`,
+    // classTtip: `
+    //     S - 55-60% damage, 15-25% shield<br>
+    //     A - 35-50% damage, 15-20% shield<br>
+    //     B - 15-30% damage, 5-10% shield<br>
+    //     C - 5-10% damage`,
 }, {
     name: "Explorer",
     slotTtip: `
         T1 - 15 - 31 slots < br >
         T2 - 32 - 39 slots < br >
         T3 - 40 - 48 slots < br >`,
-    classTtip: `
-        S - 10 - 20 % damage, 55 - 60 % shield, 30 - 35 % hyperdrive < br >
-        A - 5 - 10 % damage, 45 - 50 % shield, 15 - 25 % hyperdrive < br >
-        B - 0 - 5 % damage, 25 - 35 % shield, 5 - 10 % hyperdrive < br >
-        C - 12 - 20 % shield, 0 - 5 % hyperdrive`,
+    // classTtip: `
+    //     S - 10 - 20 % damage, 55 - 60 % shield, 30 - 35 % hyperdrive < br >
+    //     A - 5 - 10 % damage, 45 - 50 % shield, 15 - 25 % hyperdrive < br >
+    //     B - 0 - 5 % damage, 25 - 35 % shield, 5 - 10 % hyperdrive < br >
+    //     C - 12 - 20 % shield, 0 - 5 % hyperdrive`,
 }, {
     name: "Exotic",
 }]
@@ -802,6 +910,38 @@ const mtList = [{
     name: "Rifle",
 }, ]
 
+const resList = [{
+    name: "Ammonia",
+}, {
+    name: "Cadmium",
+}, {
+    name: "Cobalt",
+}, {
+    name: "Copper",
+}, {
+    name: "Dioxite",
+}, {
+    name: "Emeril",
+}, {
+    name: "Gold",
+}, {
+    name: "Indium",
+}, {
+    name: "Magnetized Ferrite",
+}, {
+    name: "Paraffinum",
+}, {
+    name: "Phosphorus",
+}, {
+    name: "Pyrite",
+}, {
+    name: "Salt",
+}, {
+    name: "Silver",
+}, {
+    name: "Uranium",
+}, ]
+
 const colorList = [{
     name: "Red",
 }, {
@@ -812,6 +952,8 @@ const colorList = [{
     name: "Green",
 }, {
     name: "Blue",
+}, {
+    name: "Purple",
 }, {
     name: "Black",
 }, {
@@ -859,9 +1001,9 @@ const fontList = [{
 }, {
     name: "Century Gothic",
 }, {
-    name: "Didot",
+    name: "Berkshire Swash",
 }, {
-    name: "Copperplate Gothic",
+    name: 'Caveat Brush',
 }, ]
 
 const freighterList = [{
@@ -890,6 +1032,7 @@ const objectList = [{
             name: "Subtype",
             type: "menu",
             sub: "subType",
+            required: true,
         }, {
             name: "Features",
             type: "checkbox",
@@ -897,7 +1040,7 @@ const objectList = [{
         }, {
             name: "Class",
             type: "menu",
-            ttip: "classTtip",
+            // ttip: "classTtip",
             list: classList
         }, {
             name: "Slots",
@@ -915,6 +1058,9 @@ const objectList = [{
         name: "Secondary Color",
         type: "menu",
         list: colorList,
+        // }, {
+        //     name: "Seed",
+        //     type: "string",
     }, {
         name: "Photo",
         type: "img",
@@ -941,7 +1087,7 @@ const objectList = [{
         }, {
             name: "Class",
             type: "menu",
-            ttipFld: "classTtip",
+            // ttipFld: "classTtip",
             list: classList,
         }, ]
     }, {
@@ -953,6 +1099,9 @@ const objectList = [{
         name: "Secondary Color",
         type: "menu",
         list: colorList,
+        // },{
+        //     name: "Seed",
+        //     type: "string",
     }, {
         name: "Photo",
         type: "img",
@@ -972,15 +1121,26 @@ const objectList = [{
         name: "Class",
         type: "menu",
         list: classList,
-        ttipFld: "classTtip",
+        // ttipFld: "classTtip",
         required: true,
     }, {
         name: "Slots",
         type: "number",
         required: true,
     }, {
-        name: "Planet",
+        name: "Space Station",
+        type: "checkbox",
+    }, {
+        name: "",
+        type: "blank",
+    }, {
+        name: "Planet Name",
         type: "string",
+    }, {
+        name: "Planet Number",
+        type: "number",
+        range: 15,
+        ttip: "First character in portal address",
     }, {
         name: "Latitude",
         type: "string",
@@ -988,16 +1148,99 @@ const objectList = [{
         name: "Longitude",
         type: "string",
     }, {
+        name: "Location Notes",
+        type: "long string",
+    }, {
+        name: "Primary Color",
+        type: "menu",
+        list: colorList,
+        required: true,
+    }, {
+        name: "Secondary Color",
+        type: "menu",
+        list: colorList,
+        // },{
+        //     name: "Seed",
+        //     type: "string",
+    }, {
         name: "Photo",
         type: "img",
         required: true,
     }]
 }, {
-    name: "Flora"
+    name: "Flora",
+    fields: [{
+        name: "Name",
+        type: "string",
+        required: true,
+    }, {
+        name: "Photo",
+        type: "img",
+        required: true,
+    }, {
+        name: "Planet Name",
+        type: "string",
+    }, {
+        name: "Planet Number",
+        type: "number",
+        range: 15,
+        ttip: "First character in portal address",
+    }, {
+        name: "Photo",
+        type: "img",
+        required: true,
+    }]
 }, {
-    name: "Fauna"
+    name: "Fauna",
+    fields: [{
+        name: "Name",
+        type: "string",
+        required: true,
+    }, {
+        name: "Type",
+        type: "string",
+        required: true,
+    }, {
+        name: "Planet Name",
+        type: "string",
+    }, {
+        name: "Planet Number",
+        type: "number",
+        range: 15,
+        ttip: "First character in portal address",
+    }, {
+        name: "Photo",
+        type: "img",
+        required: true,
+    }]
 }, {
-    name: "Planet"
+    name: "Planet",
+    fields: [{
+        name: "Name",
+        type: "string",
+        required: true,
+    }, {
+        name: "Planet Number",
+        range: 15,
+        type: "number",
+    }, {
+        name: "Biome",
+        type: "string",
+        required: true,
+    }, {
+        name: "Weather",
+        type: "string",
+    }, {
+        name: "Sentinel",
+        type: "string",
+    }, {
+        name: "Notes",
+        type: "long string",
+    }, {
+        name: "Photo",
+        type: "img",
+        required: true,
+    }]
 }, {
     name: "Base",
     fields: [{
@@ -1005,10 +1248,18 @@ const objectList = [{
         type: "string",
         required: true,
     }, {
+        name: "Planet Number",
+        type: "number",
+        range: 15,
+        ttip: "First character in portal address",
+    }, {
         name: "Game Mode",
         type: "menu",
         list: modeList,
         required: true,
+    }, {
+        name: "Type",
+        type: "string",
     }, {
         name: "Photo",
         type: "img",

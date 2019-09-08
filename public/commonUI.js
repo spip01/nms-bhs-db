@@ -1,7 +1,9 @@
 'use strict'
 
 blackHoleSuns.prototype.doLoggedout = function () {
-    if (bhs.clearPanels) bhs.clearPanels()
+    if (bhs.clearPanels)
+        bhs.clearPanels()
+
     bhs.user = bhs.userInit()
     bhs.displayUser(bhs.user, true)
 
@@ -22,27 +24,23 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
 }
 
 blackHoleSuns.prototype.displayUser = async function (user, force) {
-    let ifindex = window.location.pathname == "/index.html" || window.location.pathname == "/"
     let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform)
 
     bhs.user = mergeObjects(bhs.user, user)
 
     if ((changed || force) && bhs.user.galaxy && bhs.user.platform) {
-        bhs.buildTotals()
-        bhs.getTotals(bhs.displayTotals)
-
-        bhs.buildUserTable(bhs.user)
         bhs.displaySettings(bhs.user)
         bhs.getEntries(bhs.displayEntryList)
     }
 
+    $("body").css("background-color", bhs.user.role === "admin" ? "green" : "black")
+
     let pnl = $("#pnl-user")
-    pnl.find("#id-player").val(bhs.user._name)
-    pnl.find("#btn-Player").text(bhs.user._name)
+    pnl.find("#id-Player").val(bhs.user._name)
     pnl.find("#btn-Platform").text(bhs.user.platform)
     pnl.find("#btn-Organization").text(bhs.user.org)
 
-    if (bhs.user.galaxy) {
+    if (bhs.user.galaxy && bhs.user.galaxy !== "") {
         let i = galaxyList[bhs.getIndex(galaxyList, "name", bhs.user.galaxy)].number
         pnl.find("#btn-Galaxy").text(i + " " + bhs.user.galaxy)
         pnl.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[i].color + ";")
@@ -56,42 +54,58 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
             <div class="row">
                 <div class="col-7">
                     <div class="row">
-                        <div class="col-14 h6 txt-inp-def">Traveler</div>
-                        <input id="id-player" class="rounded col-13 h5" type="text">
-                    </div>
-                    <div class="row">
-                        <div id="id-Organization" class="col-9"></div>
+                        <div class="col-14 h6 txt-inp-def">Player Name</div>
+                        <input id="id-Player" class="rounded col-13 h5" type="text">
                     </div>
                 </div>
 
                 <div class="col-7">
                     <div class="row">
-                        <div id="id-Platform" class="col-7"></div>
-                        <div id="id-Galaxy" class="col-7"></div>
+                        <div id="id-Organization"></div>
                     </div>
                 </div>
             </div>
+
+            <div class="row">
+                <div class="col-1"></div>
+                <div id="id-Platform" class="col-3"></div>
+                <div id="id-Galaxy" class="col-3"></div>
+                <div id="id-Version" class="col-3 hidden"></div>
+            </div>
         </div>
-    </div>
-    <br>`
+        <br>`
 
     $("#panels").prepend(panel)
     let loc = $("#pnl-user")
 
     await bhs.getOrgList()
-
-    bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser)
-    bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, true)
-    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, true)
-
-    $("#id-player").change(() => {
-        let user = bhs.extractUser()
-        bhs.changeName("#id-player", user)
+    bhs.orgList.unshift({
+        name: ""
     })
 
-    $("#id-player").keyup(event => {
-        if (event.keyCode === 13) {
-            $(this).change()
+    bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser, true)
+    // bhs.buildMenu(loc, "Version", versionList, bhs.saveUser, true)
+    bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser)
+    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser)
+
+    $("#id-Player").change(() => {
+        let user = bhs.extractUser()
+        bhs.changeName("#id-Player", user)
+    })
+
+    $("#ck-fileupload").change(function (event) {
+        if ($(this).prop("checked")) {
+            panels.forEach(p => {
+                $("#" + p.id).hide()
+            })
+            $("#entrybuttons").hide()
+            $("#upload").show()
+        } else {
+            panels.forEach(p => {
+                $("#" + p.id).show()
+            })
+            $("#entrybuttons").show()
+            $("#upload").hide()
         }
     })
 }
@@ -193,7 +207,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
     loc.append(h)
 
     userTable.forEach(t => {
-        loc.find("#ck-" + t.id).change(() => {
+        loc.find("#ck-" + t.id).change(function () {
             if ($(this).prop("checked")) {
                 $("#userHeader").find("#" + t.id).show()
                 $("#userItems").find("#" + t.id).show()
@@ -317,7 +331,6 @@ const totalsRows = [{
 
 blackHoleSuns.prototype.buildTotals = function () {
     let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
-    let fgal = window.location.pathname == "/galaxy.html"
 
     const pnl = `
         <div class="card-header bkg-def">
@@ -406,7 +419,7 @@ blackHoleSuns.prototype.buildTotals = function () {
 
     tot.find("#id-showall").show()
 
-    tot.find("#ck-showall").change(() => {
+    tot.find("#ck-showall").change(function () {
         if ($(this).prop("checked"))
             bhs.displayAllUTotals(bhs.user)
         else
@@ -439,7 +452,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
     for (var i = 0; i < list.length; i++) {
         loc.append(list[i])
         if ($(list[i]).find("#id-uid").length > 0)
-            loc.find("#" + $(list[i]).prop("id")).dblclick(() => {
+            loc.find("#" + $(list[i]).prop("id")).dblclick(function() {
                 console.log($(this).find("#id-names").text().stripMarginWS() + " " + $(this).find("#id-uid").text().stripMarginWS())
                 if (fgal) {
                     bhs.entries = {}
@@ -462,7 +475,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
         for (var i = 0; i < list.length; i++) {
             loc.append(list[i])
             if (fgal) {
-                loc.find("#" + $(list[i]).prop("id")).dblclick(() => {
+                loc.find("#" + $(list[i]).prop("id")).dblclick(function()  {
                     bhs.entries = {}
                     let galaxy = $("#btn-Galaxy").text().stripNumber()
                     let platform = $("#btn-Platform").text().stripMarginWS()
@@ -658,15 +671,13 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
             </div>
         </div>`
 
-    let item = ``
     let hdr = ``
-    if (list.length > 8) {
+    if (list.length > 8)
         hdr = `<ul id="list" class="dropdown-menu scrollable-menu" role="menu"></ul>`
-        item = `<li id="item-idname" class="dropdown-item" type="button" style="rgbcolor cursor: pointer">iname</li>`
-    } else {
-        hdr = `<div id="list" class="dropdown-menu"></div>`
-        item = `<button id="item-idname" class="dropdown-item border-bottom" type="button" style="rgbcolor cursor: pointer">iname</button>`
-    }
+    else
+        hdr = `<ul id="list" class="dropdown-menu" role="menu"></ul>`
+
+    let item = `<li id="item-idname" class="dropdown-item" type="button" style="rgbcolor cursor: pointer">iname</li>`
 
     let id = label.nameToId()
     let h = /label/ [Symbol.replace](title, label)
@@ -715,7 +726,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
         mlist.append(h)
 
         mlist.find("#item-" + lid).unbind("click")
-        mlist.find("#item-" + lid).click(() => {
+        mlist.find("#item-" + lid).click(function() {
             if (bhs.user.uid) {
                 let name = $(this).text().stripMarginWS()
                 let btn = menu.find("#btn-" + id)
@@ -746,10 +757,11 @@ blackHoleSuns.prototype.extractUser = function () {
     let loc = $("#pnl-user")
     let u = {}
 
-    u._name = loc.find("#id-player").val()
+    u._name = loc.find("#id-Player").val()
     u.platform = loc.find("#btn-Platform").text().stripNumber()
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber()
     u.org = loc.find("#btn-Organization").text().stripNumber()
+    u.version = "beyond" // loc.find("#btn-Version").text().stripNumber()
 
     return u
 }

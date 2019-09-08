@@ -41,8 +41,9 @@
         integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous">
     </script>
 
-    <link href='https://fonts.googleapis.com/css?family=Berkshire Swash' rel='stylesheet'>
 
+    <!-- https://fonts.googleapis.com/css?family=Tangerine:bold,bolditalic|Inconsolata:italic|Droid+Sans -->
+    <link href="https://fonts.googleapis.com/css?family=Berkshire+Swash|Caveat+Brush&display=swap" rel="stylesheet">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <script src="/__/firebase/5.9.4/firebase-app.js"></script>
@@ -52,6 +53,7 @@
     <script src="/__/firebase/init.js"></script>
 
     <script src="common.js"></script>
+    <script src="commonNmsce.js"></script>
     <script src="commonUI.js"></script>
     <script src="index.js"></script>
 
@@ -154,40 +156,41 @@
                 </div>
 
                 <div class="col-md-7 col-14">
-                    <div class="card">
-                        <nav>
-                            <div class="nav nav-tabs" id="typeTabs" role="tablist">
-                        </nav>
-                        <div class="card-body">
-                            <div class="tab-content" id="typePanels"></div>
-                        </div>
-                    </div>
-                    <br>
-
-                    <div id="entrybuttons" class="card card-body">
-                        <div class="row">
-                            <div class="col-7">
-                                <div class="row">
-                                    <button id="save" type="button"
-                                        class="col-4 btn  btn-sm btn-def">Save</button>&nbsp;
-                                    <button id="delete" type="button" class="col-4 btn  btn-sm btn-def disabled"
-                                        disabled>Delete</button>&nbsp;
-                                    <button id="cancel" type="button"
-                                        class="col-4 btn btn-def  btn-sm">Cancel</button>&nbsp;
-                                </div>
+                    <div class="card card-body">
+                        <div class="card">
+                            <nav>
+                                <div class="nav nav-tabs" id="typeTabs" role="tablist">
+                            </nav>
+                            <div class="card-body">
+                                <div class="tab-content" id="typePanels"></div>
                             </div>
-                            <div id="status" class="border col-7 text-danger scrollbar container-fluid"
-                                style="overflow-y: scroll; height: 40px"></div>
+                        </div>
+                        <br>
+
+                        <div id="entrybuttons" class="card card-body">
+                            <div class="row">
+                                <div class="col-7">
+                                    <div class="row">
+                                        <button id="save" type="button"
+                                            class="col-4 btn  btn-sm btn-def">Save</button>&nbsp;
+                                        <button id="delete" type="button" class="col-4 btn  btn-sm btn-def disabled"
+                                            disabled>Delete</button>&nbsp;
+                                        <button id="cancel" type="button"
+                                            class="col-4 btn btn-def  btn-sm">Cancel</button>&nbsp;
+                                    </div>
+                                </div>
+                                <div id="status" class="border col-7 text-danger scrollbar container-fluid"
+                                    style="overflow-y: scroll; height: 40px"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <br>
             </div>
         </div>
         <br>
 
         <div class="row">
-            <div id="nmsceTable" class="card pad-bottom"></div>
+            <div id="entryTable" class="card pad-bottom"></div>
         </div>
     </div>
     <br>
