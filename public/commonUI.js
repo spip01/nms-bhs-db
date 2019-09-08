@@ -88,9 +88,11 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser)
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser)
 
-    $("#id-Player").change(() => {
-        let user = bhs.extractUser()
-        bhs.changeName("#id-Player", user)
+    $("#id-Player").change(function () {
+        if (bhs.user.uid) {
+            let user = bhs.extractUser()
+            bhs.changeName(this, user)
+        }
     })
 }
 
@@ -429,7 +431,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
     for (var i = 0; i < list.length; i++) {
         loc.append(list[i])
         if ($(list[i]).find("#id-uid").length > 0)
-            loc.find("#" + $(list[i]).prop("id")).dblclick(function() {
+            loc.find("#" + $(list[i]).prop("id")).dblclick(function () {
                 console.log($(this).find("#id-names").text().stripMarginWS() + " " + $(this).find("#id-uid").text().stripMarginWS())
                 if (fgal) {
                     bhs.entries = {}
@@ -452,7 +454,7 @@ blackHoleSuns.prototype.displayTotals = function (entry, id) {
         for (var i = 0; i < list.length; i++) {
             loc.append(list[i])
             if (fgal) {
-                loc.find("#" + $(list[i]).prop("id")).dblclick(function()  {
+                loc.find("#" + $(list[i]).prop("id")).dblclick(function () {
                     bhs.entries = {}
                     let galaxy = $("#btn-Galaxy").text().stripNumber()
                     let platform = $("#btn-Platform").text().stripMarginWS()
@@ -703,7 +705,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
         mlist.append(h)
 
         mlist.find("#item-" + lid).unbind("click")
-        mlist.find("#item-" + lid).click(function() {
+        mlist.find("#item-" + lid).click(function () {
             if (bhs.user.uid) {
                 let name = $(this).text().stripMarginWS()
                 let btn = menu.find("#btn-" + id)
@@ -719,15 +721,17 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
     }
 }
 
-blackHoleSuns.prototype.saveUser = function () {
-    let user = bhs.extractUser()
-    let ok
+blackHoleSuns.prototype.saveUser = async function (batch) {
+    if (bhs.user.uid) {
+        let user = bhs.extractUser()
+        let ok = bhs.validateUser(user)
 
-    if ((ok = bhs.validateUser(user))) {
-        bhs.updateUser(user)
-        bhs.displayUser(user)
-    }
-    return ok
+        if (ok)
+            ok = await bhs.updateUser(user, batch)
+
+        return ok
+    } else
+        return false
 }
 
 blackHoleSuns.prototype.extractUser = function () {

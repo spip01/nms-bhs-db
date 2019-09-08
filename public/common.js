@@ -235,7 +235,7 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
         return
 
     if (user._name.match(/Unknown Traveler/i)) {
-        $(loc).val(bhs.user._name)
+        loc.val(bhs.user._name)
         bhs.status("Player Name:" + user._name + " is restricted.")
         return
     }
@@ -249,7 +249,7 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
     let ref = bhs.getUsersColRef().where("_name", "==", user._name)
     ref.get().then(async snapshot => {
         if (!snapshot.empty && snapshot.docs[0].data().uid != bhs.user.uid) {
-            $(loc).val(bhs.user._name)
+            loc.val(bhs.user._name)
             bhs.status("Player Name:" + user._name + " is already taken.", 0)
         } else {
             bhs.assignUid(bhs.user, user)
