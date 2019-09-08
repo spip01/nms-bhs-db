@@ -32,12 +32,12 @@ service cloud.firestore {
     }
 
     match /org/{document=**} {
-      allow read: if isLoggedIn(request)
+      allow read: if true
       allow write: if hasRole(database, request, ["editor", "admin"])
     }
 
     match /poi/{document=**} {
-      allow read: if isLoggedIn(request)
+      allow read: true
       allow write: if hasRole(database, request, ["editor", "admin"])
     }
 

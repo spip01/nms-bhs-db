@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>No Man's Sky Black Hole Suns</title>
+    <meta name="description" content="No Man's Sky Black Hole Suns">
+    <meta name="keywords" content="no man's sky,map,black hole">
+    <meta name="author" content="Stephen Piper">
+    <meta name="application-name" content="NMS-Black Hole Suns">
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <script src="env.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-5"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-66007591-5');
+    </script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+    </script>
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <script src="/__/firebase/6.3.3/firebase-app.js"></script>
+    <script src="/__/firebase/6.3.3/firebase-auth.js"></script>
+    <script src="/__/firebase/6.3.3/firebase-firestore.js"></script>
+    <script src="/__/firebase/6.3.3/firebase-storage.js"></script>
+    <script src="/__/firebase/6.3.3/firebase-functions.js"></script>
+    <script src="/__/firebase/init.js"></script>
+
+    <script src="common.js"></script>
+    <script src="commonUI.js"></script>
+    <script src="darc.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="local.css">
+    <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
+</head>
+
+<body class="bkg-def">
+    <a href="https://darc.blackholesuns.com"><img src="nmsbhs_banner.jpg" alt="BHS Banner"></a>
+
+    <div id="r2" class="container-fluid">
+        <div class="row">
+            <a class="col-2 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">FAQ</a>
+            <a class="col-2 text-center h5 txt-def" href="totals.html">Totals</a>
+            <a class="col-2 text-center h5 txt-def" href="search.html">Search</a>
+
+            <div id="full-usermenu" class="container col-4">
+                <button id="login" type="button" class="text-center btn-def no-border h5">
+                    Login
+                </button>
+
+                <div id="usermenu" class="dropdown" style="display: none">
+                    <button type="button" class="row text-center txt-def no-border dropdown-toggle h5"
+                        data-toggle="dropdown">
+                        <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
+                        <h5 id="username">
+                            User
+                        </h5>
+                    </button>
+
+                    <div class="dropdown-menu bkg-def text-center">
+                        <button id="logout" type="button" class="no-border text-center dropdown-item btn-def">
+                            <h5>Logout</h5>
+                        </button>
+                        <button id="recalc" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
+                            onclick="bhs.recalcTotals()">
+                            Recalc Totals
+                        </button>
+                        <button id="admin" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
+                            onclick="bhs.setAdmin()">
+                            Admin Edit
+                        </button>
+                        <div class="text-center">
+                            <a id="poiorg" class="h5 no-border dropdown-item btn-def hidden" href="poiorg.html">Enter
+                                POI &amp; Orgs</a>
+                        </div>
+                        <button id="genDARC" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
+                            onclick="bhs.genDARC()">
+                            genDARC
+                        </button>
+                        <button id="updateDARC" type="button"
+                            class="h5 no-border text-center dropdown-item btn-def hidden" onclick="bhs.updateDARC()">
+                            updateDARC
+                        </button>
+                        <button id="backupBHS" type="button"
+                            class="h5 no-border text-center dropdown-item btn-def hidden" onclick="bhs.backupBHS()">
+                            backupBHS
+                        </button>
+                        <button id="testing" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
+                            onclick="bhs.testing()">
+                            testing
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="contest" class="row hidden"></div>
+
+    <div class="row border-top">
+        <a href="https://darc.blackholesuns.com/" class="col-3 text-center clr-creme h6">BHS DaRC Web</a>
+        <a href="https://guide.blackholesuns.com/" class="col-3 text-center clr-creme h6">Travel Guide</a>
+        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center clr-creme h6">Follow us on
+            Reddit</a>
+        <a href="https://discord.blackholesuns.com/" class="col-4 text-center clr-creme h6">Talk to us on
+            Discord</a>
+    </div>
+
+    <div id="javascript">
+        <!--googleoff:all-->
+        <div class="text-danger h6">
+            <p>Unfortunately, this page cannot function without javasript. Please add this site to your "allowed" sites.
+                For chrome it's located&nbsp;
+                <a href="chrome://settings/content/javascript">here</a></p>
+            <p>This error message can also be caused by a page loading error.</p>
+        </div>
+        <!--googleon:all-->
+        <br>
+    </div>
+    <br>
+
+    <!--googleoff:all-->
+    <div id="loginpnl" class="card bkg-def pad-bottom" style="display:none">
+        <div class="card-header">
+            <div class="h4 txt-def text-center">Login to Black Hole Suns DB</div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-5">&nbsp;</div>
+                <div id="lgoogle" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Google</div>
+            </div>
+            <div class="row">
+                <div class="col-5">&nbsp;</div>
+                <div id="lgithub" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Github</div>
+            </div>
+            <!--div class="row">
+                <div class="col-5">&nbsp;</div>
+                <div id="ltwitch" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Twitch</div>
+            </div>
+            <div class="row">
+                <div class="col-5">&nbsp;</div>
+                <div id="ldiscord" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Discord</div>
+            </div>
+            <div class="row">
+                <div class="col-5">&nbsp;</div>
+                <div id="lreddit" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Reddit</div>
+            </div-->
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-6">&nbsp;</div>
+                <div id="lcancel" class="h6 text-center col-2 btn-sm bkg-light-gray">Cancel</div>
+            </div>
+        </div>
+    </div>
+    <!--googleon:all-->
+
+    <div id="jssite" class="container-fluid pad-bottom hidden">
+        <div id="loggedout" class="row txt-def">&nbsp;&nbsp;&nbsp;&nbsp;Login is only required for saving or loading saved data<br></div>
+
+        <div class="row">
+            <div class="col-md-7 col-14">
+                <div class="card card-body pad-bottom">
+                    <div id="panels"></div>
+                </div>
+                <br>
+            </div>
+
+            <div class="col-md-7 col-14">
+                <div id="pnl-map" class="card card-body border bkg-def txt-def">
+                    <div class="row">
+                        <div id="mapcol" class="col-md-11 col-14">
+                            <div id="plymap"></div>
+                        </div>
+                        <br>
+
+                        <div class="col-md-3 col-14">
+                            <div class="row">
+                                <a id="maplogo" html="https://darc.blackholesuns.com">
+                                    <img id="logo" src="lBTK5EL.png" class="float-left" alt="BHS Logo" width="20"
+                                        height="20">
+                                </a>
+                            </div>
+                            <br>
+
+                            <div id="showmapkey" class="card border pad-bottom hidden">
+                                <div class="card-header">
+                                    <div class="h5">Key</div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="mapkey" class="row"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+            <div id="pnl-result" class="card pad-bottom"></div>
+        </div>
+    </div>
+    <br>
+
+</body>
+
+</html>

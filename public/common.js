@@ -772,37 +772,45 @@ blackHoleSuns.prototype.getUser = function (displayFcn) {
     bhs.subscribe("user", ref, displayFcn)
 }
 
-blackHoleSuns.prototype.getOrgList = function () {
+blackHoleSuns.prototype.getOrgList = function (nohide) {
     bhs.orgList = []
 
     let ref = bhs.fs.collection("org")
     return ref.get().then(snapshot => {
         for (let doc of snapshot.docs) {
             let d = doc.data()
-            d.id = doc.id
-            bhs.orgList.push(d)
+            if (!nohide || !d.hide && typeof d.addr !== "undefined") {
+                d.id = doc.id
+                bhs.orgList.push(d)
+            }
         }
 
         bhs.orgList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
             a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0)
+
+        return bhs.orgList
     }).catch(err => {
         console.log(err)
     })
 }
 
-blackHoleSuns.prototype.getPoiList = function () {
+blackHoleSuns.prototype.getPoiList = function (nohide) {
     bhs.poiList = []
 
     let ref = bhs.fs.collection("poi")
     return ref.get().then(snapshot => {
         for (let doc of snapshot.docs) {
             let d = doc.data()
-            d.id = doc.id
-            bhs.poiList.push(d)
+            if (!nohide || !d.hide) {
+                d.id = doc.id
+                bhs.poiList.push(d)
+            }
         }
 
         bhs.poiList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
             a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0)
+
+        return bhs.poiList
     }).catch(err => {
         console.log(err)
     })

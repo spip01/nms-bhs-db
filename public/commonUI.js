@@ -62,6 +62,7 @@ blackHoleSuns.prototype.setAdmin = async function () {
 
 blackHoleSuns.prototype.displayUser = async function (user, force) {
     let fpoi = window.location.pathname == "/poiorg.html"
+    let fdarc = window.location.pathname == "/darc.html"
     let ftotals = window.location.pathname == "/totals.html"
     let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform)
 
@@ -70,18 +71,20 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     if (fpoi)
         return
 
-    bhs.getActiveContest(bhs.displayContest)
-    bhs.buildTotals()
-    bhs.getTotals(bhs.displayTotals, bhs.displayTotalsHtml)
+    if (!fdarc) {
+        bhs.getActiveContest(bhs.displayContest)
+        bhs.buildTotals()
+        bhs.getTotals(bhs.displayTotals, bhs.displayTotalsHtml)
 
 
-    if ((changed || force) && bhs.user.galaxy && bhs.user.platform) {
-        bhs.buildMap()
-        bhs.setMapOptions(bhs.user)
+        if ((changed || force) && bhs.user.galaxy && bhs.user.platform) {
+            bhs.buildMap()
+            bhs.setMapOptions(bhs.user)
 
-        if (!ftotals) {
-            bhs.buildUserTable(bhs.user)
-            bhs.displaySettings(bhs.user)
+            if (!ftotals) {
+                bhs.buildUserTable(bhs.user)
+                bhs.displaySettings(bhs.user)
+            }
         }
     }
 
@@ -100,7 +103,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
         pnl.find("#btn-Galaxy").text("")
 }
 
-blackHoleSuns.prototype.buildUserPanel = async function () {
+blackHoleSuns.prototype.buildUserPanel = async function (noupload) {
     const panel = `
         <div id="pnl-user">
             <div class="row">
@@ -120,11 +123,10 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
 
             <div class="row">
                 <div class="col-1"></div>
-                <div id="id-Platform" class="col-3"></div>
-                <div id="id-Galaxy" class="col-3"></div>
-                <div id="id-Version" class="col-3 hidden"></div>
+                <div id="id-Galaxy" class="col-5"></div>
+                <div id="id-Platform" class="col-5"></div>
 
-                <label class="col-4 h5 text-right align-bottom">
+                <label id="fileupload" class="col-4 h5 text-right align-bottom hidden">
                     <input id="ck-fileupload" type="checkbox">
                     &nbsp;File Upload
                 </label>
@@ -140,31 +142,36 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
         name: ""
     })
 
-    bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser, true)
-    // bhs.buildMenu(loc, "Version", versionList, bhs.saveUser, true)
-    bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, true)
-    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, true)
+    if (!noupload)
+        bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser, true)
+    bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, !noupload)
+    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, !noupload)
 
-    $("#id-Player").change(() => {
-        let user = bhs.extractUser()
-        bhs.changeName("#id-Player", user)
-    })
-
-    $("#ck-fileupload").change(function (event) {
-        if ($(this).prop("checked")) {
-            panels.forEach(p => {
-                $("#" + p.id).hide()
-            })
-            $("#entrybuttons").hide()
-            $("#upload").show()
-        } else {
-            panels.forEach(p => {
-                $("#" + p.id).show()
-            })
-            $("#entrybuttons").show()
-            $("#upload").hide()
+    $("#id-Player").change(function () {
+        if (bhs.user.uid) {
+            let user = bhs.extractUser()
+            bhs.changeName(this, user)
         }
     })
+
+    if (!noupload) {
+        loc.find("#fileupload").show()
+        $("#ck-fileupload").change(function (event) {
+            if ($(this).prop("checked")) {
+                panels.forEach(p => {
+                    $("#" + p.id).hide()
+                })
+                $("#entrybuttons").hide()
+                $("#upload").show()
+            } else {
+                panels.forEach(p => {
+                    $("#" + p.id).show()
+                })
+                $("#entrybuttons").show()
+                $("#upload").hide()
+            }
+        })
+    }
 }
 
 blackHoleSuns.prototype.displayContest = function (contest) {
@@ -922,29 +929,30 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
 
         mlist.find("#item-" + lid).unbind("click")
         mlist.find("#item-" + lid).click(function () {
-            if (bhs.user.uid) {
-                let name = $(this).text().stripMarginWS()
-                let btn = menu.find("#btn-" + id)
-                btn.text(name)
+            let name = $(this).text().stripMarginWS()
+            let btn = menu.find("#btn-" + id)
+            btn.text(name)
 
-                if (changefcn)
-                    changefcn()
+            if (changefcn)
+                changefcn(id)
 
-                if ($(this).attr("style"))
-                    btn.attr("style", $(this).attr("style"))
-            }
+            if ($(this).attr("style"))
+                btn.attr("style", $(this).attr("style"))
         })
     }
 }
 
 blackHoleSuns.prototype.saveUser = async function (batch) {
-    let user = bhs.extractUser()
-    let ok = bhs.validateUser(user)
+    if (bhs.user.uid) {
+        let user = bhs.extractUser()
+        let ok = bhs.validateUser(user)
 
-    if (ok)
-        ok = await bhs.updateUser(user, batch)
+        if (ok)
+            ok = await bhs.updateUser(user, batch)
 
-    return ok
+        return ok
+    } else
+        return false
 }
 
 blackHoleSuns.prototype.extractUser = function () {
