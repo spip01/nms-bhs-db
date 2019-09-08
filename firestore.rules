@@ -47,7 +47,7 @@ service cloud.firestore {
       allow update: if isOwner(request, resource)
     }
 
-    match /coordex/{document=**} {
+    match /nmsce/{document=**} {
       allow read: if isLoggedIn(request)
       allow create: if isLoggedIn(request)
       allow update: if isOwner(request, resource) || modsFieldsCE(request, resource) || isAdmin(database, request)
