@@ -92,11 +92,10 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     pnl.find("#btn-Platform").text(bhs.user.platform)
     pnl.find("#btn-Organization").text(bhs.user.org)
 
-    if (bhs.user.galaxy) {
+    if (bhs.user.galaxy && bhs.user.galaxy !== "") {
         let i = galaxyList[bhs.getIndex(galaxyList, "name", bhs.user.galaxy)].number
         pnl.find("#btn-Galaxy").text(i + " " + bhs.user.galaxy)
-        if (typeof bhs.galaxyInfo[i] != "undefined")
-            pnl.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[i].color + ";")
+        pnl.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[i].color + ";")
     } else
         pnl.find("#btn-Galaxy").text("")
 }
