@@ -59,11 +59,14 @@
 </head>
 
 <body class="bkg-def">
-    <a href="https://darc.blackholesuns.com"><img src="nmsbhs_banner.jpg" alt="BHS Banner"></a>
+    <a href="darc.html"><img src="nmsbhs_banner.jpg" alt="BHS Banner"></a>
 
     <div id="r2" class="container-fluid">
         <div class="row">
             <a class="col-2 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">FAQ</a>
+            <a class="col-2 text-center h5 txt-def" href="index.html">Input</a>
+            <!--a class="col-2 text-center h5 txt-def" href="darc.html">DARC</a-->
+            <a class="col-2 text-center h5 txt-def" href="distance.html">Nav Calc</a>
             <a class="col-2 text-center h5 txt-def" href="totals.html">Totals</a>
             <a class="col-2 text-center h5 txt-def" href="search.html">Search</a>
 
@@ -119,11 +122,8 @@
         </div>
     </div>
 
-    <div id="contest" class="row hidden"></div>
-
     <div class="row border-top">
-        <a href="https://darc.blackholesuns.com/" class="col-3 text-center clr-creme h6">BHS DaRC Web</a>
-        <a href="https://guide.blackholesuns.com/" class="col-3 text-center clr-creme h6">Travel Guide</a>
+        <a href="https://guide.blackholesuns.com/" class="col-4 text-center clr-creme h6">Travel Guide</a>
         <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center clr-creme h6">Follow us on
             Reddit</a>
         <a href="https://discord.blackholesuns.com/" class="col-4 text-center clr-creme h6">Talk to us on
@@ -180,7 +180,8 @@
     <!--googleon:all-->
 
     <div id="jssite" class="container-fluid pad-bottom hidden">
-        <div id="loggedout" class="row txt-def">&nbsp;&nbsp;&nbsp;&nbsp;Login is only required for saving or loading saved data<br></div>
+        <div id="loggedout" class="row txt-def">&nbsp;&nbsp;&nbsp;&nbsp;Login is only required for saving or loading
+            saved data<br></div>
 
         <div class="row">
             <div class="col-md-7 col-14">
@@ -200,20 +201,25 @@
 
                         <div class="col-md-3 col-14">
                             <div class="row">
-                                <a id="maplogo" html="https://darc.blackholesuns.com">
+                                <a id="maplogo" html="darc.html" class="col-md-14 col-10">
                                     <img id="logo" src="lBTK5EL.png" class="float-left" alt="BHS Logo" width="20"
                                         height="20">
                                 </a>
+                                <div class="col-4">
+                                        <br>
+                                        <button id="btn-switch" type="button" class="btn-def btn btn-sm border"
+                                        onclick="redraw()">Redraw</button>
+                                </div>
                             </div>
-                            <br>
+                        </div>
+                        <br>
 
-                            <div id="showmapkey" class="card border pad-bottom hidden">
-                                <div class="card-header">
-                                    <div class="h5">Key</div>
-                                </div>
-                                <div class="card-body">
-                                    <div id="mapkey" class="row"></div>
-                                </div>
+                        <div id="showmapkey" class="card border pad-bottom hidden">
+                            <div class="card-header">
+                                <div class="h5">Key</div>
+                            </div>
+                            <div class="card-body">
+                                <div id="mapkey" class="row"></div>
                             </div>
                         </div>
                     </div>
@@ -222,10 +228,20 @@
         </div>
         <br>
 
-        <div class="row">
-            <div id="pnl-result" class="card pad-bottom"></div>
+        <div class="card">
+            <div id="pnl-results" class="card pad-bottom">
+                <div id="res-hdr" class="card-header bkg-def txt-def h4">
+                    Results
+                </div>
+                <div id="res-table" class="card-body">
+                    <div id="resHeader" class="row border-bottom bkg-def txt-def"></div>
+                    <div id="resItems" class="scrollbar container-fluid" style="overflow-y: scroll; height: 388px">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
     <br>
 
 </body>

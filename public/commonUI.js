@@ -103,18 +103,18 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
         pnl.find("#btn-Galaxy").text("")
 }
 
-blackHoleSuns.prototype.buildUserPanel = async function (noupload) {
+blackHoleSuns.prototype.buildUserPanel = async function () {
     const panel = `
         <div id="pnl-user">
             <div class="row">
-                <div class="col-7">
+                <div class="col-md-7 col-14">
                     <div class="row">
                         <div class="col-14 h6 txt-inp-def">Player Name</div>
                         <input id="id-Player" class="rounded col-13 h5" type="text">
                     </div>
                 </div>
 
-                <div class="col-7">
+                <div class="col-md-7 col-14">
                     <div class="row">
                         <div id="id-Organization"></div>
                     </div>
@@ -123,10 +123,10 @@ blackHoleSuns.prototype.buildUserPanel = async function (noupload) {
 
             <div class="row">
                 <div class="col-1"></div>
-                <div id="id-Galaxy" class="col-5"></div>
-                <div id="id-Platform" class="col-5"></div>
+                <div id="id-Galaxy" class="col-lg-4 col-md-6 col-14"></div>
+                <div id="id-Platform" class="col-lg-4 col-md-6 col-14"></div>
 
-                <label id="fileupload" class="col-4 h5 text-right align-bottom hidden">
+                <label id="fileupload" class="col-lg-4 col-md-6 col-14 h5 text-right align-bottom">
                     <input id="ck-fileupload" type="checkbox">
                     &nbsp;File Upload
                 </label>
@@ -142,10 +142,9 @@ blackHoleSuns.prototype.buildUserPanel = async function (noupload) {
         name: ""
     })
 
-    if (!noupload)
-        bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser, true)
-    bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, !noupload)
-    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, !noupload)
+    bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser, true)
+    bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, false)
+    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, false)
 
     $("#id-Player").change(function () {
         if (bhs.user.uid) {
@@ -154,24 +153,22 @@ blackHoleSuns.prototype.buildUserPanel = async function (noupload) {
         }
     })
 
-    if (!noupload) {
-        loc.find("#fileupload").show()
-        $("#ck-fileupload").change(function (event) {
-            if ($(this).prop("checked")) {
-                panels.forEach(p => {
-                    $("#" + p.id).hide()
-                })
-                $("#entrybuttons").hide()
-                $("#upload").show()
-            } else {
-                panels.forEach(p => {
-                    $("#" + p.id).show()
-                })
-                $("#entrybuttons").show()
-                $("#upload").hide()
-            }
-        })
-    }
+    loc.find("#fileupload").show()
+    $("#ck-fileupload").change(function (event) {
+        if ($(this).prop("checked")) {
+            panels.forEach(p => {
+                $("#" + p.id).hide()
+            })
+            $("#entrybuttons").hide()
+            $("#upload").show()
+        } else {
+            panels.forEach(p => {
+                $("#" + p.id).show()
+            })
+            $("#entrybuttons").show()
+            $("#upload").hide()
+        }
+    })
 }
 
 blackHoleSuns.prototype.displayContest = function (contest) {
@@ -942,13 +939,13 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
     }
 }
 
-blackHoleSuns.prototype.saveUser = async function (batch) {
+blackHoleSuns.prototype.saveUser = async function (inp) {
     if (bhs.user.uid) {
         let user = bhs.extractUser()
         let ok = bhs.validateUser(user)
 
-        if (ok)
-            ok = await bhs.updateUser(user, batch)
+        if (ok) 
+            ok = await bhs.updateUser(user, typeof inp === "string" ? null : inp)
 
         return ok
     } else

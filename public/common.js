@@ -1294,10 +1294,11 @@ blackHoleSuns.prototype.addressToXYZ = function (addr) {
 
 blackHoleSuns.prototype.xyzToAddress = function (xyz) {
     let x = xyz.x.toString(16)
-    let z = xyz.y.toString(16)
-    let y = xyz.z.toString(16)
+    let y = xyz.y.toString(16)
+    let z = xyz.z.toString(16)
+    let s = xyz.s.toString(16)
 
-    let addr = x + "." + y + "." + z + "." + "0"
+    let addr = x + "." + y + "." + z + "." + s
     return bhs.reformatAddress(addr)
 }
 

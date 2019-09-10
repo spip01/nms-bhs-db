@@ -110,7 +110,7 @@
     "no-path-concat": 1,
 
     // Prefer using arrow functions for callbacks
-    "prefer-arrow-callback": 1,
+    "prefer-arrow-callback": 0,
 
     // Return inside each then() to create readable and reusable Promise chains.
     // Forces developers to return console logs and http calls in promises. 

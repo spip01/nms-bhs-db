@@ -166,6 +166,12 @@ exports.getBasesStart = functions.https.onRequest((request, response) => {
     })
 })
 
+exports.calcRoute = functions.https.onCall(async (data, context) => {
+    const route = require('./hops.js')
+
+    return await route.genRoute(data, context)
+})
+
 // ["0000:0000:0000:0079","Thoslo Quadrant","SAS.A83","0FFE:007E:0082:003D","Vasika Boundary","Uscarlen"]
 exports.genDARC = functions.https.onCall(async (data, context) => {
     const bucket = admin.storage().bucket("nms-bhs.appspot.com")
