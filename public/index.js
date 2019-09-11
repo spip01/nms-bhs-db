@@ -95,7 +95,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                 <div class="row">
                     <div class="col-sm-4 col-7 h6 txt-inp-def">Region Name&nbsp;</div>
                     <input id="id-reg" class="rounded col-sm-5 col-7">&nbsp
-                    <button id="btn-searchRegion" type="button" class="col-sm-2 col-4 btn-def btn btn-sm">Search</button>&nbsp
+                    <button id="btn-searchRegion" type="button" class="btn-def btn btn-sm">Search</button>&nbsp
                     </div>
 
                 <div id="id-byrow" class="row">
@@ -134,7 +134,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     <div class="col-sm-2 col-4 h6 txt-inp-def">Name</div>
                     <input id="id-basename" class="rounded col-6">
                     <div id="id-Owned" class="col-sm-3 col-9"></div>
-                    <button id="btn-delbase" type="button" class="col-sm-2 col-5 btn-def btn btn-sm disabled" disabled>Delete Base</button>&nbsp
+                    <button id="btn-delbase" type="button" class="btn-def btn btn-sm disabled" disabled>Delete Base</button>&nbsp
                 </div>
 
                 <div id="id-pnl1-only" class="row">

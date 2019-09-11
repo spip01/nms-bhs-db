@@ -246,13 +246,15 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
         return
     }
 
-    let ref = bhs.getUsersColRef().where("_name", "==", user._name)
-    ref.get().then(async snapshot => {
-        if (!snapshot.empty && snapshot.docs[0].data().uid != bhs.user.uid) {
+    var userExists = firebase.functions().httpsCallable('userExists')
+    return userExists({
+        name: user._name
+    }).then(async result => {
+        if (result.data.exists) {
             loc.val(bhs.user._name)
             bhs.status("Player Name:" + user._name + " is already taken.", 0)
         } else {
-            bhs.assignUid(bhs.user, user)
+            await bhs.assignUid(bhs.user, user)
             bhs.updateUser(user)
         }
     }).catch(err => {
@@ -260,18 +262,22 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
     })
 }
 
-blackHoleSuns.prototype.getEntry = function (addr, displayfcn) {
-    let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform, addr)
-    ref.get().then(async doc => {
+blackHoleSuns.prototype.getEntry = function (addr, displayfcn, galaxy, platform) {
+    let ref = bhs.getStarsColRef(typeof galaxy !== "undefined" ? galaxy : bhs.user.galaxy,
+        typeof platform !== "undefined" ? platform : bhs.user.platform, addr)
+
+    return ref.get().then(async doc => {
         if (doc.exists) {
             let d = doc.data()
             let e = null
 
-            if (!d.blackhole)
+            if (typeof galaxy === "undefined" && !d.blackhole)
                 e = await bhs.getEntryByConnection(d.addr)
 
             displayfcn(e ? e : d)
-        }
+            return e ? e : d
+        } else
+            return null
     }).catch(err => {
         console.log(err)
     })
@@ -390,13 +396,13 @@ blackHoleSuns.prototype.deleteEntry = async function (entry, batch) {
 blackHoleSuns.prototype.assignUid = async function (user, newuser) {
     let updt = {}
     updt._name = newuser._name
-    updt.uid = newuser.uid
+    updt.uid = user.uid
 
     let ref = bhs.getStarsColRef()
     return await ref.get().then(snapshot => {
+        let pr = []
         for (let doc of snapshot.docs) {
             let g = doc.data()
-            let pr = []
 
             for (let p of platformList) {
                 let ref = bhs.getStarsColRef(g.name, p.name)
@@ -407,7 +413,6 @@ blackHoleSuns.prototype.assignUid = async function (user, newuser) {
 
                     if (!snapshot.empty) {
                         console.log(g.name + " " + p.name + " " + user._name + " " + snapshot.size)
-
                         let c = 0
                         let b = bhs.fs.batch()
 
@@ -445,14 +450,14 @@ blackHoleSuns.prototype.assignUid = async function (user, newuser) {
                     console.log(err)
                 }))
             }
-
-            return Promise.all(pr).then(() => {
-                console.log("done")
-            }).catch(err => {
-                bhs.status("ERROR: " + err.code)
-                console.log(err)
-            })
         }
+
+        return Promise.all(pr).then(() => {
+            console.log("done")
+        }).catch(err => {
+            bhs.status("ERROR: " + err.code)
+            console.log(err)
+        })
     }).catch(err => {
         console.log(err)
     })

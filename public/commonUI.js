@@ -275,7 +275,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
             </div>
             <div class="row">
                 <button id="btn-load" type="button"
-                    class="col-3 border btn btn-sm btn-def text-center" onclick="bhs.loadEntries()">Load</button>&nbsp
+                    class="btn btn-sm btn-def text-center" onclick="bhs.loadEntries()">Load</button>&nbsp
                 <div id="btn-utSettings" class="col-10 align-vertical text-right txt-def">
                     <i class="fa fa-cog txt-def"></i>&nbsp;Settings
                 </div>
@@ -286,14 +286,14 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
             <div id="id-utlistsel" class="row"></div>
 
             <div class="row">
-                <button id="btn-saveListSettings" type="button" class="col-sm-2 col-4 btn-def btn btn-sm">Save</button>&nbsp
+                <button id="btn-saveListSettings" type="button" class="btn-def btn btn-sm">Save</button>&nbsp
 
                 <label id="id-export" class="col-sm-8 col-14 text-right h6 txt-inp-def border-left" style="display:none">File Name&nbsp
                     <input id="inp-exportfile" type="text" class="rounded col-10">
                 </label>
                 
-                <button id="btn-create" type="button" href="" class="col-sm-2 col-4 btn-def btn btn-sm" style="display:none">Create</button>&nbsp
-                <a id="btn-export" type="button" href="" class="col-sm-2 col-4  btn-def btn btn-sm disabled" disabled style="display:none">Export</a>
+                <button id="btn-create" type="button" href="" class="btn-def btn btn-sm" style="display:none">Create</button>&nbsp
+                <a id="btn-export" type="button" href="" class="btn-def btn btn-sm disabled" disabled style="display:none">Export</a>
             </div>
         </div>
         
@@ -1317,8 +1317,8 @@ blackHoleSuns.prototype.buildMap = function () {
         <div class="row">
             <div class="col-5">
                 <div class="row">
-                    <button id="btn-mapsave" type="button" class="col-7 border btn btn-sm btn-def">Save</button>&nbsp
-                    <button id="btn-mapreset" type="button" class="col-7 border btn btn-sm btn-def">Reset</button>&nbsp
+                    <button id="btn-mapsave" type="button" class="btn btn-sm btn-def">Save</button>&nbsp
+                    <button id="btn-mapreset" type="button" class="btn btn-sm btn-def">Reset</button>&nbsp
                 </div>
             </div>
             <div class="col-9 border">

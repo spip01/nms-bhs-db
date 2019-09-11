@@ -226,6 +226,7 @@ body {
 
 .btn-def {
     background-color: black;
+    border-color: gold;
     color: gold;
 }
 

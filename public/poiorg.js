@@ -146,10 +146,10 @@ const panel = `
                 <br>
                 
                 <div class="row">
-                    <button id="btn-save" type="button" class="col-2 btn  btn-sm btn-def" onclick="bhs.save(this)">Save</button>&nbsp
-                    <button id="btn-delete" type="button" class="col-2 btn  btn-sm btn-def disabled"
+                    <button id="btn-save" type="button" class="btn  btn-sm btn-def" onclick="bhs.save(this)">Save</button>&nbsp
+                    <button id="btn-delete" type="button" class="btn  btn-sm btn-def disabled"
                         disabled  onclick="bhs.delete(this)">Delete</button>&nbsp
-                    <button id="btn-cancel" type="button" class="col-2 btn  btn-sm btn-def" onclick="bhs.cancel(this)">Cancel</button>&nbsp
+                    <button id="btn-cancel" type="button" class="btn  btn-sm btn-def" onclick="bhs.cancel(this)">Cancel</button>&nbsp
                     <div id="status" class="col-7 border text-danger scrollbar container-fluid"
                         style="overflow-y: scroll; height: 40px">
                     </div>

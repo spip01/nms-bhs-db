@@ -172,6 +172,16 @@ exports.calcRoute = functions.https.onCall(async (data, context) => {
     return await route.genRoute(data, context)
 })
 
+exports.userExists = functions.https.onCall(async (data, context) => {
+    let ref = admin.firestore().collection("users")
+    ref = ref.where("_name", "==", data.name)
+    return ref.get().then(snapshot => {
+        return {
+            exists: !snapshot.empty
+        }
+    })
+})
+
 // ["0000:0000:0000:0079","Thoslo Quadrant","SAS.A83","0FFE:007E:0082:003D","Vasika Boundary","Uscarlen"]
 exports.genDARC = functions.https.onCall(async (data, context) => {
     const bucket = admin.storage().bucket("nms-bhs.appspot.com")

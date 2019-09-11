@@ -65,7 +65,7 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
             <div class="row">
                 <div class="col-md-4 col-5 h6 txt-inp-def">Ending Coordinates&nbsp;</div>
                 <input id="id-end" class="rounded col-md-5 col-6" placeholder="0000:0000:0000:0000">&nbsp;
-                <button id="btn-switch" type="button" class="col-1 btn-def btn btn-sm" onclick="bhs.switchSE()"><i class="fa fa-exchange-alt txt-def"></i></button>
+                <button id="btn-switch" type="button" class="btn-def btn btn-sm" onclick="bhs.switchSE()"><i class="fa fa-exchange-alt txt-def"></i></button>
                 </div>
             <div class="row">
                 <div class="card card-body no-border">
@@ -140,20 +140,32 @@ blackHoleSuns.prototype.calcroute = async function () {
     $("#status").empty()
     bhs.status("starting")
 
+    let p = []
+    let gal = $("#btn-Galaxy").text().stripNumber()
+    let plat = $("#btn-Platform").text()
+    let start = $("#id-start").val()
+    let end = $("#id-end").val()
+
+    p.push(bhs.getEntry(start, gal, plat))
+    p.push(bhs.getEntry(end, gal, plat))
+
     var calcRoute = firebase.functions().httpsCallable('calcRoute')
     await calcRoute({
-            start: $("#id-start").val(),
-            end: $("#id-end").val(),
+            start:start,
+            end: end,
             range: $("#id-range").val(),
-            galaxy: $("#btn-Galaxy").text().stripNumber(),
-            platform: $("#btn-Platform").text(),
+            galaxy: gal,
+            platform: plat,
             user: $("#id-Player").val(),
         }).then(result => {
             if (typeof result.data.err !== "undefined")
                 bhs.status("ERROR: " + result.data.err)
             else {
                 bhs.route = result.data.route
-                bhs.displayResults(bhs.route)
+
+                Promise.all(p).then(res=>{
+                    bhs.displayResults(bhs.route, res)
+                })
             }
         })
         .catch(err => {
@@ -191,8 +203,8 @@ const restable = [{
     format: "col-lg-2 col-md-4 col-7 txt-inp-def"
 }, ]
 
-blackHoleSuns.prototype.displayResults = function (route) {
-    mapRoute(route)
+blackHoleSuns.prototype.displayResults = function (route, se) {
+    mapRoute(route, se)
 
     let hdr = $("#resHeader")
 
@@ -234,8 +246,7 @@ blackHoleSuns.prototype.displayResults = function (route) {
         let calc = 0
         if (i > 0) {
             dist = bhs.calcDistXYZ(r.coords, route[i - 1].coords) * 400
-            calc = parseInt(dist / range)
-            calc = calc ? calc : 1
+            calc = Math.ceil(dist / range)
         }
 
         for (let f of restable) {
@@ -259,7 +270,7 @@ blackHoleSuns.prototype.displayResults = function (route) {
                         l = /title/ [Symbol.replace](l, "Warp " + dist + "ly or " + calc + " jumps to")
                         jumps += calc
                     } else {
-                        l = /title/ [Symbol.replace](l, "Transit Black Hole exits to")
+                        l = /title/ [Symbol.replace](l, "Transit black hole, exits to")
                         xit = true
                         jumps++
                         bh++
@@ -295,12 +306,30 @@ blackHoleSuns.prototype.displayResults = function (route) {
     loc.append(h)
 
     loc = $("#res-hdr")
-    let calc = parseInt(bhs.calcDistXYZ(route[0].coords, route[route.length - 1].coords) * 400 / range)
-    let p = parseInt((1 - jumps / calc) * 100)
-    loc.html("Results:<br>" +
-        jumps + " jumps for DARC vs. " + calc + " direct warp jumps.<br>" +
-        "A " + p + "% savings.<br>" +
-        "Cornell index of " + bh + " black hole transits.")
+    let dist = parseInt(bhs.calcDistXYZ(route[0].coords, route[route.length - 1].coords) * 400)
+    let calc = Math.ceil(dist/ range)
+    let per = parseInt((1 - jumps / calc) * 100)
+
+    const res = `
+        <div class="row">
+            <div class="col-md-2 col-sm-3 col-4">Results:</div>
+            <div class="col-md-12 col-sm-11 col-10 h6">
+                <div class="row">
+                <div class="col-lg-4 col-sm-7 col-14">jumps jumps for DARC vs. calc direct warp jumps.</div>
+                <div class="col-lg-4 col-sm-7 col-14">A per% savings.</div>
+                <div class="col-lg-4 col-sm-7 col-14">Cornell index of bh black holes.</div>
+                <div class="col-lg-4 col-sm-7 col-14">Original warp distance distly.</div>
+                </div>
+            </div>
+        </div>
+    `
+    h = /jumps/[Symbol.replace](res, jumps)
+    h = /calc/[Symbol.replace](h, calc)
+    h = /per/[Symbol.replace](h, per)
+    h = /bh/[Symbol.replace](h, bh)
+    h = /distly/[Symbol.replace](h, dist.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")+"ly")
+
+    loc.html(h)
 }
 
 blackHoleSuns.prototype.buildDarcMap = function () {
@@ -329,8 +358,25 @@ function redraw() {
 
 function mapRoute(route) {
     let data = []
-    let out = initout()
 
+    let zero = {
+        x: 2048,
+        y: 128,
+        z: 2048,
+    }
+
+    let truezero = {
+        x: 0,
+        y: 0,
+        z: 0,
+    }
+
+    let out = initout()
+    pushentry(out, truezero)
+    pushentry(out, zero)
+    data.push(makedata(out, 4, "#c0c0c0"))
+
+    out = initout()
     for (let i = 0; i < route.length; ++i) {
         let r = route[i]
         pushentry(out, r.coords, bhs.xyzToAddress(r.coords) + "<br>" + r.region + "<br>" + r.system)
