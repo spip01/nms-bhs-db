@@ -125,6 +125,7 @@ blackHoleSuns.prototype.select = function (id) {
         let itm = bhs.orgList[i]
         $("#id-end").val(itm.addr)
         $("#btn-Points-Of-Interest").text("")
+        bhs.showOrg(name)
     }
 }
 
@@ -142,12 +143,37 @@ blackHoleSuns.prototype.showPOI = function (name) {
     let h = /wsize/ [Symbol.replace](img, w)
 
     $("#plymap").hide()
-    let loc = $("#poiimage")
+    let loc = $("#image")
     loc.empty()
     loc.show()
     loc.append(h)
 
     let ref = bhs.fs.collection("poi")
+    ref = ref.where("name", "==", name)
+    ref.get().then(snapshot => {
+        if (!snapshot.empty) {
+            let e = snapshot.docs[0].data()
+
+            let ref = bhs.fbstorage.ref().child(e.img)
+            ref.getDownloadURL().then(url => {
+                loc.find("#img-pic").attr("src", url)
+            })
+        }
+    })
+}
+
+blackHoleSuns.prototype.showOrg = function (name) {
+    const img = `<img id="img-pic" height="auto" width="wsize" />`
+    let w = Math.min($("#mapcol").width() - 8, 400)
+    let h = /wsize/ [Symbol.replace](img, w)
+
+    $("#plymap").hide()
+    let loc = $("#image")
+    loc.empty()
+    loc.show()
+    loc.append(h)
+
+    let ref = bhs.fs.collection("org")
     ref = ref.where("name", "==", name)
     ref.get().then(snapshot => {
         if (!snapshot.empty) {
@@ -396,7 +422,7 @@ function redraw() {
 }
 
 function mapRoute(route) {
-    $("#poiimage").hide()
+    $("#image").hide()
     $("#plymap").show()
 
     let data = []
