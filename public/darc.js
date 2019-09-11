@@ -225,6 +225,7 @@ blackHoleSuns.prototype.displayResults = function (route) {
         let r = route[i]
         let a = bhs.xyzToAddress(r.coords)
         let xit = false
+        let teleport = false
 
         let l = /addr/ [Symbol.replace](row, a)
         h += /row/ [Symbol.replace](l, b ? "row bkg-vlight-gray" : "row")
@@ -234,6 +235,7 @@ blackHoleSuns.prototype.displayResults = function (route) {
         if (i > 0) {
             dist = bhs.calcDistXYZ(r.coords, route[i - 1].coords) * 400
             calc = parseInt(dist / range)
+            calc = calc ? calc : 1
         }
 
         for (let f of restable) {
@@ -245,10 +247,13 @@ blackHoleSuns.prototype.displayResults = function (route) {
                     if (i === 0)
                         l = /title/ [Symbol.replace](l, "Start")
                     else if (r.region === "Teleport") {
-                        l = /title/ [Symbol.replace](l, "<div class='row pad-left'>Teleport to&nbsp;&nbsp;<div class='h6 txt-inp-def'>" + r.system + "</div></div>")
+                        l = /title/ [Symbol.replace](l, "<div class='row'>Teleport to&nbsp;&nbsp;<div class='h6 txt-inp-def'>" + r.system + "</div></div>")
+                        i++
+                        teleport = true
+                        r = route[i]
                         jumps++
                     } else if (i + 1 === route.length) {
-                        l = /title/ [Symbol.replace](l, "Warp to Dest")
+                        l = /title/ [Symbol.replace](l, "Warp " + dist + "ly or " + calc + " jumps to Dest")
                         jumps += calc
                     } else if (r.coords.s === 0x79) {
                         l = /title/ [Symbol.replace](l, "Warp " + dist + "ly or " + calc + " jumps to")
@@ -265,18 +270,18 @@ blackHoleSuns.prototype.displayResults = function (route) {
                     break
                 case "Glyph":
                     l = /col-md-4/ [Symbol.replace](l, "col-md-4 glyph h5 txt-inp-def")
-                    l = /title/ [Symbol.replace](l, i === 0 || xit || r.region === "Teleport" ? "" : bhs.addrToGlyph(bhs.xyzToAddress(r[f.field])))
+                    l = /title/ [Symbol.replace](l, xit || teleport ? "" : bhs.addrToGlyph(bhs.xyzToAddress(r[f.field])))
                     break
                 case "Coordinates":
-                    l = /title/ [Symbol.replace](l, r.region === "Teleport" ? "" : bhs.xyzToAddress(r[f.field]))
+                    l = /title/ [Symbol.replace](l, bhs.xyzToAddress(r[f.field]))
                     break
                 case "Region":
-                    l = /title/ [Symbol.replace](l, typeof r[f.field] !== "undefined" && r.region != "Teleport" ? r[f.field] : "")
+                    l = /title/ [Symbol.replace](l, typeof r[f.field] !== "undefined" ? r[f.field] : "")
                     break
                 case "System":
-                    if (xit)
+                    if (xit || teleport)
                         l = /txt-inp-def/ [Symbol.replace](l, "")
-                    l = /title/ [Symbol.replace](l, typeof r[f.field] !== "undefined" && r.region != "Teleport" ? r[f.field] : "")
+                    l = /title/ [Symbol.replace](l, typeof r[f.field] !== "undefined" ? r[f.field] : "")
                     break
             }
 
@@ -348,15 +353,21 @@ function mapRoute(route) {
 }
 
 function mapRow(evt) {
-    let end = $(evt).next().prop("id")
+    let eloc = $(evt).next()
+    let end = eloc.prop("id")
     if (typeof end === "undefined")
         return
 
     end = end.stripID()
     let exyz = bhs.addressToXYZ(end)
+    let ereg = eloc.find("#itm-region").text()
+    let esys = eloc.find("#itm-system").text()
 
-    let start = $(evt).prop("id").stripID()
+    let sloc = $(evt)
+    let start = sloc.prop("id").stripID()
     let sxyz = bhs.addressToXYZ(start)
+    let sreg = sloc.find("#itm-region").text()
+    let ssys = sloc.find("#itm-system").text()
 
     let zero = {
         x: 2048,
@@ -366,17 +377,17 @@ function mapRow(evt) {
 
     let data = []
     let out = initout()
-    pushentry(out, zero)
+    pushentry(out, zero, "Galactic Center")
     pushentry(out, sxyz)
     data.push(makedata(out, 2, "#ffffff", "#c0c0c0"))
 
     out = initout()
     pushentry(out, sxyz)
-    pushentry(out, exyz)
+    pushentry(out, exyz, end + "<br>" + ereg + "<br>" + esys)
     data.push(makedata(out, 4, "#ff0000", "#40ff00"))
 
     out = initout()
-    pushentry(out, sxyz)
+    pushentry(out, sxyz, start + "<br>" + sreg + "<br>" + ssys)
     data.push(makedata(out, 4, "#00ff00"))
 
     Plotly.react('plymap', data, changeMapLayout(true, start, end))
