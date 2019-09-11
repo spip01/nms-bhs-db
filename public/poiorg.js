@@ -27,7 +27,7 @@ blackHoleSuns.prototype.buildPanel = function (id, list) {
     } else {
         h = /title/ [Symbol.replace](h, "Points of interest")
         h = /pictitle/ [Symbol.replace](h, "Image")
-        h = /hsize/ [Symbol.replace](h, "90px")
+        h = /hsize/ [Symbol.replace](h, "auto")
         h = /wsize/ [Symbol.replace](h, "160px")
     }
 
@@ -85,6 +85,10 @@ const panel = `
                         <div class="row">
                             <div class="col-4 txt-inp-def h6">Name</div>
                             <input id="inp-name" class="rounded col-9" type="text">
+                        </div>
+                        <div class="row">
+                            <div class="col-4 txt-inp-def h6">Owner</div>
+                            <input id="inp-owner" class="rounded col-9" type="text">
                         </div>
                         <div id="id-link" class="row">
                             <div class="col-4 txt-inp-def h6">Link</div>
@@ -177,6 +181,7 @@ blackHoleSuns.prototype.listClick = function (evt) {
     let e = list[idx]
 
     pnl.find("#inp-name").val(e._name)
+    pnl.find("#inp-owner").val(e.owner)
 
     if (pnlid == "pnl-org")
         pnl.find("#inp-link").val(e.link)
@@ -222,6 +227,7 @@ blackHoleSuns.prototype.save = async function (evt) {
 
     e._name = pnl.find("#inp-name").val()
     e.name = e._name
+    e.owner = pnl.find("#inp-owner").val()
     e.hide = pnl.find("#ck-hide").prop("checked")
     e.link = pnl.find("#inp-link").val()
     if (!e.link) delete e.link
@@ -281,7 +287,9 @@ blackHoleSuns.prototype.save = async function (evt) {
 
         if (idx == -1)
             list.push(e)
-
+        else
+            list[idx] = e
+            
         list.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
             a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0)
 
@@ -325,6 +333,7 @@ blackHoleSuns.prototype.delete = async function (evt) {
 blackHoleSuns.prototype.cancel = function (evt) {
     let pnl = $(evt).closest("[id|='pnl']")
     pnl.find("#inp-name").val("")
+    pnl.find("#inp-owner").val("")
     pnl.find("#inp-link").val("")
     pnl.find("#inp-addr").val("")
     pnl.find("#inp-planet").val(0)

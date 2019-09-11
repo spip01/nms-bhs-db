@@ -77,7 +77,7 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
             </div>
             <div class="row">
                 <div class="col-md-4 col-5 h6 txt-inp-def">Average Jump Range&nbsp;</div>
-                <input id="id-range" class="rounded col-md-5 col-4" type="number" value="2400">
+                <input id="id-range" class="rounded col-md-5 col-4" type="number" value="2000">
             </div>
             <br>
             <div class="row">
@@ -119,6 +119,7 @@ blackHoleSuns.prototype.select = function (id) {
         let itm = bhs.poiList[i]
         $("#id-end").val(itm.addr)
         $("#btn-Organizations").text("")
+        bhs.showPOI(name)
     } else {
         let i = bhs.getIndex(bhs.orgList, "_name", name)
         let itm = bhs.orgList[i]
@@ -135,6 +136,31 @@ blackHoleSuns.prototype.switchSE = function () {
     $("#id-end").val(s)
 }
 
+blackHoleSuns.prototype.showPOI = function (name) {
+    const img = `<img id="img-pic" height="auto" width="wsize" />`
+    let w = Math.min($("#mapcol").width() - 8, 400)
+    let h = /wsize/ [Symbol.replace](img, w)
+
+    $("#plymap").hide()
+    let loc = $("#poiimage")
+    loc.empty()
+    loc.show()
+    loc.append(h)
+
+    let ref = bhs.fs.collection("poi")
+    ref = ref.where("name", "==", name)
+    ref.get().then(snapshot => {
+        if (!snapshot.empty) {
+            let e = snapshot.docs[0].data()
+
+            let ref = bhs.fbstorage.ref().child(e.img)
+            ref.getDownloadURL().then(url => {
+                loc.find("#img-pic").attr("src", url)
+            })
+        }
+    })
+}
+
 blackHoleSuns.prototype.calcroute = async function () {
     let now = new Date().getTime()
     $("#status").empty()
@@ -146,12 +172,12 @@ blackHoleSuns.prototype.calcroute = async function () {
     let start = $("#id-start").val()
     let end = $("#id-end").val()
 
-    p.push(bhs.getEntry(start, gal, plat))
-    p.push(bhs.getEntry(end, gal, plat))
+    p.push(bhs.getEntry(start, null, gal, plat))
+    p.push(bhs.getEntry(end, null, gal, plat))
 
     var calcRoute = firebase.functions().httpsCallable('calcRoute')
     await calcRoute({
-            start:start,
+            start: start,
             end: end,
             range: $("#id-range").val(),
             galaxy: gal,
@@ -163,7 +189,7 @@ blackHoleSuns.prototype.calcroute = async function () {
             else {
                 bhs.route = result.data.route
 
-                Promise.all(p).then(res=>{
+                Promise.all(p).then(res => {
                     bhs.displayResults(bhs.route, res)
                 })
             }
@@ -180,7 +206,7 @@ blackHoleSuns.prototype.calcroute = async function () {
 const restable = [{
     name: "Description",
     field: "desc",
-    format: "col-lg-3 col-md-3 col-8"
+    format: "col-lg-3 col-md-3 col-7"
     // }, {
     //     name: "Distance",
     //     field: "dist",
@@ -188,7 +214,7 @@ const restable = [{
 }, {
     name: "Coordinates",
     field: "coords",
-    format: "col-lg-2 col-md-3 col-6"
+    format: "col-lg-2 col-md-3 col-7"
 }, {
     name: "Glyph",
     field: "coords",
@@ -204,7 +230,17 @@ const restable = [{
 }, ]
 
 blackHoleSuns.prototype.displayResults = function (route, se) {
-    mapRoute(route, se)
+    if (se[0]) {
+        route[0].system = se[0].sys
+        route[0].region = se[0].reg
+    }
+
+    if (se[1]) {
+        route[route.length - 1].system = se[1].sys
+        route[route.length - 1].region = se[1].reg
+    }
+
+    mapRoute(route)
 
     let hdr = $("#resHeader")
 
@@ -264,10 +300,13 @@ blackHoleSuns.prototype.displayResults = function (route, se) {
                         r = route[i]
                         jumps++
                     } else if (i + 1 === route.length) {
-                        l = /title/ [Symbol.replace](l, "Warp " + dist + "ly or " + calc + " jumps to Dest")
+                        if (bhs.xyzToAddress(r.coords) === bhs.xyzToAddress(route[i - 1].coords))
+                            l = /title/ [Symbol.replace](l, "<h5>Arrived at destination</h5>")
+                        else
+                            l = /title/ [Symbol.replace](l, "Warp " + dist.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "ly or " + calc + " jumps to destination")
                         jumps += calc
                     } else if (r.coords.s === 0x79) {
-                        l = /title/ [Symbol.replace](l, "Warp " + dist + "ly or " + calc + " jumps to")
+                        l = /title/ [Symbol.replace](l, "Warp " + dist.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "ly or " + calc + " jumps to")
                         jumps += calc
                     } else {
                         l = /title/ [Symbol.replace](l, "Transit black hole, exits to")
@@ -307,7 +346,7 @@ blackHoleSuns.prototype.displayResults = function (route, se) {
 
     loc = $("#res-hdr")
     let dist = parseInt(bhs.calcDistXYZ(route[0].coords, route[route.length - 1].coords) * 400)
-    let calc = Math.ceil(dist/ range)
+    let calc = Math.ceil(dist / range)
     let per = parseInt((1 - jumps / calc) * 100)
 
     const res = `
@@ -317,17 +356,17 @@ blackHoleSuns.prototype.displayResults = function (route, se) {
                 <div class="row">
                 <div class="col-lg-4 col-sm-7 col-14">jumps jumps for DARC vs. calc direct warp jumps.</div>
                 <div class="col-lg-4 col-sm-7 col-14">A per% savings.</div>
-                <div class="col-lg-4 col-sm-7 col-14">Cornell index of bh black holes.</div>
+                <div class="col-lg-4 col-sm-7 col-14">Cornell Index of bh black holes.</div>
                 <div class="col-lg-4 col-sm-7 col-14">Original warp distance distly.</div>
                 </div>
             </div>
-        </div>
-    `
-    h = /jumps/[Symbol.replace](res, jumps)
-    h = /calc/[Symbol.replace](h, calc)
-    h = /per/[Symbol.replace](h, per)
-    h = /bh/[Symbol.replace](h, bh)
-    h = /distly/[Symbol.replace](h, dist.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")+"ly")
+        </div>`
+
+    h = /jumps/ [Symbol.replace](res, jumps)
+    h = /calc/ [Symbol.replace](h, calc)
+    h = /per/ [Symbol.replace](h, per)
+    h = /bh/ [Symbol.replace](h, bh)
+    h = /distly/ [Symbol.replace](h, dist.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " light years.")
 
     loc.html(h)
 }
@@ -357,6 +396,9 @@ function redraw() {
 }
 
 function mapRoute(route) {
+    $("#poiimage").hide()
+    $("#plymap").show()
+
     let data = []
 
     let zero = {
@@ -374,24 +416,27 @@ function mapRoute(route) {
     let out = initout()
     pushentry(out, truezero)
     pushentry(out, zero)
-    data.push(makedata(out, 4, "#c0c0c0"))
+    data.push(makedata(out, 4, "#d0d0d0"))
 
     out = initout()
     for (let i = 0; i < route.length; ++i) {
         let r = route[i]
-        pushentry(out, r.coords, bhs.xyzToAddress(r.coords) + "<br>" + r.region + "<br>" + r.system)
+        let t = (r.region ? "<br>" + r.region : "") + (r.system ? "<br>" + r.system : "")
+        pushentry(out, r.coords, bhs.xyzToAddress(r.coords) + t)
     }
 
     data.push(makedata(out, 4, "#00ff00", "#40ff00"))
 
     out = initout()
     let r = route[0]
-    pushentry(out, r.coords, bhs.xyzToAddress(r.coords) + "<br>" + r.region + "<br>" + r.system)
+    let t = (r.region ? "<br>" + r.region : "") + (r.system ? "<br>" + r.system : "")
+    pushentry(out, r.coords, bhs.xyzToAddress(r.coords) + t)
     data.push(makedata(out, 6, "#ffff00"))
 
     out = initout()
     r = route[route.length - 1]
-    pushentry(out, r.coords, bhs.xyzToAddress(r.coords) + "<br>" + r.region + "<br>" + r.system)
+    t = (r.region ? "<br>" + r.region : "") + (r.system ? "<br>" + r.system : "")
+    pushentry(out, r.coords, bhs.xyzToAddress(r.coords) + t)
     data.push(makedata(out, 6, "#ff0000"))
 
 
@@ -576,7 +621,7 @@ function changeMapLayout(zoom, saddr, eaddr) {
         t: 0
     }
 
-    let w = Math.min($("#plot3d").width() - 8, 400)
+    let w = Math.min($("#mapcol").width() - 8, 400)
     layout.width = w
     layout.height = w
 

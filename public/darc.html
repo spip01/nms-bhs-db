@@ -66,7 +66,7 @@
             <a class="col-2 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">FAQ</a>
             <a class="col-2 text-center h5 txt-def" href="index.html">Input</a>
             <!--a class="col-2 text-center h5 txt-def" href="darc.html">DARC</a-->
-            <a class="col-2 text-center h5 txt-def" href="distance.html">Nav Calc</a>
+            <a class="col-2 text-center h5 txt-def" href="distance.html">Star Nav</a>
             <a class="col-2 text-center h5 txt-def" href="totals.html">Totals</a>
             <a class="col-2 text-center h5 txt-def" href="search.html">Search</a>
 
@@ -195,7 +195,8 @@
                 <div id="pnl-map" class="card card-body border bkg-def txt-def">
                     <div class="row">
                         <div id="mapcol" class="col-md-11 col-14">
-                            <div id="plymap"></div>
+                            <div id="plymap" class="hidden"></div>
+                            <div id="poiimage" class="hidden"></div>
                         </div>
                         <br>
 
@@ -206,8 +207,8 @@
                                         height="20">
                                 </a>
                                 <div class="col-4">
-                                        <br>
-                                        <button id="btn-switch" type="button" class="btn-def btn btn-sm "
+                                    <br>
+                                    <button id="btn-switch" type="button" class="btn-def btn btn-sm "
                                         onclick="redraw()">Redraw</button>
                                 </div>
                             </div>
@@ -237,6 +238,8 @@
                     <div id="resHeader" class="row border-bottom bkg-def txt-def"></div>
                     <div id="resItems" class="scrollbar container-fluid" style="overflow-y: scroll; height: 388px">
                     </div>
+                    <br>
+                    <a class="btn btn-sm btn-def" href=" https://discordapp.com/invite/TEeK8tp/">Report Problems</a>
                 </div>
             </div>
         </div>

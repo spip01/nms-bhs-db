@@ -274,7 +274,9 @@ blackHoleSuns.prototype.getEntry = function (addr, displayfcn, galaxy, platform)
             if (typeof galaxy === "undefined" && !d.blackhole)
                 e = await bhs.getEntryByConnection(d.addr)
 
-            displayfcn(e ? e : d)
+            if (displayfcn)
+                displayfcn(e ? e : d)
+
             return e ? e : d
         } else
             return null
