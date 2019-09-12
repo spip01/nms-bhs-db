@@ -1155,6 +1155,10 @@ String.prototype.stripColons = function () {
 }
 
 function validateAddress(addr, ck) {
+    return bhs.validateAddress(addr, ck)
+}
+
+function validateAddressTF(addr, ck) {
     return bhs.validateAddress(addr, ck) === ""
 }
 
@@ -1174,10 +1178,10 @@ blackHoleSuns.prototype.validateAddress = function (addr, ck) {
     else if (c.y > 0xff) error = "y " + c.y.toString(16) + " > ff"
     else if (c.z > 0xfff) error = "z " + c.z.toString(16) + " > fff"
     else if (c.s > 0x2ff) error = "system " + c.s.toString(16) + " > 2ff"
-    else if (ck == "bh" && c.s != 0x79) error = ck + " system " + c.y.toString(16) + ' != 79'
-    else if (ck == "exit" && c.y < 0x7B) error = ck + " y " + c.y.toString(16) + ' < 7b'
-    else if (ck == "exit" && c.y > 0x83) error = ck + " y " + c.y.toString(16) + ' > 83'
-    else if (ck == "exit" && c.s > 0x78) error = ck + " system " + c.s.toString(16) + ' > 78'
+    else if (ck === "bh" && c.s != 0x79) error = ck + " system " + c.y.toString(16) + ' != 79'
+    else if (ck === "exit" && c.y < 0x7B) error = ck + " y " + c.y.toString(16) + ' < 7b'
+    else if (ck === "exit" && c.y > 0x83) error = ck + " y " + c.y.toString(16) + ' > 83'
+    else if (ck === "exit" && c.s > 0x78) error = ck + " system " + c.s.toString(16) + ' > 78'
 
     return error
 }

@@ -95,7 +95,7 @@ var importTable = [{
         field: "addr",
         required: true,
         format: reformatAddress,
-        validate: validateAddress,
+        validate: validateAddressTF,
         group: 1
     }, {
         match: /econ/i,
@@ -131,7 +131,7 @@ var importTable = [{
         field: "addr",
         labelreq: true,
         format: reformatAddress,
-        validate: validateAddress,
+        validate: validateAddressTF,
         group: 2
     }, {
         match: /econ/i,
@@ -173,13 +173,12 @@ var importTable = [{
 
 /* type menu from spreadsheet
 Black Hole
-Base Mine
-Base Visited
-Base Station
+Base
 DeadZone 
 Single System
 Edit
 Delete
+Delete Base
 */
 
 var batch
@@ -340,7 +339,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
 
                         entry[2] = mergeObjects(entry[2], entry[0])
                         entry[2] = mergeObjects(entry[2], entry[1])
-                        ok = await bhs.fBatchUpdate(entry[2], null, check, i);
+                        ok = await bhs.fBatchUpdate(entry[2], null, check, i, true);
                     }
                 } else if (entry[0].type.match(/single/i) || !entry[2].addr) {
                     ok = await bhs.fBatchUpdate(entry[1], null, check, i);
@@ -386,11 +385,11 @@ blackHoleSuns.prototype.fWriteLog = async function (check) {
         bhs.fs.collection("log").add(log)
 }
 
-blackHoleSuns.prototype.fBatchUpdate = async function (entry, exit, check, i) {
+blackHoleSuns.prototype.fBatchUpdate = async function (entry, exit, check, i, base) {
     if (check)
         return true
 
-    let err = bhs.validateEntry(entry)
+    let err = bhs.validateEntry(entry, base)
     if (err != "") {
         bhs.filestatus("row: " + (i + 1) + " black hole (" + err + ") " + entry.addr, 0)
         return

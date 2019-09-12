@@ -326,10 +326,6 @@ var DijkstraCalculator = /** @class */ (function () {
             g.setEdges(node.index, node.edges);
         }
         var shortest = g.calculateFor(dest.index);
-        for (var _h = 0, sts_1 = sts; _h < sts_1.length; _h++) {
-            let st = sts_1[_h];
-            console.log(JSON.stringify(st.system) + " scored " + shortest.totalWeight(st.index) + "; " + shortest.shortestPathTo(st.index));
-        }
         return sts.map(function (st) {
             var score = Math.round(shortest.totalWeight(st.index));
             var route = shortest
