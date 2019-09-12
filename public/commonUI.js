@@ -101,6 +101,11 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
         pnl.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[i].color + ";")
     } else
         pnl.find("#btn-Galaxy").text("")
+    
+    if (fdarc && typeof bhs.user.uid !== "undefined") {
+        bhs.setGP()
+        bhs.showRange()
+    }
 }
 
 blackHoleSuns.prototype.buildUserPanel = async function () {

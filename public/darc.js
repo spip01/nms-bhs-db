@@ -42,13 +42,37 @@ blackHoleSuns.prototype.setGP = function () {
     if (g === "" || p === "")
         return
 
+    g = g.stripNumber()
+
+    if (typeof bhs.orgList !== "undefined") {
+        let loc = $("#menu-Organizations")
+        for (let e of bhs.orgList) {
+            let itm = loc.find("#item-" + e.name.nameToId())
+            if (e.galaxy === g && e.platform === p)
+                itm.css("background-color", "#c0f0ff")
+            else
+                itm.css("background-color", "#ffc0c0")
+        }
+    }
+
+    if (typeof bhs.poiList !== "undefined") {
+        let loc = $("#menu-Points-Of-Interest")
+        for (let e of bhs.poiList) {
+            let itm = loc.find("#item-" + e.name.nameToId())
+            if (e.galaxy === g && e.platform === p)
+                itm.css("background-color", "#c0f0ff")
+            else
+                itm.css("background-color", "#ffc0c0")
+        }
+    }
+
     var calcRoute = firebase.functions().httpsCallable('calcRoute')
     calcRoute({
             start: "",
-            galaxy: g.stripNumber(),
+            galaxy: g,
             platform: p,
         }).then(result => {
-            bhs.status("load " + result.data.load)
+
         })
         .catch(err => {
             bhs.status("ERROR: " + (typeof err.code !== "undefined" ? err.code : JSON.stringify(err)))
@@ -77,7 +101,7 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
             </div>
             <div class="row">
                 <div class="col-md-4 col-5 h6 txt-inp-def">Average Jump Range&nbsp;</div>
-                <input id="id-range" class="rounded col-md-5 col-4" type="number" value="2000">
+                <input id="id-range" class="rounded col-md-5 col-4" type="number" value="2000" onchange="bhs.updateRange()">
             </div>
             <br>
             <div class="row">
@@ -110,6 +134,9 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
         let addr = bhs.reformatAddress($(this).val())
         $(this).val(addr)
     })
+
+    if (bhs.user.galaxy !== "")
+        bhs.setGP()
 }
 
 blackHoleSuns.prototype.select = function (id) {
@@ -135,6 +162,23 @@ blackHoleSuns.prototype.switchSE = function () {
 
     $("#id-start").val(e)
     $("#id-end").val(s)
+}
+
+blackHoleSuns.prototype.updateRange = function () {
+    if (bhs.user.uid !== "") {
+        let user = {
+            darcSettings: {
+                range: $("#id-range").val()
+            }
+        }
+
+        bhs.updateUser(user)
+    }
+}
+
+blackHoleSuns.prototype.showRange = function () {
+    if (typeof bhs.user.darcSettings !== "undefined" && typeof bhs.user.darcSettings.range !== "undefined")
+        $("#id-range").val(bhs.user.darcSettings.range)
 }
 
 blackHoleSuns.prototype.showPOI = function (name) {
@@ -203,7 +247,7 @@ blackHoleSuns.prototype.calcroute = async function () {
 
     var calcRoute = firebase.functions().httpsCallable('calcRoute')
     await calcRoute({
-            start: start,
+            start: start === "" ? "0000:0000:0000:0000" : start,
             end: end,
             range: $("#id-range").val(),
             galaxy: gal,
@@ -392,7 +436,7 @@ blackHoleSuns.prototype.displayResults = function (route, se) {
     h = /calc/ [Symbol.replace](h, calc)
     h = /per/ [Symbol.replace](h, per)
     h = /bh/ [Symbol.replace](h, bh)
-    h = /distly/ [Symbol.replace](h, dist.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " light years.")
+    h = /distly/ [Symbol.replace](h, dist.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " light years")
 
     loc.html(h)
 }
