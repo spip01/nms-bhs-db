@@ -436,10 +436,11 @@ blackHoleSuns.prototype.extractEntry = async function (idx, batch) {
         }
     }
 
-    let ok = bhs.validateEntry(entry) === ""
+    let ok = bhs.validateEntry(entry, single) === ""
 
     if (ok) {
-        ok = bhs.validateDist(entry) === ""
+        if (!single)
+            ok = bhs.validateDist(entry) === ""
 
         if (entry.blackhole && ok)
             ok = bhs.extractEntry(pnlBottom, batch)

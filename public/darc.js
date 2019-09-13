@@ -48,7 +48,7 @@ blackHoleSuns.prototype.setGP = function () {
         let loc = $("#menu-Organizations")
         for (let e of bhs.orgList) {
             let itm = loc.find("#item-" + e.name.nameToId())
-            if (e.galaxy === g && e.platform === p)
+            if (e.galaxy === g && e[p] === true)
                 itm.css("background-color", "#c0f0ff")
             else
                 itm.css("background-color", "#ffc0c0")

@@ -1,3 +1,14 @@
+/***************************
+ 
+https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Powehi&g=Euclid&p=PC-XBox
+https://us-central1-nms-bhs.cloudfunctions.net/getBasesStart?u=Powehi&g=Euclid&p=PC-XBox&s=0000:1111:2222:3333
+https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Calypso&p=PC-XBox
+https://us-central1-nms-bhs.cloudfunctions.net/getGPList
+https://us-central1-nms-bhs.cloudfunctions.net/getPOI?g=Euclid&p=PC-XBox
+https://us-central1-nms-bhs.cloudfunctions.net/getOrgs?g=Euclid&p=PC-XBox
+
+****************************/
+
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
 var serviceAccount = require("./nms-bhs-8025d3f3c02d.json")
@@ -8,16 +19,6 @@ const cors = require('cors')({
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 })
-
-/***************************
- 
-https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Bad%20Wolf&g=Euclid&p=PC-XBox
-https://us-central1-nms-bhs.cloudfunctions.net/getBasesStart?u=Bad%20Wolf&g=Euclid&p=PC-XBox&s=0000:1111:2222:3333
-https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Calypso&p=PC-XBox
-https://us-central1-nms-bhs.cloudfunctions.net/getGPList
-https://us-central1-nms-bhs.cloudfunctions.net/getPOI
-
-****************************/
 
 // https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Calypso&p=PC-XBox
 // ["0000:0000:0000:0079","Thoslo Quadrant","SAS.A83","0FFE:007E:0082:003D","Vasika Boundary","Uscarlen"]
@@ -68,11 +69,15 @@ exports.getGPList = functions.https.onRequest((request, response) => {
     })
 })
 
-// https://us-central1-nms-bhs.cloudfunctions.net/getPOI
+// https://us-central1-nms-bhs.cloudfunctions.net/getPOI?g=Euclid&p=PC-XBox
 // ["Farpoint Station","Euclid","PC-XBox","0803:0078:0800:0089","2","Normal","pnl-poi/4d78b946-94ae-4a54-ba95-c28fe7060d1c.jpg"] 
 exports.getPOI = functions.https.onRequest((request, response) => {
     return cors(request, response, () => {
         let ref = admin.firestore().collection("poi")
+        if (typeof request.query.g !== "undefined" && typeof request.query.p !== "undefined") {
+            ref = ref.where("galaxy", "==", request.query.g)
+            ref = ref.where("platform", "==", request.query.p)
+        }
         return ref.get().then(snapshot => {
             let e = ""
 
@@ -84,14 +89,42 @@ exports.getPOI = functions.https.onRequest((request, response) => {
 
                 response.status(200).send(e)
             } else
-                response.status(503).send("poi not found")
+                response.status(503).send("not found")
         }).catch(err => {
             response.status(503).send(err.code)
         })
     })
 })
 
-// https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Bad%20Wolf&g=Euclid&p=PC-XBox
+// https://us-central1-nms-bhs.cloudfunctions.net/getOrgs?g=Euclid&p=PC-XBox
+// ["AGT","Euclid","PC-XBox","PS4","0803:0078:0800:0089","2"] 
+exports.getOrgs = functions.https.onRequest((request, response) => {
+    return cors(request, response, () => {
+        let ref = admin.firestore().collection("org")
+        if (typeof request.query.g !== "undefined" && typeof request.query.p !== "undefined") {
+            ref = ref.where("galaxy", "==", request.query.g)
+            ref = ref.where(request.query.p, "==", true)
+        }
+        return ref.get().then(snapshot => {
+            let e = ""
+
+            if (snapshot.size) {
+                for (let doc of snapshot.docs) {
+                    let d = doc.data()
+                    if (typeof request.query.g === "undefined" || typeof request.query.p === "undefined" || d.addr !== "") 
+                        e += JSON.stringify([d._name, d.galaxy, d["PC-XBox"]?"PC-XBox":"", d["PS4"]?"PS4":"", d.addr, d.planet]) + "\n"
+                }
+
+                response.status(200).send(e)
+            } else
+                response.status(503).send("not found")
+        }).catch(err => {
+            response.status(503).send(err.code)
+        })
+    })
+})
+
+// https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Powehi&g=Euclid&p=PC-XBox
 // ["0803:0078:0800:0089","Hub3 - Farpoint Station"]
 exports.getBases = functions.https.onRequest((request, response) => {
     return cors(request, response, () => {

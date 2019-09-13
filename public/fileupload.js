@@ -339,7 +339,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
 
                         entry[2] = mergeObjects(entry[2], entry[0])
                         entry[2] = mergeObjects(entry[2], entry[1])
-                        ok = await bhs.fBatchUpdate(entry[2], null, check, i, true);
+                        ok = await bhs.fBatchWriteBase(entry[2], null, check, i, true);
                     }
                 } else if (entry[0].type.match(/single/i) || !entry[2].addr) {
                     ok = await bhs.fBatchUpdate(entry[1], null, check, i);
