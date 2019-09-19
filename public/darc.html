@@ -3,8 +3,8 @@
 
 <head>
     <title>No Man's Sky Black Hole Suns</title>
-    <meta name="description" content="No Man's Sky Black Hole Suns">
-    <meta name="keywords" content="no man's sky,map,black hole">
+    <meta name="description" content="No Man's Sky Black Hole Suns DARC">
+    <meta name="keywords" content="no man's sky,map,black hole, distance and route calculator">
     <meta name="author" content="Stephen Piper">
     <meta name="application-name" content="NMS-Black Hole Suns">
     <link rel="shortcut icon" href="favicon.ico">
@@ -202,7 +202,7 @@
 
                         <div class="col-md-3 col-14">
                             <div class="row">
-                                <a id="maplogo" html="darc.html" class="col-md-14 col-10">
+                                <a id="maplogo" class="col-md-14 col-10">
                                     <img id="logo" src="lBTK5EL.png" class="float-left" alt="BHS Logo" width="20"
                                         height="20">
                                 </a>
@@ -213,16 +213,6 @@
                                 </div>
                             </div>
                         </div>
-                        <br>
-
-                        <div id="showmapkey" class="card border pad-bottom hidden">
-                            <div class="card-header">
-                                <div class="h5">Key</div>
-                            </div>
-                            <div class="card-body">
-                                <div id="mapkey" class="row"></div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -231,11 +221,15 @@
 
         <div class="card">
             <div id="pnl-results" class="card pad-bottom">
-                <div id="res-hdr" class="card-header bkg-def txt-def h4">
-                    Results
+                <div id="res-hdr" class="card-header bkg-def txt-def">
+                    <div class="row">
+                        <div class="col-2 h4">Results</div>
+                        <div class="col-12 clr-creme">Click on entry to expand directions and draw map. Click on direction step to
+                            zoom map.</div>
+                    </div>
                 </div>
                 <div id="res-table" class="card-body">
-                    <div id="resHeader" class="row border-bottom bkg-def txt-def"></div>
+                    <div id="resHeader" class="row border-bottom bkg-def txt-def">Results:</div>
                     <div id="resItems" class="scrollbar container-fluid" style="overflow-y: scroll; height: 388px">
                     </div>
                     <br>

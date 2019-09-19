@@ -1,6 +1,7 @@
 /***************************
  
 https://us-central1-nms-bhs.cloudfunctions.net/getBases?u=Powehi&g=Euclid&p=PC-XBox
+https://us-central1-nms-bhs.cloudfunctions.net/getAllBases?g=Euclid&p=PC-XBox
 https://us-central1-nms-bhs.cloudfunctions.net/getBasesStart?u=Powehi&g=Euclid&p=PC-XBox&s=0000:1111:2222:3333
 https://us-central1-nms-bhs.cloudfunctions.net/getDARC?g=Calypso&p=PC-XBox
 https://us-central1-nms-bhs.cloudfunctions.net/getGPList
@@ -8,7 +9,7 @@ https://us-central1-nms-bhs.cloudfunctions.net/getPOI?g=Euclid&p=PC-XBox
 https://us-central1-nms-bhs.cloudfunctions.net/getOrgs?g=Euclid&p=PC-XBox
 
 ****************************/
-
+'use strict'
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
 var serviceAccount = require("./nms-bhs-8025d3f3c02d.json")
@@ -37,7 +38,8 @@ exports.getDARC = functions.https.onRequest((request, response) => {
                     response.status(503).send(request.query.g + "/" + request.query.p + " not found")
             })
             .catch(err => {
-                response.status(503).send(err.code)
+                console.log(JSON.stringify(err))
+                response.status(503).send(JSON.stringify(err))
             })
     })
 })
@@ -64,7 +66,8 @@ exports.getGPList = functions.https.onRequest((request, response) => {
 
             response.status(200).send(out)
         }).catch(err => {
-            response.status(503).send(err.code)
+            console.log(JSON.stringify(err))
+            response.status(503).send(JSON.stringify(err))
         })
     })
 })
@@ -91,7 +94,8 @@ exports.getPOI = functions.https.onRequest((request, response) => {
             } else
                 response.status(503).send("not found")
         }).catch(err => {
-            response.status(503).send(err.code)
+            console.log(JSON.stringify(err))
+            response.status(503).send(JSON.stringify(err))
         })
     })
 })
@@ -111,15 +115,16 @@ exports.getOrgs = functions.https.onRequest((request, response) => {
             if (snapshot.size) {
                 for (let doc of snapshot.docs) {
                     let d = doc.data()
-                    if (typeof request.query.g === "undefined" || typeof request.query.p === "undefined" || d.addr !== "") 
-                        e += JSON.stringify([d._name, d.galaxy, d["PC-XBox"]?"PC-XBox":"", d["PS4"]?"PS4":"", d.addr, d.planet]) + "\n"
+                    if (typeof request.query.g === "undefined" || typeof request.query.p === "undefined" || d.addr !== "")
+                        e += JSON.stringify([d._name, d.galaxy, d["PC-XBox"] ? "PC-XBox" : "", d["PS4"] ? "PS4" : "", d.addr, d.planet]) + "\n"
                 }
 
                 response.status(200).send(e)
             } else
                 response.status(503).send("not found")
         }).catch(err => {
-            response.status(503).send(err.code)
+            console.log(JSON.stringify(err))
+            response.status(503).send(JSON.stringify(err))
         })
     })
 })
@@ -138,11 +143,9 @@ exports.getBases = functions.https.onRequest((request, response) => {
                     let o = ""
 
                     if (snapshot.size > 0) {
-                        console.log(snapshot.docs[0].ref.parent.path, snapshot.size)
-
                         for (let doc of snapshot.docs) {
                             let e = doc.data()
-                            o += JSON.stringify([e.addr, e.basename]) + "\n"
+                            o += JSON.stringify([e.addr, e._name, e.basename]) + "\n"
                         }
 
                         response.status(200).send(o)
@@ -150,16 +153,66 @@ exports.getBases = functions.https.onRequest((request, response) => {
                         response.status(503).send(request.query.g + "/" + request.query.p + " not found")
                     }
                 }).catch(err => {
-                    response.status(503).send(err.code)
+                    console.log(JSON.stringify(err))
+                    response.status(503).send(JSON.stringify(err))
                 })
             } else {
                 response.status(503).send(request.query.u + " not found")
             }
         }).catch(err => {
-            response.status(503).send(err.code)
+            console.log(JSON.stringify(err))
+            response.status(503).send(JSON.stringify(err))
         })
     })
 })
+
+// https://us-central1-nms-bhs.cloudfunctions.net/getAllBases?g=Euclid&p=PC-XBox
+// ["0803:0078:0800:0089","Hub3 - Farpoint Station"]
+exports.getAllBases = functions.https.onRequest((request, response) => {
+    return cors(request, response, () => {
+        let ref = admin.firestore().collection("users/")
+        return ref.listDocuments().then(async refs => {
+            let p = []
+            for (let ref of refs) {
+                let user = await ref.get().then(doc => {
+                    return doc.data()
+                })
+                ref = ref.collection("stars5/" + request.query.g + "/" + request.query.p)
+                p.push(getBasesRef(ref, user))
+            }
+
+            return Promise.all(p).then(res => {
+                let out = ""
+                for (let o of res)
+                    out += o
+
+                response.status(200).send(out)
+            }).catch(err => {
+                console.log("promise", JSON.stringify(err))
+                response.status(503).send(JSON.stringify(err))
+            })
+        }).catch(err => {
+            console.log("listDocuments", JSON.stringify(err))
+            response.status(503).send(JSON.stringify(err))
+        })
+    })
+})
+
+function getBasesRef(ref, user) {
+    return ref.get().then(snapshot => {
+        let o = ""
+
+        for (let doc of snapshot.docs) {
+            let e = doc.data()
+            o += JSON.stringify([e.addr, user._name, e.basename]) + "\n"
+        }
+
+        return o
+    }).catch(err => {
+        console.log("getBasesRef", JSON.stringify(err))
+        response.status(503).send(JSON.stringify(err))
+    })
+}
 
 // https://us-central1-nms-bhs.cloudfunctions.net/getBasesStart?u=Bad%20Wolf&g=Euclid&p=PC-XBox&s=0000:1111:2222:3333
 // ["0000:1111:2222:3333","","","0133:0083:08D5:0025","Teleport To","9 701"]
@@ -176,8 +229,6 @@ exports.getBasesStart = functions.https.onRequest((request, response) => {
                     let o = ""
 
                     if (snapshot.size > 0) {
-                        console.log(snapshot.docs[0].ref.parent.path, snapshot.size)
-
                         for (let doc of snapshot.docs) {
                             let e = doc.data()
                             o += JSON.stringify([start, "", "", e.addr, "Teleport To", e.basename]) + "\n"
@@ -188,13 +239,15 @@ exports.getBasesStart = functions.https.onRequest((request, response) => {
                         response.status(503).send(request.query.g + "/" + request.query.p + " not found")
                     }
                 }).catch(err => {
-                    response.status(503).send(err.code)
+                    console.log(JSON.stringify(err))
+                    response.status(503).send(JSON.stringify(err))
                 })
             } else {
                 response.status(503).send(request.query.u + " not found")
             }
         }).catch(err => {
-            response.status(503).send(err.code)
+            console.log(JSON.stringify(err))
+            response.status(503).send(JSON.stringify(err))
         })
     })
 })
@@ -322,31 +375,31 @@ async function checkOldEntry(e, eref) {
         let ref = admin.firestore().doc("stars5/" + e.galaxy + "/" + e.platform + "/" + e.connection)
         e = await ref.get().then(async doc => {
             if (doc.exists) {
-                let c = doc.data()
-                c.blackhole = false
-                c.deadzone = false
+            let c = doc.data()
+            c.blackhole = false
+            c.deadzone = false
 
-                await doc.ref.set(c)
+            await doc.ref.set(c)
 
-                e.x = {}
-                e.x.sys = typeof c.sys !== "undefined" ? c.sys : ""
-                e.x.reg = typeof c.reg !== "undefined" ? c.reg : ""
-                e.x.life = typeof c.life !== "undefined" ? c.life : ""
-                e.x.econ = typeof c.econ !== "undefined" ? c.econ : ""
-                e.x.addr = c.addr
-                e.x.dist = c.dist
-                e.x.xyzs = c.xyzs
+            e.x = {}
+            e.x.sys = typeof c.sys !== "undefined" ? c.sys : ""
+            e.x.reg = typeof c.reg !== "undefined" ? c.reg : ""
+            e.x.life = typeof c.life !== "undefined" ? c.life : ""
+            e.x.econ = typeof c.econ !== "undefined" ? c.econ : ""
+            e.x.addr = c.addr
+            e.x.dist = c.dist
+            e.x.xyzs = c.xyzs
 
-                delete e.conxyzs
-                delete e.valid
+            delete e.conxyzs
+            delete e.valid
 
-                await eref.set(e)
-                console.log("fixed " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-            }
-
-            return e
-        })
-    }
+            await eref.set(e)
+            console.log("fixed " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+        }
+  
+        return e
+    })
+}
 
     return e
 }
@@ -530,6 +583,7 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
 
         p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
             name: e.galaxy,
+            _name: e._name,
             number: galaxyList[getIndex(galaxyList, "name", e.galaxy)].number,
             update: e.modded
         }))
@@ -658,14 +712,10 @@ exports.recalcTotals = functions.https.onCall(async (data, context) => {
     let p = []
 
     let ref = admin.firestore().collection("stars5")
-    let docrefs = await ref.listDocuments().then(docrefs => {
-        return docrefs
-    })
+    let docrefs = await ref.listDocuments()
 
     for (let gref of docrefs) {
-        let colrefs = await gref.listCollections().then(colrefs => {
-            return colrefs
-        })
+        let colrefs = await gref.listCollections()
 
         for (let pref of colrefs) {
             let ref = pref.where("blackhole", "==", true)

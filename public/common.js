@@ -615,7 +615,7 @@ blackHoleSuns.prototype.testing = async function () {
 
             for (let doc of snapshot.docs) {
                 let s2 = doc.data()
-                let d = bhs.calcDistXYZ(s1.x.xyzs, s2.xyzs)
+                let d = parseInt(bhs.calcDistXYZ(s1.x.xyzs, s2.xyzs))
 
                 if (d > 0 && d < 0x400) {
                     if (typeof map[s1.x.addr] === "undefined")
@@ -760,6 +760,7 @@ blackHoleSuns.prototype.addBaseList = function (entry, list) {
                 found = true
                 e.x.basename = entry.basename
                 e.x.owned = entry.owned
+                e.x.sharepoi = entry.sharepoi
                 break
             }
         }
@@ -769,6 +770,7 @@ blackHoleSuns.prototype.addBaseList = function (entry, list) {
     } else {
         list[entry.addr].basename = entry.basename
         list[entry.addr].owned = entry.owned
+        list[entry.addr].sharepoi = entry.sharepoi
     }
 
     return list
@@ -1077,11 +1079,8 @@ function mergeObjects(o, n) {
     } else if (n) {
         if (typeof o == "undefined")
             o = {}
-        let l = Object.keys(n)
-        for (let i = 0; i < l.length; ++i) {
-            let x = l[i]
+        for (let x of Object.keys(n))
             o[x] = mergeObjects(o[x], n[x])
-        }
     }
 
     return o
@@ -1098,11 +1097,8 @@ function addObjects(o, n) {
     } else if (n) {
         if (typeof o == "undefined")
             o = {}
-        let l = Object.keys(n)
-        for (let i = 0; i < l.length; ++i) {
-            let x = l[i]
+        for (let x of Object.keys(n))
             o[x] = addObjects(o[x], n[x])
-        }
     }
 
     return o
@@ -1307,7 +1303,7 @@ blackHoleSuns.prototype.xyzToAddress = function (xyz) {
     let x = xyz.x.toString(16)
     let y = xyz.y.toString(16)
     let z = xyz.z.toString(16)
-    let s = xyz.s.toString(16)
+    let s = typeof xyz.s === "undefined" ? xyz.system.toString(16) : xyz.s.toString(16)
 
     let addr = x + "." + y + "." + z + "." + s
     return bhs.reformatAddress(addr)
@@ -1336,18 +1332,20 @@ blackHoleSuns.prototype.addrToGlyph = function (addr) {
 }
 
 blackHoleSuns.prototype.calcDist = function (addr, addr2) {
-    let cord = bhs.addressToXYZ(addr)
-    let cord2 = addr2 ? bhs.addressToXYZ(addr2) : {
+    let xyz1 = bhs.addressToXYZ(addr)
+    let xyz2 = addr2 ? bhs.addressToXYZ(addr2) : {
         x: 0x7ff,
         y: 0x7f,
         z: 0x7ff
     }
-
-    return parseInt(Math.sqrt(Math.pow(cord2.x - cord.x, 2) + Math.pow(cord2.y - cord.y, 2) + Math.pow(cord2.z - cord.z, 2)) * 400)
+    return parseInt(this.calcDist(xyz1, xyz2) * 400)
 }
 
 blackHoleSuns.prototype.calcDistXYZ = function (xyz1, xyz2) {
-    return parseInt(Math.sqrt(Math.pow(xyz1.x - xyz2.x, 2) + Math.pow(xyz1.y - xyz2.y, 2) + Math.pow(xyz1.z - xyz2.z, 2)))
+    let x = xyz1.x - xyz2.x
+    let y = xyz1.y - xyz2.y
+    let z = xyz1.z - xyz2.z
+    return Math.sqrt(x * x + y * y + z * z)
 }
 
 Date.prototype.toDateLocalTimeString = function () {

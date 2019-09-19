@@ -128,6 +128,10 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                         <input id="ck-hasbase" type="checkbox">
                         Has Base
                     </label>
+                    <label id="id-sharepoi" class="col-7 h6 txt-inp-def hidden">
+                        <input id="ck-sharepoi" type="checkbox">
+                        Share POI
+                    </label>
                 </div>
 
                 <div id="id-isbase" class="row" style="display:none">
@@ -210,10 +214,13 @@ blackHoleSuns.prototype.buildPanel = function (id) {
     loc.find('#ck-hasbase').change(function () {
         let pnl = $(this).closest("[id|='pnl'")
 
-        if ($(this).prop("checked"))
+        if ($(this).prop("checked")) {
             pnl.find("#id-isbase").show()
-        else
+            pnl.find("#id-sharepoi").show()
+        } else {
             pnl.find("#id-isbase").hide()
+            pnl.find("#id-sharepoi").hide()
+        }
     })
 
     $("#" + panels[pnlBottom].id + " #id-pnl1-only").hide()
@@ -296,14 +303,18 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
     if (entry.basename) {
         loc.find("#id-basename").val(entry.basename)
         loc.find("#btn-Owned").text(entry.owned)
+        loc.find("#ck-sharepoi").prop("checked", typeof entry.sharepoi !== "undefined" ? entry.sharepoi : false)
 
         loc.find("#ck-hasbase").prop("checked", true)
         loc.find("#id-isbase").show()
+        loc.find("#id-sharepoi").show()
         loc.find("#btn-delbase").removeClass("disabled")
         loc.find("#btn-delbase").removeAttr("disabled")
     } else {
         loc.find("#ck-hasbase").prop("checked", false)
+        loc.find("#ck-sharepoi").prop("checked", false)
         loc.find("#id-isbase").hide()
+        loc.find("#id-sharepoi").hide()
         loc.find("#btn-delbase").addClass("disabled")
         loc.find("#btn-delbase").prop("disabled", true)
     }
@@ -354,6 +365,7 @@ blackHoleSuns.prototype.clearPanel = function (d) {
     })
 
     pnl.find("#id-isbase").hide()
+    pnl.find("#id-sharepoi").hide()
     pnl.find("#id-fmcenter").hide()
     pnl.find("#id-traveled").hide()
     pnl.find("#id-tocenter").hide()
@@ -453,10 +465,18 @@ blackHoleSuns.prototype.extractEntry = async function (idx, batch) {
             bhs.status("save " + entry.addr)
 
             if (hasbase) {
+                entry._name = bhs.user._name
+                entry.org = bhs.user.org
+                entry.uid = bhs.user.uid
+                entry.platform = bhs.user.platform
+                entry.galaxy = bhs.user.galaxy
+                entry.version = "beyond" // typeof bhs.user.version !== "undefined" && bhs.user.version ? bhs.user.version : "beyond"
+
                 entry.basename = loc.find("#id-basename").val()
                 entry.owned = loc.find("#btn-Owned").text().stripNumber()
-                entry.owned = entry.owned ? entry.owned : "mine"
-                bhs.updateBase(entry, batch)
+                entry.owned = entry.owned !== "" ? entry.owned : "mine"
+                entry.sharepoi = loc.find("#ck-sharepoi").prop("checked")
+                bhs.updateBase(entry)
                 bhs.status("save base " + entry.addr)
             }
         }

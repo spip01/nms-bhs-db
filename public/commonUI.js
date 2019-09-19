@@ -102,10 +102,8 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     } else
         pnl.find("#btn-Galaxy").text("")
     
-    if (fdarc && typeof bhs.user.uid !== "undefined") {
-        bhs.setGP()
-        bhs.showRange()
-    }
+    if (fdarc && typeof bhs.user.uid !== "undefined") 
+        bhs.updateDarcSettings()
 }
 
 blackHoleSuns.prototype.buildUserPanel = async function () {

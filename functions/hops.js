@@ -1,90 +1,135 @@
+'use strict'
 const admin = require('firebase-admin')
+require('events').EventEmitter.defaultMaxListeners = 0
 
-let list = {}
+const dc = require('nmsbhs-utils')
+const readline = require('readline')
 
 exports.genRoute = async function (data) {
     let now = new Date().getTime()
-    let dc = require("./dijkstra.js")
-
     if (data.galaxy === "" || data.platform === "")
         return {
             err: "no Galaxy/Platform specified"
         }
 
-    let list = await getHops(data.galaxy, data.platform)
-    let load = new Date().getTime()
+    let p = []
+    p.push(getHops(data.galaxy, data.platform))
+    p.push(getPOI(data.galaxy, data.platform))
 
-    if (data.start === "" || data.end === "")
-        return {
-            load: load - now,
-            err: "no address specified"
+    if (data.preload) {
+        return Promise.all(p).then(res => {
+            console.log("preload", new Date().getTime() - now)
+            return {
+                loaded: true,
+                preload: new Date().getTime() - now
+            }
+        })
+    }
+
+    if (data.user !== "" && data.usebases)
+        p.push(addBases(data.user, data.start, data.galaxy, data.platform))
+
+    if (!data.proximity) {
+        if (data.end !== "" && data.end !== "0000:0000:0000:0000")
+            p.push(getAddrEntry(data.end, data.galaxy, data.platform))
+        else
+            return {
+                err: "No destination specified."
+            }
+    }
+
+    return Promise.all(p).then(res => {
+        let start = {
+            addr: data.start === "" ? "0000:0000:0000:0000" : data.start
+        }
+        start.coords = dc.coordinates(start.addr)
+
+        let end = {
+            addr: data.end === "" ? "0000:0000:0000:0000" : data.end
+        }
+        end.coords = dc.coordinates(end.addr)
+
+        let hops = savedHops[data.galaxy][data.platform]
+        let poi = savedPOI[data.galaxy][data.platform]
+        let dest = []
+
+        for (let r of res) {
+            if (r) {
+                switch (r.what) {
+                    case "end":
+                        end.system = r.end.sys
+                        end.region = r.end.reg
+                        break
+                    case "bases":
+                        hops = hops.concat(r.list)
+                        break
+                }
+            }
         }
 
-    if (data.user !== "") {
-        let bases = await addBases(data.user, data.start, data.galaxy, data.platform)
-        hops = list.concat(bases)
-    } else
-        hops = list
+        if (data.proximity)
+            dest = poi
+        else
+            dest.push(end)
 
-    let base = new Date().getTime()
+        let calc = dc.dijkstraCalculator(hops, data.range, "time")
 
-    const starts = [{
-        coords: coordsToXYZ(data.start)
-    }];
+        let stime = new Date().getTime() - now
+        console.log("setup", stime)
+        now = new Date().getTime()
 
-    const dest = {
-        coords: coordsToXYZ(data.end),
-    };
+        let routes = calc.findRoutes(start, dest)
+        let ctime = new Date().getTime() - now
+        console.log("calc", ctime)
 
-    let calc = dc.dijkstraCalculator(hops, data.range, "time")
-    let res = calc.findRoute(starts, dest)
-    let done = new Date().getTime()
-
-    return {
-        route: res[0].route,
-        load: load - now,
-        base: base - load,
-        calc: done - base
-    }
+        return {
+            route: calcJumps(routes, data.range, data.maxJumps),
+            calc: ctime,
+            setup: stime
+        }
+    })
 }
 
-async function getHops(gal, plat) {
-    if (typeof list[gal] !== "undefined" && typeof list[gal][plat] !== "undefined")
-        return list[gal][plat]
+let savedHops = {}
 
-    if (typeof list[gal] === "undefined")
-        list[gal] = {}
+function getHops(gal, plat) {
+    if (typeof savedHops[gal] === "undefined")
+        savedHops[gal] = {}
 
-    if (typeof list[gal][plat] === "undefined")
-        list[gal][plat] = []
-
-    hops = list[gal][plat]
+    if (typeof savedHops[gal][plat] !== "undefined")
+        return new Promise((resolve, reject) => {
+            resolve({
+                what: "hops",
+                list: savedHops[gal][plat]
+            })
+        })
 
     const bucket = admin.storage().bucket("nms-bhs.appspot.com")
-    const readline = require('readline')
     let fname = 'darc/' + gal + "-" + plat + ".txt"
 
-    let p = []
-
     let f = bucket.file(fname)
-    await f.exists().then(data => {
+    return f.exists().then(data => {
+            let p = []
             if (data[0]) {
                 let s = f.createReadStream()
                 let rd = readline.createInterface({
                     input: s
                 })
 
+                let hops = []
                 rd.on("line", line => {
                     if (line) {
                         let r = JSON.parse(line)
                         let h = {
                             blackhole: {
-                                coords: coordsToXYZ(r[0]),
+                                coords: dc.coordinates(r[0]),
+                                addr: r[0],
                                 region: r[1],
                                 system: r[2],
                             },
                             exit: {
-                                coords: coordsToXYZ(r[3]),
+                                coords: dc.coordinates(r[3]),
+                                addr: r[3],
                                 region: r[4],
                                 system: r[5],
                             }
@@ -100,56 +145,113 @@ async function getHops(gal, plat) {
                     })
                 }))
             }
+
+            return Promise.all(p).then(res => {
+                savedHops[gal][plat] = res[0]
+                return {
+                    what: "hops",
+                    list: res[0]
+                }
+            })
         })
         .catch(err => {
-            console.log(err)
+            console.log(JSON.stringify(err))
         })
+}
 
-    return await Promise.all(p).then(res => {
-        return res[0]
+function getAddrEntry(addr, gal, plat) {
+    let ref = admin.firestore().collection("stars5/" + gal + "/" + plat)
+    ref = ref.where("addr", "==", addr)
+    return ref.get().then(async snapshot => {
+        if (!snapshot.empty)
+            return {
+                what: "end",
+                end: snapshot.docs[0].data()
+            }
+        else return {
+            what: "not found",
+        }
     })
 }
 
-function coordsToXYZ(addr) {
-    let out = {
-        x: 0,
-        y: 0,
-        z: 0,
-        s: 0
+function calcJumps(routes, range, maxJumps) {
+    let out = []
+
+    for (const orig of routes) {
+        const r = JSON.parse(JSON.stringify(orig))
+        const last = r.route[r.route.length - 1]
+        let jumps = 0
+        r.bh = 0
+
+        for (let i = 0; i < r.route.length; ++i) {
+            const l = r.route[i]
+            const n = i < r.route.length - 1 ? r.route[i + 1] : null
+            const ly = n ? Math.ceil(calcDistXYZ(n.coords, l.coords) * 400) : 0
+            const j = Math.max(Math.ceil(ly / range), 1)
+
+            l.jumps = 0
+            l.dist = 0
+
+            if (last.addr === l.addr && ly === 0)
+                l.what = "arrived"
+            else if (l.system === "Teleport") {
+                l.what = "teleport"
+                l.jumps = 1
+                jumps = 1
+            } else if (n && (n.system === "Teleport" || l.addr === n.addr))
+                l.what = "loc"
+            else if (l.coords.s === 0x79) {
+                l.what = "bh"
+                l.jumps = 1
+                jumps++
+                r.bh++
+            } else {
+                l.what = "warp"
+                l.jumps = j
+                l.dist = ly
+                jumps += j
+            }
+        }
+
+        r.jumps = jumps
+        out.push(r)
     }
 
-    // xxx:yyy:zzz:sss
-    if (addr) {
-        out.x = parseInt(addr.slice(0, 4), 16)
-        out.y = parseInt(addr.slice(5, 9), 16)
-        out.z = parseInt(addr.slice(10, 14), 16)
-        out.s = parseInt(addr.slice(15), 16)
-    }
+    out = out.filter(a => a.jumps > 1 && a.jumps <= maxJumps)
+    out = out.sort((a, b) => a.jumps - b.jumps)
 
     return out
 }
 
-async function addBases(user, start, gal, plat) {
-    let list = []
+function calcDistXYZ(xyz1, xyz2) {
+    let x = xyz1.x - xyz2.x
+    let y = xyz1.y - xyz2.y
+    let z = xyz1.z - xyz2.z
+    return Math.sqrt(x * x + y * y + z * z)
+}
 
-    start = coordsToXYZ(start)
-    let ref = admin.firestore().collection("users/")
+function addBases(user, start, gal, plat) {
+    let ref = admin.firestore().collection("users")
     ref = ref.where("_name", "==", user)
+    let startcoords = dc.coordinates(start === "" ? "0000:0000:0000:0000" : start)
 
-    await ref.get().then(async snapshot => {
+    return ref.get().then(snapshot => {
         if (snapshot.size > 0) {
             let ref = snapshot.docs[0].ref.collection("stars5/" + gal + "/" + plat)
-            await ref.get().then(snapshot => {
+            return ref.get().then(snapshot => {
+                let list = []
                 for (let doc of snapshot.docs) {
                     let e = doc.data()
                     let h = {
                         blackhole: {
-                            coords: start,
-                            region: "Teleport",
-                            system: e.basename,
+                            coords: startcoords,
+                            addr: start,
+                            region: e.basename,
+                            system: "Teleport",
                         },
                         exit: {
-                            coords: e.xyzs,
+                            coords: dc.coordinates(e.addr),
+                            addr: e.addr,
                             region: e.reg,
                             system: e.sys,
                         }
@@ -157,9 +259,104 @@ async function addBases(user, start, gal, plat) {
 
                     list.push(h)
                 }
+
+                return {
+                    what: "bases",
+                    list: list
+                }
             })
+        } else
+            return
+    })
+}
+
+let savedPOI = {}
+
+function getPOI(gal, plat) {
+    if (typeof savedPOI[gal] === "undefined")
+        savedPOI[gal] = {}
+
+    if (typeof savedPOI[gal][plat] !== "undefined")
+        return new Promise((resolve, reject) => {
+            resolve({
+                what: "poi",
+                list: savedPOI[gal][plat]
+            })
+        })
+
+    let p = []
+
+    let ref = admin.firestore().collection("poi")
+    ref = ref.where("galaxy", "==", gal)
+    ref = ref.where("platform", "==", plat)
+
+    p.push(ref.get().then(snapshot => {
+        return buildPOIList(snapshot)
+    }))
+
+    ref = admin.firestore().collection("org")
+    ref = ref.where("galaxy", "==", gal)
+    ref = ref.where("platform", "==", plat)
+
+    p.push(ref.get().then(snapshot => {
+        return buildPOIList(snapshot)
+    }))
+
+    ref = admin.firestore().collection("users")
+    p.push(ref.listDocuments().then(async docrefs => {
+        let list = []
+        for (let ref of docrefs) {
+            ref = ref.collection("stars5/" + gal + "/" + plat)
+            ref = ref.where("sharepoi", "==", true)
+
+            let snapshot = await ref.get()
+            if (!snapshot.empty)
+                buildPOIList(snapshot, list)
+        }
+
+        return list
+    }))
+
+    return Promise.all(p).then(res => {
+        let list = []
+        for (let l of res)
+            list = list.concat(l)
+
+        list = list.sort((a, b) => {
+            return a.addr > b.addr ? 1 : a.addr < b.addr ? -1 : a.addr === b.addr && typeof a.basename !== "undefined" ? -1 : 1
+        })
+
+        list = list.filter((v, idx, arr) => {
+            return idx >= arr.length - 1 || v.addr !== arr[idx + 1].addr
+        })
+
+        savedPOI[gal][plat] = list
+        return {
+            what: "poi",
+            list: list
         }
     })
+}
+
+function buildPOIList(snapshot, list) {
+    if (typeof list === "undefined")
+        list = []
+
+    for (let doc of snapshot.docs) {
+        let e = doc.data()
+
+        if (typeof e.addr !== "undefined") {
+            let h = {
+                coords: dc.coordinates(e.addr),
+                addr: e.addr,
+                name: typeof e.name !== "undefined" ? e.name : e.basename,
+                owner: typeof e.owner !== "undefined" ? e.owner : typeof e.basename !== "undefined" ? e._name : "",
+                basename: e.basename,
+            }
+
+            list.push(h)
+        }
+    }
 
     return list
 }

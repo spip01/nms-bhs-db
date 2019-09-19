@@ -37,7 +37,7 @@ service cloud.firestore {
     }
 
     match /poi/{document=**} {
-      allow read: true
+      allow read: if true
       allow write: if hasRole(database, request, ["editor", "admin"])
     }
 
@@ -45,6 +45,10 @@ service cloud.firestore {
       allow read: if isOwner(request, resource)
       allow create: if isLoggedIn(request)
       allow update: if isOwner(request, resource)
+    }
+
+    match /users/{uid}/stars5/{document=**} {
+      allow delete: if isOwner(request, resource)
     }
 
     match /nmsce/{document=**} {

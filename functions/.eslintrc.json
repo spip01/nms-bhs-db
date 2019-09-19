@@ -9,6 +9,7 @@
   "extends": "eslint:recommended",
   "rules": {
     "no-unreachable": 0,
+    "prefer-const": 0,
 
     // Removed rule "disallow the use of console" from recommended eslint rules
     "no-console": "off",
@@ -26,7 +27,7 @@
     "no-mixed-spaces-and-tabs": "off",
 
     // Removed rule "disallow the use of undeclared variables unless mentioned in /*global */ comments" from recommended eslint rules
-    "no-undef": "off",
+    "no-undef": 0,
 
     // Warn against template literal placeholder syntax in regular strings
     "no-template-curly-in-string": 1,
@@ -38,7 +39,7 @@
     "array-callback-return": 1,
 
     // Require the use of === and !==
-    "eqeqeq": 2,
+    "eqeqeq": 1,
 
     // Disallow the use of alert, confirm, and prompt
     "no-alert": 2,
