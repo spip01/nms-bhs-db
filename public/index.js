@@ -461,6 +461,10 @@ blackHoleSuns.prototype.extractEntry = async function (idx, batch) {
             if (bhs.contest)
                 entry.contest = bhs.contest._name
 
+            delete entry.sharepoi
+            delete entry.owned
+            delete entry.basename
+
             bhs.updateEntry(entry, batch)
             bhs.status("save " + entry.addr)
 

@@ -1333,12 +1333,12 @@ blackHoleSuns.prototype.addrToGlyph = function (addr) {
 
 blackHoleSuns.prototype.calcDist = function (addr, addr2) {
     let xyz1 = bhs.addressToXYZ(addr)
-    let xyz2 = addr2 ? bhs.addressToXYZ(addr2) : {
+    let xyz2 = typeof addr2 !== "undefined" ? bhs.addressToXYZ(addr2) : {
         x: 0x7ff,
         y: 0x7f,
         z: 0x7ff
     }
-    return parseInt(this.calcDist(xyz1, xyz2) * 400)
+    return parseInt(this.calcDistXYZ(xyz1, xyz2) * 400)
 }
 
 blackHoleSuns.prototype.calcDistXYZ = function (xyz1, xyz2) {
