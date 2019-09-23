@@ -125,7 +125,7 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
                         </div>&nbsp
                         <div class="col-8 border-left">
                             <div class="row">
-                                &nbsp<button id="btn-proximity" type="button" class="col-13 btn-def btn btn-sm" onclick="bhs.calcroute(true)">Proximity</button>&nbsp
+                                &nbsp<button id="btn-proximity" type="button" class="col-13 btn-def btn btn-sm" onclick="bhs.calcroute(true)">POI Proximity</button>&nbsp
                             </div>
                             <br>
                             <div class="row">
