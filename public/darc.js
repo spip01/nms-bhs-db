@@ -14,10 +14,14 @@ blackHoleSuns.prototype.buildDarcUserPnl = function () {
             <div class="row">
                 <div class="col-md-7 col-14">
                     <div class="row">
-                        <div class="col-14 h6 txt-inp-def">Player Name</div>
+                        <div class="col-13 h6 txt-inp-def">Player Name</div>
                         <input id="id-Player" class="rounded col-13 h5" type="text">
                     </div>
                 </div>
+                <label class="col-md-7 col-14 h6 txt-inp-def">
+                    <input id="ck-useBases" type="checkbox" onchange="bhs.saveDarcSettings(this)">
+                    Use Player Bases
+                </label>           
             </div>
 
             <div class="row">
@@ -113,6 +117,10 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
                         <div class="col-5">
                             <div class="row">
                                 <button id="btn-searchRegion" type="button" class="btn-def btn btn-sm" onclick="bhs.calcroute()">Calculate Route</button>&nbsp
+                                <label class="col-14 h6 txt-inp-def">
+                                    <input id="ck-nearPath" type="checkbox" onchange="bhs.saveDarcSettings(this)">
+                                    POI near route
+                                </label>
                             </div>
                         </div>&nbsp
                         <div class="col-8 border-left">
@@ -147,7 +155,7 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
 blackHoleSuns.prototype.setAddress = function (evt) {
     let addr = bhs.reformatAddress($(evt).val())
     let err = bhs.validateAddress(addr)
-    
+
     if (err !== "")
         bhs.status("ERROR: " + err)
     else {
@@ -186,7 +194,9 @@ blackHoleSuns.prototype.saveDarcSettings = function (evt) {
         let user = {}
         user.darcSettings = {}
         let id = $(evt).prop("id").stripID()
-        user.darcSettings[id] = $(evt).val()
+        let type = $(evt).attr("type")
+        let val = type === "checkbox" ? $(evt).prop("checked") : $(evt).val()
+        user.darcSettings[id] = val
 
         bhs.updateUser(user)
     }
@@ -195,6 +205,8 @@ blackHoleSuns.prototype.saveDarcSettings = function (evt) {
 blackHoleSuns.prototype.updateDarcSettings = function () {
     if (typeof bhs.user.darcSettings !== "undefined") {
         $("#id-range").val(typeof bhs.user.darcSettings.range !== "undefined" ? bhs.user.darcSettings.range : 2000)
+        $("#ck-useBases").prop("checked", bhs.user.darcSettings.useBases)
+        $("#ck-nearPath").prop("checked", bhs.user.darcSettings.nearPath)
         $("#id-maxJumps").val(typeof bhs.user.darcSettings.maxJumps !== "undefined" ? bhs.user.darcSettings.maxJumps : 20)
         $("#id-start").val(typeof bhs.user.darcSettings.start !== "undefined" ? bhs.user.darcSettings.start : "")
         $("#id-end").val(typeof bhs.user.darcSettings.end !== "undefined" ? bhs.user.darcSettings.end : "")
@@ -268,7 +280,8 @@ blackHoleSuns.prototype.calcroute = async function (proximity) {
             platform: $("#btn-Platform").text(),
             proximity: proximity,
             user: $("#id-Player").val(),
-            usebases: true
+            usebases: $("#ck-useBases").prop("checked"),
+            nearPath: $("#ck-nearPath").prop("checked")
         }).then(async res => {
             if (typeof res.data.err !== "undefined")
                 bhs.status("ERROR: " + res.data.err)
@@ -302,24 +315,24 @@ const restable = [{
     field: "addr",
     format: "col-lg-4 col-md-6 col-14 txt-inp-def h5 text-center glyph"
 }, {
-    name: "Region",
-    field: "region",
-    format: "col-lg-2 col-md-4 col-7"
-}, {
     name: "System",
     field: "system",
     format: "col-lg-2 col-md-4 col-7 txt-inp-def"
+}, {
+    name: "Region",
+    field: "region",
+    format: "col-lg-2 col-md-4 col-7"
 }, ]
 
 blackHoleSuns.prototype.displayResults = function (routes) {
-    let hdr = $("#resHeader")
+    const hdr = $("#resHeader")
 
-    let block = `
+    const block = `
         <div id="id-rindex" class="row def-bkg txt-def border-top-3" onclick="selectRoute(this)"></div>
         <div id="block-rindex" class="container-flex hidden">`
-    let row = `<div id="id-addr" class="row" onclick="mapRow(this)">`
-    let itm = `<div id="itm-field" class="format">title</div>`
-    let end = `</div>`
+    const row = `<div id="id-addr" class="row" onclick="mapRow(this)">`
+    const itm = `<div id="itm-field" class="format">title</div>`
+    const end = `</div>`
     let h = ""
 
     for (let f of restable) {
@@ -344,6 +357,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
         let loc = $("#resItems")
         let range = $("#id-range").val()
         let b = false
+        let poi = 0
 
         for (let i = 0; i < route.length; ++i) {
             let r = route[i]
@@ -372,6 +386,10 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                                 end = true
                                 finished = true
                                 break
+                            case "poi":
+                                l = /title/ [Symbol.replace](l, "<div class='row text-danger h6'><h6>POI: " + r.name + "</div>" + "<div class='text-danger'>Warp " + r.dist.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "ly or " + r.jumps + " jumps to</div>")
+                                poi++
+                                break
                             case "teleport":
                                 l = /title/ [Symbol.replace](l, "<div class='row'>Teleport to&nbsp;&nbsp;<div class='h6 txt-inp-def'>" + r.region + "</div></div>")
                                 break
@@ -389,23 +407,26 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                                 break
                         }
 
-                        r = n
+                        if (r.what !== "poi") {
+                            if (typeof n !== "undefined" && n.what === "poi")
+                                r = route[i + 2]
+                            else
+                                r = n
+                        }
                         break
                     case "Distance":
                         l = /title/ [Symbol.replace](l, r.dist + " ly")
                         break
                     case "Glyph":
-                        l = /title/ [Symbol.replace](l, warp && typeof r[f.field] !== "undefined" ? bhs.addrToGlyph(r[f.field]) : "")
-                        break
-                    case "Coordinates":
-                        l = /title/ [Symbol.replace](l, typeof r[f.field] !== "undefined" ? r[f.field] : "")
-                        break
-                    case "Region":
-                        l = /title/ [Symbol.replace](l, typeof r.name !== "undefined" ? r.name : typeof r[f.field] !== "undefined" ? r[f.field] : "")
+                        l = /title/ [Symbol.replace](l, r.what === "poi" || warp && typeof r[f.field] !== "undefined" ? bhs.addrToGlyph(r[f.field]) : "")
                         break
                     case "System":
                         if (!warp)
                             l = /txt-inp-def/ [Symbol.replace](l, "")
+                    case "Coordinates":
+                        l = /title/ [Symbol.replace](l, typeof r[f.field] !== "undefined" ? r[f.field] : "")
+                        break
+                    case "Region":
                         l = /title/ [Symbol.replace](l, typeof r.owner !== "undefined" ? r.owner : typeof r[f.field] !== "undefined" ? r[f.field] : "")
                         break
                 }
@@ -423,34 +444,42 @@ blackHoleSuns.prototype.displayResults = function (routes) {
         idx++
         loc.append(h + end)
 
-        let r = route[route.length - 1]
-
-        let dist = parseInt(bhs.calcDistXYZ(route[0].coords, route[route.length - 1].coords) * 400)
-        let calc = Math.ceil(dist / range)
-        let per = parseInt((1 - rte.jumps / calc) * 100)
-
         const res = `
             <div class="col-3">
                 <div class="row h5">title</div>
             </div>
-            <div class="col-11">
-                <div class="row">
-                    <div class="col-sm-7 col-14">jumps jumps for DARC vs. calc direct warp jumps.</div>
-                    <div class="col-sm-7 col-14">A per% savings.</div>
-                    <div class="col-sm-7 col-14">Cornell Index of bh black holes.</div>
-                    <div class="col-sm-7 col-14">Original warp distance distly.</div>
-                </div>
+            <div class="col-11 clr-creme">
+                <div id="res-row" class="row"></div>
             </div>`
 
-        h = /title/ [Symbol.replace](res, typeof r.name !== "undefined" ? r.name : typeof r.system !== "undefined" ? r.system : r.addr)
-        h = /jumps/ [Symbol.replace](h, rte.jumps)
-        h = /calc/ [Symbol.replace](h, calc)
-        h = /per/ [Symbol.replace](h, per)
-        h = /bh/ [Symbol.replace](h, rte.bh)
-        h = /distly/ [Symbol.replace](h, dist.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " light years")
+        const resrow = `<div class="col-sm-7 col-14">title</div>`
 
-        let rloc = loc.find("#id-r" + (idx - 1))
+        const r = route[route.length - 1]
+        h = /title/ [Symbol.replace](res, typeof r.name !== "undefined" ? r.name : typeof r.system !== "undefined" ? r.system : r.addr)
+
+        const rloc = loc.find("#id-r" + (idx - 1))
         rloc.html(h)
+
+        let dist = parseInt(bhs.calcDistXYZ(route[0].coords, route[route.length - 1].coords) * 400)
+        const calc = Math.ceil(dist / range)
+        dist = dist.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        const per = parseInt((1 - rte.jumps / calc) * 100)
+
+        h = ""
+
+        if (rte.jumps < calc) {
+            h += /title/ [Symbol.replace](resrow, rte.jumps + " jumps for DARC vs. " + calc + " direct warp jumps.")
+            h += /title/ [Symbol.replace](resrow, "Original warp distance " + dist + " light years.")
+            h += /title/ [Symbol.replace](resrow, "A " + per + "% savings.")
+            if (rte.bh > 0)
+                h += /title/ [Symbol.replace](resrow, "Cornell Index of " + rte.bh + " black holes.")
+        } else
+            h += /title/ [Symbol.replace](resrow, calc + " warp jumps, distance " + dist + " light years.")
+
+        if ($("#ck-nearPath").prop("checked") && poi > 0)
+            h += /title/ [Symbol.replace](resrow, poi + " additional POI along route.")
+
+        rloc.find("#res-row").append(h)
     }
 }
 
@@ -516,13 +545,20 @@ function mapRoute(route) {
     data.push(makedata(out, 4, "#d0d0d0"))
 
     out = initout()
+    let poi = initout()
     for (let i = 0; i < route.length; ++i) {
         let r = route[i]
-        let t = (r.region ? "<br>" + r.region : "") + (r.system ? "<br>" + r.system : "")
-        pushentry(out, r.coords, bhs.xyzToAddress(r.coords) + t)
+        if (r.what !== "poi") {
+            let t = (r.region ? "<br>" + r.region : "") + (r.system ? "<br>" + r.system : "")
+            pushentry(out, r.coords, bhs.xyzToAddress(r.coords) + t)
+        } else {
+            let t = (r.name ? "<br>" + r.name : "") + (r.owner ? "<br>" + r.owner : "")
+            pushentry(poi, r.coords, bhs.xyzToAddress(r.coords) + t)
+        }
     }
 
     data.push(makedata(out, 4, "#00ff00", "#40ff00"))
+    data.push(makedata(poi, 4, "#80c0ff"))
 
     out = initout()
     let r = route[0]
@@ -620,7 +656,7 @@ function changeMapLayout(zoom, saddr, eaddr) {
     if (zoom) {
         let sxyz = bhs.addressToXYZ(saddr)
         let exyz = bhs.addressToXYZ(eaddr)
-        let d = bhs.calcDistXYZ(sxyz, exyz)
+        let d = Math.ceil(bhs.calcDistXYZ(sxyz, exyz))
 
         xctr = sxyz.x
         yctr = 4095 - sxyz.z
