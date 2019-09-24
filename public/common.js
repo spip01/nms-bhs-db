@@ -604,38 +604,14 @@ blackHoleSuns.prototype.backupBHS = async function () {
 // })
 // }
 
-blackHoleSuns.prototype.testing = async function () {
-    let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform)
-    ref = ref.where("blackhole", "==", true)
-    let map = await ref.get().then(async snapshot => {
-        let map = {}
-
-        for (let doc of snapshot.docs) {
-            let s1 = doc.data()
-
-            for (let doc of snapshot.docs) {
-                let s2 = doc.data()
-                let d = parseInt(bhs.calcDistXYZ(s1.x.xyzs, s2.xyzs))
-
-                if (d > 0 && d < 0x400) {
-                    if (typeof map[s1.x.addr] === "undefined")
-                        map[s1.x.addr] = []
-                    while (typeof map[s1.x.addr][d] !== "undefined")
-                        d++
-
-                    map[s1.x.addr][d] = s2.addr
-                }
-            }
-        }
-
-        return map
-    })
-
-    let s = JSON.stringify(map)
-
-    let start = bhs.addressToXYZ("01D8:007C:04DD:0021")
-    let end = bhs.addressToXYZ("0C1A:007C:030F:0027")
-
+blackHoleSuns.prototype.genPOI = function () {
+    var fcn = firebase.functions().httpsCallable('genPOI')
+    return fcn().then(res => {
+            console.log(JSON.stringify(res))
+        })
+        .catch(err => {
+            console.log(JSON.stringify(err))
+        })
 }
 
 blackHoleSuns.prototype.recalcTotals = function () {

@@ -10,6 +10,7 @@ env.js
 /.firebase/
 /.vscode/
 .metadata
+tmp.*
 
 # Windows image file caches
 Thumbs.db

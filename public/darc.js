@@ -418,16 +418,18 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                         l = /title/ [Symbol.replace](l, r.dist + " ly")
                         break
                     case "Glyph":
-                        l = /title/ [Symbol.replace](l, r.what === "poi" || warp && typeof r[f.field] !== "undefined" ? bhs.addrToGlyph(r[f.field]) : "")
+                        l = /title/ [Symbol.replace](l, r.what === "poi" || warp ? bhs.addrToGlyph(r[f.field]) : "")
+                        break
+                    case "Coordinates":
+                        l = /title/ [Symbol.replace](l, r[f.field])
                         break
                     case "System":
                         if (!warp)
                             l = /txt-inp-def/ [Symbol.replace](l, "")
-                    case "Coordinates":
-                        l = /title/ [Symbol.replace](l, typeof r[f.field] !== "undefined" ? r[f.field] : "")
+                        l = /title/ [Symbol.replace](l, r[f.field] ? r[f.field] : typeof r.name !== "undefined" && r.name ? r.name : "")
                         break
                     case "Region":
-                        l = /title/ [Symbol.replace](l, typeof r.owner !== "undefined" ? r.owner : typeof r[f.field] !== "undefined" ? r[f.field] : "")
+                        l = /title/ [Symbol.replace](l, typeof r.owner !== "undefined" && r.owner ? r.owner : r[f.field] ? r[f.field] : "")
                         break
                 }
 

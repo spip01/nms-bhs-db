@@ -5,6 +5,9 @@ require('events').EventEmitter.defaultMaxListeners = 0
 const dc = require('nmsbhs-utils')
 const readline = require('readline')
 
+let savedHops = {}
+let savedPOI = {}
+
 exports.genRoute = async function (data) {
     let now = new Date().getTime()
     if (data.galaxy === "" || data.platform === "")
@@ -49,16 +52,22 @@ exports.genRoute = async function (data) {
         }
         end.coords = dc.coordinates(end.addr)
 
-        let hops = savedHops[data.galaxy][data.platform]
-        let poi = savedPOI[data.galaxy][data.platform]
+        let hops = []
+        let poi = []
         let dest = []
 
         for (let r of res) {
             if (r) {
                 switch (r.what) {
-                    case "end":
-                        end.system = r.end.sys
-                        end.region = r.end.reg
+                    case "hops":
+                        hops = hops.concat(r.list)
+                        break
+                    case "poi":
+                        poi = r.list
+                        break
+                    case "addr":
+                        end.system = r.entry.sys
+                        end.region = r.entry.reg
                         break
                     case "bases":
                         hops = hops.concat(r.list)
@@ -67,10 +76,13 @@ exports.genRoute = async function (data) {
             }
         }
 
-        if (data.proximity)
+        if (data.proximity && poi.length > 0)
             dest = poi
         else
             dest.push(end)
+
+        console.log("hops", data.galaxy, data.platform, hops.length)
+        console.log("poi", data.galaxy, data.platform, poi.length)
 
         let calc = dc.dijkstraCalculator(hops, data.range, "time")
 
@@ -83,16 +95,17 @@ exports.genRoute = async function (data) {
         console.log("calc", ctime)
 
         routes = calcJumps(routes, data)
+        let ptime = new Date().getTime() - now
+        console.log("post", ptime)
 
         return {
             route: routes,
             calc: ctime,
+            post: ptime,
             setup: stime
         }
     })
 }
-
-let savedHops = {}
 
 function getHops(gal, plat) {
     if (typeof savedHops[gal] === "undefined")
@@ -106,8 +119,10 @@ function getHops(gal, plat) {
             })
         })
 
+    savedHops[gal][plat] = []
+
     const bucket = admin.storage().bucket("nms-bhs.appspot.com")
-    let fname = 'darc/' + gal + "-" + plat + ".txt"
+    let fname = 'darc/' + gal + "-" + plat + ".json"
 
     let f = bucket.file(fname)
     return f.exists().then(data => {
@@ -118,7 +133,7 @@ function getHops(gal, plat) {
                     input: s
                 })
 
-                let hops = []
+                let out = []
                 rd.on("line", line => {
                     if (line) {
                         let r = JSON.parse(line)
@@ -137,22 +152,22 @@ function getHops(gal, plat) {
                             }
                         }
 
-                        hops.push(h)
+                        out.push(h)
                     }
                 })
 
                 p.push(new Promise((resolve, reject) => {
+                    savedHops[gal][plat] = out
                     rd.on("close", () => {
-                        resolve(hops)
+                        resolve()
                     })
                 }))
             }
 
             return Promise.all(p).then(res => {
-                savedHops[gal][plat] = res[0]
                 return {
                     what: "hops",
-                    list: res[0]
+                    list: savedHops[gal][plat]
                 }
             })
         })
@@ -167,8 +182,8 @@ function getAddrEntry(addr, gal, plat) {
     return ref.get().then(async snapshot => {
         if (!snapshot.empty)
             return {
-                what: "end",
-                end: snapshot.docs[0].data()
+                what: "addr",
+                entry: snapshot.docs[0].data()
             }
         else return {
             what: "not found",
@@ -316,8 +331,6 @@ function addBases(user, start, gal, plat) {
     })
 }
 
-let savedPOI = {}
-
 function getPOI(gal, plat) {
     if (typeof savedPOI[gal] === "undefined")
         savedPOI[gal] = {}
@@ -330,84 +343,209 @@ function getPOI(gal, plat) {
             })
         })
 
+    savedPOI[gal][plat] = []
+
+    const bucket = admin.storage().bucket("nms-bhs.appspot.com")
+    let fname = 'darc/poi/' + gal + "-" + plat + ".json"
+
+    let f = bucket.file(fname)
+    return f.exists().then(data => {
+            let p = []
+            if (data[0]) {
+                let s = f.createReadStream()
+                let rd = readline.createInterface({
+                    input: s
+                })
+
+                let out = []
+                rd.on("line", line => {
+                    if (line) {
+                        let r = JSON.parse(line)
+                        let h = {
+                            coords: dc.coordinates(r[0]),
+                            addr: r[0],
+                            region: r[1],
+                            system: r[2],
+                            name: r[3],
+                            owner: r[4],
+                            type: r[5],
+                        }
+
+                        out.push(h)
+                    }
+                })
+
+                p.push(new Promise((resolve, reject) => {
+                    savedPOI[gal][plat] = out
+
+                    rd.on("close", () => {
+                        resolve()
+                    })
+                }))
+            }
+
+            return Promise.all(p).then(res => {
+                return {
+                    what: "poi",
+                    list: savedPOI[gal][plat]
+                }
+            })
+        })
+        .catch(err => {
+            console.log(JSON.stringify(err))
+        })
+}
+
+exports.genPOI = function () {
+    const bucket = admin.storage().bucket("nms-bhs.appspot.com")
     let p = []
 
     let ref = admin.firestore().collection("poi")
-    ref = ref.where("galaxy", "==", gal)
-    ref = ref.where("platform", "==", plat)
-
-    p.push(ref.get().then(snapshot => {
-        return buildPOIList(snapshot, gal, plat)
-    }))
+    p.push(getPOIlist(ref, "name", "owner", "poi"))
 
     ref = admin.firestore().collection("org")
-    ref = ref.where("galaxy", "==", gal)
-    ref = ref.where("platform", "==", plat)
-
-    p.push(ref.get().then(snapshot => {
-        return buildPOIList(snapshot, gal, plat)
-    }))
+    p.push(getPOIlist(ref, "name", "owner", "org"))
 
     ref = admin.firestore().collection("users")
     p.push(ref.listDocuments().then(async docrefs => {
-        let list = []
-        for (let ref of docrefs) {
-            ref = ref.collection("stars5/" + gal + "/" + plat)
-            ref = ref.where("sharepoi", "==", true)
+        let p = []
 
-            let snapshot = await ref.get()
-            if (!snapshot.empty)
-                buildPOIList(snapshot, gal, plat, list)
+        for (let ref of docrefs) {
+            ref = ref.collection("stars5")
+            for (let gref of await ref.listDocuments())
+                for (let pref of await gref.listCollections()) {
+                    pref = pref.where("sharepoi", "==", true)
+                    p.push(getPOIlist(pref, "basename", "_name", "base"))
+                }
         }
 
-        return list
+        return Promise.all(p).then(res => {
+            let m = {}
+            for (let l of res) {
+                for (let g of Object.keys(l)) {
+                    for (let p of Object.keys(l[g])) {
+                        if (typeof m[g] === "undefined")
+                            m[g] = {}
+                        if (typeof m[g][p] === "undefined")
+                            m[g][p] = []
+
+                        m[g][p] = m[g][p].concat(l[g][p])
+                    }
+                }
+            }
+
+            return m
+        })
     }))
 
     return Promise.all(p).then(res => {
-        let list = []
-        for (let l of res)
-            list = list.concat(l)
+        let m = {}
+        for (let l of res) {
+            for (let g of Object.keys(l)) {
+                for (let p of Object.keys(l[g])) {
+                    if (typeof m[g] === "undefined")
+                        m[g] = {}
+                    if (typeof m[g][p] === "undefined")
+                        m[g][p] = []
 
-        list = list.filter((v, idx, arr) => {
-            return idx >= arr.length - 1 || v.addr !== arr[idx + 1].addr
-        })
-
-        list = list.sort((a, b) => {
-            return a.addr > b.addr ? 1 : a.addr < b.addr ? -1 : a.addr === b.addr
-        })
-
-        savedPOI[gal][plat] = list
-        return {
-            what: "poi",
-            list: list
+                    m[g][p] = m[g][p].concat(l[g][p])
+                }
+            }
         }
+
+        for (let g of Object.keys(m)) {
+            for (let p of Object.keys(m[g])) {
+                m[g][p] = m[g][p].sort((a, b) => a.addr > b.addr ? 1 : -1)
+                m[g][p] = m[g][p].filter((v, i, a) => ++i >= a.length || v.addr !== a[i].addr || v.reg !== a[i].reg || v.sys !== a[i].sys || v.name !== a[i].name || v.owner !== a[i].owner)
+                m[g][p] = m[g][p].map(e => JSON.stringify([e.addr, e.reg, e.sys, e.name, e.owner, e.type]) + "\n")
+            }
+        }
+
+        let pr = []
+
+        for (let g of Object.keys(m)) {
+            for (let p of Object.keys(m[g])) {
+                pr.push(new Promise((resolve, reject) => {
+                    let fname = 'darc/poi/' + g + "-" + p + ".json"
+                    let f = bucket.file(fname)
+                    let s = f.createWriteStream({
+                        gzip: true,
+                    })
+
+                    s.on('finish', () => {
+                        resolve(true)
+                    })
+
+                    for (let e of m[g][p])
+                        s.write(e)
+
+                    s.end()
+                }))
+            }
+        }
+
+        return Promise.all(pr).then(res => {
+            return {
+                ok: true
+            }
+        }).catch(err => {
+            console.log("error", JSON.stringify(err))
+            return {
+                err: JSON.stringify(err)
+            }
+        })
     })
 }
 
-async function buildPOIList(snapshot, gal, plat, list) {
-    if (typeof list === "undefined")
-        list = []
+function getPOIlist(ref, namefld, ownerfld, type) {
+    return ref.get().then(async snapshot => {
+        let l = []
 
-    for (let doc of snapshot.docs) {
-        let e = doc.data()
-        if (typeof e.addr !== "undefined") {
-            let h = {
-                coords: dc.coordinates(e.addr),
-                addr: e.addr,
-                name: typeof e.name !== "undefined" ? e.name : e.basename,
-                owner: typeof e.owner !== "undefined" ? e.owner : e._name,
+        for (let doc of snapshot.docs) {
+            let e = doc.data()
+
+            if (doc.ref.path.includes("users/") ||
+                (doc.ref.path.includes("poi/") || doc.ref.path.includes("org/")) && (typeof e.hide === "undefined" || e.hide === false)) {
+
+                if (typeof l[e.galaxy] === "undefined")
+                    l[e.galaxy] = {}
+
+                let plat = []
+                if (ref.id === "org") {
+                    if (typeof e["PC-XBox"] !== "undefined" && e["PC-XBox"] === true)
+                        plat.push("PC-XBox")
+                    if (typeof e["PS4"] !== "undefined" && e["PS4"] === true)
+                        plat.push("PS4")
+                } else
+                    plat.push(e.platform)
+
+                for (let p of plat) {
+                    if (typeof l[e.galaxy][p] === "undefined")
+                        l[e.galaxy][p] = []
+
+                    if (typeof e.sys === "undefined" || typeof e.reg === "undefined") {
+                        let ref = admin.firestore().doc("stars5/" + e.galaxy + "/" + p + "/" + e.addr)
+                        let edoc = await ref.get()
+                        if (edoc.exists) {
+                            let s = edoc.data()
+                            e.sys = s.sys
+                            e.reg = s.reg
+                            doc.ref.set(e)
+                        }
+                    }
+
+                    l[e.galaxy][p].push({
+                        addr: e.addr,
+                        reg: e.reg,
+                        sys: e.sys,
+                        name: e[namefld],
+                        owner: e[ownerfld],
+                        type: type
+                    })
+                }
             }
-
-            let doc = await admin.firestore().doc("stars5/" + gal + "/" + plat + "/" + e.addr).get()
-            if (doc.exists) {
-                let d = doc.data()
-                h.system = d.sys
-                h.region = d.reg
-            }
-
-            list.push(h)
         }
-    }
 
-    return list
+        return l
+    })
 }

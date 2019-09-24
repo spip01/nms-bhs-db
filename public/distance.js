@@ -131,10 +131,10 @@ var tglZoom = false
 
 function zoom() {
     tglZoom = !tglZoom
-    Plotly.relayout('plot3d', changeMapLayout(tglZoom, $("#id-saddr").val(), $("#id-eaddr").val()))
+    Plotly.relayout('plot3d', changeMapLayout(tglZoom))
 }
 
-function changeMapLayout(zoom, saddr, eaddr) {
+function changeMapLayout(zoom) {
     let xstart = 0
     let xctr = 2048
     let xend = 4095
@@ -147,8 +147,12 @@ function changeMapLayout(zoom, saddr, eaddr) {
     let yctr = 2048
     let yend = 4095
 
+    let saddr = $("#id-saddr").val()
+    let eaddr = $("#id-eaddr").val()
+    
+    let sxyz = addressToXYZ(saddr)
+
     if (zoom) {
-        let sxyz = addressToXYZ(saddr)
         let d = parseInt(calcDist(saddr, eaddr) / 400)
 
         xctr = sxyz.x
@@ -186,6 +190,13 @@ function changeMapLayout(zoom, saddr, eaddr) {
         paper_bgcolor: "#000000",
         plot_bgcolor: "#000000",
         scene: {
+            // camera: {
+            //     eye: {
+            //         x: sxyz.x,
+            //         y: sxyz.z,
+            //         z: sxyz.y
+            //     }
+            // },
             zaxis: {
                 backgroundcolor: "#000000",
                 gridcolor: "#c0c0c0",
@@ -327,6 +338,7 @@ function makedata(out, size, color, linecolor, axis1, axis2) {
         },
         type: axis1 ? "scatter" : "scatter3d",
         hoverinfo: 'text',
+        // scene: "scene"
     }
 
     if (linecolor) {

@@ -35,11 +35,12 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
 
                     $("#admin").show()
                     $("#recalc").show()
-                    $("#updateDARC").show()
-                    $("#genDARC").show()
-                    $("#backupBHS").show()
 
                     if (document.domain == "localhost") {
+                        $("#updateDARC").show()
+                        $("#genDARC").show()
+                        $("#genPOI").show()
+                        $("#backupBHS").show()
                         $("#testing").show()
                     }
                 }
@@ -101,8 +102,8 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
         pnl.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[i].color + ";")
     } else
         pnl.find("#btn-Galaxy").text("")
-    
-    if (fdarc && typeof bhs.user.uid !== "undefined") 
+
+    if (fdarc && typeof bhs.user.uid !== "undefined")
         bhs.updateDarcSettings()
 }
 
@@ -947,7 +948,7 @@ blackHoleSuns.prototype.saveUser = async function (inp) {
         let user = bhs.extractUser()
         let ok = bhs.validateUser(user)
 
-        if (ok) 
+        if (ok)
             ok = await bhs.updateUser(user, typeof inp === "string" ? null : inp)
 
         return ok
