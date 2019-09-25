@@ -225,7 +225,7 @@ var userTable = [{
     title: "Coordinates",
     id: "id-addr",
     field: "addr",
-    format: "col-lg-3 col-md-4 col-sm-4 col-6"
+    format: "col-lg-3 col-md-4 col-sm-4 col-6 monospace"
 }, {
     title: "LY",
     id: "id-toctr",

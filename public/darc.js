@@ -129,8 +129,8 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
                             </div>
                             <br>
                             <div class="row">
-                                <div class="col-7 h6 txt-inp-def">Max Jumps&nbsp;</div>
-                                <input id="id-maxJumps" class="rounded col-7" type="number" value="20" onchange="bhs.saveDarcSettings(this)">
+                                <div class="col-sm-8 col-14 h6 txt-inp-def">Max Jumps&nbsp;</div>
+                                <input id="id-maxJumps" class="rounded col-sm-6 col-14" type="number" value="20" onchange="bhs.saveDarcSettings(this)">
                             </div>
                         </div>
                     </div>
@@ -303,25 +303,55 @@ blackHoleSuns.prototype.calcroute = async function (proximity) {
 }
 
 const restable = [{
-    name: "Description",
-    field: "desc",
-    format: "col-lg-3 col-md-3 col-7"
-}, {
-    name: "Coordinates",
-    field: "addr",
+    title: "Description",
+    name: "desc",
     format: "col-lg-2 col-md-3 col-7"
 }, {
-    name: "Glyph",
+    title: "Distance",
+    name: "dist",
+    field: "dist",
+    format: "col-lg-2 col-md-3 col-7"
+}, {
+    title: "Coordinates",
+    name: "addr",
     field: "addr",
-    format: "col-lg-4 col-md-6 col-14 txt-inp-def h5 text-center glyph"
+    format: "col-lg-3 col-md-3 col-sm-8 col-14 text-center monospace"
 }, {
-    name: "System",
+    title: "Glyph",
+    name: "glyph",
+    field: "addr",
+    format: "col-lg-3 col-md-4 col-sm-6 col-14 txt-inp-def h5 text-center glyph"
+}, {
+    title: "System",
+    name: "sys",
     field: "system",
-    format: "col-lg-2 col-md-4 col-7 txt-inp-def"
+    format: "col-lg-2 col-md-8 col-sm-6 col-7 txt-inp-def text-center"
 }, {
-    name: "Region",
+    title: "Region",
+    name: "reg",
     field: "region",
-    format: "col-lg-2 col-md-4 col-7"
+    format: "col-lg-2 col-md-3 col-6 text-center"
+}, {
+    name: "newrow",
+}, {
+    title: "&nbsp;&nbsp;&nbsp;--&nbsp;Exit",
+    name: "blank",
+    format: "col-lg-4 col-md-6 col-7"
+}, {
+    name: "x-addr",
+    field: "addr",
+    format: "col-lg-3 col-md-3 col-sm-8 col-14 text-center monospace"
+}, {
+    name: "blank",
+    format: "col-lg-3 col-md-4 col-sm-1 col-1"
+}, {
+    name: "x-sys",
+    field: "system",
+    format: "col-lg-2 col-md-8 col-sm-6 col-5 text-center"
+}, {
+    name: "x-reg",
+    field: "region",
+    format: "col-lg-2 col-md-3 col-sm-6 col-7 text-center"
 }, ]
 
 blackHoleSuns.prototype.displayResults = function (routes) {
@@ -332,20 +362,24 @@ blackHoleSuns.prototype.displayResults = function (routes) {
         <div id="block-rindex" class="container-flex hidden">`
     const row = `<div id="id-addr" class="row" onclick="mapRow(this)">`
     const itm = `<div id="itm-field" class="format">title</div>`
-    const end = `</div>`
+    const enddiv = `</div>`
     let h = ""
 
     for (let f of restable) {
-        let l = /field/ [Symbol.replace](itm, f.field)
-        l = /format/ [Symbol.replace](l, f.format)
-        l = /txt-inp-def/ [Symbol.replace](l, "")
-        l = /h4/ [Symbol.replace](l, "")
-        l = /title/ [Symbol.replace](l, f.name)
-        h += l
+        if (f.name === "newrow")
+            break
+        else {
+            let l = /field/ [Symbol.replace](itm, f.name)
+            l = /format/ [Symbol.replace](l, f.format)
+            l = /txt-inp-def/ [Symbol.replace](l, "")
+            l = /h4/ [Symbol.replace](l, "")
+            l = /title/ [Symbol.replace](l, f.title)
+            h += l
+        }
     }
 
     hdr.empty()
-    hdr.append(h)
+    hdr.append(h + enddiv)
 
     let idx = 0
 
@@ -359,77 +393,102 @@ blackHoleSuns.prototype.displayResults = function (routes) {
         let b = false
         let poi = 0
 
-        for (let i = 0; i < route.length; ++i) {
+        for (let i = 1; i < route.length; ++i) {
             let r = route[i]
-            let n = route[i + 1]
-            let a = bhs.xyzToAddress(r.coords)
             let finished = false
 
-            let l = /addr/ [Symbol.replace](row, a)
+            let l = /addr/ [Symbol.replace](row, r.what === "teleport" ? r.exit.addr : r.addr)
             l = /row/ [Symbol.replace](l, i === 0 ? "row border-top-3" : "row")
             h += /row/ [Symbol.replace](l, b ? "row bkg-vlight-gray" : "row")
             b = !b
-            let warp = false
+            let warp
 
             for (let f of restable) {
                 let end = false
-                let l = /field/ [Symbol.replace](itm, f.field)
+                let l = /field/ [Symbol.replace](itm, f.name)
                 l = /format/ [Symbol.replace](l, f.format)
 
                 switch (f.name) {
-                    case "Description":
+                    case "desc":
                         warp = false
-
                         switch (r.what) {
-                            case "arrived":
+                            case "end":
                                 l = /title/ [Symbol.replace](l, "<h5>Arrived at destination</h5>")
                                 end = true
                                 finished = true
                                 break
                             case "poi":
-                                l = /title/ [Symbol.replace](l, "<div class='row text-danger h6'><h6>POI: " + r.name + "</div>" + "<div class='text-danger'>Warp " + r.dist.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "ly or " + r.jumps + " jumps to</div>")
+                                l = /title/ [Symbol.replace](l, "<div class='row text-danger h6'>POI: " + r.name + "</div>")
                                 poi++
                                 break
                             case "teleport":
                                 l = /title/ [Symbol.replace](l, "<div class='row'>Teleport to&nbsp;&nbsp;<div class='h6 txt-inp-def'>" + r.region + "</div></div>")
+                                r = r.exit
                                 break
                             case "bh":
-                                l = /title/ [Symbol.replace](l, "Transit black hole, exits at")
+                                if (r.dist === 0)
+                                    l = /title/ [Symbol.replace](l, "Transit black hole")
+                                else {
+                                    l = /title/ [Symbol.replace](l, "Warp to black hole")
+                                    warp = true
+                                }
                                 break
                             case "warp":
-                                l = /title/ [Symbol.replace](l, "Warp " + r.dist.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "ly or " + r.jumps + " jumps to")
+                                l = /title/ [Symbol.replace](l, "Warp to")
                                 warp = true
                                 break
-                            case "loc":
+                            case "start":
                             default:
                                 l = ""
                                 end = true
                                 break
                         }
+                        break
 
-                        if (r.what !== "poi") {
-                            if (typeof n !== "undefined" && n.what === "poi")
-                                r = route[i + 2]
-                            else
-                                r = n
-                        }
+                    case "dist":
+                        if (typeof r.dist === "undefined" || r.dist === 0)
+                            l = /title/ [Symbol.replace](l, "")
+                        else
+                            l = /title/ [Symbol.replace](l, r.dist.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "ly or " + r.jumps + " jumps")
                         break
-                    case "Distance":
-                        l = /title/ [Symbol.replace](l, r.dist + " ly")
-                        break
-                    case "Glyph":
+
+                    case "glyph":
                         l = /title/ [Symbol.replace](l, r.what === "poi" || warp ? bhs.addrToGlyph(r[f.field]) : "")
                         break
-                    case "Coordinates":
+
+                    case "x-addr":
+                    case "addr":
                         l = /title/ [Symbol.replace](l, r[f.field])
                         break
-                    case "System":
+
+                    case "x-sys":
+                        l = /txt-inp-def/ [Symbol.replace](l, "")
+                    case "sys":
                         if (!warp)
                             l = /txt-inp-def/ [Symbol.replace](l, "")
-                        l = /title/ [Symbol.replace](l, r[f.field] ? r[f.field] : typeof r.name !== "undefined" && r.name ? r.name : "")
+                        l = /title/ [Symbol.replace](l, typeof r[f.field] !== "undefined" && r[f.field] ? r[f.field] : typeof r.name !== "undefined" && r.name ? r.name : "")
                         break
-                    case "Region":
-                        l = /title/ [Symbol.replace](l, typeof r.owner !== "undefined" && r.owner ? r.owner : r[f.field] ? r[f.field] : "")
+
+                    case "x-reg":
+                    case "reg":
+                        l = /title/ [Symbol.replace](l, typeof r.owner !== "undefined" && r.owner ? r.owner : typeof r[f.field] !== "undefined" && r[f.field] ? r[f.field] : "")
+                        break
+
+                    case "blank":
+                        l = /title/ [Symbol.replace](l, typeof f.title !== "undefined" ? f.title : "")
+                        break
+
+                    case "newrow":
+                        if (typeof r.exit === "undefined") {
+                            l = ""
+                            end = true
+                        } else if (r.what !== "teleport") {
+                            r = r.exit
+                            h += enddiv
+                            l = /addr/ [Symbol.replace](row, r.addr)
+                            l = /row/ [Symbol.replace](l, !b ? "row bkg-vlight-gray border-top border-white" : "row border-top")
+                        } else
+                            l = ""
                         break
                 }
 
@@ -438,28 +497,27 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                     break
             }
 
-            h += end
+            h += enddiv
             if (finished)
                 break
         }
 
-        idx++
-        loc.append(h + end)
+        loc.append(h + enddiv)
 
         const res = `
-            <div class="col-3">
+            <div class="col-md-4 col-14">
                 <div class="row h5">title</div>
             </div>
-            <div class="col-11 clr-creme">
+            <div class="col-md-10 col-14 clr-creme">
                 <div id="res-row" class="row"></div>
             </div>`
 
-        const resrow = `<div class="col-sm-7 col-14">title</div>`
+        const resrow = `<div class="col-md-7 col-14">title</div>`
 
         const r = route[route.length - 1]
         h = /title/ [Symbol.replace](res, typeof r.name !== "undefined" ? r.name : typeof r.system !== "undefined" ? r.system : r.addr)
 
-        const rloc = loc.find("#id-r" + (idx - 1))
+        const rloc = loc.find("#id-r" + idx)
         rloc.html(h)
 
         let dist = parseInt(bhs.calcDistXYZ(route[0].coords, route[route.length - 1].coords) * 400)
@@ -482,6 +540,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
             h += /title/ [Symbol.replace](resrow, poi + " additional POI along route.")
 
         rloc.find("#res-row").append(h)
+        idx++
     }
 }
 

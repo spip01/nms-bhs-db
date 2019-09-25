@@ -148,7 +148,13 @@ h7 {
 }
 
 .glyph {
-    font-family: "glyph";
+    font-family: "glyph" !important;
+    font-weight: bold;
+}
+
+.monospace {
+    font-family: "Courier New" !important;
+    font-weight: bold;
 }
 
 body {
@@ -194,6 +200,10 @@ body {
 
 .border-3 {
     border-width: 3px !important;
+}
+
+.border-white {
+    border-color: white;
 }
 
 .scroll {

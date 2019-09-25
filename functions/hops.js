@@ -201,6 +201,7 @@ function calcJumps(routes, data) {
         const last = r.route[r.route.length - 1]
         let jumps = 0
         r.bh = 0
+        let le = null
 
         for (let i = 0; i < r.route.length; ++i) {
             const l = r.route[i]
@@ -212,25 +213,32 @@ function calcJumps(routes, data) {
             }
 
             const n = i < r.route.length - 1 ? r.route[i + 1] : null
-            const ly = n ? Math.ceil(calcDistXYZ(n.coords, l.coords) * 400) : 0
+            const ly = le ? Math.ceil(calcDistXYZ(le.coords, l.coords) * 400) : 0
             const j = Math.max(Math.ceil(ly / data.range), 1)
 
             l.jumps = 0
             l.dist = 0
 
-            if (last.addr === l.addr && ly === 0)
-                l.what = "arrived"
+            if (i === 0)
+                l.what = "start"
+            else if (last.addr === l.addr && ly === 0)
+                l.what = "end"
             else if (l.system === "Teleport") {
                 l.what = "teleport"
                 l.jumps = 1
+                l.exit = n
                 jumps = 1
-            } else if (n && (n.system === "Teleport" || l.addr === n.addr))
-                l.what = "loc"
-            else if (l.coords.s === 0x79) {
+                le = n
+                i++
+            } else if (l.coords.s === 0x79) {
                 l.what = "bh"
-                l.jumps = 1
-                jumps++
+                l.jumps = j
+                l.dist = ly
+                l.exit = n
+                jumps += j + 1
                 r.bh++
+                le = n
+                i++
             } else {
                 l.what = "warp"
                 l.jumps = j
