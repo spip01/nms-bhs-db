@@ -55,9 +55,9 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
     $("#save").removeAttr("disabled")
 }
 
-blackHoleSuns.prototype.setAdmin = async function () {
+blackHoleSuns.prototype.setAdmin = async function (clear) {
     bhs.updateUser({
-        role: bhs.user.role === "admin" ? "user" : "admin"
+        role: typeof clear !== "undefined" || bhs.user.role === "admin" ? "user" : "admin"
     })
 }
 

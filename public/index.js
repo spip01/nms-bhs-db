@@ -378,7 +378,7 @@ blackHoleSuns.prototype.clearPanel = function (d) {
     pnl.find("#row-valid").hide()
 }
 
-blackHoleSuns.prototype.extractEntry = async function (idx, batch) {
+blackHoleSuns.prototype.extractEntry = async function (idx) {
     let pnl = $("#panels")
     let loc = pnl.find("#" + panels[idx].id)
 
@@ -390,11 +390,11 @@ blackHoleSuns.prototype.extractEntry = async function (idx, batch) {
 
         let addr = loc.find("#id-addr").val()
         if (lastentry.addr != addr) {
-            bhs.deleteEntry(lastentry, batch)
+            ok = bhs.deleteEntry(lastentry)
             bhs.status("change address " + lastentry.addr)
 
             if (listentry.basename) {
-                bhs.deleteBase(lastentry.addr, batch)
+                ok = bhs.deleteBase(lastentry.addr)
                 bhs.status("change base address" + lastentry.addr)
             }
         }
@@ -455,7 +455,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx, batch) {
             ok = bhs.validateDist(entry) === ""
 
         if (entry.blackhole && ok)
-            ok = bhs.extractEntry(pnlBottom, batch)
+            ok = bhs.extractEntry(pnlBottom)
 
         if (ok) {
             if (bhs.contest)
@@ -465,8 +465,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx, batch) {
             delete entry.owned
             delete entry.basename
 
-            bhs.updateEntry(entry, batch)
-            bhs.status("save " + entry.addr)
+            ok = bhs.updateEntry(entry)
 
             if (hasbase) {
                 entry._name = bhs.user._name
@@ -480,8 +479,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx, batch) {
                 entry.owned = loc.find("#btn-Owned").text().stripNumber()
                 entry.owned = entry.owned !== "" ? entry.owned : "mine"
                 entry.sharepoi = loc.find("#ck-sharepoi").prop("checked")
-                bhs.updateBase(entry)
-                bhs.status("save base " + entry.addr)
+                ok = bhs.updateBase(entry)
             }
         }
     }
@@ -492,20 +490,8 @@ blackHoleSuns.prototype.extractEntry = async function (idx, batch) {
 blackHoleSuns.prototype.save = async function () {
     $("#status").empty()
 
-    let batch = bhs.fs.batch()
-
-    let ok = await bhs.saveUser(batch)
-
-    if (ok)
-        ok = bhs.extractEntry(pnlTop, batch)
-
-    if (ok)
-        await batch.commit().then(() => {
-            bhs.status("Save Successful")
-        }).catch(err => {
-            bhs.status("Error: " + err.code)
-            console.log(err)
-        })
+    if (await bhs.saveUser())
+        bhs.extractEntry(pnlTop)
 }
 
 blackHoleSuns.prototype.displayCalc = function () {

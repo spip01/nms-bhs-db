@@ -191,10 +191,12 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
 
     $("#status").empty()
     $("#filestatus").empty()
+    bhs.setAdmin(false)
 
     let check = id == "fbtn-check"
 
     reader.onload = async function () {
+
         log._name = bhs.user._name
         log.galaxy = bhs.user.galaxy
         log.platform = bhs.user.platform

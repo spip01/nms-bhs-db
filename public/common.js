@@ -324,74 +324,73 @@ blackHoleSuns.prototype.getEntryByConnection = async function (addr) {
     })
 }
 
-blackHoleSuns.prototype.updateEntry = async function (entry, batch) {
+blackHoleSuns.prototype.updateEntry = async function (entry) {
     entry.modded = firebase.firestore.Timestamp.now()
 
     if (typeof entry.created === "undefined")
         entry.created = firebase.firestore.Timestamp.now()
 
-    let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
-    if (batch)
-        batch.set(ref, entry, {
-            merge: true
-        })
-    else
-        await ref.set(entry, {
-            merge: true
-        }).then(() => {
-            bhs.status(entry.addr + " saved.")
-        }).catch(err => {
-            bhs.status("ERROR: " + err.code)
-            console.log(err)
-        })
+    await ref.set(entry, {
+        merge: true
+    }).then(() => {
+        bhs.status(entry.addr + " saved.")
+        return true
+    }).catch(err => {
+        if (err.code === "permission-denied") {
+            ref.set(entry, {
+                mergeFields: ["life", "econ"]
+            }).then(() => {
+                bhs.status(entry.addr + " (lifeform & economy) saved.")
+                return true
+            }).catch(err => {
+                bhs.status(entry.addr + " ERROR-: " + err.code)
+                return false
+            })
+        } else {
+            bhs.status(entry.addr + " ERROR: " + err.code)
+            return false
+        }
+    })
 }
 
-blackHoleSuns.prototype.updateBase = async function (entry, batch) {
+blackHoleSuns.prototype.updateBase = async function (entry) {
     entry.time = firebase.firestore.Timestamp.now()
 
     let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr)
-    if (batch)
-        batch.set(ref, entry, {
-            merge: true
-        })
-    else
-        await ref.set(entry, {
-            merge: true
-        }).then(() => {
-            bhs.status(entry.addr + " base saved.")
-        }).catch(err => {
-            bhs.status("ERROR: " + err.code)
-            console.log(err)
-        })
+    await ref.set(entry, {
+        merge: true
+    }).then(() => {
+        bhs.status(entry.addr + " base saved.")
+        return true
+    }).catch(err => {
+        bhs.status(entry.addr + " ERROR: " + err.code)
+        return false
+    })
 }
 
-blackHoleSuns.prototype.deleteBase = async function (addr, batch) {
+blackHoleSuns.prototype.deleteBase = async function (addr) {
     if (addr) {
         let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform, addr)
-        if (batch)
-            batch.delete(ref)
-        else
-            await ref.delete().then(() => {
-                bhs.status(addr + " base deleted.")
-            }).catch(err => {
-                bhs.status("ERROR: " + err.code)
-                console.log(err)
-            })
+        await ref.delete().then(() => {
+            bhs.status(addr + " base deleted.")
+            return true
+        }).catch(err => {
+            bhs.status(addr + " ERROR: " + err.code)
+            return false
+        })
     }
 }
 
-blackHoleSuns.prototype.deleteEntry = async function (entry, batch) {
+blackHoleSuns.prototype.deleteEntry = async function (entry) {
     if (entry) {
         let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
-        if (batch)
-            batch.delete(ref)
-        else
-            await ref.delete().then(() => {
-                bhs.status(entry.addr + " deleted.")
-            }).catch(err => {
-                bhs.status("ERROR: " + err.code)
-                console.log(err)
-            })
+        await ref.delete().then(() => {
+            bhs.status(entry.addr + " deleted.")
+            return true
+        }).catch(err => {
+            bhs.status(entry.addr + " ERROR: " + err.code)
+            return false
+        })
     }
 }
 
@@ -455,12 +454,13 @@ blackHoleSuns.prototype.assignUid = async function (user, newuser) {
         }
 
         return Promise.all(pr).then(() => {
-            console.log("done")
+            return bhs.recalcTotals()
         }).catch(err => {
             bhs.status("ERROR: " + err.code)
             console.log(err)
         })
     }).catch(err => {
+        bhs.status("ERROR: " + JSON.stringify(err))
         console.log(err)
     })
 }
@@ -546,63 +546,6 @@ blackHoleSuns.prototype.backupBHS = async function () {
         })
     return
 }
-
-// blackHoleSuns.prototype.checkDistance = async function () {
-//     let t = {}
-//     let start = 15000
-//     let startOffset = 8600
-//     let max = bhs.calcDist("07FF:007F:0000:0000")
-
-//     let ref = bhs.getStarsColRef()
-//     await ref.get().then(async snapshot => {
-//         let pr = []
-
-//         for (let i = 0; i < snapshot.docs.length; ++i) {
-//             let g = snapshot.docs[i].data()
-
-//             for (let j = 0; j < platformList.length; ++j) {
-//                 let ref = bhs.getStarsColRef(g.name, platformList[j].name)
-//                 ref = ref.where("blackhole", "==", true)
-//                 pr.push(ref.get().then(async snapshot => {
-//                     if (snapshot.size > 0) {
-//                         console.log(snapshot.docs[0].ref.parent.path, snapshot.size)
-
-//                         let r = e.dist
-//                         let x = bhs.calcDist(e.connection)
-
-//                         let c = r - start + startOffset
-
-//                         if (r > 7500 && r < max && Math.abs(x - c) > 2000) {
-//                             console.log(e.addr)
-//                             list[e.connection] = {}
-//                            *** list[e.connection].bh = e
-//                            *** list[e.connection].bh.calc = c
-//                            *** list[e.connection].bh.actual = x
-
-//                             let ref = bhs.getStarsColRef("Euclid", "PC-XBox", e.connection)
-//                             await ref.get().then(doc => {
-//                                 if (doc.exists) {
-//                                     list[e.connection].exit = doc.data()
-//                                 }
-//                             }).catch(err=>{
-//     console.log(err)
-// })
-//                         }
-//                     }
-//                 }).catch(err=>{
-//     console.log(err)
-// }))
-//             }
-//         }
-
-//         await Promise.all(pr).then((res) => {
-//             console.log("done "+res.length)
-//             return res
-//         })
-//     }).catch(err=>{
-//     console.log(err)
-// })
-// }
 
 blackHoleSuns.prototype.genPOI = function () {
     var fcn = firebase.functions().httpsCallable('genPOI')
