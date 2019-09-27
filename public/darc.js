@@ -180,7 +180,7 @@ blackHoleSuns.prototype.select = function (id) {
         bhs.showOrg(name)
     }
 
-    saveDarcAddrSE()
+    bhs.saveDarcAddrSE()
 }
 
 blackHoleSuns.prototype.switchSE = function () {
@@ -190,7 +190,7 @@ blackHoleSuns.prototype.switchSE = function () {
     $("#id-start").val(e)
     $("#id-end").val(s)
 
-    saveDarcAddrSE()
+    bhs.saveDarcAddrSE()
 }
 
 blackHoleSuns.prototype.saveDarcSettings = function (evt) {
@@ -274,7 +274,7 @@ blackHoleSuns.prototype.showOrg = function (name) {
                 loc.find("#img-pic").attr("src", url)
             })
         }
-    })
+    }).catch(err => console.log(err.code))
 }
 
 blackHoleSuns.prototype.calcroute = async function (proximity) {
