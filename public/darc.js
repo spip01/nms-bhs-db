@@ -179,6 +179,8 @@ blackHoleSuns.prototype.select = function (id) {
         $("#btn-Points-Of-Interest").text("")
         bhs.showOrg(name)
     }
+
+    saveDarcAddrSE()
 }
 
 blackHoleSuns.prototype.switchSE = function () {
@@ -187,6 +189,8 @@ blackHoleSuns.prototype.switchSE = function () {
 
     $("#id-start").val(e)
     $("#id-end").val(s)
+
+    saveDarcAddrSE()
 }
 
 blackHoleSuns.prototype.saveDarcSettings = function (evt) {
@@ -198,6 +202,16 @@ blackHoleSuns.prototype.saveDarcSettings = function (evt) {
         let val = type === "checkbox" ? $(evt).prop("checked") : $(evt).val()
         user.darcSettings[id] = val
 
+        bhs.updateUser(user)
+    }
+}
+
+blackHoleSuns.prototype.saveDarcAddrSE = function () {
+    if (bhs.user.uid !== "") {
+        let user = {}
+        user.darcSettings = {}
+        user.darcSettings.start = $("#id-start").val()
+        user.darcSettings.end = $("#id-end").val()
         bhs.updateUser(user)
     }
 }
@@ -440,7 +454,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                             case "start":
                                 l = /title/ [Symbol.replace](l, "Start")
                                 break
-                          default:
+                            default:
                                 l = ""
                                 end = true
                                 break
