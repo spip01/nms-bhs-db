@@ -368,7 +368,7 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
             let t = incTotals(e, 1)
             p.push(applyAllTotals(t))
 
-            if (e.blackhole) 
+            if (e.blackhole)
                 p.push(saveChange(e, "create"))
         }
 
@@ -420,7 +420,7 @@ exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/
             let t = incTotals(e, -1)
             p.push(applyAllTotals(t))
 
-            if (e.blackhole) 
+            if (e.blackhole)
                 p.push(saveChange(e, "delete"))
 
             p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
@@ -701,33 +701,7 @@ exports.getTotals = functions.https.onCall((data, context) => {
         }
     })
 })
-/*
-exports.saveEntry = functions.https.onCall(async (data, context) => {
-    for (let e of data.entries) {
-        let ref = admin.firestore.doc("stars5/" + e.galaxy + "/" + e.platform + "/" + e.addr)
-        let doc = await ref.get()
 
-        if (doc.exists) {
-            let d = doc.data()
-
-            if (e.uid === d.uid)
-                ok = true
-            else if (e.sys !== d.sys || e.reg !== d.reg || (typeof e.blackhole === "undefined" || e.blackhole && e.connection !== d.connection))
-                ok = false
-            else if (typeof d.life === "undefined" && typeof e.life !== "undefined" || typeof d.econ === "undefined" && typeof e.econ !== "undefined")
-                ok = true
-
-            e.uid = d.uid
-            e._name = d._name
-
-            if (!ok) {
-                //check admin
-            }
-        } else
-            ok = true
-    }
-})
-*/
 function mergeObjects(o, n) {
     if (typeof n !== "object") {
         o = n
@@ -735,10 +709,8 @@ function mergeObjects(o, n) {
         if (typeof o === "undefined")
             o = {}
         let l = Object.keys(n)
-        for (let i = 0; i < l.length; ++i) {
-            let x = l[i]
+        for (let x of l)
             o[x] = mergeObjects(o[x], n[x])
-        }
     }
 
     return o
@@ -756,10 +728,8 @@ function addObjects(o, n) {
         if (typeof o === "undefined")
             o = {}
         let l = Object.keys(n)
-        for (let i = 0; i < l.length; ++i) {
-            let x = l[i]
+        for (let x of l)
             o[x] = addObjects(o[x], n[x])
-        }
     }
 
     return o

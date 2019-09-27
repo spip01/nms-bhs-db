@@ -19,11 +19,10 @@ service cloud.firestore {
       allow write: if hasRole(database, request, ["admin"])
     }
 
-    // 01BA:007C:0B08:0079
     match /stars5/{document=**} {
       allow read: if isLoggedIn(request)
       allow create: if isLoggedIn(request)
-      allow update: if isOwner(request, resource) || modsFields5(request, resource) || isAdmin(database, request)
+      allow update: if isOwner(request, resource) || checkFields(request, resource) || isAdmin(database, request)
       allow delete: if isOwner(request, resource) || isAdmin(database, request)
     }
 
@@ -54,7 +53,7 @@ service cloud.firestore {
     match /nmsce/{document=**} {
       allow read: if isLoggedIn(request)
       allow create: if isLoggedIn(request)
-      allow update: if isOwner(request, resource) || modsFieldsCE(request, resource) || isAdmin(database, request)
+      allow update: if isOwner(request, resource) || isAdmin(database, request)
       allow delete: if isOwner(request, resource) || isAdmin(database, request)
     }
   }
@@ -77,18 +76,10 @@ function isAdmin(db, req) {
     get(/databases/$(db)/documents/users/$(req.auth.uid)).data.role == "admin"
 }
 
-function modsFields5(req, res) {
-  return modsField(req, res, "valid") ||  modsField(req, res, "invalid") || addsField(req, res, "life") || addsField(req, res, "econ")
-}
-
-function modsFieldsCE(req, res) {
-  return modsField(req, res, "valid") ||  modsField(req, res, "invalid") || modsField(req, res, "count")
-}
-
-function modsField(req, res, field) {
-   return req.data[field] != res.data[field]
-}
-
-function addsField(req, res, field) {
-   return req.data[field] != null && res.data[field] == null
+// request.resource - future
+// resource - existing
+function checkFields(req, res) {
+  return req.resource.data.uid == res.data.uid &&
+    req.resource.data.sys == res.data.sys &&
+    req.resource.data.reg == res.data.reg
 }
