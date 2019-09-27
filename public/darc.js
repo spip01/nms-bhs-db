@@ -301,7 +301,6 @@ blackHoleSuns.prototype.calcroute = async function (proximity) {
                 bhs.status("ERROR: " + res.data.err)
             else {
                 bhs.route = res.data.route
-                bhs.status("setup " + res.data.setup)
                 bhs.status("calc " + res.data.calc)
                 bhs.displayResults(bhs.route)
             }
