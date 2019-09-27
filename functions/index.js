@@ -24,7 +24,6 @@ exports.getDARC = functions.https.onRequest((request, response) => {
         const bucket = admin.storage().bucket("nms-bhs.appspot.com")
 
         let fname = 'darc/' + request.query.g + "-" + request.query.p + ".json"
-        console.log(fname)
         let f = bucket.file(fname)
         return f.exists().then(data => {
                 if (data[0]) {
@@ -47,7 +46,6 @@ exports.getPOI = functions.https.onRequest((request, response) => {
         const bucket = admin.storage().bucket("nms-bhs.appspot.com")
 
         let fname = 'darc/poi/' + request.query.g + "-" + request.query.p + ".json"
-        console.log(fname)
         let f = bucket.file(fname)
         return f.exists().then(data => {
                 if (data[0]) {
@@ -85,7 +83,6 @@ exports.getGPList = functions.https.onRequest((request, response) => {
 
             response.status(200).send(out)
         }).catch(err => {
-            console.log(JSON.stringify(err))
             response.status(503).send(JSON.stringify(err))
         })
     })
@@ -164,8 +161,6 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
                                 let e = snapshot.docs[0].data()
                                 let fname = 'darc/' + e.galaxy + "-" + e.platform + ".json"
 
-                                console.log(e.galaxy, e.platform, snapshot.size)
-
                                 let f = bucket.file(fname)
                                 let s = f.createWriteStream({
                                     gzip: true,
@@ -173,15 +168,12 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
 
                                 p.push(new Promise((resolve, reject) => {
                                     s.on('finish', () => {
-                                        console.log(fname, snapshot.size, "finished")
                                         resolve(fname + " " + snapshot.size)
                                     })
                                 }))
 
                                 for (let doc of snapshot.docs) {
                                     let e = doc.data()
-                                    e = await checkOldEntry(e, doc.ref)
-
                                     let out = stringify(e)
                                     if (out)
                                         s.write(out)
@@ -209,7 +201,7 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
                 ok: res
             }
         }).catch(err => {
-            console.log("error", err)
+            console.log("error", JSON.stringify(err))
             return {
                 err: err
             }
@@ -217,50 +209,9 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
     })
 })
 
-async function checkOldEntry(e, eref) {
-    if (typeof e.x === "undefined") {
-        let ref = admin.firestore().doc("stars5/" + e.galaxy + "/" + e.platform + "/" + e.connection)
-        e = await ref.get().then(async doc => {
-            if (doc.exists) {
-                let c = doc.data()
-                c.blackhole = false
-                c.deadzone = false
-
-                await doc.ref.set(c)
-
-                e.x = {}
-                e.x.sys = typeof c.sys !== "undefined" ? c.sys : ""
-                e.x.reg = typeof c.reg !== "undefined" ? c.reg : ""
-                e.x.life = typeof c.life !== "undefined" ? c.life : ""
-                e.x.econ = typeof c.econ !== "undefined" ? c.econ : ""
-                e.x.addr = c.addr
-                e.x.dist = c.dist
-                e.x.xyzs = c.xyzs
-
-                delete e.conxyzs
-                delete e.valid
-
-                await eref.set(e)
-                console.log("fixed " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
-            }
-
-            return e
-        })
-    }
-
-    return e
-}
-
 function stringify(e) {
-    if (typeof e.x === "undefined") {
-        console.log(e.galaxy, e.platform, e.addr, "x not defined")
+    if (typeof e.x === "undefined" || typeof e.sys === "undefined" && typeof e.reg === "undefined")
         return null
-    }
-
-    if (typeof e.sys === "undefined" && typeof e.reg === "undefined") {
-        console.log(e.galaxy, e.platform, e.addr, "sys/reg not found")
-        return null
-    }
 
     return JSON.stringify([e.addr, e.reg, e.sys, e.x.addr, e.x.reg, e.x.sys]) + "\n"
 }
@@ -379,12 +330,10 @@ function applyEdits(ts, elist) {
 
             switch (ed.what) {
                 case "delete":
-                    console.log("delete", ed.addr)
                     line = null
                     break
                 case "update":
                 case "create":
-                    console.log(ed.what, ed.addr)
                     delete ed.what
                     line = stringify(ed)
                     break
@@ -394,7 +343,6 @@ function applyEdits(ts, elist) {
         }
 
         if (line) {
-            console.log(line)
             ts.write(line + "\n")
         }
 
@@ -420,12 +368,8 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
             let t = incTotals(e, 1)
             p.push(applyAllTotals(t))
 
-            if (e.blackhole) {
-                e = await checkOldEntry(e, doc.ref)
-
-                console.log("create " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+            if (e.blackhole) 
                 p.push(saveChange(e, "create"))
-            }
         }
 
         p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
@@ -453,9 +397,6 @@ exports.systemUpdate = functions.firestore.document("stars5/{galaxy}/{platform}/
             if (!deepEqual(e, b)) {
                 let e = change.after.data()
                 if (e.blackhole || e.deadzone) {
-                    e = await checkOldEntry(e, change.after.ref)
-
-                    console.log("update " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
                     p.push(saveChange(e, "update"))
                 }
 
@@ -479,10 +420,8 @@ exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/
             let t = incTotals(e, -1)
             p.push(applyAllTotals(t))
 
-            if (e.blackhole) {
-                console.log("delete " + e._name + " " + e.galaxy + " " + e.platform + " " + e.addr)
+            if (e.blackhole) 
                 p.push(saveChange(e, "delete"))
-            }
 
             p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
                 update: e.modded
@@ -525,8 +464,6 @@ async function backupCols(ref, now) {
                 fs.write(JSON.stringify(doc.data()) + "\n")
 
             fs.end()
-
-            console.log(fname)
         }
     })
 
@@ -568,7 +505,6 @@ exports.recalcTotals = functions.https.onCall(async (data, context) => {
             let ref = pref.where("blackhole", "==", true)
             p.push(ref.get().then(snapshot => {
                 if (snapshot.size > 0) {
-                    console.log("bh", snapshot.docs[0].ref.path, snapshot.size)
                     let totals = {}
                     for (let e of snapshot.docs)
                         totals = incTotals(e.data(), 1, totals)

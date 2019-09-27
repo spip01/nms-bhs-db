@@ -88,22 +88,16 @@ exports.genRoute = async function (data) {
         else
             dest.push(end)
 
-        console.log("hops", data.galaxy, data.platform, hops.length)
-        console.log("poi", data.galaxy, data.platform, poi.length)
-
         let calc = dc.dijkstraCalculator(hops, data.range, "time")
 
         let stime = new Date().getTime() - now
-        console.log("setup", stime)
         now = new Date().getTime()
 
         let routes = calc.findRoutes(start, dest)
         let ctime = new Date().getTime() - now
-        console.log("calc", ctime)
 
         routes = calcJumps(routes, data)
         let ptime = new Date().getTime() - now
-        console.log("post", ptime)
 
         return {
             route: routes,
@@ -180,6 +174,9 @@ function getHops(gal, plat) {
         })
         .catch(err => {
             console.log(JSON.stringify(err))
+            return {
+                err: JSON.stringify(err)
+            }
         })
 }
 
@@ -409,6 +406,9 @@ function getPOI(gal, plat) {
         })
         .catch(err => {
             console.log(JSON.stringify(err))
+            return {
+                err: JSON.stringify(err)
+            }
         })
 }
 
