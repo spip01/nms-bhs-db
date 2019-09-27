@@ -393,7 +393,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
         let b = false
         let poi = 0
 
-        for (let i = 1; i < route.length; ++i) {
+        for (let i = 0; i < route.length; ++i) {
             let r = route[i]
             let finished = false
 
@@ -422,11 +422,11 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                                 poi++
                                 break
                             case "teleport":
-                                l = /title/ [Symbol.replace](l, "<div class='row'>Teleport to&nbsp;&nbsp;<div class='h6 txt-inp-def'>" + r.region + "</div></div>")
+                                l = /title/ [Symbol.replace](l, "<div class='row'>Teleport to&nbsp;&nbsp;<div class='h6 txt-inp-def'>" + r.name + "</div></div>")
                                 r = r.exit
                                 break
                             case "bh":
-                                if (r.dist === 0)
+                                if (r.dist === 0 && r.addr === r.exit.addr)
                                     l = /title/ [Symbol.replace](l, "Transit black hole")
                                 else {
                                     l = /title/ [Symbol.replace](l, "Warp to black hole")
@@ -438,7 +438,9 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                                 warp = true
                                 break
                             case "start":
-                            default:
+                                l = /title/ [Symbol.replace](l, "Start")
+                                break
+                          default:
                                 l = ""
                                 end = true
                                 break
@@ -446,8 +448,10 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                         break
 
                     case "dist":
-                        if (typeof r.dist === "undefined" || r.dist === 0)
+                        if (typeof r.dist === "undefined" || i === 0)
                             l = /title/ [Symbol.replace](l, "")
+                        else if (r.dist === 0)
+                            l = /title/ [Symbol.replace](l, "Same Region")
                         else
                             l = /title/ [Symbol.replace](l, r.dist.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "ly or " + r.jumps + " jumps")
                         break

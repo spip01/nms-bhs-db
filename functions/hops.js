@@ -32,9 +32,12 @@ exports.genRoute = async function (data) {
     if (data.user !== "" && data.usebases)
         p.push(addBases(data.user, data.start, data.galaxy, data.platform))
 
+    if (data.start !== "" && data.start !== "0000:0000:0000:0000")
+        p.push(getAddrEntry("start", data.start, data.galaxy, data.platform))
+
     if (!data.proximity) {
         if (data.end !== "" && data.end !== "0000:0000:0000:0000")
-            p.push(getAddrEntry(data.end, data.galaxy, data.platform))
+            p.push(getAddrEntry("end", data.end, data.galaxy, data.platform))
         else
             return {
                 err: "No destination specified."
@@ -65,9 +68,13 @@ exports.genRoute = async function (data) {
                     case "poi":
                         poi = r.list
                         break
-                    case "addr":
+                    case "end":
                         end.system = r.entry.sys
                         end.region = r.entry.reg
+                        break
+                    case "start":
+                        start.system = r.entry.sys
+                        start.region = r.entry.reg
                         break
                     case "bases":
                         hops = hops.concat(r.list)
@@ -176,13 +183,13 @@ function getHops(gal, plat) {
         })
 }
 
-function getAddrEntry(addr, gal, plat) {
+function getAddrEntry(what, addr, gal, plat) {
     let ref = admin.firestore().collection("stars5/" + gal + "/" + plat)
     ref = ref.where("addr", "==", addr)
     return ref.get().then(async snapshot => {
         if (!snapshot.empty)
             return {
-                what: "addr",
+                what: what,
                 entry: snapshot.docs[0].data()
             }
         else return {
@@ -223,8 +230,7 @@ function calcJumps(routes, data) {
                 l.what = "start"
             else if (last.addr === l.addr && ly === 0)
                 l.what = "end"
-            else if (l.system === "Teleport") {
-                l.what = "teleport"
+            else if (l.what === "teleport") {
                 l.jumps = 1
                 l.exit = n
                 jumps = 1
@@ -315,8 +321,10 @@ function addBases(user, start, gal, plat) {
                         blackhole: {
                             coords: startcoords,
                             addr: start,
-                            region: e.basename,
-                            system: "Teleport",
+                            name: e.basename,
+                            region: e.reg,
+                            system: e.sys,
+                            what: "teleport",
                         },
                         exit: {
                             coords: dc.coordinates(e.addr),
