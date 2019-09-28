@@ -83,33 +83,162 @@
             <div class="row">
                 <div class="col-lg-7 col-12">
                     <div class="card card-body pad-bottom">
-                        <div class="card card-body pad-bottom">
-                            <div class="row">
-                                <div class="col-md-3 col-5 h6 txt-inp-def">Start Coordinates</div>
-                                <input id="id-saddr" class="rounded col-md-4 col-7" placeholder="0000:0000:0000:0000"
-                                    onchange="dispAddr(this)">
+                        <div id="id-addrInput" class="card card-body pad-bottom">
+                            <div id="w-start">
+                                <div class="row">
+                                    <div class="col-md-3 col-5 h6 txt-inp-def">Start Coordinates</div>
+                                    <input id="id-addr" class="rounded col-md-4 col-7" placeholder="0000:0000:0000:0000"
+                                        onchange="dispAddr(this)">
+                                    <div class="col-5">
+                                        <label class="h6 txt-inp-def">
+                                            <input id="ck-glyphs" type="checkbox" onchange="setGlyphInput()">
+                                            Input Glyphs
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-2 col-4 h6 text-right txt-inp-def">Portal</div>
+                                    <div class="col-md-10 col-8">
+                                        <div class="row">
+                                            <div id="id-glyph" class="col-md-9 col-12 h3 txt-inp-def glyph"></div>
+                                            <div id="id-hex" class="col-md-3 col-12 txt-inp-def"></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-2 col-4 h6 text-right txt-inp-def">Portal</div>
-                                <div class="col-md-10 col-8">
-                                    <div class="row">
-                                        <div id="id-sglyph" class="col-md-9 col-12 h3 txt-inp-def glyph"></div>
-                                        <div id="id-shex" class="col-md-3 col-12 txt-inp-def"></div>
+                            <div id="w-end">
+                                <div class="row">
+                                    <div class="col-md-3 col-5 h6 txt-inp-def">End Coordinates</div>
+                                    <input id="id-addr" class="rounded col-md-4 col-7" placeholder="0000:0000:0000:0000"
+                                        onchange="dispAddr(this)">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-2 col-4 h6 text-right txt-inp-def">Portal</div>
+                                    <div class="col-md-10 col-8">
+                                        <div class="row">
+                                            <div id="id-glyph" class="col-md-9 col-12 h3 txt-inp-def glyph"></div>
+                                            <div id="id-hex" class="col-md-3 col-12 txt-inp-def"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="id-glyphInput" class="card card-body pad-bottom hidden">
+                            <div id="w-start">
+                                <div class="row">
+                                    <div class="col-md-3 col-4 h6 txt-inp-def">Start Glyph</div>
+                                    <input id="id-glyph" class="rounded col-md-5 col-10 h4 glyph"
+                                        onchange="dispGlyph(this)">
+                                    <div class="col-4">
+                                        <label class="h6 txt-inp-def">
+                                            <input id="ck-glyphs" type="checkbox" onchange="setGlyphInput()">
+                                            Input Glyphs
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-14 text-center">
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">0</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">1</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">2</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">3</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">4</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">5</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">6</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">7</button>&nbsp
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-14 text-center">
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">8</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">9</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">A</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">B</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">C</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">D</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">E</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">F</button>&nbsp
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-2 col-4 h6 text-right txt-inp-def">Coords</div>
+                                    <div class="col-md-10 col-8">
+                                        <div class="row">
+                                            <div id="id-addr" class="col-md-9 col-12 txt-inp-def"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="row">
-                                <div class="col-md-3 col-5 h6 txt-inp-def">End Coordinates</div>
-                                <input id="id-eaddr" class="rounded col-md-4 col-7" placeholder="0000:0000:0000:0000"
-                                    onchange="dispAddr(this)">
-                            </div>
-                            <div class="row">
-                                <div class="col-md-2 col-4 h6 text-right txt-inp-def">Portal</div>
-                                <div class="col-md-10 col-8">
-                                    <div class="row">
-                                        <div id="id-eglyph" class="col-md-9 col-12 h3 txt-inp-def glyph"></div>
-                                        <div id="id-ehex" class="col-md-3 col-12 txt-inp-def"></div>
+                            <div id="w-end">
+                                <div class="row">
+                                    <div class="col-md-3 col-4 h6 txt-inp-def">End Glyph</div>
+                                    <input id="id-glyph" class="rounded col-md-5 col-10 h4 glyph"
+                                        onchange="dispGlyph(this)">
+                                </div>
+                                <div class="row">
+                                    <div class="col-14 text-center">
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">0</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">1</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">2</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">3</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">4</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">5</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">6</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">7</button>&nbsp
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-14 text-center">
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">8</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">9</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">A</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">B</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">C</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">D</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">E</button>&nbsp
+                                        <button type="button" class="btn-def btn btn-sm glyph"
+                                            onclick="addGlyph(this)">F</button>&nbsp
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-2 col-4 h6 text-right txt-inp-def">Coords</div>
+                                    <div class="col-md-10 col-8">
+                                        <div class="row">
+                                            <div id="id-addr" class="col-md-9 col-12 txt-inp-def"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -146,8 +275,8 @@
                             <div id="plot3d"></div>
                         </div>
                         <br>
-                        <button type="button" class="btn btn-sm btn-def text-center"
-                            onclick="zoom()">Toggle Zoom</button>
+                        <button type="button" class="btn btn-sm btn-def text-center" onclick="zoom()">Toggle
+                            Zoom</button>
                     </div>
                 </div>
             </div>

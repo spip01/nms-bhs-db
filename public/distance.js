@@ -4,27 +4,40 @@ $(document).ready(() => {
 })
 
 function dispAddr(evt) {
-    let saddr = $("#id-saddr").val()
-    let eaddr = $("#id-eaddr").val()
-    let range = $("#id-range").val()
+    let loc = $("#id-addrInput")
+    let gloc = $("#id-glyphInput")
+    let sloc = loc.find("#w-start")
+    let eloc = loc.find("#w-end")
+
+    let saddr = sloc.find("#id-addr").val()
+    let eaddr = eloc.find("#id-addr").val()
 
     if (saddr !== "") {
         saddr = reformatAddress(saddr)
-        $("#id-saddr").val(saddr)
         let glyph = addrToGlyph(saddr)
-        $("#id-sglyph").text(glyph)
-        $("#id-shex").text(glyph)
+
+        sloc.find("#id-addr").val(saddr)
+        sloc.find("#id-glyph").text(glyph)
+        sloc.find("#id-hex").text(glyph)
+
+        gloc.find("#w-start #id-addr").text(saddr)
+        gloc.find("#w-start #id-glyph").val(glyph)
     }
 
     if (eaddr !== "") {
         eaddr = reformatAddress(eaddr)
-        $("#id-eaddr").val(eaddr)
         let glyph = addrToGlyph(eaddr)
-        $("#id-eglyph").text(glyph)
-        $("#id-ehex").text(glyph)
-    }
+
+        eloc.find("#id-addr").val(eaddr)
+        eloc.find("#id-glyph").text(glyph)
+        eloc.find("#id-hex").text(glyph)
+ 
+        gloc.find("#w-end #id-addr").text(eaddr)
+        gloc.find("#w-end #id-glyph").val(glyph)
+   }
 
     if (saddr !== "" && eaddr != "") {
+        let range = $("#id-range").val()
         let dist = calcDist(saddr, eaddr)
         $("#id-dist").text(dist + " ly")
 
@@ -38,11 +51,41 @@ function dispAddr(evt) {
     }
 }
 
+function dispGlyph(evt){
+    let glyph = $(evt).val().toUpperCase()
+    $(evt).val(glyph)
+    let id = $(evt).closest("[id|='w']").prop("id")
+
+    let addr = glyphToAddr(glyph)
+    $("#id-addrInput #"+id+" #id-addr").val(addr)
+
+    dispAddr()
+}
+
+function setGlyphInput (evt) {
+    if ($("#id-glyphInput").is(":visible")) {
+        $("#id-glyphInput").hide()
+        $("#id-addrInput").show()
+        $("[id='ck-glyphs']").prop("checked", false)
+    } else {
+        $("#id-glyphInput").show()
+        $("#id-addrInput").hide()
+        $("[id='ck-glyphs']").prop("checked", true)
+    }
+}
+
+function addGlyph(evt){
+    let loc = $(evt).closest("[id|='w']").find("#id-glyph")
+    let a = loc.val() + $(evt).text()
+    loc.val(a)
+}
+
 function calcAngle(saddr, eaddr, xp, yp) {
     let zero = xyzToAddress({
         x: 2048,
         y: 128,
         z: 2048,
+        s: 0,
     })
 
     let a = calcDist(zero, eaddr, xp, yp)
@@ -110,11 +153,31 @@ function addressToXYZ(addr) {
 
 function xyzToAddress(xyz) {
     let x = xyz.x.toString(16)
-    let z = xyz.y.toString(16)
-    let y = xyz.z.toString(16)
+    let z = xyz.z.toString(16)
+    let y = xyz.y.toString(16)
+    let s = xyz.s.toString(16)
 
-    let addr = x + "." + y + "." + z + "." + "0"
+    let addr = x + "." + y + "." + z + "." + s
     return reformatAddress(addr)
+}
+
+function glyphToAddr (glyph) {
+    //const portalFormat = "psssyyzzzxxx"
+
+    if (glyph) {
+        let xyz = {}
+        xyz.s = parseInt(glyph.slice(1, 4), 16)
+        xyz.y = parseInt(glyph.slice(4, 6), 16) - 0x81
+        xyz.z = parseInt(glyph.slice(6, 9), 16) - 0x801
+        xyz.x = parseInt(glyph.slice(9, 12), 16) - 0x801
+        xyz.y = xyz.y < 0 ? xyz.y + 0x100 : xyz.y
+        xyz.z = xyz.z < 0 ? xyz.z + 0x1000 : xyz.z
+        xyz.x = xyz.x < 0 ? xyz.x + 0x1000 : xyz.x
+
+        return xyzToAddress(xyz)
+    }
+
+    return ""
 }
 
 function calcDist(addr, addr2, axis1, axis2) {
@@ -147,9 +210,10 @@ function changeMapLayout(zoom) {
     let yctr = 2048
     let yend = 4095
 
-    let saddr = $("#id-saddr").val()
-    let eaddr = $("#id-eaddr").val()
-    
+    let loc = $("#id-addrInput")
+    let saddr = loc.find("#w-start #id-addr").val()
+    let eaddr = loc.find("#w-end #id-addr").val()
+
     let sxyz = addressToXYZ(saddr)
 
     if (zoom) {
