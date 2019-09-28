@@ -329,7 +329,7 @@ blackHoleSuns.prototype.updateEntry = async function (entry) {
 
     if (typeof entry.created === "undefined")
         entry.created = firebase.firestore.Timestamp.now()
-  
+
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
     await ref.set(entry, {
         merge: true
@@ -1232,7 +1232,7 @@ blackHoleSuns.prototype.xyzToAddress = function (xyz) {
 blackHoleSuns.prototype.addrToGlyph = function (addr) {
     let s = ""
 
-    //const portalFormat = "psssyyxxxzzz"
+    //const portalFormat = "psssyyzzzxxx"
 
     if (addr) {
         let xyz = bhs.addressToXYZ(addr)
@@ -1249,6 +1249,25 @@ blackHoleSuns.prototype.addrToGlyph = function (addr) {
     }
 
     return s
+}
+
+blackHoleSuns.prototype.glyphToAddr = function (glyph) {
+    //const portalFormat = "psssyyzzzxxx"
+
+    if (glyph) {
+        let xyz = {}
+        xyz.s = parseInt(glyph.slice(1, 4), 16)
+        xyz.y = parseInt(glyph.slice(4, 6), 16) - 0x81
+        xyz.z = parseInt(glyph.slice(6, 9), 16) - 0x801
+        xyz.x = parseInt(glyph.slice(9, 12), 16) - 0x801
+        xyz.y = xyz.y < 0 ? xyz.y + 0x100 : xyz.y
+        xyz.z = xyz.z < 0 ? xyz.z + 0x1000 : xyz.z
+        xyz.x = xyz.x < 0 ? xyz.x + 0x1000 : xyz.x
+
+        return bhs.xyzToAddress(xyz)
+    }
+
+    return ""
 }
 
 blackHoleSuns.prototype.calcDist = function (addr, addr2) {

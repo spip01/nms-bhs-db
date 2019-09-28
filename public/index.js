@@ -76,15 +76,66 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         <div id="idname" class="card pad-bottom bkg-trans-2">
             <div class="card-header txt-def h5">title</div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-sm-4 col-7 h6 txt-inp-def">Coordinates&nbsp;</div>
-                    <input id="id-addr" class="rounded col-sm-5 col-7" placeholder="0000:0000:0000:0000" onchange="bhs.dispAddr(this)">
+                <div id="id-addrInput">
+                    <div class="row">
+                        <div class="col-sm-4 col-7 h6 txt-inp-def">Coordinates&nbsp;</div>
+                        <input id="id-addr" class="rounded col-sm-5 col-7" placeholder="0000:0000:0000:0000" onchange="bhs.changeAddr(this)">
+                        <div class="col-5">
+                            <label class="h6 txt-inp-def">
+                                <input id="ck-glyphs" type="checkbox" onchange="bhs.setGlyphInput()">
+                                Input Glyphs
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-2 col-7 h6 txt-inp-def">Portal&nbsp;</div>
+                        <div id="id-glyph" class="col-sm-8 col-7 h4 text-center txt-inp-def glyph"></div>
+                        <div id="id-hex" class="col-sm-4 col-14 text-center txt-inp-def"></div>
+                    </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-sm-4 col-7 h6 txt-inp-def">Portal&nbsp;</div>
-                    <div id="id-glyph" class="col-sm-5 col-7 h4 txt-inp-def glyph"></div>
-                    <div id="id-hex" class="col-sm-5 col-14 text-center txt-inp-def"></div>
+                <div id="id-glyphInput" class="hidden">
+                    <div class="row">
+                        <div class="col-sm-2 col-7 h6 txt-inp-def">Glyph&nbsp;</div>
+                        <input id="id-glyph" class="rounded col-sm-7 col-7 h4 glyph" onchange="bhs.changeGlyph(this)">
+                        <div class="col-5">
+                            <label class="h6 txt-inp-def">
+                                <input id="ck-glyphs" type="checkbox" onchange="bhs.setGlyphInput()">
+                                Input Glyphs
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="row"> 
+                        <div class="col-14 text-center">
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">0</button>&nbsp
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">1</button>&nbsp
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">2</button>&nbsp
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">3</button>&nbsp
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">4</button>&nbsp
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">5</button>&nbsp
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">6</button>&nbsp
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">7</button>&nbsp
+                        </div>
+                    </div>
+                    <div class="row"> 
+                        <div class="col-14 text-center">
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">8</button>&nbsp
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">9</button>&nbsp
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">A</button>&nbsp
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">B</button>&nbsp
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">C</button>&nbsp
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">D</button>&nbsp
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">E</button>&nbsp
+                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">F</button>&nbsp
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4 col-7 h6 txt-inp-def">Coords&nbsp;</div>
+                        <div id="id-addr" class="col-sm-5 col-7 txt-inp-def"></div>
+                    </div>  
                 </div>
 
                 <div class="row">
@@ -107,6 +158,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     <div class="col-1">&nbsp;</div>
                     <div id="id-Lifeform" class="col-11"></div>
                 </div>
+
                 <div class="row border-bottom">
                     <div class="col-1">&nbsp;</div>
                     <div id="id-Economy" class="col-11"></div>
@@ -220,27 +272,63 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
 }
 
-blackHoleSuns.prototype.dispAddr=function(evt){
+blackHoleSuns.prototype.setGlyphInput = function (evt) {
+    if ($("#id-glyphInput").is(":visible")) {
+        $("[id='id-glyphInput']").hide()
+        $("[id='id-addrInput']").show()
+        $("[id='ck-glyphs']").prop("checked", false)
+    } else {
+        $("[id='id-glyphInput']").show()
+        $("[id='id-addrInput']").hide()
+        $("[id='ck-glyphs']").prop("checked", true)
+    }
+}
+
+blackHoleSuns.prototype.addGlyph = function (evt) {
+    let loc = $(evt).closest("[id|='pnl']").find("#id-addr")
+    let a = loc.val()
+    a += $(evt).text()
+    loc.val(a)
+}
+
+blackHoleSuns.prototype.changeAddr = function (evt) {
     let addr = bhs.reformatAddress($(evt).val())
-    $(evt).val(addr)
-
-    let glyph = bhs.addrToGlyph(addr)
-
     let pnl = $(evt).closest("[id|='pnl'")
-    pnl.find("#id-glyph").text(glyph)
-    pnl.find("#id-hex").text(glyph)
 
+    bhs.dispAddr(pnl, addr)
     bhs.getEntry(addr, bhs.displayListEntry)
-
     bhs.displayCalc()
 }
 
-blackHoleSuns.prototype.searchRegion = function(evt){
+blackHoleSuns.prototype.changeGlyph = function (evt) {
+    let glyph = $(evt).val().toUpperCase()
+    let addr = bhs.glyphToAddr(glyph)
+    let pnl = $(evt).closest("[id|='pnl'")
+
+    bhs.dispAddr(pnl, addr)
+    bhs.getEntry(addr, bhs.displayListEntry)
+    bhs.displayCalc()
+}
+
+blackHoleSuns.prototype.dispAddr = function (pnl ,addr) {
+    let glyph = bhs.addrToGlyph(addr)
+
+    let loc =pnl.find("#id-glyphInput")
+    loc.find("#id-addr").text(addr)
+    loc.find("#id-glyph").val(glyph)
+
+    loc =pnl.find("#id-addrInput")
+    loc.find("#id-addr").val(addr)
+    loc.find("#id-glyph").text(glyph)
+    loc.find("#id-hex").text(glyph)
+}
+
+blackHoleSuns.prototype.searchRegion = function (evt) {
     let reg = $(evt).closest("[id|='pnl']").find("#id-reg").val()
     bhs.getEntryByRegion(reg, bhs.displayListEntry)
 }
 
-blackHoleSuns.prototype.delBase = function(evt){
+blackHoleSuns.prototype.delBase = function (evt) {
     let reg = $(evt).closest("[id|='pnl']").find("#id-addr").val()
     bhs.deleteBase(addr)
 }
@@ -280,11 +368,7 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
     bhs.drawSingle(entry)
 
     let loc = $("#" + panels[idx].id)
-
-    loc.find("#id-addr").val(entry.addr)
-    let glyph = bhs.addrToGlyph(entry.addr)
-    loc.find("#id-glyph").text(glyph)
-    loc.find("#id-hex").text(glyph)
+    bhs.dispAddr(loc, entry.addr)
     loc.find("#id-sys").val(entry.sys)
     loc.find("#id-reg").val(entry.reg)
 
