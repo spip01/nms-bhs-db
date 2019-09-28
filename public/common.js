@@ -329,7 +329,8 @@ blackHoleSuns.prototype.updateEntry = async function (entry) {
 
     if (typeof entry.created === "undefined")
         entry.created = firebase.firestore.Timestamp.now()
-
+  
+    let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
     await ref.set(entry, {
         merge: true
     }).then(() => {
