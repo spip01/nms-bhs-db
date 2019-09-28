@@ -1721,7 +1721,7 @@ blackHoleSuns.prototype.traceZero = function (addr) {
         let out = initout()
         pushentry(out, zero, "Galactic Center")
         pushentry(out, addr.xyzs)
-        Plotly.addTraces('plymap', makedata(opt, out, 5, opt["clr-bh"], opt["clr-dz"]))
+        Plotly.addTraces('plymap', makedata(opt, out, 5, opt["clr-bh"], "#d0d0d0"))
     }
 }
 

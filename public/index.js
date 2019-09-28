@@ -78,7 +78,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
             <div class="card-body">
                 <div class="row">
                     <div class="col-sm-4 col-7 h6 txt-inp-def">Coordinates&nbsp;</div>
-                    <input id="id-addr" class="rounded col-sm-5 col-7" placeholder="0000:0000:0000:0000">
+                    <input id="id-addr" class="rounded col-sm-5 col-7" placeholder="0000:0000:0000:0000" onchange="bhs.dispAddr(this)">
                 </div>
 
                 <div class="row">
@@ -95,7 +95,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                 <div class="row">
                     <div class="col-sm-4 col-7 h6 txt-inp-def">Region Name&nbsp;</div>
                     <input id="id-reg" class="rounded col-sm-5 col-7">&nbsp
-                    <button id="btn-searchRegion" type="button" class="btn-def btn btn-sm">Search</button>&nbsp
+                    <button id="btn-searchRegion" type="button" class="btn-def btn btn-sm" onclick="bhs.searchRegion(this)">Search</button>&nbsp
                     </div>
 
                 <div id="id-byrow" class="row">
@@ -138,7 +138,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     <div class="col-sm-2 col-4 h6 txt-inp-def">Name</div>
                     <input id="id-basename" class="rounded col-6">
                     <div id="id-Owned" class="col-sm-3 col-9"></div>
-                    <button id="btn-delbase" type="button" class="btn-def btn btn-sm disabled" disabled>Delete Base</button>&nbsp
+                    <button id="btn-delbase" type="button" class="btn-def btn btn-sm disabled" disabled onclick="bhs.delBase(this)">Delete Base</button>&nbsp
                 </div>
 
                 <div id="id-pnl1-only" class="row">
@@ -194,22 +194,6 @@ blackHoleSuns.prototype.buildPanel = function (id) {
     bhs.buildMenu(loc, "Economy", economyList)
     bhs.buildMenu(loc, "Owned", ownershipList)
 
-    loc.find("#id-addr").unbind("change")
-    loc.find("#id-addr").change(function () {
-        let addr = bhs.reformatAddress($(this).val())
-        $(this).val(addr)
-
-        let glyph = bhs.addrToGlyph(addr)
-
-        let pnl = $(this).closest("[id|='pnl'")
-        pnl.find("#id-glyph").text(glyph)
-        pnl.find("#id-hex").text(glyph)
-
-        bhs.getEntry(addr, bhs.displayListEntry)
-
-        bhs.displayCalc()
-    })
-
     loc.find('#ck-hasbase').unbind("change")
     loc.find('#ck-hasbase').change(function () {
         let pnl = $(this).closest("[id|='pnl'")
@@ -234,16 +218,31 @@ blackHoleSuns.prototype.buildPanel = function (id) {
             pnl.show()
     })
 
-    loc.find("#btn-searchRegion").unbind("click")
-    loc.find("#btn-searchRegion").click(() => {
-        bhs.getEntryByRegion(loc.find("#id-reg").val(), bhs.displayListEntry)
-    })
+}
 
-    loc.find("#btn-delbase").unbind("click")
-    loc.find("#btn-delbase").click(() => {
-        let addr = loc.find("#id-addr").val()
-        bhs.deleteBase(addr)
-    })
+blackHoleSuns.prototype.dispAddr=function(evt){
+    let addr = bhs.reformatAddress($(evt).val())
+    $(evt).val(addr)
+
+    let glyph = bhs.addrToGlyph(addr)
+
+    let pnl = $(evt).closest("[id|='pnl'")
+    pnl.find("#id-glyph").text(glyph)
+    pnl.find("#id-hex").text(glyph)
+
+    bhs.getEntry(addr, bhs.displayListEntry)
+
+    bhs.displayCalc()
+}
+
+blackHoleSuns.prototype.searchRegion = function(evt){
+    let reg = $(evt).closest("[id|='pnl']").find("#id-reg").val()
+    bhs.getEntryByRegion(reg, bhs.displayListEntry)
+}
+
+blackHoleSuns.prototype.delBase = function(evt){
+    let reg = $(evt).closest("[id|='pnl']").find("#id-addr").val()
+    bhs.deleteBase(addr)
 }
 
 blackHoleSuns.prototype.displayListEntry = function (entry, zoom) {
