@@ -282,6 +282,12 @@ blackHoleSuns.prototype.setGlyphInput = function (evt) {
         $("[id='id-addrInput']").hide()
         $("[id='ck-glyphs']").prop("checked", true)
     }
+
+    bhs.updateUser({
+        inputSettings: {
+            glyph: $("#ck-glyphs").prop("checked")
+        }
+    })
 }
 
 blackHoleSuns.prototype.addGlyph = function (evt) {
@@ -310,14 +316,14 @@ blackHoleSuns.prototype.changeGlyph = function (evt) {
     bhs.displayCalc()
 }
 
-blackHoleSuns.prototype.dispAddr = function (pnl ,addr) {
+blackHoleSuns.prototype.dispAddr = function (pnl, addr) {
     let glyph = bhs.addrToGlyph(addr)
 
-    let loc =pnl.find("#id-glyphInput")
+    let loc = pnl.find("#id-glyphInput")
     loc.find("#id-addr").text(addr)
     loc.find("#id-glyph").val(glyph)
 
-    loc =pnl.find("#id-addrInput")
+    loc = pnl.find("#id-addrInput")
     loc.find("#id-addr").val(addr)
     loc.find("#id-glyph").text(glyph)
     loc.find("#id-hex").text(glyph)

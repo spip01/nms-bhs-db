@@ -207,27 +207,20 @@ blackHoleSuns.prototype.navLoggedout = function () {
     $("#usermenu").hide()
 }
 
-blackHoleSuns.prototype.updateUser = async function (user, batch) {
+blackHoleSuns.prototype.updateUser = async function (user) {
     bhs.user = mergeObjects(bhs.user, user)
     let ref = bhs.getUsersColRef(bhs.user.uid)
-
-    if (batch) {
-        batch.set(ref, bhs.user, {
-            merge: true
-        })
+    return await ref.set(bhs.user, {
+        merge: true
+    }).then(() => {
         return true
-    } else
-        return await ref.set(bhs.user, {
-            merge: true
-        }).then(() => {
-            return true
-        }).catch(err => {
-            if (bhs.status)
-                bhs.status("ERROR: " + err)
+    }).catch(err => {
+        if (bhs.status)
+            bhs.status("ERROR: " + err)
 
-            console.log(err)
-            return false
-        })
+        console.log(err)
+        return false
+    })
 }
 
 blackHoleSuns.prototype.changeName = function (loc, user) {

@@ -105,6 +105,13 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
 
     if (fdarc && typeof bhs.user.uid !== "undefined")
         bhs.updateDarcSettings()
+
+    
+    if(typeof bhs.user.inputSettings !== "undefined" && typeof bhs.user.inputSettings.glyph !== "undefined" && bhs.user.inputSettings.glyph){
+        $("[id='id-glyphInput']").show()
+        $("[id='id-addrInput']").hide()
+        $("[id='ck-glyphs']").prop("checked", true)
+    }
 }
 
 blackHoleSuns.prototype.buildUserPanel = async function () {
@@ -943,13 +950,13 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
     }
 }
 
-blackHoleSuns.prototype.saveUser = async function (inp) {
+blackHoleSuns.prototype.saveUser = async function () {
     if (bhs.user.uid) {
         let user = bhs.extractUser()
         let ok = bhs.validateUser(user)
 
         if (ok)
-            ok = await bhs.updateUser(user, typeof inp === "string" ? null : inp)
+            ok = bhs.updateUser(user)
 
         return ok
     } else
