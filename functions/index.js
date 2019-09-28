@@ -358,10 +358,11 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
         let e = doc.data()
 
         if (typeof e.created === "undefined") {
-            e.created = e.modded
-            doc.ref.set(e, {
-                modded: true
-            })
+            p.push(doc.ref.set({
+                created: e.modded
+            }, {
+                merge: true
+            }))
         }
 
         if (e.blackhole || e.deadzone) {
@@ -371,13 +372,6 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
             if (e.blackhole)
                 p.push(saveChange(e, "create"))
         }
-
-        p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
-            name: e.galaxy,
-            _name: e._name,
-            number: galaxyList[getIndex(galaxyList, "name", e.galaxy)].number,
-            update: e.modded
-        }))
 
         return Promise.all(p)
     })
@@ -399,12 +393,6 @@ exports.systemUpdate = functions.firestore.document("stars5/{galaxy}/{platform}/
                 if (e.blackhole || e.deadzone) {
                     p.push(saveChange(e, "update"))
                 }
-
-                p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
-                    update: e.modded
-                }, {
-                    merge: true
-                }))
             }
         }
 
@@ -422,12 +410,6 @@ exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/
 
             if (e.blackhole)
                 p.push(saveChange(e, "delete"))
-
-            p.push(admin.firestore().doc("stars5/" + e.galaxy).set({
-                update: e.modded
-            }, {
-                merge: true
-            }))
         }
 
         return Promise.all(p)
