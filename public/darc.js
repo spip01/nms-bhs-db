@@ -470,7 +470,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                         break
 
                     case "glyph":
-                        l = /title/ [Symbol.replace](l, r.what === "poi" || warp ? bhs.addrToGlyph(r[f.field]) : "")
+                        l = /title/ [Symbol.replace](l, r.what === "poi" || warp ? bhs.addrToGlyph(r[f.field], r.planet) : "")
                         break
 
                     case "x-addr":

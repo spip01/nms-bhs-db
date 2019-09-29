@@ -105,7 +105,7 @@ exports.userExists = functions.https.onCall(async (data, context) => {
 
 exports.genPOI = functions.https.onCall((data, context) => {
     const hops = require('./hops.js')
-    return hops.genPOIfile()
+    return hops.genPOI()
 })
 
 exports.scheduleGenPOI = functions.pubsub.schedule('0 * * * *').onRun(context => {

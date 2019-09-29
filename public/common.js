@@ -1228,7 +1228,7 @@ blackHoleSuns.prototype.xyzToAddress = function (xyz) {
     return bhs.reformatAddress(addr)
 }
 
-blackHoleSuns.prototype.addrToGlyph = function (addr) {
+blackHoleSuns.prototype.addrToGlyph = function (addr, planet) {
     let s = ""
 
     //const portalFormat = "psssyyzzzxxx"
@@ -1240,7 +1240,7 @@ blackHoleSuns.prototype.addrToGlyph = function (addr) {
         let xy = "00" + (xyz.y + 0x81).toString(16).toUpperCase()
         let xz = "00" + (xyz.z + 0x801).toString(16).toUpperCase()
 
-        s = "0"
+        s = typeof planet === "string" ? planet : "0"
         s += xs.slice(xs.length - 3)
         s += xy.slice(xy.length - 2)
         s += xz.slice(xz.length - 3)

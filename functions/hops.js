@@ -21,7 +21,6 @@ exports.genRoute = async function (data) {
 
     if (data.preload) {
         return Promise.all(p).then(res => {
-            console.log("preload", new Date().getTime() - now)
             return {
                 loaded: true,
                 preload: new Date().getTime() - now
@@ -382,6 +381,7 @@ function getPOI(gal, plat) {
                             name: r[3],
                             owner: r[4],
                             type: r[5],
+                            planet: r[6],
                         }
 
                         out.push(h)
@@ -471,9 +471,9 @@ exports.genPOI = function () {
 
         for (let g of Object.keys(m)) {
             for (let p of Object.keys(m[g])) {
-                m[g][p] = m[g][p].sort((a, b) => a.addr > b.addr ? 1 : -1)
+                m[g][p] = m[g][p].sort((a, b) => a.addr === b.addr ? a.type > b.type ? 1 : -1 : a.addr > b.addr ? 1 : -1)
                 m[g][p] = m[g][p].filter((v, i, a) => ++i >= a.length || v.addr !== a[i].addr || v.reg !== a[i].reg || v.sys !== a[i].sys || v.name !== a[i].name || v.owner !== a[i].owner)
-                m[g][p] = m[g][p].map(e => JSON.stringify([e.addr, e.reg, e.sys, e.name, e.owner, e.type]) + "\n")
+                m[g][p] = m[g][p].map(e => JSON.stringify([e.addr, e.reg, e.sys, e.name, e.owner, e.type, e.planet]) + "\n")
             }
         }
 
@@ -556,7 +556,8 @@ function getPOIlist(ref, namefld, ownerfld, type) {
                         sys: e.sys,
                         name: e[namefld],
                         owner: e[ownerfld],
-                        type: type
+                        type: type,
+                        planet: e.planet
                     })
                 }
             }
