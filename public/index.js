@@ -308,7 +308,7 @@ blackHoleSuns.prototype.changeAddr = function (evt) {
 
 blackHoleSuns.prototype.changeGlyph = function (evt) {
     let glyph = $(evt).val().toUpperCase()
-    let addr = bhs.glyphToAddr(glyph)
+    let addr = bhs.reformatAddress(glyph)
     let pnl = $(evt).closest("[id|='pnl'")
 
     bhs.dispAddr(pnl, addr)

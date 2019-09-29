@@ -61,115 +61,90 @@ blackHoleSuns.prototype.buildFilePanel = function () {
 
 const inpCoordIdx = 5
 var importTable = [{
-        match: /platform/i,
-        field: "platform",
-        format: formatPlatform,
-        group: 0
-    }, {
-        match: /galaxy/i,
-        field: "galaxy",
-        format: formatGalaxy,
-        group: 0
-    }, {
-        match: /org/i,
-        field: "org",
-        format: formatOrg,
-        group: 0
-    }, {
-        match: /type/i,
-        field: "type",
-        group: 0
-    }, {
-        match: /own/i,
-        field: "owned",
-        format: formatOwned,
-        group: 0
-    },
-    /* {
-        match: /traveler|player|your/i,
-        field: "player",
-        group: 0
-    },*/
-    { // 1st match
-        match: /coord|addr/i,
-        field: "addr",
-        required: true,
-        format: reformatAddress,
-        validate: validateAddressTF,
-        group: 1
-    }, {
-        match: /econ/i,
-        field: "econ",
-        format: formatEcon,
-        group: 1
-    }, {
-        match: /reg/i,
-        field: "reg",
-        required: true,
-        group: 1
-    }, {
-        match: /sys/i,
-        field: "sys",
-        required: true,
-        group: 1
-    }, {
-        match: /sun/i,
-        field: "sun",
-        group: 1
-    }, {
-        match: /life/i,
-        field: "life",
-        format: formatLife,
-        group: 1
-    }, {
-        match: /conf/i,
-        field: "conflict",
-        format: formatConflict,
-        group: 1
-    }, { // 2nd match
-        match: /coord|addr/i,
-        field: "addr",
-        labelreq: true,
-        format: reformatAddress,
-        validate: validateAddressTF,
-        group: 2
-    }, {
-        match: /econ/i,
-        field: "econ",
-        format: formatEcon,
-        group: 2
-    }, {
-        match: /reg/i,
-        field: "reg",
-        labelreq: true,
-        checkreq: checkZeroAddress,
-        checkval: 10,
-        checkgrp: 2,
-        group: 2
-    }, {
-        match: /sys/i,
-        field: "sys",
-        labelreq: true,
-        checkreq: checkZeroAddress,
-        checkval: 10,
-        checkgrp: 2,
-        group: 2
-    }, {
-        match: /sun/i,
-        field: "sun",
-        group: 2
-    }, {
-        match: /life/i,
-        field: "life",
-        format: formatLife,
-        group: 2
-    }, {
-        match: /conf/i,
-        field: "conflict",
-        format: formatConflict,
-        group: 2
-    }
-]
+    match: /platform/i,
+    field: "platform",
+    format: formatPlatform,
+    group: 0
+}, {
+    match: /galaxy/i,
+    field: "galaxy",
+    format: formatGalaxy,
+    group: 0
+}, {
+    match: /org/i,
+    field: "org",
+    format: formatOrg,
+    group: 0
+}, {
+    match: /type/i,
+    field: "type",
+    group: 0
+}, {
+    match: /own/i,
+    field: "owned",
+    format: formatOwned,
+    group: 0
+}, { // 1st match
+    match: /coord|addr/i,
+    field: "addr",
+    required: true,
+    format: reformatAddress,
+    validate: validateAddressTF,
+    group: 1
+}, {
+    match: /econ/i,
+    field: "econ",
+    format: formatEcon,
+    group: 1
+}, {
+    match: /reg/i,
+    field: "reg",
+    required: true,
+    group: 1
+}, {
+    match: /sys/i,
+    field: "sys",
+    required: true,
+    group: 1
+}, {
+    match: /life/i,
+    field: "life",
+    format: formatLife,
+    group: 1
+}, { // 2nd match
+    match: /coord|addr/i,
+    field: "addr",
+    labelreq: true,
+    format: reformatAddress,
+    validate: validateAddressTF,
+    group: 2
+}, {
+    match: /econ/i,
+    field: "econ",
+    format: formatEcon,
+    group: 2
+}, {
+    match: /reg/i,
+    field: "reg",
+    labelreq: true,
+    checkreq: checkZeroAddress,
+    checkval: 10,
+    checkgrp: 2,
+    group: 2
+}, {
+    match: /sys/i,
+    field: "sys",
+    labelreq: true,
+    checkreq: checkZeroAddress,
+    checkval: 10,
+    checkgrp: 2,
+    group: 2
+}, {
+    match: /life/i,
+    field: "life",
+    format: formatLife,
+    group: 2
+}, ]
 
 /* type menu from spreadsheet
 Black Hole
@@ -459,9 +434,9 @@ blackHoleSuns.prototype.fBatchUpdate = async function (entry, exit, check, i, ba
 //             if (!doc.exists)
 //                 bhs.filestatus(entry.addr + " doesn't exist for edit.", 1)
 //         }).catch(err=>{
-        //     bhs.filestatus("ERROR: "+err.code, 0)
-        //     console.log(err)
-        // })
+//     bhs.filestatus("ERROR: "+err.code, 0)
+//     console.log(err)
+// })
 //     } else {
 //         let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, old)
 //         batch.delete(ref)
@@ -486,8 +461,8 @@ blackHoleSuns.prototype.fBatchDelete = async function (entry, check) {
         await ref.get().then(function (doc) {
             if (!doc.exists)
                 bhs.filestatus(entry.addr + " doesn't exist for delete.", 0)
-        }).catch(err=>{
-            bhs.filestatus("ERROR: "+err.code, 0)
+        }).catch(err => {
+            bhs.filestatus("ERROR: " + err.code, 0)
             console.log(err)
         })
     } else {
@@ -505,8 +480,8 @@ blackHoleSuns.prototype.fBatchDeleteBase = async function (entry, check) {
         await ref.get().then(function (doc) {
             if (!doc.exists)
                 bhs.filestatus(entry.addr + " base doesn't exist for delete.", 0)
-        }).catch(err=>{
-            bhs.filestatus("ERROR: "+err.code, 0)
+        }).catch(err => {
+            bhs.filestatus("ERROR: " + err.code, 0)
             console.log(err)
         })
     } else {

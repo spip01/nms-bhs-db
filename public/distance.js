@@ -31,10 +31,10 @@ function dispAddr(evt) {
         eloc.find("#id-addr").val(eaddr)
         eloc.find("#id-glyph").text(glyph)
         eloc.find("#id-hex").text(glyph)
- 
+
         gloc.find("#w-end #id-addr").text(eaddr)
         gloc.find("#w-end #id-glyph").val(glyph)
-   }
+    }
 
     if (saddr !== "" && eaddr != "") {
         let range = $("#id-range").val()
@@ -51,18 +51,18 @@ function dispAddr(evt) {
     }
 }
 
-function dispGlyph(evt){
+function dispGlyph(evt) {
     let glyph = $(evt).val().toUpperCase()
     $(evt).val(glyph)
     let id = $(evt).closest("[id|='w']").prop("id")
 
-    let addr = glyphToAddr(glyph)
-    $("#id-addrInput #"+id+" #id-addr").val(addr)
+    let addr = reformatAddress(glyph)
+    $("#id-addrInput #" + id + " #id-addr").val(addr)
 
     dispAddr()
 }
 
-function setGlyphInput (evt) {
+function setGlyphInput(evt) {
     if ($("#id-glyphInput").is(":visible")) {
         $("#id-glyphInput").hide()
         $("#id-addrInput").show()
@@ -74,7 +74,7 @@ function setGlyphInput (evt) {
     }
 }
 
-function addGlyph(evt){
+function addGlyph(evt) {
     let loc = $(evt).closest("[id|='w']").find("#id-glyph")
     let a = loc.val() + $(evt).text()
     loc.val(a)
@@ -96,16 +96,22 @@ function calcAngle(saddr, eaddr, xp, yp) {
 }
 
 function reformatAddress(addr) {
-    let str = /[^0-9A-F]+/g [Symbol.replace](addr.toUpperCase(), ":")
-    str = str[0] == ":" ? str.slice(1) : str
     let out = ""
+    addr = addr.toUpperCase()
 
-    for (let i = 0; i < 4; ++i) {
-        let idx = str.indexOf(":")
-        let end = idx > 4 || idx == -1 ? 4 : idx
-        let s = str.slice(0, end)
-        str = str.slice(end + (idx <= 4 && idx >= 0 ? 1 : 0))
-        out += "0000".slice(0, 4 - s.length) + s + (i < 3 ? ":" : "")
+    if (addr.match(/[0-9A-F]{12}/))
+        out = glyphToAddr(addr)
+    else {
+        let str = /[^0-9A-F]+/g [Symbol.replace](addr.toUpperCase(), ":")
+        str = str[0] == ":" ? str.slice(1) : str
+
+        for (let i = 0; i < 4; ++i) {
+            let idx = str.indexOf(":")
+            let end = idx > 4 || idx == -1 ? 4 : idx
+            let s = str.slice(0, end)
+            str = str.slice(end + (idx <= 4 && idx >= 0 ? 1 : 0))
+            out += "0000".slice(0, 4 - s.length) + s + (i < 3 ? ":" : "")
+        }
     }
 
     return out
@@ -161,18 +167,15 @@ function xyzToAddress(xyz) {
     return reformatAddress(addr)
 }
 
-function glyphToAddr (glyph) {
+function glyphToAddr(glyph) {
     //const portalFormat = "psssyyzzzxxx"
 
     if (glyph) {
         let xyz = {}
         xyz.s = parseInt(glyph.slice(1, 4), 16)
-        xyz.y = parseInt(glyph.slice(4, 6), 16) - 0x81
-        xyz.z = parseInt(glyph.slice(6, 9), 16) - 0x801
-        xyz.x = parseInt(glyph.slice(9, 12), 16) - 0x801
-        xyz.y = xyz.y < 0 ? xyz.y + 0x100 : xyz.y
-        xyz.z = xyz.z < 0 ? xyz.z + 0x1000 : xyz.z
-        xyz.x = xyz.x < 0 ? xyz.x + 0x1000 : xyz.x
+        xyz.y = (parseInt(glyph.slice(4, 6), 16) - 0x81) & 0xff
+        xyz.z = (parseInt(glyph.slice(6, 9), 16) - 0x801) & 0xfff
+        xyz.x = (parseInt(glyph.slice(9, 12), 16) - 0x801) & 0xfff
 
         return xyzToAddress(xyz)
     }

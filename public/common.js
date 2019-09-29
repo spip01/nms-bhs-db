@@ -1044,16 +1044,22 @@ function reformatAddress(addr) {
 }
 
 blackHoleSuns.prototype.reformatAddress = function (addr) {
-    let str = /[^0-9A-F]+/g [Symbol.replace](addr.toUpperCase(), ":")
-    str = str[0] == ":" ? str.slice(1) : str
     let out = ""
+    addr = addr.toUpperCase()
 
-    for (let i = 0; i < 4; ++i) {
-        let idx = str.indexOf(":")
-        let end = idx > 4 || idx == -1 ? 4 : idx
-        let s = str.slice(0, end)
-        str = str.slice(end + (idx <= 4 && idx >= 0 ? 1 : 0))
-        out += "0000".slice(0, 4 - s.length) + s + (i < 3 ? ":" : "")
+    if (addr.match(/[0-9A-F]{12}/))
+        out = bhs.glyphToAddr(addr)
+    else {
+        let str = /[^0-9A-F]+/g [Symbol.replace](addr, ":")
+        str = str[0] == ":" ? str.slice(1) : str
+
+        for (let i = 0; i < 4; ++i) {
+            let idx = str.indexOf(":")
+            let end = idx > 4 || idx == -1 ? 4 : idx
+            let s = str.slice(0, end)
+            str = str.slice(end + (idx <= 4 && idx >= 0 ? 1 : 0))
+            out += "0000".slice(0, 4 - s.length) + s + (i < 3 ? ":" : "")
+        }
     }
 
     return out
@@ -1250,12 +1256,9 @@ blackHoleSuns.prototype.glyphToAddr = function (glyph) {
     if (glyph) {
         let xyz = {}
         xyz.s = parseInt(glyph.slice(1, 4), 16)
-        xyz.y = parseInt(glyph.slice(4, 6), 16) - 0x81
-        xyz.z = parseInt(glyph.slice(6, 9), 16) - 0x801
-        xyz.x = parseInt(glyph.slice(9, 12), 16) - 0x801
-        xyz.y = xyz.y < 0 ? xyz.y + 0x100 : xyz.y
-        xyz.z = xyz.z < 0 ? xyz.z + 0x1000 : xyz.z
-        xyz.x = xyz.x < 0 ? xyz.x + 0x1000 : xyz.x
+        xyz.y = (parseInt(glyph.slice(4, 6), 16) - 0x81) & 0xff
+        xyz.z = (parseInt(glyph.slice(6, 9), 16) - 0x801) & 0xfff
+        xyz.x = (parseInt(glyph.slice(9, 12), 16) - 0x801) & 0xfff
 
         return bhs.xyzToAddress(xyz)
     }
