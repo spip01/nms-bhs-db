@@ -363,108 +363,81 @@ blackHoleSuns.prototype.fWriteLog = async function (check) {
 }
 
 blackHoleSuns.prototype.fBatchUpdate = async function (entry, exit, check, i, base) {
-    if (check)
-        return true
-
-    let err = bhs.validateEntry(entry, base)
-    if (err != "") {
-        bhs.filestatus("row: " + (i + 1) + " black hole (" + err + ") " + entry.addr, 0)
-        return
-    }
-
-    if (exit) {
-        let err = bhs.validateEntry(exit)
-        if (err != "") {
-            bhs.filestatus("row: " + (i + 1) + " exit (" + err + ") " + entry.addr, 0)
-            return
-        }
-    }
-
-    delete entry.type
-    delete entry.owned
-    entry.xyzs = bhs.addressToXYZ(entry.addr)
-    entry.dist = bhs.calcDist(entry.addr)
-
-    if (entry.blackhole && exit) {
-        entry.connection = exit.addr
-        exit.dist = bhs.calcDist(exit.addr)
-        entry.towardsCtr = entry.dist - exit.dist
-
-        entry.x = {}
-        entry.x.addr = exit.addr
-        entry.x.xyzs = bhs.addressToXYZ(exit.addr)
-        entry.x.dist = exit.dist
-        entry.x.sys = exit.sys
-        entry.x.reg = exit.reg
-        entry.x.life = typeof exit.life !== "undefined" ? exit.life : ""
-        entry.x.econ = typeof exit.econ !== "undefined" ? exit.econ : ""
-    }
-
-    entry.modded = firebase.firestore.Timestamp.now()
-
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
-    batch.set(ref, entry, {
-        merge: true
-    })
-    let ok = await bhs.fCheckBatchSize()
+    let ok = false
 
-    if (ok && entry.blackhole && exit) {
-        exit.modded = firebase.firestore.Timestamp.now()
+    if (check) {
+        let doc = await ref.get()
+        if (doc.exists) {
+            let e = doc.data()
+            if (e.uid !== entry.uid)
+                bhs.filestatus("row: " + (i + 1) + " can't write over system, "+e.addr+", created by " + e._name, 0)
+        }
+        return
+    } else {
+        let err = bhs.validateEntry(entry, base)
+        if (err != "") {
+            bhs.filestatus("row: " + (i + 1) + " black hole (" + err + ") " + entry.addr, 0)
+            return  false
+        }
 
-        let ref = bhs.getStarsColRef(exit.galaxy, exit.platform, exit.addr)
-        batch.set(ref, exit, {
+        if (exit) {
+            let err = bhs.validateEntry(exit)
+            if (err != "") {
+                bhs.filestatus("row: " + (i + 1) + " exit (" + err + ") " + entry.addr, 0)
+                return false
+            }
+        }
+
+        delete entry.type
+        delete entry.owned
+        entry.xyzs = bhs.addressToXYZ(entry.addr)
+        entry.dist = bhs.calcDist(entry.addr)
+
+        if (entry.blackhole && exit) {
+            entry.connection = exit.addr
+            exit.dist = bhs.calcDist(exit.addr)
+            entry.towardsCtr = entry.dist - exit.dist
+
+            entry.x = {}
+            entry.x.addr = exit.addr
+            entry.x.xyzs = bhs.addressToXYZ(exit.addr)
+            entry.x.dist = exit.dist
+            entry.x.sys = exit.sys
+            entry.x.reg = exit.reg
+            entry.x.life = typeof exit.life !== "undefined" ? exit.life : ""
+            entry.x.econ = typeof exit.econ !== "undefined" ? exit.econ : ""
+        }
+
+        entry.modded = firebase.firestore.Timestamp.now()
+
+        let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
+        batch.set(ref, entry, {
             merge: true
         })
         ok = await bhs.fCheckBatchSize()
+
+        if (ok && entry.blackhole && exit) {
+            exit.modded = firebase.firestore.Timestamp.now()
+
+            let ref = bhs.getStarsColRef(exit.galaxy, exit.platform, exit.addr)
+            batch.set(ref, exit, {
+                merge: true
+            })
+            ok = await bhs.fCheckBatchSize()
+        }
     }
 
     return ok
 }
 
-// blackHoleSuns.prototype.fBatchEdit = async function (b, entry, old, check) {
-//     delete entry.type
-//     delete entry.owned
-//     entry.modded = firebase.firestore.Timestamp.now()
-
-//     let ok = true
-
-//     if (check) {
-//         let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, old)
-//         await ref.get().then(function (doc) {
-//             if (!doc.exists)
-//                 bhs.filestatus(entry.addr + " doesn't exist for edit.", 1)
-//         }).catch(err=>{
-//     bhs.filestatus("ERROR: "+err.code, 0)
-//     console.log(err)
-// })
-//     } else {
-//         let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, old)
-//         batch.delete(ref)
-//         ok = await bhs.fCheckBatchSize()
-
-//         if (ok) {
-//             let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
-//             batch.set(ref, entry)
-
-//             bhs.filestatus(entry.addr + " edited", 1)
-//             ok = await bhs.fCheckBatchSize()
-//         }
-//     }
-
-//     return ok
-// }
-
 blackHoleSuns.prototype.fBatchDelete = async function (entry, check) {
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
 
     if (check) {
-        await ref.get().then(function (doc) {
-            if (!doc.exists)
-                bhs.filestatus(entry.addr + " doesn't exist for delete.", 0)
-        }).catch(err => {
-            bhs.filestatus("ERROR: " + err.code, 0)
-            console.log(err)
-        })
+        doc = await ref.get()
+        if (!doc.exists)
+            bhs.filestatus(entry.addr + " doesn't exist for delete.", 0)
     } else {
         batch.delete(ref)
         return await bhs.fCheckBatchSize()
