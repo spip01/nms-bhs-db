@@ -1047,7 +1047,7 @@ blackHoleSuns.prototype.reformatAddress = function (addr) {
     let out = ""
     addr = addr.toUpperCase()
 
-    if (addr.match(/[0-9A-F]{12}/))
+    if (addr.match(/^[0-9A-F]{12}$/))
         out = bhs.glyphToAddr(addr)
     else {
         let str = /[^0-9A-F]+/g [Symbol.replace](addr, ":")

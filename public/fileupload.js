@@ -471,13 +471,6 @@ blackHoleSuns.prototype.fBatchWriteBase = async function (entry, check) {
         entry.modded = firebase.firestore.Timestamp.now()
         entry.xyzs = bhs.addressToXYZ(entry.addr)
         bhs.updateBase(entry)
-
-        // let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr)
-        // batch.set(ref, entry, {
-        //     merge: true
-        // })
-        bhs.filestatus(entry.addr + " base saved.", 1)
-        // return await bhs.fCheckBatchSize()
     }
 
     return true
