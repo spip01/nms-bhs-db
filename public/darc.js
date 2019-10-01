@@ -425,19 +425,6 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                     case "desc":
                         warp = false
                         switch (r.what) {
-                            case "end":
-                                l = /title/ [Symbol.replace](l, "<h5>Arrived at destination</h5>")
-                                end = true
-                                finished = true
-                                break
-                            case "poi":
-                                l = /title/ [Symbol.replace](l, "<div class='row text-danger h6'>POI: " + r.name + "</div>")
-                                poi++
-                                break
-                            case "teleport":
-                                l = /title/ [Symbol.replace](l, "<div class='row'>Teleport to&nbsp;&nbsp;<div class='h6 txt-inp-def'>" + r.name + "</div></div>")
-                                r = r.exit
-                                break
                             case "bh":
                                 if (r.dist === 0 && r.addr === r.exit.addr)
                                     l = /title/ [Symbol.replace](l, "Transit black hole")
@@ -446,12 +433,26 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                                     warp = true
                                 }
                                 break
-                            case "warp":
-                                l = /title/ [Symbol.replace](l, "Warp to")
-                                warp = true
-                                break
                             case "start":
                                 l = /title/ [Symbol.replace](l, "Start")
+                                break
+                            case "teleport":
+                                l = /title/ [Symbol.replace](l, "<div class='row'>Teleport to&nbsp;&nbsp;<div class='h6 txt-inp-def'>" + r.name + "</div></div>")
+                                r = r.exit
+                                break
+                            case "end":
+                                finished = true
+                                if (r.dist === 0) {
+                                    l = /title/ [Symbol.replace](l, "<h5>Arrived at destination</h5>")
+                                    end = true
+                                } else {
+                                    l = /title/ [Symbol.replace](l, "Warp to destination")
+                                    warp = true
+                                }
+                                break
+                            case "poi":
+                                l = /title/ [Symbol.replace](l, "<div class='row text-danger h6'>POI: " + r.name + "</div>")
+                                poi++
                                 break
                             default:
                                 l = ""

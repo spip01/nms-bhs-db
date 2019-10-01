@@ -59,7 +59,7 @@ blackHoleSuns.prototype.buildFilePanel = function () {
     })
 }
 
-const inpCoordIdx = 5
+const inpCoordIdx = 4
 var importTable = [{
     match: /platform/i,
     field: "platform",
@@ -79,72 +79,68 @@ var importTable = [{
     match: /type/i,
     field: "type",
     group: 0
+},{
+    match: /coord|addr/i,
+    field: "addr",
+    required: true,
+    format: reformatAddress,
+    validate: validateAddressTF,
+    group: 1    // black hole
+}, {
+    match: /coord|addr/i,
+    field: "addr",
+    required: notBaseDel,
+    format: reformatAddress,
+    validate: validateAddressTF,
+    group: 2    // exit
+}, {
+    match: /reg/i,
+    field: "reg",
+    required: true,
+    group: 1    // black hole
+}, {
+    match: /sys/i,
+    field: "sys",
+    required: true,
+    group: 1    // black hole
+}, {
+    match: /life/i,
+    field: "life",
+    format: formatLife,
+    group: 1    // black hole
+}, {
+    match: /econ/i,
+    field: "econ",
+    format: formatEcon,
+    group: 1    // black hole
+}, {
+    match: /reg/i,
+    field: "reg",
+    group: 2    // exit
+}, {
+    match: /sys/i,
+    field: "sys",
+    group: 2    // exit
+}, {
+    match: /life/i,
+    field: "life",
+    format: formatLife,
+    group: 2    // exit
+}, {
+    match: /econ/i,
+    field: "econ",
+    format: formatEcon,
+    group: 2    // exit
 }, {
     match: /own/i,
     field: "owned",
     format: formatOwned,
-    group: 0
-}, { // 1st match
-    match: /coord|addr/i,
-    field: "addr",
-    required: true,
-    format: reformatAddress,
-    validate: validateAddressTF,
-    group: 1
+    group: 2    // exit
 }, {
-    match: /econ/i,
-    field: "econ",
-    format: formatEcon,
-    group: 1
-}, {
-    match: /reg/i,
-    field: "reg",
-    required: true,
-    group: 1
-}, {
-    match: /sys/i,
-    field: "sys",
-    required: true,
-    group: 1
-}, {
-    match: /life/i,
-    field: "life",
-    format: formatLife,
-    group: 1
-}, { // 2nd match
-    match: /coord|addr/i,
-    field: "addr",
-    labelreq: true,
-    format: reformatAddress,
-    validate: validateAddressTF,
-    group: 2
-}, {
-    match: /econ/i,
-    field: "econ",
-    format: formatEcon,
-    group: 2
-}, {
-    match: /reg/i,
-    field: "reg",
-    labelreq: true,
-    checkreq: checkZeroAddress,
-    checkval: 10,
-    checkgrp: 2,
-    group: 2
-}, {
-    match: /sys/i,
-    field: "sys",
-    labelreq: true,
-    checkreq: checkZeroAddress,
-    checkval: 10,
-    checkgrp: 2,
-    group: 2
-}, {
-    match: /life/i,
-    field: "life",
-    format: formatLife,
-    group: 2
-}, ]
+    match: /planet/i,
+    field: "planet",
+    group: 2    // exit
+},  ]
 
 /* type menu from spreadsheet
 Black Hole
@@ -212,7 +208,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                     }
                 }
 
-                if ((importTable[i].required || importTable[i].lablereq) && importTable[i].index == -1) {
+                if (importTable[i].required === true && importTable[i].index == -1) {
                     found = false
                     continue
                 }
@@ -250,18 +246,19 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
 
             let row = allrows[i].split(/[,\t]/)
 
-            if (row.length < 3 || row[importTable[inpCoordIdx].index] == "")
+            if (row.length < 2 || row[importTable[inpCoordIdx].index] == "")
                 ok = false
 
             for (let j = 0; j < importTable.length && ok; ++j) {
                 let idx = importTable[j].index
+                let grp = importTable[j].group
+                let fld = importTable[j].field
+                
                 if (idx >= 0) {
                     if (row[idx] == "") {
-                        let grp = importTable[j].checkgrp
-                        let val = importTable[j].checkval
-                        if (importTable[j].required || importTable[j].checkreq &&
-                            importTable[j].checkreq(entry[importTable[grp].group][importTable[val].field])) {
-                            bhs.filestatus("row: " + (i + 1) + " missing " + importTable[j].match, 0)
+                        if (importTable[j].required === true || typeof importTable[j].required === "function" &&
+                            importTable[j].required(entry[2].addr, entry[0].type)) {
+                            bhs.filestatus("row: " + (i + 1) + " missing " + importTable[j].field, 0)
                             ok = false
                         }
                     } else {
@@ -272,11 +269,11 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                         if (importTable[j].validate)
                             ok = importTable[j].validate(v)
 
-                        entry[importTable[j].group][importTable[j].field] = v
+                        entry[grp][fld] = v
 
                         if (!ok) {
-                            let s = importTable[j].group == 1 ? "bh " : importTable[j].group == 2 ? "exit " : ""
-                            bhs.filestatus("row: " + (i + 1) + " invalid value " + s + importTable[j].match + " " + entry[importTable[j].group][importTable[j].field], 0)
+                            let s = grp == 1 ? "bh " : grp == 2 ? "exit " : ""
+                            bhs.filestatus("row: " + (i + 1) + " invalid value " + s + importTable[j].field + " " + entry[grp][fld], 0)
                         }
                     }
                 }
@@ -306,13 +303,6 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                     } else {
                         entry[2] = {}
                         entry[2].basename = basename
-
-                        if (entry[0].type.match(/v.*/i))
-                            entry[2].owned = "visited"
-                        else if (entry[0].type.match(/s.*/i))
-                            entry[2].owned = "station"
-                        else
-                            entry[2].owned = "mine"
 
                         entry[2] = mergeObjects(entry[2], entry[0])
                         entry[2] = mergeObjects(entry[2], entry[1])
@@ -371,14 +361,14 @@ blackHoleSuns.prototype.fBatchUpdate = async function (entry, exit, check, i, ba
         if (doc.exists) {
             let e = doc.data()
             if (e.uid !== entry.uid)
-                bhs.filestatus("row: " + (i + 1) + " can't write over system, "+e.addr+", created by " + e._name, 0)
+                bhs.filestatus("row: " + (i + 1) + " can't write over system, " + e.addr + ", created by " + e._name, 0)
         }
         return
     } else {
         let err = bhs.validateEntry(entry, base)
         if (err != "") {
             bhs.filestatus("row: " + (i + 1) + " black hole (" + err + ") " + entry.addr, 0)
-            return  false
+            return false
         }
 
         if (exit) {
@@ -499,4 +489,14 @@ blackHoleSuns.prototype.filestatus = function (str, lvl) {
 
     if (lvl == 0 || $("#ck-verbose").prop("checked") && lvl == 1)
         $("#filestatus").append("<h6>" + str + "</h6>")
+}
+
+function notBase(addr, type){
+    let t = typeof type !== "undefined" ? type.slice(0,4).toLowerCase() : ""
+    return !(t === "base" || typeof addr !== "undefined" && addr === "0000:0000:0000:0000")
+}
+
+function notBaseDel(addr, type){
+    let t = typeof type !== "undefined" ? type.slice(0,4).toLowerCase() : ""
+    return !(t === "base" || t === "dele" || typeof addr !== "undefined" && addr === "0000:0000:0000:0000")
 }

@@ -70,10 +70,12 @@ exports.genRoute = async function (data) {
                     case "end":
                         end.system = r.entry.sys
                         end.region = r.entry.reg
+                        end.planet = r.entry.planet
                         break
                     case "start":
                         start.system = r.entry.sys
                         start.region = r.entry.reg
+                        start.planet = r.entry.planet
                         break
                     case "bases":
                         hops = hops.concat(r.list)
@@ -204,7 +206,7 @@ function calcJumps(routes, data) {
         const last = r.route[r.route.length - 1]
         let jumps = 0
         r.bh = 0
-        let le = null
+        let lexit = null
 
         for (let i = 0; i < r.route.length; ++i) {
             const l = r.route[i]
@@ -215,37 +217,35 @@ function calcJumps(routes, data) {
                     nr.push(l)
             }
 
-            const n = i < r.route.length - 1 ? r.route[i + 1] : null
-            const ly = le ? Math.ceil(calcDistXYZ(le.coords, l.coords) * 400) : 0
-            const j = Math.max(Math.ceil(ly / data.range), 1)
+            const exit = i < r.route.length - 1 ? r.route[i + 1] : null
+            const dist = lexit ? Math.ceil(calcDistXYZ(lexit.coords, l.coords) * 400) : 0
+            const jmp = Math.max(Math.ceil(dist / data.range), 1)
 
+            lexit = exit
             l.jumps = 0
             l.dist = 0
 
-            if (i === 0)
+            if (i === 0) {
                 l.what = "start"
-            else if (last.addr === l.addr && ly === 0)
+                lexit = l
+            } else if (last.addr === l.addr) {
                 l.what = "end"
-            else if (l.what === "teleport") {
+                l.jumps = dist === 0 ? 0 : jmp
+                l.dist = dist
+                jumps += l.jumps
+            } else if (l.what === "teleport") {
                 l.jumps = 1
-                l.exit = n
+                l.exit = exit
                 jumps = 1
-                le = n
-                i++
-            } else if (l.coords.s === 0x79) {
-                l.what = "bh"
-                l.jumps = j
-                l.dist = ly
-                l.exit = n
-                jumps += j + 1
-                r.bh++
-                le = n
                 i++
             } else {
-                l.what = "warp"
-                l.jumps = j
-                l.dist = ly
-                jumps += j
+                l.what = "bh"
+                l.jumps = jmp
+                l.dist = dist
+                l.exit = exit
+                jumps += jmp + 1
+                r.bh++
+                i++
             }
 
             nr.push(l)
@@ -320,6 +320,7 @@ function addBases(user, start, gal, plat) {
                             name: e.basename,
                             region: e.reg,
                             system: e.sys,
+                            planet: e.planet,
                             what: "teleport",
                         },
                         exit: {
@@ -327,6 +328,7 @@ function addBases(user, start, gal, plat) {
                             addr: e.addr,
                             region: e.reg,
                             system: e.sys,
+                            planet: e.planet,
                         }
                     }
 

@@ -9,6 +9,7 @@ https://us-central1-nms-bhs.cloudfunctions.net/getPOI?g=Euclid&p=PC-XBox
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
 var serviceAccount = require("./nms-bhs-8025d3f3c02d.json")
+require('events').EventEmitter.defaultMaxListeners = 0
 const cors = require('cors')({
     origin: true
 })
@@ -187,7 +188,6 @@ exports.genDARC = functions.https.onCall(async (data, context) => {
                             })
                         }))
                     }
-
                 }
 
                 return Promise.all(p).then(res => {

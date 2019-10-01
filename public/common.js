@@ -1035,10 +1035,6 @@ String.prototype.nameToId = function () {
     return id
 }
 
-function checkZeroAddress(addr) {
-    return /(0{4}:){3}0{4}/.test(addr)
-}
-
 function reformatAddress(addr) {
     return bhs.reformatAddress(addr)
 }
