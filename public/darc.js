@@ -371,7 +371,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
     const hdr = $("#resHeader")
 
     const block = `
-        <div id="id-rindex" class="row def-bkg txt-def border-top-3" onclick="selectRoute(this)"></div>
+        <div id="id-rindex" class="row def-bkg txt-def border-top-gold" onclick="selectRoute(this)"></div>
         <div id="block-rindex" class="container-flex hidden">`
     const row = `<div id="id-addr" class="row" onclick="mapRow(this)">`
     const itm = `<div id="itm-field" class="format">title</div>`
@@ -411,7 +411,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
             let finished = false
 
             let l = /addr/ [Symbol.replace](row, r.what === "teleport" ? r.exit.addr : r.addr)
-            l = /row/ [Symbol.replace](l, i === 0 ? "row border-top-3" : "row")
+            l = /row/ [Symbol.replace](l, i === 0 ? "row border-top-gold" : "row")
             h += /row/ [Symbol.replace](l, b ? "row bkg-vlight-gray" : "row")
             b = !b
             let warp
