@@ -18,6 +18,11 @@ async function main() {
     const file = "C:\\Users\\sp\\Documents\\nms\\RAWBHS - Black Hole Tracker-mod.csv"
 
     await fs.readFile(file, 'utf8', async (err, data) => {
+        if (err) {
+            console.log(err)
+            return
+        }
+
         let allrows = data.split(/\r?\n|\r/)
         for (let i = 1; i < allrows.length; ++i) {
             let row = allrows[i]
@@ -88,11 +93,11 @@ function reformatAddress(addr) {
     //     out = bhs.glyphToAddr(addr)
     // else {
     let str = /[^0-9A-F]+/g [Symbol.replace](addr, ":")
-    str = str[0] == ":" ? str.slice(1) : str
+    str = str[0] === ":" ? str.slice(1) : str
 
     for (let i = 0; i < 4; ++i) {
         let idx = str.indexOf(":")
-        let end = idx > 4 || idx == -1 ? 4 : idx
+        let end = idx > 4 || idx === -1 ? 4 : idx
         let s = str.slice(0, end)
         str = str.slice(end + (idx <= 4 && idx >= 0 ? 1 : 0))
         out += "0000".slice(0, 4 - s.length) + s + (i < 3 ? ":" : "")
@@ -116,14 +121,14 @@ function formatPlatform(val) {
 
 function formatListSel(val, list) {
     let name = val.stripNumber()
-    if (name == "") {
+    if (name === "") {
         let num = val.replace(/(\d+).*/, "$1")
         let idx = getIndex(list, "number", num)
-        if (idx != -1)
+        if (idx !== -1)
             name = list[idx].name
     } else {
         let idx = getIndex(list, "name", name)
-        if (idx != -1)
+        if (idx !== -1)
             name = list[idx].name
     }
 
@@ -135,7 +140,7 @@ function getIndex(list, field, id) {
         return -1
 
     return list.map(x => {
-        return typeof x[field] == "string" ? x[field].toLowerCase() : x[field]
+        return typeof x[field] === "string" ? x[field].toLowerCase() : x[field]
     }).indexOf(id.toLowerCase())
 }
 

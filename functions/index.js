@@ -109,7 +109,7 @@ exports.genPOI = functions.https.onCall((data, context) => {
     return hops.genPOI()
 })
 
-exports.scheduleGenPOI = functions.pubsub.schedule('0 * * * *').onRun(context => {
+exports.scheduleGenPOI = functions.pubsub.schedule('0,30 * * * *').onRun(context => {
     const hops = require('./hops.js')
     return hops.genPOI()
 })
@@ -216,7 +216,7 @@ function stringify(e) {
     return JSON.stringify([e.addr, e.reg, e.sys, e.x.addr, e.x.reg, e.x.sys]) + "\n"
 }
 
-exports.scheduleUpdateDARC = functions.pubsub.schedule("0 * * * *").onRun((context) => {
+exports.scheduleUpdateDARC = functions.pubsub.schedule("0,15,30,45 * * * *").onRun((context) => {
     return doUpdateDARC()
 })
 
@@ -274,11 +274,13 @@ async function doUpdateDARC() {
                     })
 
                     rd.on("line", line => {
-                        let addr = line.replace(/.*?((?:[0-9A-F]{4}:){3}[0-9A-F]{4}).*/, "$1")
-                        if (applyEdits(ts, elist[addr]))
-                            delete elist[addr]
-                        else
-                            ts.write(line + "\n")
+                        if (line !== "\n") {
+                            let addr = line.replace(/.*?((?:[0-9A-F]{4}:){3}[0-9A-F]{4}).*/, "$1")
+                            if (applyEdits(ts, elist[addr]))
+                                delete elist[addr]
+                            else
+                                ts.write(line)
+                        }
                     })
 
                     rd.on("close", () => {
@@ -378,22 +380,16 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
 
 exports.systemUpdate = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
     .onUpdate(async (change, context) => {
-        var deepEqual = require('deep-equal')
-
         let p = []
         let e = change.after.data()
 
         if (e.blackhole) {
-            delete e.modded
             let b = change.before.data()
-            delete b.modded
 
-            if (!deepEqual(e, b)) {
-                let e = change.after.data()
-                if (e.blackhole || e.deadzone) {
-                    p.push(saveChange(e, "update"))
-                }
-            }
+            // JSON.stringify([e.addr, e.reg, e.sys, e.x.addr, e.x.reg, e.x.sys])
+            if (e.addr !== b.addr || e.reg !== b.reg || e.sys !== b.sys ||
+                e.x.addr !== b.x.addr || e.x.reg !== b.x.reg || e.x.sys !== b.x.sys)
+                p.push(saveChange(e, "update"))
         }
 
         return Promise.all(p)
