@@ -214,7 +214,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
     const gbtn = `
         <button type="button" class="btn-def btn btn-sm col-8x1" onclick="bhs.addGlyph(this)">
-            <scope class="h4 glyph">title</scope>
+            <scope class="h3 glyph">title</scope>
             &nbsp;(title)
         </button>`
 
