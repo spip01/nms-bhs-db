@@ -153,14 +153,17 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
 }
 
 blackHoleSuns.prototype.setAddress = function (evt) {
-    let addr = bhs.reformatAddress($(evt).val())
-    let err = bhs.validateAddress(addr)
+    let addr = $(evt).val()
+    if (addr !== "") {
+        addr = bhs.reformatAddress(addr)
+        let err = bhs.validateAddress(addr)
 
-    if (err !== "")
-        bhs.status("ERROR: " + err)
-    else {
-        $(evt).val(addr)
-        bhs.saveDarcSettings(evt)
+        if (err !== "")
+            bhs.status("ERROR: " + err)
+        else {
+            $(evt).val(addr)
+            bhs.saveDarcSettings(evt)
+        }
     }
 }
 

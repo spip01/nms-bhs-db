@@ -171,6 +171,14 @@ body {
     background-color: white;
 }
 
+.col-8x1 {
+    -webkit-box-flex: 0;
+    box-flex: 0;
+    -ms-flex: 0 0 12.5%;
+    flex: 0 0 12.5%;
+    max-width: 12.5%;
+  }
+
 [class|='col-'] {
     padding-left: 1px !important;
     padding-right: 1px !important;

@@ -1,6 +1,20 @@
 $(document).ready(() => {
     $("#javascript").empty()
     $("#jssite").show()
+
+    const gbtn = `
+    <button type="button" class="btn-def btn btn-sm col-8x1" onclick="addGlyph(this)">
+        <scope class="h4 glyph">title</scope>
+        &nbsp;(title)
+    </button>`
+
+    let h = ""
+    for (let i = 0; i < 16; ++i) {
+        h += /title/g [Symbol.replace](gbtn, i.toString(16).toUpperCase())
+    }
+
+    let gloc = $("[id='glyphbuttons']")
+    gloc.append(h)
 })
 
 function dispAddr(evt) {
@@ -53,13 +67,15 @@ function dispAddr(evt) {
 
 function dispGlyph(evt) {
     let glyph = $(evt).val().toUpperCase()
-    $(evt).val(glyph)
-    let id = $(evt).closest("[id|='w']").prop("id")
+    if (glyph !== "") {
+        $(evt).val(glyph)
+        let id = $(evt).closest("[id|='w']").prop("id")
 
-    let addr = reformatAddress(glyph)
-    $("#id-addrInput #" + id + " #id-addr").val(addr)
+        let addr = reformatAddress(glyph)
+        $("#id-addrInput #" + id + " #id-addr").val(addr)
 
-    dispAddr()
+        dispAddr()
+    }
 }
 
 function setGlyphInput(evt) {
@@ -76,8 +92,10 @@ function setGlyphInput(evt) {
 
 function addGlyph(evt) {
     let loc = $(evt).closest("[id|='w']").find("#id-glyph")
-    let a = loc.val() + $(evt).text()
+    let a = loc.val() + $(evt).text().trim().slice(0, 1)
     loc.val(a)
+    if (a.length===12)
+        dispGlyph(loc)
 }
 
 function calcAngle(saddr, eaddr, xp, yp) {

@@ -107,30 +107,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                         </div>
                     </div>
 
-                    <div class="row"> 
-                        <div class="col-14 text-center">
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">0</button>&nbsp
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">1</button>&nbsp
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">2</button>&nbsp
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">3</button>&nbsp
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">4</button>&nbsp
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">5</button>&nbsp
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">6</button>&nbsp
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">7</button>&nbsp
-                        </div>
-                    </div>
-                    <div class="row"> 
-                        <div class="col-14 text-center">
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">8</button>&nbsp
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">9</button>&nbsp
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">A</button>&nbsp
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">B</button>&nbsp
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">C</button>&nbsp
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">D</button>&nbsp
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">E</button>&nbsp
-                            <button type="button" class="btn-def btn btn-sm glyph" onclick="bhs.addGlyph(this)">F</button>&nbsp
-                        </div>
-                    </div>
+                    <div id="glyphbuttons" class="row"></div>
 
                     <div class="row">
                         <div class="col-sm-4 col-7 h6 txt-inp-def">Coords&nbsp;</div>
@@ -235,12 +212,26 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         </div>
         <br>`
 
+    const gbtn = `
+        <button type="button" class="btn-def btn btn-sm col-8x1" onclick="bhs.addGlyph(this)">
+            <scope class="h4 glyph">title</scope>
+            &nbsp;(title)
+        </button>`
+
     let h = /idname/g [Symbol.replace](panel, id)
     h = /title/g [Symbol.replace](h, id == "pnl-S1" ? panels[pnlTop].name : panels[pnlBottom].name)
 
     $("#panels").append(h)
 
     let loc = $("#" + id)
+
+    h = ""
+    for (let i = 0; i < 16; ++i) {
+        h += /title/g [Symbol.replace](gbtn, i.toString(16).toUpperCase())
+    }
+
+    let gloc = loc.find("#glyphbuttons")
+    gloc.append(h)
 
     bhs.buildMenu(loc, "Lifeform", lifeformList)
     bhs.buildMenu(loc, "Economy", economyList)
@@ -291,29 +282,35 @@ blackHoleSuns.prototype.setGlyphInput = function (evt) {
 }
 
 blackHoleSuns.prototype.addGlyph = function (evt) {
-    let loc = $(evt).closest("[id|='pnl']").find("#id-addr")
-    let a = loc.val()
-    a += $(evt).text()
+    let loc = $(evt).closest("#id-glyphInput").find("#id-glyph")
+    let a = loc.val() + $(evt).text().trim().slice(0, 1)
     loc.val(a)
+    if (a.length === 12)
+        bhs.changeAddr(loc)
 }
 
 blackHoleSuns.prototype.changeAddr = function (evt) {
-    let addr = bhs.reformatAddress($(evt).val())
-    let pnl = $(evt).closest("[id|='pnl'")
+    let addr = $(evt).val()
+    if (addr !== "") {
+        addr = bhs.reformatAddress(addr)
+        let pnl = $(evt).closest("[id|='pnl'")
 
-    bhs.dispAddr(pnl, addr)
-    bhs.getEntry(addr, bhs.displayListEntry)
-    bhs.displayCalc()
+        bhs.dispAddr(pnl, addr)
+        bhs.getEntry(addr, bhs.displayListEntry)
+        bhs.displayCalc()
+    }
 }
 
 blackHoleSuns.prototype.changeGlyph = function (evt) {
     let glyph = $(evt).val().toUpperCase()
-    let addr = bhs.reformatAddress(glyph)
-    let pnl = $(evt).closest("[id|='pnl'")
+    if (glyph !== "") {
+        let addr = bhs.reformatAddress(glyph)
+        let pnl = $(evt).closest("[id|='pnl'")
 
-    bhs.dispAddr(pnl, addr)
-    bhs.getEntry(addr, bhs.displayListEntry)
-    bhs.displayCalc()
+        bhs.dispAddr(pnl, addr)
+        bhs.getEntry(addr, bhs.displayListEntry)
+        bhs.displayCalc()
+    }
 }
 
 blackHoleSuns.prototype.dispAddr = function (pnl, addr) {
