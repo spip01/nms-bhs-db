@@ -563,6 +563,9 @@ blackHoleSuns.prototype.displayResults = function (routes) {
         rloc.find("#res-row").append(h)
         idx++
     }
+
+    if (routes.length === 1)
+        selectRoute("#id-r0")
 }
 
 var selected
