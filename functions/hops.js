@@ -5,8 +5,10 @@ require('events').EventEmitter.defaultMaxListeners = 0
 const dc = require('nmsbhs-utils')
 const readline = require('readline')
 
-let savedHops = {}
-let savedPOI = {}
+var savedHops = {}
+var savedPOI = {}
+var hopsModded = null
+var poiModded = null
 
 exports.genRoute = async function (data) {
     let now = new Date().getTime()
@@ -109,11 +111,25 @@ exports.genRoute = async function (data) {
     })
 }
 
-function getHops(gal, plat) {
+async function getHops(gal, plat) {
     if (typeof savedHops[gal] === "undefined")
         savedHops[gal] = {}
 
-    if (typeof savedHops[gal][plat] !== "undefined")
+    const bucket = admin.storage().bucket("nms-bhs.appspot.com")
+    let fname = 'darc/' + gal + "-" + plat + ".json"
+    let f = bucket.file(fname)
+    let data = await f.exists()
+
+    if (typeof data === "undefined" || !data[0]) {
+        resolve({
+            what: "hops",
+            list: []
+        })
+    }
+
+    let m = f.getMetadata()
+
+    if (typeof savedHops[gal][plat] !== "undefined" && hopsModded && hopsModded >= m.updated)
         return new Promise((resolve, reject) => {
             resolve({
                 what: "hops",
@@ -121,64 +137,53 @@ function getHops(gal, plat) {
             })
         })
 
+    hopsModded = m.updated
     savedHops[gal][plat] = []
 
-    const bucket = admin.storage().bucket("nms-bhs.appspot.com")
-    let fname = 'darc/' + gal + "-" + plat + ".json"
+    let p = []
+    if (data[0]) {
+        let s = f.createReadStream()
+        let rd = readline.createInterface({
+            input: s
+        })
 
-    let f = bucket.file(fname)
-    return f.exists().then(data => {
-            let p = []
-            if (data[0]) {
-                let s = f.createReadStream()
-                let rd = readline.createInterface({
-                    input: s
-                })
-
-                let out = []
-                rd.on("line", line => {
-                    if (line) {
-                        let r = JSON.parse(line)
-                        let h = {
-                            blackhole: {
-                                coords: dc.coordinates(r[0]),
-                                addr: r[0],
-                                region: r[1],
-                                system: r[2],
-                            },
-                            exit: {
-                                coords: dc.coordinates(r[3]),
-                                addr: r[3],
-                                region: r[4],
-                                system: r[5],
-                            }
-                        }
-
-                        out.push(h)
+        let out = []
+        rd.on("line", line => {
+            if (line) {
+                let r = JSON.parse(line)
+                let h = {
+                    blackhole: {
+                        coords: dc.coordinates(r[0]),
+                        addr: r[0],
+                        region: r[1],
+                        system: r[2],
+                    },
+                    exit: {
+                        coords: dc.coordinates(r[3]),
+                        addr: r[3],
+                        region: r[4],
+                        system: r[5],
                     }
-                })
-
-                p.push(new Promise((resolve, reject) => {
-                    savedHops[gal][plat] = out
-                    rd.on("close", () => {
-                        resolve()
-                    })
-                }))
-            }
-
-            return Promise.all(p).then(res => {
-                return {
-                    what: "hops",
-                    list: savedHops[gal][plat]
                 }
-            })
-        })
-        .catch(err => {
-            console.log(JSON.stringify(err))
-            return {
-                err: JSON.stringify(err)
+
+                out.push(h)
             }
         })
+
+        p.push(new Promise((resolve, reject) => {
+            savedHops[gal][plat] = out
+            rd.on("close", () => {
+                resolve()
+            })
+        }))
+    }
+
+    return Promise.all(p).then(res => {
+        return {
+            what: "hops",
+            list: savedHops[gal][plat]
+        }
+    })
 }
 
 function getAddrEntry(what, addr, gal, plat) {
