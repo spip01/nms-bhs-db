@@ -38,6 +38,7 @@
     <script src="glyph.js"></script>
 
     <link rel="stylesheet" type="text/css" href="local.css">
+    <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
 </head>
 
 <body class="bkg-def">
@@ -78,27 +79,27 @@
     <br>
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
-        <div class="card card-body pad-bottom bkg-def border clr-white">
-            <div class="col-lg-7 col-md-9 col-14">
+        <div class="card card-body pad-bottom bkg-def border">
+            <div class="col-lg-9 col-14">
                 <div class="card">
                     <div class="card-header bkg-def txt-def h3">
                         Coordinates to Glyph conversion
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-3 col-5 h6 txt-inp-def">Input Coordinates</div>
-                            <input id="id-addr" class="rounded col-md-4 col-7" placeholder="0000:0000:0000:0000"
+                            <div class="col-4 h6 txt-inp-def">Input Coordinates</div>
+                            <input id="id-addr" class="rounded col-9" placeholder="0000:0000:0000:0000"
                                 onchange="dispAddr(this)">
                         </div>
 
                         <div class="row">
-                            <div class="col-md-2 col-4 h6 text-right txt-inp-def">Glyphs</div>
-                            <div class="col-md-10 col-8">
-                                <div class="row">
-                                    <div id="id-glyph" class="col-md-9 col-12 h3 txt-inp-def glyph"></div>
-                                    <div id="id-hex" class="col-md-3 col-12 txt-inp-def"></div>
-                                </div>
-                            </div>
+                            <div class="col-4 h6 txt-inp-def">Glyph</div>
+                            <div id="id-glyph" class="col-10 h4 txt-inp-def glyph"></div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-4 h6 txt-inp-def">Hex</div>
+                            <div id="id-hex" class="col-10 h4 txt-inp-def"></div>
                         </div>
                     </div>
                     <br>
@@ -111,15 +112,15 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-3 col-4 h6 txt-inp-def">Input Glyph</div>
-                            <input id="id-glyph" class="rounded col-md-6 col-10 h4 glyph" onchange="dispGlyph(this)">
+                            <div class="col-4 h6 txt-inp-def">Input Glyph</div>
+                            <input id="id-glyph" class="col-10 rounded h4 glyph" onchange="dispGlyph(this)">
                         </div>
 
                         <div id="glyphbuttons" class="row"> </div>
 
                         <div class="row">
-                            <div class="col-md-2 col-4 h6 text-right txt-inp-def">Coordinates</div>
-                            <div id="id-addr" class="col-md-9 col-12 h3 txt-inp-def"></div>
+                            <div class="col-4 h6 txt-inp-def">Coordinates</div>
+                            <div id="id-addr" class="col-10 h4 txt-inp-def"></div>
                         </div>
                     </div>
                 </div>
