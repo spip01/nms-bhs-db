@@ -120,12 +120,13 @@ async function getHops(gal, plat) {
     let f = bucket.file(fname)
     let data = await f.exists()
 
-    if (typeof data === "undefined" || !data[0]) {
-        resolve({
-            what: "hops",
-            list: []
+    if (typeof data === "undefined" || !data[0])
+        return new Promise((resolve, reject) => {
+            resolve({
+                what: "hops",
+                list: []
+            })
         })
-    }
 
     let m = f.getMetadata()
 
@@ -350,11 +351,27 @@ function addBases(user, start, gal, plat) {
     })
 }
 
-function getPOI(gal, plat) {
+async function getPOI(gal, plat) {
     if (typeof savedPOI[gal] === "undefined")
         savedPOI[gal] = {}
 
-    if (typeof savedPOI[gal][plat] !== "undefined")
+    const bucket = admin.storage().bucket("nms-bhs.appspot.com")
+    let fname = 'darc/poi/' + gal + "-" + plat + ".json"
+
+    let f = bucket.file(fname)
+    let data = await f.exists()
+
+    if (typeof data === "undefined" || !data[0])
+        return new Promise((resolve, reject) => {
+            resolve({
+                what: "poi",
+                list: []
+            })
+        })
+
+    let m = f.getMetadata()
+
+    if (typeof savedPOI[gal][plat] !== "undefined" && poiModded && poiModded >= m.updated)
         return new Promise((resolve, reject) => {
             resolve({
                 what: "poi",
@@ -362,61 +379,50 @@ function getPOI(gal, plat) {
             })
         })
 
+    poiModded = m.updated
     savedPOI[gal][plat] = []
 
-    const bucket = admin.storage().bucket("nms-bhs.appspot.com")
-    let fname = 'darc/poi/' + gal + "-" + plat + ".json"
+    let p = []
+    if (data[0]) {
+        let s = f.createReadStream()
+        let rd = readline.createInterface({
+            input: s
+        })
 
-    let f = bucket.file(fname)
-    return f.exists().then(data => {
-            let p = []
-            if (data[0]) {
-                let s = f.createReadStream()
-                let rd = readline.createInterface({
-                    input: s
-                })
-
-                let out = []
-                rd.on("line", line => {
-                    if (line) {
-                        let r = JSON.parse(line)
-                        let h = {
-                            coords: dc.coordinates(r[0]),
-                            addr: r[0],
-                            region: r[1],
-                            system: r[2],
-                            name: r[3],
-                            owner: r[4],
-                            type: r[5],
-                            planet: r[6],
-                        }
-
-                        out.push(h)
-                    }
-                })
-
-                p.push(new Promise((resolve, reject) => {
-                    savedPOI[gal][plat] = out
-
-                    rd.on("close", () => {
-                        resolve()
-                    })
-                }))
-            }
-
-            return Promise.all(p).then(res => {
-                return {
-                    what: "poi",
-                    list: savedPOI[gal][plat]
+        let out = []
+        rd.on("line", line => {
+            if (line) {
+                let r = JSON.parse(line)
+                let h = {
+                    coords: dc.coordinates(r[0]),
+                    addr: r[0],
+                    region: r[1],
+                    system: r[2],
+                    name: r[3],
+                    owner: r[4],
+                    type: r[5],
+                    planet: r[6],
                 }
-            })
-        })
-        .catch(err => {
-            console.log(JSON.stringify(err))
-            return {
-                err: JSON.stringify(err)
+
+                out.push(h)
             }
         })
+
+        p.push(new Promise((resolve, reject) => {
+            savedPOI[gal][plat] = out
+
+            rd.on("close", () => {
+                resolve()
+            })
+        }))
+    }
+
+    return Promise.all(p).then(res => {
+        return {
+            what: "poi",
+            list: savedPOI[gal][plat]
+        }
+    })
 }
 
 exports.genPOI = function () {
