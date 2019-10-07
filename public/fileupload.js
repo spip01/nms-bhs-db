@@ -79,68 +79,66 @@ var importTable = [{
     match: /type/i,
     field: "type",
     group: 0
-},{
+}, {
     match: /coord|addr/i,
     field: "addr",
     required: true,
     format: reformatAddress,
-    validate: validateAddressTF,
-    group: 1    // black hole
+    group: 1 // black hole
 }, {
     match: /coord|addr/i,
     field: "addr",
     required: notBaseDel,
     format: reformatAddress,
-    validate: validateAddressTF,
-    group: 2    // exit
+    group: 2 // exit
 }, {
     match: /reg/i,
     field: "reg",
     required: true,
-    group: 1    // black hole
+    group: 1 // black hole
 }, {
     match: /sys/i,
     field: "sys",
     required: true,
-    group: 1    // black hole
+    group: 1 // black hole
 }, {
     match: /life/i,
     field: "life",
     format: formatLife,
-    group: 1    // black hole
+    group: 1 // black hole
 }, {
     match: /econ/i,
     field: "econ",
     format: formatEcon,
-    group: 1    // black hole
+    group: 1 // black hole
 }, {
     match: /reg/i,
     field: "reg",
-    group: 2    // exit
+    group: 2 // exit
 }, {
     match: /sys/i,
     field: "sys",
-    group: 2    // exit
+    group: 2 // exit
 }, {
     match: /life/i,
     field: "life",
     format: formatLife,
-    group: 2    // exit
+    group: 2 // exit
 }, {
     match: /econ/i,
     field: "econ",
     format: formatEcon,
-    group: 2    // exit
+    group: 2 // exit
 }, {
     match: /own/i,
     field: "owned",
     format: formatOwned,
-    group: 2    // exit
+    group: 2 // exit
 }, {
     match: /planet/i,
     field: "planet",
-    group: 2    // exit
-},  ]
+    group: 2 // exit
+}, ]
 
 /* type menu from spreadsheet
 Black Hole
@@ -253,7 +251,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                 let idx = importTable[j].index
                 let grp = importTable[j].group
                 let fld = importTable[j].field
-                
+
                 if (idx >= 0) {
                     if (row[idx] == "") {
                         if (importTable[j].required === true || typeof importTable[j].required === "function" &&
@@ -266,15 +264,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                         if (importTable[j].format)
                             v = importTable[j].format(v)
 
-                        if (importTable[j].validate)
-                            ok = importTable[j].validate(v)
-
                         entry[grp][fld] = v
-
-                        if (!ok) {
-                            let s = grp == 1 ? "bh " : grp == 2 ? "exit " : ""
-                            bhs.filestatus("row: " + (i + 1) + " invalid value " + s + importTable[j].field + " " + entry[grp][fld], 0)
-                        }
                     }
                 }
             }
@@ -315,20 +305,22 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                     entry[1].deadzone = entry[0].type.match(/dead|dz/i) || entry[2].addr == entry[1].addr
                     entry[1].blackhole = !entry[1].deadzone
 
-                    let str = validateBHAddress(entry[1].addr)
-                    if (str != "") {
-                        bhs.filestatus("row: " + (i + 1) + " invalid black hole address (" + str + ") " + entry[1].addr, 0)
-                        ok = false
-                    }
+                    let err = validateBHAddress(entry[1].addr)
+                    ok = err === ""
 
-                    if (ok && !entry[1].deadzone && (str = validateExitAddress(entry[2].addr)) != "") {
-                        bhs.filestatus("row: " + (i + 1) + " invalid exit address (" + str + ") " + entry[1].addr, 0)
-                        ok = false
-                    }
+                    if (ok && !entry[1].deadzone)
+                        err = validateExitAddress(entry[2].addr)
 
-                    let err = bhs.validateDist(entry[1])
-                    if (ok && err != "")
-                        bhs.filestatus("row: " + (i + 1) + " invalid distance (" + err + ") " + entry[1].addr, 0)
+                    ok = ok && err === ""
+
+                    if (ok && !entry[1].deadzone)
+                        err = bhs.validateDist(entry[1])
+
+                    ok = ok && err === ""
+
+                    if (!ok)
+                        bhs.filestatus("row: " + (i + 1) + " " + err, 0)
+
                     else
                         ok = await bhs.fBatchUpdate(entry[1], entry[2], check, i)
                 }
@@ -491,12 +483,12 @@ blackHoleSuns.prototype.filestatus = function (str, lvl) {
         $("#filestatus").append("<h6>" + str + "</h6>")
 }
 
-function notBase(addr, type){
-    let t = typeof type !== "undefined" ? type.slice(0,4).toLowerCase() : ""
+function notBase(addr, type) {
+    let t = typeof type !== "undefined" ? type.slice(0, 4).toLowerCase() : ""
     return !(t === "base" || typeof addr !== "undefined" && addr === "0000:0000:0000:0000")
 }
 
-function notBaseDel(addr, type){
-    let t = typeof type !== "undefined" ? type.slice(0,4).toLowerCase() : ""
+function notBaseDel(addr, type) {
+    let t = typeof type !== "undefined" ? type.slice(0, 4).toLowerCase() : ""
     return !(t === "base" || t === "dele" || typeof addr !== "undefined" && addr === "0000:0000:0000:0000")
 }

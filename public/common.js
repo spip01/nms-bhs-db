@@ -1094,7 +1094,7 @@ blackHoleSuns.prototype.validateAddress = function (addr, ck) {
     else if (ck === "exit" && c.y > 0x83) error = ck + " y " + c.y.toString(16) + ' > 83'
     else if (ck === "exit" && c.s > 0x78) error = ck + " system " + c.s.toString(16) + ' > 78'
 
-    return error
+    return error === "" ? "" : addr + " " + error
 }
 
 blackHoleSuns.prototype.validateDist = function (entry) {
