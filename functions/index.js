@@ -279,7 +279,7 @@ async function doUpdateDARC() {
                             if (applyEdits(ts, elist[addr]))
                                 delete elist[addr]
                             else
-                                ts.write(line)
+                                ts.write(line + "\n")
                         }
                     })
 
