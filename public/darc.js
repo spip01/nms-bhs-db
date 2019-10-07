@@ -629,40 +629,47 @@ function mapRoute(route) {
     pushentry(out, zero)
     data.push(makedata(out, 4, "#d0d0d0"))
 
-    out = initout()
-    let poi = initout()
     for (let i = 0; i < route.length; ++i) {
         let r = route[i]
-        if (r.what !== "poi") {
-            let t = (r.region ? "<br>" + r.region : "") + (r.system ? "<br>" + r.system : "")
-            pushentry(out, r.coords, bhs.xyzToAddress(r.coords) + t)
-        } else {
-            let t = (r.name ? "<br>" + r.name : "") + (r.owner ? "<br>" + r.owner : "")
-            pushentry(poi, r.coords, bhs.xyzToAddress(r.coords) + t)
+        let l = route[i - 1]
+        out = initout()
+
+        switch (r.what) {
+            case "start":
+                pushentry(out, r.coords, r.addr + (r.region ? "<br>" + r.region : "") + (r.system ? "<br>" + r.system : ""))
+                data.push(makedata(out, 5, "#00ff00"))
+                break
+
+            case "end":
+                if (typeof l.exit !== "undefined")
+                    l = l.exit
+                pushentry(out, l.coords, l.addr + (l.region ? "<br>" + l.region : "") + (l.system ? "<br>" + l.system : ""))
+                pushentry(out, r.coords, r.addr + (r.region ? "<br>" + r.region : "") + (r.system ? "<br>" + r.system : ""))
+                data.push(makedata(out, 4, "#ff0000", "#ff0000"))
+
+                out = initout()
+                pushentry(out, r.coords, r.addr + (r.region ? "<br>" + r.region : "") + (r.system ? "<br>" + r.system : ""))
+                data.push(makedata(out, 5, "#ff0000"))
+                break
+
+            case "teleport":
+            case "bh":
+                if (typeof l.exit !== "undefined")
+                    l = l.exit
+                pushentry(out, l.coords, l.addr + (l.region ? "<br>" + l.region : "") + (l.system ? "<br>" + l.system : ""))
+                pushentry(out, r.coords, r.addr + (r.region ? "<br>" + r.region : "") + (r.system ? "<br>" + r.system : ""))
+                data.push(makedata(out, 4, "#ff0000", "#ff0000"))
+
+                out = initout()
+                pushentry(out, r.coords, r.addr + (r.region ? "<br>" + r.region : "") + (r.system ? "<br>" + r.system : ""))
+                r = r.exit
+                pushentry(out, r.coords, r.addr + (r.region ? "<br>" + r.region : "") + (r.system ? "<br>" + r.system : ""))
+                data.push(makedata(out, 4, "#00ff00", "#00ff00"))
+                break
+
+            case "poi":
         }
     }
-
-    data.push(makedata(out, 4, "#00ff00", "#40ff00"))
-    data.push(makedata(poi, 4, "#80c0ff"))
-
-    out = initout()
-    let r = route[0]
-    let reg = typeof r.name !== "undefined" ? r.name : typeof r.region !== "undefined" ? r.region : ""
-    let sys = typeof r.owner !== "undefined" ? r.owner : typeof r.system !== "undefined" ? r.system : ""
-    let t = (reg ? "<br>" + reg : "") + (sys ? "<br>" + sys : "")
-
-    pushentry(out, r.coords, bhs.xyzToAddress(r.coords) + t)
-    data.push(makedata(out, 6, "#ffff00"))
-
-    out = initout()
-    r = route[route.length - 1]
-    reg = typeof r.name !== "undefined" ? r.name : typeof r.region !== "undefined" ? r.region : ""
-    sys = typeof r.owner !== "undefined" ? r.owner : typeof r.system !== "undefined" ? r.system : ""
-    t = (reg ? "<br>" + reg : "") + (sys ? "<br>" + sys : "")
-
-    pushentry(out, r.coords, bhs.xyzToAddress(r.coords) + t)
-    data.push(makedata(out, 6, "#ff0000"))
-
 
     Plotly.react('plymap', data, changeMapLayout())
 }
@@ -698,11 +705,11 @@ function mapRow(evt) {
 
     out = initout()
     pushentry(out, sxyz)
-    pushentry(out, exyz, end + "<br>" + ereg + "<br>" + esys)
+    pushentry(out, exyz, end + (ereg ? "<br>" + ereg : "") + (esys ? "<br>" + esys : ""))
     data.push(makedata(out, 4, "#ff0000", "#40ff00"))
 
     out = initout()
-    pushentry(out, sxyz, start + "<br>" + sreg + "<br>" + ssys)
+    pushentry(out, sxyz, start(sreg ? "<br>" + sreg : "") + (ssys ? "<br>" + ssys : ""))
     data.push(makedata(out, 4, "#00ff00"))
 
     Plotly.react('plymap', data, changeMapLayout(true, start, end))
