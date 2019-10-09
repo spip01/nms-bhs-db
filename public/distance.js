@@ -4,7 +4,7 @@ $(document).ready(() => {
 
     const gbtn = `
     <button type="button" class="btn-def btn btn-sm col-8x1" onclick="addGlyph(this)">
-        <scope class="h3 glyph">title</scope>
+        <span class="h3 glyph">title</span>
         &nbsp;(title)
     </button>`
 
@@ -146,7 +146,9 @@ function addrToGlyph(addr, planet) {
         let xy = "00" + (xyz.y + 0x81).toString(16).toUpperCase()
         let xz = "00" + (xyz.z + 0x801).toString(16).toUpperCase()
 
-        s = typeof planet === "string" ? planet : "0"
+        planet = typeof planet === "undefined" || planet === "" ? 0 : typeof planet === "string" ? parseInt(planet) : planet
+
+        s = planet.toString(16).toUpperCase().slice(0, 1)
         s += xs.slice(xs.length - 3)
         s += xy.slice(xy.length - 2)
         s += xz.slice(xz.length - 3)

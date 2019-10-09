@@ -177,7 +177,7 @@ body {
     -ms-flex: 0 0 12.5%;
     flex: 0 0 12.5%;
     max-width: 12.5%;
-  }
+}
 
 [class|='col-'] {
     padding-left: 1px !important;
@@ -212,6 +212,10 @@ body {
 
 .border-white {
     border-color: white;
+}
+
+.border-gold {
+    border-color: gold;
 }
 
 .scroll {
@@ -385,7 +389,7 @@ body {
 
 .border-top-gold {
     border-top: 1px solid;
-    border-color:gold;
+    border-color: gold;
 }
 
 .scrollable-menu {

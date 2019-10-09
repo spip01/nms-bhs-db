@@ -4,7 +4,7 @@ $(document).ready(() => {
 
     const gbtn = `
     <button type="button" class="btn-def btn btn-sm col-8x1" onclick="addGlyph(this)">
-        <scope class="h3 glyph">title</scope>
+        <span class="h3 glyph">title</span>
         &nbsp;(title)
     </button>`
 
@@ -15,16 +15,20 @@ $(document).ready(() => {
 
     let gloc = $("[id='glyphbuttons']")
     gloc.append(h)
+
+    $('[data-toggle="tooltip"]').tooltip()
 })
 
 function dispAddr(evt) {
-    let addr = $(evt).val().toUpperCase()
+    let loc = $(evt).closest(".card")
+    let addr = loc.find("#id-addr").val()
+
     if (addr !== "") {
         addr = reformatAddress(addr)
-        $(evt).val(addr)
+        loc.find("#id-addr").val(addr)
 
-        let loc = $(evt).closest(".card")
-        let glyph = addrToGlyph(addr)
+        let planet = loc.find("#id-planet").val()
+        let glyph = addrToGlyph(addr, planet)
         loc.find("#id-glyph").text(glyph)
         loc.find("#id-hex").text(glyph)
     }
@@ -34,8 +38,10 @@ function dispGlyph(evt) {
     let glyph = $(evt).val().toUpperCase()
     if (glyph !== "") {
         let addr = reformatAddress(glyph)
-        let loc = $(evt).closest(".card").find("#id-addr")
-        loc.text(addr)
+        let planet = glyph.slice(0, 1)
+        let loc = $(evt).closest(".card")
+        loc.find("#id-addr").text(addr)
+        loc.find("#id-planet").text(planet)
     }
 }
 
@@ -81,7 +87,9 @@ function addrToGlyph(addr, planet) {
         let xy = "00" + (xyz.y + 0x81).toString(16).toUpperCase()
         let xz = "00" + (xyz.z + 0x801).toString(16).toUpperCase()
 
-        s = typeof planet === "string" ? planet : "0"
+        planet = typeof planet === "undefined" || planet === "" ? 0 : typeof planet === "string" ? parseInt(planet) : planet
+
+        s = planet.toString(16).toUpperCase().slice(0, 1)
         s += xs.slice(xs.length - 3)
         s += xy.slice(xy.length - 2)
         s += xz.slice(xz.length - 3)

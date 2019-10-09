@@ -27,10 +27,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+    </script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
     </script>
@@ -79,56 +84,89 @@
     <br>
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
-        <div class="card card-body pad-bottom bkg-def border">
-            <div class="col-lg-9 col-14">
-                <div class="card">
-                    <div class="card-header bkg-def txt-def h3">
-                        Coordinates to Glyph conversion
-                    </div>
-                    <div class="card-body">
+        <div class="card">
+            <div class="card-header bkg-def txt-def h3">
+                Coordinates to Glyph conversion
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-5 col-md-6 col-13">
                         <div class="row">
-                            <div class="col-4 h6 txt-inp-def">Input Coordinates</div>
-                            <input id="id-addr" class="rounded col-9" placeholder="0000:0000:0000:0000"
-                                onchange="dispAddr(this)">
-                        </div>
-                        <div class="row">
-                            <div class="col-4 h6 txt-inp-def"></div>
-                            <div id="id-glyph" class="col-10 h6 txt-inp-def">Coordinatess can be entered without leading zeros or as a 16 digit number without separators.</div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-4 h6 txt-inp-def">Glyph</div>
-                            <div id="id-glyph" class="col-10 h4 txt-inp-def glyph"></div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-4 h6 txt-inp-def">Hex</div>
-                            <div id="id-hex" class="col-10 h4 txt-inp-def"></div>
+                            <div class="col-md-6 col-sm-4 col-6 h6 txt-inp-def" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom"
+                                title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators.">
+                                Input Coordinates&nbsp;
+                                <i class="far fa-question-circle"></i>
+                            </div>
+                            <input id="id-addr" class="rounded col-lg-7 col-md-8 col-sm-5 col-8 h5"
+                                placeholder="0000:0000:0000:0000" onchange="dispAddr(this)">
                         </div>
                     </div>
-                    <br>
+
+                    <div class="col-lg-5 col-md-7 col-13">
+                        <div class="row">
+                            <div class="col-sm-4 col-6 h6 txt-inp-def" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom" title="Planet number 0-15.<br>Defaults to 0.">
+                                Input Planet&nbsp;
+                                <i class="far fa-question-circle"></i>
+                            </div>
+                            <input id="id-planet" class="rounded col-md-2 col-sm-2 col-3" type="number" value=0 min=0
+                                max=15 placeholder="0" onchange="dispAddr(this)">
+                        </div>
+                    </div>
                 </div>
-                <br>
 
-                <div class="card">
-                    <div class="card-header bkg-def txt-def h3">
-                        Glyph to Coordinates conversion
+                <div class="row">
+                    <div class="col-lg-5 col-md-6 col-13">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-4 col-sm-4 col-3 h6 txt-inp-def">Glyph</div>
+                            <div id="id-glyph" class="col-lg-10 col-md-10 col-sm-10 col-11 h4 txt-inp-def glyph"></div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-4 h6 txt-inp-def">Input Glyph</div>
-                            <input id="id-glyph" class="col-10 rounded h4 glyph" onchange="dispGlyph(this)">
-                        </div>
-                        <div class="row">
-                            <div class="col-4 h6 txt-inp-def"></div>
-                            <div id="id-glyph" class="col-10 h6 txt-inp-def">Type hex digits into field or use buttons</div>
-                        </div>
 
+                    <div class="col-lg-5 col-md-7 col-13">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-4 col-sm-4 col-3 h6 txt-inp-def">Hex</div>
+                            <div id="id-hex" class="col-lg-10 col-md-10 col-sm-10 col-11 h4 txt-inp-def"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+
+        <div class="card">
+            <div class="card-header bkg-def txt-def h3">
+                Glyph to Coordinates conversion
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-2 col-md-2 col-4 h6 txt-inp-def" data-toggle="tooltip" data-html="true"
+                        data-placement="bottom" title="Type hex digits into field or use buttons.">Input
+                        Glyph&nbsp;
+                        <i class="far fa-question-circle"></i>
+                    </div>
+                    <input id="id-glyph" class="col-lg-4 col-md-5 col-sm-6 col-10 rounded h4 glyph"
+                        onchange="dispGlyph(this)">
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-8 col-md-9">
                         <div id="glyphbuttons" class="row"> </div>
+                    </div>
+                </div>
 
+                <div class="row">
+                    <div class="col-lg-5 col-md-6 col-13">
                         <div class="row">
-                            <div class="col-4 h6 txt-inp-def">Coordinates</div>
-                            <div id="id-addr" class="col-10 h4 txt-inp-def"></div>
+                            <div class="col-lg-4 col-md-4 col-sm-4 col-4 h6 txt-inp-def">Coordinates</div>
+                            <div id="id-addr" class="col-lg-10 col-md-10 col-sm-10 col-10 h4 txt-inp-def"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5 col-md-6 col-13">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-4 col-sm-4 col-4 h6 txt-inp-def">Planet</div>
+                            <div id="id-planet" class="col-1 h4 txt-inp-def"></div>
                         </div>
                     </div>
                 </div>

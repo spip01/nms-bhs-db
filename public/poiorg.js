@@ -111,7 +111,7 @@ const panel = `
                             <div class="col-3 txt-inp-def h6">Coord</div>
                             <input id="inp-addr" class="rounded col-5" type="text" placeholder="0000:0000:0000:0000">
                             <div class="col-3 txt-inp-def h6">Planet</div>
-                            <input id="inp-planet" class="rounded col-3" type="number" value=0 min=0>
+                            <input id="inp-planet" class="rounded col-3" type="number" value=0 min=0 max=15>
                         </div>
                         <br>
                         <div id="platform-menu" class="row">
