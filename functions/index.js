@@ -109,7 +109,7 @@ exports.genPOI = functions.https.onCall((data, context) => {
     return hops.genPOI()
 })
 
-exports.scheduleGenPOI = functions.pubsub.schedule('0,30 * * * *').onRun(context => {
+exports.scheduleGenPOI = functions.pubsub.schedule('*/30 * * * *').onRun(context => {
     const hops = require('./hops.js')
     return hops.genPOI()
 })
@@ -216,7 +216,7 @@ function stringify(e) {
     return JSON.stringify([e.addr, e.reg, e.sys, e.x.addr, e.x.reg, e.x.sys]) + "\n"
 }
 
-exports.scheduleUpdateDARC = functions.pubsub.schedule("0,15,30,45 * * * *").onRun((context) => {
+exports.scheduleUpdateDARC = functions.pubsub.schedule("*/15 * * * *").onRun((context) => {
     return doUpdateDARC()
 })
 
@@ -369,7 +369,8 @@ exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}
 
         if (e.blackhole || e.deadzone) {
             let t = incTotals(e, 1)
-            p.push(applyAllTotals(t))
+            let ref = admin.firestore().collection("counter")
+            p.push(ref.doc().set(t))
 
             if (e.blackhole)
                 p.push(saveChange(e, "create"))
@@ -402,7 +403,8 @@ exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/
 
         if (e.blackhole || e.deadzone) {
             let t = incTotals(e, -1)
-            p.push(applyAllTotals(t))
+            let ref = admin.firestore().collection("counter")
+            p.push(ref.doc().set(t))
 
             if (e.blackhole)
                 p.push(saveChange(e, "delete"))
@@ -410,6 +412,21 @@ exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/
 
         return Promise.all(p)
     })
+
+exports.scheduleUpdateTotals = functions.pubsub.schedule("*/1 * * * *").onRun(async context => {
+    let total = {}
+
+    let ref = admin.firestore().collection("counter")
+    let snapshot = await ref.get()
+
+    for (let doc of snapshot.docs) {
+        let t = doc.data()
+        await doc.ref.delete()
+        total = addObjects(total, t)
+    }
+
+    return applyAllTotals(total)
+})
 
 function saveChange(e, edit) {
     e.what = edit
@@ -563,7 +580,7 @@ function applyAllTotals(totals, reset) {
 
     return Promise.all(p).then(() => {
             return {
-                totals: totals
+                ok: true
             }
         })
         .catch(err => {
@@ -574,18 +591,23 @@ function applyAllTotals(totals, reset) {
 }
 
 function updateTotal(add, ref, reset) {
-    return admin.firestore().runTransaction(transaction => {
-        return transaction.get(ref).then(doc => {
-            let t = {}
+    if (typeof add !== "undefined" && add !== {})
+        return admin.firestore().runTransaction(transaction => {
+            return transaction.get(ref).then(doc => {
+                let t = {}
 
-            if (reset || !doc.exists)
-                t = add
-            else
-                t = addObjects(doc.data(), add)
+                if (reset || !doc.exists)
+                    t = add
+                else
+                    t = addObjects(doc.data(), add)
 
-            return transaction.set(ref, t)
+                return transaction.set(ref, t)
+            })
         })
-    })
+    else
+        return new Promise((resolve, reject) => {
+            resolve()
+        })
 }
 
 exports.getTotals = functions.https.onCall((data, context) => {
