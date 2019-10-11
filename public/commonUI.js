@@ -77,7 +77,6 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
         bhs.buildTotals()
         bhs.getTotals(bhs.displayTotals, bhs.displayTotalsHtml)
 
-
         if ((changed || force) && bhs.user.galaxy && bhs.user.platform) {
             bhs.buildMap()
             bhs.setMapOptions(bhs.user)

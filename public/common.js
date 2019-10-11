@@ -758,13 +758,17 @@ blackHoleSuns.prototype.getUserList = async function () {
     })
 }
 
+var reqTotal = false
+
 blackHoleSuns.prototype.getTotals = async function (displayFcn, dispHtml) {
     let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
     let ftotals = window.location.pathname == "/totals.html"
     let fsearch = window.location.pathname == "/search.html"
 
-    if (fsearch)
+    if (fsearch || reqTotal)
         return
+        
+    reqTotal = true
 
     var t = firebase.functions().httpsCallable('getTotals')
 
