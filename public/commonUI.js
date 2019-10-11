@@ -105,8 +105,8 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     if (fdarc && typeof bhs.user.uid !== "undefined")
         bhs.updateDarcSettings()
 
-    
-    if(typeof bhs.user.inputSettings !== "undefined" && typeof bhs.user.inputSettings.glyph !== "undefined" && bhs.user.inputSettings.glyph){
+
+    if (typeof bhs.user.inputSettings !== "undefined" && typeof bhs.user.inputSettings.glyph !== "undefined" && bhs.user.inputSettings.glyph) {
         $("[id='id-glyphInput']").show()
         $("[id='id-addrInput']").hide()
         $("[id='ck-glyphs']").prop("checked", true)
@@ -779,6 +779,7 @@ blackHoleSuns.prototype.updateTotalsListView = function (e, refpath) {
 }
 
 blackHoleSuns.prototype.displayTotalsHtml = function (html, p) {
+    $("#subpanel #scroll-" + p).remove()
     $("#subpanel").append(html)
 
     if (p === "Players")

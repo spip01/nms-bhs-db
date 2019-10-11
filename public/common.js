@@ -758,17 +758,13 @@ blackHoleSuns.prototype.getUserList = async function () {
     })
 }
 
-var reqTotal = false
-
 blackHoleSuns.prototype.getTotals = async function (displayFcn, dispHtml) {
     let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
     let ftotals = window.location.pathname == "/totals.html"
     let fsearch = window.location.pathname == "/search.html"
 
-    if (fsearch || reqTotal)
+    if (fsearch)
         return
-        
-    reqTotal = true
 
     var t = firebase.functions().httpsCallable('getTotals')
 
@@ -777,21 +773,21 @@ blackHoleSuns.prototype.getTotals = async function (displayFcn, dispHtml) {
             view: "Galaxies"
         })
         .then(result => {
-            dispHtml(result.data.html, "Galaxies")
+                dispHtml(result.data.html, "Galaxies")
         })
 
     t({
             view: "Players"
         })
         .then(result => {
-            dispHtml(result.data.html, "Players")
+                dispHtml(result.data.html, "Players")
         })
 
     t({
             view: "Organizations"
         })
         .then(result => {
-            dispHtml(result.data.html, "Organizations")
+                dispHtml(result.data.html, "Organizations")
         })
 
     let ref = bhs.fs.doc("bhs/Totals")
