@@ -292,7 +292,7 @@ blackHoleSuns.prototype.addGlyph = function (evt) {
 blackHoleSuns.prototype.changeAddr = function (evt) {
     let addr = $(evt).val()
     if (addr !== "") {
-        addr = bhs.reformatAddress(addr)
+        addr = reformatAddress(addr)
         let pnl = $(evt).closest("[id|='pnl'")
 
         bhs.dispAddr(pnl, addr)
@@ -304,7 +304,7 @@ blackHoleSuns.prototype.changeAddr = function (evt) {
 blackHoleSuns.prototype.changeGlyph = function (evt) {
     let glyph = $(evt).val().toUpperCase()
     if (glyph !== "") {
-        let addr = bhs.reformatAddress(glyph)
+        let addr = reformatAddress(glyph)
         let pnl = $(evt).closest("[id|='pnl'")
 
         bhs.dispAddr(pnl, addr)
@@ -314,7 +314,7 @@ blackHoleSuns.prototype.changeGlyph = function (evt) {
 }
 
 blackHoleSuns.prototype.dispAddr = function (pnl, addr) {
-    let glyph = bhs.addrToGlyph(addr)
+    let glyph = addrToGlyph(addr)
 
     let loc = pnl.find("#id-glyphInput")
     loc.find("#id-addr").text(addr)
@@ -406,7 +406,7 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
     }
 
     if (entry.econ) {
-        let l = economyList[bhs.getIndex(economyList, "name", entry.econ)].number
+        let l = economyList[getIndex(economyList, "name", entry.econ)].number
         loc.find("#btn-Economy").text(l + " " + entry.econ)
         loc.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";")
     }
@@ -501,8 +501,8 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
     entry.life = loc.find("#btn-Lifeform").text().stripNumber()
     entry.econ = loc.find("#btn-Economy").text().stripNumber()
 
-    entry.dist = bhs.calcDist(entry.addr)
-    entry.xyzs = bhs.addressToXYZ(entry.addr)
+    entry.dist = calcDist(entry.addr)
+    entry.xyzs = addressToXYZ(entry.addr)
 
     let hasbase = loc.find("#ck-hasbase").prop("checked")
     let single = loc.find("#ck-single").prop("checked")
@@ -523,14 +523,14 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
             entry.connection = xloc.find("#id-addr").val()
             entry.x = {}
             entry.x.addr = entry.connection
-            entry.x.dist = bhs.calcDist(entry.x.addr)
-            entry.x.xyzs = bhs.addressToXYZ(entry.connection)
+            entry.x.dist = calcDist(entry.x.addr)
+            entry.x.xyzs = addressToXYZ(entry.connection)
             entry.x.sys = xloc.find("#id-sys").val()
             entry.x.reg = xloc.find("#id-reg").val()
             entry.x.life = xloc.find("#btn-Lifeform").text().stripNumber()
             entry.x.econ = xloc.find("#btn-Economy").text().stripNumber()
 
-            entry.towardsCtr = entry.dist - bhs.calcDist(entry.connection)
+            entry.towardsCtr = entry.dist - calcDist(entry.connection)
         }
     }
 
@@ -587,18 +587,18 @@ blackHoleSuns.prototype.displayCalc = function () {
     let addr = top.find("#id-addr").val()
     let connection = bottom.find("#id-addr").val()
 
-    let tdist = bhs.calcDist(addr)
+    let tdist = calcDist(addr)
 
     top.find("#fmcenter").text(tdist + "ly")
     top.find("#id-fmcenter").show()
 
     if (connection) {
-        let bdist = bhs.calcDist(connection)
+        let bdist = calcDist(connection)
 
         bottom.find("#fmcenter").text(bdist + "ly")
         bottom.find("#id-fmcenter").show()
 
-        bottom.find("#traveled").text(bhs.calcDist(addr, connection) + "ly")
+        bottom.find("#traveled").text(calcDist(addr, connection) + "ly")
         bottom.find("#id-traveled").show()
 
         bottom.find("#tocenter").text((tdist - bdist) + "ly")

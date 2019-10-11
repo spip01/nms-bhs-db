@@ -155,7 +155,7 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
 blackHoleSuns.prototype.setAddress = function (evt) {
     let addr = $(evt).val()
     if (addr !== "") {
-        addr = bhs.reformatAddress(addr)
+        addr = reformatAddress(addr)
         let err = bhs.validateAddress(addr)
 
         if (err !== "")
@@ -170,13 +170,13 @@ blackHoleSuns.prototype.setAddress = function (evt) {
 blackHoleSuns.prototype.select = function (id) {
     let name = $("#btn-" + id).text()
     if (id === "Points-Of-Interest") {
-        let i = bhs.getIndex(bhs.poiList, "_name", name)
+        let i = getIndex(bhs.poiList, "_name", name)
         let itm = bhs.poiList[i]
         $("#id-end").val(itm.addr)
         $("#btn-Organizations").text("")
         bhs.showPOI(name)
     } else {
-        let i = bhs.getIndex(bhs.orgList, "_name", name)
+        let i = getIndex(bhs.orgList, "_name", name)
         let itm = bhs.orgList[i]
         $("#id-end").val(itm.addr)
         $("#btn-Points-Of-Interest").text("")
@@ -474,7 +474,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                         break
 
                     case "glyph":
-                        l = /title/ [Symbol.replace](l, r.what === "poi" || warp ? bhs.addrToGlyph(r[f.field], r.planet) : "")
+                        l = /title/ [Symbol.replace](l, r.what === "poi" || warp ? addrToGlyph(r[f.field], r.planet) : "")
                         break
 
                     case "x-addr":
@@ -541,7 +541,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
         const rloc = loc.find("#id-r" + idx)
         rloc.html(h)
 
-        let dist = parseInt(bhs.calcDistXYZ(route[0].coords, route[route.length - 1].coords) * 400)
+        let dist = parseInt(calcDistXYZ(route[0].coords, route[route.length - 1].coords) * 400)
         const calc = Math.ceil(dist / range)
         dist = dist.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         const per = parseInt((1 - rte.jumps / calc) * 100)
@@ -681,13 +681,13 @@ function mapRow(evt) {
         return
 
     end = end.stripID()
-    let exyz = bhs.addressToXYZ(end)
+    let exyz = addressToXYZ(end)
     let ereg = eloc.find("#itm-region").text()
     let esys = eloc.find("#itm-system").text()
 
     let sloc = $(evt)
     let start = sloc.prop("id").stripID()
-    let sxyz = bhs.addressToXYZ(start)
+    let sxyz = addressToXYZ(start)
     let sreg = sloc.find("#itm-region").text()
     let ssys = sloc.find("#itm-system").text()
 
@@ -746,9 +746,9 @@ function changeMapLayout(zoom, saddr, eaddr) {
     let yend = 4095
 
     if (zoom) {
-        let sxyz = bhs.addressToXYZ(saddr)
-        let exyz = bhs.addressToXYZ(eaddr)
-        let d = Math.ceil(bhs.calcDistXYZ(sxyz, exyz))
+        let sxyz = addressToXYZ(saddr)
+        let exyz = addressToXYZ(eaddr)
+        let d = Math.ceil(calcDistXYZ(sxyz, exyz))
 
         xctr = sxyz.x
         yctr = 4095 - sxyz.z

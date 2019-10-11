@@ -47,7 +47,7 @@ blackHoleSuns.prototype.buildPanel = function (id, list) {
     }
 
     pnl.find("#inp-addr").change(function () {
-        let addr = bhs.reformatAddress($(this).val())
+        let addr = reformatAddress($(this).val())
         $(this).val(addr)
     })
 
@@ -177,7 +177,7 @@ blackHoleSuns.prototype.listClick = function (evt) {
     let pnlid = pnl.prop("id")
     let list = pnlid == "pnl-org" ? bhs.orgList : bhs.poiList
 
-    let idx = bhs.getIndex(list, "_name", sel)
+    let idx = getIndex(list, "_name", sel)
     let e = list[idx]
 
     pnl.find("#inp-name").val(e._name)
@@ -221,7 +221,7 @@ blackHoleSuns.prototype.save = async function (evt) {
     let e = {}
     if (lastSel) {
         sel = $(lastSel).text().stripMarginWS()
-        idx = bhs.getIndex(list, "_name", sel)
+        idx = getIndex(list, "_name", sel)
         e = mergeObjects(e, list[idx])
     }
 
@@ -307,7 +307,7 @@ blackHoleSuns.prototype.delete = async function (evt) {
     let list = pnlid == "pnl-org" ? bhs.orgList : bhs.poiList
 
     if (lastSel) {
-        let idx = bhs.getIndex(list, "_name", $(lastSel).text().stripMarginWS())
+        let idx = getIndex(list, "_name", $(lastSel).text().stripMarginWS())
         let e = list[idx]
 
         if (e.img)

@@ -32,7 +32,7 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
 
 blackHoleSuns.prototype.select = function () {
     bhs.entries = {}
-    let i = bhs.getIndex(bhs.usersList, "name", $("#btn-Player").text().stripNumber())
+    let i = getIndex(bhs.usersList, "name", $("#btn-Player").text().stripNumber())
     let uid = i != -1 ? bhs.usersList[i].uid : null
     let galaxy = $("#btn-Galaxy").text().stripNumber()
     let platform = $("#btn-Platform").text().stripNumber()
@@ -55,7 +55,7 @@ blackHoleSuns.prototype.search = function () {
     let end = loc.find("#id-end").val()
 
     if (addr != "") {
-        addr = bhs.reformatAddress(addr)
+        addr = reformatAddress(addr)
         loc.find("#id-addr").val(addr)
         bhs.doSearch("addr", addr)
     } else if (sys != "")

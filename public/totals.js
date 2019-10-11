@@ -31,7 +31,7 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
 
 blackHoleSuns.prototype.select = function () {
     bhs.entries = {}
-    let i = bhs.getIndex(bhs.usersList, "name", $("#btn-Player").text().stripNumber())
+    let i = getIndex(bhs.usersList, "name", $("#btn-Player").text().stripNumber())
     let uid = i != -1 ? bhs.usersList[i].uid : null
     let galaxy = $("#btn-Galaxy").text().stripNumber()
     let platform = $("#btn-Platform").text().stripNumber()

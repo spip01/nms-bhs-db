@@ -97,7 +97,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     pnl.find("#btn-Organization").text(bhs.user.org)
 
     if (bhs.user.galaxy && bhs.user.galaxy !== "") {
-        let i = galaxyList[bhs.getIndex(galaxyList, "name", bhs.user.galaxy)].number
+        let i = galaxyList[getIndex(galaxyList, "name", bhs.user.galaxy)].number
         pnl.find("#btn-Galaxy").text(i + " " + bhs.user.galaxy)
         pnl.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[i].color + ";")
     } else
@@ -521,7 +521,7 @@ function entryDblclk(evt) {
     let iftotals = window.location.pathname == "/totals.html" || window.location.pathname == "/search.html"
 
     let id = $(evt).parent().prop("id")
-    let e = bhs.entries[bhs.reformatAddress(id)]
+    let e = bhs.entries[reformatAddress(id)]
 
     if (!iftotals) {
         $('html, body').animate({
@@ -534,7 +534,7 @@ function entryDblclk(evt) {
         bhs.displayListEntry(e)
     } else {
         let l = {}
-        l[bhs.reformatAddress(id)] = e
+        l[reformatAddress(id)] = e
         bhs.drawList(l)
     }
 }
@@ -1108,7 +1108,7 @@ blackHoleSuns.prototype.extractMapOptions = function () {
     for (let i = 0; i < minmaxtable.length; ++i)
         c[minmaxtable[i].id] = parseInt(opt.find("#inp-" + minmaxtable[i].id).val())
 
-    c.ctrcord = bhs.reformatAddress(opt.find("#inp-ctrcord").val())
+    c.ctrcord = reformatAddress(opt.find("#inp-ctrcord").val())
     c.ctrzoom = parseInt(opt.find("#inp-ctrzoom").val())
     c.chaindepth = parseInt(opt.find("#inp-chaindepth").val())
     c.chainradius = parseInt(opt.find("#inp-chainradius").val())
@@ -1233,7 +1233,7 @@ blackHoleSuns.prototype.purgeMap = function () {
                         bhs.getEntry(addr, bhs.displayListEntry)
 
                     let opt = bhs.extractMapOptions()
-                    let xyz = bhs.addressToXYZ(addr)
+                    let xyz = addressToXYZ(addr)
 
                     mapped = {}
                     searched = {}
@@ -1572,7 +1572,7 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
     let fsearch = window.location.pathname == "/search.html"
 
     let opt = bhs.extractMapOptions()
-    let ctr = bhs.addressToXYZ(opt.ctrcord)
+    let ctr = addressToXYZ(opt.ctrcord)
     ctr.z = 4096 - ctr.z
 
     let xstart, xctr, xend

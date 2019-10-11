@@ -373,17 +373,17 @@ blackHoleSuns.prototype.fBatchUpdate = async function (entry, exit, check, i, ba
 
         delete entry.type
         delete entry.owned
-        entry.xyzs = bhs.addressToXYZ(entry.addr)
-        entry.dist = bhs.calcDist(entry.addr)
+        entry.xyzs = addressToXYZ(entry.addr)
+        entry.dist = calcDist(entry.addr)
 
         if (entry.blackhole && exit) {
             entry.connection = exit.addr
-            exit.dist = bhs.calcDist(exit.addr)
+            exit.dist = calcDist(exit.addr)
             entry.towardsCtr = entry.dist - exit.dist
 
             entry.x = {}
             entry.x.addr = exit.addr
-            entry.x.xyzs = bhs.addressToXYZ(exit.addr)
+            entry.x.xyzs = addressToXYZ(exit.addr)
             entry.x.dist = exit.dist
             entry.x.sys = exit.sys
             entry.x.reg = exit.reg
@@ -451,7 +451,7 @@ blackHoleSuns.prototype.fBatchWriteBase = async function (entry, check) {
     if (!check) {
         delete entry.type
         entry.modded = firebase.firestore.Timestamp.now()
-        entry.xyzs = bhs.addressToXYZ(entry.addr)
+        entry.xyzs = addressToXYZ(entry.addr)
         bhs.updateBase(entry)
     }
 
@@ -492,3 +492,46 @@ function notBaseDel(addr, type) {
     let t = typeof type !== "undefined" ? type.slice(0, 4).toLowerCase() : ""
     return !(t === "base" || t === "dele" || typeof addr !== "undefined" && addr === "0000:0000:0000:0000")
 }
+
+function formatOrg(val) {
+    return formatListSel(val, bhs.orgList)
+}
+
+function formatEcon(val) {
+    return formatListSel(val, economyList)
+}
+
+function formatConflict(val) {
+    return formatListSel(val, conflictList)
+}
+
+function formatGalaxy(val) {
+    return formatListSel(val, galaxyList)
+}
+
+function formatLife(val) {
+    if (val.match(/^g/i)) return "Gek"
+    else if (val.match(/^k/i)) return "Korvax"
+    else if (val.match(/^v/i)) return "Vy'keen"
+    else return ""
+}
+
+function formatPlatform(val) {
+    if (val.match(/^ps/i)) return "PS4"
+    else return "PC-XBox"
+}
+
+function formatOwned(val) {
+    if (val.match(/^s/i)) return ("station")
+    if (val.match(/^v/i)) return ("visited")
+    else return ("mine")
+}
+
+function validateBHAddress(addr) {
+    return bhs.validateAddress(addr, "bh")
+}
+
+function validateExitAddress(addr) {
+    return bhs.validateAddress(addr, "exit")
+}
+
