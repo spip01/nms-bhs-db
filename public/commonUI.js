@@ -119,7 +119,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
             <div class="row">
                 <div class="col-md-7 col-14">
                     <div class="row">
-                        <div class="col-14 h6 txt-inp-def">Player Name</div>
+                        <div class="col-14 h6 txt-inp-def">Player Name<span class="h5 text-danger">&nbsp;*</span></div>
                         <input id="id-Player" class="rounded col-13 h5" type="text">
                     </div>
                 </div>
@@ -138,7 +138,10 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
 
                 <label id="fileupload" class="col-lg-4 col-md-6 col-14 h5 text-right align-bottom">
                     <input id="ck-fileupload" type="checkbox">
-                    &nbsp;File Upload
+                    &nbsp;File Upload&nbsp;
+                    <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                        data-placement="bottom" title="Bulk entry upload using a comma or tab separated '.csv' file.">
+                    </i>
                 </label>
             </div>
         </div>
@@ -153,8 +156,8 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     })
 
     bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser, true)
-    bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, false)
-    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, false)
+    bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, false, false, true)
+    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, false, false, true)
 
     $("#id-Player").change(function () {
         if (bhs.user.uid) {
@@ -865,18 +868,22 @@ blackHoleSuns.prototype.clickGalaxy = function (evt) {
     bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, null, galaxy, platform)
 }
 
-blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical) {
+blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical, ttip, required) {
     if (!list || list.length == 0)
         return
 
     let title = `        
         <div class="row">
-            <div class="col-md-medium col-sm-small col-xs h6 txt-inp-def">label</div>`
+            <div class="col-md-medium col-sm-small col-xs h6 txt-inp-def">labelttip</div>`
     let block = `
             <div id="menu-idname" class="col-md-medium col-sm-small col-xs dropdown">
                 <button id="btn-idname" class="btn border btn-sm dropdown-toggle" style="rgbcolor" type="button" data-toggle="dropdown"></button>
             </div>
         </div>`
+    const tText = `&nbsp;
+        <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+            data-placement="bottom" title="ttip"></i>`
+    const rText = `<span class="h5 text-danger">&nbsp;*</span>ttip`
 
     let item = ``
     let hdr = ``
@@ -890,6 +897,15 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
 
     let id = label.nameToId()
     let h = /label/ [Symbol.replace](title, label)
+    if (typeof required !== "undefined")
+        h = /ttip/ [Symbol.replace](h, rText)
+
+    if (typeof ttip !== "undefined" && ttip) {
+        h = /ttip/ [Symbol.replace](h, tText)
+        h = /ttip/ [Symbol.replace](h, ttip)
+    } else
+        h = /ttip/ [Symbol.replace](h, "")
+
     h = /medium/ [Symbol.replace](h, vertical ? 13 : 8)
     h = /small/ [Symbol.replace](h, vertical ? 13 : 7)
     h = /xs/ [Symbol.replace](h, vertical ? 13 : 6)
@@ -948,6 +964,9 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
                 btn.attr("style", $(this).attr("style"))
         })
     }
+
+    if (typeof ttip !== "undefined" && ttip)
+        $('[data-toggle="tooltip"]').tooltip()
 }
 
 blackHoleSuns.prototype.saveUser = async function () {

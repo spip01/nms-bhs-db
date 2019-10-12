@@ -8,9 +8,8 @@ $(document).ready(() => {
     bhs.buildUserPanel()
     bhs.buildFilePanel()
 
-    panels.forEach(p => {
+    for(let p of panels)
         bhs.buildPanel(p.id)
-    })
 
     $("#save").click(() => {
         bhs.save()
@@ -46,6 +45,9 @@ $(document).ready(() => {
     $("#cancel").click(() => {
         bhs.clearPanels()
     })
+
+    //$('[data-toggle="tooltip"]').tooltip()
+    $('[data-toggle="tooltip"]').hide()
 })
 
 const pnlTop = 0
@@ -78,12 +80,21 @@ blackHoleSuns.prototype.buildPanel = function (id) {
             <div class="card-body">
                 <div id="id-addrInput">
                     <div class="row">
-                        <div class="col-sm-4 col-7 h6 txt-inp-def">Coordinates&nbsp;</div>
+                        <div class="col-sm-4 col-7 h6 txt-inp-def">Coordinates<span class="h5 text-danger">&nbsp;*</span>&nbsp;
+                            <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom" title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
+                                A <span class='h5'>12</span> digit glyph as hex values can also be entered.">
+                            </i>
+                        </div>
                         <input id="id-addr" class="rounded col-sm-5 col-7" placeholder="0000:0000:0000:0000" onchange="bhs.changeAddr(this)">
                         <div class="col-5">
                             <label class="h6 txt-inp-def">
                                 <input id="ck-glyphs" type="checkbox" onchange="bhs.setGlyphInput()">
-                                Input Glyphs
+                                Input Glyphs<span class="h5 text-danger">&nbsp;*</span>&nbsp;
+                                <i class="far fa-question-circle text-danger" data-toggle="tooltip"
+                                    data-html="true" data-placement="bottom"
+                                    title="Display glyph input buttons and show glyphs in input field.">
+                                </i>
                             </label>
                         </div>
                     </div>
@@ -97,12 +108,23 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
                 <div id="id-glyphInput" class="hidden">
                     <div class="row">
-                        <div class="col-sm-2 col-7 h6 txt-inp-def">Glyph&nbsp;</div>
+                        <div class="col-sm-3 col-3 h6 txt-inp-def">
+                            Glyph<span class="h5 text-danger">&nbsp;*</span>&nbsp;
+                            <i class="far fa-question-circle text-danger" data-toggle="tooltip"
+                                data-html="true" data-placement="bottom"
+                                title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
+                                digit glyph as hex values can also be entered.">
+                            </i>
+                        </div>
                         <input id="id-glyph" class="rounded col-sm-7 col-7 h4 glyph" onchange="bhs.changeGlyph(this)">
-                        <div class="col-5">
+                        <div class="col-4">
                             <label class="h6 txt-inp-def">
                                 <input id="ck-glyphs" type="checkbox" onchange="bhs.setGlyphInput()">
-                                Input Glyphs
+                                Input Glyphs&nbsp;
+                                <i class="far fa-question-circle text-danger" data-toggle="tooltip"
+                                    data-html="true" data-placement="bottom"
+                                    title="Hide glyph input buttons.">
+                                </i>
                             </label>
                         </div>
                     </div>
@@ -116,12 +138,12 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                 </div>
 
                 <div class="row">
-                    <div class="col-sm-4 col-7  h6 txt-inp-def">System Name&nbsp;</div>
+                    <div class="col-sm-4 col-7  h6 txt-inp-def">System Name<span class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
                     <input id="id-sys" class="rounded col-sm-5 col-7">
                 </div>
 
                 <div class="row">
-                    <div class="col-sm-4 col-7 h6 txt-inp-def">Region Name&nbsp;</div>
+                    <div class="col-sm-4 col-7 h6 txt-inp-def">Region Name<span class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
                     <input id="id-reg" class="rounded col-sm-5 col-7">&nbsp
                     <button id="btn-searchRegion" type="button" class="btn-def btn btn-sm" onclick="bhs.searchRegion(this)">Search</button>&nbsp
                     </div>
@@ -144,22 +166,34 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                 <div id="row-valid" class="row border-bottom">
                     <label class="radio col-5 h6 txt-inp-def">
                         <input id="btn-valid" type="radio" name="validradio">
-                        BH Pair Confirmed
+                        BH Pair Confirmed&nbsp;
+                        <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Set this if you have made this black hole transit.">
+                        </i>
                     </label>
                     <label class="radio col-4 h6 txt-inp-def">
                         <input id="btn-invalid" type="radio" name="validradio">
-                        Broken
+                        Broken&nbsp;
+                        <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Set this if this black hole did not exit at the given coordinates.">
+                        </i>
                     </label>
                 </div>
 
-                <div class="row">
+                <div class="row border-bottom">
                     <label class="col-7 h6 txt-inp-def">
                         <input id="ck-hasbase" type="checkbox">
-                        Has Base
+                        Has Base&nbsp;
+                        <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Enter a base to be used as a starting point in the DARC.">
+                        </i>
                     </label>
                     <label id="id-sharepoi" class="col-7 h6 txt-inp-def hidden">
                         <input id="ck-sharepoi" type="checkbox">
-                        Share POI
+                        Share POI&nbsp;
+                        <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Include this base with the 'POI near route'">
+                        </i>
                     </label>
                 </div>
 
@@ -174,14 +208,21 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     <div class="col-5">
                         <label class="h6 txt-inp-def">
                             <input id="ck-single" type="checkbox">
-                            Single System
+                            Single System&nbsp;
+                            <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom" title="Enter a system without a black hole exit.">
+                            </i>
                         </label>
                     </div>
 
                     <div class="col-5">
                         <label class="h6 txt-inp-def">
                             <input id="ck-isdz" type="checkbox">
-                            Dead Zone
+                            Dead Zone&nbsp;
+                            <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom" title="Back hole doesn't function or it exits back to the same system.  
+                                Can happen within 3500ly of the galaxy center.">
+                            </i>
                         </label>
                     </div>
                 </div>
@@ -203,7 +244,12 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
                    <div id="id-tocenter" class="col-5 txt-inp-def" style="display:none">
                         <div class="row">
-                            <div class="col-9 text-right"> Towards Center&nbsp;</div>
+                            <div class="col-9 text-right"> Towards Center&nbsp;
+                                <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom" title="Typically this is around 6000ly. On the edges of the galaxy 
+                                    it can be more.  In the core it can be slightly negative.">
+                                </i>&nbsp;
+                            </div>
                             <div id="tocenter" class="col-5 text-left h6"></div>
                         </div>
                     </div>
@@ -212,12 +258,6 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         </div>
         <br>`
 
-    const gbtn = `
-        <button type="button" class="btn-def btn btn-sm col-8x1" onclick="bhs.addGlyph(this)">
-            <span class="h3 glyph">title</span>
-            &nbsp;(title)
-        </button>`
-
     let h = /idname/g [Symbol.replace](panel, id)
     h = /title/g [Symbol.replace](h, id == "pnl-S1" ? panels[pnlTop].name : panels[pnlBottom].name)
 
@@ -225,13 +265,8 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
     let loc = $("#" + id)
 
-    h = ""
-    for (let i = 0; i < 16; ++i) {
-        h += /title/g [Symbol.replace](gbtn, i.toString(16).toUpperCase())
-    }
-
     let gloc = loc.find("#glyphbuttons")
-    gloc.append(h)
+    addGlyphButtons(gloc, bhs.addGlyph)
 
     bhs.buildMenu(loc, "Lifeform", lifeformList)
     bhs.buildMenu(loc, "Economy", economyList)
@@ -260,7 +295,6 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         else
             pnl.show()
     })
-
 }
 
 blackHoleSuns.prototype.setGlyphInput = function (evt) {

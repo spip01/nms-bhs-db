@@ -29,7 +29,7 @@
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
         integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"
@@ -64,92 +64,7 @@
 </head>
 
 <body class="bkg-def">
-    <a href="darc.html"><img src="nmsbhs_banner.jpg" alt="BHS Banner"></a>
-
-    <div id="r2" class="container-fluid">
-        <div class="row">
-            <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">FAQ</a>
-
-            <div id="full-usermenu" class="container col-4">
-                <button id="login" type="button" class="text-center btn-def no-border h5">
-                    Login
-                </button>
-
-                <div id="usermenu" class="dropdown" style="display: none">
-                    <button type="button" class="row text-center txt-def no-border dropdown-toggle h5"
-                        data-toggle="dropdown">
-                        <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
-                        <h5 id="username">
-                            User
-                        </h5>
-                    </button>
-
-                    <div class="dropdown-menu bkg-def text-center">
-                        <button id="logout" type="button" class="no-border text-center dropdown-item btn-def">
-                            <h5>Logout</h5>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="footer" class="row border-top">
-        <a href="https://twitter.com/nmsblkholesuns" class="col-4 text-center clr-creme h6">Follow us on
-            Twitter</a>
-        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center clr-creme h6">Follow us on
-            Reddit</a>
-        <a href="https://discord.blackholesuns.com/" class="col-4 text-center clr-creme h6">Talk to us on Discord</a>
-    </div>
-
-    <div id="javascript">
-        <!--googleoff:all-->
-        <div class="text-danger h6">
-            <p>Unfortunately, this page cannot function without javasript. Please add this site to your "allowed" sites.
-                For chrome it's located&nbsp;
-                <a href="chrome://settings/content/javascript">here</a></p>
-            <p>This error message can also be caused by a page loading error.</p>
-        </div>
-        <!--googleon:all-->
-        <br>
-    </div>
-    <br>
-
-    <!--googleoff:all-->
-    <div id="loginpnl" class="card bkg-def pad-bottom" style="display:none">
-        <div class="card-header">
-            <div class="h4 txt-def text-center">Login to NMS Coordinate Exchange</div>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-5">&nbsp;</div>
-                <div id="lgoogle" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Google</div>
-            </div>
-            <div class="row">
-                <div class="col-5">&nbsp;</div>
-                <div id="lgithub" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Github</div>
-            </div>
-            <!--div class="row">
-                <div class="col-5">&nbsp;</div>
-                <div id="ltwitch" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Twitch</div>
-            </div>
-            <div class="row">
-                <div class="col-5">&nbsp;</div>
-                <div id="ldiscord" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Discord</div>
-            </div>
-            <div class="row">
-                <div class="col-5">&nbsp;</div>
-                <div id="lreddit" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Reddit</div>
-            </div-->
-        </div>
-        <div class="card-footer">
-            <div class="row">
-                <div class="col-6">&nbsp;</div>
-                <div id="lcancel" class="h6 text-center col-2 btn-sm bkg-light-gray">Cancel</div>
-            </div>
-        </div>
-    </div>
-    <!--googleon:all-->
+    <div id="bhsmenus"></div>
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div id="loggedout" class="row text-danger h5">
@@ -169,9 +84,9 @@
                             <nav>
                                 <div class="nav nav-tabs" id="typeTabs" role="tablist">
                             </nav>
-                            <div  class="card-body">
+                            <div class="card-body">
                                 <div class="tab-content" id="typePanels"></div>
-                                <div id="imgtable" class="row hidden"></div>    
+                                <div id="imgtable" class="row hidden"></div>
                             </div>
                         </div>
                         <br>
@@ -195,6 +110,12 @@
                     </div>
                 </div>
             </div>
+
+            <br>
+            <div class="text-danger h6">
+                <span class="h5">*</span> - Required Entry&nbsp;&nbsp;&nbsp;&nbsp;
+                <i class="far fa-question-circle text-danger"></i> - Tool Tip
+            </div>
         </div>
         <br>
 
@@ -202,8 +123,11 @@
             <div id="entryTable" class="card pad-bottom"></div>
         </div>
     </div>
-    <br>
 
+    <br>
+    <div class="clr-creme text-right h7">
+        <i class="far fa-copyright"></i> 2019 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
 </body>
 
 </html>

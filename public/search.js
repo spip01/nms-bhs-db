@@ -2,6 +2,7 @@
 
 $(document).ready(() => {
     startUp()
+    
     bhs.buildSelectPanel()
     bhs.buildSearchPanel()
 })

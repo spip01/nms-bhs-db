@@ -27,73 +27,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+    </script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
     </script>
 
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-    <script src="distance.js"></script>
+    <script src="commonNms.js"></script>
+    <script src="nav.js"></script>
 
     <link rel="stylesheet" type="text/css" href="local.css">
 </head>
 
 <body class="bkg-def">
-    <a href="darc.html"><img src="nmsbhs_banner.jpg" alt="BHS Banner"></a>
-
-    <div id="r2" class="container-fluid">
-        <div class="row">
-            <a class="col-8x1 text-center h4 txt-def" href="https://faq.blackholesuns.com/">FAQ</a>
-            <a class="col-8x1 text-center h5 txt-def" href="https://guide.blackholesuns.com/">Travel Guide</a>
-            <a class="col-8x1 text-center h5 txt-def" href="darc.html">DARC</a>
-            <!--a class="col-8x1 text-center h5 txt-def" href="distance.html">Star Nav</a-->
-            <a class="col-8x1 text-center h5 txt-def" href="glyph.html">Glyph Converter</a>
-            <a class="col-8x1 text-center h5 txt-def" href="index.html">Input</a>
-            <a class="col-8x1 text-center h5 txt-def" href="totals.html">Totals</a>
-            <a class="col-8x1 text-center h5 txt-def" href="search.html">Search</a>
-        </div>
-    </div>
-
-    <div class="row border-top">
-        <a href="https://twitter.com/nmsblkholesuns" class="col-4 text-center clr-creme h6">Follow us on
-            Twitter</a>
-        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center clr-creme h6">Follow us on
-            Reddit</a>
-        <a href="https://discord.blackholesuns.com/" class="col-4 text-center clr-creme h6">Talk to us on Discord</a>
-    </div>
-
-    <div id="javascript">
-        <!--googleoff:all-->
-        <div class="text-danger h6">
-            <p>Unfortunately, this page cannot function without javasript. Please add this site to your "allowed" sites.
-                For chrome it's located&nbsp;
-                <a href="chrome://settings/content/javascript">here</a></p>
-            <p>This error message can also be caused by a page loading error.</p>
-        </div>
-        <!--googleon:all-->
-        <br>
-    </div>
-    <br>
+    <div id="bhsmenus"></div>
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
-        <div class="card card-body pad-bottom bkg-def border clr-white">
+            <div class="card card-body pad-bottom bkg-def border clr-white">
             <div class="row">
                 <div class="col-lg-7 col-12">
                     <div class="card card-body pad-bottom">
                         <div id="id-addrInput" class="card card-body pad-bottom">
                             <div id="w-start">
                                 <div class="row">
-                                    <div class="col-md-3 col-5 h6 txt-inp-def">Start Coordinates</div>
+                                    <div class="col-md-3 col-5 h6 txt-inp-def">
+                                        Start Coordinates&nbsp;
+                                        <i class="far fa-question-circle text-danger" data-toggle="tooltip"
+                                            data-html="true" data-placement="bottom"
+                                            title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
+                                         A <span class='h5'>12</span> digit glyph as hex values can also be entered."></i>
+                                    </div>
                                     <input id="id-addr" class="rounded col-md-4 col-7" placeholder="0000:0000:0000:0000"
                                         onchange="dispAddr(this)">
                                     <div class="col-5">
                                         <label class="h6 txt-inp-def">
                                             <input id="ck-glyphs" type="checkbox" onchange="setGlyphInput()">
-                                            Input Glyphs
+                                            Input Glyphs&nbsp;
+                                            <i class="far fa-question-circle text-danger" data-toggle="tooltip"
+                                                data-html="true" data-placement="bottom"
+                                                title="Display glyph input buttons and show glyphs in input field.">
+                                            </i>
                                         </label>
                                     </div>
                                 </div>
@@ -128,18 +110,27 @@
                         <div id="id-glyphInput" class="card card-body pad-bottom hidden">
                             <div id="w-start">
                                 <div class="row">
-                                    <div class="col-md-3 col-4 h6 txt-inp-def">Start Glyph</div>
+                                    <div class="col-md-3 col-4 h6 txt-inp-def">Start Glyph&nbsp;
+                                            <i class="far fa-question-circle text-danger" data-toggle="tooltip"
+                                                data-html="true" data-placement="bottom"
+                                                title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
+                                                digit glyph as hex values can also be entered."></i>
+                                            </div>
                                     <input id="id-glyph" class="rounded col-md-6 col-10 h4 glyph"
                                         onchange="dispGlyph(this)">
                                     <div class="col-3">
                                         <label class="h6 txt-inp-def">
                                             <input id="ck-glyphs" type="checkbox" onchange="setGlyphInput()">
-                                            Input Glyphs
+                                            Input Glyphs&nbsp;
+                                            <i class="far fa-question-circle text-danger" data-toggle="tooltip"
+                                                data-html="true" data-placement="bottom"
+                                                title="Hide glyph input buttons.">
+                                            </i>
                                         </label>
                                     </div>
                                 </div>
 
-                                <div id="glyphbuttons" class="row">   </div>
+                                <div id="glyphbuttons" class="row"> </div>
 
                                 <div class="row">
                                     <div class="col-md-2 col-4 h6 text-right txt-inp-def">Coords</div>
@@ -158,7 +149,7 @@
                                         onchange="dispGlyph(this)">
                                 </div>
 
-                                <div id="glyphbuttons" class="row">   </div>
+                                <div id="glyphbuttons" class="row"> </div>
 
                                 <div class="row">
                                     <div class="col-md-2 col-4 h6 text-right txt-inp-def">Coords</div>
@@ -176,7 +167,11 @@
                             <div class="row">
                                 <div class="col-md-3 col-5 h6 txt-inp-def">Distance</div>
                                 <div id="id-dist" class="col-md-3 col-5 txt-inp-def"></div>
-                                <div class="col-md-3 col-5 h6 txt-inp-def">X-Z Plane Angle</div>
+                                <div class="col-md-3 col-5 h6 txt-inp-def">X-Z Plane Angle&nbsp;
+                                    <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                                        data-placement="bottom"
+                                        title="This is the angle for the top down view of the galaxy. For more definitive directions use the 3d map."></i>
+                                </div>
                                 <div id="id-angle" class="col-md-3 col-5 txt-inp-def"></div>
                             </div>
                             <br>
@@ -197,17 +192,31 @@
                 </div>
 
                 <div class="col-lg-5 col-12">
-                    <div class="card card-body pad-bottom">
-                        <div class="card card-body pad-bottom">
-                            <div id="plot3d"></div>
+                    <div class="card pad-bottom">
+                        <div class="card-header h4 bkg-def txt-def">
+                            3D Map&nbsp;
+                            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom"
+                                title="The grey dot is the galactic center. To approximate the galactic map view align the red starting
+                                position with the galactic center."></i>
                         </div>
-                        <br>
-                        <button type="button" class="btn btn-sm btn-def text-center" onclick="zoom()">Toggle
-                            Zoom</button>
+                        <div class="card-body">
+                            <div class="card card-body pad-bottom">
+                                <div id="plot3d"></div>
+                            </div>
+                            <br>
+                            <button type="button" class="btn btn-sm btn-def text-center" onclick="zoom()">Toggle
+                                Zoom</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <br>
+    <div class="clr-creme text-right h7">
+        <i class="far fa-copyright"></i> 2019 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     </div>
 </body>
 

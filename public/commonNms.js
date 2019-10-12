@@ -1,5 +1,24 @@
 'use strict'
 
+function addGlyphButtons(loc, fcn) {
+    const gbtn = `
+        <button type="button" class="btn-def btn btn-sm col-8x1">
+            <span class="h3 glyph">title</span>
+            &nbsp;(title)
+        </button>`
+
+    let h = ""
+    for (let i = 0; i < 16; ++i) {
+        h += /title/g [Symbol.replace](gbtn, i.toString(16).toUpperCase())
+    }
+
+    loc.append(h)
+
+    loc.find(":button").unbind("click")
+    loc.find(":button").click(function () {
+        fcn(this)})
+}
+
 function reformatAddress(addr) {
     let out = ""
     addr = addr.toUpperCase()
@@ -156,7 +175,7 @@ String.prototype.stripNumber = function () {
     return this.replace(/\s*-?\d*\.*\s*(\D*)\s*/, "$1")
 }
 
-function formatListSel (val, list) {
+function formatListSel(val, list) {
     let name = val.stripNumber()
     if (name == "") {
         let num = val.replace(/(\d+).*/, "$1")
@@ -172,7 +191,7 @@ function formatListSel (val, list) {
     return name
 }
 
-function getIndex (list, field, id) {
+function getIndex(list, field, id) {
     if (!id)
         return -1
 
@@ -181,7 +200,7 @@ function getIndex (list, field, id) {
     }).indexOf(id.toLowerCase())
 }
 
-function buildGalaxyInfo  () {
+function buildGalaxyInfo() {
     let galaxyInfo = []
     galaxyInfo[1] = {}
     galaxyInfo[1].color = "#ffffff"
@@ -200,7 +219,7 @@ function buildGalaxyInfo  () {
     return galaxyInfo
 }
 
-function calcDist (addr, addr2) {
+function calcDist(addr, addr2) {
     let xyz1 = addressToXYZ(addr)
     let xyz2 = typeof addr2 !== "undefined" ? addressToXYZ(addr2) : {
         x: 0x7ff,
@@ -210,7 +229,7 @@ function calcDist (addr, addr2) {
     return parseInt(calcDistXYZ(xyz1, xyz2) * 400)
 }
 
-function calcDistXYZ (xyz1, xyz2) {
+function calcDistXYZ(xyz1, xyz2) {
     let x = xyz1.x - xyz2.x
     let y = xyz1.y - xyz2.y
     let z = xyz1.z - xyz2.z

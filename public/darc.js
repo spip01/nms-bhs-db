@@ -6,37 +6,14 @@ $(document).ready(() => {
     bhs.buildDarcUserPnl()
     bhs.buildQueryPanel()
     bhs.buildDarcMap()
+
+    $('[data-toggle="tooltip"]').tooltip()
 })
 
 blackHoleSuns.prototype.buildDarcUserPnl = function () {
-    const panel = `
-        <div id="pnl-user">
-            <div class="row">
-                <div class="col-md-7 col-14">
-                    <div class="row">
-                        <div class="col-13 h6 txt-inp-def">Player Name</div>
-                        <input id="id-Player" class="rounded col-13 h5" type="text">
-                    </div>
-                </div>
-                <label class="col-md-7 col-14 h6 txt-inp-def">
-                    <input id="ck-useBases" type="checkbox" onchange="bhs.saveDarcSettings(this)">
-                    Use Player Bases
-                </label>           
-            </div>
-
-            <div class="row">
-                <div class="col-1"></div>
-                <div id="id-Galaxy" class="col-md-5 col-14"></div>
-                <div id="id-Platform" class="col-md-5 col-14"></div>
-            </div>
-        </div>
-        <br>`
-
-    $("#panels").prepend(panel)
     let loc = $("#pnl-user")
-
-    bhs.buildMenu(loc, "Platform", platformList, bhs.setGP, false)
-    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.setGP, false)
+    bhs.buildMenu(loc, "Platform", platformList, bhs.setGP, false, false, true)
+    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.setGP, false, "", true)
 }
 
 blackHoleSuns.prototype.setGP = function () {
@@ -87,63 +64,10 @@ blackHoleSuns.prototype.setGP = function () {
 }
 
 blackHoleSuns.prototype.buildQueryPanel = async function () {
-    const query = `
-        <div id="pnl-query" class="card card-body">
-            <div class="row">
-                <div class="col-md-4 col-5 h6 txt-inp-def">Starting Coordinates&nbsp;</div>
-                <input id="id-start" class="rounded col-md-5 col-6" placeholder="0000:0000:0000:0000" onchange="bhs.setAddress(this)">
-            </div>
-            <div class="row">
-                <div class="col-md-4 col-5 h6 txt-inp-def">Ending Coordinates&nbsp;</div>
-                <input id="id-end" class="rounded col-md-5 col-6" placeholder="0000:0000:0000:0000" onchange="bhs.setAddress(this)">&nbsp;
-                <button id="btn-switch" type="button" class="btn-def btn btn-sm" onclick="bhs.switchSE()"><i class="fa fa-exchange-alt txt-def"></i></button>
-            </div>
-            <div class="row">
-                <div class="card card-body no-border">
-                    <div class="row">
-                        <div id="id-Points-Of-Interest" class="col-md-7 col-14"></div>
-                        <div id="id-Organizations" class="col-md-7 col-14"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-4 col-5 h6 txt-inp-def">Average Jump Range&nbsp;</div>
-                <input id="id-range" class="rounded col-md-5 col-4" type="number" value="2000" onchange="bhs.saveDarcSettings(this)">
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-7">
-                    <div class="row">
-                        <div class="col-5">
-                            <div class="row">
-                                <button id="btn-searchRegion" type="button" class="btn-def btn btn-sm" onclick="bhs.calcroute()">Calculate Route</button>&nbsp
-                                <label class="col-14 h6 txt-inp-def">
-                                    <input id="ck-nearPath" type="checkbox" onchange="bhs.saveDarcSettings(this)">
-                                    POI near route
-                                </label>
-                            </div>
-                        </div>&nbsp
-                        <div class="col-8 border-left">
-                            <div class="row">
-                                &nbsp<button id="btn-proximity" type="button" class="col-13 btn-def btn btn-sm" onclick="bhs.calcroute(true)">POI Proximity</button>&nbsp
-                            </div>
-                            <br>
-                            <div class="row">
-                                <div class="col-sm-8 col-14 h6 txt-inp-def">Max Jumps&nbsp;</div>
-                                <input id="id-maxJumps" class="rounded col-sm-6 col-14" type="number" value="20" onchange="bhs.saveDarcSettings(this)">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="status" class="border col-7 text-danger scrollbar container-fluid" style="overflow-y: scroll; height: 68px"></div>
-            </div>
-        </div>`
-
-    $("#panels").append(query)
     let pnl = $("#pnl-query")
 
     await bhs.getPoiList(true)
-    bhs.buildMenu(pnl, "Points Of Interest", bhs.poiList, bhs.select)
+    bhs.buildMenu(pnl, "Points Of Interest", bhs.poiList, bhs.select, false, "Blue items are in your current galaxy. Red are not.")
 
     await bhs.getOrgList(true)
     bhs.buildMenu(pnl, "Organizations", bhs.orgList, bhs.select)

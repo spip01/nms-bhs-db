@@ -1,20 +1,15 @@
 $(document).ready(() => {
-    $("#javascript").empty()
+    $("#javascript").remove()
     $("#jssite").show()
 
-    const gbtn = `
-    <button type="button" class="btn-def btn btn-sm col-8x1" onclick="addGlyph(this)">
-        <span class="h3 glyph">title</span>
-        &nbsp;(title)
-    </button>`
+    $("#bhsmenus").load("bhsmenus.html", () => {
+        $("#login").hide()
 
-    let h = ""
-    for (let i = 0; i < 16; ++i) {
-        h += /title/g [Symbol.replace](gbtn, i.toString(16).toUpperCase())
-    }
+        let gloc = $("[id='glyphbuttons']")
+        addGlyphButtons(gloc, addGlyph)
 
-    let gloc = $("[id='glyphbuttons']")
-    gloc.append(h)
+        $('[data-toggle="tooltip"]').tooltip()
+    })
 })
 
 function dispAddr(evt) {
@@ -94,7 +89,7 @@ function addGlyph(evt) {
     let loc = $(evt).closest("[id|='w']").find("#id-glyph")
     let a = loc.val() + $(evt).text().trim().slice(0, 1)
     loc.val(a)
-    if (a.length===12)
+    if (a.length === 12)
         dispGlyph(loc)
 }
 

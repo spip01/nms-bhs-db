@@ -29,11 +29,10 @@
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
         integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
         integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
     </script>
@@ -60,164 +59,144 @@
 </head>
 
 <body class="bkg-def">
-    <a href="darc.html"><img src="nmsbhs_banner.jpg" alt="BHS Banner"></a>
-
-    <div id="r2" class="container-fluid">
-        <div class="row">
-            <a class="col-8x1 text-center h4 txt-def" href="https://faq.blackholesuns.com/">FAQ</a>
-            <a class="col-8x1 text-center h5 txt-def" href="https://guide.blackholesuns.com/">Travel Guide</a>
-            <!--a class="col-8x1 text-center h5 txt-def" href="darc.html">DARC</a-->
-            <a class="col-8x1 text-center h5 txt-def" href="distance.html">Star Nav</a>
-            <a class="col-8x1 text-center h5 txt-def" href="glyph.html">Glyph Converter</a>
-            <a class="col-8x1 text-center h5 txt-def" href="index.html">Input</a>
-            <a class="col-8x1 text-center h5 txt-def" href="totals.html">Totals</a>
-            <a class="col-8x1 text-center h5 txt-def" href="search.html">Search</a>
-
-            <div id="full-usermenu" class="container col-4">
-                <button id="login" type="button" class="text-center btn-def no-border h5">
-                    Login
-                </button>
-
-                <div id="usermenu" class="dropdown" style="display: none">
-                    <button type="button" class="row text-center txt-def no-border dropdown-toggle h5"
-                        data-toggle="dropdown">
-                        <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
-                        <h5 id="username">
-                            User
-                        </h5>
-                    </button>
-
-                    <div class="dropdown-menu bkg-def text-center">
-                        <button id="logout" type="button" class="no-border text-center dropdown-item btn-def">
-                            <h5>Logout</h5>
-                        </button>
-                        <button id="recalc" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                            onclick="bhs.recalcTotals()">
-                            Recalc Totals
-                        </button>
-                        <button id="admin" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                            onclick="bhs.setAdmin()">
-                            Admin Edit
-                        </button>
-                        <div class="text-center">
-                            <a id="poiorg" class="h5 no-border dropdown-item btn-def hidden" href="poiorg.html">Enter
-                                POI &amp; Orgs</a>
-                        </div>
-                        <button id="genDARC" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                            onclick="bhs.genDARC()">
-                            genDARC
-                        </button>
-                        <button id="updateDARC" type="button"
-                            class="h5 no-border text-center dropdown-item btn-def hidden" onclick="bhs.updateDARC()">
-                            updateDARC
-                        </button>
-                        <button id="genPOI" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                            onclick="bhs.genPOI()">
-                            genPOI
-                        </button>
-                        <button id="backupBHS" type="button"
-                            class="h5 no-border text-center dropdown-item btn-def hidden" onclick="bhs.backupBHS()">
-                            backupBHS
-                        </button>
-                        <button id="testing" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                            onclick="bhs.testing()">
-                            testing
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row border-top">
-        <a href="https://twitter.com/nmsblkholesuns" class="col-4 text-center clr-creme h6">Follow us on
-            Twitter</a>
-        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center clr-creme h6">Follow us on
-            Reddit</a>
-        <a href="https://discord.blackholesuns.com/" class="col-4 text-center clr-creme h6">Talk to us on
-            Discord</a>
-    </div>
-
-    <div id="javascript">
-        <!--googleoff:all-->
-        <div class="text-danger h6">
-            <p>Unfortunately, this page cannot function without javasript. Please add this site to your "allowed" sites.
-                For chrome it's located&nbsp;
-                <a href="chrome://settings/content/javascript">here</a></p>
-            <p>This error message can also be caused by a page loading error.</p>
-        </div>
-        <!--googleon:all-->
-        <br>
-    </div>
-    <br>
-
-    <!--googleoff:all-->
-    <div id="loginpnl" class="card bkg-def pad-bottom" style="display:none">
-        <div class="card-header">
-            <div class="h4 txt-def text-center">Login to Black Hole Suns DB</div>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-5">&nbsp;</div>
-                <div id="lgoogle" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Google</div>
-            </div>
-            <div class="row">
-                <div class="col-5">&nbsp;</div>
-                <div id="lgithub" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Github</div>
-            </div>
-            <!--div class="row">
-                <div class="col-5">&nbsp;</div>
-                <div id="ltwitch" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Twitch</div>
-            </div>
-            <div class="row">
-                <div class="col-5">&nbsp;</div>
-                <div id="ldiscord" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Discord</div>
-            </div>
-            <div class="row">
-                <div class="col-5">&nbsp;</div>
-                <div id="lreddit" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Reddit</div>
-            </div-->
-        </div>
-        <div class="card-footer">
-            <div class="row">
-                <div class="col-6">&nbsp;</div>
-                <div id="lcancel" class="h6 text-center col-2 btn-sm bkg-light-gray">Cancel</div>
-            </div>
-        </div>
-    </div>
-    <!--googleon:all-->
+    <div id="bhsmenus"></div>
 
     <div id="jssite" class="container-fluid pad-bottom hidden">
         <div id="loggedout" class="row txt-def">&nbsp;&nbsp;&nbsp;&nbsp;Login is only required for saving or loading
-            saved data<br></div>
+            saved data<br>
+        </div>
 
         <div class="row">
             <div class="col-md-7 col-14">
                 <div class="card card-body pad-bottom">
-                    <div id="panels"></div>
+                    <div id="pnl-user">
+                        <div class="row">
+                            <div class="col-md-7 col-14">
+                                <div class="row">
+                                    <div class="col-13 h6 txt-inp-def">Player Name</div>
+                                    <input id="id-Player" class="rounded col-13 h5" type="text">
+                                </div>
+                            </div>
+                            <label class="col-md-7 col-14 h6 txt-inp-def">
+                                <input id="ck-useBases" type="checkbox" onchange="bhs.saveDarcSettings(this)">
+                                Use Player Bases&nbsp;
+                                <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom" title="With this enabled the DARC will use the players bases as starting points for the route generator. 
+                                    These can be entered on the input page.">
+                                </i>
+                            </label>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-1"></div>
+                            <div id="id-Galaxy" class="col-md-5 col-14"></div>
+                            <div id="id-Platform" class="col-md-5 col-14"></div>
+                        </div>
+                    </div>
+                    <br>
+                    <div id="pnl-query" class="card card-body">
+                        <div class="row">
+                            <div class="col-md-4 col-5 h6 txt-inp-def" onchange="bhs.setAddress(this)">
+                                Starting Coordinates&nbsp;
+                                <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom" title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
+                                    A <span class='h5'>12</span> digit glyph as hex values can also be entered.">
+                                </i>
+                            </div>
+                            <input id="id-start" class="rounded col-md-5 col-6" placeholder="0000:0000:0000:0000">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 col-5 h6 txt-inp-def">Ending Coordinates&nbsp;</div>
+                            <input id="id-end" class="rounded col-md-5 col-6" placeholder="0000:0000:0000:0000"
+                                onchange="bhs.setAddress(this)">&nbsp;
+                            <button id="btn-switch" type="button" class="btn-def btn btn-sm" onclick="bhs.switchSE()"><i
+                                    class="fa fa-exchange-alt txt-def"></i></button>
+                        </div>
+                        <div class="row">
+                            <div class="card card-body no-border">
+                                <div class="row">
+                                    <div id="id-Points-Of-Interest" class="col-md-7 col-14"></div>
+                                    <div id="id-Organizations" class="col-md-7 col-14"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 col-5 h6 txt-inp-def">Average Jump Range&nbsp;</div>
+                            <input id="id-range" class="rounded col-md-5 col-4" type="number" value="2000"
+                                onchange="bhs.saveDarcSettings(this)">
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="col-7">
+                                <div class="row">
+                                    <div class="col-5">
+                                        <div class="row">
+                                            <button id="btn-searchRegion" type="button" class="btn-def btn btn-sm"
+                                                onclick="bhs.calcroute()">Calculate Route</button>&nbsp
+                                            <label class="col-14 h6 txt-inp-def">
+                                                <input id="ck-nearPath" type="checkbox"
+                                                    onchange="bhs.saveDarcSettings(this)">
+                                                POI near route
+                                            </label>
+                                        </div>
+                                    </div>&nbsp
+                                    <div class="col-8 border-left">
+                                        <div class="row">
+                                            &nbsp<button id="btn-proximity" type="button"
+                                                class="col-13 btn-def btn btn-sm" onclick="bhs.calcroute(true)">POI
+                                                Proximity</button>&nbsp
+                                        </div>
+                                        <br>
+                                        <div class="row">
+                                            <div class="col-sm-8 col-14 h6 txt-inp-def">Max Jumps&nbsp;</div>
+                                            <input id="id-maxJumps" class="rounded col-sm-6 col-14" type="number"
+                                                value="20" onchange="bhs.saveDarcSettings(this)">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="status" class="border col-7 text-danger scrollbar container-fluid"
+                                style="overflow-y: scroll; height: 68px"></div>
+                        </div>
+                    </div>
+                    <br>
+
+                    <div class="text-danger h6">
+                        <span class="h5">*</span> - Required Entry&nbsp;&nbsp;&nbsp;&nbsp;
+                        <i class="far fa-question-circle text-danger"></i> - Tool Tip
+                    </div>
                 </div>
                 <br>
             </div>
 
             <div class="col-md-7 col-14">
                 <div id="pnl-map" class="card card-body border bkg-def txt-def">
-                    <div class="row">
-                        <div id="mapcol" class="col-md-11 col-14">
-                            <div id="plymap" class="hidden"></div>
-                            <div id="image" class="hidden"></div>
-                        </div>
-                        <br>
+                    <div class="card-header h4 bkg-def txt-def border-bottom">
+                        3D Map&nbsp;
+                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="When zoomed in the grey dot is the galactic center. To approximate 
+                            the galactic map view align the red starting position with the galactic center.">
+                        </i>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div id="mapcol" class="col-md-11 col-14">
+                                <div id="plymap" class="hidden"></div>
+                                <div id="image" class="hidden"></div>
+                            </div>
+                            <br>
 
-                        <div class="col-md-3 col-14">
-                            <div class="row">
-                                <a id="maplogo" class="col-md-14 col-10">
-                                    <img id="logo" src="lBTK5EL.png" class="float-left" alt="BHS Logo" width="20"
-                                        height="20">
-                                </a>
-                                <div class="col-4">
-                                    <br>
-                                    <button id="btn-switch" type="button" class="btn-def btn btn-sm "
-                                        onclick="redraw()">Redraw</button>
+                            <div class="col-md-3 col-14">
+                                <div class="row">
+                                    <a id="maplogo" class="col-md-14 col-10">
+                                        <img id="logo" src="lBTK5EL.png" class="float-left" alt="BHS Logo" width="20"
+                                            height="20">
+                                    </a>
+                                    <div class="col-4">
+                                        <br>
+                                        <button id="btn-switch" type="button" class="btn-def btn btn-sm "
+                                            onclick="redraw()">Redraw</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -247,9 +226,11 @@
             </div>
         </div>
     </div>
-
     <br>
 
+    <div class="clr-creme text-right h7">
+        <i class="far fa-copyright"></i> 2019 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
 </body>
 
 </html>

@@ -15,23 +15,21 @@ var starsCol = "stars5"
 const usersCol = "users"
 
 function startUp() {
-    $("#javascript").empty()
+    $("#javascript").remove()
     $("#jssite").show()
 
     bhs = new blackHoleSuns()
-
     bhs.init()
     bhs.initFirebase()
 
-    if (starsCol != "stars5")
-        $("body").css("background-color", "red")
+    $("#bhsmenus").load("bhsmenus.html", () => {
+        $("#login").click(() => {
+            bhs.logIn()
+        })
 
-    $("#login").click(() => {
-        bhs.logIn()
-    })
-
-    $("#logout").click(() => {
-        bhs.logOut()
+        $("#logout").click(() => {
+            bhs.logOut()
+        })
     })
 }
 
@@ -773,21 +771,21 @@ blackHoleSuns.prototype.getTotals = async function (displayFcn, dispHtml) {
             view: "Galaxies"
         })
         .then(result => {
-                dispHtml(result.data.html, "Galaxies")
+            dispHtml(result.data.html, "Galaxies")
         })
 
     t({
             view: "Players"
         })
         .then(result => {
-                dispHtml(result.data.html, "Players")
+            dispHtml(result.data.html, "Players")
         })
 
     t({
             view: "Organizations"
         })
         .then(result => {
-                dispHtml(result.data.html, "Organizations")
+            dispHtml(result.data.html, "Organizations")
         })
 
     let ref = bhs.fs.doc("bhs/Totals")

@@ -40,49 +40,15 @@
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
     </script>
 
-<script src="glyph.js"></script>
-<script src="commonNms.js"></script>
+    <script src="glyph.js"></script>
+    <script src="commonNms.js"></script>
 
     <link rel="stylesheet" type="text/css" href="local.css">
     <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
 </head>
 
 <body class="bkg-def">
-    <a href="darc.html"><img src="nmsbhs_banner.jpg" alt="BHS Banner"></a>
-
-    <div id="r2" class="container-fluid">
-        <div class="row">
-            <a class="col-8x1 text-center h4 txt-def" href="https://faq.blackholesuns.com/">FAQ</a>
-            <a class="col-8x1 text-center h5 txt-def" href="https://guide.blackholesuns.com/">Travel Guide</a>
-            <a class="col-8x1 text-center h5 txt-def" href="darc.html">DARC</a>
-            <a class="col-8x1 text-center h5 txt-def" href="distance.html">Star Nav</a>
-            <!--a class="col-8x1 text-center h5 txt-def" href="glyph.html">Glyph Converter</a-->
-            <a class="col-8x1 text-center h5 txt-def" href="index.html">Input</a>
-            <a class="col-8x1 text-center h5 txt-def" href="totals.html">Totals</a>
-            <a class="col-8x1 text-center h5 txt-def" href="search.html">Search</a>
-        </div>
-    </div>
-
-    <div class="row border-top">
-        <a href="https://twitter.com/nmsblkholesuns" class="col-4 text-center clr-creme h6">Follow us on
-            Twitter</a>
-        <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center clr-creme h6">Follow us on
-            Reddit</a>
-        <a href="https://discord.blackholesuns.com/" class="col-4 text-center clr-creme h6">Talk to us on Discord</a>
-    </div>
-
-    <div id="javascript">
-        <!--googleoff:all-->
-        <div class="text-danger h6">
-            <p>Unfortunately, this page cannot function without javasript. Please add this site to your "allowed" sites.
-                For chrome it's located&nbsp;
-                <a href="chrome://settings/content/javascript">here</a></p>
-            <p>This error message can also be caused by a page loading error.</p>
-        </div>
-        <!--googleon:all-->
-        <br>
-    </div>
-    <br>
+    <div id="bhsmenus"></div>
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div class="card">
@@ -97,7 +63,7 @@
                                 data-placement="bottom"
                                 title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators.">
                                 Input Coordinates&nbsp;
-                                <i class="far fa-question-circle"></i>
+                                <i class="far fa-question-circle text-danger"></i>
                             </div>
                             <input id="id-addr" class="rounded col-lg-7 col-md-8 col-sm-5 col-8 h5"
                                 placeholder="0000:0000:0000:0000" onchange="dispAddr(this)">
@@ -109,7 +75,7 @@
                             <div class="col-sm-4 col-6 h6 txt-inp-def" data-toggle="tooltip" data-html="true"
                                 data-placement="bottom" title="Planet number 0-15.<br>Defaults to 0.">
                                 Input Planet&nbsp;
-                                <i class="far fa-question-circle"></i>
+                                <i class="far fa-question-circle text-danger"></i>
                             </div>
                             <input id="id-planet" class="rounded col-md-2 col-sm-2 col-3" type="number" value=0 min=0
                                 max=15 placeholder="0" onchange="dispAddr(this)">
@@ -145,7 +111,7 @@
                     <div class="col-lg-2 col-md-2 col-4 h6 txt-inp-def" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Type hex digits into field or use buttons.">Input
                         Glyph&nbsp;
-                        <i class="far fa-question-circle"></i>
+                        <i class="far fa-question-circle text-danger"></i>
                     </div>
                     <input id="id-glyph" class="col-lg-4 col-md-5 col-sm-6 col-10 rounded h4 glyph"
                         onchange="dispGlyph(this)">
@@ -173,6 +139,11 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <br>
+    <div class="clr-creme text-right h7">
+        <i class="far fa-copyright"></i> 2019 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     </div>
 </body>
 
