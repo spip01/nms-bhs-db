@@ -2,17 +2,17 @@
 <html lang="en">
 
 <head>
-    <title>No Man's Sky Distance and Route Calculator</title>
-    <meta name="description" content="No Man's Sky Black Hole Suns DARC">
-    <meta name="keywords" content="no man's sky,map,black hole, distance and route calculator">
+    <title>NMS Coordinate Exchange</title>
+    <meta name="description" content="No Man's Sky Coordinate Exchange">
+    <meta name="keywords" content="no man's sky,coordinate exchange">
     <meta name="author" content="Stephen Piper">
-    <meta name="application-name" content="NMS-Black Hole Suns">
-    <link rel="shortcut icon" href="favicon.ico">
+    <meta name="application-name" content="NMS-Coordinate Exchange">
+    <link rel="shortcut icon" href="nmsce.ico">
 
     <script src="env.js"></script>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-5"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-6"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
 
@@ -21,7 +21,7 @@
         }
         gtag('js', new Date());
 
-        gtag('config', 'UA-66007591-5');
+        gtag('config', 'UA-66007591-6');
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -29,7 +29,7 @@
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
         integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"
@@ -41,6 +41,9 @@
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
     </script>
 
+
+    <!-- https://fonts.googleapis.com/css?family=Tangerine:bold,bolditalic|Inconsolata:italic|Droid+Sans -->
+    <link href="https://fonts.googleapis.com/css?family=Berkshire+Swash|Caveat+Brush&display=swap" rel="stylesheet">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <script src="/__/firebase/6.3.3/firebase-app.js"></script>
@@ -51,9 +54,10 @@
     <script src="/__/firebase/init.js"></script>
 
     <script src="commonFb.js"></script>
+    <script src="commonNmsce.js"></script>
     <script src="commonUI.js"></script>
     <script src="commonNms.js"></script>
-    <script src="darc.js"></script>
+    <script src="nmsce.js"></script>
 
     <link rel="stylesheet" type="text/css" href="local.css">
     <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
@@ -64,14 +68,7 @@
 
     <div id="r2" class="container-fluid">
         <div class="row">
-            <a class="col-8x1 text-center h4 txt-def" href="https://faq.blackholesuns.com/">FAQ</a>
-            <a class="col-8x1 text-center h5 txt-def" href="https://guide.blackholesuns.com/">Travel Guide</a>
-            <!--a class="col-8x1 text-center h5 txt-def" href="darc.html">DARC</a-->
-            <a class="col-8x1 text-center h5 txt-def" href="distance.html">Star Nav</a>
-            <a class="col-8x1 text-center h5 txt-def" href="glyph.html">Glyph Converter</a>
-            <a class="col-8x1 text-center h5 txt-def" href="index.html">Input</a>
-            <a class="col-8x1 text-center h5 txt-def" href="totals.html">Totals</a>
-            <a class="col-8x1 text-center h5 txt-def" href="search.html">Search</a>
+            <a class="col-3 text-center h5 txt-def" href="https://dbguide.blackholesuns.com/">FAQ</a>
 
             <div id="full-usermenu" class="container col-4">
                 <button id="login" type="button" class="text-center btn-def no-border h5">
@@ -91,51 +88,18 @@
                         <button id="logout" type="button" class="no-border text-center dropdown-item btn-def">
                             <h5>Logout</h5>
                         </button>
-                        <button id="recalc" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                            onclick="bhs.recalcTotals()">
-                            Recalc Totals
-                        </button>
-                        <button id="admin" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                            onclick="bhs.setAdmin()">
-                            Admin Edit
-                        </button>
-                        <div class="text-center">
-                            <a id="poiorg" class="h5 no-border dropdown-item btn-def hidden" href="poiorg.html">Enter
-                                POI &amp; Orgs</a>
-                        </div>
-                        <button id="genDARC" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                            onclick="bhs.genDARC()">
-                            genDARC
-                        </button>
-                        <button id="updateDARC" type="button"
-                            class="h5 no-border text-center dropdown-item btn-def hidden" onclick="bhs.updateDARC()">
-                            updateDARC
-                        </button>
-                        <button id="genPOI" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                            onclick="bhs.genPOI()">
-                            genPOI
-                        </button>
-                        <button id="backupBHS" type="button"
-                            class="h5 no-border text-center dropdown-item btn-def hidden" onclick="bhs.backupBHS()">
-                            backupBHS
-                        </button>
-                        <button id="testing" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                            onclick="bhs.testing()">
-                            testing
-                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row border-top">
+    <div id="footer" class="row border-top">
         <a href="https://twitter.com/nmsblkholesuns" class="col-4 text-center clr-creme h6">Follow us on
             Twitter</a>
         <a href="https://www.reddit.com/r/NMSBlackHoleSuns/" class="col-4 text-center clr-creme h6">Follow us on
             Reddit</a>
-        <a href="https://discord.blackholesuns.com/" class="col-4 text-center clr-creme h6">Talk to us on
-            Discord</a>
+        <a href="https://discord.blackholesuns.com/" class="col-4 text-center clr-creme h6">Talk to us on Discord</a>
     </div>
 
     <div id="javascript">
@@ -154,7 +118,7 @@
     <!--googleoff:all-->
     <div id="loginpnl" class="card bkg-def pad-bottom" style="display:none">
         <div class="card-header">
-            <div class="h4 txt-def text-center">Login to Black Hole Suns DB</div>
+            <div class="h4 txt-def text-center">Login to NMS Coordinate Exchange</div>
         </div>
         <div class="card-body">
             <div class="row">
@@ -187,38 +151,45 @@
     </div>
     <!--googleon:all-->
 
-    <div id="jssite" class="container-fluid pad-bottom hidden">
-        <div id="loggedout" class="row txt-def">&nbsp;&nbsp;&nbsp;&nbsp;Login is only required for saving or loading
-            saved data<br></div>
+    <div id="jssite" class="container-fluid pad-bottom" style="display:none">
+        <div id="loggedout" class="row text-danger h5">
+            <h4>Welcome to No Man's Sky Coordinate Exchange. Please login.</h4>
+        </div>
 
-        <div class="row">
-            <div class="col-md-7 col-14">
-                <div class="card card-body pad-bottom">
-                    <div id="panels"></div>
+        <div class="card card-body pad-bottom bkg-def">
+            <div class="row">
+                <div class="col-md-7 col-14">
+                    <div id="panels" class="card card-body"></div>
+                    <br>
                 </div>
-                <br>
-            </div>
 
-            <div class="col-md-7 col-14">
-                <div id="pnl-map" class="card card-body border bkg-def txt-def">
-                    <div class="row">
-                        <div id="mapcol" class="col-md-11 col-14">
-                            <div id="plymap" class="hidden"></div>
-                            <div id="image" class="hidden"></div>
+                <div class="col-md-7 col-14">
+                    <div class="card card-body">
+                        <div class="card">
+                            <nav>
+                                <div class="nav nav-tabs" id="typeTabs" role="tablist">
+                            </nav>
+                            <div  class="card-body">
+                                <div class="tab-content" id="typePanels"></div>
+                                <div id="imgtable" class="row hidden"></div>    
+                            </div>
                         </div>
                         <br>
 
-                        <div class="col-md-3 col-14">
+                        <div id="entrybuttons" class="card card-body">
                             <div class="row">
-                                <a id="maplogo" class="col-md-14 col-10">
-                                    <img id="logo" src="lBTK5EL.png" class="float-left" alt="BHS Logo" width="20"
-                                        height="20">
-                                </a>
-                                <div class="col-4">
-                                    <br>
-                                    <button id="btn-switch" type="button" class="btn-def btn btn-sm "
-                                        onclick="redraw()">Redraw</button>
+                                <div class="col-7">
+                                    <div class="row">
+                                        <button id="save" type="button"
+                                            class="col-4 btn  btn-sm btn-def">Save</button>&nbsp;
+                                        <button id="delete" type="button" class="col-4 btn btn-sm btn-def disabled"
+                                            disabled>Delete</button>&nbsp;
+                                        <button id="cancel" type="button"
+                                            class="col-4 btn btn-def  btn-sm">Cancel</button>&nbsp;
+                                    </div>
                                 </div>
+                                <div id="status" class="border col-7 text-danger scrollbar container-fluid"
+                                    style="overflow-y: scroll; height: 40px"></div>
                             </div>
                         </div>
                     </div>
@@ -227,27 +198,10 @@
         </div>
         <br>
 
-        <div class="card">
-            <div id="pnl-results" class="card pad-bottom">
-                <div id="res-hdr" class="card-header bkg-def txt-def">
-                    <div class="row">
-                        <div class="col-4 h4">Results</div>
-                        <div class="col-10 clr-creme">Click on entry to expand directions and draw map. Click on
-                            direction step to
-                            zoom map.</div>
-                    </div>
-                </div>
-                <div id="res-table" class="card-body">
-                    <div id="resHeader" class="row border-bottom bkg-def txt-def">Results:</div>
-                    <div id="resItems" class="scrollbar container-fluid" style="overflow-y: scroll; height: 388px">
-                    </div>
-                    <br>
-                    <a class="btn btn-sm btn-def" href=" https://discordapp.com/invite/TEeK8tp/">Report Problems</a>
-                </div>
-            </div>
+        <div class="row">
+            <div id="entryTable" class="card pad-bottom"></div>
         </div>
     </div>
-
     <br>
 
 </body>
