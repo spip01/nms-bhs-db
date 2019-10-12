@@ -6,8 +6,6 @@ $(document).ready(() => {
     bhs.buildDarcUserPnl()
     bhs.buildQueryPanel()
     bhs.buildDarcMap()
-
-    $('[data-toggle="tooltip"]').tooltip()
 })
 
 blackHoleSuns.prototype.buildDarcUserPnl = function () {
@@ -67,7 +65,7 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
     let pnl = $("#pnl-query")
 
     await bhs.getPoiList(true)
-    bhs.buildMenu(pnl, "Points Of Interest", bhs.poiList, bhs.select, false, "Blue items are in your current galaxy. Red are not.")
+    bhs.buildMenu(pnl, "Points Of Interest", bhs.poiList, bhs.select, false, "List maintained by Black Hole Suns. Blue items are in your current galaxy. Red are not.")
 
     await bhs.getOrgList(true)
     bhs.buildMenu(pnl, "Organizations", bhs.orgList, bhs.select)
@@ -279,6 +277,7 @@ const restable = [{
     format: "col-lg-4 col-md-6 col-7"
 }, {
     name: "x-addr",
+    id: "addr",
     field: "addr",
     format: "col-lg-3 col-md-3 col-sm-8 col-14 text-center monospace"
 }, {
@@ -286,10 +285,12 @@ const restable = [{
     format: "col-lg-3 col-md-4 col-sm-1 col-1"
 }, {
     name: "x-sys",
+    id: "sys",
     field: "system",
     format: "col-lg-2 col-md-8 col-sm-6 col-5 text-center"
 }, {
     name: "x-reg",
+    id: "reg",
     field: "region",
     format: "col-lg-2 col-md-3 col-sm-6 col-7 text-center"
 }, ]
@@ -345,7 +346,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
 
             for (let f of restable) {
                 let end = false
-                let l = /field/ [Symbol.replace](itm, f.name)
+                let l = /field/ [Symbol.replace](itm, typeof f.id !== "undefined" ? f.id : f.name)
                 l = /format/ [Symbol.replace](l, f.format)
 
                 switch (f.name) {
@@ -599,6 +600,12 @@ function mapRoute(route) {
 }
 
 function mapRow(evt) {
+    let sloc = $(evt)
+    let start = sloc.prop("id").stripID()
+    let sxyz = addressToXYZ(start)
+    let sreg = sloc.find("#itm-reg").text()
+    let ssys = sloc.find("#itm-sys").text()
+
     let eloc = $(evt).next()
     let end = eloc.prop("id")
     if (typeof end === "undefined")
@@ -606,14 +613,8 @@ function mapRow(evt) {
 
     end = end.stripID()
     let exyz = addressToXYZ(end)
-    let ereg = eloc.find("#itm-region").text()
-    let esys = eloc.find("#itm-system").text()
-
-    let sloc = $(evt)
-    let start = sloc.prop("id").stripID()
-    let sxyz = addressToXYZ(start)
-    let sreg = sloc.find("#itm-region").text()
-    let ssys = sloc.find("#itm-system").text()
+    let ereg = eloc.find("#itm-reg").text()
+    let esys = eloc.find("#itm-sys").text()
 
     let zero = {
         x: 2048,
@@ -627,14 +628,20 @@ function mapRow(evt) {
     pushentry(out, sxyz)
     data.push(makedata(out, 2, "#ffffff", "#c0c0c0"))
 
-    out = initout()
-    pushentry(out, sxyz)
-    pushentry(out, exyz, end + (ereg ? "<br>" + ereg : "") + (esys ? "<br>" + esys : ""))
-    data.push(makedata(out, 4, "#ff0000", "#40ff00"))
+    if (exyz.x !== sxyz.x || exyz.y !== sxyz.y || exyz.z !== sxyz.z) {
+        out = initout()
+        pushentry(out, sxyz)
+        pushentry(out, exyz, end + (ereg ? "<br>" + ereg : "") + (esys ? "<br>" + esys : ""))
+        data.push(makedata(out, 4, "#ff0000", "#40ff00"))
 
-    out = initout()
-    pushentry(out, sxyz, start(sreg ? "<br>" + sreg : "") + (ssys ? "<br>" + ssys : ""))
-    data.push(makedata(out, 4, "#00ff00"))
+        out = initout()
+        pushentry(out, sxyz, start + (sreg ? "<br>" + sreg : "") + (ssys ? "<br>" + ssys : ""))
+        data.push(makedata(out, 4, "#00ff00"))
+    } else {
+        out = initout()
+        pushentry(out, exyz, end + (ereg ? "<br>" + ereg : "") + (esys ? "<br>" + esys : ""))
+        data.push(makedata(out, 4, "#00ff00"))
+    }
 
     Plotly.react('plymap', data, changeMapLayout(true, start, end))
 }

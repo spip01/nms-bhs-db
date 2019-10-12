@@ -31,6 +31,10 @@ function startUp() {
             bhs.logOut()
         })
     })
+
+    $("body").tooltip({
+        selector: '[data-toggle="tooltip"]'
+    })
 }
 
 function blackHoleSuns() {

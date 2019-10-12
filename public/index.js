@@ -45,9 +45,6 @@ $(document).ready(() => {
     $("#cancel").click(() => {
         bhs.clearPanels()
     })
-
-    //$('[data-toggle="tooltip"]').tooltip()
-    $('[data-toggle="tooltip"]').hide()
 })
 
 const pnlTop = 0
@@ -81,9 +78,9 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                 <div id="id-addrInput">
                     <div class="row">
                         <div class="col-sm-4 col-7 h6 txt-inp-def">Coordinates<span class="h5 text-danger">&nbsp;*</span>&nbsp;
-                            <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                                 data-placement="bottom" title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
-                                A <span class='h5'>12</span> digit glyph as hex values can also be entered.">
+                                A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
                             </i>
                         </div>
                         <input id="id-addr" class="rounded col-sm-5 col-7" placeholder="0000:0000:0000:0000" onchange="bhs.changeAddr(this)">
@@ -91,7 +88,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                             <label class="h6 txt-inp-def">
                                 <input id="ck-glyphs" type="checkbox" onchange="bhs.setGlyphInput()">
                                 Input Glyphs<span class="h5 text-danger">&nbsp;*</span>&nbsp;
-                                <i class="far fa-question-circle text-danger" data-toggle="tooltip"
+                                <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
                                     data-html="true" data-placement="bottom"
                                     title="Display glyph input buttons and show glyphs in input field.">
                                 </i>
@@ -100,7 +97,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     </div>
 
                     <div class="row">
-                        <div class="col-sm-2 col-7 h6 txt-inp-def">Portal&nbsp;</div>
+                        <div class="col-sm-2 col-7 h6 txt-inp-def">Glyphs&nbsp;</div>
                         <div id="id-glyph" class="col-sm-8 col-7 h4 text-center txt-inp-def glyph"></div>
                         <div id="id-hex" class="col-sm-4 col-14 text-center txt-inp-def"></div>
                     </div>
@@ -110,10 +107,10 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     <div class="row">
                         <div class="col-sm-3 col-3 h6 txt-inp-def">
                             Glyph<span class="h5 text-danger">&nbsp;*</span>&nbsp;
-                            <i class="far fa-question-circle text-danger" data-toggle="tooltip"
+                            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
                                 data-html="true" data-placement="bottom"
                                 title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
-                                digit glyph as hex values can also be entered.">
+                                digit hex, 0-9 a-f, value can be entered directly in the field.">
                             </i>
                         </div>
                         <input id="id-glyph" class="rounded col-sm-7 col-7 h4 glyph" onchange="bhs.changeGlyph(this)">
@@ -121,7 +118,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                             <label class="h6 txt-inp-def">
                                 <input id="ck-glyphs" type="checkbox" onchange="bhs.setGlyphInput()">
                                 Input Glyphs&nbsp;
-                                <i class="far fa-question-circle text-danger" data-toggle="tooltip"
+                                <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
                                     data-html="true" data-placement="bottom"
                                     title="Hide glyph input buttons.">
                                 </i>
@@ -144,8 +141,11 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
                 <div class="row">
                     <div class="col-sm-4 col-7 h6 txt-inp-def">Region Name<span class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
-                    <input id="id-reg" class="rounded col-sm-5 col-7">&nbsp
-                    <button id="btn-searchRegion" type="button" class="btn-def btn btn-sm" onclick="bhs.searchRegion(this)">Search</button>&nbsp
+                        <input id="id-reg" class="rounded col-sm-5 col-7">&nbsp
+                        <button id="btn-searchRegion" type="button" class="btn-def btn btn-sm" onclick="bhs.searchRegion(this)">Search</button>&nbsp;
+                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Search for a region and display it on the 3D map.">
+                        </i>
                     </div>
 
                 <div id="id-byrow" class="row">
@@ -167,14 +167,14 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     <label class="radio col-5 h6 txt-inp-def">
                         <input id="btn-valid" type="radio" name="validradio">
                         BH Pair Confirmed&nbsp;
-                        <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                             data-placement="bottom" title="Set this if you have made this black hole transit.">
                         </i>
                     </label>
                     <label class="radio col-4 h6 txt-inp-def">
                         <input id="btn-invalid" type="radio" name="validradio">
                         Broken&nbsp;
-                        <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                             data-placement="bottom" title="Set this if this black hole did not exit at the given coordinates.">
                         </i>
                     </label>
@@ -184,15 +184,15 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     <label class="col-7 h6 txt-inp-def">
                         <input id="ck-hasbase" type="checkbox">
                         Has Base&nbsp;
-                        <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
-                            data-placement="bottom" title="Enter a base to be used as a starting point in the DARC.">
+                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Enter a base to be used as a starting point with the DARC.">
                         </i>
                     </label>
                     <label id="id-sharepoi" class="col-7 h6 txt-inp-def hidden">
                         <input id="ck-sharepoi" type="checkbox">
                         Share POI&nbsp;
-                        <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
-                            data-placement="bottom" title="Include this base with the 'POI near route'">
+                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Include this base with the 'POI near route' with the DARC.">
                         </i>
                     </label>
                 </div>
@@ -209,7 +209,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                         <label class="h6 txt-inp-def">
                             <input id="ck-single" type="checkbox">
                             Single System&nbsp;
-                            <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                                 data-placement="bottom" title="Enter a system without a black hole exit.">
                             </i>
                         </label>
@@ -219,9 +219,8 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                         <label class="h6 txt-inp-def">
                             <input id="ck-isdz" type="checkbox">
                             Dead Zone&nbsp;
-                            <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
-                                data-placement="bottom" title="Back hole doesn't function or it exits back to the same system.  
-                                Can happen within 3500ly of the galaxy center.">
+                            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom" title="Back hole doesn't function or it exits back to the same system.">
                             </i>
                         </label>
                     </div>
@@ -245,7 +244,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                    <div id="id-tocenter" class="col-5 txt-inp-def" style="display:none">
                         <div class="row">
                             <div class="col-9 text-right"> Towards Center&nbsp;
-                                <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
+                                <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom" title="Typically this is around 6000ly. On the edges of the galaxy 
                                     it can be more.  In the core it can be slightly negative.">
                                 </i>&nbsp;
@@ -259,7 +258,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         <br>`
 
     let h = /idname/g [Symbol.replace](panel, id)
-    h = /title/g [Symbol.replace](h, id == "pnl-S1" ? panels[pnlTop].name : panels[pnlBottom].name)
+    h = /title/ [Symbol.replace](h, id == "pnl-S1" ? panels[pnlTop].name : panels[pnlBottom].name)
 
     $("#panels").append(h)
 

@@ -1,14 +1,16 @@
 $(document).ready(() => {
     $("#javascript").remove()
     $("#jssite").show()
+    
+    $("body").tooltip({
+        selector: '[data-toggle="tooltip"]'
+    })
 
     $("#bhsmenus").load("bhsmenus.html", () => {
         $("#login").hide()
 
         let gloc = $("[id='glyphbuttons']")
         addGlyphButtons(gloc, addGlyph)
-
-        $('[data-toggle="tooltip"]').tooltip()
     })
 })
 

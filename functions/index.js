@@ -614,7 +614,7 @@ exports.getTotals = functions.https.onCall((data, context) => {
     const totScrollPnl = `  <div id="scroll-idname" class="card card-body nopadding">`
     const totHdr = `              <div id="hdr-idname" class="row border-bottom txt-def">`
     const totItm = `              <div id="itm-idname" class="scrollbar container-fluid nopadding" style="overflow-y: scroll; height:124px">`
-    const totItms = `                  <div id="idname" class="format" onclick="bhs.sortTotals(this)">title</div>`
+    const totItms = `                  <div id="idname" class="format" onclick="bhs.sortTotals(this)">title&nbsp;<i id="up" class="fas fa-sort-up hidden"></i></div>`
 
     const userHdr = `               <div id="u-idname" class="row">`
     const userItms = `                  <div id="idname" class="format" onclick="bhs.clickUser(this)">title</div>`
