@@ -285,7 +285,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
                 <span class="h4 col-6 txt-def">System List&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Hit 'Load' to download entries from server. Click on column titles to sort data based on column. 
-                        Click on data entry to display in input section and hi-light entry in map.  Once selected entry may be edited.">
+                        Click on data entry to display in input section and highlight entry in map.  Once selected entry may be edited.">
                     </i>
                 </span>
                 <div id="lc-plat" class="col-4 txt-def h6"></div>
@@ -548,8 +548,8 @@ function entryDblclk(evt) {
         bhs.displayListEntry(e)
     } else {
         let l = {}
-        l[reformatAddress(id)] = e
-        bhs.drawList(l)
+        l[e.addr] = e
+        bhs.drawList(l, true)
     }
 }
 
@@ -1297,7 +1297,11 @@ blackHoleSuns.prototype.buildMap = function () {
             <div id="id-mapinp" class="col-sm-6 col-14">
                 <div class="row">
                     <div class="col-1"></div>
-                    <div class="col-5 txt-def">Min</div>
+                    <div class="col-5 txt-def">Min&nbsp;
+                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Set display range of map.">
+                        </i>
+                    </div>
                     <div class="col-5 txt-def">Max</div>
                 </div>
                 <div class="row">
@@ -1326,7 +1330,10 @@ blackHoleSuns.prototype.buildMap = function () {
                     </label>
                     <label id="id-drawcon" class="col-sm-7 col-14 h6 txt-def">
                         <input id="ck-drawcon" type="checkbox" checked>
-                        Draw Connections
+                        Draw Connections&nbsp;
+                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Draw lines between black hole and exit.  WARNING this is slow.">
+                        </i>
                     </label>
                     <label id="id-zoomreg" class="col-14 h6 txt-def">
                         <input id="ck-zoomreg" type="checkbox" checked>
@@ -1336,7 +1343,11 @@ blackHoleSuns.prototype.buildMap = function () {
                 <div class="row">
                     <label class="col-8 h6 txt-def">
                         <input id="ck-chain" type="checkbox" checked>
-                        Select Chain&nbsp
+                        Select Chain&nbsp;
+                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Follow black holes from current exit to the next black
+                            hole if closer than selected radius. Continue chain forward and backward in time using depth.">
+                        </i>&nbsp
                         <input id="inp-chaindepth" type="number" class="rounded col-7 txt-def" min="0">
                     </label> 
                     <label class="col-6 h6 txt-def">
@@ -1359,7 +1370,10 @@ blackHoleSuns.prototype.buildMap = function () {
             </label>
             <label class="col-sm-3 col-7 h6 txt-def">
             <input id="ck-addzero" type="checkbox" checked>
-                &nbsp;Add 0
+                &nbsp;Add 0&nbsp;
+                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                    data-placement="bottom" title="Add line to center of galaxy.">
+                </i>
             </label>
         </div>
         <br>
@@ -1374,7 +1388,6 @@ blackHoleSuns.prototype.buildMap = function () {
             <div class="col-9 border">
                 <div class="col-14 h6 clr-creme text-center">
                     Click on map to select system & draw connections. 
-                    Click on color box in map key to change colors. Set dot size in map key. Then click redraw.
                 </div>
             </div>
         </div>`

@@ -25,16 +25,14 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
         uid: null
     })
 
-    bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select, true)
+    bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select, true, "Display entries made by player on map. First selection for galaxy & platform is slow.")
     bhs.buildMenu(loc, "Platform", platformList, bhs.select, true)
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.select, true)
 }
 
-blackHoleSuns.prototype.select = function () {
-    bhs.entries = {}
-    let i = getIndex(bhs.usersList, "name", $("#btn-Player").text().stripNumber())
-    let uid = i != -1 ? bhs.usersList[i].uid : null
+blackHoleSuns.prototype.select = async function () {
+    let name = $("#btn-Player").text().stripNumber()
     let galaxy = $("#btn-Galaxy").text().stripNumber()
     let platform = $("#btn-Platform").text().stripNumber()
-    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, uid, galaxy, platform)
+    bhs.getEntriesByName(bhs.displayEntryList, bhs.displayEntry, name, galaxy, platform)
 }

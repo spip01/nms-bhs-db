@@ -629,18 +629,39 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, 
     }
 }
 
-blackHoleSuns.prototype.getOrgEntries = async function (displayFcn, singleFcn, name, galaxy, platform) {
+blackHoleSuns.prototype.getEntriesByName = async function (displayFcn, singleFcn, name, galaxy, platform) {
+    name = name ? name : bhs.user._name
     galaxy = galaxy ? galaxy : bhs.user.galaxy
     platform = platform ? platform : bhs.user.platform
 
     if (!bhs.loaded || !bhs.loaded[galaxy] || !bhs.loaded[galaxy][platform])
-        await bhs.getEntries(displayFcn, singleFcn, null, galaxy, platform)
+        await bhs.getEntries(null, null, null, galaxy, platform)
 
+    bhs.entries = {}
     let list = Object.keys(bhs.list[galaxy][platform])
     for (let i = 0; i < list.length; ++i) {
         let e = bhs.list[galaxy][platform][list[i]]
-        let k = Object.keys(e)
-        if (e[k[0]].org == name)
+        if (e._name === name)
+            bhs.entries[list[i]] = e
+    }
+
+    if (displayFcn)
+        displayFcn(bhs.entries)
+}
+
+blackHoleSuns.prototype.getOrgEntries = async function (displayFcn, singleFcn, name, galaxy, platform) {
+    name = name ? name : bhs.user.org
+    galaxy = galaxy ? galaxy : bhs.user.galaxy
+    platform = platform ? platform : bhs.user.platform
+
+    if (!bhs.loaded || !bhs.loaded[galaxy] || !bhs.loaded[galaxy][platform])
+        await bhs.getEntries(null, null, null, galaxy, platform)
+
+    bhs.entries = {}
+    let list = Object.keys(bhs.list[galaxy][platform])
+    for (let i = 0; i < list.length; ++i) {
+        let e = bhs.list[galaxy][platform][list[i]]
+        if (e.org === name)
             bhs.entries[list[i]] = e
     }
 
@@ -691,9 +712,11 @@ blackHoleSuns.prototype.addBaseList = function (entry, list) {
     return list
 }
 
-blackHoleSuns.prototype.getUser = function (displayFcn) {
-    let ref = bhs.getUsersColRef(bhs.user.uid)
-    bhs.subscribe("user", ref, displayFcn)
+blackHoleSuns.prototype.getUser = async function (displayFcn) {
+    if (typeof displayFcn !== "undefined" && displayFcn) {
+        let ref = bhs.getUsersColRef(bhs.user.uid)
+        bhs.subscribe("user", ref, displayFcn)
+    }
 }
 
 blackHoleSuns.prototype.getOrgList = function (nohide) {
