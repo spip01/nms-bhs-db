@@ -272,7 +272,7 @@ blackHoleSuns.prototype.buildTypePanels = function () {
         </div>`
     const tText = `
         <div data-toggle="tooltip" data-html="true" data-placement="bottom" title="ttext">
-            <i class="far fa-question-circle text-danger h6"></i>
+            <i class="fa fa-question-circle-o text-danger h6"></i>
         </div>`
     const tBlank = `
         <div class="col-sm-7 col-14"></div>`
