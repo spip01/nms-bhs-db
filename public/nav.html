@@ -27,8 +27,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
 
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
-        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/4c24999109.js" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
@@ -52,7 +51,7 @@
     <div id="bhsmenus"></div>
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
-            <div class="card card-body pad-bottom bkg-def border clr-white">
+        <div class="card card-body pad-bottom bkg-def border clr-white">
             <div class="row">
                 <div class="col-lg-7 col-12">
                     <div class="card card-body pad-bottom">
@@ -64,7 +63,8 @@
                                         <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
                                             data-html="true" data-placement="bottom"
                                             title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
-                                         A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field."></i>
+                                         A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
+                                        </i>
                                     </div>
                                     <input id="id-addr" class="rounded col-md-4 col-7" placeholder="0000:0000:0000:0000"
                                         onchange="dispAddr(this)">
@@ -111,11 +111,11 @@
                             <div id="w-start">
                                 <div class="row">
                                     <div class="col-md-3 col-4 h6 txt-inp-def">Start Glyph&nbsp;
-                                            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
-                                                data-html="true" data-placement="bottom"
-                                                title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
-                                                digit hex, 0-9 a-f, value can be entered directly in the field."></i>
-                                            </div>
+                                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
+                                            data-html="true" data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
+                                                digit hex, 0-9 a-f, value can be entered directly in the field.">
+                                        </i>
+                                    </div>
                                     <input id="id-glyph" class="rounded col-md-6 col-10 h4 glyph"
                                         onchange="dispGlyph(this)">
                                     <div class="col-3">
@@ -168,9 +168,10 @@
                                 <div class="col-md-3 col-5 h6 txt-inp-def">Distance</div>
                                 <div id="id-dist" class="col-md-3 col-5 txt-inp-def"></div>
                                 <div class="col-md-3 col-5 h6 txt-inp-def">X-Z Plane Angle&nbsp;
-                                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
-                                        data-placement="bottom"
-                                        title="This is the angle for the top down view of the galaxy. For more definitive directions use the 3d map."></i>
+                                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
+                                        data-html="true" data-placement="bottom"
+                                        title="This is the angle for the top down view of the galaxy. For more definitive directions use the 3d map.">
+                                    </i>
                                 </div>
                                 <div id="id-angle" class="col-md-3 col-5 txt-inp-def"></div>
                             </div>
@@ -196,9 +197,9 @@
                         <div class="card-header h4 bkg-def txt-def">
                             3D Map&nbsp;
                             <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
-                                data-placement="bottom"
-                                title="The grey line is towards the galactic center. To approximate the galactic map view align the red starting
-                                position with the galactic center."></i>
+                                data-placement="bottom" title="The grey line is towards the galactic center. To approximate the galactic map view align the red starting
+                                position with the galactic center.">
+                            </i>
                         </div>
                         <div class="card-body">
                             <div class="card card-body pad-bottom">
