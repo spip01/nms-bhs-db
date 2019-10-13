@@ -16,7 +16,8 @@ function addGlyphButtons(loc, fcn) {
 
     loc.find(":button").unbind("click")
     loc.find(":button").click(function () {
-        fcn(this)})
+        fcn(this)
+    })
 }
 
 function reformatAddress(addr) {

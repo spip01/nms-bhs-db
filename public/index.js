@@ -8,7 +8,7 @@ $(document).ready(() => {
     bhs.buildUserPanel()
     bhs.buildFilePanel()
 
-    for(let p of panels)
+    for (let p of panels)
         bhs.buildPanel(p.id)
 
     $("#save").click(() => {
@@ -86,7 +86,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                         <input id="id-addr" class="rounded col-sm-5 col-7" placeholder="0000:0000:0000:0000" onchange="bhs.changeAddr(this)">
                         <div class="col-5">
                             <label class="h6 txt-inp-def">
-                                <input id="ck-glyphs" type="checkbox" onchange="bhs.setGlyphInput()">
+                                <input id="ck-glyphs" type="checkbox" onchange="bhs.setGlyphInput(this)">
                                 Input Glyphs<span class="h5 text-danger">&nbsp;*</span>&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                     data-html="true" data-placement="bottom"
@@ -116,7 +116,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                         <input id="id-glyph" class="rounded col-sm-7 col-7 h4 glyph" onchange="bhs.changeGlyph(this)">
                         <div class="col-4">
                             <label class="h6 txt-inp-def">
-                                <input id="ck-glyphs" type="checkbox" onchange="bhs.setGlyphInput()">
+                                <input id="ck-glyphs" type="checkbox" onchange="bhs.setGlyphInput(this)">
                                 Input Glyphs&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                     data-html="true" data-placement="bottom"
@@ -297,21 +297,23 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 }
 
 blackHoleSuns.prototype.setGlyphInput = function (evt) {
-    if ($("#id-glyphInput").is(":visible")) {
-        $("[id='id-glyphInput']").hide()
-        $("[id='id-addrInput']").show()
-        $("[id='ck-glyphs']").prop("checked", false)
-    } else {
-        $("[id='id-glyphInput']").show()
-        $("[id='id-addrInput']").hide()
-        $("[id='ck-glyphs']").prop("checked", true)
-    }
+    if (typeof bhs.inputSettings === "undefined" || bhs.inputSettings.glyph !== $(evt).prop("checked")) {
+        // if (!$(evt).prop("checked")) {
+        //     $("[id='id-glyphInput']").hide()
+        //     $("[id='id-addrInput']").show()
+        //     $("[id='ck-glyphs']").prop("checked", false)
+        // } else {
+        //     $("[id='id-glyphInput']").show()
+        //     $("[id='id-addrInput']").hide()
+        //     $("[id='ck-glyphs']").prop("checked", true)
+        // }
 
-    bhs.updateUser({
-        inputSettings: {
-            glyph: $("#ck-glyphs").prop("checked")
-        }
-    })
+        bhs.updateUser({
+            inputSettings: {
+                glyph: $(evt).prop("checked")
+            }
+        })
+    }
 }
 
 blackHoleSuns.prototype.addGlyph = function (evt) {

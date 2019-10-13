@@ -211,18 +211,22 @@ blackHoleSuns.prototype.navLoggedout = function () {
 
 blackHoleSuns.prototype.updateUser = async function (user) {
     bhs.user = mergeObjects(bhs.user, user)
-    let ref = bhs.getUsersColRef(bhs.user.uid)
-    return await ref.set(bhs.user, {
-        merge: true
-    }).then(() => {
-        return true
-    }).catch(err => {
-        if (bhs.status)
-            bhs.status("ERROR: " + err)
+    
+    if (bhs.user.uid) {
+        bhs.user = mergeObjects(bhs.user, user)
+        let ref = bhs.getUsersColRef(bhs.user.uid)
+        return await ref.set(bhs.user, {
+            merge: true
+        }).then(() => {
+            return true
+        }).catch(err => {
+            if (bhs.status)
+                bhs.status("ERROR: " + err)
 
-        console.log(err)
-        return false
-    })
+            console.log(err)
+            return false
+        })
+    }
 }
 
 blackHoleSuns.prototype.changeName = function (loc, user) {
@@ -713,7 +717,7 @@ blackHoleSuns.prototype.addBaseList = function (entry, list) {
 }
 
 blackHoleSuns.prototype.getUser = async function (displayFcn) {
-    if (typeof displayFcn !== "undefined" && displayFcn) {
+    if (bhs.user.uid && typeof displayFcn !== "undefined" && displayFcn) {
         let ref = bhs.getUsersColRef(bhs.user.uid)
         bhs.subscribe("user", ref, displayFcn)
     }

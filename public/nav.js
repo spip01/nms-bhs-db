@@ -1,7 +1,7 @@
 $(document).ready(() => {
     $("#javascript").remove()
     $("#jssite").show()
-    
+
     $("body").tooltip({
         selector: '[data-toggle="tooltip"]'
     })
@@ -76,14 +76,14 @@ function dispGlyph(evt) {
 }
 
 function setGlyphInput(evt) {
-    if ($("#id-glyphInput").is(":visible")) {
-        $("#id-glyphInput").hide()
-        $("#id-addrInput").show()
-        $("[id='ck-glyphs']").prop("checked", false)
-    } else {
+    if ($(evt).prop("checked")) {
         $("#id-glyphInput").show()
         $("#id-addrInput").hide()
         $("[id='ck-glyphs']").prop("checked", true)
+    } else {
+        $("#id-glyphInput").hide()
+        $("#id-addrInput").show()
+        $("[id='ck-glyphs']").prop("checked", false)
     }
 }
 

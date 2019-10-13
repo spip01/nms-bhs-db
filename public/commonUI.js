@@ -55,9 +55,19 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
     $("#save").removeAttr("disabled")
 }
 
-blackHoleSuns.prototype.setAdmin = async function (clear) {
+blackHoleSuns.prototype.setAdmin = function (clear) {
     bhs.updateUser({
         role: typeof clear !== "undefined" || bhs.user.role === "admin" ? "user" : "admin"
+    })
+}
+
+blackHoleSuns.prototype.toggleTips = function () {
+    let tips = typeof bhs.user.inputSettings !== "undefined" && !bhs.user.inputSettings.tips
+
+    bhs.updateUser({
+        inputSettings: {
+            tips: tips
+        }
     })
 }
 
@@ -102,15 +112,23 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     } else
         pnl.find("#btn-Galaxy").text("")
 
-    if (fdarc && typeof bhs.user.uid !== "undefined")
+    if (fdarc && typeof bhs.user.uid !== "undefined" && bhs.user.uid)
         bhs.updateDarcSettings()
 
-
-    if (typeof bhs.user.inputSettings !== "undefined" && typeof bhs.user.inputSettings.glyph !== "undefined" && bhs.user.inputSettings.glyph) {
+    if (typeof bhs.user.inputSettings !== "undefined" && bhs.user.inputSettings.glyph) {
         $("[id='id-glyphInput']").show()
         $("[id='id-addrInput']").hide()
         $("[id='ck-glyphs']").prop("checked", true)
+    } else {
+        $("[id='id-glyphInput']").hide()
+        $("[id='id-addrInput']").show()
+        $("[id='ck-glyphs']").prop("checked", false)
     }
+
+    if (typeof bhs.user.inputSettings !== "undefined" && bhs.user.inputSettings.tips)
+        $("[data-toggle='tooltip']").show()
+    else
+        $("[data-toggle='tooltip']").hide()
 }
 
 blackHoleSuns.prototype.buildUserPanel = async function () {
