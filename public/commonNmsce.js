@@ -1,3 +1,5 @@
+'use strict'
+
 blackHoleSuns.prototype.updateNmsce = async function (entry, batch) {
     entry.modded = firebase.firestore.Timestamp.now()
 

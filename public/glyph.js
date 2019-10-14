@@ -1,3 +1,5 @@
+'use strict'
+
 $(document).ready(() => {
     $("#javascript").remove()
     $("#jssite").show()
