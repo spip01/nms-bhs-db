@@ -72,17 +72,22 @@ blackHoleSuns.prototype.toggleTips = function () {
 }
 
 blackHoleSuns.prototype.displayUser = async function (user, force) {
+    let findex = window.location.pathname == "/index.html"
     let fpoi = window.location.pathname == "/poiorg.html"
     let fdarc = window.location.pathname == "/darc.html"
     let ftotals = window.location.pathname == "/totals.html"
+    let fnmsce = window.location.pathname == "/nmsce.html"
     let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform)
 
     bhs.user = mergeObjects(bhs.user, user)
 
+    if (!findex)
+        $("#fileupload").hide()
+
     if (fpoi)
         return
 
-    if (!fdarc) {
+    if (!fdarc && !fnmsce) {
         bhs.getActiveContest(bhs.displayContest)
         bhs.buildTotals()
         bhs.getTotals(bhs.displayTotals, bhs.displayTotalsHtml)
@@ -999,7 +1004,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
             btn.text(name)
 
             if (changefcn)
-                changefcn(id)
+                changefcn(btn)
 
             if ($(this).attr("style"))
                 btn.attr("style", $(this).attr("style"))

@@ -87,7 +87,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                         <div class="col-5">
                             <label class="h6 txt-inp-def">
                                 <input id="ck-glyphs" type="checkbox" onchange="bhs.setGlyphInput(this)">
-                                Input Glyphs<span class="h5 text-danger">&nbsp;*</span>&nbsp;
+                                Input Glyphs&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                     data-html="true" data-placement="bottom"
                                     title="Display glyph input buttons and show glyphs in input field.">

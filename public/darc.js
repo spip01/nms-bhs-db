@@ -89,8 +89,9 @@ blackHoleSuns.prototype.setAddress = function (evt) {
     }
 }
 
-blackHoleSuns.prototype.select = function (id) {
-    let name = $("#btn-" + id).text()
+blackHoleSuns.prototype.select = function (btn) {
+    let name = btn.text()
+    let id = btn.prop("id").stripID()
     if (id === "Points-Of-Interest") {
         let i = getIndex(bhs.poiList, "_name", name)
         let itm = bhs.poiList[i]

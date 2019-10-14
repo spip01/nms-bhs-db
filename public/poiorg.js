@@ -10,11 +10,6 @@ $(document).ready(async () => {
     bhs.buildPanel("pnl-poi", bhs.poiList)
 })
 
-blackHoleSuns.prototype.selectMenu = function () {
-    let loc = $(this)
-    loc.closest("[id|='btn'").text(loc.text().stripNumber())
-}
-
 blackHoleSuns.prototype.buildPanel = function (id, list) {
     let pnl = $("#" + id)
 
@@ -33,9 +28,9 @@ blackHoleSuns.prototype.buildPanel = function (id, list) {
 
     pnl.append(h)
 
-    bhs.buildMenu(pnl, "Mode", modeList, bhs.selectMenu)
-    bhs.buildMenu(pnl, "Platform", platformList, bhs.selectMenu)
-    bhs.buildMenu(pnl, "Galaxy", galaxyList, bhs.selectMenu)
+    bhs.buildMenu(pnl, "Mode", modeList)
+    bhs.buildMenu(pnl, "Platform", platformList)
+    bhs.buildMenu(pnl, "Galaxy", galaxyList)
     bhs.buildTable(pnl, list)
 
     if (id == "pnl-poi") {
