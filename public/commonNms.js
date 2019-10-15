@@ -110,7 +110,6 @@ function glyphToAddr(glyph) {
     return ""
 }
 
-
 function mergeObjects(o, n) {
     if (typeof n != "object") {
         o = n
@@ -142,12 +141,9 @@ function addObjects(o, n) {
     return o
 }
 
-// String.prototype.idToName = function () {
-//     let name = /--/g [Symbol.replace](this, "'")
-//     name = /-/g [Symbol.replace](name, " ")
-
-//     return name
-// }
+String.prototype.idToName = function () {
+    return /-/g [Symbol.replace](name, " ")
+}
 
 function uuidv4() {
     return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
@@ -156,8 +152,7 @@ function uuidv4() {
 }
 
 String.prototype.nameToId = function () {
-    let id = /[^a-z0-9_-]/ig [Symbol.replace](this, "-")
-    return id
+    return /[^a-z0-9_-]/ig [Symbol.replace](this, "-")
 }
 
 String.prototype.stripColons = function () {
