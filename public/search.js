@@ -2,7 +2,7 @@
 
 $(document).ready(() => {
     startUp()
-    
+
     bhs.buildSelectPanel()
     bhs.buildSearchPanel()
 })
@@ -26,9 +26,18 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
         uid: null
     })
 
-    bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select, false,"Search entries made by player. First search for galaxy & platform is slow.")
-    bhs.buildMenu(loc, "Platform", platformList, bhs.select)
-    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.select)
+    bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select, {
+        vertical:true,
+        tip: "Search entries made by player. First search for galaxy & platform is slow."
+    })
+    bhs.buildMenu(loc, "Platform", platformList, bhs.select, {
+        vertical:true,
+        required: true
+    })
+    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.select, {
+        vertical:true,
+        required: true
+    })
 }
 
 blackHoleSuns.prototype.select = function () {

@@ -2,7 +2,7 @@
 
 $(document).ready(function () {
     startUp()
-    
+
     bhs.buildSelectPanel()
 })
 
@@ -25,9 +25,17 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
         uid: null
     })
 
-    bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select, true, "Display entries made by player on map. First selection for galaxy & platform is slow.")
-    bhs.buildMenu(loc, "Platform", platformList, bhs.select, true)
-    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.select, true)
+    bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select, {
+        vertical: true,
+        tip: "Display entries made by player on map. First selection for galaxy & platform is slow."
+    })
+    bhs.buildMenu(loc, "Platform", platformList, bhs.select, {
+        vertical: true
+    })
+    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.select, {
+        vertical: true,
+        tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal"
+    })
 }
 
 blackHoleSuns.prototype.select = async function () {

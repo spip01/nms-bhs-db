@@ -178,7 +178,7 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
 }
 
 blackHoleSuns.prototype.init = function () {
-    bhs.galaxyInfo = buildGalaxyInfo()
+    buildGalaxyInfo()
     bhs.user = bhs.userInit()
 }
 

@@ -28,9 +28,15 @@ blackHoleSuns.prototype.buildPanel = function (id, list) {
 
     pnl.append(h)
 
-    bhs.buildMenu(pnl, "Mode", modeList)
-    bhs.buildMenu(pnl, "Platform", platformList)
-    bhs.buildMenu(pnl, "Galaxy", galaxyList)
+    bhs.buildMenu(pnl, "Mode", modeList, null, {
+        required: true
+    })
+    bhs.buildMenu(pnl, "Platform", platformList, null, {
+        required: true
+    })
+    bhs.buildMenu(pnl, "Galaxy", galaxyList, null, {
+        required: true
+    })
     bhs.buildTable(pnl, list)
 
     if (id == "pnl-poi") {
@@ -284,7 +290,7 @@ blackHoleSuns.prototype.save = async function (evt) {
             list.push(e)
         else
             list[idx] = e
-            
+
         list.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
             a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0)
 

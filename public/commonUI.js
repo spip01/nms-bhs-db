@@ -111,9 +111,9 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     pnl.find("#btn-Organization").text(bhs.user.org)
 
     if (bhs.user.galaxy && bhs.user.galaxy !== "") {
-        let i = galaxyList[getIndex(galaxyList, "name", bhs.user.galaxy)].number
-        pnl.find("#btn-Galaxy").text(i + " " + bhs.user.galaxy)
-        pnl.find("#btn-Galaxy").attr("style", "background-color: " + bhs.galaxyInfo[i].color + ";")
+        let i = galaxyList[getIndex(galaxyList, "name", bhs.user.galaxy)]
+        pnl.find("#btn-Galaxy").text(i.number + " " + bhs.user.galaxy)
+        pnl.find("#btn-Galaxy").attr("style", "background-color: " + i.color + ";")
     } else
         pnl.find("#btn-Galaxy").text("")
 
@@ -178,9 +178,16 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
         name: ""
     })
 
-    bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser, true)
-    bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, false, false, true)
-    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, false, false, true)
+    bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser, {
+        vertical: true
+    })
+    bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, {
+        required: true
+    })
+    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, {
+        tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
+        required: true
+    })
 
     $("#id-Player").change(function () {
         if (bhs.user.uid) {
@@ -914,7 +921,7 @@ blackHoleSuns.prototype.clickGalaxy = function (evt) {
     bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, null, galaxy, platform)
 }
 
-blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, vertical, ttip, required) {
+blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, options) {
     if (!list || list.length == 0)
         return
 
@@ -943,15 +950,16 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
 
     let id = label.nameToId()
     let h = /label/ [Symbol.replace](title, label)
-    if (typeof required !== "undefined")
+    if (typeof options !== "undefined" && options.required)
         h = /ttip/ [Symbol.replace](h, rText)
 
-    if (typeof ttip !== "undefined" && ttip) {
+    if (typeof options !== "undefined" && typeof options.tip !== "undefined") {
         h = /ttip/ [Symbol.replace](h, tText)
-        h = /ttip/ [Symbol.replace](h, ttip)
+        h = /ttip/ [Symbol.replace](h, options.tip)
     } else
         h = /ttip/ [Symbol.replace](h, "")
 
+    let vertical = typeof options !== "undefined" && options.vertical
     h = /medium/ [Symbol.replace](h, vertical ? 13 : 8)
     h = /small/ [Symbol.replace](h, vertical ? 13 : 7)
     h = /xs/ [Symbol.replace](h, vertical ? 13 : 6)
@@ -961,7 +969,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
     l = /small/ [Symbol.replace](l, vertical ? 13 : 6)
     l = /xs/ [Symbol.replace](l, vertical ? 13 : 7)
 
-    h += /rgbcolor/ [Symbol.replace](l, "background-color: " + levelRgb[typeof list[0].number == "undefined" ? 0 : list[0].number])
+    h += /rgbcolor/ [Symbol.replace](l, "")
     loc.find("#id-" + id).empty()
     loc.find("#id-" + id).append(h)
 
@@ -970,30 +978,11 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, verti
 
     let mlist = menu.find("#list")
 
-    for (let i = 0; i < list.length; ++i) {
-        let lid = list[i].name.nameToId()
+    for (let l of list) {
+        let lid = l.name.nameToId()
         h = /idname/ [Symbol.replace](item, lid)
-
-        if (list[i].number)
-            h = /iname/ [Symbol.replace](h, list[i].number + " " + list[i].name)
-        else
-        if (list[i].number)
-            h = /iname/ [Symbol.replace](h, list[i].number + " " + list[i].name)
-        else
-            h = /iname/ [Symbol.replace](h, list[i].name)
-
-        if (label != "Galaxy") {
-            if (list[i].number)
-                h = /rgbcolor/ [Symbol.replace](h, "background-color: " + levelRgb[list[i].number] + ";")
-            else
-                h = /rgbcolor/ [Symbol.replace](h, "background-color: #c0f0ff;")
-        } else {
-            if (typeof bhs.galaxyInfo[galaxyList[i].number] != "undefined") {
-                let c = bhs.galaxyInfo[galaxyList[i].number].color
-                h = /rgbcolor/ [Symbol.replace](h, "background-color: " + c + ";")
-            } else
-                h = /rgbcolor/ [Symbol.replace](h, "background-color: #ffffff;")
-        }
+        h = /iname/ [Symbol.replace](h, (typeof l.number !== "undefined" ? l.number + " " : "") + l.name)
+        h = /rgbcolor/ [Symbol.replace](h, "background-color: " + (typeof l.color !== "undefined" ? l.color : "#c0f0ff") + ";")
 
         mlist.append(h)
 

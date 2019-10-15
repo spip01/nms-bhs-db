@@ -120,9 +120,9 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
     loc.find("#btn-Lifeform").text(entry.life)
 
     if (entry.econ) {
-        let l = economyList[getIndex(economyList, "name", entry.econ)].number
-        loc.find("#btn-Economy").text(l + " " + entry.econ)
-        loc.find("#btn-Economy").attr("style", "background-color: " + levelRgb[l] + ";")
+        let l = economyList[getIndex(economyList, "name", entry.econ)]
+        loc.find("#btn-Economy").text(l.number + " " + entry.econ)
+        loc.find("#btn-Economy").attr("style", "background-color: " + l.color + ";")
     }
 
     $("#entrybuttons").show()

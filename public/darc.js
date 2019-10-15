@@ -10,8 +10,13 @@ $(document).ready(() => {
 
 blackHoleSuns.prototype.buildDarcUserPnl = function () {
     let loc = $("#pnl-user")
-    bhs.buildMenu(loc, "Platform", platformList, bhs.setGP, false, false, true)
-    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.setGP, false, "", true)
+    bhs.buildMenu(loc, "Platform", platformList, bhs.setGP, {
+        required: true
+    })
+    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.setGP, {
+        tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
+        required: true
+    })
 }
 
 blackHoleSuns.prototype.setGP = function () {
@@ -65,7 +70,7 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
     let pnl = $("#pnl-query")
 
     await bhs.getPoiList(true)
-    bhs.buildMenu(pnl, "Points Of Interest", bhs.poiList, bhs.select, false, "List maintained by Black Hole Suns. Blue items are in your current galaxy. Red are not.")
+    bhs.buildMenu(pnl, "Points Of Interest", bhs.poiList, bhs.select, {tip:"List maintained by Black Hole Suns. Blue items are in your current galaxy. Red are not."})
 
     await bhs.getOrgList(true)
     bhs.buildMenu(pnl, "Organizations", bhs.orgList, bhs.select)

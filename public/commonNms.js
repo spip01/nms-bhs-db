@@ -173,7 +173,7 @@ String.prototype.stripNumber = function () {
 
 function formatListSel(val, list) {
     let name = val.stripNumber()
-    if (name == "") {
+    if (name === "") {
         let num = val.replace(/(\d+).*/, "$1")
         let idx = getIndex(list, "number", num)
         if (idx != -1)
@@ -192,27 +192,11 @@ function getIndex(list, field, id) {
         return -1
 
     return list.map(x => {
-        return typeof x[field] == "string" ? x[field].toLowerCase() : x[field]
+        if (field === "name" && typeof x.match !== "undefined" && id.match(x.match))
+            return x.name.toLowerCase()
+        else
+            return typeof x[field] === "string" ? x[field].toLowerCase() : x[field]
     }).indexOf(id.toLowerCase())
-}
-
-function buildGalaxyInfo() {
-    let galaxyInfo = []
-    galaxyInfo[1] = {}
-    galaxyInfo[1].color = "#ffffff"
-
-    for (let i = 0; i < galaxyRaw.length; ++i) {
-        for (let j = galaxyRaw[i].start, step = 0; j <= 256;) {
-            if (typeof galaxyInfo[j] == "undefined") {
-                galaxyInfo[j] = {}
-                galaxyInfo[j].color = galaxyRaw[i].color
-            }
-
-            j += step++ % 2 ? galaxyRaw[i].step1 : galaxyRaw[i].step2
-        }
-    }
-
-    return galaxyInfo
 }
 
 function calcDist(addr, addr2) {
@@ -248,18 +232,64 @@ function calcAngle(saddr, eaddr, xp, yp) {
 }
 
 Date.prototype.toDateLocalTimeString = function () {
-    let date = this
-    return date.getFullYear() +
-        "-" + ten(date.getMonth() + 1) +
-        "-" + ten(date.getDate()) +
-        " " + ten(date.getHours()) +
-        ":" + ten(date.getMinutes()) +
-        ":" + ten(date.getSeconds())
+    const ten = function (i) {
+        return i < 10 ? '0' + i : i
+    }
+
+    return this.getFullYear() +
+        "-" + ten(this.getMonth() + 1) +
+        "-" + ten(this.getDate()) +
+        " " + ten(this.getHours()) +
+        ":" + ten(this.getMinutes()) +
+        ":" + ten(this.getSeconds())
 }
 
-function ten(i) {
-    return i < 10 ? '0' + i : i
+function buildGalaxyInfo() {
+    for (let l of galaxyRaw)
+        for (let j = l.start, step = 1; j <= 255;) {
+            if (typeof galaxyList[j - 1].color === "undefined")
+                galaxyList[j - 1].color = l.color
+
+            j += step++ % 2 ? l.step1 : l.step2
+        }
+
+    for (let l of economyList)
+        l.color = levelRgb[l.number]
 }
+
+/*************************
+from https://nomanssky.gamepedia.com/Galaxy
+Empty - blue- 7, 12, 27, 32, 47, 52, 67 etc, a total of 26. 
+Harsh - red - 3, 15, 23, 35, 43, 55, 63 etc, a total of 26.
+Lush - green - 10, 19, 30, 39, 50, 59, 70 etc, a total of 25.
+Norm - teal - a total of 178.
+**************************/
+
+const galaxyRaw = [{
+    name: "harsh",
+    color: "#f3636b",
+    start: 3,
+    step1: 12,
+    step2: 8
+}, {
+    name: "empty",
+    color: "#65ccf4",
+    start: 7,
+    step1: 5,
+    step2: 15
+}, {
+    name: "lush",
+    color: "#62f97a",
+    start: 10,
+    step1: 9,
+    step2: 11
+}, {
+    name: "norm",
+    color: "#88fefa",
+    start: 1,
+    step1: 1,
+    step2: 1
+}]
 
 const lifeformList = [{
     name: "Vy'keen",
@@ -272,6 +302,17 @@ const lifeformList = [{
     match: /^k/i
 }, {
     name: "none"
+}]
+
+const ownershipList = [{
+    name: "mine",
+    match: /^m/i
+}, {
+    name: "visited",
+    match: /^v/i
+}, {
+    name: "station",
+    match: /^s/i
 }]
 
 const platformList = [{
@@ -496,33 +537,6 @@ const starClassPossible = "OBAFGKMLTYE"
 const starOdditiesPossible = "efhkmnpqsvw"
 const starTypeRegex = /[OBAFGKMLTYE][0-9][efhkmnpqsvw]*/i
 const levelRgb = ["#ffffff", "#ffc0c0", "#ffff00", "#c0ffc0"]
-
-// from https://nomanssky.gamepedia.com/Galaxy
-const galaxyRaw = [{
-    name: "harsh",
-    color: "#f3636b",
-    start: 3,
-    step1: 12,
-    step2: 8
-}, {
-    name: "empty",
-    color: "#65ccf4",
-    start: 7,
-    step1: 5,
-    step2: 15
-}, {
-    name: "lush",
-    color: "#62f97a",
-    start: 9,
-    step1: 9,
-    step2: 11
-}, {
-    name: "norm",
-    color: "#88fefa",
-    start: 2,
-    step1: 1,
-    step2: 1
-}]
 
 const galaxyList = [{
     name: "Euclid",

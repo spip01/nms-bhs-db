@@ -510,21 +510,25 @@ function formatGalaxy(val) {
 }
 
 function formatLife(val) {
-    if (val.match(/^g/i)) return "Gek"
-    else if (val.match(/^k/i)) return "Korvax"
-    else if (val.match(/^v/i)) return "Vy'keen"
-    else return ""
+    return formatListSel(val, lifeformList)
+
+    // if (val.match(/^g/i)) return "Gek"
+    // else if (val.match(/^k/i)) return "Korvax"
+    // else if (val.match(/^v/i)) return "Vy'keen"
+    // else return ""
 }
 
 function formatPlatform(val) {
-    if (val.match(/^ps/i)) return "PS4"
-    else return "PC-XBox"
+    return formatListSel(val, platformList)
+    // if (val.match(/^ps/i)) return "PS4"
+    // else return "PC-XBox"
 }
 
 function formatOwned(val) {
-    if (val.match(/^s/i)) return ("station")
-    if (val.match(/^v/i)) return ("visited")
-    else return ("mine")
+    return formatListSel(val, ownershipList)
+    // if (val.match(/^s/i)) return ("station")
+    // if (val.match(/^v/i)) return ("visited")
+    // else return ("mine")
 }
 
 function validateBHAddress(addr) {
