@@ -105,6 +105,11 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
         }
     }
 
+    if (typeof (Storage) !== "undefined" && (!bhs.user.galaxy || !bhs.user.platform)) {
+        bhs.user.galaxy = window.localStorage.getItem('galaxy')
+        bhs.user.platform = window.localStorage.getItem('platform')
+    }
+
     $("body").css("background-color", bhs.user.role === "admin" ? "green" : "black")
 
     let pnl = $("#pnl-user")

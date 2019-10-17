@@ -47,6 +47,7 @@ function dispAddr(evt) {
 
     let saddr = sloc.find("#id-addr").val()
     let eaddr = eloc.find("#id-addr").val()
+    let range = $("#id-range").val()
 
     if (saddr !== "") {
         saddr = reformatAddress(saddr)
@@ -73,7 +74,6 @@ function dispAddr(evt) {
     }
 
     if (saddr !== "" && eaddr != "") {
-        let range = $("#id-range").val()
         let dist = calcDist(saddr, eaddr)
         $("#id-dist").text(dist + " ly")
 
@@ -87,8 +87,8 @@ function dispAddr(evt) {
     }
 
     if (typeof(Storage) !== "undefined") {
-        window.localStorage.setItem('navstart', start);
-        window.localStorage.setItem('navend', end);
+        window.localStorage.setItem('navstart', saddr);
+        window.localStorage.setItem('navend', eaddr);
         window.localStorage.setItem('navrange', range);
     }
 }

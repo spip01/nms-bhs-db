@@ -63,6 +63,10 @@ blackHoleSuns.prototype.setGP = function () {
     }
 
     // bhs.status("caching")
+    if (typeof (Storage) !== "undefined" && !bhs.user.uid) {
+        window.localStorage.setItem('galaxy', g)
+        window.localStorage.setItem('platform', p)
+    }
 
     var calcRoute = firebase.functions().httpsCallable('calcRoute')
     calcRoute({
@@ -147,7 +151,10 @@ blackHoleSuns.prototype.saveDarcSettings = function (evt) {
         let val = type === "checkbox" ? $(evt).prop("checked") : $(evt).val()
         user.darcSettings[id] = val
 
-        bhs.updateUser(user)
+        if (typeof (Storage) !== "undefined" && !bhs.user.uid)
+            window.localStorage.setItem('darcsettings', JSON.stringify(user.darcSettings));
+        else
+            bhs.updateUser(user)
     }
 }
 
@@ -157,11 +164,22 @@ blackHoleSuns.prototype.saveDarcAddrSE = function () {
         user.darcSettings = {}
         user.darcSettings.start = $("#id-start").val()
         user.darcSettings.end = $("#id-end").val()
-        bhs.updateUser(user)
+
+        if (typeof (Storage) !== "undefined" && !bhs.user.uid)
+            window.localStorage.setItem('darcsettings', JSON.stringify(user.darcSettings))
+        else
+            bhs.updateUser(user)
     }
 }
 
 blackHoleSuns.prototype.updateDarcSettings = function () {
+    if (typeof bhs.user.darcSettings === "undefined") {
+        let settings = window.localStorage.getItem('darcsettings')
+
+        if (settings)
+            bhs.user.darcSettings = JSON.parse(settings)
+    }
+
     if (typeof bhs.user.darcSettings !== "undefined") {
         $("#id-range").val(typeof bhs.user.darcSettings.range !== "undefined" ? bhs.user.darcSettings.range : 2000)
         $("#ck-useBases").prop("checked", bhs.user.darcSettings.useBases)
