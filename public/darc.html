@@ -95,7 +95,7 @@
                     <br>
                     <div id="pnl-query" class="card card-body">
                         <div class="row">
-                            <div class="col-md-4 col-5 h6 txt-inp-def" onchange="bhs.setAddress(this)">
+                            <div class="col-md-4 col-5 h6 txt-inp-def">
                                 Starting Coordinates&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom"
@@ -103,7 +103,7 @@
                                     A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
                                 </i>
                             </div>
-                            <input id="id-start" class="rounded col-md-5 col-6" placeholder="0000:0000:0000:0000">
+                            <input id="id-start" class="rounded col-md-5 col-6" placeholder="0000:0000:0000:0000" onchange="bhs.setAddress(this)">
                         </div>
                         <div class="row">
                             <div class="col-md-4 col-5 h6 txt-inp-def">Ending Coordinates&nbsp;</div>

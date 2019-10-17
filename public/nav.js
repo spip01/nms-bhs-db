@@ -14,6 +14,29 @@ $(document).ready(() => {
         let gloc = $("[id='glyphbuttons']")
         addGlyphButtons(gloc, addGlyph)
     })
+
+    if (typeof (Storage) !== "undefined") {
+        let start = window.localStorage.getItem('navstart');
+        let end = window.localStorage.getItem('navend');
+        let range = window.localStorage.getItem('navrange');
+
+        let loc = $("#id-addrInput")
+
+        if (start) {
+            let sloc = loc.find("#w-start")
+            sloc.find("#id-addr").val(start)
+        }
+
+        if (end) {
+            let eloc = loc.find("#w-end")
+            eloc.find("#id-addr").val(end)
+        }
+
+        if (range) 
+            $("#id-range").val(range)
+
+            dispAddr()
+    }
 })
 
 function dispAddr(evt) {
@@ -61,6 +84,12 @@ function dispAddr(evt) {
             $("#id-jumps").text(parseInt(dist / range))
 
         mapPoints("plot3d", saddr, eaddr)
+    }
+
+    if (typeof(Storage) !== "undefined") {
+        window.localStorage.setItem('navstart', start);
+        window.localStorage.setItem('navend', end);
+        window.localStorage.setItem('navrange', range);
     }
 }
 

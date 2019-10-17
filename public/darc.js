@@ -6,6 +6,18 @@ $(document).ready(() => {
     bhs.buildDarcUserPnl()
     bhs.buildQueryPanel()
     bhs.buildDarcMap()
+
+    if (typeof (Storage) !== "undefined") {
+        let route = window.localStorage.getItem('darcroute');
+
+        if (route) {
+            bhs.route = []
+            bhs.route.push({
+                route: JSON.parse(route)
+            })
+            bhs.displayResults(bhs.route)
+        }
+    }
 })
 
 blackHoleSuns.prototype.buildDarcUserPnl = function () {
@@ -70,7 +82,9 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
     let pnl = $("#pnl-query")
 
     await bhs.getPoiList(true)
-    bhs.buildMenu(pnl, "Points Of Interest", bhs.poiList, bhs.select, {tip:"List maintained by Black Hole Suns. Blue items are in your current galaxy. Red are not."})
+    bhs.buildMenu(pnl, "Points Of Interest", bhs.poiList, bhs.select, {
+        tip: "List maintained by Black Hole Suns. Blue items are in your current galaxy. Red are not."
+    })
 
     await bhs.getOrgList(true)
     bhs.buildMenu(pnl, "Organizations", bhs.orgList, bhs.select)
@@ -511,6 +525,9 @@ function selectRoute(evt) {
     $("#id-end").val(bhs.route[selected].route[bhs.route[selected].route.length - 1].addr)
 
     mapRoute(bhs.route[selected].route)
+
+    if (typeof (Storage) !== "undefined")
+        window.localStorage.setItem('darcroute', JSON.stringify(bhs.route[selected].route));
 }
 
 blackHoleSuns.prototype.buildDarcMap = function () {
@@ -650,6 +667,11 @@ function mapRow(evt) {
     }
 
     Plotly.react('plymap', data, changeMapLayout(true, start, end))
+
+    if (typeof (Storage) !== "undefined") {
+        window.localStorage.setItem('navstart', start);
+        window.localStorage.setItem('navend', end);
+    }
 }
 
 function pushentry(out, xyz, label) {
