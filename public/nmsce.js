@@ -911,18 +911,14 @@ NMSCE.prototype.displayList = function (entries) {
             </div>
             <div id="sub-idname" class="container-flex h6 hidden">
                 <div id="list-idname" class="scrollbar" style="overflow-y: scroll; height: 180px">`
-    const row = `
-                    <div id="idname" class="row border-bottom border-3 border-black format">
-                        <div id="id-Photo" class="col-2">
+    const row = `   <div id="idname" class="row border-bottom border-3 border-black format">
+                        <div id="id-Photo" class="col-md-2 col-3">
                             <img id="img-pic" height="auto" width="wsize" />
                         </div>
-                        <div class="col-12">
-                            <div class="row">
-                    
-                    `
-    const itm = `   
-                        <div id="id-idname" class="col-2 border">title</div>`
-    const end = `</div>`
+                        <div class="col-md-12 col-11">
+                            <div class="row">`
+    const itm = `              <div id="id-idname" class="col-lg-2 col-md-3 col-4 border">title</div>`
+    const end = `</div></div></div>`
 
     let h = ""
 
@@ -949,7 +945,7 @@ NMSCE.prototype.displayList = function (entries) {
             }
         }
 
-        h += end + end + end
+        h += end
 
         for (let e of entries[obj.name.nameToId()]) {
             let l = /idname/ [Symbol.replace](row, e.id)
@@ -971,10 +967,10 @@ NMSCE.prototype.displayList = function (entries) {
                 }
             }
 
-            h += end + end + end
+            h += end
         }
 
-        h += end + end + end
+        h += end
     }
 
     $("#id-table").html(h)

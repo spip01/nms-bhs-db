@@ -72,7 +72,7 @@ blackHoleSuns.prototype.toggleTips = function () {
 }
 
 blackHoleSuns.prototype.displayUser = async function (user, force) {
-    let findex = window.location.pathname == "/index.html"
+    let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
     let fpoi = window.location.pathname == "/poiorg.html"
     let fdarc = window.location.pathname == "/darc.html"
     let ftotals = window.location.pathname == "/totals.html"

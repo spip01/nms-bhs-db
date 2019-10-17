@@ -296,11 +296,12 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
 
                         entry[2] = mergeObjects(entry[2], entry[0])
                         entry[2] = mergeObjects(entry[2], entry[1])
-                        ok = await bhs.fBatchWriteBase(entry[2], null, check, i, true);
+                        ok = await bhs.fBatchWriteBase(entry[2], null, check, i, true)
+                        if (ok)
+                            ok = await bhs.fBatchUpdate(entry[1], null, check, i, true)
                     }
                 } else if (entry[0].type.match(/single/i) || !entry[2].addr) {
-                    ok = await bhs.fBatchUpdate(entry[1], null, check, i);
-
+                    ok = await bhs.fBatchUpdate(entry[1], null, check, i, true)
                 } else {
                     entry[1].deadzone = entry[0].type.match(/dead|dz/i) || entry[2].addr == entry[1].addr
                     entry[1].blackhole = !entry[1].deadzone
@@ -511,24 +512,14 @@ function formatGalaxy(val) {
 
 function formatLife(val) {
     return formatListSel(val, lifeformList)
-
-    // if (val.match(/^g/i)) return "Gek"
-    // else if (val.match(/^k/i)) return "Korvax"
-    // else if (val.match(/^v/i)) return "Vy'keen"
-    // else return ""
 }
 
 function formatPlatform(val) {
     return formatListSel(val, platformList)
-    // if (val.match(/^ps/i)) return "PS4"
-    // else return "PC-XBox"
 }
 
 function formatOwned(val) {
     return formatListSel(val, ownershipList)
-    // if (val.match(/^s/i)) return ("station")
-    // if (val.match(/^v/i)) return ("visited")
-    // else return ("mine")
 }
 
 function validateBHAddress(addr) {
