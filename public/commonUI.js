@@ -87,7 +87,9 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     if (fpoi)
         return
 
-    if (!fdarc && !fnmsce) {
+    if (fnmsce)
+        nmsce.displayUser()
+    else if (!fdarc) {
         bhs.getActiveContest(bhs.displayContest)
         bhs.buildTotals()
         bhs.getTotals(bhs.displayTotals, bhs.displayTotalsHtml)
@@ -925,8 +927,9 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
     if (!list || list.length == 0)
         return
 
-    let title = `        
-        <div class="row">
+    let header = `        
+        <div class="row">`
+    let title = `
             <div class="col-md-medium col-sm-small col-xs h6 txt-inp-def">labelttip</div>`
     let block = `
             <div id="menu-idname" class="col-md-medium col-sm-small col-xs dropdown">
@@ -949,25 +952,47 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
     }
 
     let id = label.nameToId()
-    let h = /label/ [Symbol.replace](title, label)
-    if (typeof options !== "undefined" && options.required)
-        h = /ttip/ [Symbol.replace](h, rText)
+    let h = header
 
-    if (typeof options !== "undefined" && typeof options.tip !== "undefined") {
-        h = /ttip/ [Symbol.replace](h, tText)
-        h = /ttip/ [Symbol.replace](h, options.tip)
-    } else
-        h = /ttip/ [Symbol.replace](h, "")
+    if (typeof options === "undefined")
+        options = {}
 
-    let vertical = typeof options !== "undefined" && options.vertical
-    h = /medium/ [Symbol.replace](h, vertical ? 13 : 8)
-    h = /small/ [Symbol.replace](h, vertical ? 13 : 7)
-    h = /xs/ [Symbol.replace](h, vertical ? 13 : 6)
+    if (typeof options.labelsize === "undefined" || typeof options.menusize === "undefined") {
+        if (options.vertical) {
+            options.labelsize = [13, 13, 13]
+            options.menusize = [13, 13, 13]
+        } else if (options.nolabel) {
+            options.labelsize = [1, 1, 1]
+            options.menusize = [12, 12, 12]
+        } else {
+            options.labelsize = [8, 7, 6]
+            options.menusize = [5, 6, 7]
+        }
+    }
+
+    if (!options.nolabel || options.required || options.tip) {
+        let l = /label/ [Symbol.replace](title, options.nolabel ? "&nbsp;" : label)
+
+        if (options.required)
+            l = /ttip/ [Symbol.replace](l, rText)
+
+        if (options.tip) {
+            l = /ttip/ [Symbol.replace](l, tText)
+            l = /ttip/ [Symbol.replace](l, options.tip)
+        } else
+            l = /ttip/ [Symbol.replace](l, "")
+
+        l = /medium/ [Symbol.replace](l, options.labelsize[0])
+        l = /small/ [Symbol.replace](l, options.labelsize[1])
+        l = /xs/ [Symbol.replace](l, options.labelsize[2])
+
+        h += l
+    }
 
     let l = /idname/g [Symbol.replace](block, id)
-    l = /medium/ [Symbol.replace](l, vertical ? 13 : 5)
-    l = /small/ [Symbol.replace](l, vertical ? 13 : 6)
-    l = /xs/ [Symbol.replace](l, vertical ? 13 : 7)
+    l = /medium/ [Symbol.replace](l, options.menusize[0])
+    l = /small/ [Symbol.replace](l, options.menusize[1])
+    l = /xs/ [Symbol.replace](l, options.menusize[2])
 
     h += /rgbcolor/ [Symbol.replace](l, "")
     loc.find("#id-" + id).empty()
@@ -992,7 +1017,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
             let btn = menu.find("#btn-" + id)
             btn.text(name)
 
-            if (changefcn)
+            if (typeof changefcn === "function")
                 changefcn(btn)
 
             if ($(this).attr("style"))
@@ -1434,7 +1459,6 @@ blackHoleSuns.prototype.buildMap = function () {
     map.find("#btn-redraw").unbind("click")
     map.find("#btn-redraw").click(() => {
         bhs.purgeMap()
-
         let fsearch = window.location.pathname == "/search.html"
         if (!fsearch)
             bhs.drawList(bhs.entries)
@@ -1445,12 +1469,14 @@ blackHoleSuns.prototype.buildMap = function () {
         bhs.updateUser({
             mapoptions: bhs.extractMapOptions()
         })
+        bhs.purgeMap()
         bhs.drawList(bhs.entries)
     })
 
     $("#btn-mapreset").unbind("click")
     opt.find("#btn-mapreset").click(() => {
         bhs.resetMapOptions()
+        bhs.purgeMap()
         bhs.drawList(bhs.entries)
     })
 
@@ -1594,8 +1620,8 @@ blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
         let list = bhs.findClose(opt, xyz, up)
 
         for (let d of list) {
-            if (!getMapCk(mapped, xyz)) {
-                setMapCk(mapped, xyz)
+            if (!getMapCk(mapped, d.xyzs)) {
+                setMapCk(mapped, d.xyzs)
 
                 let out = initout()
                 pushentry(out, d.xyzs, d.addr + "<br>" + d.sys + "<br>" + d.reg)

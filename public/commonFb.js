@@ -944,7 +944,7 @@ blackHoleSuns.prototype.validateEntry = function (entry, nobh) {
 
     let str
     if (nobh) {
-        if (ok && (str = validateAddress(entry.addr)) != "") {
+        if (ok && (str = bhs.validateAddress(entry.addr)) != "") {
             error += "Invalid address. (" + str + ") "
             ok = false
         }

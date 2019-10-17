@@ -320,9 +320,10 @@ blackHoleSuns.prototype.changeAddr = function (evt) {
     let addr = $(evt).val()
     if (addr !== "") {
         addr = reformatAddress(addr)
+        let glyph = addrToGlyph(addr)
         let pnl = $(evt).closest("[id|='pnl'")
 
-        bhs.dispAddr(pnl, addr)
+        bhs.dispAddr(pnl, addr, glyph)
         bhs.getEntry(addr, bhs.displayListEntry)
         bhs.displayCalc()
     }
@@ -334,15 +335,13 @@ blackHoleSuns.prototype.changeGlyph = function (evt) {
         let addr = reformatAddress(glyph)
         let pnl = $(evt).closest("[id|='pnl'")
 
-        bhs.dispAddr(pnl, addr)
+        bhs.dispAddr(pnl, addr, glyph)
         bhs.getEntry(addr, bhs.displayListEntry)
         bhs.displayCalc()
     }
 }
 
-blackHoleSuns.prototype.dispAddr = function (pnl, addr) {
-    let glyph = addrToGlyph(addr)
-
+blackHoleSuns.prototype.dispAddr = function (pnl, addr, glyph) {
     let loc = pnl.find("#id-glyphInput")
     loc.find("#id-addr").text(addr)
     loc.find("#id-glyph").val(glyph)
@@ -351,6 +350,8 @@ blackHoleSuns.prototype.dispAddr = function (pnl, addr) {
     loc.find("#id-addr").val(addr)
     loc.find("#id-glyph").text(glyph)
     loc.find("#id-hex").text(glyph)
+
+    bhs.drawSingle({xyzs:addressToXYZ(addr)})
 }
 
 blackHoleSuns.prototype.searchRegion = function (evt) {
@@ -398,7 +399,7 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
     bhs.drawSingle(entry)
 
     let loc = $("#" + panels[idx].id)
-    bhs.dispAddr(loc, entry.addr)
+    bhs.dispAddr(loc, entry.addr, addrToGlyph(entry.addr))
     loc.find("#id-sys").val(entry.sys)
     loc.find("#id-reg").val(entry.reg)
 

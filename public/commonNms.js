@@ -142,7 +142,7 @@ function addObjects(o, n) {
 }
 
 String.prototype.idToName = function () {
-    return /-/g [Symbol.replace](name, " ")
+    return /-/g [Symbol.replace](this, " ")
 }
 
 function uuidv4() {
@@ -209,26 +209,26 @@ function calcDist(addr, addr2) {
     return parseInt(calcDistXYZ(xyz1, xyz2) * 400)
 }
 
-function calcDistXYZ(xyz1, xyz2) {
-    let x = xyz1.x - xyz2.x
-    let y = xyz1.y - xyz2.y
-    let z = xyz1.z - xyz2.z
-    return Math.sqrt(x * x + y * y + z * z)
+function calcDistXYZ(xyz1, xyz2, xp, yp) {
+    if (typeof xp !== "undefined" && typeof yp !== "undefined") {
+        let x = xyz1[xp] - xyz2[xp]
+        let y = xyz1[yp] - xyz2[yp]
+        return Math.sqrt(x * x + y * y)
+    } else {
+        let x = xyz1.x - xyz2.x
+        let y = xyz1.y - xyz2.y
+        let z = xyz1.z - xyz2.z
+        return Math.sqrt(x * x + y * y + z * z)
+    }
 }
 
 function calcAngle(saddr, eaddr, xp, yp) {
-    let zero = xyzToAddress({
-        x: 2048,
-        y: 128,
-        z: 2048,
-        s: 0,
-    })
-
+    let zero = glyphToAddr("000000000000")
     let a = calcDist(zero, eaddr, xp, yp)
     let c = calcDist(saddr, eaddr, xp, yp)
     let b = calcDist(saddr, zero, xp, yp)
-
-    return parseInt(Math.acos((a * a - b * b - c * c) / (-2 * b * c)) * 180 / Math.PI)
+    let angle = parseInt(Math.acos((a * a - b * b - c * c) / (-2 * b * c)) * 180 / Math.PI)
+    return Number.isNaN(angle) ? 0 : angle
 }
 
 Date.prototype.toDateLocalTimeString = function () {

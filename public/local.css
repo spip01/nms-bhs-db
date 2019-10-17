@@ -210,6 +210,10 @@ body {
     border-width: 3px !important;
 }
 
+.border-black {
+    border-color: black;
+}
+
 .border-white {
     border-color: white;
 }

@@ -1,114 +1,110 @@
 'use strict'
 
+var nmsce
+
 $(document).ready(() => {
     startUp()
 
-    bhs.last = []
+    nmsce = new NMSCE()
+
+    nmsce.last = {}
 
     bhs.buildUserPanel()
 
-    panels.forEach(p => {
-        bhs.buildPanel(p.id)
-    })
-
-    bhs.buildTypePanels()
+    nmsce.buildPanel()
+    nmsce.buildTypePanels()
 
     $("#save").click(() => {
-        bhs.save()
+        nmsce.save()
     })
 
     $("#delete").click(() => {
         $("#status").empty()
-        panels.forEach(p => {
-            bhs.deleteEntry($("#" + p.id + " #id-addr").val())
-        })
+        //bhs.deleteEntry($("#pnl-S1 #id-addr").val())
     })
 
     $("#cancel").click(() => {
-        bhs.displaySingle(bhs.last[pnlTop], pnlTop)
+        nmsce.displaySingle(nmsce.last)
     })
 })
 
-const pnlTop = 0
+function NMSCE() {
 
-var panels = [{
-    name: "System Info",
-    id: "pnl-S1",
-    listid: "S1",
-    calc: true,
-}]
+}
 
-blackHoleSuns.prototype.buildPanel = function (id) {
-    const panel = `
-        <div id="idname" class="card pad-bottom bkg-trans-2">
-            <div class="card-header txt-def h5">title</div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-4 h6 txt-inp-def">Coordinates&nbsp;</div>
-                    <input id="id-addr" class="rounded col-md-5 col-6" placeholder="0000:0000:0000:0000">
-                </div>
+NMSCE.prototype.displayUser = function () {
+    if (bhs.user.galaxy !== "") {
+        //nmsce.displaySettings(bhs.user)
+        nmsce.getEntries(bhs.user, nmsce.displayList)
+    }
+}
 
-                <div class="row">
-                    <div class="col-4 h6 txt-inp-def">Portal Glyphs&nbsp;</div>
-                    <div id="id-glyph" class="col-10 h4 txt-inp-def text-left glyph"></div>
-                </div>
-
-                <div class="row">
-                    <div class="col-4 h6 txt-inp-def">System Name&nbsp;</div>
-                    <input id="id-sys" class="rounded col-md-5 col-6">
-                </div>
-
-                <div class="row">
-                    <div class="col-4 h6 txt-inp-def">Region Name&nbsp;</div>
-                    <input id="id-reg" class="rounded col-md-5 col-6">&nbsp
-                    </div>
-
-                <div id="id-byrow" class="row">
-                    <div class="col-4 h6 txt-inp-def">Entered by&nbsp;</div>
-                    <div id="id-by" class="col-md-5 col-6 txt-inp-def"></div>
-                </div>
-
-                <div class="row">
-                    <div class="col-1">&nbsp;</div>
-                    <div id="id-Lifeform" class="col-6"></div>
-                </div>
-                <div class="row">
-                    <div class="col-1">&nbsp;</div>
-                    <div id="id-Economy" class="col-6"></div>
-                </div>
-            </div>
-        </div>
-        <br>`
-
-    let h = /idname/g [Symbol.replace](panel, id)
-    h = /title/g [Symbol.replace](h, id == "pnl-S1" ? panels[pnlTop].name : panels[pnlBottom].name)
-
-    $("#panels").append(h)
-
-    let loc = $("#" + id)
+NMSCE.prototype.buildPanel = function () {
+    let loc = $("#pnl-S1")
 
     bhs.buildMenu(loc, "Lifeform", lifeformList)
-    bhs.buildMenu(loc, "Economy", economyList)
-
-    loc.find("#id-addr").unbind("change")
-    loc.find("#id-addr").change(function () {
-        let addr = reformatAddress($(this).val())
-        $(this).val(addr)
-        $(this).closest("[id|='pnl']").find("#id-glyph").html(addrToGlyph(addr))
-
-        bhs.getEntry(addr, bhs.displaySingle, 0)
+    bhs.buildMenu(loc, "Economy", economyList, null, {
+        required: true
     })
+
+    let gloc = loc.find("#glyphbuttons")
+    addGlyphButtons(gloc, nmsce.addGlyph)
 }
 
-blackHoleSuns.prototype.displayListEntry = function (entry) {
-    if (entry.sys)
-        bhs.displaySingle(entry.sys, pnlTop)
-
-    bhs.last = entry
+NMSCE.prototype.setGlyphInput = function (evt) {
+    if (typeof bhs.inputSettings === "undefined" || bhs.inputSettings.glyph !== $(evt).prop("checked")) {
+        bhs.updateUser({
+            inputSettings: {
+                glyph: $(evt).prop("checked")
+            }
+        })
+    }
 }
 
-blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
-    let loc = $("#" + panels[0].id)
+NMSCE.prototype.addGlyph = function (evt) {
+    let loc = $(evt).closest("#id-glyphInput").find("#id-glyph")
+    let a = loc.val() + $(evt).text().trim().slice(0, 1)
+    loc.val(a)
+    if (a.length === 12)
+        nmsce.changeAddr(loc)
+}
+
+NMSCE.prototype.changeAddr = function (evt) {
+    let addr = $(evt).val()
+    if (addr !== "") {
+        addr = reformatAddress(addr)
+        let glyph = addrToGlyph(addr)
+        let pnl = $(evt).closest("[id|='pnl'")
+
+        nmsce.dispAddr(pnl, addr, glyph)
+        bhs.getEntry(addr, nmsce.displaySystem)
+    }
+}
+
+NMSCE.prototype.changeGlyph = function (evt) {
+    let glyph = $(evt).val().toUpperCase()
+    if (glyph !== "") {
+        let addr = reformatAddress(glyph)
+        let pnl = $(evt).closest("[id|='pnl'")
+
+        nmsce.dispAddr(pnl, addr, glyph)
+        bhs.getEntry(addr, nmsce.displaySystem)
+    }
+}
+
+NMSCE.prototype.dispAddr = function (pnl, addr, glyph) {
+    let loc = pnl.find("#id-glyphInput")
+    loc.find("#id-addr").text(addr)
+    loc.find("#id-glyph").val(glyph)
+
+    loc = pnl.find("#id-addrInput")
+    loc.find("#id-addr").val(addr)
+    loc.find("#id-glyph").text(glyph)
+    loc.find("#id-hex").text(glyph)
+}
+
+NMSCE.prototype.displaySystem = function (entry) {
+    let loc = $("#pnl-S1")
 
     loc.find("#id-addr").val(entry.addr)
     loc.find("#id-glyph").html(addrToGlyph(entry.addr))
@@ -130,18 +126,7 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
     $("#delete").removeAttr("disabled")
 }
 
-blackHoleSuns.prototype.clearPanels = function () {
-    panels.forEach(d => {
-        bhs.clearPanel(d.id)
-    })
-
-    bhs.last = []
-
-    $("#delete").addClass("disabled")
-    $("#delete").prop("disabled", true)
-}
-
-blackHoleSuns.prototype.clearPanel = function (d) {
+NMSCE.prototype.clearPanel = function (d) {
     let pnl = $("#" + d)
 
     pnl.find("input").each(() => {
@@ -151,9 +136,14 @@ blackHoleSuns.prototype.clearPanel = function (d) {
     pnl.find("[id|='menu']").each(() => {
         $(this).find("[id|='btn']").text("")
     })
+
+    nmsce.last = {}
+
+    $("#delete").addClass("disabled")
+    $("#delete").prop("disabled", true)
 }
 
-blackHoleSuns.prototype.extractEntry = async function (batch) {
+NMSCE.prototype.extractEntry = async function () {
     let entry = {}
     entry._name = bhs.user._name
     entry.org = bhs.user.org
@@ -169,8 +159,16 @@ blackHoleSuns.prototype.extractEntry = async function (batch) {
     entry.econ = loc.find("#btn-Economy").text().stripNumber()
 
     let ok = bhs.validateEntry(entry, true) === ""
+
+    if (ok && entry.econ === "") {
+        bhs.status("Error: Missing economy. Changes not saved.", 0)
+        ok = false
+    }
+
     if (ok) {
-        //bhs.updateEntry(entry, batch)
+        entry.xyzs = addrToXYZ(addr)
+
+        //bhs.updateEntry(entry)
 
         let tab = $("#typeTabs .active").prop("id").stripID()
         let pnl = $("#typePanels #pnl-" + tab)
@@ -208,9 +206,7 @@ blackHoleSuns.prototype.extractEntry = async function (batch) {
                         break
                     case "img":
                         let canvas = $("#id-canvas")[0]
-                        if (typeof canvas === "undefined")
-                            entry[id] = ""
-                        else {
+                        if (typeof canvas !== "undefined") {
                             if (typeof entry[id] === "undefined")
                                 entry[id] = "nmsce/" + uuidv4() + ".jpg"
 
@@ -226,7 +222,7 @@ blackHoleSuns.prototype.extractEntry = async function (batch) {
                         data.type === "num" && entry[id] === -1 ||
                         data.type === "img" && entry[id] === "") {
 
-                        bhs.status(id + " required. Entry not saved.", 0)
+                        nmsce.status(id + " required. Entry not saved.", 0)
                         ok = false
                         break
                     }
@@ -234,37 +230,24 @@ blackHoleSuns.prototype.extractEntry = async function (batch) {
         }
 
         if (ok)
-            bhs.updateNmsce(entry, batch)
+            nmsce.updateEntry(entry)
     }
 
     return ok
 }
 
-blackHoleSuns.prototype.save = async function () {
+NMSCE.prototype.save = async function () {
     $("#status").empty()
 
-    let batch = bhs.fs.batch()
-
-    let ok = bhs.saveUser(batch)
-
-    if (ok)
-        ok = await bhs.extractEntry(batch)
-
-    if (ok)
-        await batch.commit().then(() => {
-            bhs.status("Save Successful")
-            console.log("Save Successful")
-        }).catch(err => {
-            bhs.status("Error: " + err.code)
-            console.log(err)
-        })
+    if (bhs.saveUser())
+        await nmsce.extractEntry()
 }
 
-blackHoleSuns.prototype.status = function (str) {
+NMSCE.prototype.status = function (str) {
     $("#status").append("<h6>" + str + "</h6>")
 }
 
-blackHoleSuns.prototype.buildTypePanels = function () {
+NMSCE.prototype.buildTypePanels = function () {
     let nav = `<a class="nav-item nav-link txt-def h6 active" id="tab-idname" data-toggle="tab" href="#pnl-idname" role="tab" aria-controls="pnl-idname" aria-selected="true">title</a>`
     let header = `
         <div class="tab-pane fade show active" id="pnl-idname" role="tabpanel" aria-labelledby="tab-idname">
@@ -337,7 +320,7 @@ blackHoleSuns.prototype.buildTypePanels = function () {
             <div id="row-idname" data-type="img" data-req="ifreq" class="row">
                 <div class="col-md-3 col-2 txt-inp-def h6">title</div>
                 <input id="id-idname" type="file" class="col-8 form-control form-control-sm" 
-                    accept="image/*" name="files[]" onchange="loadCanvasWithInputFile(this)">&nbsp
+                    accept="image/*" name="files[]" onchange="nmsce.loadCanvasWithInputFile(this)">&nbsp
             </div>
             <br>
       </div>`
@@ -373,12 +356,9 @@ blackHoleSuns.prototype.buildTypePanels = function () {
 
                 switch (f.type) {
                     case "menu":
-                        appenditem(itm, tList, "", id, f.required)
+                        appenditem(itm, tList, "", id)
                         let lst = itm.find("#list-" + id)
-                        bhs.buildMenu(lst, f.name, f.list, f.sublist ? bhs.selectSublist : null)
-
-                        if (f.required)
-                            lst.find("#id-menu").html(f.name + `&nbsp;<font style="color:red">*</font>&nbsp;`)
+                        bhs.buildMenu(lst, f.name, f.list, f.sublist ? nmsce.selectSublist : null, f)
 
                         if (f.sublist) {
                             for (let k = 0; k < f.list.length; ++k) {
@@ -391,17 +371,13 @@ blackHoleSuns.prototype.buildTypePanels = function () {
                                     if (slist) {
                                         if (f.sublist[j].type == "menu") {
                                             l = /idname/ [Symbol.replace](tSubList, (t.name + "-" + f.sublist[j].name).nameToId())
-                                            appenditem(itm, l, "", f.sublist[j].name.nameToId(), f.sublist[j].required)
+                                            appenditem(itm, l, "", f.sublist[j].name.nameToId())
 
                                             sub = itm.find("#slist-" + (t.name + "-" + f.sublist[j].name).nameToId())
-                                            bhs.buildMenu(sub, f.sublist[j].name, slist)
-
-                                            if (f.sublist[j].required)
-                                                sub.find("#id-menu").html(f.sublist[j].name + `&nbsp;<font style="color:red">*</font>&nbsp;`)
-
+                                            bhs.buildMenu(sub, f.sublist[j].name, slist, f)
                                         } else if (f.sublist[j].type == "array") {
                                             l = /idname/ [Symbol.replace](tArray, (t.name + "-" + f.sublist[j].name).nameToId())
-                                            appenditem(itm, l, "", f.sublist[j].name.nameToId(), false)
+                                            appenditem(itm, l, "", f.sublist[j].name.nameToId())
 
                                             sub = itm.find("#slist-" + (t.name + "-" + f.sublist[j].name).nameToId())
                                             sub = sub.find("#row-" + f.sublist[j].name.nameToId())
@@ -454,12 +430,12 @@ blackHoleSuns.prototype.buildTypePanels = function () {
     })
 }
 
-blackHoleSuns.prototype.selectType = function (btn) {
+NMSCE.prototype.selectType = function (btn) {
     $("#typePanels [id|='pnl']").hide()
     $("#typePanels").find("#pnl-" + btn.text().stripMarginWS()).show()
 }
 
-blackHoleSuns.prototype.selectSublist = function (btn) {
+NMSCE.prototype.selectSublist = function (btn) {
     let t = btn.text().stripMarginWS()
     let f = btn.prop("id").slice(4)
     let pnl = btn.closest("[id|='pnl']")
@@ -479,34 +455,52 @@ let imgcanvas = document.createElement('canvas')
 let txtcanvas = document.createElement('canvas')
 
 const txtList = [{
-    name: "Player Name",
+    name: "Player Name"
 }, {
-    name: "System Info",
+    name: "System Name"
 }, {
-    name: "Portal Glyph",
-    font: "glyph"
+    name: "System Economy"
 }, {
-    name: "Galaxy",
+    name: "Coordinates"
 }, {
-    name: "Input Text",
-    what: "inptxt"
+    name: "Glyphs",
+    font: "glyph",
+    label: "NMS Glyphs"
+}, {
+    name: "Galaxy"
+}, {
+    name: "Text",
+    what: "inptxt",
+    ttip: "Uses 'Input Text' field below."
 }]
 
-function loadCanvasWithInputFile(evt) {
+NMSCE.prototype.loadCanvasWithInputFile = function (evt) {
     const cvs = `
         <div id="img-idname" class="card card-body">
-            <canvas id="id-canvas" class="border"></canvas>
-            <br>
             <div class="row">
-                <button onclick="redditShare(this)"><img src="reddit.png" style="width:20px; height:20px" title="Share to reddit" alt="Share to reddit"></button>
+                <canvas id="id-canvas" class="border"></canvas>&nbsp;
+                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                    data-placement="top" title="You can position text by clicking and dragging.">
+                </i>
             </div>
             <br>
-            <div id="img-text" class="txt-inp-def h6"></div>    
+            <div class="row">
+                <button onclick="nmsce.redditShare(this)"><img src="reddit.png" style="width:20px; height:20px" title="Share to reddit" alt="Share to reddit"></button>&nbsp;
+                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                    data-placement="bottom" title="Opens a new tab with reddit post. Select community, title & flair. Then post.">
+                </i>            
+            </div>
+            <br>
+
+            <div id="img-text" class="txt-inp-def h6 border-top"></div>
         </div>`
 
     const hdr = `
         <div  class="row"> 
-            <div class="col-4"></div>
+            <i class="fa fa-question-circle-o text-danger h6 col-4" data-toggle="tooltip" data-html="true"
+                data-placement="bottom" title="Text overlay is generated from current values. To change display
+                toggle checkbox off and back on.">
+            </i>            
             <div class="col-2 text-center">Color</div>
             <div class="col-2 text-center">Size</div>
             <div class="col-5">&nbsp;&nbsp;Font</div>
@@ -515,15 +509,25 @@ function loadCanvasWithInputFile(evt) {
     const itm = `
         <div id="txt-idname" class="row"> 
             <label class="col-4">
-                <input id="ck-idname" type="checkbox" onchange="addText(this)">
-                title&nbsp;
+                <input id="ck-idname" type="checkbox" onchange="nmsce.addText(this)">
+                titlettip&nbsp;
             </label>
-            <input id="sel-idname" class="col-2 bkg-def" style="border-color:black" onchange="setColor(this)" type="color" value="#ffffff">&nbsp;
-            <input id="size-idname" class="col-2" onchange="setSize(this)" type="number" value=16 min=0>
+            <input id="sel-idname" class="col-2 bkg-def" style="border-color:black" onchange="nmsce.setColor(this)" type="color" value="#ffffff">&nbsp;
+            <input id="size-idname" class="col-2" onchange="nmsce.setSize(this)" type="number" value=16 min=0>
             <div id="id-" class="col-5"></div>
         </div>`
 
-    const inptxt = `<input id="inp-Input-Text" class="col-13" type="text" onchange="addText(this)">`
+    const inptxt = `
+        <br>
+        <div id="inp-inptxt" class="row"> 
+            <div class="col-3">Input Text</div>
+            <input id="inp-Input-Text" class="col-10" type="text" onchange="nmsce.addText(this)">
+        </div>`
+
+    const ttip = `&nbsp;
+        <i class="fa fa-question-circle-o text-danger h6 col-4" data-toggle="tooltip" data-html="true"
+            data-placement="bottom" title="ttext">
+        </i> `
 
     let file = evt.files[0]
     if (file.type.match('image.*')) {
@@ -539,25 +543,38 @@ function loadCanvasWithInputFile(evt) {
             let l = /idname/g [Symbol.replace](itm, i.name.nameToId())
             l = /title/ [Symbol.replace](l, i.name)
 
-            if (i.what === "inptxt")
-                l = l.replace(/(.*)<\/div>$/, "$1" + inptxt + "<\div>")
+            if (i.ttip) {
+                l = /ttip/ [Symbol.replace](l, ttip)
+                l = /ttip/ [Symbol.replace](l, i.ttip)
+            } else
+                l = /ttip/ [Symbol.replace](l, "")
 
             h += l
+
+            h += i.what === "inptxt" ? inptxt : ""
         }
 
         let loc = $("#img-text")
         loc.empty()
         loc.append(h)
 
+        let height = 0
         let fnt = loc.find("[id|='txt']")
         for (let loc of fnt) {
             let id = $(loc).prop("id")
             id = id.stripID().idToName()
             let i = getIndex(txtList, "name", id)
-            if (typeof txtList[i].font === "undefined")
-                bhs.buildMenu($(loc), "", fontList, setFont)
-            else
-                $(loc).find("#id-").text(txtList[i].font)
+            if (typeof txtList[i].font === "undefined") {
+                bhs.buildMenu($(loc), "", fontList, nmsce.setFont, {
+                    nolabel: true
+                })
+                height = $(loc).height()
+            } else {
+                let lbl = $(loc).find("#id-")
+                lbl.text(txtList[i].label)
+                if (height > 0)
+                    lbl.height(height)
+            }
         }
 
         texts = []
@@ -565,16 +582,16 @@ function loadCanvasWithInputFile(evt) {
 
         img = img.find("#id-canvas")
         img.mousedown(e => {
-            handleMouseDown(e)
+            nmsce.handleMouseDown(e)
         })
         img.mousemove(e => {
-            handleMouseMove(e)
+            nmsce.handleMouseMove(e)
         })
         img.mouseup(e => {
-            handleMouseUp(e)
+            nmsce.handleMouseUp(e)
         })
         img.mouseout(e => {
-            handleMouseOut(e)
+            nmsce.handleMouseOut(e)
         })
 
         let imgctx = imgcanvas.getContext("2d")
@@ -613,7 +630,7 @@ var selectedText = -1
 var startX = 0
 var startY = 0
 
-function addText(evt) {
+NMSCE.prototype.addText = function (evt) {
     let canvas = document.getElementById("id-canvas")
     let ctx = canvas.getContext("2d")
 
@@ -631,21 +648,29 @@ function addText(evt) {
             y: texts.length * 20 + 20,
         }
 
+        let sloc = $("#pnl-S1")
+        let id = $("#typeTabs .active").prop("id").stripID()
+        let pnl = $("#typePanels #pnl-" + id)
+
         switch ($(evt).prop("id")) {
             case "ck-Player-Name":
-                text.text = "by " + bhs.user._name
+                text.text = bhs.user._name
                 break
-            case "ck-System-Info":
-                text.text = $("#btn-Lifeform").text().stripMarginWS() + " " + $("#btn-Economy").text().stripNumber()
+            case "ck-System-Economy":
+                text.text = sloc.find("#btn-Economy").text().stripNumber()
                 break
-            case "ck-Portal-Glyph":
+            case "ck-System-Name":
+                text.text = sloc.find("#id-sys").val()
+                break
+            case "ck-Coordinates":
+                text.text = sloc.find("#id-addrInput #id-addr").val()
+                break
+            case "ck-Glyphs":
                 text.font = "glyph"
                 text.size = 20
-                let loc = $("#typeTabs .active").prop("id").stripID()
-                loc = $("#typePanels #pnl-" + loc)
-                loc = loc.find("#id-Planet-Number")
+                let loc = pnl.find("#id-Planet-Index")
                 let num = loc.length > 0 && loc.val() >= 0 ? loc.val() : 0
-                text.text = addrToGlyph($("#id-addr").val(), num)
+                text.text = addrToGlyph(sloc.find("#id-addrInput #id-addr").val(), num)
                 break
                 // case "ck-objinfo":
                 //     text.text = "ship info"
@@ -653,10 +678,9 @@ function addText(evt) {
                 //     break
             case "ck-Galaxy":
                 text.text = bhs.user.galaxy
-                text.color = $("#sel-galaxy").val()
                 break
-            case "ck-Input-Text":
-                text.text = $(evt).closest("[id|='txt']").find("#inp-"+sub).val()
+            case "ck-Text":
+                text.text = $("#inp-Input-Text").val()
                 break
         }
 
@@ -672,13 +696,13 @@ function addText(evt) {
                 texts.splice(i, 1)
     }
 
-    drawText()
+    nmsce.drawText()
 
     ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
     ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
 }
 
-function setFont(btn) {
+NMSCE.prototype.setFont = function (btn) {
     let canvas = document.getElementById("id-canvas")
     let ctx = canvas.getContext("2d")
     let font = btn.text().stripMarginWS()
@@ -693,13 +717,13 @@ function setFont(btn) {
             texts[i].height = texts[i].fontsize
         }
 
-    drawText()
+    nmsce.drawText()
 
     ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
     ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
 }
 
-function setColor(evt) {
+NMSCE.prototype.setColor = function (evt) {
     let canvas = document.getElementById("id-canvas")
     let ctx = canvas.getContext("2d")
 
@@ -707,13 +731,13 @@ function setColor(evt) {
         if (texts[i].sub == $(evt).prop("id").stripID())
             texts[i].color = $(evt).val()
 
-    drawText()
+    nmsce.drawText()
 
     ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
     ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
 }
 
-function setSize(evt) {
+NMSCE.prototype.setSize = function (evt) {
     let canvas = document.getElementById("id-canvas")
     let ctx = canvas.getContext("2d")
     let id = $(evt).prop("id").stripID()
@@ -727,19 +751,19 @@ function setSize(evt) {
             texts[i].height = texts[i].fontsize
         }
 
-    drawText()
+    nmsce.drawText()
 
     ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
     ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
 }
 
-function drawText() {
+NMSCE.prototype.drawText = function () {
     let ctx = txtcanvas.getContext("2d")
     ctx.clearRect(0, 0, txtcanvas.width, txtcanvas.height)
 
     for (var i = 0; i < texts.length; i++) {
         var text = texts[i]
-        if (text.sub == "glyph") {
+        if (text.sub === "glyph") {
             ctx.fillStyle = text.color
             ctx.fillRect(text.x - 2, text.y - text.height - 2, text.width + 4, text.height + 4)
             ctx.fillStyle = "#000000"
@@ -752,7 +776,7 @@ function drawText() {
     }
 }
 
-function redditShare(evt) {
+NMSCE.prototype.redditShare = function (evt) {
     let canvas = document.getElementById("id-canvas")
 
     canvas.toBlob(blob => {
@@ -767,12 +791,12 @@ function redditShare(evt) {
     }, "image/jpeg", .7)
 }
 
-function textHittest(x, y, textIndex) {
+NMSCE.prototype.textHittest = function (x, y, textIndex) {
     var text = texts[textIndex]
     return (x >= text.x && x <= text.x + text.width && y >= text.y - text.height && y <= text.y)
 }
 
-function handleMouseDown(e) {
+NMSCE.prototype.handleMouseDown = function (e) {
     e.preventDefault()
 
     var canvas = $(e.currentTarget).get(0)
@@ -784,21 +808,21 @@ function handleMouseDown(e) {
     startY = parseInt(e.clientY - offsetY)
 
     for (var i = 0; i < texts.length && selectedText == -1; i++)
-        if (textHittest(startX, startY, i))
+        if (nmsce.textHittest(startX, startY, i))
             selectedText = i
 }
 
-function handleMouseUp(e) {
+NMSCE.prototype.handleMouseUp = function (e) {
     e.preventDefault()
     selectedText = -1
 }
 
-function handleMouseOut(e) {
+NMSCE.prototype.handleMouseOut = function (e) {
     e.preventDefault()
     selectedText = -1
 }
 
-function handleMouseMove(e) {
+NMSCE.prototype.handleMouseMove = function (e) {
     if (selectedText < 0)
         return
 
@@ -823,10 +847,156 @@ function handleMouseMove(e) {
     text.x += dx
     text.y += dy
 
-    drawText()
+    nmsce.drawText()
 
     ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
     ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
+}
+
+NMSCE.prototype.updateEntry = async function (entry) {
+    entry.modded = firebase.firestore.Timestamp.now()
+
+    if (typeof entry.created === "undefined")
+        entry.created = firebase.firestore.Timestamp.now()
+
+    let ref = bhs.fs.collection("nmsce/" + entry.galaxy + "/" + entry.type)
+    if (typeof entry.id === "undefined") {
+        ref = ref.doc()
+        entry.id = ref.id
+    } else
+        ref = ref.doc(entry.id)
+
+    await ref.set(entry, {
+        merge: true
+    }).then(() => {
+        nmsce.status(entry.addr + " saved.")
+    }).catch(err => {
+        nmsce.status("ERROR: " + err.code)
+        console.log(err)
+    })
+}
+
+NMSCE.prototype.getEntries = async function (user, displayFcn, singleDispFcn) {
+    nmsce.entries = {}
+
+    for (let t of objectList) {
+        let type = t.name
+        nmsce.entries[type] = []
+
+        let ref = bhs.fs.collection("nmsce/" + user.galaxy + "/" + type)
+        ref = ref.where("uid", "==", user.uid)
+
+        let snapshot = await ref.get()
+        for (let e of snapshot.docs)
+            nmsce.entries[type].push(e.data())
+
+        if (typeof singleDispFcn === "function") {
+            ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()))
+            bhs.subscribe("nmsceentries-" + "type", ref, singleDispFcn)
+        }
+    }
+
+    if (typeof displayFcn === "function")
+        displayFcn(nmsce.entries)
+}
+
+NMSCE.prototype.displayList = function (entries) {
+    const card = `
+        <div class="card h5">
+            <div id="ttl-idname" class="card-header bkg-def txt-def" onclick="nmsce.showSub('#sub-idname')">
+                <div class="row">
+                    <div class="col-3">title</div>
+                    <div class="col-3">Total: total</div>
+                </div>
+            </div>
+            <div id="sub-idname" class="container-flex h6 hidden">
+                <div id="list-idname" class="scrollbar" style="overflow-y: scroll; height: 180px">`
+    const row = `
+                    <div id="idname" class="row border-bottom border-3 border-black format">
+                        <div id="id-Photo" class="col-2">
+                            <img id="img-pic" height="auto" width="wsize" />
+                        </div>
+                        <div class="col-12">
+                            <div class="row">
+                    
+                    `
+    const itm = `   
+                        <div id="id-idname" class="col-2 border">title</div>`
+    const end = `</div>`
+
+    let h = ""
+
+    for (let obj of objectList) {
+        let l = /idname/g [Symbol.replace](card, obj.name.nameToId())
+        l = /title/ [Symbol.replace](l, obj.name)
+        h += /total/ [Symbol.replace](l, entries[obj.name].length)
+
+        h += /format/ [Symbol.replace](row, "txt-def bkg-def")
+
+        l = /idname/g [Symbol.replace](itm, "Coords")
+        h += /title/ [Symbol.replace](l, "Coordinates")
+
+        for (let f of obj.fields) {
+            if (f.type !== "img") {
+                let l = /idname/g [Symbol.replace](itm, f.name.nameToId())
+                h += /title/ [Symbol.replace](l, f.name)
+
+                if (typeof f.sublist !== "undefined")
+                    for (let s of f.sublist) {
+                        let l = /idname/g [Symbol.replace](itm, s.name.nameToId())
+                        h += /title/ [Symbol.replace](l, s.name)
+                    }
+            }
+        }
+
+        h += end + end + end
+
+        for (let e of entries[obj.name.nameToId()]) {
+            let l = /idname/ [Symbol.replace](row, e.id)
+            h += /wsize/ [Symbol.replace](l, "120px")
+
+            l = /idname/g [Symbol.replace](itm, "Coords")
+            h += /title/ [Symbol.replace](l, e.addr)
+
+            for (let f of obj.fields) {
+                if (f.type !== "img") {
+                    let l = /idname/g [Symbol.replace](itm, f.name.nameToId())
+                    h += /title/ [Symbol.replace](l, e[f.name.nameToId()])
+
+                    if (typeof f.sublist !== "undefined")
+                        for (let s of f.sublist) {
+                            let l = /idname/g [Symbol.replace](itm, s.name.nameToId())
+                            h += /title/ [Symbol.replace](l, e[s.name.nameToId()])
+                        }
+                }
+            }
+
+            h += end + end + end
+        }
+
+        h += end + end + end
+    }
+
+    $("#id-table").html(h)
+    let loc = $("#id-table")
+
+    for (let obj of objectList)
+        for (let e of entries[obj.name.nameToId()]) {
+            let eloc = loc.find("#" + e.id + " #id-Photo")
+            for (let f of obj.fields)
+                if (f.type === "img") {
+                    let ref = bhs.fbstorage.ref().child(e[f.name])
+                    ref.getDownloadURL().then(url => {
+                        eloc.find("#img-pic").attr("src", url)
+                    })
+                }
+        }
+}
+
+NMSCE.prototype.showSub = function (id) {
+    let loc = $("#id-table")
+    loc.find("[id|='sub']").hide()
+    loc.find(id).show()
 }
 
 const shipList = [{
@@ -1622,7 +1792,6 @@ const freighterList = [{
 
 const planetNumTip = `This is the first glyph in the portal address. Assigned to each celestial body according to their aphelion.`
 
-// player name, galaxy, platform
 const objectList = [{
     name: "Ship",
     fields: [{
