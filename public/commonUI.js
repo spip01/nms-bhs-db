@@ -1,5 +1,8 @@
 'use strict'
 
+// Copyright 2019 Black Hole Suns
+// Written by Stephen Piper
+
 blackHoleSuns.prototype.doLoggedout = function () {
     if (bhs.clearPanels)
         bhs.clearPanels()
@@ -76,7 +79,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     let fpoi = window.location.pathname == "/poiorg.html"
     let fdarc = window.location.pathname == "/darc.html"
     let ftotals = window.location.pathname == "/totals.html"
-    let fnmsce = window.location.pathname == "/nmsce.html"
+    let fnmsce = window.location.pathname == "/nmsce.html" || window.location.pathname == "/cesearch.html"
     let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform)
 
     bhs.user = mergeObjects(bhs.user, user)
@@ -149,7 +152,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
             <div class="row">
                 <div class="col-md-7 col-14">
                     <div class="row">
-                        <div class="col-14 h6 txt-inp-def">Player Name<span class="h5 text-danger">&nbsp;*</span></div>
+                        <div class="col-14 h6 txt-inp-def">Player Name<span id="namereq" class="h5 text-danger">&nbsp;*</span></div>
                         <input id="id-Player" class="rounded col-13 h5" type="text">
                     </div>
                 </div>
@@ -185,16 +188,22 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
         name: ""
     })
 
+    let fsearch = window.location.pathname == "/cesearch.html"
+
     bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser, {
         vertical: true
     })
+
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, {
-        required: true
+        required: !fsearch
     })
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, {
         tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
-        required: true
+        required: !fsearch
     })
+
+    if (fsearch)
+        $("#namereq").hide()
 
     $("#id-Player").change(function () {
         if (bhs.user.uid) {
@@ -1036,10 +1045,7 @@ blackHoleSuns.prototype.saveUser = async function () {
         let user = bhs.extractUser()
         let ok = bhs.validateUser(user)
 
-        if (ok)
-            ok = bhs.updateUser(user)
-
-        return ok
+        return bhs.updateUser(user)
     } else
         return false
 }
@@ -1524,9 +1530,9 @@ blackHoleSuns.prototype.drawSingle = function (e) {
     let opt = bhs.extractMapOptions()
 
     let out = initout()
-    pushentry(out, e.xyzs, e.addr + "<br>" + e.sys + "<br>" + e.reg)
+    pushentry(out, e.xyzs, typeof e.addr === "undefined" ? e.addr + "<br>" + e.sys + "<br>" + e.reg : "")
     if (e.blackhole)
-        pushentry(out, e.x.xyzs, e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg)
+        pushentry(out, e.x.xyzs, typeof e.addr === "undefined" ? e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg : "")
 
     Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"] * 2, opt["clr-bh"], e.blackhole ? opt["clr-exit"] : null))
 }

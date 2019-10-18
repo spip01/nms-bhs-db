@@ -1,5 +1,8 @@
 'use strict'
 
+// Copyright 2019 Black Hole Suns
+// Written by Stephen Piper
+
 $(document).ready(() => {
     $("#javascript").remove()
     $("#jssite").show()

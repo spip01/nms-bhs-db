@@ -1,5 +1,8 @@
 'use strict'
 
+// Copyright 2019 Black Hole Suns
+// Written by Stephen Piper
+
 blackHoleSuns.prototype.buildFilePanel = function () {
     const panel = `
     <div id="upload" class="card" style="display:none">

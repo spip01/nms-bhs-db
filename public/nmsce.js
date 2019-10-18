@@ -1,9 +1,24 @@
 'use strict'
 
+// Copyright 2019 Black Hole Suns
+// Written by Stephen Piper
+
 var nmsce
+
+const searchwindow = window.location.pathname == "/cesearch.html"
 
 $(document).ready(() => {
     startUp()
+
+    $("#cemenus").load("cemenus.html", () => {
+        $("#login").click(() => {
+            bhs.logIn()
+        })
+
+        $("#logout").click(() => {
+            bhs.logOut()
+        })
+    })
 
     nmsce = new NMSCE()
 
@@ -26,6 +41,10 @@ $(document).ready(() => {
     $("#cancel").click(() => {
         nmsce.displaySingle(nmsce.last)
     })
+
+    $("#search").click(() => {
+        nmsce.search()
+    })
 })
 
 function NMSCE() {
@@ -33,7 +52,7 @@ function NMSCE() {
 }
 
 NMSCE.prototype.displayUser = function () {
-    if (bhs.user.galaxy !== "") {
+    if (bhs.user.galaxy !== "" && !searchwindow) {
         //nmsce.displaySettings(bhs.user)
         nmsce.getEntries(bhs.user, nmsce.displayList)
     }
@@ -44,7 +63,7 @@ NMSCE.prototype.buildPanel = function () {
 
     bhs.buildMenu(loc, "Lifeform", lifeformList)
     bhs.buildMenu(loc, "Economy", economyList, null, {
-        required: true
+        required: !searchwindow
     })
 
     let gloc = loc.find("#glyphbuttons")
@@ -143,7 +162,7 @@ NMSCE.prototype.clearPanel = function (d) {
     $("#delete").prop("disabled", true)
 }
 
-NMSCE.prototype.extractEntry = async function () {
+NMSCE.prototype.extractEntry = async function (fcn) {
     let entry = {}
     entry._name = bhs.user._name
     entry.org = bhs.user.org
@@ -216,7 +235,7 @@ NMSCE.prototype.extractEntry = async function () {
                         }
                 }
 
-                if (data.req)
+                if (data.req && !searchwindow)
                     if (typeof entry[id] === "undefined" ||
                         (data.type === "string" || data.type === "menu") && entry[id] === "" ||
                         data.type === "num" && entry[id] === -1 ||
@@ -230,7 +249,7 @@ NMSCE.prototype.extractEntry = async function () {
         }
 
         if (ok)
-            nmsce.updateEntry(entry)
+            fcn(entry)
     }
 
     return ok
@@ -240,7 +259,14 @@ NMSCE.prototype.save = async function () {
     $("#status").empty()
 
     if (bhs.saveUser())
-        await nmsce.extractEntry()
+        await nmsce.extractEntry(nmsce.updateEntry)
+}
+
+NMSCE.prototype.search = async function () {
+    $("#status").empty()
+
+    if (bhs.saveUser() || searchwindow)
+        await nmsce.extractEntry(nmsce.search)
 }
 
 NMSCE.prototype.status = function (str) {
@@ -349,10 +375,15 @@ NMSCE.prototype.buildTypePanels = function () {
 
         let itm = pnl.find("#itm-" + id)
         if (obj.fields) {
-            for (let i = 0; i < obj.fields.length; ++i) {
-                let f = obj.fields[i]
+            for (let f of obj.fields) {
+                if (searchwindow && !f.search)
+                    continue
+
                 let l = ""
                 let id = f.name.nameToId()
+
+                if (searchwindow)
+                    f.required = false
 
                 switch (f.type) {
                     case "menu":
@@ -361,12 +392,13 @@ NMSCE.prototype.buildTypePanels = function () {
                         bhs.buildMenu(lst, f.name, f.list, f.sublist ? nmsce.selectSublist : null, f)
 
                         if (f.sublist) {
-                            for (let k = 0; k < f.list.length; ++k) {
-                                let t = f.list[k]
-
+                            for (let t of f.list) {
                                 for (let j = 0; j < f.sublist.length; ++j) {
                                     let slist = t[f.sublist[j].sub] ? t[f.sublist[j].sub] : f.sublist[j].list
                                     let sub
+
+                                    if (searchwindow && !f.sublist[j].search)
+                                        continue
 
                                     if (slist) {
                                         if (f.sublist[j].type == "menu") {
@@ -930,7 +962,7 @@ NMSCE.prototype.displayList = function (entries) {
         h += /format/ [Symbol.replace](row, "txt-def bkg-def")
 
         l = /idname/g [Symbol.replace](itm, "Coords")
-        h += /title/ [Symbol.replace](l, "Coordinates")
+        h += /title/ [Symbol.replace](l, searchwindow ? "Glyph" : "Coordinates")
 
         for (let f of obj.fields) {
             if (f.type !== "img") {
@@ -951,8 +983,15 @@ NMSCE.prototype.displayList = function (entries) {
             let l = /idname/ [Symbol.replace](row, e.id)
             h += /wsize/ [Symbol.replace](l, "120px")
 
-            l = /idname/g [Symbol.replace](itm, "Coords")
-            h += /title/ [Symbol.replace](l, e.addr)
+            if (searchwindow) {
+                l = /idname/g [Symbol.replace](itm, "Coords")
+                h += /title/ [Symbol.replace](l, e.addr)
+
+            } else {
+                l = /idname/g [Symbol.replace](itm, "Coords")
+                l = /border/ [Symbol.replace](itm, "border glyph")
+                h += /title/ [Symbol.replace](l, addrToGlyph(e.addr, e.planet))
+            }
 
             for (let f of obj.fields) {
                 if (f.type !== "img") {
@@ -1797,45 +1836,53 @@ const objectList = [{
         name: "Wave",
         type: "number",
         ttip: "Wave based on looking away from spawn point after reload for 0, 29, 49 & 65 sec.",
-        range: "4"
+        range: "4",
+        search: true,
     }, {
         name: "Type",
         type: "menu",
         list: shipList, // fighter, shuttle, etc.
         required: true,
+        search: true,
         sublist: [{
             name: "Subtype",
             type: "menu",
             sub: "subType",
             required: true,
+            search: true,
         }, {
             name: "Features",
             type: "array",
             sub: "features",
+            search: true,
         }, {
             name: "Class",
             type: "menu",
             // ttip: "classTtip",
-            list: classList
+            list: classList,
+            search: true,
         }, {
             name: "Slots",
             type: "menu",
             ttip: "slotTtip",
             sub: "slotList",
             list: slotList,
+            search: true,
         }, ]
     }, {
         name: "Primary Color",
         type: "menu",
         list: colorList,
         required: true,
+        search: true,
     }, {
         name: "Secondary Color",
         type: "menu",
         list: colorList,
-        // }, {
-        //     name: "Seed",
-        //     type: "string",
+        search: true,
+    }, {
+        name: "Seed",
+        type: "string",
     }, {
         name: "Photo",
         type: "img",
@@ -1851,29 +1898,35 @@ const objectList = [{
         type: "menu",
         list: freighterList,
         required: true,
+        search: true,
         sublist: [{
             name: "Subtype",
             sub: "subType",
+            search: true,
         }, {
             name: "Slots",
             type: "menu",
             ttipFld: "slotTtip",
             list: slotList,
+            search: true,
         }, {
             name: "Class",
             type: "menu",
             // ttipFld: "classTtip",
             list: classList,
+            search: true,
         }, ]
     }, {
         name: "Primary Color",
         type: "menu",
         list: colorList,
         required: true,
+        search: true,
     }, {
         name: "Secondary Color",
         type: "menu",
         list: colorList,
+        search: true,
         // },{
         //     name: "Seed",
         //     type: "string",
@@ -1892,16 +1945,19 @@ const objectList = [{
         type: "menu",
         list: mtList,
         required: true,
+        search: true,
     }, {
         name: "Class",
         type: "menu",
         list: classList,
         // ttipFld: "classTtip",
         required: true,
+        search: true,
     }, {
         name: "Slots",
         type: "number",
         required: true,
+        search: true,
     }, {
         name: "Space Station",
         type: "checkbox",
@@ -1930,10 +1986,12 @@ const objectList = [{
         type: "menu",
         list: colorList,
         required: true,
+        search: true,
     }, {
         name: "Secondary Color",
         type: "menu",
         list: colorList,
+        search: true,
         // },{
         //     name: "Seed",
         //     type: "string",
@@ -1951,6 +2009,7 @@ const objectList = [{
         name: "Description",
         type: "long string",
         required: true,
+        search: true,
     }, {
         name: "Planet Name",
         type: "string",
@@ -1978,6 +2037,7 @@ const objectList = [{
         name: "Description",
         type: "long string",
         required: true,
+        search: true,
     }, {
         name: "Planet Name",
         type: "string",
@@ -2006,15 +2066,20 @@ const objectList = [{
         type: "menu",
         list: biomeList,
         required: true,
+        search: true,
     }, {
         name: "Weather",
         type: "menu",
         list: weatherList,
+        search: true,
     }, {
         name: "Sentinels",
         type: "menu",
         list: sentinelList,
-        ttip: `Low - Sentinels only guard secure facilities<br>High - Patrols are present throughout the planet (orange icon)<br>Aggressive - Patrols are present throughout the planet and Sentinels will attack on sight (red icon)<br>`
+        ttip: `Low - Sentinels only guard secure facilities<br>
+            High - Patrols are present throughout the planet (orange icon)<br>
+            Aggressive - Patrols are present throughout the planet and Sentinels will attack on sight (red icon)<br>`,
+        search: true,
     }, {
         name: "Notes",
         type: "long string",
@@ -2029,10 +2094,12 @@ const objectList = [{
         name: "Name",
         type: "string",
         required: true,
+        search: true,
     }, {
         name: "Owner",
         type: "string",
         required: true,
+        search: true,
     }, {
         name: "Planet Index",
         type: "number",
@@ -2044,9 +2111,11 @@ const objectList = [{
         list: modeList,
         required: true,
         ttip: "Bases are only visible by players using the same game mode.",
+        search: true,
     }, {
         name: "Description",
         type: "long string",
+        search: true,
     }, {
         name: "Photo",
         type: "img",

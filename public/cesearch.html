@@ -63,7 +63,7 @@
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div id="loggedout" class="row text-danger h5">
-            <h4>Welcome to No Man's Sky Coordinate Exchange. Please login.</h4>
+            <h4>Welcome to the No Man's Sky Coordinate Exchange search page. Login NOT required.</h4>
         </div>
 
         <div class="card card-body pad-bottom bkg-def">
@@ -75,11 +75,10 @@
                             <div class="card-body">
                                 <div id="id-addrInput">
                                     <div class="row">
-                                        <div class="col-sm-4 col-7 h6 txt-inp-def">Coordinates<span
-                                                class="h5 text-danger">&nbsp;*</span>&nbsp;
+                                        <div class="col-sm-4 col-7 h6 txt-inp-def">Coordinates&nbsp;
                                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                                 data-html="true" data-placement="bottom"
-                                                title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
+                                                title="Search at a specific address.<br>Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
                                                 A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
                                             </i>
                                         </div>
@@ -109,9 +108,9 @@
                                 <div id="id-glyphInput" class="hidden">
                                     <div class="row">
                                         <div class="col-sm-3 col-3 h6 txt-inp-def">
-                                            Glyph<span class="h5 text-danger">&nbsp;*</span>&nbsp;
+                                            Glyph&nbsp;
                                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
-                                                data-html="true" data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
+                                                data-html="true" data-placement="bottom" title="Search at a specific address.<br>Enter value using the glyph buttons or a <span class='h5'>12</span> 
                                                 digit hex, 0-9 a-f, value can be entered directly in the field.">
                                             </i>
                                         </div>
@@ -139,20 +138,13 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-sm-4 col-7  h6 txt-inp-def">System Name<span
-                                            class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
+                                    <div class="col-sm-4 col-7  h6 txt-inp-def">System Name</div>
                                     <input id="id-sys" class="rounded col-sm-5 col-7">
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-sm-4 col-7 h6 txt-inp-def">Region Name<span
-                                            class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
+                                    <div class="col-sm-4 col-7 h6 txt-inp-def">Region Name</div>
                                     <input id="id-reg" class="rounded col-sm-5 col-7">&nbsp
-                                </div>
-
-                                <div id="id-byrow" class="row">
-                                    <div class="col-sm-4 col-7  h6 txt-inp-def">Entered by&nbsp;</div>
-                                    <div id="id-by" class="col-sm-5 col-7 txt-inp-def"></div>
                                 </div>
 
                                 <div class="row">
@@ -187,12 +179,8 @@
                             <div class="row">
                                 <div class="col-7">
                                     <div class="row">
-                                        <button id="save" type="button"
-                                            class="col-4 btn  btn-sm btn-def">Save</button>&nbsp;
-                                        <button id="delete" type="button" class="col-4 btn btn-sm btn-def disabled"
-                                            disabled>Delete</button>&nbsp;
-                                        <button id="cancel" type="button"
-                                            class="col-4 btn btn-def  btn-sm">Cancel</button>&nbsp;
+                                        <button id="search" type="button"
+                                            class="col-4 btn btn-def  btn-sm">Search</button>&nbsp;
                                     </div>
                                 </div>
                                 <div id="status" class="border col-7 text-danger scrollbar container-fluid"
@@ -202,18 +190,13 @@
                     </div>
                 </div>
             </div>
-
-            <div class="text-danger h6">
-                <span class="h5">*</span> - Required Entry&nbsp;&nbsp;&nbsp;&nbsp;
-                <i class="fa fa-question-circle-o text-danger h6"></i> - Tool Tip
-            </div>
         </div>
         <br>
 
         <div class="card pad-bottom">
             <div class="card-header bkg-def txt-def">
                 <div class="row">
-                    <div class="col-4 h3"> Entry List</div>
+                    <div class="col-4 h3">Search List</div>
                     <div id="id-galaxy" class="col-4 h4"></div>
                     <div id="id-platform" class="col-2 h4"></div>
                 </div>

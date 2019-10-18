@@ -1,5 +1,8 @@
 'use strict'
 
+// Copyright 2019 Black Hole Suns
+// Written by Stephen Piper
+
 function addGlyphButtons(loc, fcn) {
     const gbtn = `
         <button type="button" class="btn-def btn btn-sm col-8x1">
