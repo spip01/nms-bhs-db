@@ -27,6 +27,7 @@ function startUp() {
 
     $("#bhsmenus").load("bhsmenus.html", () => {
         let page = window.location.pathname.replace(/(.*)\//, "$1")
+        page = page === "" ? "index.html" : page
         let loc = $("#navmenu").find("[href='" + page + "']")
         loc.addClass("clr-blue border rounded")
     })
