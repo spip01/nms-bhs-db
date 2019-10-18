@@ -159,6 +159,7 @@ h7 {
 
 body {
     font-size: .75rem !important;
+    background-color: black;
 }
 
 .waiting {
@@ -229,7 +230,7 @@ body {
 
 .nav-text {
     padding-top: 8px;
-    color: #008000;
+    color: blue;
     background-color: #f0fff0;
 }
 
@@ -300,7 +301,11 @@ body {
 }
 
 .bkg-white {
-    background-color: #ffffff;
+    background-color: white;
+}
+
+.bkg-black {
+    background-color:black;
 }
 
 .bkg-green {
@@ -357,6 +362,10 @@ body {
 }
 
 .button {
+    cursor: pointer;
+}
+
+.pointer {
     cursor: pointer;
 }
 

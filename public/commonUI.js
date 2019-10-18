@@ -199,7 +199,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     })
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, {
         tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
-        required: !fsearch
+        required: true
     })
 
     if (fsearch)
@@ -378,7 +378,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
     $("#entryTable").empty()
     $("#entryTable").append(table)
 
-    const line = `<div id="idname" class="width h6">title&nbsp;<i id="up" class="fa fa-sort-asc hidden"></i></div>`
+    const line = `<div id="idname" class="width h6">title&nbsp;<i id="up" class="fa fa-sort-asc pointer hidden"></i></div>`
 
     let h = ""
     userTable.forEach(t => {
@@ -1021,7 +1021,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
         let lid = l.name.nameToId()
         h = /idname/ [Symbol.replace](item, lid)
         h = /iname/ [Symbol.replace](h, (typeof l.number !== "undefined" ? l.number + " " : "") + l.name)
-        h = /rgbcolor/ [Symbol.replace](h, "background-color: " + (typeof l.color !== "undefined" ? l.color : "#c0f0ff") + ";")
+        h = /rgbcolor/ [Symbol.replace](h, "background-color: " + (typeof l.color === "undefined" ? "#f4f4f4" : l.color) + ";")
 
         mlist.append(h)
 
@@ -1041,12 +1041,11 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
 }
 
 blackHoleSuns.prototype.saveUser = async function () {
-    if (bhs.user.uid) {
-        let user = bhs.extractUser()
-        let ok = bhs.validateUser(user)
+    let user = bhs.extractUser()
 
-        return bhs.updateUser(user)
-    } else
+    if (bhs.user.uid)
+        return bhs.validateUser(user) ? bhs.updateUser(user) : false
+    else
         return false
 }
 

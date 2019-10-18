@@ -56,7 +56,7 @@ function addrToGlyph(addr, planet) {
         let xy = "00" + (xyz.y + 0x81).toString(16).toUpperCase()
         let xz = "00" + (xyz.z + 0x801).toString(16).toUpperCase()
 
-        planet = typeof planet === "undefined" || planet === "" ? 0 : parseInt(planet)
+        planet = typeof planet === "undefined" || planet === "" || planet < 0 || planet > 15 ? 0 : parseInt(planet)
 
         s = planet.toString(16).toUpperCase().slice(0, 1)
         s += xs.slice(xs.length - 3)

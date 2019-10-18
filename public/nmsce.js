@@ -162,13 +162,16 @@ NMSCE.prototype.clearPanel = function (d) {
     $("#delete").prop("disabled", true)
 }
 
-NMSCE.prototype.extractEntry = async function (fcn) {
+NMSCE.prototype.extractEntry = async function (fcn, user) {
+    if (typeof user === "undefined")
+        user = bhs.user
+
     let entry = {}
-    entry._name = bhs.user._name
-    entry.org = bhs.user.org
-    entry.uid = bhs.user.uid
-    entry.platform = bhs.user.platform
-    entry.galaxy = bhs.user.galaxy
+    entry._name = user._name
+    entry.org = user.org
+    entry.uid = user.uid
+    entry.platform = user.platform
+    entry.galaxy = user.galaxy
 
     let loc = $("#pnl-S1")
     entry.addr = loc.find("#id-addr").val()
@@ -177,15 +180,19 @@ NMSCE.prototype.extractEntry = async function (fcn) {
     entry.life = loc.find("#btn-Lifeform").text().stripNumber()
     entry.econ = loc.find("#btn-Economy").text().stripNumber()
 
-    let ok = bhs.validateEntry(entry, true) === ""
+    let ok = true
 
-    if (ok && entry.econ === "") {
-        bhs.status("Error: Missing economy. Changes not saved.", 0)
-        ok = false
+    if (!searchwindow) {
+        ok = bhs.validateEntry(entry, true) === ""
+
+        if (ok && entry.econ === "") {
+            bhs.status("Error: Missing economy. Changes not saved.", 0)
+            ok = false
+        }
     }
 
     if (ok) {
-        entry.xyzs = addrToXYZ(addr)
+        entry.xyzs = addressToXYZ(entry.addr)
 
         //bhs.updateEntry(entry)
 
@@ -224,15 +231,18 @@ NMSCE.prototype.extractEntry = async function (fcn) {
                         entry[id] = $(loc).prop("checked")
                         break
                     case "img":
-                        let canvas = $("#id-canvas")[0]
-                        if (typeof canvas !== "undefined") {
-                            if (typeof entry[id] === "undefined")
-                                entry[id] = "nmsce/" + uuidv4() + ".jpg"
+                        if (!searchwindow) {
+                            let canvas = $("#id-canvas")[0]
+                            if (typeof canvas !== "undefined") {
+                                if (typeof entry[id] === "undefined")
+                                    entry[id] = "nmsce/" + uuidv4() + ".jpg"
 
-                            await canvas.toBlob(async blob => {
-                                await bhs.fbstorage.ref().child(entry[id]).put(blob)
-                            }, "image/jpeg", .7)
+                                await canvas.toBlob(async blob => {
+                                    await bhs.fbstorage.ref().child(entry[id]).put(blob)
+                                }, "image/jpeg", .7)
+                            }
                         }
+                        break
                 }
 
                 if (data.req && !searchwindow)
@@ -264,9 +274,8 @@ NMSCE.prototype.save = async function () {
 
 NMSCE.prototype.search = async function () {
     $("#status").empty()
-
-    if (bhs.saveUser() || searchwindow)
-        await nmsce.extractEntry(nmsce.search)
+    let user = bhs.extractUser()
+    await nmsce.extractEntry(nmsce.doSearch, user)
 }
 
 NMSCE.prototype.status = function (str) {
@@ -481,6 +490,20 @@ NMSCE.prototype.selectSublist = function (btn) {
 
     for (let i = 0; i < sub.length; ++i)
         pnl.find("#slist-" + (t + "-" + sub[i].name).nameToId()).show()
+}
+
+NMSCE.prototype.doSearch = async function (entry) {
+    let ref = bhs.fs.collection("nmsce/" + entry.galaxy + "/" + entry.type)
+    let snapshot = await ref.get()
+
+    let list = {}
+    list[entry.type] = []
+
+    for (let doc of snapshot.docs) {
+        list[entry.type].push(doc.data())
+    }
+
+    nmsce.displayList(list)
 }
 
 let imgcanvas = document.createElement('canvas')
@@ -943,7 +966,7 @@ NMSCE.prototype.displayList = function (entries) {
             </div>
             <div id="sub-idname" class="container-flex h6 hidden">
                 <div id="list-idname" class="scrollbar" style="overflow-y: scroll; height: 180px">`
-    const row = `   <div id="idname" class="row border-bottom border-3 border-black format">
+    const row = `   <div id="row-idname" class="row border-bottom border-3 border-black format" onclick="nmsce.selectList(this)">
                         <div id="id-Photo" class="col-md-2 col-3">
                             <img id="img-pic" height="auto" width="wsize" />
                         </div>
@@ -955,14 +978,32 @@ NMSCE.prototype.displayList = function (entries) {
     let h = ""
 
     for (let obj of objectList) {
+        if (typeof entries[obj.name.nameToId()] === "undefined")
+            continue
+
         let l = /idname/g [Symbol.replace](card, obj.name.nameToId())
+        if (searchwindow)
+            l = /hidden/ [Symbol.replace](l, obj.name.nameToId())
         l = /title/ [Symbol.replace](l, obj.name)
-        h += /total/ [Symbol.replace](l, entries[obj.name].length)
+        h += /total/ [Symbol.replace](l, entries[obj.name.nameToId()].length)
 
-        h += /format/ [Symbol.replace](row, "txt-def bkg-def")
+        l = /format/ [Symbol.replace](row, "txt-def bkg-def")
 
-        l = /idname/g [Symbol.replace](itm, "Coords")
-        h += /title/ [Symbol.replace](l, searchwindow ? "Glyph" : "Coordinates")
+        if (searchwindow) {
+            l = /col-md-2 col-3/ [Symbol.replace](l, "col-3")
+            h += /col-md-12 col-11/ [Symbol.replace](l, "col-11")
+
+            l = /idname/g [Symbol.replace](itm, "Player")
+            h += /title/ [Symbol.replace](l, "Player")
+            l = /idname/g [Symbol.replace](itm, "Coords")
+            h += /title/ [Symbol.replace](l, "Glyphs")
+            l = /idname/g [Symbol.replace](itm, "Economy")
+            h += /title/ [Symbol.replace](l, "Economy")
+        } else {
+            h += l
+            l = /idname/g [Symbol.replace](itm, "Coords")
+            h += /title/ [Symbol.replace](l, "Coordinates")
+        }
 
         for (let f of obj.fields) {
             if (f.type !== "img") {
@@ -981,16 +1022,24 @@ NMSCE.prototype.displayList = function (entries) {
 
         for (let e of entries[obj.name.nameToId()]) {
             let l = /idname/ [Symbol.replace](row, e.id)
-            h += /wsize/ [Symbol.replace](l, "120px")
 
             if (searchwindow) {
+                l = /col-md-2 col-3/ [Symbol.replace](l, "col-3")
+                l = /col-md-12 col-11/ [Symbol.replace](l, "col-11")
+                h += /wsize/ [Symbol.replace](l, "240px")
+
+                l = /idname/g [Symbol.replace](itm, "Player")
+                h += /title/ [Symbol.replace](l, e._name)
+                l = /idname/g [Symbol.replace](itm, "Coords")
+                l = /border/ [Symbol.replace](l, "border glyph")
+                h += /title/ [Symbol.replace](l, addrToGlyph(e.addr, e["Planet-Index"]))
+                l = /idname/g [Symbol.replace](itm, "Economy")
+                h += /title/ [Symbol.replace](l, e.econ)
+            } else {
+                h += /wsize/ [Symbol.replace](l, "120px")
+
                 l = /idname/g [Symbol.replace](itm, "Coords")
                 h += /title/ [Symbol.replace](l, e.addr)
-
-            } else {
-                l = /idname/g [Symbol.replace](itm, "Coords")
-                l = /border/ [Symbol.replace](itm, "border glyph")
-                h += /title/ [Symbol.replace](l, addrToGlyph(e.addr, e.planet))
             }
 
             for (let f of obj.fields) {
@@ -1015,9 +1064,12 @@ NMSCE.prototype.displayList = function (entries) {
     $("#id-table").html(h)
     let loc = $("#id-table")
 
-    for (let obj of objectList)
+    for (let obj of objectList) {
+        if (typeof entries[obj.name.nameToId()] === "undefined")
+            continue
+
         for (let e of entries[obj.name.nameToId()]) {
-            let eloc = loc.find("#" + e.id + " #id-Photo")
+            let eloc = loc.find("#row-" + e.id)
             for (let f of obj.fields)
                 if (f.type === "img") {
                     let ref = bhs.fbstorage.ref().child(e[f.name])
@@ -1026,7 +1078,26 @@ NMSCE.prototype.displayList = function (entries) {
                     })
                 }
         }
+    }
 }
+
+// NMSCE.prototype.selectList = function (evt) {
+//     let end = glyphToAddr($(evt).find("#id-Coords").text())
+
+//     if (typeof (Storage) !== "undefined") {
+//         let settings = window.localStorage.getItem('darcsettings')
+//         settings = settings ? JSON.parse(settings) : {}
+//         settings["id-end"] = end
+//         window.localStorage.setItem('darcsettings', JSON.stringify(settings));
+//     }
+
+//     if (bhs.user.uid)
+//         bhs.updateUser({
+//             darcsettings: {
+//                 "id-end": end
+//             }
+//         })
+// }
 
 NMSCE.prototype.showSub = function (id) {
     let loc = $("#id-table")

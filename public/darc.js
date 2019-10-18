@@ -104,14 +104,8 @@ blackHoleSuns.prototype.setAddress = function (evt) {
     let addr = $(evt).val()
     if (addr !== "") {
         addr = reformatAddress(addr)
-        let err = bhs.validateAddress(addr)
-
-        if (err !== "")
-            bhs.status("ERROR: " + err)
-        else {
-            $(evt).val(addr)
-            bhs.saveDarcSettings(evt)
-        }
+        $(evt).val(addr)
+        bhs.saveDarcAddrSE()
     }
 }
 
