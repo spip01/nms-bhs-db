@@ -14,14 +14,18 @@ $(document).ready(() => {
     $("#bhsmenus").load("bhsmenus.html", () => {
         $("#login").hide()
 
+        let page = window.location.pathname.replace(/(.*)\//, "$1")
+        let loc = $("#navmenu").find("[href='" + page + "']")
+        loc.addClass("clr-blue border rounded")
+
         let gloc = $("[id='glyphbuttons']")
         addGlyphButtons(gloc, addGlyph)
     })
 
     if (typeof (Storage) !== "undefined") {
-        let start = window.localStorage.getItem('navstart');
-        let end = window.localStorage.getItem('navend');
-        let range = window.localStorage.getItem('navrange');
+        let start = window.localStorage.getItem('navstart')
+        let end = window.localStorage.getItem('navend')
+        let range = window.localStorage.getItem('navrange')
 
         let loc = $("#id-addrInput")
 
@@ -90,9 +94,9 @@ function dispAddr(evt) {
     }
 
     if (typeof(Storage) !== "undefined") {
-        window.localStorage.setItem('navstart', saddr);
-        window.localStorage.setItem('navend', eaddr);
-        window.localStorage.setItem('navrange', range);
+        window.localStorage.setItem('navstart', saddr)
+        window.localStorage.setItem('navend', eaddr)
+        window.localStorage.setItem('navrange', range)
     }
 }
 

@@ -26,13 +26,9 @@ function startUp() {
     bhs.initFirebase()
 
     $("#bhsmenus").load("bhsmenus.html", () => {
-        $("#login").click(() => {
-            bhs.logIn()
-        })
-
-        $("#logout").click(() => {
-            bhs.logOut()
-        })
+        let page = window.location.pathname.replace(/(.*)\//, "$1")
+        let loc = $("#navmenu").find("[href='" + page + "']")
+        loc.addClass("clr-blue border rounded")
     })
 
     $("body").tooltip({
@@ -214,7 +210,7 @@ blackHoleSuns.prototype.navLoggedout = function () {
 
 blackHoleSuns.prototype.updateUser = async function (user) {
     bhs.user = mergeObjects(bhs.user, user)
-    
+
     if (bhs.user.uid) {
         bhs.user = mergeObjects(bhs.user, user)
         let ref = bhs.getUsersColRef(bhs.user.uid)

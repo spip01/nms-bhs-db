@@ -11,13 +11,9 @@ $(document).ready(() => {
     startUp()
 
     $("#cemenus").load("cemenus.html", () => {
-        $("#login").click(() => {
-            bhs.logIn()
-        })
-
-        $("#logout").click(() => {
-            bhs.logOut()
-        })
+        let page = window.location.pathname.replace(/(.*)\//, "$1")
+        let loc = $("#navmenu").find("[href='" + page + "']")
+        loc.addClass("clr-blue border rounded")
     })
 
     nmsce = new NMSCE()

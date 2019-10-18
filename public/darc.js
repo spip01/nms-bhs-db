@@ -11,7 +11,7 @@ $(document).ready(() => {
     bhs.buildDarcMap()
 
     if (typeof (Storage) !== "undefined") {
-        let route = window.localStorage.getItem('darcroute');
+        let route = window.localStorage.getItem('darcroute')
 
         if (route) {
             bhs.route = []
@@ -149,7 +149,7 @@ blackHoleSuns.prototype.saveDarcSettings = function (evt) {
         user.darcSettings[id] = val
 
         if (typeof (Storage) !== "undefined" && !bhs.user.uid)
-            window.localStorage.setItem('darcsettings', JSON.stringify(user.darcSettings));
+            window.localStorage.setItem('darcsettings', JSON.stringify(user.darcSettings))
         else
             bhs.updateUser(user)
     }
@@ -542,7 +542,7 @@ function selectRoute(evt) {
     mapRoute(bhs.route[selected].route)
 
     if (typeof (Storage) !== "undefined")
-        window.localStorage.setItem('darcroute', JSON.stringify(bhs.route[selected].route));
+        window.localStorage.setItem('darcroute', JSON.stringify(bhs.route[selected].route))
 }
 
 blackHoleSuns.prototype.buildDarcMap = function () {
@@ -684,8 +684,8 @@ function mapRow(evt) {
     Plotly.react('plymap', data, changeMapLayout(true, start, end))
 
     if (typeof (Storage) !== "undefined") {
-        window.localStorage.setItem('navstart', start);
-        window.localStorage.setItem('navend', end);
+        window.localStorage.setItem('navstart', start)
+        window.localStorage.setItem('navend', end)
     }
 }
 

@@ -336,6 +336,11 @@ body {
     color: #ffffff;
 }
 
+.clr-blue {
+    color: #5dace0;
+    border-color: #5dace0;
+}
+
 .card-title {
     color: #008000;
 }

@@ -14,6 +14,10 @@ $(document).ready(() => {
     $("#bhsmenus").load("bhsmenus.html", () => {
         $("#login").hide()
         
+        let page = window.location.pathname.replace(/(.*)\//, "$1")
+        let loc = $("#navmenu").find("[href='" + page + "']")
+        loc.addClass("clr-blue border rounded")
+
         let gloc = $("[id='glyphbuttons']")
         addGlyphButtons(gloc, addGlyph)
     })

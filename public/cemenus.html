@@ -3,34 +3,32 @@
 </div>
 
 <div class="container-fluid">
-    <div class="row">
-        <a class="col-8x1 text-center h5 txt-def" href="cesearch.html">Search</a>
-        <a class="col-8x1 text-center h5 txt-def" href="nmsce.html">Input</a>
-        <a class="col-8x1 text-center h5 txt-def" href="darc.html">BHS DARC</a>
-        <a class="col-8x1 text-center h5 txt-def" href="nav.html">Star Nav</a>
-        <a class="col-8x1 text-center h5 txt-def" href="glyph.html">Glyph Converter</a>
+    <div id="navmenu" class="row h5">
+        <a class="col-8x1 text-center txt-def" href="cesearch.html">Search</a>
+        <a class="col-8x1 text-center txt-def" href="nmsce.html">Input</a>
+        <a class="col-8x1 text-center txt-def" href="darc.html">BHS DARC</a>
+        <a class="col-8x1 text-center txt-def" href="nav.html">Star Nav</a>
+        <a class="col-8x1 text-center txt-def" href="glyph.html">Glyph Converter</a>
 
         <div id="full-usermenu" class="container col-4">
-            <button id="login" type="button" class="text-center btn-def no-border h5">
+            <button id="login" type="button" class="text-center btn-def no-border h5" onclick="bhs.login()">
                 Login
             </button>
 
             <div id="usermenu" class="dropdown" style="display: none">
-                <button type="button" class="row text-center txt-def no-border dropdown-toggle h5"
+                <button type="button" class="row bkg-def txt-def text-center no-border dropdown-toggle"
                     data-toggle="dropdown">
                     <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
-                    <h5 id="username">
+                    <span id="username">
                         User
-                    </h5>
+                    </span>
                 </button>
 
                 <div class="dropdown-menu bkg-def text-center">
-                    <button id="logout" type="button" class="no-border text-center dropdown-item btn-def">
-                        <h5>Logout</h5>
-                    </button>
+                    <button id="logout" type="button" class="no-border text-center dropdown-item btn-def" onclick="bhs.logout()">Logout</button>
                     <button id="tooltip" type="button" class="no-border text-center dropdown-item btn-def"
                         onclick="bhs.toggleTips()">
-                        <h5>Toggle Tooltip Display</h5>
+                        Toggle Tooltip Display
                     </button>
                     <button id="admin" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
                         onclick="bhs.setAdmin()">
