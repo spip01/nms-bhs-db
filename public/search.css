@@ -1,19 +1,19 @@
 body {
     font-size: .75rem !important;
-    background-color: #000060 !important;
+    background-color: #060f3f !important;
 }
 
 .clr-def {
-    color: #000060;
+    color: #060f3f;
 }
 
 .bkg-def {
-    background-color: #000060;
+    background-color: #060f3f;
 }
 
 .txt-def {
     color: #ffee00;
-    background-color: #000060;
+    background-color: #060f3f;
 }
 
 .txt-inp-def {
@@ -21,7 +21,7 @@ body {
 }
 
 .btn-def {
-    background-color: #000060;
+    background-color: #060f3f;
     border-color: #ffee00;
     color: #ffee00;
 }

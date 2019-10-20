@@ -1,38 +1,40 @@
-<div class="text-center bkg-black">
-    <img src="nmsbhs_banner.jpg" alt="BHS Banner">
-</div>
-
 <div class="container-fluid">
-    <div id="navmenu" class="row text-center h5">
-        <a class="col-8x1 text-center txt-def" href="cesearch.html">Search</a>
-        <a class="col-8x1 text-center txt-def" href="nmsce.html">Input</a>
-        <a class="col-8x1 text-center txt-def" href="darc.html">BHS DARC</a>
-        <a class="col-8x1 text-center txt-def" href="nav.html">Star Nav</a>
-        <a class="col-8x1 text-center txt-def" href="glyph.html">Glyph Converter</a>
+    <div id="navmenu" class="row">
+        <img src="nmsce.png" class="col-2" alt="nmsce logo" style="width:40px; height:auto">
+        <div class="col-12">
+            <br><br>
+            <div class="row text-center h5">
+                <a class="col-8x1 text-center txt-def" href="cesearch.html">Search</a>
+                <a class="col-8x1 text-center txt-def" href="nmsce.html">Input</a>
+                <a class="col-8x1 text-center txt-def" href="darc.html">BHS DARC</a>
+                <a class="col-8x1 text-center txt-def" href="nav.html">Star Nav</a>
+                <a class="col-8x1 text-center txt-def" href="glyph.html">Glyph Converter</a>
 
-        <div id="full-usermenu" class="container col-4">
-            <button id="login" type="button" class="text-center btn-def no-border" onclick="bhs.login()">
-                Login
-            </button>
-
-            <div id="usermenu" class="dropdown" style="display: none">
-                <button type="button" class="row bkg-def txt-def text-center no-border dropdown-toggle"
-                    data-toggle="dropdown">
-                    <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
-                    <h6 id="username">User</h6>
-                </button>
-
-                <div class="dropdown-menu bkg-def text-center">
-                    <button id="logout" type="button" class="no-border text-center dropdown-item btn-def"
-                        onclick="bhs.logout()">Logout</button>
-                    <button id="tooltip" type="button" class="no-border text-center dropdown-item btn-def"
-                        onclick="bhs.toggleTips()">
-                        Toggle Tooltip Display
+                <div id="full-usermenu" class="container col-4">
+                    <button id="login" type="button" class="text-center btn-def no-border" onclick="bhs.login()">
+                        Login
                     </button>
-                    <button id="admin" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                        onclick="bhs.setAdmin()">
-                        Admin Edit
-                    </button>
+
+                    <div id="usermenu" class="dropdown" style="display: none">
+                        <button type="button" class="row bkg-def txt-def text-center no-border dropdown-toggle"
+                            data-toggle="dropdown">
+                            <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
+                            <h6 id="username">User</h6>
+                        </button>
+
+                        <div class="dropdown-menu bkg-def text-center">
+                            <button id="logout" type="button" class="no-border text-center dropdown-item btn-def"
+                                onclick="bhs.logout()">Logout</button>
+                            <button id="tooltip" type="button" class="no-border text-center dropdown-item btn-def"
+                                onclick="bhs.toggleTips()">
+                                Toggle Tooltip Display
+                            </button>
+                            <button id="admin" type="button"
+                                class="h5 no-border text-center dropdown-item btn-def hidden" onclick="bhs.setAdmin()">
+                                Admin Edit
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

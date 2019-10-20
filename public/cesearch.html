@@ -67,7 +67,7 @@
             Welcome to the No Man's Sky Coordinate Exchange search page. Login NOT required.
         </div>
 
-        <div class="card card-body pad-bottom bkg-def">
+        <div class="card card-body pad-bottom" style=" background-color: #d9dcec;">
             <div class="row">
                 <div class="col-md-7 col-14">
                     <div id="panels" class="card card-body">
@@ -182,6 +182,8 @@
                                     <div class="row">
                                         <button id="search" type="button"
                                             class="col-4 btn btn-def  btn-sm">Search</button>&nbsp;
+                                        <button id="clear" type="button"
+                                            class="col-4 btn btn-def  btn-sm">Reset</button>&nbsp;
                                     </div>
                                 </div>
                                 <div id="status" class="border col-7 text-danger scrollbar container-fluid"
@@ -211,6 +213,26 @@
     <div class="clr-creme text-right h7">
         <i class="fa fa-copyright"></i> 2019 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     </div>
+
+    <div id="modal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-def btn-sm" data-dismiss="modal"
+                        onclick="nmsce.newDARC(this)">DARC</button>
+                    <button type="button" class="btn btn-def btn-sm" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>

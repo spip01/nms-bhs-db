@@ -41,6 +41,11 @@ $(document).ready(() => {
     $("#search").click(() => {
         nmsce.search()
     })
+
+    $("#clear").click(() => {
+        nmsce.clearPanel("pnl-S1")
+        nmsce.clearPanel("typePanels")
+    })
 })
 
 function NMSCE() {
@@ -92,7 +97,9 @@ NMSCE.prototype.changeAddr = function (evt) {
         let pnl = $(evt).closest("[id|='pnl'")
 
         nmsce.dispAddr(pnl, addr, glyph)
-        bhs.getEntry(addr, nmsce.displaySystem)
+
+        if (!searchwindow)
+            bhs.getEntry(addr, nmsce.displaySystem)
     }
 }
 
@@ -103,7 +110,9 @@ NMSCE.prototype.changeGlyph = function (evt) {
         let pnl = $(evt).closest("[id|='pnl'")
 
         nmsce.dispAddr(pnl, addr, glyph)
-        bhs.getEntry(addr, nmsce.displaySystem)
+
+        if (!searchwindow)
+            bhs.getEntry(addr, nmsce.displaySystem)
     }
 }
 
@@ -144,11 +153,11 @@ NMSCE.prototype.displaySystem = function (entry) {
 NMSCE.prototype.clearPanel = function (d) {
     let pnl = $("#" + d)
 
-    pnl.find("input").each(() => {
+    pnl.find("input").each(function () {
         $(this).val("")
     })
 
-    pnl.find("[id|='menu']").each(() => {
+    pnl.find("[id|='menu']").each(function () {
         $(this).find("[id|='btn']").text("")
     })
 
@@ -176,15 +185,11 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
     entry.life = loc.find("#btn-Lifeform").text().stripNumber()
     entry.econ = loc.find("#btn-Economy").text().stripNumber()
 
-    let ok = true
+    let ok = bhs.validateEntry(entry, true) === ""
 
-    if (!searchwindow) {
-        ok = bhs.validateEntry(entry, true) === ""
-
-        if (ok && entry.econ === "") {
-            bhs.status("Error: Missing economy. Changes not saved.", 0)
-            ok = false
-        }
+    if (ok && entry.econ === "") {
+        bhs.status("Error: Missing economy. Changes not saved.", 0)
+        ok = false
     }
 
     if (ok) {
@@ -215,12 +220,12 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
                     case "menu":
                         entry[id] = $(loc).text()
                         break
-                    case "cklist":
+                    case "array":
                         if ($(loc).prop("checked")) {
                             let aid = $(r).prop("id").stripID()
                             if (typeof entry[aid] === "undefined")
-                                entry[aid] = []
-                            entry[aid].push(id)
+                                entry[aid] = {}
+                            entry[aid][id] = true
                         }
                         break
                     case "checkbox":
@@ -247,7 +252,7 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
                         data.type === "num" && entry[id] === -1 ||
                         data.type === "img" && entry[id] === "") {
 
-                        nmsce.status(id + " required. Entry not saved.", 0)
+                        bhs.status(id + " required. Entry not saved.", 0)
                         ok = false
                         break
                     }
@@ -261,8 +266,87 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
     return ok
 }
 
+NMSCE.prototype.extractSearch = async function (user) {
+    if (typeof user === "undefined")
+        user = bhs.user
+
+    let platform = user.platform
+    let galaxy = user.galaxy
+
+    let tab = $("#typeTabs .active").prop("id").stripID()
+    let pnl = $("#typePanels #pnl-" + tab)
+
+    let ref = bhs.fs.collection("nmsce/" + galaxy + "/" + tab)
+
+    let loc = $("#pnl-S1")
+    let addr = loc.find("#id-addr").val()
+    let sys = loc.find("#id-sys").val()
+    let reg = loc.find("#id-reg").val()
+    let life = loc.find("#btn-Lifeform").text().stripNumber()
+    let econ = loc.find("#btn-Economy").text().stripNumber()
+
+    if (user._name !== bhs.user._name) ref = ref.where("_name", "==", user._name)
+    if (addr) ref = ref.where("addr", "==", addr)
+    if (econ) ref = ref.where("econ", "==", econ)
+    if (life) ref = ref.where("life", "==", life)
+    if (sys) ref = ref.where("sys", "==", sys)
+    if (reg) ref = ref.where("life", "==", reg)
+
+    let list = pnl.find(":input")
+    for (let loc of list) {
+        if ($(loc).is(":visible")) {
+            let id = loc.id.stripID()
+
+            let r = $(loc).closest("[id|='row']")
+            let data = r.data()
+
+            if (typeof data === "undefined")
+                continue
+
+            let val = null
+
+            switch (data.type) {
+                case "num":
+                case "float":
+                case "string":
+                    val = $(loc).val()
+                    if (val) ref = ref.where(id, "==", val)
+                    break
+                case "menu":
+                    val = $(loc).text()
+                    if (val) ref = ref.where(id, "==", val)
+                    break
+                case "array":
+                    if ($(loc).prop("checked")) {
+                        let aid = $(r).prop("id").stripID()
+                        ref = ref.where(aid + "." + id, "==", true)
+                    }
+                    break
+                case "checkbox":
+                    if ($(loc).prop("checked"))
+                        ref = ref.where(id, "==", true)
+                    break
+            }
+        }
+    }
+
+    let snapshot = await ref.get()
+
+    let found = {}
+    found[tab] = []
+
+    for (let doc of snapshot.docs) {
+        found[tab].push(doc.data())
+    }
+
+    $("#id-table").empty()
+    nmsce.displayList(found)
+}
+
 NMSCE.prototype.save = async function () {
     $("#status").empty()
+
+    nmsce.saveText()
 
     if (bhs.saveUser())
         await nmsce.extractEntry(nmsce.updateEntry)
@@ -271,10 +355,10 @@ NMSCE.prototype.save = async function () {
 NMSCE.prototype.search = async function () {
     $("#status").empty()
     let user = bhs.extractUser()
-    await nmsce.extractEntry(nmsce.doSearch, user)
+    await nmsce.extractSearch(user)
 }
 
-NMSCE.prototype.status = function (str) {
+blackHoleSuns.prototype.status = function (str) {
     $("#status").append("<h6>" + str + "</h6>")
 }
 
@@ -347,14 +431,12 @@ NMSCE.prototype.buildTypePanels = function () {
             </div>
         </div>`
     const tImg = `
-        <div id="img-idname" class="col-14">
-            <div id="row-idname" data-type="img" data-req="ifreq" class="row">
-                <div class="col-md-3 col-2 txt-inp-def h6">title</div>
-                <input id="id-idname" type="file" class="col-8 form-control form-control-sm" 
-                    accept="image/*" name="files[]" onchange="nmsce.loadCanvasWithInputFile(this)">&nbsp
-            </div>
-            <br>
-      </div>`
+        <div id="row-idname" data-type="img" data-req="ifreq" class="row text-center">
+            <div class="col-md-4 col-3 txt-inp-def h6">title</div>
+            <input id="id-idname" type="file" class="col-10 form-control form-control-sm" 
+                accept="image/*" name="files[]" onchange="nmsce.loadScreenshot(this)">&nbsp
+        </div>
+        <br>`
 
     let tabs = $("#typeTabs")
     let pnl = $("#typePanels")
@@ -488,20 +570,7 @@ NMSCE.prototype.selectSublist = function (btn) {
         pnl.find("#slist-" + (t + "-" + sub[i].name).nameToId()).show()
 }
 
-NMSCE.prototype.doSearch = async function (entry) {
-    let ref = bhs.fs.collection("nmsce/" + entry.galaxy + "/" + entry.type)
-    let snapshot = await ref.get()
-
-    let list = {}
-    list[entry.type] = []
-
-    for (let doc of snapshot.docs) {
-        list[entry.type].push(doc.data())
-    }
-
-    nmsce.displayList(list)
-}
-
+let logocanvas = document.createElement('canvas')
 let imgcanvas = document.createElement('canvas')
 let txtcanvas = document.createElement('canvas')
 
@@ -520,32 +589,22 @@ const txtList = [{
 }, {
     name: "Galaxy"
 }, {
+    name: "Platform",
+    ttip: "Only necessary for bases."
+}, {
+    name: "Mode",
+    ttip: "Only necessary for bases."
+}, {
     name: "Text",
-    what: "inptxt",
+    what: "txt",
     ttip: "Uses 'Input Text' field below."
+    // }, {
+    //     name: "Logo",
+    //     what: "logo",
+    //     ttip: "Use a personal logo from your local machine."
 }]
 
-NMSCE.prototype.loadCanvasWithInputFile = function (evt) {
-    const cvs = `
-        <div id="img-idname" class="card card-body">
-            <div class="row">
-                <canvas id="id-canvas" class="border"></canvas>&nbsp;
-                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                    data-placement="top" title="You can position text by clicking and dragging.">
-                </i>
-            </div>
-            <br>
-            <div class="row">
-                <button onclick="nmsce.redditShare(this)"><img src="reddit.png" style="width:20px; height:20px" title="Share to reddit" alt="Share to reddit"></button>&nbsp;
-                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                    data-placement="bottom" title="Opens a new tab with reddit post. Select community, title & flair. Then post.">
-                </i>            
-            </div>
-            <br>
-
-            <div id="img-text" class="txt-inp-def h6 border-top"></div>
-        </div>`
-
+NMSCE.prototype.loadScreenshot = function (evt) {
     const hdr = `
         <div  class="row"> 
             <i class="fa fa-question-circle-o text-danger h6 col-4" data-toggle="tooltip" data-html="true"
@@ -568,11 +627,22 @@ NMSCE.prototype.loadCanvasWithInputFile = function (evt) {
             <div id="id-" class="col-5"></div>
         </div>`
 
-    const inptxt = `
+    const txt = `
         <br>
-        <div id="inp-inptxt" class="row"> 
+        <div id="inp-idname" class="row"> 
             <div class="col-3">Input Text</div>
             <input id="inp-Input-Text" class="col-10" type="text" onchange="nmsce.addText(this)">
+        </div>`
+
+    const logo = `
+        <br>
+        <div id="txt-idname" class="row"> 
+            <label class="col-4">
+                <input id="ck-idname" type="checkbox" onchange="nmsce.addText(this)">
+                titlettip&nbsp;
+            </label>
+            <input id="id-idname" type="file" class="col-9 form-control form-control-sm" 
+                accept="image/*" name="files[]" onchange="nmsce.loadLogo(this)">&nbsp
         </div>`
 
     const ttip = `&nbsp;
@@ -580,57 +650,65 @@ NMSCE.prototype.loadCanvasWithInputFile = function (evt) {
             data-placement="bottom" title="ttext">
         </i> `
 
-    let file = evt.files[0]
-    if (file.type.match('image.*')) {
-        let id = file.name.nameToId()
-        let h = /idname/g [Symbol.replace](cvs, id)
-        let img = $("#imgtable")
-        img.empty()
-        img.show()
-        img.append(h)
+    let img = $("#imgtable")
+    img.show()
 
-        h = hdr
-        for (let i of txtList) {
-            let l = /idname/g [Symbol.replace](itm, i.name.nameToId())
-            l = /title/ [Symbol.replace](l, i.name)
-
-            if (i.ttip) {
-                l = /ttip/ [Symbol.replace](l, ttip)
-                l = /ttip/ [Symbol.replace](l, i.ttip)
-            } else
-                l = /ttip/ [Symbol.replace](l, "")
-
-            h += l
-
-            h += i.what === "inptxt" ? inptxt : ""
+    let h = hdr
+    let l = ""
+    for (let i of txtList) {
+        switch (i.what) {
+            case "logo":
+                l = logo
+                break
+            case "txt":
+                l = itm + txt
+                break
+            default:
+                l = itm
+                break
         }
 
-        let loc = $("#img-text")
-        loc.empty()
-        loc.append(h)
+        l = /idname/g [Symbol.replace](l, i.name.nameToId())
+        l = /title/ [Symbol.replace](l, i.name)
 
-        let height = 0
-        let fnt = loc.find("[id|='txt']")
-        for (let loc of fnt) {
-            let id = $(loc).prop("id")
-            id = id.stripID().idToName()
-            let i = getIndex(txtList, "name", id)
-            if (typeof txtList[i].font === "undefined") {
-                bhs.buildMenu($(loc), "", fontList, nmsce.setFont, {
-                    nolabel: true
-                })
-                height = $(loc).height()
-            } else {
-                let lbl = $(loc).find("#id-")
-                lbl.text(txtList[i].label)
-                if (height > 0)
-                    lbl.height(height)
-            }
+        if (i.ttip) {
+            l = /ttip/ [Symbol.replace](l, ttip)
+            l = /ttip/ [Symbol.replace](l, i.ttip)
+        } else
+            l = /ttip/ [Symbol.replace](l, "")
+
+        h += l
+
+    }
+
+    let loc = $("#img-text")
+    loc.empty()
+    loc.append(h)
+
+    let height = 0
+    let fnt = loc.find("[id|='txt']")
+    for (let loc of fnt) {
+        let id = $(loc).prop("id")
+        id = id.stripID().idToName()
+        let i = getIndex(txtList, "name", id)
+        if (typeof txtList[i].font === "undefined") {
+            bhs.buildMenu($(loc), "", fontList, nmsce.setFont, {
+                nolabel: true
+            })
+            $(loc).find("#btn-").text("Arial")
+            height = $(loc).height()
+        } else {
+            let lbl = $(loc).find("#id-")
+            lbl.text(txtList[i].label)
+            if (height > 0)
+                lbl.height(height)
         }
+    }
 
-        texts = []
-        selectedText = -1
+    texts = []
+    selectedText = -1
 
+    if (typeof evt !== "undefined") {
         img = img.find("#id-canvas")
         img.mousedown(e => {
             nmsce.handleMouseDown(e)
@@ -650,8 +728,9 @@ NMSCE.prototype.loadCanvasWithInputFile = function (evt) {
         let canvas = img[0]
         let ctx = canvas.getContext("2d")
 
-        let width = $("#img-" + id).width()
+        let width = $("#id-img").width()
 
+        let file = evt.files[0]
         let reader = new FileReader()
         reader.onload = function () {
             let img = new Image()
@@ -662,8 +741,10 @@ NMSCE.prototype.loadCanvasWithInputFile = function (evt) {
 
                 let logo = new Image()
                 logo.onload = function () {
-                    imgctx.drawImage(logo, 5, canvas.height - 35, 30, 30)
+                    imgctx.drawImage(logo, canvas.width - 35, canvas.height - 35, 30, 30)
                     ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
+
+                    nmsce.showText()
                 }
 
                 logo.src = "/nmsce.png"
@@ -673,13 +754,116 @@ NMSCE.prototype.loadCanvasWithInputFile = function (evt) {
         }
 
         reader.readAsDataURL(file)
+    } else {
+        let canvas = document.getElementById("id-canvas")
+        let ctx = canvas.getContext("2d")
+        ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
     }
 }
+
+// NMSCE.prototype.loadLogo = function (evt) {
+//     let ctx = logocanvas.getContext("2d")
+//     let file = evt.files[0]
+
+//     if (file.type.match('image.*')) {
+//         let reader = new FileReader()
+//         reader.onload = function () {
+//             let img = new Image()
+//             img.onload = function () {
+//                 logocanvas.width = canvas.width
+//                 logocanvas.height = canvas.height
+//                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+//             }
+
+//             img.src = reader.result
+//         }
+
+//         reader.readAsDataURL(file)
+//     }
+// }
 
 var texts = []
 var selectedText = -1
 var startX = 0
 var startY = 0
+
+NMSCE.prototype.saveText = function () {
+    bhs.updateUser({
+        nmscetext: texts
+    })
+}
+
+NMSCE.prototype.clearText = function () {
+    nmsce.loadScreenshot()
+}
+
+NMSCE.prototype.showText = function () {
+    if (typeof bhs.user.nmscetext !== "undefined") {
+        texts = []
+        let list = Object.keys(bhs.user.nmscetext)
+
+        for (let i of list)
+            nmsce.addSavedText(bhs.user.nmscetext[i])
+
+        nmsce.drawText()
+
+        let canvas = document.getElementById("id-canvas")
+        let ctx = canvas.getContext("2d")
+        ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
+        ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
+    }
+}
+
+NMSCE.prototype.addSavedText = function (text) {
+    let loc = $("#img-text #txt-" + text.sub)
+    loc.find("#ck-" + text.sub).prop("checked", true)
+    loc.find("#size-" + text.sub).val(text.fontsize)
+    loc.find("#sel-" + text.sub).val(text.color)
+    loc.find("#btn-").text(text.font)
+
+    let sloc = $("#pnl-S1")
+    let id = $("#typeTabs .active").prop("id").stripID()
+    let pnl = $("#typePanels #pnl-" + id)
+
+    switch (text.sub) {
+        case "Player-Name":
+            text.text = bhs.user._name
+            break
+        case "System-Economy":
+            text.text = sloc.find("#btn-Economy").text().stripNumber()
+            break
+        case "System-Name":
+            text.text = sloc.find("#id-sys").val()
+            break
+        case "Coordinates":
+            text.text = sloc.find("#id-addrInput #id-addr").val()
+            break
+        case "Glyphs":
+            let loc = pnl.find("#id-Planet-Index")
+            let num = loc.length > 0 && loc.val() >= 0 ? loc.val() : 0
+            text.text = addrToGlyph(sloc.find("#id-addrInput #id-addr").val(), num)
+            break
+            // case "ck-objinfo":
+            //     text.text = "ship info"
+            //     text.color = $("#sel-objinfo").val()
+            //     break
+        case "Galaxy":
+            text.text = bhs.user.galaxy
+            break
+        case "Platform":
+            text.text = bhs.user.platform
+            break
+        case "Mode":
+            let mloc = pnl.find("#btn-Game-Mode")
+            text.text = mloc.length === 1 ? mloc.text().stripMarginWS() : ""
+            break
+        case "Text":
+            $("#inp-Input-Text").val(text.text)
+            break
+    }
+
+    texts.push(text)
+}
 
 NMSCE.prototype.addText = function (evt) {
     let canvas = document.getElementById("id-canvas")
@@ -688,13 +872,14 @@ NMSCE.prototype.addText = function (evt) {
     let ck = $(evt).prop("checked")
     let id = $(evt).prop("id")
     let sub = id.replace(/ck-(.*)/, "$1")
+    let itm = $(evt).closest("[id|='txt']")
 
     if (ck) {
         var text = {
-            font: "verdana",
-            fontsize: 16,
+            font: itm.find("#btn-").text(),
+            fontsize: parseInt(itm.find("#size-" + sub).val()),
             sub: sub,
-            color: $("#sel-" + sub).val(),
+            color: itm.find("#sel-" + sub).val(),
             x: 20,
             y: texts.length * 20 + 20,
         }
@@ -703,22 +888,21 @@ NMSCE.prototype.addText = function (evt) {
         let id = $("#typeTabs .active").prop("id").stripID()
         let pnl = $("#typePanels #pnl-" + id)
 
-        switch ($(evt).prop("id")) {
-            case "ck-Player-Name":
+        switch ($(evt).prop("id").stripID()) {
+            case "Player-Name":
                 text.text = bhs.user._name
                 break
-            case "ck-System-Economy":
+            case "System-Economy":
                 text.text = sloc.find("#btn-Economy").text().stripNumber()
                 break
-            case "ck-System-Name":
+            case "System-Name":
                 text.text = sloc.find("#id-sys").val()
                 break
-            case "ck-Coordinates":
+            case "Coordinates":
                 text.text = sloc.find("#id-addrInput #id-addr").val()
                 break
-            case "ck-Glyphs":
+            case "Glyphs":
                 text.font = "glyph"
-                text.size = 20
                 let loc = pnl.find("#id-Planet-Index")
                 let num = loc.length > 0 && loc.val() >= 0 ? loc.val() : 0
                 text.text = addrToGlyph(sloc.find("#id-addrInput #id-addr").val(), num)
@@ -727,10 +911,17 @@ NMSCE.prototype.addText = function (evt) {
                 //     text.text = "ship info"
                 //     text.color = $("#sel-objinfo").val()
                 //     break
-            case "ck-Galaxy":
+            case "Galaxy":
                 text.text = bhs.user.galaxy
                 break
-            case "ck-Text":
+            case "Platform":
+                text.text = bhs.user.platform
+                break
+            case "Mode":
+                let mloc = pnl.find("#btn-Game-Mode")
+                text.text = mloc.length === 1 ? mloc.text().stripMarginWS() : ""
+                break
+            case "Text":
                 text.text = $("#inp-Input-Text").val()
                 break
         }
@@ -740,6 +931,7 @@ NMSCE.prototype.addText = function (evt) {
         ctx.fillStyle = text.color
         text.width = ctx.measureText(text.text).width
         text.height = text.fontsize
+
         texts.push(text)
     } else {
         for (let i = 0; i < texts.length; ++i)
@@ -812,13 +1004,12 @@ NMSCE.prototype.drawText = function () {
     let ctx = txtcanvas.getContext("2d")
     ctx.clearRect(0, 0, txtcanvas.width, txtcanvas.height)
 
-    for (var i = 0; i < texts.length; i++) {
-        var text = texts[i]
-        if (text.sub === "glyph") {
+    for (let text of texts) {
+        if (text.font === "glyph") {
             ctx.fillStyle = text.color
-            ctx.fillRect(text.x - 2, text.y - text.height - 2, text.width + 4, text.height + 4)
+            ctx.fillRect(text.x - 2, text.y - text.height, text.width + 4, text.height + 4)
             ctx.fillStyle = "#000000"
-            ctx.fillRect(text.x - 1, text.y - text.height - 1, text.width + 2, text.height + 2)
+            ctx.fillRect(text.x - 1, text.y - text.height + 1, text.width + 2, text.height + 2)
         }
 
         ctx.font = text.fontsize + "px " + text.font
@@ -920,9 +1111,9 @@ NMSCE.prototype.updateEntry = async function (entry) {
     await ref.set(entry, {
         merge: true
     }).then(() => {
-        nmsce.status(entry.addr + " saved.")
+        bhs.status(entry.addr + " saved.")
     }).catch(err => {
-        nmsce.status("ERROR: " + err.code)
+        bhs.status("ERROR: " + err.code)
         console.log(err)
     })
 }
@@ -953,10 +1144,10 @@ NMSCE.prototype.getEntries = async function (user, displayFcn, singleDispFcn) {
 
 NMSCE.prototype.displayList = function (entries) {
     const card = `
-        <div class="card h5">
+        <div class="container-flex h5">
             <div id="ttl-idname" class="card-header bkg-def txt-def" onclick="nmsce.showSub('#sub-idname')">
                 <div class="row">
-                    <div class="col-3">title</div>
+                    <div id="id-idname" class="col-3">title</div>
                     <div class="col-3">Total: total</div>
                 </div>
             </div>
@@ -1041,12 +1232,34 @@ NMSCE.prototype.displayList = function (entries) {
             for (let f of obj.fields) {
                 if (f.type !== "img") {
                     let l = /idname/g [Symbol.replace](itm, f.name.nameToId())
-                    h += /title/ [Symbol.replace](l, e[f.name.nameToId()])
+                    if (typeof e[f.name.nameToId()] !== "undefined") {
+                        if (f.type === "array") {
+                            let items = Object.keys(e[f.name.nameToId()])
+
+                            for (let i of items)
+                                t += i + " "
+
+                            h += /title/ [Symbol.replace](l, t)
+                        } else
+                            h += /title/ [Symbol.replace](l, e[f.name.nameToId()])
+                    } else
+                        h += /title/ [Symbol.replace](l, "")
 
                     if (typeof f.sublist !== "undefined")
                         for (let s of f.sublist) {
                             let l = /idname/g [Symbol.replace](itm, s.name.nameToId())
-                            h += /title/ [Symbol.replace](l, e[s.name.nameToId()])
+                            if (typeof e[s.name.nameToId()] !== "undefined") {
+                                if (s.type === "array") {
+                                    let items = Object.keys(e[s.name.nameToId()])
+                                    let t = ""
+                                    for (let i of items)
+                                        t += i + " "
+
+                                    h += /title/ [Symbol.replace](l, t)
+                                } else
+                                    h += /title/ [Symbol.replace](l, e[s.name.nameToId()])
+                            } else
+                                h += /title/ [Symbol.replace](l, "")
                         }
                 }
             }
@@ -1077,28 +1290,61 @@ NMSCE.prototype.displayList = function (entries) {
     }
 }
 
-// NMSCE.prototype.selectList = function (evt) {
-//     let end = glyphToAddr($(evt).find("#id-Coords").text())
-
-//     if (typeof (Storage) !== "undefined") {
-//         let settings = window.localStorage.getItem('darcsettings')
-//         settings = settings ? JSON.parse(settings) : {}
-//         settings["id-end"] = end
-//         window.localStorage.setItem('darcsettings', JSON.stringify(settings));
-//     }
-
-//     if (bhs.user.uid)
-//         bhs.updateUser({
-//             darcsettings: {
-//                 "id-end": end
-//             }
-//         })
-// }
-
 NMSCE.prototype.showSub = function (id) {
     let loc = $("#id-table")
     loc.find("[id|='sub']").hide()
     loc.find(id).show()
+}
+
+NMSCE.prototype.selectList = function (evt) {
+    if (searchwindow) {
+        nmsce.buildModal(evt)
+
+        let loc = $('#modal')
+        loc.modal("show")
+
+        let width = loc.width()
+
+        let src = $(evt).find("#img-pic")
+
+        loc.find("#img-pic").css("width", width + "px")
+        loc.find("#img-pic").attr("src", src.attr("src"))
+    }
+}
+
+NMSCE.prototype.buildModal = function (evt) {
+    const row = `  
+        <div id="id-Photo" class="row">
+            <img id="img-pic" height="auto" width="wsize" />
+        </div>
+        <div class="row">`
+    const itm = `   <div id="id-idname" class="col-7">tname: title</div>`
+    const end = `</div>`
+
+    let loc = $(evt).closest("[id|='sub']")
+    let title = loc.prop("id").stripID().idToName()
+
+    loc = $("#modal")
+    loc.find(".modal-title").text(title)
+
+    loc = loc.find(".modal-body")
+
+    let h = row
+
+    let items = $(evt).find("[id|='id']")
+    for (let i of items) {
+        let id = $(i).prop("id").stripID()
+        if (id !== "Photo") {
+            let t = $(i).text()
+            if (t) {
+                let l = /idname/ [Symbol.replace](itm, id)
+                l = /tname/ [Symbol.replace](l, id.idToName())
+                h += /title/ [Symbol.replace](l, t)
+            }
+        }
+    }
+
+    loc.html(h + end)
 }
 
 const shipList = [{

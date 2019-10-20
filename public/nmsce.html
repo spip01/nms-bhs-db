@@ -178,7 +178,6 @@
                             </nav>
                             <div class="card-body">
                                 <div class="tab-content" id="typePanels"></div>
-                                <div id="imgtable" class="row hidden"></div>
                             </div>
                         </div>
                         <br>
@@ -188,24 +187,64 @@
                                 <div class="col-7">
                                     <div class="row">
                                         <button id="save" type="button"
-                                            class="col-4 btn  btn-sm btn-def">Save</button>&nbsp;
+                                            class="col-4 btn btn-sm btn-def">Save</button>&nbsp;
                                         <button id="delete" type="button" class="col-4 btn btn-sm btn-def disabled"
                                             disabled>Delete</button>&nbsp;
                                         <button id="cancel" type="button"
                                             class="col-4 btn btn-def  btn-sm">Cancel</button>&nbsp;
                                     </div>
+                                    <br>
+                                    <div class="row">
+                                        <div class="text-danger h6">
+                                            <span class="h5">*</span> - Required Entry&nbsp;&nbsp;&nbsp;&nbsp;
+                                            <i class="fa fa-question-circle-o text-danger h6"></i> - Tool Tip
+                                        </div>
+                                    </div>
                                 </div>
                                 <div id="status" class="border col-7 text-danger scrollbar container-fluid"
-                                    style="overflow-y: scroll; height: 40px"></div>
+                                    style="overflow-y: scroll; height: 50px"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="text-danger h6">
-                <span class="h5">*</span> - Required Entry&nbsp;&nbsp;&nbsp;&nbsp;
-                <i class="fa fa-question-circle-o text-danger h6"></i> - Tool Tip
+        </div>
+
+        <div id="imgtable" class="card card-body hidden">
+            <div class="row">
+                <div class="col-md-7 col-14">
+                    <div id="id-img" class="row">
+                        <canvas id="id-canvas" class="border"></canvas>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="col-7">
+                            <button onclick="nmsce.redditShare(this)"><img src="reddit.png"
+                                    style="width:20px; height:20px" title="Share to reddit"
+                                    alt="Share to reddit"></button>&nbsp;
+                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom"
+                                title="Opens a new tab with reddit post. Select community, title & flair. Then post.">
+                            </i>
+                        </div>
+                        <div class="col-7 text-right">
+                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                data-placement="top" title="You can position text by clicking and dragging.">
+                            </i>
+                        </div>
+                    </div>
+                </div>
+                <br>
+
+                <div class="col-md-7 col-14">
+                    <div clss="row">
+                        <div id="img-text" class="txt-inp-def h6 border-top"></div>
+                    </div>
+                    <div clss="row">
+                        <button class="btn btn-sm btn-def col-2" onclick="nmsce.clearText()">Reset</button>
+                    </div>
+                </div>
             </div>
         </div>
         <br>
