@@ -199,11 +199,6 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
 
     let ok = bhs.validateEntry(entry, true) === ""
 
-    if (ok && entry.econ === "") {
-        bhs.status("Error: Missing economy. Changes not saved.", 0)
-        ok = false
-    }
-
     if (ok) {
         entry.xyzs = addressToXYZ(entry.addr)
 

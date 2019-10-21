@@ -931,7 +931,7 @@ blackHoleSuns.prototype.validateEntry = function (entry, nobh) {
         ok = false
     }
 
-    let fnmsce = window.location.pathname == "/nmsce.html"||window.location.pathname == "/cesearch.html"
+    let fnmsce = window.location.pathname == "/nmsce.html" || window.location.pathname == "/cesearch.html"
 
     if (ok && !entry.reg && !fnmsce) {
         error += "Missing region name. "
@@ -940,6 +940,11 @@ blackHoleSuns.prototype.validateEntry = function (entry, nobh) {
 
     if (ok && (entry.reg.includes("<") || entry.reg.includes(">"))) {
         error += "Invalid region name '" + entry.reg + "'. "
+        ok = false
+    }
+
+    if (ok && !entry.econ && fnmsce) {
+        err += "Missing economy."
         ok = false
     }
 
