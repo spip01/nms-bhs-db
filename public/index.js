@@ -354,7 +354,9 @@ blackHoleSuns.prototype.dispAddr = function (pnl, addr, glyph) {
     loc.find("#id-glyph").text(glyph)
     loc.find("#id-hex").text(glyph)
 
-    bhs.drawSingle({xyzs:addressToXYZ(addr)})
+    bhs.drawSingle({
+        xyzs: addressToXYZ(addr)
+    })
 }
 
 blackHoleSuns.prototype.searchRegion = function (evt) {
@@ -523,8 +525,10 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
         entry.uid = bhs.user.uid
         entry.platform = bhs.user.platform
         entry.galaxy = bhs.user.galaxy
-        entry.version = "beyond" // typeof bhs.user.version !== "undefined" && bhs.user.version ? bhs.user.version : "beyond"
     }
+
+    entry.version = "beyond"
+    entry.page = "bhs"
 
     entry.addr = loc.find("#id-addr").val()
     entry.sys = loc.find("#id-sys").val()
@@ -578,26 +582,19 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
             if (bhs.contest)
                 entry.contest = bhs.contest._name
 
-            delete entry.sharepoi
-            delete entry.owned
-            delete entry.basename
-
-            ok = bhs.updateEntry(entry)
-
             if (hasbase) {
-                entry._name = bhs.user._name
-                entry.org = bhs.user.org
-                entry.uid = bhs.user.uid
-                entry.platform = bhs.user.platform
-                entry.galaxy = bhs.user.galaxy
-                entry.version = "beyond" // typeof bhs.user.version !== "undefined" && bhs.user.version ? bhs.user.version : "beyond"
-
                 entry.basename = loc.find("#id-basename").val()
                 entry.owned = loc.find("#btn-Owned").text().stripNumber()
                 entry.owned = entry.owned !== "" ? entry.owned : "mine"
                 entry.sharepoi = loc.find("#ck-sharepoi").prop("checked")
                 ok = bhs.updateBase(entry)
             }
+
+            delete entry.sharepoi
+            delete entry.owned
+            delete entry.basename
+
+            ok = bhs.updateEntry(entry)
         }
     }
 

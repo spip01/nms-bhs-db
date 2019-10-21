@@ -169,14 +169,25 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
 
     let entry = {}
 
-    if (nmsce.last !== {})
+    if (nmsce.last !== {}) {
         entry = mergeObjects(entry, nmsce.last)
 
-    entry._name = user._name
-    entry.org = user.org
-    entry.uid = user.uid
-    entry.platform = user.platform
-    entry.galaxy = user.galaxy
+        let addr = loc.find("#id-addr").val()
+        if (nmsce.last.addr != addr) {
+            ok = bhs.deleteEntry(nmsce.last)
+            bhs.status("change address " + nmsce.last.addr)
+        }
+    }
+
+    if (!nmsce.last || nmsce.last.uid == bhs.user.uid) {
+        entry._name = user._name
+        entry.org = user.org
+        entry.uid = user.uid
+        entry.platform = user.platform
+        entry.galaxy = user.galaxy
+    }
+
+    entry.version = "beyond"
     entry.page = "nmsce"
 
     let loc = $("#pnl-S1")
