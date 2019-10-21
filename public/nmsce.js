@@ -85,6 +85,7 @@ NMSCE.prototype.addGlyph = function (evt) {
     let loc = $(evt).closest("#id-glyphInput").find("#id-glyph")
     let a = loc.val() + $(evt).text().trim().slice(0, 1)
     loc.val(a)
+
     if (a.length === 12)
         nmsce.changeAddr(loc)
 }
@@ -92,21 +93,16 @@ NMSCE.prototype.addGlyph = function (evt) {
 NMSCE.prototype.changeAddr = function (evt) {
     let addr = $(evt).val()
     if (addr !== "") {
+        if (addr.length === 12) {
+            let p = addr.slice(0, 1)
+            let tab = $("[role='tabpanel']")
+
+            for (let l of tab)
+                $(l).find("#id-Planet-Index").val(p)
+        }
+
         addr = reformatAddress(addr)
         let glyph = addrToGlyph(addr)
-        let pnl = $(evt).closest("[id|='pnl'")
-
-        nmsce.dispAddr(pnl, addr, glyph)
-
-        if (!searchwindow)
-            bhs.getEntry(addr, nmsce.displaySystem)
-    }
-}
-
-NMSCE.prototype.changeGlyph = function (evt) {
-    let glyph = $(evt).val().toUpperCase()
-    if (glyph !== "") {
-        let addr = reformatAddress(glyph)
         let pnl = $(evt).closest("[id|='pnl'")
 
         nmsce.dispAddr(pnl, addr, glyph)
@@ -172,11 +168,16 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
         user = bhs.user
 
     let entry = {}
+
+    if (nmsce.last !== {})
+        entry = mergeObjects(entry, nmsce.last)
+
     entry._name = user._name
     entry.org = user.org
     entry.uid = user.uid
     entry.platform = user.platform
     entry.galaxy = user.galaxy
+    entry.page = "nmsce"
 
     let loc = $("#pnl-S1")
     entry.addr = loc.find("#id-addr").val()
@@ -195,7 +196,7 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
     if (ok) {
         entry.xyzs = addressToXYZ(entry.addr)
 
-        //bhs.updateEntry(entry)
+        bhs.updateEntry(entry)
 
         let tab = $("#typeTabs .active").prop("id").stripID()
         let pnl = $("#typePanels #pnl-" + tab)
@@ -232,7 +233,9 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
                         entry[id] = $(loc).prop("checked")
                         break
                     case "img":
-                        if (!searchwindow) {
+                        if (!searchwindow && (entry.replaceImg || typeof entry[id] === "undefined")) {
+                            delete entry.replaceImg
+
                             let canvas = $("#id-canvas")[0]
                             if (typeof canvas !== "undefined") {
                                 if (typeof entry[id] === "undefined")
@@ -264,6 +267,52 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
     }
 
     return ok
+}
+
+NMSCE.prototype.displaySingle = async function (entry) {
+    nmsce.last = entry
+
+    let tloc = $("#tab-" + entry.type.nameToId())
+    tloc.click()
+
+    let img = $("#imgtable")
+    img.hide()
+
+    let loc = $("#pnl-S1")
+    loc.find("#id-addr").val(entry.addr)
+    loc.find("#id-sys").val(entry.sys)
+    loc.find("#id-reg").val(entry.reg)
+    loc.find("#btn-Lifeform").text(entry.life)
+    loc.find("#btn-Economy").text(entry.econ)
+
+    let pnl = $("#typePanels #pnl-" + entry.type)
+
+    let list = pnl.find(":input")
+    for (let loc of list) {
+        let id = loc.id.stripID()
+        let r = $(loc).closest("[id|='row']")
+        let rid = r.prop("id").stripID()
+        let data = r.data()
+
+        switch (data.type) {
+            case "num":
+            case "float":
+            case "string":
+                $(loc).val(entry[id])
+                break
+            case "menu":
+                $(loc).text(entry[id])
+                break
+            case "array":
+                $(loc).prop("checked", typeof entry[rid] !== "undefined" && entry[rid][id] ? true : false)
+                break
+            case "checkbox":
+                $(loc).prop("checked", entry[id] ? true : false)
+                break
+            case "img":
+                break
+        }
+    }
 }
 
 NMSCE.prototype.extractSearch = async function (user) {
@@ -649,6 +698,9 @@ NMSCE.prototype.loadScreenshot = function (evt) {
         <i class="fa fa-question-circle-o text-danger h6 col-4" data-toggle="tooltip" data-html="true"
             data-placement="bottom" title="ttext">
         </i> `
+
+    if (nmsce.last !== {})
+        nmsce.last.replaceImg = true
 
     let img = $("#imgtable")
     img.show()
@@ -1309,6 +1361,13 @@ NMSCE.prototype.selectList = function (evt) {
 
         loc.find("#img-pic").css("width", width + "px")
         loc.find("#img-pic").attr("src", src.attr("src"))
+    } else {
+        let type = $(evt).closest("[id|='sub']").prop("id").stripID()
+        let id = $(evt).prop("id").stripID()
+        let i = getIndex(nmsce.entries[type], "id", id)
+        let e = nmsce.entries[type][i]
+
+        nmsce.displaySingle(e)
     }
 }
 
@@ -1319,6 +1378,7 @@ NMSCE.prototype.buildModal = function (evt) {
         </div>
         <div class="row">`
     const itm = `   <div id="id-idname" class="col-7">tname: title</div>`
+    const glyph = ` <div id="id-idname" class="col-7">tname: <span id="coords" class="glyph">title</span></div>`
     const end = `</div>`
 
     let loc = $(evt).closest("[id|='sub']")
@@ -1337,7 +1397,7 @@ NMSCE.prototype.buildModal = function (evt) {
         if (id !== "Photo") {
             let t = $(i).text()
             if (t) {
-                let l = /idname/ [Symbol.replace](itm, id)
+                let l = /idname/ [Symbol.replace](id === "Coords" ? glyph : itm, id)
                 l = /tname/ [Symbol.replace](l, id.idToName())
                 h += /title/ [Symbol.replace](l, t)
             }
@@ -1345,6 +1405,20 @@ NMSCE.prototype.buildModal = function (evt) {
     }
 
     loc.html(h + end)
+}
+
+NMSCE.prototype.newDARC = function (evt) {
+    let addr = $(".modal-body #coords").text()
+
+    if (typeof (Storage) !== "undefined")
+        window.localStorage.setItem('nmsceaddr', addr)
+
+    var win = window.open('darc.html', '_blank');
+    if (win) {
+        win.focus();
+    } else {
+        alert('Please allow popups for this website');
+    }
 }
 
 const shipList = [{

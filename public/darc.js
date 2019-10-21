@@ -170,7 +170,7 @@ blackHoleSuns.prototype.saveDarcAddrSE = function () {
 }
 
 blackHoleSuns.prototype.updateDarcSettings = function () {
-    if (typeof bhs.user.darcSettings === "undefined") {
+    if (typeof (Storage) !== "undefined" && typeof bhs.user.darcSettings === "undefined") {
         let settings = window.localStorage.getItem('darcsettings')
 
         if (settings)
@@ -184,6 +184,13 @@ blackHoleSuns.prototype.updateDarcSettings = function () {
         $("#id-maxJumps").val(typeof bhs.user.darcSettings.maxJumps !== "undefined" ? bhs.user.darcSettings.maxJumps : 20)
         $("#id-start").val(typeof bhs.user.darcSettings.start !== "undefined" ? bhs.user.darcSettings.start : "")
         $("#id-end").val(typeof bhs.user.darcSettings.end !== "undefined" ? bhs.user.darcSettings.end : "")
+    }
+
+    let nmsce = null
+    if (typeof (Storage) !== "undefined") {
+        nmsce = window.localStorage.getItem('nmsceaddr')
+        $("#id-end").val(nmsce ? glyphToAddr(nmsce) : "")
+        window.localStorage.removeItem('nmsceaddr')
     }
 }
 

@@ -196,8 +196,9 @@
                                     <br>
                                     <div class="row">
                                         <div class="text-danger h6">
-                                            <span class="h5">*</span> - Required Entry&nbsp;&nbsp;&nbsp;&nbsp;
-                                            <i class="fa fa-question-circle-o text-danger h6"></i> - Tool Tip
+                                            <span class="h5">*</span>&nbsp;Required Entry,&nbsp;
+                                            <i class="fa fa-question-circle-o text-danger h6"></i>&nbsp;
+                                            <span id="ttipmsg">Tool Tip</span>
                                         </div>
                                     </div>
                                 </div>
@@ -252,7 +253,12 @@
         <div class="card pad-bottom">
             <div class="card-header bkg-def txt-def">
                 <div class="row">
-                    <div class="col-4 h3"> Entry List</div>
+                    <div class="col-4 h3"> Entry List&nbsp;
+                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom"
+                            title="Click on a heading to open that list. Click on an entry to select it for editing.">
+                        </i>
+                    </div>
                     <div id="id-galaxy" class="col-4 h4"></div>
                     <div id="id-platform" class="col-2 h4"></div>
                 </div>

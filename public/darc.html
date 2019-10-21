@@ -61,8 +61,9 @@
     <div id="bhsmenus"></div>
 
     <div id="jssite" class="container-fluid pad-bottom hidden">
-        <div id="loggedout" class="row txt-def">&nbsp;&nbsp;&nbsp;&nbsp;Login is only required for using saved bases.  If you aren't 
-            logged in then your input and last selected route are saved to local browser storage.<br>
+        <div id="loggedout" class="row txt-def">&nbsp;&nbsp;&nbsp;&nbsp;Login is only required for 
+            using saved bases. If you aren't logged in then your input and last selected route are 
+            saved to local browser storage.<br>
         </div>
 
         <div class="row">
@@ -103,7 +104,8 @@
                                     A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
                                 </i>
                             </div>
-                            <input id="id-start" class="rounded col-md-5 col-6" placeholder="0000:0000:0000:0000" onchange="bhs.setAddress(this)">
+                            <input id="id-start" class="rounded col-md-5 col-6" placeholder="0000:0000:0000:0000"
+                                onchange="bhs.setAddress(this)">
                         </div>
                         <div class="row">
                             <div class="col-md-4 col-5 h6 txt-inp-def">Ending Coordinates&nbsp;</div>
@@ -162,8 +164,9 @@
                     <br>
 
                     <div class="text-danger h6">
-                        <span class="h5">*</span> - Required Entry&nbsp;&nbsp;&nbsp;&nbsp;
-                        <i class="fa fa-question-circle-o text-danger h6"></i> - Tool Tip
+                        <span class="h5">*</span>&nbsp;Required Entry,&nbsp;
+                        <i class="fa fa-question-circle-o text-danger h6"></i>&nbsp;
+                        <span id="ttipmsg">Tool Tip</span>
                     </div>
                 </div>
                 <br>

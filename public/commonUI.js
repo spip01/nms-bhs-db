@@ -140,10 +140,13 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
         $("[id='ck-glyphs']").prop("checked", false)
     }
 
-    if (typeof bhs.user.inputSettings !== "undefined" && bhs.user.inputSettings.tips)
+    if (typeof bhs.user.inputSettings !== "undefined" && bhs.user.inputSettings.tips) {
         $("[data-toggle='tooltip']").show()
-    else
+        $("#ttipmsg").text("Tool Tip")
+    } else {
         $("[data-toggle='tooltip']").hide()
+        $("#ttipmsg").text("Tool Tip (disabled)")
+    }
 }
 
 blackHoleSuns.prototype.buildUserPanel = async function () {
