@@ -18,7 +18,7 @@ $(document).ready(() => {
 
     nmsce = new NMSCE()
 
-    nmsce.last = {}
+    nmsce.last = null
 
     bhs.buildUserPanel()
 
@@ -35,7 +35,12 @@ $(document).ready(() => {
     })
 
     $("#cancel").click(() => {
-        nmsce.displaySingle(nmsce.last)
+        if (nmsce.last)
+            nmsce.displaySingle(nmsce.last)
+        else {
+            nmsce.clearPanel("pnl-S1")
+            nmsce.clearPanel("typePanels")
+        }
     })
 
     $("#search").click(() => {
@@ -157,7 +162,7 @@ NMSCE.prototype.clearPanel = function (d) {
         $(this).find("[id|='btn']").text("")
     })
 
-    nmsce.last = {}
+    nmsce.last = null
 
     $("#delete").addClass("disabled")
     $("#delete").prop("disabled", true)
@@ -169,7 +174,7 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
 
     let entry = {}
 
-    if (nmsce.last !== {}) {
+    if (nmsce.last) {
         entry = mergeObjects(entry, nmsce.last)
 
         let addr = loc.find("#id-addr").val()
@@ -276,8 +281,6 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
 }
 
 NMSCE.prototype.displaySingle = async function (entry) {
-    nmsce.last = entry
-
     let tloc = $("#tab-" + entry.type.nameToId())
     tloc.click()
 
@@ -705,7 +708,7 @@ NMSCE.prototype.loadScreenshot = function (evt) {
             data-placement="bottom" title="ttext">
         </i> `
 
-    if (nmsce.last !== {})
+    if (nmsce.last)
         nmsce.last.replaceImg = true
 
     let img = $("#imgtable")
@@ -1373,6 +1376,7 @@ NMSCE.prototype.selectList = function (evt) {
         let i = getIndex(nmsce.entries[type], "id", id)
         let e = nmsce.entries[type][i]
 
+        nmsce.last = e
         nmsce.displaySingle(e)
     }
 }
@@ -1541,6 +1545,30 @@ const sentinelList = [{
 }, {
     name: "Aggressive"
 }]
+
+const baseList = [{
+    name: "Race Track"
+},{
+    name: "Maze"
+},{
+    name: "Low Orbit"
+},{
+    name: "Under Water"
+},{
+    name: "Large"
+},{
+    name: "Civ Capital"
+},{
+    name: "Civ Hub"
+},]
+
+const faunaList = [{
+    name: "Diplo"
+},{
+    name: "Huge"
+},{
+    name: "Cute"
+},]
 
 const resList = [{
     name: "Ammonia",
@@ -2422,9 +2450,14 @@ const objectList = [{
         name: "Name",
         type: "string",
     }, {
+        name: "Type",
+        type: "menu",
+        list: faunaList,
+        required: true,
+    },  {
         name: "Height",
         type: "float",
-        range: 10.0,
+        range: 15.0,
         required: true,
     }, {
         name: "Description",
@@ -2505,6 +2538,11 @@ const objectList = [{
         required: true,
         ttip: "Bases are only visible by players using the same game mode.",
         search: true,
+    }, {
+        name: "Type",
+        type: "menu",
+        list: baseList,
+        required: true,
     }, {
         name: "Description",
         type: "long string",
