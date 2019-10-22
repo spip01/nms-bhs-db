@@ -362,6 +362,9 @@ blackHoleSuns.prototype.cancel = function (evt) {
     pnl.find("#btn-delete").prop("disabled", true)
 }
 
-blackHoleSuns.prototype.statusOut = function (pnl, str) {
+blackHoleSuns.prototype.statusOut = function (pnl, str, clear) {
+    if (clear)
+        pnl.find("#status").empty()
+
     pnl.find("#status").prepend("<h6>" + str + "</h6>")
 }

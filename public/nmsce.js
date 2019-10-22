@@ -355,15 +355,16 @@ NMSCE.prototype.extractSearch = async function (user) {
         if ($(loc).is(":visible")) {
             let id = loc.id.stripID()
 
-            let r = $(loc).closest("[id|='row']")
-            let data = r.data()
+            let rloc = $(loc).closest("[id|='row']")
+            let rdata = rloc.data()
+            let sloc = rloc.find("#sck-" + id)
 
-            if (typeof data === "undefined")
+            if (typeof rdata === "undefined")
                 continue
 
             let val = null
 
-            switch (data.type) {
+            switch (rdata.type) {
                 case "num":
                 case "float":
                 case "string":
@@ -375,14 +376,14 @@ NMSCE.prototype.extractSearch = async function (user) {
                     if (val) ref = ref.where(id, "==", val)
                     break
                 case "array":
-                    if ($(loc).prop("checked")) {
-                        let aid = $(r).prop("id").stripID()
-                        ref = ref.where(aid + "." + id, "==", true)
+                    if (sloc.prop("checked")) {
+                        let aid = $(rloc).prop("id").stripID()
+                        ref = ref.where(aid + "." + id, "==", $(loc).prop("checked"))
                     }
                     break
                 case "checkbox":
-                    if ($(loc).prop("checked"))
-                        ref = ref.where(id, "==", true)
+                    if (sloc.prop("checked"))
+                        ref = ref.where(id, "==", $(loc).prop("checked"))
                     break
             }
         }
@@ -390,15 +391,20 @@ NMSCE.prototype.extractSearch = async function (user) {
 
     let snapshot = await ref.get()
 
-    let found = {}
-    found[tab] = []
+    if (snapshot.empty)
+        bhs.status("Nothing Found.", true)
+    else {
+        let found = {}
+        found[tab] = []
 
-    for (let doc of snapshot.docs) {
-        found[tab].push(doc.data())
+        bhs.status("Found "+snapshot.size+" items.", true)
+
+        for (let doc of snapshot.docs)
+            found[tab].push(doc.data())
+
+        $("#id-table").empty()
+        nmsce.displayList(found)
     }
-
-    $("#id-table").empty()
-    nmsce.displayList(found)
 }
 
 NMSCE.prototype.save = async function () {
@@ -416,7 +422,10 @@ NMSCE.prototype.search = async function () {
     await nmsce.extractSearch(user)
 }
 
-blackHoleSuns.prototype.status = function (str) {
+blackHoleSuns.prototype.status = function (str, clear) {
+    if (clear)
+        $("#status").empty()
+
     $("#status").append("<h6>" + str + "</h6>")
 }
 
@@ -426,7 +435,8 @@ NMSCE.prototype.buildTypePanels = function () {
         <div class="tab-pane fade show active" id="pnl-idname" role="tabpanel" aria-labelledby="tab-idname">
             <div id="itm-idname" class="row"></div>
         </div>`
-    const tText = `
+    const tReq = `&nbsp;<font style="color:red">*</font>`
+    const tText = `&nbsp;
         <div data-toggle="tooltip" data-html="true" data-placement="bottom" title="ttext">
             <i class="fa fa-question-circle-o text-danger h6"></i>
         </div>`
@@ -435,28 +445,28 @@ NMSCE.prototype.buildTypePanels = function () {
     const tString = `
         <div class="col-sm-7 col-14">
             <div id="row-idname" data-type="string" data-req="ifreq" class="row">
-                <div class="col-md-6 col-5 h6 txt-inp-def">title</div>
+                <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
                 <input id="id-idname" class="rounded col-md-7 col-9">
             </div>
         </div>`
     const tLongString = `
         <div class="col-14">
             <div id="row-idname" data-type="string" data-req="ifreq" class="row">
-                <div class="col-md-4 col-3 h6 txt-inp-def">title</div>
+                <div class="col-md-4 col-3 h6 txt-inp-def">titlettip&nbsp;</div>
                 <input id="id-idname" class="rounded col-md-9 col-10">
             </div>
         </div>`
     const tNumber = `
         <div class="col-sm-7 col-14">
             <div id="row-idname" data-type="num" data-req="ifreq" class="row">
-                <div class="col-md-6 col-5 h6 txt-inp-def">title</div>
+                <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
                 <input id="id-idname" type="number" class="rounded col-md-5 col-6" min=0 max=range value=0>
             </div>
         </div>`
     const tFloat = `
         <div class="col-sm-7 col-14">
             <div id="row-idname" data-type="float" data-req="ifreq" class="row">
-                <div class="col-md-6 col-5 h6 txt-inp-def">title</div>
+                <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
                 <input id="id-idname" type="number" class="rounded col-md-5 col-6" step=0.1 min=0 max=range value=-1>
             </div>
         </div>`
@@ -467,18 +477,28 @@ NMSCE.prototype.buildTypePanels = function () {
             </div>
         </div>`
     const tArray = `
-        <div id="slist-idname" class="col-14 border-top border-bottom hidden">
+        <div id="slist-idname" class="container border-top border-bottom hidden">
             <div id="row-idname" data-type="array" data-req="ifreq" class="row"></div>
         </div>`
     const tArrayItm = `
         <label id="id-idname" class="col-sm-3 col-4 h6 txt-inp-def">
-            title&nbsp
-            <input id="ck-idname" type="checkbox">
+            <div class="row">
+                titlettip&nbsp;
+                <label id="search-idname" class="h6 txt-inp-def hidden">
+                    <font style="color:blue">*</font>&nbsp;
+                    <input id="sck-idname" data-type="search" type="checkbox">
+                </label>          
+                <input id="ck-idname" type="checkbox">
+            </div>
         </label>`
     const tCkItem = `
         <div id="row-idname" data-type="checkbox" data-req="false" class=col-sm-7 col-14">
-            <label id="id-idname" class="h6 txt-inp-def">
-                title&nbsp
+            <label id="id-idname" class="h6 txt-inp-def row">
+                titlettip&nbsp
+                <label id="search-idname" class="h6 txt-inp-def hidden">
+                    <font style="color:blue">*</font>&nbsp;
+                    <input id="sck-idname" type="checkbox">
+                </label>  
                 <input id="ck-idname" type="checkbox">
             </label>
         </div>`
@@ -490,7 +510,7 @@ NMSCE.prototype.buildTypePanels = function () {
         </div>`
     const tImg = `
         <div id="row-idname" data-type="img" data-req="ifreq" class="row text-center">
-            <div class="col-md-4 col-3 txt-inp-def h6">title</div>
+            <div class="col-md-4 col-3 txt-inp-def h6">titlettip&nbsp;</div>
             <input id="id-idname" type="file" class="col-10 form-control form-control-sm" 
                 accept="image/*" name="files[]" onchange="nmsce.loadScreenshot(this)">&nbsp
         </div>
@@ -499,14 +519,22 @@ NMSCE.prototype.buildTypePanels = function () {
     let tabs = $("#typeTabs")
     let pnl = $("#typePanels")
 
-    let appenditem = (itm, add, title, id, req) => {
-        let l = /title/ [Symbol.replace](add, title + (req ? `&nbsp;<font style="color:red">*</font>&nbsp;` : ""))
+    let appenditem = (itm, add, title, id, ttip, req) => {
+        let l = /title/ [Symbol.replace](add, title + (req ? tReq : ""))
+
+        if (ttip) {
+            l = /ttip/ [Symbol.replace](l, tText)
+            l = /ttext/ [Symbol.replace](l, ttip)
+        } else
+            l = /ttip/ [Symbol.replace](l, "")
+
         l = /idname/g [Symbol.replace](l, id)
         l = /ifreq/ [Symbol.replace](l, req ? true : false)
+
         itm.append(l)
     }
 
-    objectList.forEach(obj => {
+    for (let obj of objectList) {
         let id = obj.name.nameToId()
         let h = /idname/g [Symbol.replace](nav, id)
         h = /title/ [Symbol.replace](h, obj.name)
@@ -539,33 +567,29 @@ NMSCE.prototype.buildTypePanels = function () {
                         if (f.sublist) {
                             for (let t of f.list) {
                                 for (let j = 0; j < f.sublist.length; ++j) {
-                                    let slist = t[f.sublist[j].sub] ? t[f.sublist[j].sub] : f.sublist[j].list
+                                    let flist = f.sublist[j]
+                                    let slist = t[flist.sub] ? t[flist.sub] : flist.list
                                     let sub
 
-                                    if (searchwindow && !f.sublist[j].search)
+                                    if (searchwindow && !flist.search)
                                         continue
 
                                     if (slist) {
-                                        if (f.sublist[j].type == "menu") {
-                                            l = /idname/ [Symbol.replace](tSubList, (t.name + "-" + f.sublist[j].name).nameToId())
-                                            appenditem(itm, l, "", f.sublist[j].name.nameToId())
+                                        if (flist.type == "menu") {
+                                            l = /idname/ [Symbol.replace](tSubList, (t.name + "-" + flist.name).nameToId())
+                                            appenditem(itm, l, "", flist.name.nameToId())
 
-                                            sub = itm.find("#slist-" + (t.name + "-" + f.sublist[j].name).nameToId())
-                                            bhs.buildMenu(sub, f.sublist[j].name, slist, f)
-                                        } else if (f.sublist[j].type == "array") {
-                                            l = /idname/ [Symbol.replace](tArray, (t.name + "-" + f.sublist[j].name).nameToId())
-                                            appenditem(itm, l, "", f.sublist[j].name.nameToId())
+                                            sub = itm.find("#slist-" + (t.name + "-" + flist.name).nameToId())
+                                            bhs.buildMenu(sub, flist.name, slist, f)
+                                        } else if (flist.type == "array") {
+                                            l = /idname/ [Symbol.replace](tArray, (t.name + "-" + flist.name).nameToId())
+                                            appenditem(itm, l, "", flist.name.nameToId(), flist.ttip)
 
-                                            sub = itm.find("#slist-" + (t.name + "-" + f.sublist[j].name).nameToId())
-                                            sub = sub.find("#row-" + f.sublist[j].name.nameToId())
+                                            sub = itm.find("#slist-" + (t.name + "-" + flist.name).nameToId())
+                                            sub = sub.find("#row-" + flist.name.nameToId())
 
-                                            for (let m = 0; m < slist.length; ++m)
-                                                appenditem(sub, tArrayItm, slist[m].name, slist[m].name.nameToId())
-                                        }
-
-                                        if (f.sublist[j].ttip) {
-                                            l = /ttext/ [Symbol.replace](tText, t[f.sublist[j].ttip])
-                                            sub.find("#row-" + f.sublist[j].name.nameToId()).append(l)
+                                            for (let m of slist)
+                                                appenditem(sub, tArrayItm, m.name, m.name.nameToId())
                                         }
                                     }
                                 }
@@ -575,36 +599,34 @@ NMSCE.prototype.buildTypePanels = function () {
 
                     case "number":
                         l = /range/ [Symbol.replace](tNumber, f.range)
-                        appenditem(itm, l, f.name, id, f.required)
+                        appenditem(itm, l, f.name, id, f.ttip, f.required)
                         break
                     case "float":
                         l = /range/ [Symbol.replace](tFloat, f.range)
-                        appenditem(itm, l, f.name, id, f.required)
+                        appenditem(itm, l, f.name, id, f.ttip, f.required)
                         break
                     case "img":
-                        appenditem(itm, tImg, f.name, id, f.required)
+                        appenditem(itm, tImg, f.name, id, f.ttip, f.required)
                         break
                     case "checkbox":
-                        appenditem(itm, tCkItem, f.name, id, f.required)
+                        appenditem(itm, tCkItem, f.name, id, f.ttip, f.required)
                         break
                     case "string":
-                        appenditem(itm, tString, f.name, id, f.required)
+                        appenditem(itm, tString, f.name, id, f.ttip, f.required)
                         break
                     case "long string":
-                        appenditem(itm, tLongString, f.name, id, f.required)
+                        appenditem(itm, tLongString, f.name, id, f.ttip, f.required)
                         break
                     case "blank":
                         itm.append(tBlank)
                         break
                 }
-
-                if (f.ttip) {
-                    l = /ttext/ [Symbol.replace](tText, f.ttip)
-                    itm.find("#row-" + id).append(l)
-                }
             }
         }
-    })
+    }
+
+    if (searchwindow)
+        $("[id|='search']").show()
 }
 
 NMSCE.prototype.selectType = function (btn) {
@@ -655,7 +677,7 @@ const txtList = [{
 }, {
     name: "Text",
     what: "txt",
-    ttip: "Uses 'Input Text' field below."
+    ttip: "Uses 'Input Text' field below. Add a '\\n' to seperate multiple lines."
     // }, {
     //     name: "Logo",
     //     what: "logo",
@@ -734,7 +756,7 @@ NMSCE.prototype.loadScreenshot = function (evt) {
 
         if (i.ttip) {
             l = /ttip/ [Symbol.replace](l, ttip)
-            l = /ttip/ [Symbol.replace](l, i.ttip)
+            l = /ttext/ [Symbol.replace](l, i.ttip)
         } else
             l = /ttip/ [Symbol.replace](l, "")
 
@@ -1075,7 +1097,17 @@ NMSCE.prototype.drawText = function () {
 
         ctx.font = text.fontsize + "px " + text.font
         ctx.fillStyle = text.color
-        ctx.fillText(text.text, text.x, text.y)
+
+        if (text.text.includes("\\n")) {
+            let l = text.text.split("\\n")
+
+            for (let i = 0; i < l.length; ++i) {
+                ctx.fillText(l[i], text.x, text.y + i * (text.fontsize * 1.15))
+            }
+        } else {
+            console.log(text.x, text.y)
+            ctx.fillText(text.text, text.x, text.y)
+        }
     }
 }
 
@@ -1086,8 +1118,8 @@ NMSCE.prototype.redditShare = function (evt) {
         let name = "temp/" + uuidv4() + ".jpg"
         bhs.fbstorage.ref().child(name).put(blob).then(() => {
             bhs.fbstorage.ref().child(name).getDownloadURL().then(url => {
-                let u = 'https://reddit.com/' + url
-                window.open(u)
+                let u = "http://www.reddit.com/submit?url=" + encodeURI(url)
+                window.open(u);
             })
         })
 
@@ -1548,27 +1580,117 @@ const sentinelList = [{
 
 const baseList = [{
     name: "Race Track"
-},{
+}, {
     name: "Maze"
-},{
+}, {
+    name: "Farm"
+}, {
+    name: "Maze"
+}, {
     name: "Low Orbit"
-},{
+}, {
     name: "Under Water"
-},{
+}, {
     name: "Large"
-},{
+}, {
     name: "Civ Capital"
-},{
+}, {
     name: "Civ Hub"
-},]
+}, ]
 
 const faunaList = [{
-    name: "Diplo"
-},{
-    name: "Huge"
-},{
-    name: "Cute"
-},]
+    name: "Anastomus - Striders"
+}, {
+    name: "Anomalous"
+}, {
+    name: "Bos - Spiders"
+}, {
+    name: "Conokinis - Beetle"
+}, {
+    name: "Felidae - Cat"
+}, {
+    name: "Felihex - Hexapodal cat"
+}, {
+    name: "Hexungulatis - Hexapodal cow"
+}, {
+    name: "Lok - Blobs, rare"
+}, {
+    name: "Mogara - Grunts, bipedal species"
+}, {
+    name: "Procavya - Rodents"
+}, {
+    name: "Rangifae - Diplos"
+}, {
+    name: "Reococcyx - Bipedal antelopes"
+}, {
+    name: "Tetraceris - Antelopes"
+}, {
+    name: "Theroma - Triceratops"
+}, {
+    name: "Tyranocae - Tyrannosaurus rex-like"
+}, {
+    name: "Ungulatis - Cow"
+}, {
+    name: "Ictaloris - Fish"
+}, {
+    name: "Prionace - Sharks"
+}, {
+    name: "Prionacefda - Swimming cows"
+}, {
+    name: "Unknown - Swimming rodents"
+}, {
+    name: "Agnelis - Birds"
+}, {
+    name: "Cycromys - Flying Lizard"
+}, {
+    name: "Oxyacta - Wraiths / flying snake"
+}, {
+    name: "Rhopalocera - Butterflies"
+}]
+
+const faunaProductKilled = [{
+    name: "Diplo Chunks"
+}, {
+    name: "Feline Liver"
+}, {
+    name: "Fiendish Roe"
+}, {
+    name: "Leg Meat"
+}, {
+    name: "Leopard-Fruit"
+}, {
+    name: "Meaty Chunks"
+}, {
+    name: "Meaty Wings"
+}, {
+    name: "Offal Sac"
+}, {
+    name: "Raw Steak"
+}, {
+    name: "Regis Grease"
+}, {
+    name: "Salty Fingers"
+}, {
+    name: "Scaly Meat"
+}, {
+    name: "Strider Sausage"
+}]
+
+const faunaProductTamed = [{
+    name: "Crab 'Apple'"
+}, {
+    name: "Creature Egg"
+}, {
+    name: "Fresh Milk"
+}, {
+    name: "Giant Egg"
+}, {
+    name: "Tall Eggs"
+}, {
+    name: "Warm Proto-Milk"
+}, {
+    name: "Wild Milk"
+}]
 
 const resList = [{
     name: "Ammonia",
@@ -2241,7 +2363,7 @@ const weatherList = [{
 }]
 
 const freighterList = [{
-    name: "Sentenel"
+    name: "Sentinel"
 }, {
     name: "Venator"
 }]
@@ -2304,6 +2426,7 @@ const objectList = [{
     }, {
         name: "Seed",
         type: "string",
+        ttip: "Found in save file. Can be used to reskin ship.",
     }, {
         name: "Photo",
         type: "img",
@@ -2348,9 +2471,10 @@ const objectList = [{
         type: "menu",
         list: colorList,
         search: true,
-        // },{
-        //     name: "Seed",
-        //     type: "string",
+    }, {
+        name: "Seed",
+        type: "string",
+        ttip: "Found in save file. Can be used to reskin ship.",
     }, {
         name: "Photo",
         type: "img",
@@ -2382,6 +2506,7 @@ const objectList = [{
     }, {
         name: "Space Station",
         type: "checkbox",
+        search: true,
     }, {
         name: "",
         type: "blank",
@@ -2413,37 +2538,38 @@ const objectList = [{
         type: "menu",
         list: colorList,
         search: true,
-        // },{
-        //     name: "Seed",
-        //     type: "string",
+    }, {
+        name: "Seed",
+        type: "string",
+        ttip: "Found in save file. Can be used to reskin MT.",
     }, {
         name: "Photo",
         type: "img",
         required: true,
     }]
-}, {
-    name: "Flora",
-    fields: [{
-        name: "Name",
-        type: "string",
-    }, {
-        name: "Description",
-        type: "long string",
-        required: true,
-        search: true,
-    }, {
-        name: "Planet Name",
-        type: "string",
-    }, {
-        name: "Planet Index",
-        type: "number",
-        range: 15,
-        ttip: planetNumTip,
-    }, {
-        name: "Photo",
-        type: "img",
-        required: true,
-    }]
+    // }, {
+    // name: "Flora",
+    // fields: [{
+    //     name: "Name",
+    //     type: "string",
+    // }, {
+    //     name: "Description",
+    //     type: "long string",
+    //     required: true,
+    //     search: true,
+    // }, {
+    //     name: "Planet Name",
+    //     type: "string",
+    // }, {
+    //     name: "Planet Index",
+    //     type: "number",
+    //     range: 15,
+    //     ttip: planetNumTip,
+    // }, {
+    //     name: "Photo",
+    //     type: "img",
+    //     required: true,
+    // }]
 }, {
     name: "Fauna",
     fields: [{
@@ -2453,16 +2579,29 @@ const objectList = [{
         name: "Type",
         type: "menu",
         list: faunaList,
+        search: true,
         required: true,
-    },  {
+    }, {
+        name: "Predator",
+        type: "checkbox",
+        search: true,
+    }, {
+        name: "Killed Product",
+        type: "menu",
+        list: faunaProductKilled,
+        search: true,
+    }, {
+        name: "Tamed Product",
+        type: "menu",
+        list: faunaProductTamed,
+        search: true,
+    }, {
         name: "Height",
         type: "float",
         range: 15.0,
-        required: true,
     }, {
         name: "Description",
         type: "long string",
-        required: true,
         search: true,
     }, {
         name: "Planet Name",
@@ -2480,8 +2619,9 @@ const objectList = [{
 }, {
     name: "Planet",
     fields: [{
-        name: "Name",
+        name: "Name", // menu on search page??? like poi
         type: "string",
+        search: true,
     }, {
         name: "Planet Index",
         range: 15,
@@ -2494,9 +2634,9 @@ const objectList = [{
         required: true,
         search: true,
     }, {
-        name: "Weather",
-        type: "menu",
-        list: weatherList,
+        name: "Extreme Weather",
+        type: "checkbox",
+        ttip: "Any deadly weather pattern.",
         search: true,
     }, {
         name: "Sentinels",
@@ -2505,6 +2645,10 @@ const objectList = [{
         ttip: `Low - Sentinels only guard secure facilities<br>
             High - Patrols are present throughout the planet (orange icon)<br>
             Aggressive - Patrols are present throughout the planet and Sentinels will attack on sight (red icon)<br>`,
+        search: true,
+    }, {
+        name: "Predators",
+        type: "checkbox",
         search: true,
     }, {
         name: "Notes",
@@ -2517,7 +2661,7 @@ const objectList = [{
 }, {
     name: "Base",
     fields: [{
-        name: "Name",
+        name: "Base Name",
         type: "string",
         required: true,
         search: true,
@@ -2539,10 +2683,23 @@ const objectList = [{
         ttip: "Bases are only visible by players using the same game mode.",
         search: true,
     }, {
+        name: "Latitude",
+        type: "string",
+        ttip: "Helpful finding bases on crowded planets.",
+    }, {
+        name: "Longitude",
+        type: "string",
+    }, {
         name: "Type",
         type: "menu",
         list: baseList,
+        search: true,
         required: true,
+    }, {
+        name: "POI",
+        type: "checkbox",
+        ttip: "Point of interest.",
+        search: true,
     }, {
         name: "Description",
         type: "long string",

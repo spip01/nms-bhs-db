@@ -644,6 +644,9 @@ blackHoleSuns.prototype.displayCalc = function () {
     }
 }
 
-blackHoleSuns.prototype.status = function (str) {
+blackHoleSuns.prototype.status = function (str, clear) {
+    if (clear)
+        $("#status").empty()
+        
     $("#status").prepend("<h6>" + str + "</h6>")
 }

@@ -142,10 +142,10 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
 
     if (typeof bhs.user.inputSettings !== "undefined" && bhs.user.inputSettings.tips) {
         $("[data-toggle='tooltip']").show()
-        $("#ttipmsg").text("Tool Tip")
+        $("#ttipmsg").css("text-decoration","none")
     } else {
         $("[data-toggle='tooltip']").hide()
-        $("#ttipmsg").text("Tool Tip (disabled)")
+        $("#ttipmsg").css("text-decoration","line-through")
     }
 }
 

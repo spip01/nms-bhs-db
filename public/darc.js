@@ -81,7 +81,6 @@ blackHoleSuns.prototype.setGP = function () {
         })
         .catch(err => {
             console.log(err)
-            bhs.status("ERROR: " + (typeof err.code !== "undefined" ? err.code : JSON.stringify(err)))
         })
 }
 
@@ -246,8 +245,7 @@ blackHoleSuns.prototype.showOrg = function (name) {
 
 blackHoleSuns.prototype.calcroute = async function (proximity) {
     let now = new Date().getTime()
-    $("#status").empty()
-    bhs.status("starting")
+    bhs.status("starting", true)
     let loc = $("#resItems")
     loc.empty()
 
@@ -868,6 +866,9 @@ function makedata(out, size, color, linecolor) {
     return line
 }
 
-blackHoleSuns.prototype.status = function (str) {
+blackHoleSuns.prototype.status = function (str, clear) {
+    if (clear)
+        $("#status").empty()
+        
     $("#status").append("<h6>" + str + "</h6>")
 }

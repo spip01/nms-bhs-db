@@ -161,7 +161,6 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
     let file = f.files[0]
     let reader = new FileReader()
 
-    $("#status").empty()
     $("#filestatus").empty()
     bhs.setAdmin(false)
 
