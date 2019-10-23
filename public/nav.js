@@ -307,7 +307,8 @@ function mapPoints(plot, saddr, eaddr, axis1, axis2) {
     pushentry(out, exyz, eaddr)
     data.push(makedata(out, 5, "#ff0000", null, axis1, axis2))
 
-    let layout = changeMapLayout()
+    tglZoom = true
+    let layout = changeMapLayout(tglZoom)
 
     if (axis1) {
         layout.width = 200
@@ -315,7 +316,6 @@ function mapPoints(plot, saddr, eaddr, axis1, axis2) {
     }
 
     Plotly.newPlot(plot, data, layout)
-    tglZoom = false
 }
 
 function pushentry(out, xyz, label) {
