@@ -110,13 +110,13 @@
                 <div id="id-glyphInput" class="card card-body pad-bottom hidden">
                     <div id="w-start">
                         <div class="row">
-                            <div class="col-lg-3 col-md-4 col-sm-3 col-4 h6 txt-inp-def">Start&nbsp;
+                            <div class="col-lg-3 col-md-4 col-sm-3 col-3 h6 txt-inp-def">Start&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
                                                 digit hex, 0-9 a-f, value can be entered directly in the field.">
                                 </i>
                             </div>
-                            <input id="id-glyph" class="rounded col-lg-6 col-md-10 col-sm-6 col-14 glyph"
+                            <input id="id-glyph" class="rounded col-md-8 col-sm-6 col-11 glyph h5"
                                 onchange="dispGlyph(this)">
                             <label class="h6 txt-inp-def col-lg-4 col-md-14 col-sm-4 col-14">
                                 <input id="ck-glyphs" type="checkbox" onchange="setGlyphInput(this)">
@@ -127,34 +127,25 @@
                             </label>
                         </div>
 
-                        <div id="glyphbuttons" class="row"></div>
-
                         <div class="row">
                             <div class="col-md-3 col-4 h6 txt-inp-def">Coords</div>
-                            <div class="col-md-10 col-8">
-                                <div class="row">
-                                    <div id="id-addr" class="col-md-9 col-12 txt-inp-def"></div>
-                                </div>
-                            </div>
+                            <div id="id-addr" class="col-10 txt-inp-def"></div>
                         </div>
+
+                        <div id="glyphbuttons" class="row"></div>
                     </div>
 
                     <div id="w-end">
                         <div class="row">
-                            <div class="col-md-3 col-4 h6 txt-inp-def">End</div>
-                            <input id="id-glyph" class="rounded col-md-6 col-14 glyph" onchange="dispGlyph(this)">
+                            <div class="col-lg-3 col-md-4 col-sm-3 col-3 h6 txt-inp-def">End</div>
+                            <input id="id-glyph" class="rounded col-md-8 col-sm-6 col-11 glyph h5" onchange="dispGlyph(this)">
                         </div>
-
-                        <div id="glyphbuttons" class="row"> </div>
-
                         <div class="row">
                             <div class="col-md-3 col-4 h6 txt-inp-def">Coords</div>
-                            <div class="col-md-10 col-8">
-                                <div class="row">
-                                    <div id="id-addr" class="col-md-9 col-12 txt-inp-def"></div>
-                                </div>
-                            </div>
+                            <div id="id-addr" class="col-10 txt-inp-def"></div>
                         </div>
+
+                        <div id="glyphbuttons" class="row"></div>
                     </div>
                 </div>
                 <br>
@@ -205,8 +196,9 @@
                                 <br>
                                 <div class="col-sm-14 col-5">
                                     <div class="row">
-                                        <button id="btn-switch" type="button" class="btn-def btn btn-sm col-lg-8 col-sm-10 col-14"
-                                            onclick="zoom()">Toggle Zoom</button>
+                                        <button id="btn-switch" type="button"
+                                            class="btn-def btn btn-sm col-lg-8 col-sm-10 col-14" onclick="zoom()">Toggle
+                                            Zoom</button>
                                     </div>
                                 </div>
                             </div>
