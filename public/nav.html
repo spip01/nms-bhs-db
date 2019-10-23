@@ -45,179 +45,179 @@
     <script src="nav.js"></script>
 
     <link rel="stylesheet" type="text/css" href="local.css">
+    <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
 </head>
 
 <body>
     <div id="bhsmenus"></div>
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
-        <div id="loggedout" class="row txt-def">&nbsp;&nbsp;&nbsp;&nbsp;All input is saved to local browser storage.<br></div>
-                    
-        <div class="card card-body pad-bottom bkg-def border clr-white">
-            <div class="row">
-                <div class="col-lg-7 col-12">
-                    <div class="card card-body pad-bottom">
-                        <div id="id-addrInput" class="card card-body pad-bottom">
-                            <div id="w-start">
-                                <div class="row">
-                                    <div class="col-md-3 col-5 h6 txt-inp-def">
-                                        Start Coordinates&nbsp;
-                                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
-                                            data-html="true" data-placement="bottom"
-                                            title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
+        <div id="loggedout" class="row txt-def">&nbsp;&nbsp;&nbsp;&nbsp;All input is saved to local browser storage.<br>
+        </div>
+
+        <div class="row bkg-def">
+            <div class="col-md-7 col-14">
+                <div id="id-addrInput" class="card card-body">
+                    <div id="w-start">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-2 col-5 h6 txt-inp-def">
+                                Start&nbsp;
+                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom"
+                                    title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
                                          A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
-                                        </i>
-                                    </div>
-                                    <input id="id-addr" class="rounded col-md-4 col-7" placeholder="0000:0000:0000:0000"
-                                        onchange="dispAddr(this)">
-                                    <div class="col-5">
-                                        <label class="h6 txt-inp-def">
-                                            <input id="ck-glyphs" type="checkbox" onchange="setGlyphInput(this)">
-                                            Input Glyphs&nbsp;
-                                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
-                                                data-html="true" data-placement="bottom"
-                                                title="Display glyph input buttons and show glyphs in input field.">
-                                            </i>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-2 col-4 h6 text-right txt-inp-def">Glyphs</div>
-                                    <div class="col-md-10 col-8">
-                                        <div class="row">
-                                            <div id="id-glyph" class="col-md-9 col-12 h3 txt-inp-def glyph"></div>
-                                            <div id="id-hex" class="col-md-3 col-12 txt-inp-def"></div>
-                                        </div>
-                                    </div>
-                                </div>
+                                </i>
                             </div>
-                            <div id="w-end">
-                                <div class="row">
-                                    <div class="col-md-3 col-5 h6 txt-inp-def">End Coordinates</div>
-                                    <input id="id-addr" class="rounded col-md-4 col-7" placeholder="0000:0000:0000:0000"
-                                        onchange="dispAddr(this)">
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-2 col-4 h6 text-right txt-inp-def">Glyphs</div>
-                                    <div class="col-md-10 col-8">
-                                        <div class="row">
-                                            <div id="id-glyph" class="col-md-9 col-12 h3 txt-inp-def glyph"></div>
-                                            <div id="id-hex" class="col-md-3 col-12 txt-inp-def"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <input id="id-addr" class="rounded col-md-5 col-sm-4 col-9"
+                                placeholder="0000:0000:0000:0000" onchange="dispAddr(this)">
+                            <label class="h6 col-md-5 col-sm-5 col-14 txt-inp-def">
+                                <input id="ck-glyphs" type="checkbox" onchange="setGlyphInput(this)">
+                                Input Glyphs&nbsp;
+                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom"
+                                    title="Display glyph input buttons and show glyphs in input field.">
+                                </i>
+                            </label>
                         </div>
-
-                        <div id="id-glyphInput" class="card card-body pad-bottom hidden">
-                            <div id="w-start">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-2 col-4 h6 txt-inp-def">Glyphs</div>
+                            <div class="col-md-11 col-sm-12 col-10">
                                 <div class="row">
-                                    <div class="col-md-3 col-4 h6 txt-inp-def">Start Glyph&nbsp;
-                                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
-                                            data-html="true" data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
-                                                digit hex, 0-9 a-f, value can be entered directly in the field.">
-                                        </i>
-                                    </div>
-                                    <input id="id-glyph" class="rounded col-md-6 col-10 h4 glyph"
-                                        onchange="dispGlyph(this)">
-                                    <div class="col-3">
-                                        <label class="h6 txt-inp-def">
-                                            <input id="ck-glyphs" type="checkbox" onchange="setGlyphInput(this)">
-                                            Input Glyphs&nbsp;
-                                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
-                                                data-html="true" data-placement="bottom"
-                                                title="Hide glyph input buttons.">
-                                            </i>
-                                        </label>
-                                    </div>
+                                    <div id="id-glyph" class="col-md-14 col-sm-8 col-14 h3 txt-inp-def glyph"></div>
+                                    <div id="id-hex" class="col-md-14 col-sm-4 col-14 txt-inp-def"></div>
                                 </div>
-
-                                <div id="glyphbuttons" class="row"> </div>
-
-                                <div class="row">
-                                    <div class="col-md-2 col-4 h6 text-right txt-inp-def">Coords</div>
-                                    <div class="col-md-10 col-8">
-                                        <div class="row">
-                                            <div id="id-addr" class="col-md-9 col-12 txt-inp-def"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="w-end">
-                                <div class="row">
-                                    <div class="col-md-3 col-4 h6 txt-inp-def">End Glyph</div>
-                                    <input id="id-glyph" class="rounded col-md-6 col-10 h4 glyph"
-                                        onchange="dispGlyph(this)">
-                                </div>
-
-                                <div id="glyphbuttons" class="row"> </div>
-
-                                <div class="row">
-                                    <div class="col-md-2 col-4 h6 text-right txt-inp-def">Coords</div>
-                                    <div class="col-md-10 col-8">
-                                        <div class="row">
-                                            <div id="id-addr" class="col-md-9 col-12 txt-inp-def"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <br>
-
-                        <div class="card card-body pad-bottom">
-                            <div class="row">
-                                <div class="col-md-3 col-5 h6 txt-inp-def">Distance</div>
-                                <div id="id-dist" class="col-md-3 col-5 txt-inp-def"></div>
-                                <div class="col-md-3 col-5 h6 txt-inp-def">X-Z Plane Angle&nbsp;
-                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
-                                        data-html="true" data-placement="bottom"
-                                        title="This is the angle for the top down view of the galaxy. For more definitive directions use the 3d map.">
-                                    </i>
-                                </div>
-                                <div id="id-angle" class="col-md-3 col-5 txt-inp-def"></div>
-                            </div>
-                            <br>
-
-                            <div class="row">
-                                <div class="col-md-3 col-5 h6 txt-inp-def">Jump Range</div>
-                                <input id="id-range" type="number" class="rounded col-md-4 col-7" value=2000
-                                    onchange="dispAddr(this)">
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-3 col-5 h6 txt-inp-def">Jumps</div>
-                                <div id="id-jumps" class="col-5 txt-inp-def"></div>
                             </div>
                         </div>
                     </div>
-                    <br>
+                    <div id="w-end">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-2 col-5 h6 txt-inp-def">End</div>
+                            <input id="id-addr" class="rounded col-md-5 col-sm-4 col-9"
+                                placeholder="0000:0000:0000:0000" onchange="dispAddr(this)">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3 col-sm-2 col-4 h6 txt-inp-def">Glyphs</div>
+                            <div class="col-md-11 col-sm-12 col-10">
+                                <div class="row">
+                                    <div id="id-glyph" class="col-md-14 col-sm-8 col-14 h3 txt-inp-def glyph"></div>
+                                    <div id="id-hex" class="col-md-14 col-sm-4 col-14 txt-inp-def"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="col-lg-5 col-12">
-                    <div class="card pad-bottom">
-                        <div class="card-header h4 bkg-def txt-def">
-                            3D Map&nbsp;
+                <div id="id-glyphInput" class="card card-body pad-bottom hidden">
+                    <div id="w-start">
+                        <div class="row">
+                            <div class="col-lg-3 col-md-4 col-sm-3 col-4 h6 txt-inp-def">Start&nbsp;
+                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
+                                                digit hex, 0-9 a-f, value can be entered directly in the field.">
+                                </i>
+                            </div>
+                            <input id="id-glyph" class="rounded col-lg-6 col-md-10 col-sm-6 col-14 glyph"
+                                onchange="dispGlyph(this)">
+                            <label class="h6 txt-inp-def col-lg-4 col-md-14 col-sm-4 col-14">
+                                <input id="ck-glyphs" type="checkbox" onchange="setGlyphInput(this)">
+                                Input Coords&nbsp;
+                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom" title="Hide glyph input buttons.">
+                                </i>
+                            </label>
+                        </div>
+
+                        <div id="glyphbuttons" class="row"></div>
+
+                        <div class="row">
+                            <div class="col-md-3 col-4 h6 txt-inp-def">Coords</div>
+                            <div class="col-md-10 col-8">
+                                <div class="row">
+                                    <div id="id-addr" class="col-md-9 col-12 txt-inp-def"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="w-end">
+                        <div class="row">
+                            <div class="col-md-3 col-4 h6 txt-inp-def">End</div>
+                            <input id="id-glyph" class="rounded col-md-6 col-14 glyph" onchange="dispGlyph(this)">
+                        </div>
+
+                        <div id="glyphbuttons" class="row"> </div>
+
+                        <div class="row">
+                            <div class="col-md-3 col-4 h6 txt-inp-def">Coords</div>
+                            <div class="col-md-10 col-8">
+                                <div class="row">
+                                    <div id="id-addr" class="col-md-9 col-12 txt-inp-def"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+
+                <div class="card card-body pad-bottom">
+                    <div class="row">
+                        <div class="col-md-3 col-5 h6 txt-inp-def">Distance</div>
+                        <div id="id-dist" class="col-md-3 col-5 txt-inp-def"></div>
+                        <div class="col-md-5 col-5 h6 txt-inp-def">X-Z Plane Angle&nbsp;
                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                                data-placement="bottom" title="The grey line is towards the galactic center. To approximate the galactic map view align the green starting
-                                position with the galactic center.">
+                                data-placement="bottom"
+                                title="This is the angle for the top down view of the galaxy. For more definitive directions use the 3d map.">
                             </i>
                         </div>
-                        <div class="card-body">
-                            <div class="card card-body pad-bottom">
-                                <div id="plot3d"></div>
-                            </div>
+                        <div id="id-angle" class="col-md-3 col-5 txt-inp-def"></div>
+                    </div>
+                    <br>
+
+                    <div class="row">
+                        <div class="col-md-3 col-5 h6 txt-inp-def">Jump Range</div>
+                        <input id="id-range" type="number" class="rounded col-lg-3 col-md-4 col-sm-4 col-7" value=2000
+                            onchange="dispAddr(this)">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3 col-5 h6 txt-inp-def">Jumps</div>
+                        <div id="id-jumps" class="col-5 txt-inp-def"></div>
+                    </div>
+                </div>
+                <br>
+            </div>
+
+            <div class="col-md-7 col-14">
+                <div class="card card-body bkg-def border">
+                    <div class="row">
+                        <div id="mapcol" class="border col-lg-9 col-md-11 col-sm-11 col-14">
+                            <div id="plymap"></div>
+                        </div>
+
+                        <div class="col-lg-5 col-md-3 col-sm-3 col-14 text-center">
                             <br>
-                            <button type="button" class="btn btn-sm btn-def text-center" onclick="zoom()">Toggle
-                                Zoom</button>
+                            <div class="row">
+                                <a id="maplogo" class="col-sm-14 col-8">
+                                    <img id="logo" src="lBTK5EL.png" class="float-left" alt="BHS Logo" width="20"
+                                        height="20">
+                                </a>
+                                <br>
+                                <br>
+                                <div class="col-sm-14 col-5">
+                                    <div class="row">
+                                        <button id="btn-switch" type="button" class="btn-def btn btn-sm col-lg-8 col-sm-10 col-14"
+                                            onclick="zoom()">Toggle Zoom</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
     <br>
+
     <div class="clr-creme text-right h7">
         <i class="fa fa-copyright"></i> 2019 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     </div>

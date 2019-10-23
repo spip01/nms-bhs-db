@@ -484,9 +484,9 @@ NMSCE.prototype.buildTypePanels = function () {
         <label id="id-idname" class="col-sm-3 col-4 h6 txt-inp-def">
             <div class="row">
                 titlettip&nbsp;
-                <label id="search-idname" class="h6 txt-inp-def hidden">
-                    <font style="color:blue">*</font>&nbsp;
-                    <input id="sck-idname" data-type="search" type="checkbox">
+                <label id="search-idname" class="h6 txt-inp-def hidden" style="color:blue">
+                    **&nbsp;
+                    <input id="sck-idname" type="checkbox">
                 </label>          
                 <input id="ck-idname" type="checkbox">
             </div>
@@ -495,10 +495,10 @@ NMSCE.prototype.buildTypePanels = function () {
         <div id="row-idname" data-type="checkbox" data-req="false" class=col-sm-7 col-14">
             <label id="id-idname" class="h6 txt-inp-def row">
                 titlettip&nbsp
-                <label id="search-idname" class="h6 txt-inp-def hidden">
-                    <font style="color:blue">*</font>&nbsp;
+                <label id="search-idname" class="h6 txt-inp-def hidden" style="color:blue">
+                    **&nbsp;
                     <input id="sck-idname" type="checkbox">
-                </label>  
+                </label>          
                 <input id="ck-idname" type="checkbox">
             </label>
         </div>`

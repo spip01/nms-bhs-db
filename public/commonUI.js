@@ -118,7 +118,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     let pnl = $("#pnl-user")
     pnl.find("#id-Player").val(bhs.user._name)
     pnl.find("#btn-Platform").text(bhs.user.platform)
-    pnl.find("#btn-Organization").text(bhs.user.org)
+    pnl.find("#btn-Civ-Org").text(bhs.user.org)
 
     if (bhs.user.galaxy && bhs.user.galaxy !== "") {
         let i = galaxyList[getIndex(galaxyList, "name", bhs.user.galaxy)]
@@ -142,10 +142,10 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
 
     if (typeof bhs.user.inputSettings !== "undefined" && bhs.user.inputSettings.tips) {
         $("[data-toggle='tooltip']").show()
-        $("#ttipmsg").css("text-decoration","none")
+        $("#ttipmsg").css("text-decoration", "none")
     } else {
         $("[data-toggle='tooltip']").hide()
-        $("#ttipmsg").css("text-decoration","line-through")
+        $("#ttipmsg").css("text-decoration", "line-through")
     }
 }
 
@@ -153,32 +153,31 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     const panel = `
         <div id="pnl-user">
             <div class="row">
-                <div class="col-md-7 col-14">
+                <div class="col-sm-7 col-14">
                     <div class="row">
-                        <div class="col-14 h6 txt-inp-def">Player Name<span id="namereq" class="h5 text-danger">&nbsp;*</span></div>
-                        <input id="id-Player" class="rounded col-13 h5" type="text">
+                        <div class="col-sm-14 col-5 h6 txt-inp-def">Player Name<span id="namereq" class="h5 text-danger">&nbsp;*</span></div>
+                        <input id="id-Player" class="rounded col-lg-10 col-md-11 col-sm-8 col-9 h5" type="text">
                     </div>
                 </div>
 
-                <div class="col-md-7 col-14">
-                    <div class="row">
-                        <div id="id-Organization"></div>
-                    </div>
+                <div class="col-sm-7 col-14">
+                    <div id="id-Civ-Org"></div>
                 </div>
             </div>
 
             <div class="row">
-                <div class="col-1"></div>
-                <div id="id-Galaxy" class="col-lg-4 col-md-6 col-14"></div>
-                <div id="id-Platform" class="col-lg-4 col-md-6 col-14"></div>
-
-                <label id="fileupload" class="col-lg-4 col-md-6 col-14 h5 text-right align-bottom">
+                <div id="id-Galaxy" class="col-sm-7 col-14"></div>
+                <div id="id-Platform" class="col-sm-7 col-14"></div>
+            </div>
+            <div class="row text-right">
+                <label id="fileupload" class="h5 text-right align-bottom">
                     <input id="ck-fileupload" type="checkbox">
                     &nbsp;File Upload&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Bulk entry upload using a comma or tab separated '.csv' file.">
                     </i>
                 </label>
+                </div>
             </div>
         </div>
         <br>`
@@ -193,17 +192,23 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
 
     let fsearch = window.location.pathname == "/cesearch.html"
 
-    bhs.buildMenu(loc, "Organization", bhs.orgList, bhs.saveUser, {
-        vertical: true
+    bhs.buildMenu(loc, "Civ/Org", bhs.orgList, bhs.saveUser, {
+        labelsize: "col-sm-14 col-5",
+        menusize: "col-sm-14 col-9",
     })
 
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, {
-        required: !fsearch
+        required: !fsearch,
+        labelsize: "col-sm-7 col-6",
+        menusize: "col-sm-7 col-8",
     })
+
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, {
         tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
-        required: true
-    })
+        required: true,
+        labelsize: "col-sm-7 col-6",
+        menusize: "col-sm-7 col-8",
+   })
 
     if (fsearch)
         $("#namereq").hide()
@@ -686,7 +691,7 @@ blackHoleSuns.prototype.buildTotals = function () {
 
     if (!findex) {
         tot.find("#itm-Players").css("height", "210px")
-        tot.find("#itm-Organizations").css("height", "120px")
+        tot.find("#itm-Civ-Org").css("height", "120px")
     }
 
     let h = ""
@@ -909,7 +914,7 @@ blackHoleSuns.prototype.clickUser = function (evt) {
     if (window.location.pathname == "/totals.html") {
         bhs.entries = {}
 
-        if (pnlid == "itm-Organizations") {
+        if (pnlid == "itm-Civ-Org") {
             let galaxy = $("#btn-Galaxy").text().stripNumber()
             let platform = $("#btn-Platform").text().stripNumber()
             $("#btn-Player").text(id.stripID())
@@ -947,9 +952,9 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
     let header = `        
         <div class="row">`
     let title = `
-            <div class="col-md-medium col-sm-small col-xs h6 txt-inp-def">labelttip</div>`
+            <div class="size h6 txt-inp-def">labelttip</div>`
     let block = `
-            <div id="menu-idname" class="col-md-medium col-sm-small col-xs dropdown">
+            <div id="menu-idname" class="size dropdown">
                 <button id="btn-idname" class="btn border btn-sm dropdown-toggle" style="rgbcolor" type="button" data-toggle="dropdown"></button>
             </div>
         </div>`
@@ -974,17 +979,20 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
     if (typeof options === "undefined")
         options = {}
 
-    if (typeof options.labelsize === "undefined" || typeof options.menusize === "undefined") {
-        if (options.vertical) {
-            options.labelsize = [13, 13, 13]
-            options.menusize = [13, 13, 13]
-        } else if (options.nolabel) {
-            options.labelsize = [1, 1, 1]
-            options.menusize = [12, 12, 12]
-        } else {
-            options.labelsize = [8, 7, 6]
-            options.menusize = [5, 6, 7]
-        }
+    if (typeof options.labelsize === "undefined") {
+        if (options.vertical)
+            options.labelsize = "col-14"
+        else if (options.nolabel)
+            options.labelsize = "col-1"
+        else
+            options.labelsize = "col-7"
+    }
+
+    if (typeof options.menusize === "undefined") {
+        if (options.vertical)
+            options.menusize = "col-7"
+        else
+            options.menusize = "col-7"
     }
 
     if (!options.nolabel || options.required || options.tip) {
@@ -999,17 +1007,13 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
         } else
             l = /ttip/ [Symbol.replace](l, "")
 
-        l = /medium/ [Symbol.replace](l, options.labelsize[0])
-        l = /small/ [Symbol.replace](l, options.labelsize[1])
-        l = /xs/ [Symbol.replace](l, options.labelsize[2])
+        l = /size/ [Symbol.replace](l, options.labelsize)
 
         h += l
     }
 
     let l = /idname/g [Symbol.replace](block, id)
-    l = /medium/ [Symbol.replace](l, options.menusize[0])
-    l = /small/ [Symbol.replace](l, options.menusize[1])
-    l = /xs/ [Symbol.replace](l, options.menusize[2])
+    l = /size/ [Symbol.replace](l, options.menusize)
 
     h += /rgbcolor/ [Symbol.replace](l, "")
     loc.find("#id-" + id).empty()
@@ -1059,7 +1063,7 @@ blackHoleSuns.prototype.extractUser = function () {
     u._name = loc.find("#id-Player").val()
     u.platform = loc.find("#btn-Platform").text().stripNumber()
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber()
-    u.org = loc.find("#btn-Organization").text().stripNumber()
+    u.org = loc.find("#btn-Civ-Org").text().stripNumber()
     u.version = "beyond" // loc.find("#btn-Version").text().stripNumber()
 
     return u

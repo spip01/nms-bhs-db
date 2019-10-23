@@ -44,7 +44,7 @@ blackHoleSuns.prototype.setGP = function () {
     g = g.stripNumber()
 
     if (typeof bhs.orgList !== "undefined") {
-        let loc = $("#menu-Organizations")
+        let loc = $("#menu-Civ-Org")
         for (let e of bhs.orgList) {
             let itm = loc.find("#item-" + e.name.nameToId())
             if (e.galaxy === g && e[p] === true)
@@ -55,7 +55,7 @@ blackHoleSuns.prototype.setGP = function () {
     }
 
     if (typeof bhs.poiList !== "undefined") {
-        let loc = $("#menu-Points-Of-Interest")
+        let loc = $("#menu-POI")
         for (let e of bhs.poiList) {
             let itm = loc.find("#item-" + e.name.nameToId())
             if (e.galaxy === g && e.platform === p)
@@ -88,12 +88,18 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
     let pnl = $("#pnl-query")
 
     await bhs.getPoiList(true)
-    bhs.buildMenu(pnl, "Points Of Interest", bhs.poiList, bhs.select, {
-        tip: "List maintained by Black Hole Suns. Blue items are in your current galaxy. Red are not."
+    bhs.buildMenu(pnl, "POI", bhs.poiList, bhs.select, {
+        tip: "Points of Interest list maintained by Black Hole Suns. Blue items are in your current galaxy. Red are not.",
+        labelsize: "col-md-6 col-sm-3 col-6",
+        menusize: "col-8"
     })
 
     await bhs.getOrgList(true)
-    bhs.buildMenu(pnl, "Organizations", bhs.orgList, bhs.select)
+    bhs.buildMenu(pnl, "Civ/Org", bhs.orgList, bhs.select, {
+        tip: "Civilizations & Organizations list is mainly from the NMS wiki. Blue items are in your current galaxy. Red are not.",
+        labelsize: "col-md-6 col-sm-3 col-6",
+        menusize: "col-8"
+    })
 
     if (bhs.user.galaxy !== "")
         bhs.setGP()
@@ -111,11 +117,11 @@ blackHoleSuns.prototype.setAddress = function (evt) {
 blackHoleSuns.prototype.select = function (btn) {
     let name = btn.text()
     let id = btn.prop("id").stripID()
-    if (id === "Points-Of-Interest") {
+    if (id === "POI") {
         let i = getIndex(bhs.poiList, "_name", name)
         let itm = bhs.poiList[i]
         $("#id-end").val(itm.addr)
-        $("#btn-Organizations").text("")
+        $("#btn-Civ-Org").text("")
         bhs.showPOI(name)
     } else {
         let i = getIndex(bhs.orgList, "_name", name)
@@ -185,10 +191,10 @@ blackHoleSuns.prototype.updateDarcSettings = function () {
         $("#id-end").val(typeof bhs.user.darcSettings.end !== "undefined" ? bhs.user.darcSettings.end : "")
     }
 
-    let nmsce = null
     if (typeof (Storage) !== "undefined") {
-        nmsce = window.localStorage.getItem('nmsceaddr')
-        $("#id-end").val(nmsce ? glyphToAddr(nmsce) : "")
+        let nmsce = window.localStorage.getItem('nmsceaddr')
+        if (nmsce)
+            $("#id-end").val(glyphToAddr(nmsce))
         window.localStorage.removeItem('nmsceaddr')
     }
 }
@@ -869,6 +875,6 @@ function makedata(out, size, color, linecolor) {
 blackHoleSuns.prototype.status = function (str, clear) {
     if (clear)
         $("#status").empty()
-        
+
     $("#status").append("<h6>" + str + "</h6>")
 }

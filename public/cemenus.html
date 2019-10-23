@@ -1,38 +1,42 @@
 <div class="container-fluid">
     <div id="navmenu" class="row">
-        <img src="nmsce.png" class="col-2" alt="nmsce logo" style="width:40px; height:auto">
-        <div class="col-12">
-            <br><br>
-            <div class="row text-center h5">
-                <a class="col-8x1 text-center txt-def" href="cesearch.html">Search</a>
-                <a class="col-8x1 text-center txt-def" href="nmsce.html">Input</a>
-                <a class="col-8x1 text-center txt-def" href="darc.html">BHS DARC</a>
-                <a class="col-8x1 text-center txt-def" href="nav.html">Star Nav</a>
-                <a class="col-8x1 text-center txt-def" href="glyph.html">Glyph Converter</a>
+        <img src="nmsce.png" class="col-lg-1 col-md-2 col-sm-2 col-5" alt="nmsce logo"
+            style="top:10px; width:80px; height:80px">
+        <div class="col-sm-10 col-9">
+            <br>
+            <div class="row h5">
+                <a class="col-lg-6 col-md-8 col-sm-7 col-14 txt-def h4" href="cesearch.html">Search</a>
+                <a class="col-md-6 col-sm-4 col-14 txt-def h4" href="nmsce.html">Input</a>
+                <a class="col-lg-3 col-md-4 col-sm-7 col-14 txt-def" href="darc.html">BHS DARC</a>
+                <a class="col-lg-3 col-md-4 col-sm-7 col-14 txt-def" href="nav.html">Star Nav</a>
+                <a class="col-lg-3 col-md-4 col-sm-7 col-14 txt-def" href="glyph.html">Glyph Converter</a>
 
-                <div id="full-usermenu" class="container col-4">
-                    <button id="login" type="button" class="text-center btn-def no-border" onclick="bhs.login()">
-                        Login
-                    </button>
-
-                    <div id="usermenu" class="dropdown" style="display: none">
-                        <button type="button" class="row bkg-def txt-def text-center no-border dropdown-toggle"
-                            data-toggle="dropdown">
-                            <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
-                            <h6 id="username">User</h6>
+                <div class="col-lg-5 col-md-14 col-sm-7 col-14 txt-def">
+                    <div id="full-usermenu">
+                        <button id="login" type="button" class="btn-def no-border" onclick="bhs.login()">
+                            Login
                         </button>
 
-                        <div class="dropdown-menu bkg-def text-center">
-                            <button id="logout" type="button" class="no-border text-center dropdown-item btn-def"
-                                onclick="bhs.logout()">Logout</button>
-                            <button id="tooltip" type="button" class="no-border text-center dropdown-item btn-def"
-                                onclick="bhs.toggleTips()">
-                                Toggle Tooltip Display
+                        <div id="usermenu" class="dropdown" style="display: none">
+                            <button type="button" class="row btn-def no-border dropdown-toggle"
+                                data-toggle="dropdown">
+                                <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
+                                <h6 id="username">User</h6>
                             </button>
-                            <button id="admin" type="button"
-                                class="h5 no-border text-center dropdown-item btn-def hidden" onclick="bhs.setAdmin()">
-                                Admin Edit
-                            </button>
+
+                            <div class="dropdown-menu bkg-def text-center">
+                                <button id="logout" type="button" class="no-border text-center dropdown-item btn-def"
+                                    onclick="bhs.logout()">Logout</button>
+                                <button id="tooltip" type="button" class="no-border text-center dropdown-item btn-def"
+                                    onclick="bhs.toggleTips()">
+                                    Toggle Tooltip Display
+                                </button>
+                                <button id="admin" type="button"
+                                    class="h5 no-border text-center dropdown-item btn-def hidden"
+                                    onclick="bhs.setAdmin()">
+                                    Admin Edit
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -46,7 +50,7 @@
 <div class="row border-top">
     <!--a href="https://twitter.com/nmsblkholesuns" class="col-4 text-center clr-creme h6">Follow us on
         Twitter</a-->
-    <a href="https://www.reddit.com/r/NMSCoordinateExchange/" class="col-4 text-center clr-creme h6">NMSCE Reddit</a>
+    <a href="https://www.reddit.com/r/NMSCoordinateExchange/" class="col-7 text-center clr-creme h6">NMSCE Reddit</a>
     <!--a href="https://discord.blackholesuns.com/" class="col-4 text-center clr-creme h6">Talk to us on Discord</a-->
 </div>
 

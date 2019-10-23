@@ -18,7 +18,7 @@ blackHoleSuns.prototype.buildPanel = function (id, list) {
 
     let h = panel
     if (id == "pnl-org") {
-        h = /title/ [Symbol.replace](h, "Organizations")
+        h = /title/ [Symbol.replace](h, "Civ/Org")
         h = /pictitle/ [Symbol.replace](h, "Logo")
         h = /hsize/ [Symbol.replace](h, "auto")
         h = /wsize/ [Symbol.replace](h, "120px")

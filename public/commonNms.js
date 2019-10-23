@@ -5,7 +5,7 @@
 
 function addGlyphButtons(loc, fcn) {
     const gbtn = `
-        <button type="button" class="btn-def btn btn-sm col-8x1">
+        <button type="button" class="btn-def btn btn-sm col-sm-8x1 col-2">
             <span class="h3 glyph">title</span>
             &nbsp;(title)
         </button>`

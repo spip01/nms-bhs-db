@@ -90,7 +90,7 @@ function dispAddr(evt) {
         if (range !== "")
             $("#id-jumps").text(parseInt(dist / range))
 
-        mapPoints("plot3d", saddr, eaddr)
+        mapPoints("plymap", saddr, eaddr)
     }
 
     if (typeof(Storage) !== "undefined") {
@@ -137,7 +137,7 @@ var tglZoom = false
 
 function zoom() {
     tglZoom = !tglZoom
-    Plotly.relayout('plot3d', changeMapLayout(tglZoom))
+    Plotly.relayout('plymap', changeMapLayout(tglZoom))
 }
 
 function changeMapLayout(zoom) {
@@ -271,7 +271,7 @@ function changeMapLayout(zoom) {
         t: 0
     }
 
-    let w = Math.min($("#plot3d").width() - 8, 400)
+    let w = Math.min($("#plymap").width() - 8, 400)
     layout.width = w
     layout.height = w
 
@@ -279,6 +279,10 @@ function changeMapLayout(zoom) {
 }
 
 function mapPoints(plot, saddr, eaddr, axis1, axis2) {
+    let w = $("#maplogo").width()
+    $("#logo").prop("width", Math.min(w, 100))
+    $("#logo").prop("height", Math.min(w, 100))
+
     let zero = {
         x: 2048,
         y: 128,

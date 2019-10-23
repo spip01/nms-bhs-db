@@ -3,62 +3,66 @@
 </div>
 
 <div class="container-fluid">
-    <div id="navmenu" class="row text-center h5">
-        <a class="col-8x1 text-center txt-def" href="https://faq.blackholesuns.com/">FAQ</a>
-        <a class="col-8x1 text-center txt-def" href="https://guide.blackholesuns.com/">Travel Guide</a>
-        <a class="col-8x1 text-center txt-def" href="darc.html">DARC</a>
-        <a class="col-8x1 text-center txt-def" href="nav.html">Star Nav</a>
-        <a class="col-8x1 text-center txt-def" href="glyph.html">Glyph Converter</a>
-        <a class="col-8x1 text-center txt-def" href="index.html">BHS Input</a>
-        <a class="col-8x1 text-center txt-def" href="totals.html">Totals</a>
-        <a class="col-8x1 text-center txt-def" href="search.html">Search</a>
+    <div id="navmenu" class="row txt-def h5">
+        <a class="col-lg-8x1 col-md-3 col-sm-4 col-14 h4" href="darc.html">DARC</a>
+        <a class="col-lg-8x1 col-md-3 col-sm-4 col-14 h4" href="nav.html">Star Nav</a>
+        <a class="col-lg-8x1 col-md-3 col-sm-4 col-14 h4" href="glyph.html">Glyph Converter</a>
+        <a class="col-lg-8x1 col-md-3 col-sm-4 col-7" href="index.html">BHS Input</a>
+        <a class="col-lg-8x1 col-md-3 col-sm-4 col-7" href="totals.html">Totals</a>
+        <a class="col-lg-8x1 col-md-3 col-sm-4 col-7" href="search.html">Search</a>
+        <a class="col-lg-8x1 col-md-3 col-sm-4 col-7" href="https://faq.blackholesuns.com/">FAQ</a>
+        <a class="col-lg-8x1 col-md-3 col-sm-4 col-7" href="https://guide.blackholesuns.com/">Travel Guide</a>
 
-        <div id="full-usermenu" class="container col-4">
-            <button id="login" type="button" class="text-center btn-def no-border" onclick="bhs.login()">Login</button>
-            <div id="usermenu" class="dropdown" style="display: none">
-                <button type="button" class="row text-center txt-def no-border dropdown-toggle" data-toggle="dropdown">
-                    <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
-                    <h6 id="username">User</h6>
-                </button>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-7">
+            <div id="full-usermenu" class="container txt-def">
+                <button id="login" type="button" class="btn-def no-border" onclick="bhs.login()">Login</button>
+                <div id="usermenu" class="dropdown" style="display: none">
+                    <button type="button" class="row no-border btn-def no-border dropdown-toggle"
+                        data-toggle="dropdown">
+                        <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
+                        <h6 id="username">User</h6>
+                    </button>
 
-                <div class="dropdown-menu bkg-def text-center">
-                    <button id="logout" type="button" class="no-border text-center dropdown-item btn-def" onclick="bhs.logout()">Logout</button>
-                    <button id="tooltip" type="button" class="no-border text-center dropdown-item btn-def"
-                        onclick="bhs.toggleTips()">
-                        <h5>Toggle Tooltip Display</h5>
-                    </button>
-                    <button id="recalc" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                        onclick="bhs.recalcTotals()">
-                        Recalc Totals
-                    </button>
-                    <button id="admin" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                        onclick="bhs.setAdmin()">
-                        Admin Edit
-                    </button>
-                    <div class="text-center">
-                        <a id="poiorg" class="h5 no-border dropdown-item btn-def hidden" href="poiorg.html">Enter
-                            POI &amp; Orgs</a>
+                    <div class="dropdown-menu bkg-def text-center">
+                        <button id="logout" type="button" class="no-border text-center dropdown-item btn-def"
+                            onclick="bhs.logout()">Logout</button>
+                        <button id="tooltip" type="button" class="no-border text-center dropdown-item btn-def"
+                            onclick="bhs.toggleTips()">
+                            <h5>Toggle Tooltip Display</h5>
+                        </button>
+                        <button id="recalc" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
+                            onclick="bhs.recalcTotals()">
+                            Recalc Totals
+                        </button>
+                        <button id="admin" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
+                            onclick="bhs.setAdmin()">
+                            Admin Edit
+                        </button>
+                        <div class="text-center">
+                            <a id="poiorg" class="h5 no-border dropdown-item btn-def hidden" href="poiorg.html">Enter
+                                POI &amp; Orgs</a>
+                        </div>
+                        <button id="genDARC" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
+                            onclick="bhs.genDARC()">
+                            genDARC
+                        </button>
+                        <button id="updateDARC" type="button"
+                            class="h5 no-border text-center dropdown-item btn-def hidden" onclick="bhs.updateDARC()">
+                            updateDARC
+                        </button>
+                        <button id="genPOI" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
+                            onclick="bhs.genPOI()">
+                            genPOI
+                        </button>
+                        <button id="backupBHS" type="button"
+                            class="h5 no-border text-center dropdown-item btn-def hidden" onclick="bhs.backupBHS()">
+                            backupBHS
+                        </button>
+                        <button id="testing" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
+                            onclick="bhs.testing()">
+                            testing
+                        </button>
                     </div>
-                    <button id="genDARC" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                        onclick="bhs.genDARC()">
-                        genDARC
-                    </button>
-                    <button id="updateDARC" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                        onclick="bhs.updateDARC()">
-                        updateDARC
-                    </button>
-                    <button id="genPOI" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                        onclick="bhs.genPOI()">
-                        genPOI
-                    </button>
-                    <button id="backupBHS" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                        onclick="bhs.backupBHS()">
-                        backupBHS
-                    </button>
-                    <button id="testing" type="button" class="h5 no-border text-center dropdown-item btn-def hidden"
-                        onclick="bhs.testing()">
-                        testing
-                    </button>
                 </div>
             </div>
         </div>

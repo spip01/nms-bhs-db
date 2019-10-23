@@ -61,8 +61,8 @@
     <div id="bhsmenus"></div>
 
     <div id="jssite" class="container-fluid pad-bottom hidden">
-        <div id="loggedout" class="row txt-def">&nbsp;&nbsp;&nbsp;&nbsp;Login is only required for 
-            using saved bases. If you aren't logged in then your input and last selected route are 
+        <div id="loggedout" class="row txt-def">&nbsp;&nbsp;&nbsp;&nbsp;Login is only required for
+            using saved bases. If you aren't logged in then your input and last selected route are
             saved to local browser storage.<br>
         </div>
 
@@ -71,13 +71,13 @@
                 <div class="card card-body pad-bottom">
                     <div id="pnl-user">
                         <div class="row">
-                            <div class="col-md-7 col-14">
+                            <div class="col-md-7 col-sm-7 col-14">
                                 <div class="row">
                                     <div class="col-13 h6 txt-inp-def">Player Name</div>
                                     <input id="id-Player" class="rounded col-13 h5" type="text">
                                 </div>
                             </div>
-                            <label class="col-md-7 col-14 h6 txt-inp-def">
+                            <label class="col-md-7 col-sm-7 col-14 h6 txt-inp-def">
                                 <input id="ck-useBases" type="checkbox" onchange="bhs.saveDarcSettings(this)">
                                 Use Player Bases&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
@@ -87,29 +87,30 @@
                             </label>
                         </div>
 
-                        <div class="row">
-                            <div class="col-1"></div>
-                            <div id="id-Galaxy" class="col-md-5 col-14"></div>
-                            <div id="id-Platform" class="col-md-5 col-14"></div>
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div id="id-Galaxy" class="col-lg-6 col-md-14 col-sm-6 col-14"></div>
+                                <div id="id-Platform" class="col-lg-6 col-md-14 col-sm-6 col-14"></div>
+                            </div>
                         </div>
                     </div>
                     <br>
-                    <div id="pnl-query" class="card card-body">
+                    <div id="pnl-query" class="container-fluid border-top border-3">
                         <div class="row">
-                            <div class="col-md-4 col-5 h6 txt-inp-def">
-                                Starting Coordinates&nbsp;
+                            <div class="col-sm-3 col-4 h6 txt-inp-def">
+                                Start&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom"
                                     title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
                                     A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
                                 </i>
                             </div>
-                            <input id="id-start" class="rounded col-md-5 col-6" placeholder="0000:0000:0000:0000"
-                                onchange="bhs.setAddress(this)">
+                            <input id="id-start" class="rounded col-lg-5 col-md-7 col-sm-5 col-8"
+                                placeholder="0000:0000:0000:0000" onchange="bhs.setAddress(this)">
                         </div>
                         <div class="row">
-                            <div class="col-md-4 col-5 h6 txt-inp-def">Ending Coordinates&nbsp;</div>
-                            <input id="id-end" class="rounded col-md-5 col-6" placeholder="0000:0000:0000:0000"
+                            <div class="col-sm-3 col-4 h6 txt-inp-def">End&nbsp;</div>
+                            <input id="id-end" class="rounded col-lg-5 col-md-7 col-sm-5 col-8" placeholder="0000:0000:0000:0000"
                                 onchange="bhs.setAddress(this)">&nbsp;
                             <button id="btn-switch" type="button" class="btn-def btn btn-sm" onclick="bhs.switchSE()"><i
                                     class="fa fa-exchange-alt txt-def"></i></button>
@@ -117,48 +118,41 @@
                         <div class="row">
                             <div class="card card-body no-border">
                                 <div class="row">
-                                    <div id="id-Points-Of-Interest" class="col-md-7 col-14"></div>
-                                    <div id="id-Organizations" class="col-md-7 col-14"></div>
+                                    <div id="id-POI" class="col-lg-6 col-md-14 col-sm-7 col-14"></div>
+                                    <div id="id-Civ-Org" class="col-lg-6 col-md-14 col-sm-7 col-14"></div>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-4 col-5 h6 txt-inp-def">Average Jump Range&nbsp;</div>
-                            <input id="id-range" class="rounded col-md-5 col-4" type="number" value="2000"
+                            <div class="col-sm-6 col-9 h6 txt-inp-def">Average Jump Range&nbsp;</div>
+                            <input id="id-range" class="rounded col-sm-3 col-5" type="number" value="2000"
                                 onchange="bhs.saveDarcSettings(this)">
                         </div>
                         <br>
-                        <div class="row">
-                            <div class="col-7">
+                        <div class="row border-top border-3">
+                            <div class="col-lg-9 col-md-14 col-sm-9 col-14">
                                 <div class="row">
-                                    <div class="col-5">
-                                        <div class="row">
-                                            <button id="btn-searchRegion" type="button" class="btn-def btn btn-sm"
-                                                onclick="bhs.calcroute()">Calculate Route</button>&nbsp
-                                            <label class="col-14 h6 txt-inp-def">
-                                                <input id="ck-nearPath" type="checkbox"
-                                                    onchange="bhs.saveDarcSettings(this)">
-                                                POI near route
-                                            </label>
-                                        </div>
-                                    </div>&nbsp
-                                    <div class="col-8 border-left">
-                                        <div class="row">
-                                            &nbsp<button id="btn-proximity" type="button"
-                                                class="col-13 btn-def btn btn-sm" onclick="bhs.calcroute(true)">POI
-                                                Proximity</button>&nbsp
-                                        </div>
-                                        <br>
-                                        <div class="row">
-                                            <div class="col-sm-8 col-14 h6 txt-inp-def">Max Jumps&nbsp;</div>
-                                            <input id="id-maxJumps" class="rounded col-sm-6 col-14" type="number"
-                                                value="20" onchange="bhs.saveDarcSettings(this)">
-                                        </div>
-                                    </div>
+                                    <button id="btn-searchRegion" type="button"
+                                        class="col-md-5 col-sm-5 col-6 btn-def btn btn-sm"
+                                        onclick="bhs.calcroute()">Calculate Route</button>&nbsp
+                                    <label class="col-7 h6 txt-inp-def">
+                                        <input id="ck-nearPath" type="checkbox" onchange="bhs.saveDarcSettings(this)">
+                                        POI near route
+                                    </label>
                                 </div>
+                                <div class="row">
+                                    <button id="btn-proximity" type="button"
+                                        class="col-md-5 col-sm-5 col-6 btn-def btn btn-sm"
+                                        onclick="bhs.calcroute(true)">POI Proximity</button>&nbsp
+                                    <div class="col-md-4 col-sm-5 col-4 h6 txt-inp-def">Max Jumps&nbsp;</div>
+                                    <input id="id-maxJumps" class="rounded col-lg-3 col-md-4 col-sm-3 col-3" value="20"
+                                        onchange="bhs.saveDarcSettings(this)">
+                                </div>
+                                <br>
                             </div>
-                            <div id="status" class="border col-7 text-danger scrollbar container-fluid"
-                                style="overflow-y: scroll; height: 68px"></div>
+                            <div id="status"
+                                class="border col-lg-5 col-md-14 col-sm-5 col-14 text-danger scrollbar container-fluid"
+                                style="overflow-y: scroll; height: 40px"></div>
                         </div>
                     </div>
                     <br>
@@ -182,15 +176,15 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div id="mapcol" class="col-md-11 col-14">
+                            <div id="mapcol" class="col-md-11 col-sm-11 col-14">
                                 <div id="plymap" class="hidden"></div>
                                 <div id="image" class="hidden"></div>
                             </div>
                             <br>
 
-                            <div class="col-md-3 col-14">
+                            <div class="col-md-3 col-sm-3 col-14">
                                 <div class="row">
-                                    <a id="maplogo" class="col-md-14 col-10">
+                                    <a id="maplogo" class="col-sm-14 col-10">
                                         <img id="logo" src="lBTK5EL.png" class="float-left" alt="BHS Logo" width="20"
                                             height="20">
                                     </a>
@@ -211,11 +205,12 @@
         <div class="card">
             <div id="pnl-results" class="card pad-bottom">
                 <div id="res-hdr" class="card-header bkg-def txt-def">
-                    <div class="row">
-                        <div class="col-4 h4">Results</div>
-                        <div class="col-10 clr-creme">Click on entry to expand directions and draw map. Click on
-                            direction step to
-                            zoom map.</div>
+                    <div class="row h4">
+                        Results&nbsp;
+                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Click on entry to expand directions and draw map. Click on
+                            direction step to zoom map.">
+                        </i>
                     </div>
                 </div>
                 <div id="res-table" class="card-body">
