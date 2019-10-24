@@ -10,16 +10,6 @@ $(document).ready(function () {
 })
 
 blackHoleSuns.prototype.buildSelectPanel = async function () {
-    const panel = `
-        <div id="sel">
-            <div class="row">
-                <div id="id-Player" class="col-3 text-center"></div>
-                <div id="id-Platform" class="col-3 text-center"></div>
-                <div id="id-Galaxy" class="col-3 text-center"></div>
-            </div>
-        <br>`
-
-    $("#pnl-user").append(panel)
     let loc = $("#pnl-user #sel")
 
     bhs.usersList = await bhs.getUserList()

@@ -79,6 +79,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     let fpoi = window.location.pathname == "/poiorg.html"
     let fdarc = window.location.pathname == "/darc.html"
     let ftotals = window.location.pathname == "/totals.html"
+    let fsearch = window.location.pathname == "/searc.html"
     let fnmsce = window.location.pathname == "/nmsce.html" || window.location.pathname == "/cesearch.html"
     let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform)
 
@@ -87,7 +88,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     if (!findex)
         $("#fileupload").hide()
 
-    if (fpoi)
+    if (fpoi || fsearch)
         return
 
     if (fnmsce)
@@ -208,7 +209,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
         required: true,
         labelsize: "col-sm-7 col-6",
         menusize: "col-sm-7 col-8",
-   })
+    })
 
     if (fsearch)
         $("#namereq").hide()
@@ -276,49 +277,43 @@ blackHoleSuns.prototype.displayContest = function (contest) {
     }, 1000)
 }
 
-const utTypeIdx = 0
-const utAddrIdx = 1
+const utAddrIdx = 0
 
 var userTable = [{
-    title: "Type",
-    id: "id-type",
-    format: "col-sm-2 col-3",
-    field: "blackhole",
-}, {
     title: "Coordinates",
     id: "id-addr",
     field: "addr",
-    format: "col-lg-5 col-md-6 col-sm-4 col-6 monospace"
+    format: "col-lg-5 col-md-10 col-sm-4 col-10 monospace"
 }, {
     title: "LY",
     id: "id-toctr",
-    format: "col-sm-2 col-3",
-    calc: true
+    field: "towardsCtr",
+    format: "col-lg-2 col-md-4 col-sm-2 col-4 text-right",
 }, {
     title: "System",
     id: "id-sys",
     field: "sys",
-    format: "col-sm-3 col-5"
+    format: "col-lg-3 col-md-7 col-sm-4 col-7"
 }, {
     title: "Region",
     id: "id-reg",
     field: "reg",
-    format: "col-sm-3 col-5"
+    format: "col-lg-3 col-md-7 col-sm-4 col-7"
 }, {
     title: "Lifeform",
     id: "id-life",
     field: "life",
-    format: "col-lg-2 col-md-4 col-sm-3 col-3"
+    format: "col-lg-3 col-md-7 col-sm-3 col-7"
 }, {
     title: "Economy",
     id: "id-econ",
     field: "econ",
-    format: "col-lg-2 col-md-4 col-sm-3 col-3"
+    format: "col-lg-3 col-md-7 col-sm-3 col-7"
 }, {
     title: "Base",
     id: "id-base",
     field: "basename",
-    format: "col-sm-3 col-4",
+    format: "col-lg-3 col-md-7 col-sm-3 col-7",
 }]
 
 blackHoleSuns.prototype.loadEntries = function () {
@@ -336,19 +331,15 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
     const table = `
         <div class="card-header bkg-def">
             <div class="row">
-                <span class="h4 col-6 txt-def">System List&nbsp;
+                <span class="h4 col-sm-5 col-14 txt-def">System List&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Hit 'Load' to download entries from server. Click on column titles to sort data based on column. 
                         Click on data entry to display in input section and highlight entry in map.  Once selected entry may be edited.">
                     </i>
                 </span>
-                <div id="lc-plat" class="col-4 txt-def h6"></div>
-                <div id="lc-gal" class="col-4 h6 txt-def"></div>
-            </div>
-            <div class="row">
                 <button id="btn-load" type="button"
-                    class="btn btn-sm btn-def text-center" onclick="bhs.loadEntries()">Load</button>&nbsp
-                <div id="btn-utSettings" class="col-10 align-vertical text-right txt-def">
+                    class="btn btn-sm btn-def text-center col-sm-2 col-4" onclick="bhs.loadEntries()">Load</button>&nbsp
+                <div id="btn-utSettings" class="col-6 align-vertical text-right txt-def">
                     <i class="fa fa-cog txt-def"></i>&nbsp;Settings&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Opens column selection panel. Checked column labels will be displayed in list.">
@@ -372,7 +363,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
             </div>
         </div>
         
-        <div id="id-table" class="card-body">
+        <div id="id-table" class="container-fluid border-top border-def">
             <div id="userHeader" class="row border-bottom bkg-def txt-def"></div>
             <div id="userItems" class="scrollbar container-fluid" style="overflow-y: scroll; height: 388px"></div>
         </div>`
@@ -432,22 +423,16 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
 
             if (list.length > 0) {
                 list.sort((a, b) => {
-                    let abh = $(a).find("#" + id + " #bh-" + id).text().stripMarginWS().toLowerCase()
-                    let axit = $(a).find("#" + id + " #x-" + id).text().stripMarginWS().toLowerCase()
-                    let bbh = $(b).find("#" + id + " #bh-" + id).text().stripMarginWS().toLowerCase()
-                    let bxit = $(b).find("#" + id + " #x-" + id).text().stripMarginWS().toLowerCase()
+                    let av = $(a).find("#" + id).text().stripMarginWS().toLowerCase()
+                    let bv = $(b).find("#" + id).text().stripMarginWS().toLowerCase()
 
-                    if (abh) {
-                        if (bbh)
-                            return abh > bbh ? 1 : abh < bbh ? -1 : 0
-                        else
-                            return abh > bxit ? 1 : abh < bxit ? -1 : 0
-                    } else {
-                        if (bbh)
-                            return axit > bbh ? 1 : axit < bbh ? -1 : 0
-                        else
-                            return axit > bxit ? 1 : axit < bxit ? -1 : 0
-                    }
+                    if (!av)
+                        av = $(a).find(".row:nth-child(2)").find("#" + id).text().stripMarginWS().toLowerCase()
+
+                    if (!bv)
+                        bv = $(b).find(".row:nth-child(2)").find("#" + id).text().stripMarginWS().toLowerCase()
+
+                    return av > bv ? 1 : av < bv ? -1 : 0
                 })
 
                 loc.empty()
@@ -510,48 +495,45 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist, force) {
     if (window.location.pathname == "/totals.html")
         return
 
-    const lineHdr = `
-        <div id="gpa" class="row">`
-    const line = `
-            <div id="idname" class="width border-bottom" onclick="entryDblclk(this)">
-                <div id="bh-idname" class="row">bhdata</div>
-                <div id="x-idname" class="row">xdata</div>
-            </div>`
-    const lineEnd = `
-        </div>`
+    const lineHdr = `<div id="gpa" class="border-bottom border-3" onclick="entryDblclk(this)">`
+    const line = `      <div class="row">`
+    const item = `          <div id="idname" class="width">data</div>`
+    const end = `</div>`
 
     let h = ""
 
     let keys = Object.keys(entrylist)
-    for (let i = 0; i < keys.length; ++i) {
-        let entry = entrylist[keys[i]]
-        h += /gpa/ [Symbol.replace](lineHdr, keys[i].nameToId())
+    for (let i of keys) {
+        let entry = entrylist[i]
+
+        h += /gpa/ [Symbol.replace](lineHdr, i.nameToId()) + line
+
         let l = ""
+        for (let t of userTable) {
+            l = /idname/ [Symbol.replace](item, t.id)
+            l = /width/ [Symbol.replace](l, t.format)
 
-        for (let j = 0; j < userTable.length; ++j) {
-            let t = userTable[j]
-
-            l = /idname/g [Symbol.replace](line, t.id)
-            l = /width/g [Symbol.replace](l, t.format)
-
-            if (t.calc) {
-                l = /bhdata/ [Symbol.replace](l, entry.towardsCtr ? entry.towardsCtr : "")
-                l = /xdata/ [Symbol.replace](l, "")
-            } else if (t.id == "id-type") {
-                l = /bhdata/ [Symbol.replace](l, entry.blackhole ? "BH" : entry.deadzone ? "DZ" : "")
-                l = /xdata/ [Symbol.replace](l, "")
-            } else if (t.id == "id-base") {
-                l = /bhdata/ [Symbol.replace](l, entry.basename ? entry.basename : "")
-                l = /xdata/ [Symbol.replace](l, entry.x && entry.x.basename ? entry.x.basename : "")
-            } else {
-                l = /bhdata/ [Symbol.replace](l, entry[t.field] ? entry[t.field] : "")
-                l = /xdata/ [Symbol.replace](l, entry.x && entry.x[t.field] ? entry.x[t.field] : "")
-            }
-
-            h += l
+            let d = entry[t.field]
+            h += /data/ [Symbol.replace](l, typeof d !== "undefined" ? d : "")
         }
 
-        h += lineEnd
+        h += end
+
+        if (typeof entry.x !== "undefined") {
+            h += line
+
+            for (let t of userTable) {
+                l = /idname/ [Symbol.replace](item, t.id)
+                l = /width/ [Symbol.replace](l, t.format + (t.field === "addr" ? " border-top" : ""))
+
+                let d = entry.x[t.field]
+                h += /data/ [Symbol.replace](l, typeof d !== "undefined" ? d : "")
+            }
+
+            h += end
+        }
+
+        h += end
     }
 
     $("#userItems").append(h)
@@ -588,7 +570,7 @@ blackHoleSuns.prototype.displayEntry = function (entry, zoom) {
 function entryDblclk(evt) {
     let iftotals = window.location.pathname == "/totals.html" || window.location.pathname == "/search.html"
 
-    let id = $(evt).parent().prop("id")
+    let id = $(evt).prop("id")
     let e = bhs.entries[reformatAddress(id)]
 
     if (!iftotals) {
@@ -614,25 +596,25 @@ const totalsItemsEnd = `</div>`
 const totalsCol = [{
     title: "",
     id: "id-what",
-    format: "col-sm-4 col-6",
+    format: "col-lg-4 col-md-6 col-sm-4 col-6",
 }, {
     title: "Player",
     id: "id-Player",
-    format: "col-sm-2 col-4 text-right",
+    format: "col-lg-2 col-md-4 col-sm-2 col-4 text-right",
     where: "index",
 }, {
     title: "All",
     id: "id-Total",
-    format: "col-sm-2 col-4 text-right",
+    format: "col-lg-2 col-md-4 col-sm-2 col-4 text-right",
 }, {
     title: "Contest",
     id: "id-ctst",
-    format: "col-sm-2 col-10 text-right hidden",
+    format: "col-lg-2 col-md-10 col-sm-2 col-10 text-right hidden",
     where: "index",
 }, {
     title: "Ctst All",
     id: "id-contestall",
-    format: "col-sm-2 col-4 text-right hidden",
+    format: "col-lg-2 col-md-4 col-sm-2 col-4 text-right hidden",
 }]
 
 const rowTotal = 0
@@ -663,12 +645,12 @@ blackHoleSuns.prototype.buildTotals = function () {
     const pnl = `
         <div class="card-header bkg-def">
             <div class="row">
-                <div class="col-7 h4 txt-def">Total Black Hole Entries&nbsp;
+                <div class="col-8 h4 txt-def">Total Black Hole Entries&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Click on colum titles to sort data based on column.">
                     </i>
                 </div>
-                <div id="contrib" class="col-7 clr-creme">Total contributors: </div>
+                <div id="contrib" class="col-6 clr-creme">Total contributors: </div>
                 <div id="cname" class="row clr-creme"></div>
             </div>
         </div>
@@ -1580,12 +1562,16 @@ blackHoleSuns.prototype.drawList = function (listEntry, force) {
 
             if (e.blackhole) {
                 pushentry(out.bh, e.xyzs, text)
+                
+                if (typeof e.x === "undefined")
+                    console.log(e)
+                else {
+                    text = e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg
+                    if (e.x.basename)
+                        text += "<br>" + e.x.basename
 
-                text = e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg
-                if (e.x.basename)
-                    text += "<br>" + e.x.basename
-
-                pushentry(out.x, e.x.xyzs, text)
+                    pushentry(out.x, e.x.xyzs, text)
+                }
             } else if (e.deadzone)
                 pushentry(out.dz, e.xyzs, text)
             else if (e.basename)

@@ -623,19 +623,19 @@ exports.getTotals = functions.https.onCall((data, context) => {
 
     const totalsColumns = [{
         id: "id-Name",
-        format: "col-sm-4 col-14",
+        format: "col-lg-5 col-md-14 col-sm-5 col-14",
     }, {
         title: "Total",
         id: "id-Total",
-        format: "col-sm-3 col-7 text-right",
+        format: "col-lg-3 col-md-4 col-sm-3 col-4 text-right",
     }, {
         title: "PC-XBox",
         id: "id-PC-XBox",
-        format: "col-sm-3 col-3 text-right",
+        format: "col-lg-3 col-md-4 col-sm-3 col-4 text-right",
     }, {
         title: "PS4",
         id: "id-PS4",
-        format: "col-sm-3 col-3 text-right",
+        format: "col-lg-3 col-md-4 col-sm-3 col-4 text-right",
     }]
 
     let html = /idname/ [Symbol.replace](totScrollPnl, data.view)

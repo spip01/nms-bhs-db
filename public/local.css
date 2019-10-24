@@ -20,37 +20,37 @@ h7 {
 
     .h1,
     h1 {
-        font-size: 2rem
+        font-size: 1.62rem
     }
 
     .h2,
     h2 {
-        font-size: 1.75rem
+        font-size: 1.41rem
     }
 
     .h3,
     h3 {
-        font-size: 1.5rem
+        font-size: 1.215rem
     }
 
     .h4,
     h4 {
-        font-size: 1.25rem
+        font-size: 1rem
     }
 
     .h5,
     h5 {
-        font-size: 1rem
+        font-size: .81rem
     }
 
     .h6,
     h6 {
-        font-size: 0.75rem
+        font-size: 0.61rem
     }
 
     .h7,
     h7 {
-        font-size: 0.5rem;
+        font-size: 0.41rem;
     }
 
     .sticky {
@@ -213,6 +213,10 @@ body {
 }
 
 .border-gold {
+    border-color: gold;
+}
+
+.border-def {
     border-color: gold;
 }
 

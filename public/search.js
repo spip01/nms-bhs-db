@@ -11,17 +11,7 @@ $(document).ready(() => {
 })
 
 blackHoleSuns.prototype.buildSelectPanel = async function () {
-    const panel = `
-        <div id="sel">
-            <div class="row">
-                <div id="id-Player" class="col-4 text-center"></div>
-                <div id="id-Platform" class="col-4 text-center"></div>
-                <div id="id-Galaxy" class="col-4 text-center"></div>
-            </div>
-        <br>`
-
-    $("#pnl-user").append(panel)
-    let loc = $("#pnl-user #sel")
+    let loc = $("#pnl-user")
 
     bhs.usersList = await bhs.getUserList()
     bhs.usersList.unshift({
@@ -30,15 +20,12 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
     })
 
     bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select, {
-        vertical:true,
-        tip: "Search entries made by player. First search for galaxy & platform is slow."
+        tip: "Search entries made by player. First search for galaxy any platform is slow."
     })
     bhs.buildMenu(loc, "Platform", platformList, bhs.select, {
-        vertical:true,
         required: true
     })
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.select, {
-        vertical:true,
         required: true
     })
 }

@@ -67,127 +67,125 @@
             </h4>
         </div>
 
-        <div class="card card-body border pad-bottom">
-            <div class="card card-body border pad-bottom bkg-def">
-                <div class="row">
-                    <div class="col-9">
-                        <div id="mapcol" class="card card-body border bkg-def pad-bottom">
-                            <div id="plymap"></div>
-                        </div>
-                        <br>
+        <div class="card card-body border bkg-def">
+            <div class="row">
+                <div class="col-md-5 col-14">
+                    <div id="pnl-user" class="card card-body">
+                        <div id="id-Player"></div>
+                        <div id="id-Platform"></div>
+                        <div id="id-Galaxy"></div>
                     </div>
+                    <br>
 
-                    <div class="col-5">
-                        <div class="row">
-                            <div class="col-7">
-                                <div class="row">
-                                    <div class="col-4">
-                                        <button id="btn-redraw" type="button"
-                                            class="text-center btn-sm btn btn-def">Clear
-                                        </button>
-                                    </div>
-                                </div>
-                                <br>
-                                <div class="row container">
-                                    <div id="btn-mapsettings" class="txt-def">
-                                        <i class="fa fa-cog txt-def"></i>&nbsp;Settings
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="maplogo" class="col-7">
-                                <img id="logo" src="lBTK5EL.png" class="float-center" alt="BHS Logo" height="20px"
-                                    width="20px" style="max-width:100px; max-height:100px">
-                            </div>
+                    <div id="searchpnl" class="card border pad-bottom">
+                        <div class="card-header txt-def h4 text-center">
+                            Search&nbsp;
+                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom"
+                                title="Searches topmost field completed except for start & end date.">
+                            </i>
                         </div>
-                        <br>
-
-                        <div id="pnl-user" class="card card-body border pad-bottom"></div>
-                        <br>
-
-                        <div id="searchpnl" class="card border pad-bottom">
-                            <div class="card-header txt-def h4 text-center">
-                                Search
-                                <br>
-                                <h6 class="clr-creme">Searches topmost field completed except for start & end date.</h6>
+                        <div class="card-body txt-def bkg-white">
+                            <div class="row">
+                                <div class="col-6 h6 txt-inp-def">Coordinates&nbsp;</div>
+                                <input id="id-addr" class="rounded col-8" placeholder="0000:0000:0000:0000">
                             </div>
-                            <div class="card-body txt-def bkg-white">
-                                <div class="row">
-                                    <div class="col-6 h6 txt-inp-def">Coordinates&nbsp;</div>
-                                    <input id="id-addr" class="rounded col-8" placeholder="0000:0000:0000:0000">
-                                </div>
 
-                                <div class="row">
-                                    <div class="col-6 h6 txt-inp-def">System Name&nbsp;</div>
-                                    <input id="id-sys" class="rounded col-8">
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-6 h6 txt-inp-def">Region Name&nbsp;</div>
-                                    <input id="id-reg" class="rounded col-8">&nbsp;
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-6 h6 txt-inp-def">Start Date&nbsp;</div>
-                                    <input id="id-start" type="date" class="rounded col-8">&nbsp;
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-6 h6 txt-inp-def">End Date&nbsp;</div>
-                                    <input id="id-end" type="date" class="rounded col-8">&nbsp;
-                                </div>
-
-                                <!--div class="row">
-                                    <div id="id-Lifeform" class="col-12"></div>
-                                </div-->
-
-                                <!--div class="row">
-                                    <div id="id-Economy" class="col-12"></div>
-                                </div-->
-                                <br>
-                                <div class="row">
-                                    <div class="col-4"></div>
-                                    <button id="btn-search" type="button" class="col-6 btn btn-sm btn-def">Search</button>&nbsp;
-                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
-                                        data-html="true" data-placement="bottom"
-                                        title="First search on a specific galaxy & platform will be slow.">
-                                    </i>
-                                </div>
+                            <div class="row">
+                                <div class="col-6 h6 txt-inp-def">System Name&nbsp;</div>
+                                <input id="id-sys" class="rounded col-8">
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <br>
 
-                <div id="map" class="row">
-                    <div class="col-5">
-                        <div id="showmapkey" class="card border bkg-def pad-bottom hidden">
-                            <div class="card-header h5 txt-def">Key&nbsp;
+                            <div class="row">
+                                <div class="col-6 h6 txt-inp-def">Region Name&nbsp;</div>
+                                <input id="id-reg" class="rounded col-8">&nbsp;
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6 h6 txt-inp-def">Start Date&nbsp;</div>
+                                <input id="id-start" type="date" class="rounded col-8">&nbsp;
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6 h6 txt-inp-def">End Date&nbsp;</div>
+                                <input id="id-end" type="date" class="rounded col-8">&nbsp;
+                            </div>
+
+                            <br>
+                            <div class="row">
+                                <div class="col-4"></div>
+                                <button id="btn-search" type="button"
+                                    class="col-6 btn btn-sm btn-def">Search</button>&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                                    data-placement="bottom" title="Click on color box to change colors and set dot size in 
-                                    adjacent field. Then click redraw.">
+                                    data-placement="bottom"
+                                    title="First search on a specific galaxy & platform will be slow.">
                                 </i>
                             </div>
-                            <div id="mapkey" class="card-body txt-def"></div>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+
+                <div class="col-md-9 col-14">
+                    <div class="row bkg-def">
+                        <div id="mapcol" class="col-md-11 col-14">
+                            <div id="plymap" class="border"></div>
+                            <br>
+                        </div>
+
+                        <div class="col-md-3 col-14">
+                            <div class="row">
+                                <div id="maplogo" class="col-md-14 col-4">
+                                    <img id="logo" src="lBTK5EL.png" class="float-center" alt="BHS Logo" height="20px"
+                                        width="20px" style="max-width:100px; max-height:100px">
+                                </div>
+
+                                <div class="col-md-14 col-10">
+                                    <div class="row">
+                                        <button id="btn-redraw" type="button"
+                                            class="col-md-14 col-5 text-center btn-sm btn btn-def">Clear
+                                        </button>
+                                        <div id="btn-mapsettings" class="col-md-14 col-9 txt-def">
+                                            <i class="fa fa-cog txt-def"></i>&nbsp;Settings
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+
                         </div>
                     </div>
                     <br>
 
-                    <div class="col-9">
-                        <div id="showmapoptions" class="hidden">
-                            <div id="mapoptions" class="card card-body bkg-def border pad-bottom"></div>
+                    <div id="map" class="row">
+                        <div class="col-5">
+                            <div id="showmapkey" class="card border bkg-def pad-bottom hidden">
+                                <div class="card-header h5 txt-def">Key&nbsp;
+                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                        data-html="true" data-placement="bottom" title="Click on color box to change colors and set dot size in 
+                                    adjacent field. Then click redraw.">
+                                    </i>
+                                </div>
+                                <div id="mapkey" class="card-body txt-def"></div>
+                            </div>
+                        </div>
+                        <br>
+
+                        <div class="col-9">
+                            <div id="showmapoptions" class="hidden">
+                                <div id="mapoptions" class="card card-body bkg-def border pad-bottom"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <br>
-
-        <div id="showentries" class="card">
-            <div id="entryTable" class="card border pad-bottom"></div>
-        </div>
     </div>
-
     <br>
+
+    <div id="entryTable" class="card pad-bottom"></div>
+    <br>
+
     <div class="clr-creme text-right h7">
         <i class="fa fa-copyright"></i> 2019 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     </div>

@@ -67,19 +67,19 @@ var panels = [{
 
 blackHoleSuns.prototype.buildPanel = function (id) {
     const panel = `
-        <div id="idname" class="card pad-bottom bkg-trans-2">
+        <div id="idname" class="card">
             <div class="card-header txt-def h5">title</div>
             <div class="card-body">
                 <div id="id-addrInput">
                     <div class="row">
-                        <div class="col-sm-4 col-7 h6 txt-inp-def">Coordinates<span class="h5 text-danger">&nbsp;*</span>&nbsp;
+                        <div class="col-sm-4 col-5 h6 txt-inp-def">Coords<span class="h5 text-danger">&nbsp;*</span>&nbsp;
                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                                 data-placement="bottom" title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
                                 A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
                             </i>
                         </div>
-                        <input id="id-addr" class="rounded col-sm-5 col-7" placeholder="0000:0000:0000:0000" onchange="bhs.changeAddr(this)">
-                        <div class="col-5">
+                        <input id="id-addr" class="rounded col-sm-5 col-9 h6" placeholder="0000:0000:0000:0000" onchange="bhs.changeAddr(this)">
+                        <div class="col-lg-4 col-md-7 col-sm-4 col-7">
                             <label class="h6 txt-inp-def">
                                 <input id="ck-glyphs" type="checkbox" onchange="bhs.setGlyphInput(this)">
                                 Input Glyphs&nbsp;
@@ -92,15 +92,19 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     </div>
 
                     <div class="row">
-                        <div class="col-sm-2 col-7 h6 txt-inp-def">Glyphs&nbsp;</div>
-                        <div id="id-glyph" class="col-sm-8 col-7 h4 text-center txt-inp-def glyph"></div>
-                        <div id="id-hex" class="col-sm-4 col-14 text-center txt-inp-def"></div>
+                        <div class="col-lg-2 col-md-3 col-sm-2 col-4 h6 txt-inp-def">Glyphs&nbsp;</div>
+                        <div class="col-lg-10 col-md-11 col-sm-12 col-10">
+                            <div class="row">
+                                <div id="id-glyph" class=" col-lg-9 col-md-14 col-sm-8 col-14 h5 txt-inp-def glyph"></div>
+                                <div id="id-hex" class=" col-lg-5 col-md-14 col-sm-4 col-14 h6 txt-inp-def"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div id="id-glyphInput" class="hidden">
                     <div class="row">
-                        <div class="col-sm-3 col-3 h6 txt-inp-def">
+                        <div class="col-lg-3 col-md-5 col-sm-3 col-5 h6 txt-inp-def">
                             Glyph<span class="h5 text-danger">&nbsp;*</span>&nbsp;
                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                 data-html="true" data-placement="bottom"
@@ -108,8 +112,8 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                                 digit hex, 0-9 a-f, value can be entered directly in the field.">
                             </i>
                         </div>
-                        <input id="id-glyph" class="rounded col-sm-7 col-7 h4 glyph" onchange="bhs.changeGlyph(this)">
-                        <div class="col-4">
+                        <input id="id-glyph" class="rounded col-lg-7 col-md-9 col-sm-7 col-9 h5 glyph" onchange="bhs.changeGlyph(this)">
+                        <div class="col-lg-4 col-md-9 col-sm-4 col-9">
                             <label class="h6 txt-inp-def">
                                 <input id="ck-glyphs" type="checkbox" onchange="bhs.setGlyphInput(this)">
                                 Input Glyphs&nbsp;
@@ -194,13 +198,13 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
                 <div id="id-isbase" class="row" style="display:none">
                     <div class="col-sm-2 col-4 h6 txt-inp-def">Name</div>
-                    <input id="id-basename" class="rounded col-6">
+                    <input id="id-basename" class="rounded col-7">
                     <div id="id-Owned" class="col-sm-3 col-9"></div>
                     <button id="btn-delbase" type="button" class="btn-def btn btn-sm disabled" disabled onclick="bhs.delBase(this)">Delete Base</button>&nbsp
                 </div>
 
-                <div id="id-pnl1-only" class="row">
-                    <div class="col-5">
+                <div id="id-pnl1-only" class="row border-top">
+                    <div class="col-7">
                         <label class="h6 txt-inp-def">
                             <input id="ck-single" type="checkbox">
                             Single System&nbsp;
@@ -210,7 +214,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                         </label>
                     </div>
 
-                    <div class="col-5">
+                    <div class="col-7">
                         <label class="h6 txt-inp-def">
                             <input id="ck-isdz" type="checkbox">
                             Dead Zone&nbsp;
@@ -222,29 +226,31 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                 </div>
 
                 <div class="row">
-                    <div id="id-fmcenter" class="col-4 txt-inp-def" style="display:none">
+                    <div id="id-fmcenter" class="col-lg-7 col-md-14 col-sm-7 col-14 txt-inp-def" style="display:none">
                         <div class="row">
-                            <div class="col-7 text-right">To Center&nbsp;</div>
-                            <div id="fmcenter" class="col-7 text-left h6"></div>
+                            <div class="col-9 h6">To Center&nbsp;</div>
+                            <div id="fmcenter" class="col-5 h6"></div>
                         </div>
                     </div>
-                        
-                    <div id="id-traveled" class="col-5 txt-inp-def" style="display:none">
+                </div>
+
+                <div class="row">
+                    <div id="id-traveled" class="col-lg-7 col-md-14 col-sm-7 col-14 txt-inp-def" style="display:none">
                         <div class="row">
-                            <div class="col-8 text-right"> Traveled&nbsp;</div>
-                            <div id="traveled" class="col-6 text-left h6"></div>
+                            <div class="col-9 h6">Traveled&nbsp;</div>
+                            <div id="traveled" class="col-5 h6"></div>
                         </div>
                     </div>
 
-                   <div id="id-tocenter" class="col-5 txt-inp-def" style="display:none">
+                   <div id="id-tocenter" class="col-lg-7 col-md-14 col-sm-7 col-14 txt-inp-def" style="display:none">
                         <div class="row">
-                            <div class="col-9 text-right"> Towards Center&nbsp;
+                            <div class="col-9 h6"> Towards Center&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom" title="Typically this is around 6000ly. On the edges of the galaxy 
                                     it can be more.  In the core it can be slightly negative.">
                                 </i>&nbsp;
                             </div>
-                            <div id="tocenter" class="col-5 text-left h6"></div>
+                            <div id="tocenter" class="col-5 h6"></div>
                         </div>
                     </div>
                 </div>

@@ -113,9 +113,9 @@
   .col-8x1 {
     -webkit-box-flex: 0;
     box-flex: 0;
-    -ms-flex: 0 0 12.5%;
-    flex: 0 0 12.5%;
-    max-width: 12.5%;
+    -ms-flex: 0 0 12.4%;
+    flex: 0 0 12.4%;
+    max-width: 12.4%;
   }
 
   @media (min-width: 768px) {
@@ -234,9 +234,9 @@
     .col-sm-8x1 {
       -webkit-box-flex: 0;
       box-flex: 0;
-      -ms-flex: 0 0 12.5%;
-      flex: 0 0 12.5%;
-      max-width: 12.5%;
+      -ms-flex: 0 0 12.4%;
+      flex: 0 0 12.4%;
+      max-width: 12.4%;
     }
   }
 
@@ -356,9 +356,9 @@
     .col-md-8x1 {
       -webkit-box-flex: 0;
       box-flex: 0;
-      -ms-flex: 0 0 12.5%;
-      flex: 0 0 12.5%;
-      max-width: 12.5%;
+      -ms-flex: 0 0 12.4%;
+      flex: 0 0 12.4%;
+      max-width: 12.4%;
     }
   }
 
@@ -478,9 +478,9 @@
     .col-lg-8x1 {
       -webkit-box-flex: 0;
       box-flex: 0;
-      -ms-flex: 0 0 12.5%;
-      flex: 0 0 12.5%;
-      max-width: 12.5%;
+      -ms-flex: 0 0 12.4%;
+      flex: 0 0 12.4%;
+      max-width: 12.4%;
     }
   }
 

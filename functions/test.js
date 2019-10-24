@@ -6,40 +6,39 @@ const serviceAccount = require("./nms-bhs-8025d3f3c02d.json")
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 })
-const fs = require('fs')
 
-const csvcolumns = ["bhsys", "bhreg", "bhaddr", "exitsys", "exitreg", "exitaddr"]
-const jsoncolumns = ["bhaddr", "bhreg", "bhsys", "exitaddr", "exitreg", "exitsys"]
 
 async function main() {
-    const csvfile = "C:\\Users\\sp\\Documents\\nms\\2e253fc8-0984-453d-8665-706e2a17f7d9.csv"
-    const jsonfile = "C:\\Users\\sp\\Documents\\nms\\darc_Euclid-PS4.json"
-    let csv = []
-    let json = {}
+    let urefs = await admin.firestore().collection("users").listDocuments()
 
-    let data = fs.readFileSync(csvfile, 'utf8')
-    let allrows = data.split(/\r?\n|\r/)
-    for (let row of allrows) {
-        let r = row.split(/,/g)
-        csv.push(r[2])
-    }
+    for (let uref of urefs) { // user
+        uref = uref.collection("stars5")
+        let grefs = await uref.listDocuments()
 
-    data = fs.readFileSync(jsonfile, 'utf8')
-    allrows = data.split(/\r?\n|\r/)
-    for (let row of allrows) {
-        if (row.length > 32) {
-            let r = JSON.parse(row)
-            json[r[0]] = true
+        for (let gref of grefs) { // galaxy
+            let prefs = await gref.listCollections()
+
+            for (let pref of prefs) { // platform
+                let snapshot = await pref.get()
+
+                for (let doc of snapshot.docs) {
+                    let b = doc.data()
+
+                    if (b.blackhole && typeof b.x === "undefined") {
+                        let ref = admin.firestore().doc("stars5/" + b.galaxy + "/" + b.platform + "/" + b.addr)
+                        let edoc = await ref.get()
+                        let e = edoc.data()
+
+                        console.log(e._name, ref.path, doc.ref.path)
+                        doc.ref.set({
+                            x: e.x
+                        }, {
+                            merge: true
+                        })
+                    }
+                }
+            }
         }
-    }
-
-    console.log(csv.length)
-    console.log(Object.keys(json).length)
-
-    for (let a of csv) {
-        console.log(a)
-        if (typeof json[a] === "undefined")
-            console.log(a, json[a], "not found")
     }
 }
 

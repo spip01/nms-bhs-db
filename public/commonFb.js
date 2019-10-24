@@ -112,7 +112,7 @@ blackHoleSuns.prototype.logOut = function () {
     bhs.fbauth.signOut()
 }
 
-blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
+blackHoleSuns.prototype.onAuthStateChanged = async function (usr) {
     if (usr) {
         let profilePicUrl = usr.photoURL
         let userName = usr.displayName
@@ -122,54 +122,29 @@ blackHoleSuns.prototype.onAuthStateChanged = function (usr) {
         $("#userpic").attr('src', profilePicUrl || '/images/body_image.png')
         $("#username").text(userName)
 
-        bhs.navLoggedin()
-
-        // let ref = bhs.fs.collection("users").where("_name","==","wasim13dark")
-        // ref.get().then(function(snapshot){
-        //     if (!snapshot.empty)
-        //         user = snapshot.docs[0].data()
-
-        //      bhs.doLoggedin(user)
-        //      bhs.navLoggedin()
-        // }).catch(err=>{
-        //     console.log(err)
-        // })
-
         let ref = bhs.getUsersColRef(usr.uid)
-        ref.get().then(doc => {
-            if (doc.exists)
-                user = doc.data()
-            else
-                user.firsttime = firebase.firestore.Timestamp.now()
+        let doc = await ref.get()
+        if (doc.exists)
+            user = doc.data()
+        else
+            user.firsttime = firebase.firestore.Timestamp.now()
 
-            user.email = usr.email
-            user.displayName = usr.displayName
-            user.role = "user"
-            user.lasttime = firebase.firestore.Timestamp.now()
+        user.email = usr.email
+        user.displayName = usr.displayName
+        user.role = "user"
+        user.lasttime = firebase.firestore.Timestamp.now()
 
-            bhs.updateUser(user)
-            bhs.doLoggedin(user)
+        bhs.updateUser(user)
 
-            // if (document.domain == "localhost") {
-            // var t = firebase.functions().httpsCallable('getDARC')
-            // t()
-            // .then(result => {
-            //     console.log(result.data)
-            // })
-            // .catch(err => {
-            //     console.log(err)
-            // })
-            // }
-        }).catch(err => {
-            user.email = usr.email
-            user.displayName = usr.displayName
-            user.role = "user"
-            user.lasttime = firebase.firestore.Timestamp.now()
-            user.firsttime = user.lasttime
+        // ref = bhs.fs.collection("users").where("_name", "==", "zeenewbian")
+        // let snapshot = await ref.get()
+        // if (!snapshot.empty) {
+        //     user = snapshot.docs[0].data()
+        //     bhs.displayUser(user, true)
+        // }
 
-            bhs.updateUser(user)
-            bhs.doLoggedin(user)
-        })
+        bhs.doLoggedin(user)
+        bhs.navLoggedin()
     } else {
         bhs.navLoggedout()
         bhs.user = bhs.userInit()

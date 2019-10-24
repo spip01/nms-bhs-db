@@ -88,7 +88,7 @@ function dispAddr(evt) {
         $("#id-angle").text(xzAngle + " deg")
 
         if (range !== "")
-            $("#id-jumps").text(parseInt(dist / range))
+            $("#id-jumps").text(Math.ceil(dist / range))
 
         mapPoints("plymap", saddr, eaddr)
     }

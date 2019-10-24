@@ -51,49 +51,49 @@
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div class="card">
-            <div class="card-header bkg-def txt-def h3">
-                Coordinates to Glyph conversion
+            <div class="card-header bkg-def txt-def h4">
+                Coordinates to Glyph
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-lg-5 col-md-6 col-13">
+                    <div class="col-lg-5 col-md-6 col-sm-7 col-13">
                         <div class="row">
-                            <div class="col-md-6 col-sm-4 col-6 h6 txt-inp-def" data-toggle="tooltip" data-html="true"
+                            <div class="col-sm-5 col-5 h6 txt-inp-def" data-toggle="tooltip" data-html="true"
                                 data-placement="bottom"
                                 title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators.">
-                                Input Coordinates&nbsp;
+                                Coords&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6"></i>
                             </div>
-                            <input id="id-addr" class="rounded col-lg-7 col-md-8 col-sm-5 col-8 h5"
+                            <input id="id-addr" class="rounded col-lg-7 col-md-8 col-sm-7 col-9 h6"
                                 placeholder="0000:0000:0000:0000" onchange="dispAddr(this)">
                         </div>
                     </div>
 
-                    <div class="col-lg-5 col-md-7 col-13">
+                    <div class="col-lg-5 col-md-7 col-sm-6 col-13">
                         <div class="row">
-                            <div class="col-sm-4 col-6 h6 txt-inp-def" data-toggle="tooltip" data-html="true"
+                            <div class="col-sm-4 col-5 h6 txt-inp-def" data-toggle="tooltip" data-html="true"
                                 data-placement="bottom" title="Planet number 0-15.<br>Defaults to 0.">
-                                Input Planet&nbsp;
+                                Planet&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6"></i>
                             </div>
-                            <input id="id-planet" class="rounded col-md-2 col-sm-2 col-3" type="number" value=0 min=0
+                            <input id="id-planet" class="rounded col-3 h6" type="number" value=0 min=0
                                 max=15 placeholder="0" onchange="dispAddr(this)">
                         </div>
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-lg-5 col-md-6 col-13">
+                    <div class="col-lg-5 col-md-6 col-sm-7 col-13">
                         <div class="row">
-                            <div class="col-lg-4 col-md-4 col-sm-4 col-3 h6 txt-inp-def">Glyph</div>
-                            <div id="id-glyph" class="col-lg-10 col-md-10 col-sm-10 col-11 h4 txt-inp-def glyph"></div>
+                            <div class="col-lg-4 col-md-4 col-sm-3 col-5 h6 txt-inp-def">Glyph</div>
+                            <div id="id-glyph" class="col-lg-10 col-md-10 col-sm-11 col-9 h4 txt-inp-def glyph"></div>
                         </div>
                     </div>
 
-                    <div class="col-lg-5 col-md-7 col-13">
+                    <div class="col-lg-5 col-md-7 col-sm-7 col-13">
                         <div class="row">
-                            <div class="col-lg-4 col-md-4 col-sm-4 col-3 h6 txt-inp-def">Hex</div>
-                            <div id="id-hex" class="col-lg-10 col-md-10 col-sm-10 col-11 h4 txt-inp-def"></div>
+                            <div class="col-lg-4 col-md-4 col-sm-3 col-5 h6 txt-inp-def">Hex</div>
+                            <div id="id-hex" class="col-9 h4 txt-inp-def"></div>
                         </div>
                     </div>
                 </div>
@@ -102,37 +102,33 @@
         <br>
 
         <div class="card">
-            <div class="card-header bkg-def txt-def h3">
-                Glyph to Coordinates conversion
+            <div class="card-header bkg-def txt-def h4">
+                Glyph to Coordinates
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-lg-2 col-md-2 col-4 h6 txt-inp-def" data-toggle="tooltip" data-html="true"
-                        data-placement="bottom" title="Type hex digits into field or use buttons.">Input
+                    <div class="col-md-2 col-3 h6 txt-inp-def" data-toggle="tooltip" data-html="true"
+                        data-placement="bottom" title="Type hex digits into field or use buttons.">
                         Glyph&nbsp;
                         <i class="fa fa-question-circle-o text-danger h6"></i>
                     </div>
-                    <input id="id-glyph" class="col-lg-4 col-md-5 col-sm-6 col-10 rounded h4 glyph"
+                    <input id="id-glyph" class="col-lg-4 col-md-5 col-sm-6 col-11 rounded h5 glyph"
                         onchange="dispGlyph(this)">
                 </div>
 
-                <div class="row">
-                    <div class="col-lg-8 col-md-9">
-                        <div id="glyphbuttons" class="row"> </div>
-                    </div>
-                </div>
+                <div id="glyphbuttons" class="row"> </div>
 
                 <div class="row">
-                    <div class="col-lg-5 col-md-6 col-13">
+                    <div class="col-md-5 col-sm-7 col-13">
                         <div class="row">
-                            <div class="col-lg-4 col-md-4 col-sm-4 col-4 h6 txt-inp-def">Coordinates</div>
-                            <div id="id-addr" class="col-lg-10 col-md-10 col-sm-10 col-10 h4 txt-inp-def"></div>
+                            <div class="col-sm-3 col-4 h6 txt-inp-def">Coords</div>
+                            <div id="id-addr" class="col-10 h5 txt-inp-def"></div>
                         </div>
                     </div>
-                    <div class="col-lg-5 col-md-6 col-13">
+                    <div class="col-md-5 col-sm-7 col-13">
                         <div class="row">
-                            <div class="col-lg-4 col-md-4 col-sm-4 col-4 h6 txt-inp-def">Planet</div>
-                            <div id="id-planet" class="col-1 h4 txt-inp-def"></div>
+                            <div class="col-4 h6 txt-inp-def">Planet</div>
+                            <div id="id-planet" class="col-1 h5 txt-inp-def"></div>
                         </div>
                     </div>
                 </div>
