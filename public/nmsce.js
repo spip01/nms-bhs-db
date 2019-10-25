@@ -1484,13 +1484,35 @@ const shipList = [{
         name: "Barrel Nose"
     }, {
         name: "Rasa"
+    }, {
+        name: "Viper"
+    }, {
+        name: "Alphs"
     }, ],
     features: [{
         name: "Droid"
     }, {
         name: "Halo"
     }, {
-        name: "X-Wing"
+        name: "Shield"
+    },  {
+        name: "Jet"
+    },  {
+        name: "Heavy"
+    },  {
+        name: "Top Fin"
+    },  {
+        name: "6 Wing"
+    },  {
+        name: "E-Wing"
+    },  {
+        name: "Gull Wing"
+    },  {
+        name: "Delta"
+    },  {
+        name: "Star Jumper"
+    },  {
+        name: "Vulture Wing"
     }, ]
 }, {
     name: "Hauler",
@@ -1750,6 +1772,8 @@ const colorList = [{
     name: "Bronze",
 }, {
     name: "Gold",
+}, {
+    name: "Pink",
 }, ]
 
 const fontList = [{
