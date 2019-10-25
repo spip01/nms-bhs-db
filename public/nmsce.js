@@ -14,6 +14,16 @@ $(document).ready(() => {
         let page = window.location.pathname.replace(/(.*)\//, "$1")
         let loc = $("#navmenu").find("[href='" + page + "']")
         loc.addClass("clr-blue border rounded")
+
+        // $("#menuimg").on("load", () => {
+        //     let height = $("#menuitems").height()
+        //     let loc = $("[src='nmsce.png']")
+        //     let iheight = loc.height()
+        //     let width = loc.width() * height / iheight
+
+        //     loc.width(width)
+        //     loc.height(height)
+        // })
     })
 
     nmsce = new NMSCE()
@@ -397,7 +407,7 @@ NMSCE.prototype.extractSearch = async function (user) {
         let found = {}
         found[tab] = []
 
-        bhs.status("Found "+snapshot.size+" items.", true)
+        bhs.status("Found " + snapshot.size + " items.", true)
 
         for (let doc of snapshot.docs)
             found[tab].push(doc.data())
@@ -1495,23 +1505,23 @@ const shipList = [{
         name: "Halo"
     }, {
         name: "Shield"
-    },  {
+    }, {
         name: "Jet"
-    },  {
+    }, {
         name: "Heavy"
-    },  {
+    }, {
         name: "Top Fin"
-    },  {
+    }, {
         name: "6 Wing"
-    },  {
+    }, {
         name: "E-Wing"
-    },  {
+    }, {
         name: "Gull Wing"
-    },  {
+    }, {
         name: "Delta"
-    },  {
+    }, {
         name: "Star Jumper"
-    },  {
+    }, {
         name: "Vulture Wing"
     }, ]
 }, {
