@@ -14,13 +14,13 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
 
     bhs.usersList = await bhs.getUserList()
     bhs.usersList.unshift({
-        name: "",
+        name: "--blank--",
         uid: null
     })
 
     bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select, {
         vertical: true,
-        tip: "Display entries made by player on map. First selection for galaxy & platform is slow."
+        tip: "Display entries made by player on map. '--blank--' is to deselect a player. First selection for galaxy & platform is slow."
     })
     bhs.buildMenu(loc, "Platform", platformList, bhs.select, {
         vertical: true

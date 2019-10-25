@@ -14,13 +14,20 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
     let loc = $("#pnl-user")
 
     bhs.usersList = await bhs.getUserList()
+
+    bhs.usersList.sort((a, b) => {
+        a = a.name.toLowerCase()
+        b = b.name.toLowerCase()
+        return a > b ? 1 : a < b ? -1 : 0
+    })
+
     bhs.usersList.unshift({
-        name: "",
+        name: "--blank--",
         uid: null
     })
 
     bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select, {
-        tip: "Search entries made by player. First search for galaxy any platform is slow."
+        tip: "Search entries made by player. '--blank--' is to deselect a player. First search for galaxy any platform is slow."
     })
     bhs.buildMenu(loc, "Platform", platformList, bhs.select, {
         required: true

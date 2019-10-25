@@ -208,6 +208,12 @@ blackHoleSuns.prototype.changeName = function (loc, user) {
     if (user._name == bhs.user._name)
         return
 
+    if (user._name.match(/--blank--/i)) {
+        $(loc).val(bhs.user._name)
+        bhs.status("Player Name:" + user._name + " is restricted.")
+        return
+    }
+
     if (user._name.match(/Unknown Traveler/i)) {
         $(loc).val(bhs.user._name)
         bhs.status("Player Name:" + user._name + " is restricted.")
@@ -629,13 +635,16 @@ blackHoleSuns.prototype.getEntriesByName = async function (displayFcn, singleFcn
     if (!bhs.loaded || !bhs.loaded[galaxy] || !bhs.loaded[galaxy][platform])
         await bhs.getEntries(null, null, null, galaxy, platform)
 
-    bhs.entries = {}
-    let list = Object.keys(bhs.list[galaxy][platform])
-    for (let i = 0; i < list.length; ++i) {
-        let e = bhs.list[galaxy][platform][list[i]]
-        if (e._name === name)
-            bhs.entries[list[i]] = e
-    }
+    if (name !== "--blank--") {
+        bhs.entries = {}
+        let list = Object.keys(bhs.list[galaxy][platform])
+        for (let i = 0; i < list.length; ++i) {
+            let e = bhs.list[galaxy][platform][list[i]]
+            if (e._name === name)
+                bhs.entries[list[i]] = e
+        }
+    } else
+        bhs.entries = bhs.list[galaxy][platform]
 
     if (displayFcn)
         displayFcn(bhs.entries)
@@ -649,13 +658,16 @@ blackHoleSuns.prototype.getOrgEntries = async function (displayFcn, singleFcn, n
     if (!bhs.loaded || !bhs.loaded[galaxy] || !bhs.loaded[galaxy][platform])
         await bhs.getEntries(null, null, null, galaxy, platform)
 
-    bhs.entries = {}
-    let list = Object.keys(bhs.list[galaxy][platform])
-    for (let i = 0; i < list.length; ++i) {
-        let e = bhs.list[galaxy][platform][list[i]]
-        if (e.org === name)
-            bhs.entries[list[i]] = e
-    }
+    if (name !== "--blank--") {
+        bhs.entries = {}
+        let list = Object.keys(bhs.list[galaxy][platform])
+        for (let i = 0; i < list.length; ++i) {
+            let e = bhs.list[galaxy][platform][list[i]]
+            if (e.org === name)
+                bhs.entries[list[i]] = e
+        }
+    } else
+        bhs.entries = bhs.list[galaxy][platform]
 
     if (displayFcn)
         displayFcn(bhs.entries)

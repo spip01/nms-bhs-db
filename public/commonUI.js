@@ -188,7 +188,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
 
     await bhs.getOrgList()
     bhs.orgList.unshift({
-        name: ""
+        name: "--blank--"
     })
 
     let fsearch = window.location.pathname == "/cesearch.html"
@@ -486,15 +486,13 @@ blackHoleSuns.prototype.entriesToCsv = function () {
     let out = "bh coord,sys,reg,life,econ,exit coord,sys,reg,life,econ\n"
 
     let list = $("#userItems").children()
-    for (let i = 0; i < list.length; ++i) {
-        let loc = list[i]
+    for (let loc of list) {
         let addr = /-/g [Symbol.replace]($(loc).prop("id"), ":")
         let e = bhs.entries[addr]
         if (e.blackhole) {
             out += e.addr + "," + e.sys + "," + e.reg + "," + e.life + "," + e.econ + ","
             out += e.x.addr + "," + e.x.sys + "," + e.x.reg + "," + e.x.life + "," + e.x.econ + "\n"
         }
-
     }
 
     return out
