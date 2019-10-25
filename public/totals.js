@@ -33,6 +33,7 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
 
 blackHoleSuns.prototype.select = async function () {
     let name = $("#btn-Player").text().stripNumber()
+    name = name ? name : "--blank--"
     let galaxy = $("#btn-Galaxy").text().stripNumber()
     let platform = $("#btn-Platform").text().stripNumber()
     bhs.getEntriesByName(bhs.displayEntryList, bhs.displayEntry, name, galaxy, platform)

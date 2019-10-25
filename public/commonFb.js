@@ -627,7 +627,7 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, 
     }
 }
 
-blackHoleSuns.prototype.getEntriesByName = async function (displayFcn, singleFcn, name, galaxy, platform) {
+blackHoleSuns.prototype.getEntriesByName = async function (displayFcn, name, galaxy, platform) {
     name = name ? name : bhs.user._name
     galaxy = galaxy ? galaxy : bhs.user.galaxy
     platform = platform ? platform : bhs.user.platform
@@ -650,7 +650,7 @@ blackHoleSuns.prototype.getEntriesByName = async function (displayFcn, singleFcn
         displayFcn(bhs.entries)
 }
 
-blackHoleSuns.prototype.getOrgEntries = async function (displayFcn, singleFcn, name, galaxy, platform) {
+blackHoleSuns.prototype.getOrgEntries = async function (displayFcn, name, galaxy, platform) {
     name = name ? name : bhs.user.org
     galaxy = galaxy ? galaxy : bhs.user.galaxy
     platform = platform ? platform : bhs.user.platform

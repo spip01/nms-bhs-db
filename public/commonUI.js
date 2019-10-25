@@ -852,6 +852,11 @@ blackHoleSuns.prototype.displayTotalsHtml = function (html, p) {
 
     if (p === "Players")
         $("#contrib").text("Total contributors: " + $("#itm-Players").children().length)
+
+    let ftotals = window.location.pathname == "/totals.html"
+
+    if (ftotals)
+        $("[id='totals-tip']").show()
 }
 
 blackHoleSuns.prototype.sortTotals = function (evt) {
@@ -897,33 +902,29 @@ blackHoleSuns.prototype.sortTotals = function (evt) {
 }
 
 blackHoleSuns.prototype.clickUser = function (evt) {
-    return
-    let loc = $(evt).parent()
-    let id = loc.prop("id")
-    let pnlid = loc.parent().prop("id")
-    let name = $(evt).parent().find("#id-names").text().stripMarginWS()
-
     if (window.location.pathname == "/totals.html") {
-        bhs.entries = {}
+        let id = $(evt).prop("id").stripID()
+        if (id !== "PC-XBox" && id !== "PS4")
+            return
 
-        if (pnlid == "itm-Civ-Org") {
-            let galaxy = $("#btn-Galaxy").text().stripNumber()
-            let platform = $("#btn-Platform").text().stripNumber()
-            $("#btn-Player").text(id.stripID())
-            bhs.getOrgEntries(bhs.displayEntryList, bhs.displayEntry, name, galaxy, platform)
-        } else {
-            let uid = $(evt).parent().find("#id-uid").text().stripMarginWS()
-            let galaxy = $(evt).parent().find("#id-galaxy").text().stripMarginWS()
-            let platform = $(evt).parent().find("#id-platform").text().stripMarginWS()
+        let loc = $(evt).parent()
+        let pnlid = loc.closest("[id|='itm']").prop("id")
 
-            console.log(name + " " + uid)
+        let galaxy = $("#btn-Galaxy").text().stripNumber()
+        let name = loc.find("#id-Name").text().stripMarginWS()
+        let platform = $(evt).prop("id").stripID()
 
-            $("#btn-Galaxy").text(galaxy)
-            $("#btn-Platform").text(platform)
-            $("#btn-Player").text(name)
+        $("#btn-Platform").text(platform)
+        $("#btn-Player").text(name)
 
-            bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, uid, galaxy, platform)
-        }
+        if (pnlid == "itm-Galaxies") {
+            $("#btn-Galaxy").text(name)
+            $("#btn-Player").text("")
+            bhs.getEntries(bhs.displayEntryList, null, null, name.stripNumber(), platform)
+        } else if (pnlid == "itm-Organizations")
+            bhs.getOrgEntries(bhs.displayEntryList, name, galaxy, platform)
+        else
+            bhs.getEntriesByName(bhs.displayEntryList, name, galaxy, platform)
     }
 }
 

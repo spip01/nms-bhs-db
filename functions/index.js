@@ -614,11 +614,13 @@ exports.getTotals = functions.https.onCall((data, context) => {
     const totScrollPnl = `  <div id="scroll-idname" class="card card-body nopadding">`
     const totHdr = `              <div id="hdr-idname" class="row border-bottom txt-def">`
     const totItm = `              <div id="itm-idname" class="scrollbar container-fluid nopadding" style="overflow-y: scroll; height:124px">`
-    const totItms = `                  <div id="idname" class="format pointer" onclick="bhs.sortTotals(this)">title&nbsp;<i id="up" class="fas fa-sort-up hidden"></i></div>`
+    const totItms = `                  <div id="idname" class="format pointer" onclick="bhs.sortTotals(this)">titlettip&nbsp;<i id="up" class="fas fa-sort-up hidden"></i></div>`
 
     const userHdr = `               <div id="u-idname" class="row">`
     const userItms = `                  <div id="idname" class="format" onclick="bhs.clickUser(this)">title</div>`
-
+    const ttip = `&nbsp;
+        <i id="totals-tip" class="fa fa-question-circle-o text-danger h6 hidden" data-toggle="tooltip" data-html="true"
+            data-placement="bottom" title="ttip"></i>`
     const divEnd = `</div>`
 
     const totalsColumns = [{
@@ -630,10 +632,12 @@ exports.getTotals = functions.https.onCall((data, context) => {
         format: "col-lg-3 col-md-4 col-sm-3 col-4 text-right",
     }, {
         title: "PC-XBox",
+        ttip: "Click on item in column to display on map. Uses selected galaxy. This can take a long time.",
         id: "id-PC-XBox",
         format: "col-lg-3 col-md-4 col-sm-3 col-4 text-right",
     }, {
         title: "PS4",
+        ttip: "Click on item in column to display on map. Uses selected galaxy. This can take a long time.",
         id: "id-PS4",
         format: "col-lg-3 col-md-4 col-sm-3 col-4 text-right",
     }]
@@ -646,6 +650,8 @@ exports.getTotals = functions.https.onCall((data, context) => {
 
         let l = /idname/ [Symbol.replace](totItms, h.id)
         l = /title/ [Symbol.replace](l, h.id === "id-Name" ? data.view : h.title)
+        l = /ttip/ [Symbol.replace](l, h.ttip ? ttip : "")
+        l = /ttip/ [Symbol.replace](l, h.ttip ? h.ttip : "")
         html += /format/ [Symbol.replace](l, h.format)
     }
     html += divEnd
