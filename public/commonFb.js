@@ -548,16 +548,16 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, 
     platform = platform ? platform : bhs.user.platform
     let complete = false
 
-    let ifindex = window.location.pathname == "/index.html" || window.location.pathname == "/"
+    let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
     let ref = bhs.getStarsColRef(galaxy, platform)
 
-    if (uid || ifindex) {
+    if (uid || findex) {
         ref = ref.where("uid", "==", uid ? uid : bhs.user.uid)
     } else
         complete = true
 
     if (bhs.loaded && bhs.loaded[galaxy] && bhs.loaded[galaxy][platform]) {
-        if (uid || ifindex) {
+        if (uid || findex) {
             uid = uid ? uid : bhs.user.uid
             let list = Object.keys(bhs.list[galaxy][platform])
             for (let i = 0; i < list.length; ++i) {
@@ -577,6 +577,19 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, 
             bhs.list[galaxy][platform] = {}
 
         let bhref = ref.where("blackhole", "==", true)
+
+        if (findex && bhs.user.settings.start) {
+            complete = false
+            let start = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.start)).seconds
+            bhref = bhref.where("created", ">=", start)
+        }
+
+        if (findex && bhs.user.settings.end) {
+            complete = false
+            let end = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.end)).seconds
+            bhref = bhref.where("created", "<=", end)
+        }
+
         await bhref.get().then(async snapshot => {
             for (let i = 0; i < snapshot.size; ++i)
                 bhs.list[galaxy][platform][snapshot.docs[i].data().addr] = snapshot.docs[i].data()
@@ -592,7 +605,7 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, 
                 bhs.loaded[galaxy][platform] = true
             }
 
-            if (ifindex)
+            if (findex)
                 await blackHoleSuns.prototype.getBases(displayFcn, singleDispFcn)
         }).catch(err => {
             console.log(err)

@@ -342,13 +342,25 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
                 <div id="btn-utSettings" class="col-6 align-vertical text-right txt-def">
                     <i class="fa fa-cog txt-def"></i>&nbsp;Settings&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                        data-placement="bottom" title="Opens column selection panel. Checked column labels will be displayed in list.">
+                        data-placement="bottom" title="Opens date range and column selection panel. Checked column labels will be displayed in list. Actions take effect after hitting 'Save'.">
                     </i>
                 </div>
             </div>
         </div>
 
         <div id="utSettings" class="card card-body" style="display:none">
+            <div class="row">
+                <label class="col-lg-7 col-md-14 col-sm-7 col-14 h6 txt-inp-def">Start Date&nbsp;
+                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                        data-placement="bottom" title="Date entry was created. Delete date to ignore.">
+                    </i>&nbsp;
+                    <input id="id-start" type="date" class="rounded col-8">
+                </label>
+                <label class="col-lg-7 col-md-14 col-sm-7 col-14 h6 txt-inp-def">End Date&nbsp;
+                    <input id="id-end" type="date" class="rounded col-8">
+                </label>
+            </div>
+
             <div id="id-utlistsel" class="row"></div>
 
             <div class="row">
@@ -1057,6 +1069,9 @@ blackHoleSuns.prototype.extractSettings = function () {
 
     let loc = $("#utSettings")
 
+    s.start = loc.find("#id-start").val()
+    s.end = loc.find("#id-end").val()
+
     loc.find("[id|='ck']").each(function () {
         let id = $(this).prop("id")
         let checked = $(this).prop("checked")
@@ -1084,6 +1099,9 @@ blackHoleSuns.prototype.displaySettings = function (entry) {
         entry.settings = bhs.initSettings()
 
     let loc = $("#utSettings")
+
+    loc.find("#id-start").val(entry.settings.start)
+    loc.find("#id-end").val(entry.settings.end)
 
     let tbl = $("#id-table")
     let usrHdr = tbl.find("#userHeader")
@@ -1562,7 +1580,7 @@ blackHoleSuns.prototype.drawList = function (listEntry, force) {
 
             if (e.blackhole) {
                 pushentry(out.bh, e.xyzs, text)
-                
+
                 if (typeof e.x === "undefined")
                     console.log(e)
                 else {
