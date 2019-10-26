@@ -36,5 +36,5 @@ blackHoleSuns.prototype.select = async function () {
     name = name ? name : "--blank--"
     let galaxy = $("#btn-Galaxy").text().stripNumber()
     let platform = $("#btn-Platform").text().stripNumber()
-    bhs.getEntriesByName(bhs.displayEntryList, bhs.displayEntry, name, galaxy, platform)
+    bhs.getEntriesByName(bhs.displayEntryList, name, galaxy, platform)
 }
