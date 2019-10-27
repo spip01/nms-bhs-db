@@ -33,7 +33,7 @@ function startUp() {
 
         $("#banner").on("load", () => {
             let width = $("body").width()
-            loc = $("[src='nmsbhs_banner.jpg']")
+            loc = $("[src='images/bhs-banner.jpg']")
             let iwidth = loc.width()
             let iheight = loc.height() * width / iwidth
 

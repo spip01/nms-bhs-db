@@ -17,6 +17,16 @@ $(document).ready(() => {
         let page = window.location.pathname.replace(/(.*)\//, "$1")
         let loc = $("#navmenu").find("[href='" + page + "']")
         loc.addClass("clr-blue border rounded")
+        
+        $("#banner").on("load", () => {
+            let width = $("body").width()
+            loc = $("[src='images/bhs-banner.jpg']")
+            let iwidth = loc.width()
+            let iheight = loc.height() * width / iwidth
+
+            loc.width(width)
+            loc.height(iheight)
+        })
 
         let gloc = $("[id='glyphbuttons']")
         addGlyphButtons(gloc, addGlyph)
@@ -280,8 +290,8 @@ function changeMapLayout(zoom) {
 
 function mapPoints(plot, saddr, eaddr, axis1, axis2) {
     let w = $("#maplogo").width()
-    $("#logo").prop("width", Math.min(w, 100))
-    $("#logo").prop("height", Math.min(w, 100))
+    $("#logo").css("width", Math.min(w, 100)+"px")
+    $("#logo").height( Math.min(w, 100)+"px")
 
     let zero = {
         x: 2048,

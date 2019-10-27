@@ -18,6 +18,16 @@ $(document).ready(() => {
         let loc = $("#navmenu").find("[href='" + page + "']")
         loc.addClass("clr-blue border rounded")
 
+        $("#banner").on("load", () => {
+            let width = $("body").width()
+            loc = $("[src='images/bhs-banner.jpg']")
+            let iwidth = loc.width()
+            let iheight = loc.height() * width / iwidth
+
+            loc.width(width)
+            loc.height(iheight)
+        })
+
         let gloc = $("[id='glyphbuttons']")
         addGlyphButtons(gloc, addGlyph)
     })

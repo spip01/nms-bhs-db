@@ -17,12 +17,12 @@ $(document).ready(() => {
 
         // $("#menuimg").on("load", () => {
         //     let height = $("#menuitems").height()
-        //     let loc = $("[src='nmsce.png']")
+        //     let loc = $("[src='images/nmsce-logo.png']")
         //     let iheight = loc.height()
         //     let width = loc.width() * height / iheight
 
-        //     loc.width(width)
-        //     loc.height(height)
+        //     loc.css("width",width+"px")
+        //     loc.height(height+"px")
         // })
     })
 
@@ -450,6 +450,7 @@ NMSCE.prototype.buildTypePanels = function () {
         <div data-toggle="tooltip" data-html="true" data-placement="bottom" title="ttext">
             <i class="fa fa-question-circle-o text-danger h6"></i>
         </div>`
+    const tTextImg = `<img src='pic'>`
     const tBlank = `
         <div class="col-sm-7 col-14"></div>`
     const tString = `
@@ -493,12 +494,12 @@ NMSCE.prototype.buildTypePanels = function () {
     const tArrayItm = `
         <label id="id-idname" class="col-sm-3 col-4 h6 txt-inp-def">
             <div class="row">
-                titlettip&nbsp;
                 <label id="search-idname" class="h6 txt-inp-def hidden" style="color:blue">
                     **&nbsp;
                     <input id="sck-idname" type="checkbox">
-                </label>          
+                </label>    
                 <input id="ck-idname" type="checkbox">
+                &nbsp;titlettip&nbsp;
             </div>
         </label>`
     const tCkItem = `
@@ -529,12 +530,16 @@ NMSCE.prototype.buildTypePanels = function () {
     let tabs = $("#typeTabs")
     let pnl = $("#typePanels")
 
-    let appenditem = (itm, add, title, id, ttip, req) => {
+    let appenditem = (itm, add, title, id, ttip, req, timg) => {
         let l = /title/ [Symbol.replace](add, title + (req ? tReq : ""))
 
         if (ttip) {
             l = /ttip/ [Symbol.replace](l, tText)
             l = /ttext/ [Symbol.replace](l, ttip)
+        } else if (timg) {
+            l = /ttip/ [Symbol.replace](l, tText)
+            l = /ttext/ [Symbol.replace](l, tTextImg)
+            l = /pic/ [Symbol.replace](l, timg)
         } else
             l = /ttip/ [Symbol.replace](l, "")
 
@@ -593,13 +598,13 @@ NMSCE.prototype.buildTypePanels = function () {
                                             bhs.buildMenu(sub, flist.name, slist, f)
                                         } else if (flist.type == "array") {
                                             l = /idname/ [Symbol.replace](tArray, (t.name + "-" + flist.name).nameToId())
-                                            appenditem(itm, l, "", flist.name.nameToId(), flist.ttip)
+                                            appenditem(itm, l, "", flist.name.nameToId(), flist.ttip, null)
 
                                             sub = itm.find("#slist-" + (t.name + "-" + flist.name).nameToId())
                                             sub = sub.find("#row-" + flist.name.nameToId())
 
                                             for (let m of slist)
-                                                appenditem(sub, tArrayItm, m.name, m.name.nameToId())
+                                                appenditem(sub, tArrayItm, m.name, m.name.nameToId(), null, null, m.timg)
                                         }
                                     }
                                 }
@@ -840,7 +845,7 @@ NMSCE.prototype.loadScreenshot = function (evt) {
                     nmsce.showText()
                 }
 
-                logo.src = "/nmsce.png"
+                logo.src = "/images/nmsce-logo.png"
             }
 
             img.src = reader.result
@@ -1497,12 +1502,13 @@ const shipList = [{
     }, {
         name: "Viper"
     }, {
-        name: "Alphs"
+        name: "Alpha"
     }, ],
     features: [{
         name: "Droid"
     }, {
-        name: "Halo"
+        name: "Halo",
+        timg: "images/halo.jpg"
     }, {
         name: "Shield"
     }, {
@@ -1527,13 +1533,30 @@ const shipList = [{
 }, {
     name: "Hauler",
     subType: [{
-        name: "Tilt Wing"
-    }, {
-        name: "Fan Wing"
+        name: "Fan"
     }, {
         name: "Baller"
     }, {
         name: "Box"
+    }, {
+        name: "Mini"
+    }, ],
+    features: [{
+        name: "Tilt Wing"
+    }, {
+        name: "Gull Wing"
+    }, {
+        name: "C Wing"
+    }, {
+        name: "E Wing"
+    }, {
+        name: "Shield"
+    }, {
+        name: "Glowing"
+    }, {
+        name: "Streach Neck"
+    }, {
+        name: "Turbine"
     }, ],
     slotTtip: `
         T1 - 15-19 slots<br>
@@ -1777,6 +1800,8 @@ const colorList = [{
 }, {
     name: "Cream",
 }, {
+    name: "Tan",
+}, {
     name: "Chrome",
 }, {
     name: "Bronze",
@@ -1784,6 +1809,8 @@ const colorList = [{
     name: "Gold",
 }, {
     name: "Pink",
+}, {
+    name: "Salmon",
 }, ]
 
 const fontList = [{

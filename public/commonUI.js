@@ -1341,8 +1341,8 @@ blackHoleSuns.prototype.buildMap = function () {
     let fsearch = window.location.pathname == "/search.html"
 
     let w = $("#maplogo").width()
-    $("#logo").prop("width", w)
-    $("#logo").prop("height", w)
+    $("#logo").width(w+"px")
+    $("#logo").height(w+"px")
 
     const settings = `
         <br>

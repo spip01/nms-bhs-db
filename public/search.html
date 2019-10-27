@@ -3,11 +3,15 @@
 
 <head>
     <title>No Man's Sky Black Hole Suns</title>
-    <meta name="description" content="No Man's Sky Black Hole Suns Search">
-    <meta name="keywords" content="no man's sky,map,black hole">
+    <meta name="description" content="Black Hole Suns data search for No Man's Sky">
+    <meta name="subject" content="Player addon for the game No Man's Sky.">
     <meta name="author" content="Stephen Piper">
+    <meta name="designer" content="Stephen Piper">
     <meta name="application-name" content="NMS-Black Hole Suns">
+    <meta name="copyright" content="Black Hole Suns">
+    <meta name="Classification" content="Game">
 
+    <link rel="shortcut icon" href="images/bhs.ico">
     <script src="env.js"></script>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -54,16 +58,35 @@
 
     <link rel="stylesheet" type="text/css" href="local.css">
     <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
-    <link rel="shortcut icon" href="favicon.ico">
 </head>
 
 <body>
     <div id="bhsmenus"></div>
 
+    <div id="javascript" class="container-fluid">
+        <div class="row">
+            <div class="col-2">
+                <img itemprop="logo" src="images/bhs-logo.png" alt="bhs logo" style="top:10px; width:40px; height:40px">
+            </div>
+            <!--googleoff:all-->
+            <div class="text-danger h6 col-12">
+                <p>Unfortunately, this page cannot function without javasript. Please add this site to your "allowed"
+                    sites. For chrome it's located&nbsp;
+                    <a href="chrome://settings/content/javascript">here</a></p>
+                <p>This error message can also be caused by a page loading error.</p>
+            </div>
+        </div>
+        <!--googleon:all-->
+    </div>
+    <br>
+
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div id="loggedout" class="row text-danger h5">
-            <h4>This is the data sarch page for the No Man's Sky Black Hole
-                Suns project. Please login.
+            <h4>Welcome to the
+                <span itemprop="description">data search page for No Man's Sky Black Hole Suns.</span>
+                <!--googleoff: all-->
+                Please login.
+                <!--googleon: all-->
             </h4>
         </div>
 
@@ -136,7 +159,7 @@
                         <div class="col-md-3 col-14">
                             <div class="row">
                                 <div id="maplogo" class="col-md-14 col-4">
-                                    <img id="logo" src="lBTK5EL.png" class="float-center" alt="BHS Logo" height="20px"
+                                    <img id="logo" src="images/bhs-logo.png" class="float-center" alt="BHS Logo" height="20px"
                                         width="20px" style="max-width:100px; max-height:100px">
                                 </div>
 

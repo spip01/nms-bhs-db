@@ -2,13 +2,17 @@
 <html lang="en">
 
 <head>
-    <title>No Man's Sky Distance and Route Calculator</title>
-    <meta name="description" content="No Man's Sky Black Hole Suns DARC">
-    <meta name="keywords" content="no man's sky,map,black hole, distance and route calculator">
+    <title>No Man's Sky Distance and Route Calculator (DARC)</title>
+    <meta name="description" content="Travel anywhere in No Man's Sky using black holes. We'll calculate the quickest route for you.">
+    <meta name="subject" content="Distance and Route Calculator (DARC) addon for the game No Man's Sky.">
     <meta name="author" content="Stephen Piper">
-    <meta name="application-name" content="NMS-Black Hole Suns">
-    <link rel="shortcut icon" href="favicon.ico">
+    <meta name="designer" content="Stephen Piper">
+    <meta name="application-name" content="NMS-Black Hole Suns DARC">
+    <meta name="copyright" content="Black Hole Suns">
+    <meta name="Classification" content="Game">
+    <meta name="keywords" content="darc,nms,bhs,no mans sky,black hole suns,route calculator,distance calculator">
 
+    <link rel="shortcut icon" href="images/bhs.ico">
     <script src="env.js"></script>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -60,10 +64,32 @@
 <body>
     <div id="bhsmenus"></div>
 
+    <div id="javascript" class="container-fluid">
+        <div class="row">
+            <div class="col-2">
+                <img itemprop="logo" src="images/bhs-logo.png" alt="bhs logo" style="top:10px; width:40px; height:40px">
+            </div>
+            <!--googleoff:all-->
+            <div class="text-danger h6 col-12">
+                <p>Unfortunately, this page cannot function without javasript. Please add this site to your "allowed"
+                    sites. For chrome it's located&nbsp;
+                    <a href="chrome://settings/content/javascript">here</a></p>
+                <p>This error message can also be caused by a page loading error.</p>
+            </div>
+            <!--googleon:all-->
+            <br>
+        </div>
+    </div>
+    <br>
+
     <div id="jssite" class="container-fluid pad-bottom hidden">
-        <div id="loggedout" class="row txt-def">&nbsp;&nbsp;&nbsp;&nbsp;Login is only required for
-            using saved bases. If you aren't logged in then your input and last selected route are
-            saved to local browser storage.<br>
+        <div id="loggedout" class="row txt-def">Welcome to the
+            <span itemprop="description">Black Hole Suns Distance and Route Calculator (DARC).</span>
+            <!--googleoff: all-->
+            Login is only required for using saved bases. If you aren't logged in then your input and last selected
+            route are saved to local browser storage.
+            <!--googleon: all-->
+            <br>
         </div>
 
         <div class="row">
@@ -110,8 +136,8 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-3 col-4 h6 txt-inp-def">End&nbsp;</div>
-                            <input id="id-end" class="rounded col-lg-5 col-md-7 col-sm-5 col-8" placeholder="0000:0000:0000:0000"
-                                onchange="bhs.setAddress(this)">&nbsp;
+                            <input id="id-end" class="rounded col-lg-5 col-md-7 col-sm-5 col-8"
+                                placeholder="0000:0000:0000:0000" onchange="bhs.setAddress(this)">&nbsp;
                             <button id="btn-switch" type="button" class="btn-def btn btn-sm" onclick="bhs.switchSE()"><i
                                     class="fa fa-exchange-alt txt-def"></i></button>
                         </div>
@@ -185,7 +211,7 @@
                             <div class="col-md-3 col-sm-3 col-14">
                                 <div class="row">
                                     <a id="maplogo" class="col-sm-14 col-10">
-                                        <img id="logo" src="lBTK5EL.png" class="float-left" alt="BHS Logo" width="20"
+                                        <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo" width="20"
                                             height="20">
                                     </a>
                                     <div class="col-4">
@@ -218,7 +244,8 @@
                     <div id="resItems" class="scrollbar container-fluid" style="overflow-y: scroll; height: 388px">
                     </div>
                     <br>
-                    <a class="btn btn-sm btn-def" href=" https://discordapp.com/invite/TEeK8tp/">Report Problems</a>&nbsp;
+                    <a class="btn btn-sm btn-def" href=" https://discordapp.com/invite/TEeK8tp/">Report
+                        Problems</a>&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="This will take you to the Discord BHS trouble-tickets channel.">
                     </i>

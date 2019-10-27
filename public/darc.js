@@ -202,7 +202,7 @@ blackHoleSuns.prototype.updateDarcSettings = function () {
 blackHoleSuns.prototype.showPOI = function (name) {
     const img = `<img id="img-pic" height="auto" width="wsize" />`
     let w = Math.min($("#mapcol").width() - 8, 400)
-    let h = /wsize/ [Symbol.replace](img, w)
+    let h = /wsize/ [Symbol.replace](img, w+"px")
 
     $("#plymap").hide()
     let loc = $("#image")
@@ -227,7 +227,7 @@ blackHoleSuns.prototype.showPOI = function (name) {
 blackHoleSuns.prototype.showOrg = function (name) {
     const img = `<img id="img-pic" height="auto" width="wsize" />`
     let w = Math.min($("#mapcol").width() - 8, 400)
-    let h = /wsize/ [Symbol.replace](img, w)
+    let h = /wsize/ [Symbol.replace](img, w+"px")
 
     $("#plymap").hide()
     let loc = $("#image")
@@ -558,8 +558,8 @@ function selectRoute(evt) {
 
 blackHoleSuns.prototype.buildDarcMap = function () {
     let w = $("#maplogo").width()
-    $("#logo").prop("width", Math.min(w, 100))
-    $("#logo").prop("height", Math.min(w, 100))
+    $("#logo").css("width", Math.min(w, 100)+"px")
+    $("#logo").height( Math.min(w, 100)+"px")
 
     let zero = {
         x: 2048,

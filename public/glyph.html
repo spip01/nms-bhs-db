@@ -3,12 +3,16 @@
 
 <head>
     <title>No Man's Sky Glyph & Coordinate Converter</title>
-    <meta name="description" content="No Man's Sky Black Hole Suns Glyph & Coordinate Converter">
-    <meta name="keywords" content="no man's sky,map,black hole,glyph converter,portal converter">
+    <meta name="description" content="Convert to and from glyphs and galactic coordinates used in No Man's Sky.">
+    <meta name="subject" content="Glyph & Coordinate converter for the game No Man's Sky.">
     <meta name="author" content="Stephen Piper">
-    <meta name="application-name" content="NMS-Black Hole Suns">
-    <link rel="shortcut icon" href="favicon.ico">
+    <meta name="designer" content="Stephen Piper">
+    <meta name="application-name" content="NMS-Black Hole Suns Glyph Converter">
+    <meta name="copyright" content="Black Hole Suns">
+    <meta name="Classification" content="Game">
+    <meta name="keywords" content="glyph,coordinate,converter,nms,bhs,no mans sky,black hole suns">
 
+    <link rel="shortcut icon" href="images/bhs.ico">
     <script src="env.js"></script>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -49,10 +53,30 @@
 <body>
     <div id="bhsmenus"></div>
 
+    <div id="javascript" class="container-fluid">
+        <div class="row h5" itemprop="descrption">No Man's Sky Glyph and Coordinate Converter</div>
+        <div class="row">
+            <!--googleoff:all-->
+            <div class="text-danger h6">
+                <p>Unfortunately, this page cannot function without javasript. Please add this site to your "allowed"
+                    sites. For chrome it's located&nbsp;
+                    <a href="chrome://settings/content/javascript">here</a></p>
+                <p>This error message can also be caused by a page loading error.</p>
+            </div>
+        </div>
+        <!--googleon:all-->
+        <br>
+    </div>
+    <br>
+
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div class="card">
             <div class="card-header bkg-def txt-def h4">
-                Coordinates to Glyph
+                <div class="row">
+                    <div class="col-12">Coordinates to Glyph</div>
+                    <img itemprop="logo" src="images/bhs-logo.png" alt="bhs logo" clsss="col-1 text-right"
+                        style="top:10px; width:40px; height:40px">
+                </div>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -76,8 +100,8 @@
                                 Planet&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6"></i>
                             </div>
-                            <input id="id-planet" class="rounded col-3 h6" type="number" value=0 min=0
-                                max=15 placeholder="0" onchange="dispAddr(this)">
+                            <input id="id-planet" class="rounded col-3 h6" type="number" value=0 min=0 max=15
+                                placeholder="0" onchange="dispAddr(this)">
                         </div>
                     </div>
                 </div>
@@ -102,9 +126,7 @@
         <br>
 
         <div class="card">
-            <div class="card-header bkg-def txt-def h4">
-                Glyph to Coordinates
-            </div>
+            <div class="card-header bkg-def txt-def h4">Glyph to Coordinates</div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-2 col-3 h6 txt-inp-def" data-toggle="tooltip" data-html="true"

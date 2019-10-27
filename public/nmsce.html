@@ -2,13 +2,15 @@
 <html lang="en">
 
 <head>
-    <title>NMS Coordinate Exchange</title>
-    <meta name="description" content="No Man's Sky Coordinate Exchange">
-    <meta name="keywords" content="no man's sky,coordinate exchange">
+    <title>No Man's Sky Coordinate Exchange (NMSCE)</title>
+    <meta name="description" content="Data entry for No Man's Sky Coordinate Exchange (NMSCE)">
+    <meta name="subject" content="Coordinate exchange for the game No Man's Sky.">
     <meta name="author" content="Stephen Piper">
-    <meta name="application-name" content="NMS-Coordinate Exchange">
-    <link rel="shortcut icon" href="nmsce.ico">
+    <meta name="designer" content="Stephen Piper">
+    <meta name="copyright" content="Black Hole Suns">
+    <meta name="Classification" content="Game">
 
+    <link rel="shortcut icon" href="images/nmsce.ico">
     <script src="env.js"></script>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -61,9 +63,33 @@
 <body>
     <div id="cemenus"></div>
 
+    <div id="javascript">
+        <div class="row">
+            <div class="col-2">
+                <img itemprop="logo" src="images/nmsce-logo.png" alt="nmsce logo"
+                    style="top:10px; width:40px; height:40px">
+            </div>
+            <!--googleoff:all-->
+            <div class="text-danger h6 col-12">
+                <p>Unfortunately, this page cannot function without javasript. Please add this site to your "allowed"
+                    sites. For chrome it's located&nbsp;
+                    <a href="chrome://settings/content/javascript">here</a></p>
+                <p>This error message can also be caused by a page loading error.</p>
+            </div>
+            <!--googleon:all-->
+            <br>
+        </div>
+    </div>
+    <br>
+
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div id="loggedout" class="row text-danger h5">
-            <h4>Welcome to No Man's Sky Coordinate Exchange. Please login.</h4>
+            <h4>Welcome to the 
+                <span itemprop="description">No Man's Sky Coordinate Exchange data entry page.</span>
+                <!--googleoff: all-->
+                Please login.
+                <!--googleon: all-->
+            </h4>
         </div>
 
         <div class="card card-body pad-bottom bkg-def">
@@ -219,7 +245,7 @@
                     <br>
                     <div class="row">
                         <div class="col-7">
-                            <button onclick="nmsce.redditShare(this)"><img src="reddit.png"
+                            <button onclick="nmsce.redditShare(this)"><img src="images/reddit.png"
                                     style="width:20px; height:20px" title="Share to reddit"
                                     alt="Share to reddit"></button>&nbsp;
                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"

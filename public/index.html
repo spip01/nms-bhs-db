@@ -3,12 +3,15 @@
 
 <head>
     <title>No Man's Sky Black Hole Suns</title>
-    <meta name="description" content="No Man's Sky Black Hole Suns">
-    <meta name="keywords" content="no man's sky,map,black hole">
+    <meta name="description" content="Player addon for No Man's Sky">
+    <meta name="subject" content="Player addon for the game No Man's Sky.">
     <meta name="author" content="Stephen Piper">
+    <meta name="designer" content="Stephen Piper">
     <meta name="application-name" content="NMS-Black Hole Suns">
-    <link rel="shortcut icon" href="favicon.ico">
+    <meta name="copyright" content="Black Hole Suns">
+    <meta name="Classification" content="Game">
 
+    <link rel="shortcut icon" href="images/bhs.ico">
     <script src="env.js"></script>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -61,24 +64,30 @@
 <body>
     <div id="bhsmenus"></div>
 
-    <div id="javascript">
-        <!--googleoff:all-->
-        <div class="text-danger h6">
-            <p>Unfortunately, this page cannot function without javasript. Please add this site to your "allowed" sites.
-                For chrome it's located&nbsp;
-                <a href="chrome://settings/content/javascript">here</a></p>
-            <p>This error message can also be caused by a page loading error.</p>
+    <div id="javascript" class="container-fluid">
+        <div class="row">
+            <div class="col-2">
+                <img itemprop="logo" src="images/bhs-logo.png" alt="bhs logo" style="top:10px; width:40px; height:40px">
+            </div>
+            <!--googleoff:all-->
+            <div class="text-danger h6 col-12">
+                <p>Unfortunately, this page cannot function without javasript. Please add this site to your "allowed"
+                    sites. For chrome it's located&nbsp;
+                    <a href="chrome://settings/content/javascript">here</a></p>
+                <p>This error message can also be caused by a page loading error.</p>
+            </div>
         </div>
         <!--googleon:all-->
-        <br>
     </div>
     <br>
-    <!--googleoff:all-->
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div id="loggedout" class="row text-danger h5">
-            <h4>This is the data entry page for the No Man's Sky Black Hole
-                Suns project. Please login.
+            <h4>Welcome to
+                <span itemprop="description">No Man's Sky Black Hole Suns data entry page.</span>
+                <!--googleoff: all-->
+                Please login.
+                <!--googleon: all-->
             </h4>
         </div>
 
@@ -104,7 +113,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="status" class="border col-lg-9 col-md-14 col-sm-9 col-14 text-danger scrollbar container-fluid"
+                        <div id="status"
+                            class="border col-lg-9 col-md-14 col-sm-9 col-14 text-danger scrollbar container-fluid"
                             style="overflow-y: scroll; height: 68px"></div>
                     </div>
                 </div>
@@ -122,7 +132,7 @@
                         <div class="col-sm-3 col-14">
                             <div class="row">
                                 <div id="maplogo" class="col-sm-14 col-4">
-                                    <img id="logo" src="lBTK5EL.png" class="float-left" alt="BHS Logo" width="20"
+                                    <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo" width="20"
                                         height="20">
                                 </div>
                                 <div class="col-sm-14 col-4 text-right">

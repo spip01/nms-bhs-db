@@ -187,7 +187,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
         let step = 1 / allrows.length * 100
         let width = 1
         let progress = $("#progress")
-        progress.prop("width", width + "%")
+        progress.width( width + "%")
         progress.show()
 
         let k = 0
