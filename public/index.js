@@ -95,8 +95,8 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                         <div class="col-lg-2 col-md-3 col-sm-2 col-4 h6 txt-inp-def">Glyphs&nbsp;</div>
                         <div class="col-lg-10 col-md-11 col-sm-12 col-10">
                             <div class="row">
-                                <div id="id-glyph" class=" col-lg-9 col-md-14 col-sm-8 col-14 h5 txt-inp-def glyph"></div>
-                                <div id="id-hex" class=" col-lg-5 col-md-14 col-sm-4 col-14 h6 txt-inp-def"></div>
+                                <div id="id-glyph" class=" col-lg-9 col-md-14 col-sm-8 col-14 h5 clr-def glyph"></div>
+                                <div id="id-hex" class=" col-lg-5 col-md-14 col-sm-4 col-14 h6 clr-def"></div>
                             </div>
                         </div>
                     </div>
@@ -128,8 +128,8 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     <div id="glyphbuttons" class="row"></div>
 
                     <div class="row">
-                        <div class="col-sm-4 col-7 h6 txt-inp-def">Coords&nbsp;</div>
-                        <div id="id-addr" class="col-sm-5 col-7 txt-inp-def"></div>
+                        <div class="col-sm-4 col-7 h6 clr-def">Coords&nbsp;</div>
+                        <div id="id-addr" class="col-sm-5 col-7 clr-def"></div>
                     </div>  
                 </div>
 
@@ -149,7 +149,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
                 <div id="id-byrow" class="row">
                     <div class="col-sm-4 col-7  h6 txt-inp-def">Entered by&nbsp;</div>
-                    <div id="id-by" class="col-sm-5 col-7 txt-inp-def"></div>
+                    <div id="id-by" class="col-sm-5 col-7 clr-def"></div>
                 </div>
 
                 <div class="row">
@@ -162,7 +162,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     <div id="id-Economy" class="col-11"></div>
                 </div>
 
-                <div id="row-valid" class="row border-bottom">
+                <!--div id="row-valid" class="row border-bottom">
                     <label class="radio col-5 h6 txt-inp-def">
                         <input id="btn-valid" type="radio" name="validradio">
                         BH Pair Confirmed&nbsp;
@@ -177,34 +177,40 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                             data-placement="bottom" title="Set this if this black hole did not exit at the given coordinates.">
                         </i>
                     </label>
+                </div-->
+
+                <div class="row">
+                    <div id="id-fmcenter" class="col-lg-7 col-md-14 col-sm-7 col-14 txt-inp-def" style="display:none">
+                        <div class="row">
+                            <div class="col-md-5 col-sm-7 col-9 h6">To Center&nbsp;</div>
+                            <div id="fmcenter" class="clr-def col-5 h6"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="row border-bottom">
-                    <label class="col-7 h6 txt-inp-def">
-                        <input id="ck-hasbase" type="checkbox">
-                        Has Base&nbsp;
-                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                            data-placement="bottom" title="Enter a base to be used as a starting point with the DARC.">
-                        </i>
-                    </label>
-                    <label id="id-sharepoi" class="col-7 h6 txt-inp-def hidden">
-                        <input id="ck-sharepoi" type="checkbox">
-                        Share POI&nbsp;
-                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                            data-placement="bottom" title="Include this base with the 'POI near route' with the DARC.">
-                        </i>
-                    </label>
-                </div>
+                <div class="row">
+                    <div id="id-traveled" class="col-lg-7 col-md-14 col-sm-7 col-14 txt-inp-def" style="display:none">
+                        <div class="row">
+                            <div class="col-md-5 col-sm-7 col-9 h6">Traveled&nbsp;</div>
+                            <div id="traveled" class="clr-def col-5 h6"></div>
+                        </div>
+                    </div>
 
-                <div id="id-isbase" class="row" style="display:none">
-                    <div class="col-sm-2 col-4 h6 txt-inp-def">Name</div>
-                    <input id="id-basename" class="rounded col-7">
-                    <div id="id-Owned" class="col-sm-3 col-9"></div>
-                    <button id="btn-delbase" type="button" class="btn-def btn btn-sm disabled" disabled onclick="bhs.delBase(this)">Delete Base</button>&nbsp
+                   <div id="id-tocenter" class="col-lg-7 col-md-14 col-sm-7 col-14 txt-inp-def" style="display:none">
+                        <div class="row">
+                            <div class="col-md-5 col-sm-7 col-9 h6">Towards Center&nbsp;
+                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom" title="Typically this is around 6000ly. On the edges of the galaxy 
+                                    it can be more.  In the core it can be slightly negative.">
+                                </i>&nbsp;
+                            </div>
+                            <div id="tocenter" class="col-5 h6 clr-def"></div>
+                        </div>
+                    </div>
                 </div>
-
+                
                 <div id="id-pnl1-only" class="row border-top">
-                    <div class="col-7">
+                    <div class="col-lg-5 col-md-7 col-sm-5 col-7">
                         <label class="h6 txt-inp-def">
                             <input id="ck-single" type="checkbox">
                             Single System&nbsp;
@@ -225,34 +231,28 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     </div>
                 </div>
 
-                <div class="row">
-                    <div id="id-fmcenter" class="col-lg-7 col-md-14 col-sm-7 col-14 txt-inp-def" style="display:none">
-                        <div class="row">
-                            <div class="col-9 h6">To Center&nbsp;</div>
-                            <div id="fmcenter" class="col-5 h6"></div>
-                        </div>
-                    </div>
+                <div class="row border-top">
+                    <label class="col-7 h6 txt-inp-def">
+                        <input id="ck-hasbase" type="checkbox">
+                        Has Base&nbsp;
+                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Enter a base to be used as a starting point with the DARC.">
+                        </i>
+                    </label>
+                    <label id="id-sharepoi" class="col-7 h6 txt-inp-def hidden">
+                        <input id="ck-sharepoi" type="checkbox">
+                        Share POI&nbsp;
+                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Include this base with the 'POI near route' with the DARC.">
+                        </i>
+                    </label>
                 </div>
 
-                <div class="row">
-                    <div id="id-traveled" class="col-lg-7 col-md-14 col-sm-7 col-14 txt-inp-def" style="display:none">
-                        <div class="row">
-                            <div class="col-9 h6">Traveled&nbsp;</div>
-                            <div id="traveled" class="col-5 h6"></div>
-                        </div>
-                    </div>
-
-                   <div id="id-tocenter" class="col-lg-7 col-md-14 col-sm-7 col-14 txt-inp-def" style="display:none">
-                        <div class="row">
-                            <div class="col-9 h6"> Towards Center&nbsp;
-                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                                    data-placement="bottom" title="Typically this is around 6000ly. On the edges of the galaxy 
-                                    it can be more.  In the core it can be slightly negative.">
-                                </i>&nbsp;
-                            </div>
-                            <div id="tocenter" class="col-5 h6"></div>
-                        </div>
-                    </div>
+                <div id="id-isbase" class="row" style="display:none">
+                    <div class="col-sm-3 col-4 h6 txt-inp-def">Name</div>
+                    <input id="id-basename" class="rounded col-7">
+                    <div id="id-Owned" class="col-sm-4 col-9"></div>
+                    <button id="btn-delbase" type="button" class="btn-def btn btn-sm disabled" disabled onclick="bhs.delBase(this)">Delete Base</button>&nbsp
                 </div>
             </div>
         </div>
@@ -422,8 +422,8 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
 
     loc.find("#btn-Lifeform").text(entry.life)
     loc.find("#ck-isdz").prop("checked", entry.deadzone)
-    loc.find("#btn-valid").prop("checked", entry.valid)
-    loc.find("#btn-invalid").prop("checked", entry.invalid)
+    // loc.find("#btn-valid").prop("checked", entry.valid)
+    // loc.find("#btn-invalid").prop("checked", entry.invalid)
 
     if (entry.basename) {
         loc.find("#id-basename").val(entry.basename)
@@ -550,8 +550,8 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
     let deadzone = loc.find("#ck-isdz").prop("checked")
 
     let bhloc = pnl.find("#" + panels[pnlTop].id)
-    entry.valid = bhloc.find("#btn-valid").prop("checked")
-    entry.invalid = bhloc.find("#btn-invalid").prop("checked")
+    // entry.valid = bhloc.find("#btn-valid").prop("checked")
+    // entry.invalid = bhloc.find("#btn-invalid").prop("checked")
 
     if (idx == pnlTop) {
         entry.deadzone = deadzone

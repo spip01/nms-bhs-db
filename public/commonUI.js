@@ -1161,30 +1161,24 @@ var colortable = [{
 }]
 
 const minmaxtable = [{
-        id: "xmin",
-        val: 0
-    },
-    {
-        id: "xmax",
-        val: 4095
-    },
-    {
-        id: "ymin",
-        val: 0
-    },
-    {
-        id: "ymax",
-        val: 255
-    },
-    {
-        id: "zmin",
-        val: 0
-    },
-    {
-        id: "zmax",
-        val: 4095
-    },
-]
+    id: "xmin",
+    val: 0
+}, {
+    id: "xmax",
+    val: 4095
+}, {
+    id: "ymin",
+    val: 0
+}, {
+    id: "ymax",
+    val: 255
+}, {
+    id: "zmin",
+    val: 0
+}, {
+    id: "zmax",
+    val: 4095
+}, ]
 
 blackHoleSuns.prototype.extractMapOptions = function () {
     let c = {}
@@ -1341,8 +1335,8 @@ blackHoleSuns.prototype.buildMap = function () {
     let fsearch = window.location.pathname == "/search.html"
 
     let w = $("#maplogo").width()
-    $("#logo").width(w+"px")
-    $("#logo").height(w+"px")
+    $("#logo").width(w + "px")
+    $("#logo").height(w + "px")
 
     const settings = `
         <br>
