@@ -91,21 +91,30 @@
             </h4>
         </div>
 
-        <div class="row">
-            <div class="col-md-7 col-14">
-                <div class="card card-body pad-bottom">
+        <div class="card card-body">
+            <div id="panels" class="container-fluid"></div>
 
-                    <div id="panels"></div>
+            <div class="row">
+                <div id="inputPanels" class="container-fluid">
+                    <div class="row">
+                        <div id="inp-S1" class="col-md-7 col-14"></div>
+                        <div id="inp-S2" class="col-md-7 col-14"></div>
+                    </div>
+                </div>
+            </div>
 
-                    <div id="entrybuttons" class="row">
-                        <div class="col-lg-5 col-md-14 col-sm-5 col-14">
+            <div id="entrybuttons" class="row">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-7 col-14">
                             <div class="row">
-                                <button id="save" type="button" class="btn btn-sm btn-def">Save</button>&nbsp;
-                                <button id="delete" type="button" class="btn btn-sm btn-def disabled"
+                                <button id="save" type="button" class="col-4 btn btn-sm btn-def">Save</button>&nbsp;
+                                <button id="delete" type="button" class="col-4 btn btn-sm btn-def disabled"
                                     disabled>Delete</button>&nbsp;
-                                <button id="cancel" type="button" class="btn btn-def  btn-sm">Cancel</button>&nbsp;
+                                <button id="cancel" type="button"
+                                    class="col-4 btn btn-def  btn-sm">Cancel</button>&nbsp;
+                                <br>
                             </div>
-                            <br>
                             <div class="row">
                                 <div class="text-danger h6">
                                     <span class="h5">*</span>&nbsp;Required Entry,&nbsp;
@@ -113,41 +122,42 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="status"
-                            class="border col-lg-9 col-md-14 col-sm-9 col-14 text-danger scrollbar container-fluid"
+                        <div id="status" class="border col-sm-7 col-14 text-danger scrollbar container-fluid"
                             style="overflow-y: scroll; height: 68px"></div>
                     </div>
                 </div>
-                <br>
             </div>
+        </div>
+        <br>
 
+        <div class="row">
             <div class="col-md-7 col-14">
                 <div id="map" class="card card-body border bkg-def">
                     <div class="row">
-                        <div id="mapcol" class="col-sm-11 col-14">
+                        <div id="mapcol" class="col-lg-11 col-md-14 col-sm-11 col-14">
                             <div id="plymap"></div>
                             <br>
                         </div>
 
-                        <div class="col-sm-3 col-14">
+                        <div class="col-lg-3 col-md-14 col-sm-3 col-14">
                             <div class="row">
-                                <div id="maplogo" class="col-sm-14 col-4">
-                                    <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo" width="20"
-                                        height="20">
+                                <div id="maplogo" class="col-lg-14 col-md-4 col-sm-14 col-4">
+                                    <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo"
+                                        width="20" height="20">
                                 </div>
-                                <div class="col-sm-14 col-4 text-right">
+                                <div class="col-lg-14 col-md-4 col-sm-14 col-4 text-right">
                                     <br>
                                     <button id="btn-redraw" type="button"
                                         class="btn btn-sm btn-def text-center">Redraw</button>&nbsp;
                                 </div>
 
-                                <div class="col-sm-14 col-4 text-right">
+                                <div class="col-lg-14 col-md-4 col-sm-14 col-4 text-right">
                                     <br>
                                     <button id="btn-load" type="button" class="btn btn-sm btn-def text-center"
                                         onclick="bhs.loadEntries()">Load</button>&nbsp;
                                 </div>
 
-                                <div id="btn-mapsettings" class="col-sm-14 col-14 txt-def text-right">
+                                <div id="btn-mapsettings" class="pointer col-14 txt-def text-right">
                                     <br>
                                     <i class="fa fa-cog txt-def"></i>&nbsp;Settings
                                 </div>
@@ -173,17 +183,47 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <br>
+            <br>
 
-        <div class="row">
             <div class="col-md-7 col-14">
                 <div id="entryTable" class="card pad-bottom"></div>
                 <br>
             </div>
+            <br>
+        </div>
 
-            <div class="col-md-7 col-14">
-                <div id="totals" class="card border pad-bottom"></div>
+        <div id="totals" class="card border pad-bottom">
+            <div class="card-header bkg-def">
+                <div class="row">
+                    <div class="col-8 h4 txt-def">Total Black Hole Entries&nbsp;
+                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Click on colum titles to sort data based on column.">
+                        </i>
+                    </div>
+                    <div id="contrib" class="col-6 clr-creme">Total contributors: </div>
+                    <div id="cname" class="row clr-creme"></div>
+                </div>
+            </div>
+
+            <div id="subpanel" class="card-body bkg-white">
+                <label id="id-showall" class="row h6 txt-inp-def hidden">
+                    Show All&nbsp
+                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                        data-placement="bottom" title="Show all of the player's totals for all galaxies and platforms.">
+                    </i>&nbsp;
+                    <input id="ck-showall" type="checkbox">
+                </label>
+
+                <div class="row">
+                    <div class="col-md-4 col-sm-14 col-14">
+                        <div id="hdr-Player" class="row"></div>
+                        <div id="itm-Player"></div>
+                    </div>
+                    <div id="scroll-Players" class="col-md-5 col-sm-7 col-14"></div>
+                    <div id="scroll-Organizations" class="col-md-5 col-sm-7 col-14"></div>
+                    <div id="scroll-Galaxies" class="col-14"></div>
+                </div>
+                <br>
             </div>
         </div>
     </div>

@@ -50,6 +50,89 @@ $(document).ready(() => {
     })
 })
 
+blackHoleSuns.prototype.buildUserPanel = async function () {
+    const panel = `
+        <div id="pnl-user">
+            <div class="row">
+                <div class="col-lg-4 col-md-6 col-sm-7 col-14">
+                    <div class="row">
+                        <div class="h6 col-lg-14 col-5 txt-inp-def">Player Name<span id="namereq" class="h5 text-danger">&nbsp;*</span></div>
+                        <input id="id-Player" class="rounded col-lg-13 col-9 h5" type="text">
+                    </div>
+                </div>
+
+                <div id="id-Civ-Org" class="col-lg-2 col-sm-6 col-14"></div>
+
+                <div id="id-Galaxy" class="col-lg-2 col-sm-5 col-14"></div>
+                <div id="id-Platform" class="col-lg-2 col-sm-5 col-14"></div>
+                <br>
+
+                <label id="fileupload" class="col-lg-3 col-sm-4 col-14 h5">
+                    <input id="ck-fileupload" type="checkbox">
+                    &nbsp;File Upload&nbsp;
+                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                        data-placement="bottom" title="Bulk entry upload using a comma or tab separated '.csv' file.">
+                    </i>
+                </label>
+            </div>
+        </div>`
+
+    $("#panels").prepend(panel)
+    let loc = $("#pnl-user")
+
+    await bhs.getOrgList()
+    bhs.orgList.unshift({
+        name: "--blank--"
+    })
+
+    let fsearch = window.location.pathname == "/cesearch.html"
+
+    bhs.buildMenu(loc, "Civ/Org", bhs.orgList, bhs.saveUser, {
+        labelsize:"col-lg-14 col-5",
+        menusize:"col-lg-14 col-7"
+    })
+
+    bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, {
+        required: !fsearch,
+        labelsize:"col-lg-14 col-5",
+        menusize:"col-lg-14 col-7"
+    })
+
+    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, {
+        tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
+        required: true,
+        labelsize:"col-lg-14 col-5",
+        menusize:"col-lg-14 col-7"
+    })
+
+    if (fsearch)
+        $("#namereq").hide()
+
+    $("#id-Player").change(function () {
+        if (bhs.user.uid) {
+            let user = bhs.extractUser()
+            bhs.changeName(this, user)
+        }
+    })
+
+    loc.find("#fileupload").show()
+    $("#ck-fileupload").change(function (event) {
+        if ($(this).prop("checked")) {
+            panels.forEach(p => {
+                $("#" + p.id).hide()
+            })
+            $("#entrybuttons").hide()
+            $("#upload").show()
+        } else {
+            panels.forEach(p => {
+                $("#" + p.id).show()
+            })
+            $("#entrybuttons").show()
+            $("#upload").hide()
+        }
+    })
+}
+
 const pnlTop = 0
 const pnlBottom = 1
 
@@ -261,7 +344,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
     let h = /idname/g [Symbol.replace](panel, id)
     h = /title/ [Symbol.replace](h, id == "pnl-S1" ? panels[pnlTop].name : panels[pnlBottom].name)
 
-    $("#panels").append(h)
+    $("#inp-" + id.stripID()).append(h)
 
     let loc = $("#" + id)
 
@@ -653,6 +736,6 @@ blackHoleSuns.prototype.displayCalc = function () {
 blackHoleSuns.prototype.status = function (str, clear) {
     if (clear)
         $("#status").empty()
-        
+
     $("#status").prepend("<h6>" + str + "</h6>")
 }

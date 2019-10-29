@@ -82,7 +82,7 @@
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div id="loggedout" class="row text-danger h5">
-            <h4>Welcome to 
+            <h4>Welcome to
                 <span itemprop="description">No Man's Sky Black Hole Suns entry totals page.</span>
                 <!--googleoff: all-->
                 Please login.
@@ -92,9 +92,43 @@
 
         <div class="row">
             <div class="col-md-7 col-14">
-                <div id="totals" class="card border pad-bottom"></div>
-                <br>
+                <div id="totals" class="card border pad-bottom">
+                    <div class="card-header bkg-def">
+                        <div class="row">
+                            <div class="col-8 h4 txt-def">Total Black Hole Entries&nbsp;
+                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom" title="Click on colum titles to sort data based on column.">
+                                </i>
+                            </div>
+                            <div id="contrib" class="col-6 clr-creme">Total contributors: </div>
+                            <div id="cname" class="row clr-creme"></div>
+                        </div>
+                    </div>
+
+                    <div id="subpanel" class="card-body bkg-white">
+                        <label id="id-showall" class="row h6 txt-inp-def hidden">
+                            Show All&nbsp
+                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom"
+                                title="Show all of the player's totals for all galaxies and platforms.">
+                            </i>&nbsp;
+                            <input id="ck-showall" type="checkbox">
+                        </label>
+
+                        <div class="row">
+                            <div class="col-14">
+                                <div id="hdr-Player" class="row"></div>
+                                <div id="itm-Player"></div>
+                            </div>
+                            <div id="scroll-Players" class="col-14"></div>
+                            <div id="scroll-Organizations" class="col-14"></div>
+                            <div id="scroll-Galaxies" class="col-14"></div>
+                        </div>
+                        <br>
+                    </div>
+                </div>
             </div>
+            <br>
 
             <div class="col-md-7 col-14">
                 <div id="pnl-user" class="card card-body border pad-bottom">

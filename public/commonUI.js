@@ -13,7 +13,6 @@ blackHoleSuns.prototype.doLoggedout = function () {
     $("#status").empty()
     $("#filestatus").empty()
     $("#entryTable").empty()
-    $("#totals").empty()
 
     $("#save").addClass("disabled")
     $("#save").prop("disabled", true)
@@ -93,6 +92,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
 
     if (fnmsce)
         nmsce.displayUser()
+
     else if (!fdarc) {
         bhs.getActiveContest(bhs.displayContest)
         bhs.buildTotals()
@@ -150,6 +150,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     }
 }
 
+// index.js has a local copy now
 blackHoleSuns.prototype.buildUserPanel = async function () {
     const panel = `
         <div id="pnl-user">
@@ -339,7 +340,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
                 </span>
                 <button id="btn-load" type="button"
                     class="btn btn-sm btn-def text-center col-sm-2 col-4" onclick="bhs.loadEntries()">Load</button>&nbsp
-                <div id="btn-utSettings" class="col-6 align-vertical text-right txt-def">
+                <div id="btn-utSettings" class="col-6 pointer align-vertical text-right txt-def">
                     <i class="fa fa-cog txt-def"></i>&nbsp;Settings&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Opens date range and column selection panel. Checked column labels will be displayed in list. Actions take effect after hitting 'Save'.">
@@ -394,7 +395,7 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
     let h = ""
     userTable.forEach(t => {
         let l = /idname/ [Symbol.replace](line, t.id)
-        l = /width/ [Symbol.replace](l, t.format)
+        l = /width/ [Symbol.replace](l, t.format + " pointer")
         h += /title/ [Symbol.replace](l, t.title)
     })
 
@@ -584,10 +585,6 @@ function entryDblclk(evt) {
     let e = bhs.entries[reformatAddress(id)]
 
     if (!iftotals) {
-        $('html, body').animate({
-            scrollTop: ($('#panels').offset().top)
-        }, 0)
-
         $("#delete").removeClass("disabled")
         $("#delete").removeAttr("disabled")
 
@@ -606,26 +603,17 @@ const totalsItemsEnd = `</div>`
 const totalsCol = [{
     title: "",
     id: "id-what",
-    format: "col-lg-4 col-md-6 col-sm-4 col-6",
+    format: "col-lg-7 col-md-6 col-sm-3 col-6",
 }, {
     title: "Player",
     id: "id-Player",
-    format: "col-lg-2 col-md-4 col-sm-2 col-4 text-right",
+    format: "col-lg-3 col-md-4 col-sm-2 col-4 text-right",
     where: "index",
 }, {
     title: "All",
     id: "id-Total",
-    format: "col-lg-2 col-md-4 col-sm-2 col-4 text-right",
-}, {
-    title: "Contest",
-    id: "id-ctst",
-    format: "col-lg-2 col-md-10 col-sm-2 col-10 text-right hidden",
-    where: "index",
-}, {
-    title: "Ctst All",
-    id: "id-contestall",
-    format: "col-lg-2 col-md-4 col-sm-2 col-4 text-right hidden",
-}]
+    format: "col-lg-3 col-md-4 col-sm-2 col-4 text-right",
+}, ]
 
 const rowTotal = 0
 const rowPlatform = 1
@@ -652,48 +640,18 @@ blackHoleSuns.prototype.buildTotals = function () {
     let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
     let ftotals = window.location.pathname == "/totals.html"
 
-    const pnl = `
-        <div class="card-header bkg-def">
-            <div class="row">
-                <div class="col-8 h4 txt-def">Total Black Hole Entries&nbsp;
-                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                        data-placement="bottom" title="Click on colum titles to sort data based on column.">
-                    </i>
-                </div>
-                <div id="contrib" class="col-6 clr-creme">Total contributors: </div>
-                <div id="cname" class="row clr-creme"></div>
-            </div>
-        </div>
-        <div id="subpanel" class="card-body bkg-white">
-            <label id="id-showall" class="row h6 txt-inp-def hidden">
-                Show All&nbsp
-                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                    data-placement="bottom" title="Show all of the player's totals for all galaxies and platforms.">
-                </i>&nbsp;
-                <input id="ck-showall" type="checkbox">
-            </label>
-            <div id="hdr-Player" class="row border-bottom bkg-def txt-def"></div>
-            <div id="itm-Player"></div>
-            <br>
-        </div>`
-
-    let tot = $("#totals")
-    tot.empty()
-    tot.append(pnl)
-
-    if (!findex) {
-        tot.find("#itm-Players").css("height", "210px")
-        tot.find("#itm-Civ-Org").css("height", "120px")
-    }
+    if (!bhs.user.galaxy || !bhs.user.platform)
+        return
 
     let h = ""
 
     totalsCol.forEach(t => {
         let l = /idname/ [Symbol.replace](totalsItems, t.id)
         l = /title/ [Symbol.replace](l, t.title)
-        h += /format/ [Symbol.replace](l, t.format)
+        h += /format/ [Symbol.replace](l, t.format+" bkg-def txt-def")
     })
-    tot.find("#hdr-Player").append(h)
+
+    $("#hdr-Player").html(h)
 
     totalsRows.forEach(x => {
         let t = /altplatform/ [Symbol.replace](x.title, bhs.user.platform != "PS4" ? "PS4" : "PC-XBox")
@@ -711,19 +669,19 @@ blackHoleSuns.prototype.buildTotals = function () {
 
         h += totalsItemsEnd
 
-        tot.find("#itm-Player").append(h)
+        $("#itm-Player").append(h)
     })
 
     totalsRows.forEach(t => {
         if (t.where == "index" && !findex)
-            tot.find("#itm-Player #" + t.id).hide()
+            $("#itm-Player #" + t.id).hide()
         if (t.where == "galaxy" && !ftotals)
-            tot.find("#itm-Player #" + t.id).hide()
+            $("#itm-Player #" + t.id).hide()
     })
 
     if (findex) {
-        tot.find("#id-showall").show()
-        tot.find("#ck-showall").change(function () {
+        $("#id-showall").show()
+        $("#ck-showall").change(function () {
             if ($(this).prop("checked")) {
                 $("[id|='gal']").show()
                 $("#totals").find("#id-totalBHGP").css("border-bottom", "1px solid black")
@@ -737,9 +695,8 @@ blackHoleSuns.prototype.buildTotals = function () {
 
 blackHoleSuns.prototype.displayTotals = function (e, refpath) {
     let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
-    let ftotals = window.location.pathname == "/totals.html"
 
-    if (bhs.user.galaxy === "" || bhs.user.platform === "")
+    if (!bhs.user.galaxy || !bhs.user.platform)
         return
 
     bhs.updateTotalsListView(e, refpath)
@@ -847,8 +804,7 @@ blackHoleSuns.prototype.updateTotalsListView = function (e, refpath) {
 }
 
 blackHoleSuns.prototype.displayTotalsHtml = function (html, p) {
-    $("#subpanel #scroll-" + p).remove()
-    $("#subpanel").append(html)
+    $("#subpanel #scroll-" + p).html(html)
 
     if (p === "Players")
         $("#contrib").text("Total contributors: " + $("#itm-Players").children().length)
@@ -1201,8 +1157,6 @@ blackHoleSuns.prototype.extractMapOptions = function () {
 
     c.connection = opt.find("#ck-drawcon").prop("checked")
     c.map3d = opt.find("#ck-3dmap").prop("checked")
-    //c.exit = opt.find("#ck-drawexits").prop("checked")
-    //c.base = opt.find("#ck-drawbase").prop("checked")
     c.zoomreg = opt.find("#ck-zoomreg").prop("checked")
     c.addzero = opt.find("#ck-addzero").prop("checked")
     c.chain = opt.find("#ck-chain").prop("checked")
@@ -1247,8 +1201,6 @@ blackHoleSuns.prototype.setMapOptions = function (entry) {
 
         opt.find("#ck-drawcon").prop("checked", typeof entry.mapoptions.connection != "undefined" ? entry.mapoptions.connection : false)
         opt.find("#ck-3dmap").prop("checked", typeof entry.mapoptions.map3d != "undefined" ? entry.mapoptions.map3d : true)
-        //opt.find("#ck-drawexits").prop("checked", typeof entry.mapoptions.exit != "undefined" ? entry.mapoptions.exit : false)
-        //opt.find("#ck-drawbase").prop("checked", typeof entry.mapoptions.base != "undefined" ? entry.mapoptions.base : false)
         opt.find("#ck-zoomreg").prop("checked", typeof entry.mapoptions.zoomreg != "undefined" ? entry.mapoptions.zoomreg : false)
         opt.find("#ck-addzero").prop("checked", typeof entry.mapoptions.addzero != "undefined" ? entry.mapoptions.addzero : true)
         opt.find("#ck-chain").prop("checked", typeof entry.mapoptions.chain != "undefined" ? entry.mapoptions.chain : true)
@@ -1341,7 +1293,7 @@ blackHoleSuns.prototype.buildMap = function () {
     const settings = `
         <br>
         <div class="row">
-            <div id="id-mapinp" class="col-sm-6 col-14">
+            <div id="id-mapinp" class="col-lg-6 col-md-14 col-sm-6 col-14">
                 <div class="row">
                     <div class="col-1"></div>
                     <div class="col-5 txt-def">Min&nbsp;
@@ -1369,39 +1321,39 @@ blackHoleSuns.prototype.buildMap = function () {
                 <br>
             </div>
 
-            <div class="col-sm-7 col-14 border-left">
-                <div class="row">
-                    <label class="col-sm-7 col-14 h6 txt-def">
-                        <input id="ck-3dmap" type="checkbox" checked>
-                        3D Map
-                    </label>
-                    <label id="id-drawcon" class="col-sm-7 col-14 h6 txt-def">
-                        <input id="ck-drawcon" type="checkbox" checked>
-                        Draw Connections&nbsp;
-                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                            data-placement="bottom" title="Draw lines between black hole and exit.  WARNING this is slow.">
-                        </i>
-                    </label>
-                    <label id="id-zoomreg" class="col-14 h6 txt-def">
-                        <input id="ck-zoomreg" type="checkbox" checked>
-                        Auto Zoom Reg Search (zoom radius)
-                    </label>
-                </div>
-                <div class="row">
-                    <label class="col-8 h6 txt-def">
-                        <input id="ck-chain" type="checkbox" checked>
-                        Select Chain&nbsp;
-                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                            data-placement="bottom" title="Follow black holes from current exit to the next black
-                            hole if closer than selected radius. Continue chain forward and backward in time using depth.">
-                        </i>&nbsp
-                        <input id="inp-chaindepth" type="number" class="rounded col-7 txt-def" min="0">
-                    </label> 
-                    <label class="col-6 h6 txt-def">
-                        Radius&nbsp
-                        <input id="inp-chainradius" type="number" class="rounded col-8 txt-def" min="0">
-                    </label>
-                </div>
+            <div class="col-sm-7 col-14 border-left pad-left">
+                <label class="h6 txt-def">
+                    <input id="ck-3dmap" type="checkbox" checked>
+                    3D Map&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </label>
+                <label id="id-drawcon" class="h6 txt-def">
+                    <input id="ck-drawcon" type="checkbox" checked>
+                    Draw Connections&nbsp;
+                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                        data-placement="bottom" title="Draw lines between black hole and exit.  WARNING this is slow.">
+                    </i>
+                </label>
+                <label id="id-zoomreg" class="h6 txt-def">
+                    <input id="ck-zoomreg" type="checkbox" checked>
+                    Auto Zoom&nbsp;
+                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                        data-placement="bottom" title="When the search button beside the 'Region Name' input 
+                        is used then zoom the map into that region using the 'Zoom Radius'.">
+                    </i>&nbsp
+                </label>
+                <label class="h6 txt-def">
+                    <input id="ck-chain" type="checkbox" checked>
+                    Select Chain&nbsp;
+                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                        data-placement="bottom" title="Follow black holes from current exit to the next black
+                        hole if closer than selected radius. Continue chain forward and backward in time using depth.">
+                    </i>&nbsp
+                    <input id="inp-chaindepth" type="number" class="rounded col-5 txt-def" min="0">
+                </label> 
+                <label class="h6 txt-def">
+                    &nbsp&nbsp&nbsp&nbspRadius&nbsp
+                    <input id="inp-chainradius" type="number" class="rounded col-5 txt-def" min="0">
+                </label>
             </div>
         </div>
         <br>
@@ -1413,7 +1365,7 @@ blackHoleSuns.prototype.buildMap = function () {
                 <input id="inp-ctrcord" type="text" class="rounded col-14 txt-def" placeholder="07FF:007F:07FF:0000">
             </label>
             <label class="col-sm-4 col-7 h6 txt-def">Radius&nbsp
-                <input id="inp-ctrzoom" type="number" class="rounded col-6 txt-def" min="0" max="2048">
+                <input id="inp-ctrzoom" type="number" class="rounded col-14 txt-def" min="0" max="2048">
             </label>
             <label class="col-sm-3 col-7 h6 txt-def">
             <input id="ck-addzero" type="checkbox" checked>
@@ -1442,12 +1394,12 @@ blackHoleSuns.prototype.buildMap = function () {
     let opt = $("#mapoptions")
     opt.empty()
     opt.html(settings)
-    const col = '<div class="col-sm-7 col-14">'
+    const col = '<div class="col-lg-7 col-md-14 col-sm-7 col-14">'
     const key = `
         <div class="row">
-            <div id="idname" class="col-5 text-center">title</div>
-            <input id="sel-idname" class="col-4 bkg-def" style="border-color:black" type="color" value="colorsel">
-            <input id="inp-idname" type="number" class="rounded col-5 text-right txt-def hidden" min="0" max="20">
+            <div id="idname" class="col-lg-6 col-md-5 col-6 text-center">title</div>
+            <input id="sel-idname" class="col-lg-4 col-md-3 col-4 bkg-def" style="border-color:black" type="color" value="colorsel">
+            <input id="inp-idname" type="number" class="rounded col-lg-4 col-md-4 col-sm-4 col-4 text-right txt-def hidden" min="0" max="20">
         </div>`
     const colend = `</div>`
 
