@@ -483,7 +483,9 @@ function doBackup() {
         for (let ref of refs)
             p.push(backupCols(ref, now))
 
-        return Promise.all(p)
+        return Promise.all(p).then(res=>{
+            return true
+        })
     })
 }
 

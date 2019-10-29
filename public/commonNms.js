@@ -319,7 +319,7 @@ const ownershipList = [{
 
 const platformList = [{
     name: "PC-XBox",
-    match: /pc|xbox/i
+    match: /^pc/i
 }, {
     name: "PS4",
     match: /ps4/i

@@ -97,6 +97,15 @@
                         <div id="id-Player"></div>
                         <div id="id-Platform"></div>
                         <div id="id-Galaxy"></div>
+                        <div class="row">
+                            <button id="btn-load" type="button" class="btn btn-sm btn-def text-center col-sm-2 col-4"
+                                onclick="bhs.loadEntries()">Load</button>&nbsp;
+                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom"
+                                title="Load all entries for selected Player, Galaxy & Platform. This is a duplicate of the 'Load' button in the System List.
+                                WARNING: This loads all of the entries for the selected galaxy & patform and with some combinations this can take minutes.">
+                            </i>
+                        </div>
                     </div>
                     <br>
 
@@ -104,8 +113,9 @@
                         <div class="card-header txt-def h4 text-center">
                             Search&nbsp;
                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                                data-placement="bottom"
-                                title="Searches topmost field completed except for start & end date. Search is from selected player, galaxy & platform.">
+                                data-placement="bottom" title="Searches topmost field completed except for start & end date. 
+                                Search is from selected player, galaxy & platform.
+                                Searching with no inputs set draws the entire set.">
                             </i>
                         </div>
                         <div class="card-body txt-def bkg-white">
@@ -137,12 +147,12 @@
                             <br>
                             <div class="row">
                                 <div class="col-4"></div>
-                                <button id="btn-search" type="button"
-                                    class="col-6 btn btn-sm btn-def">Search</button>&nbsp;
+                                <button id="btn-search" type="button" class="col-6 btn btn-sm btn-def">Search
+                                </button>&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom"
-                                    title="First search on a specific galaxy & platform will be slow.">
-                                </i>
+                                    title="Search filters the 'System List' and adds the results to the map.">
+                                </i>&nbsp;
                             </div>
                         </div>
                     </div>
@@ -159,15 +169,20 @@
                         <div class="col-md-3 col-14">
                             <div class="row">
                                 <div id="maplogo" class="col-md-14 col-4">
-                                    <img id="logo" src="images/bhs-logo.png" class="float-center" alt="BHS Logo" height="20px"
-                                        width="20px" style="max-width:100px; max-height:100px">
+                                    <img id="logo" src="images/bhs-logo.png" class="float-center" alt="BHS Logo"
+                                        height="20px" width="20px" style="max-width:100px; max-height:100px">
                                 </div>
 
                                 <div class="col-md-14 col-10">
                                     <div class="row">
                                         <button id="btn-redraw" type="button"
-                                            class="col-md-14 col-5 text-center btn-sm btn btn-def">Clear
-                                        </button>
+                                            class="col-md-14 col-5 text-center btn-sm btn btn-def"
+                                            onclick="bhs.purgeMap()">Clear
+                                        </button>&nbsp;
+                                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                            data-html="true" data-placement="bottom"
+                                            title="Clear the map to start a new search.">
+                                        </i>&nbsp;
                                         <div id="btn-mapsettings" class="col-md-14 col-9 txt-def">
                                             <i class="fa fa-cog txt-def"></i>&nbsp;Settings
                                         </div>

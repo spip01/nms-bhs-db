@@ -88,21 +88,21 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     let fsearch = window.location.pathname == "/cesearch.html"
 
     bhs.buildMenu(loc, "Civ/Org", bhs.orgList, bhs.saveUser, {
-        labelsize:"col-lg-14 col-5",
-        menusize:"col-lg-14 col-7"
+        labelsize: "col-lg-14 col-5",
+        menusize: "col-lg-14 col-7"
     })
 
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, {
         required: !fsearch,
-        labelsize:"col-lg-14 col-5",
-        menusize:"col-lg-14 col-7"
+        labelsize: "col-lg-14 col-5",
+        menusize: "col-lg-14 col-7"
     })
 
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, {
         tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
         required: true,
-        labelsize:"col-lg-14 col-5",
-        menusize:"col-lg-14 col-7"
+        labelsize: "col-lg-14 col-5",
+        menusize: "col-lg-14 col-7"
     })
 
     if (fsearch)
@@ -138,12 +138,12 @@ const pnlBottom = 1
 
 var panels = [{
     name: "Black Hole System",
-    id: "pnl-S1",
+    id: "inp-S1",
     listid: "S1",
     calc: true,
 }, {
     name: "Exit System",
-    id: "pnl-S2",
+    id: "inp-S2",
     listid: "S2",
     calc: true,
 }]
@@ -587,16 +587,23 @@ blackHoleSuns.prototype.clearPanel = function (d) {
 }
 
 blackHoleSuns.prototype.extractEntry = async function (idx) {
-    let pnl = $("#panels")
+    let pnl = $("#inputPanels")
     let loc = pnl.find("#" + panels[idx].id)
 
     let entry = {}
+    let ok = true
     let lastentry = bhs.last[idx] ? bhs.last[idx] : null
+    let addr = loc.find("#id-addr").val()
+
+    let err = bhs.validateAddress(addr)
+    if (err !== "") {
+        bhs.status("Error: " + err)
+        return false
+    }
 
     if (lastentry) {
         entry = mergeObjects(entry, lastentry)
 
-        let addr = loc.find("#id-addr").val()
         if (lastentry.addr != addr) {
             ok = bhs.deleteEntry(lastentry)
             bhs.status("change address " + lastentry.addr)
@@ -619,7 +626,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
     entry.version = "beyond"
     entry.page = "bhs"
 
-    entry.addr = loc.find("#id-addr").val()
+    entry.addr = addr
     entry.sys = loc.find("#id-sys").val()
     entry.reg = loc.find("#id-reg").val()
     entry.life = loc.find("#btn-Lifeform").text().stripNumber()
@@ -631,10 +638,6 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
     let hasbase = loc.find("#ck-hasbase").prop("checked")
     let single = loc.find("#ck-single").prop("checked")
     let deadzone = loc.find("#ck-isdz").prop("checked")
-
-    let bhloc = pnl.find("#" + panels[pnlTop].id)
-    // entry.valid = bhloc.find("#btn-valid").prop("checked")
-    // entry.invalid = bhloc.find("#btn-invalid").prop("checked")
 
     if (idx == pnlTop) {
         entry.deadzone = deadzone
@@ -658,7 +661,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
         }
     }
 
-    let ok = bhs.validateEntry(entry, single) === ""
+    ok = bhs.validateEntry(entry, single) === ""
 
     if (ok) {
         if (!single)

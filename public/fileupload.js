@@ -187,7 +187,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
         let step = 1 / allrows.length * 100
         let width = 1
         let progress = $("#progress")
-        progress.width( width + "%")
+        progress.width(width + "%")
         progress.show()
 
         let k = 0
@@ -235,7 +235,6 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
             entry[0].galaxy = bhs.user.galaxy
             entry[0].platform = bhs.user.platform
             entry[0].type = ""
-            entry[0].owned = "mine"
             entry[0].version = bhs.user.version
             if (bhs.contest)
                 entry[0].contest = bhs.contest.name
@@ -293,14 +292,13 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                     if (!basename) {
                         bhs.filestatus("row: " + (i + 1) + " Base name required.", 0)
                     } else {
-                        entry[2] = {}
-                        entry[2].basename = basename
-
-                        entry[2] = mergeObjects(entry[2], entry[0])
-                        entry[2] = mergeObjects(entry[2], entry[1])
-                        ok = await bhs.fBatchWriteBase(entry[2], null, check, i, true)
-                        if (ok)
-                            ok = await bhs.fBatchUpdate(entry[1], null, check, i, true)
+                        ok = await bhs.fBatchUpdate(entry[1], null, check, i, true)
+                        
+                        if (ok) {
+                            entry[1].basename = basename
+                            entry[1].owned = typeof entry[2].owned !== "undefined"?entry[2].owned:"mine"
+                            ok = await bhs.fBatchWriteBase(entry[1], null, check, i, true)
+                        }
                     }
                 } else if (entry[0].type.match(/single/i) || !entry[2].addr) {
                     ok = await bhs.fBatchUpdate(entry[1], null, check, i, true)
@@ -531,4 +529,3 @@ function validateBHAddress(addr) {
 function validateExitAddress(addr) {
     return bhs.validateAddress(addr, "exit")
 }
-

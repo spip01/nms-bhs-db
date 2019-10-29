@@ -26,14 +26,14 @@ blackHoleSuns.prototype.buildSelectPanel = async function () {
         uid: null
     })
 
-    bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select, {
-        tip: "Search entries made by player. '--blank--' is to deselect a player. First search for galaxy any platform is slow."
+    bhs.buildMenu(loc, "Player", bhs.usersList, null, {
+        tip: "Search entries made by player. '--blank--' is to deselect a player."
     })
-    bhs.buildMenu(loc, "Platform", platformList, bhs.select, {
-        required: true
+    bhs.buildMenu(loc, "Platform", platformList, null, {
+        required: true,
     })
-    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.select, {
-        required: true
+    bhs.buildMenu(loc, "Galaxy", galaxyList, null, {
+        required: true,
     })
 }
 
@@ -74,6 +74,9 @@ blackHoleSuns.prototype.search = function () {
 
         bhs.doSearch("created", start, end)
     }
+    else
+        bhs.displayEntryList(bhs.entries)
+
 }
 
 blackHoleSuns.prototype.doSearch = function (type, s1, s2) {
@@ -92,5 +95,5 @@ blackHoleSuns.prototype.doSearch = function (type, s1, s2) {
             found[list[i]] = e
     }
 
-    bhs.displayEntryList(found, true)
+    bhs.displayEntryList(found)
 }

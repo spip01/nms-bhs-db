@@ -645,7 +645,7 @@ blackHoleSuns.prototype.getEntriesByName = async function (displayFcn, name, gal
     if (!bhs.loaded || !bhs.loaded[galaxy] || !bhs.loaded[galaxy][platform])
         await bhs.getEntries(null, null, null, galaxy, platform)
 
-    if (name !== "--blank--") {
+    if (!name.match(/-+blank-+/i)) {
         bhs.entries = {}
         let list = Object.keys(bhs.list[galaxy][platform])
         for (let i = 0; i < list.length; ++i) {
@@ -983,6 +983,9 @@ blackHoleSuns.prototype.validateEntry = function (entry, nobh) {
 }
 
 blackHoleSuns.prototype.validateAddress = function (addr, ck) {
+    if (addr === "")
+        return "Empty address"
+
     let c = addressToXYZ(addr)
     let error = ""
 

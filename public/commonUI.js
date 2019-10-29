@@ -131,7 +131,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     if (fdarc && typeof bhs.user.uid !== "undefined" && bhs.user.uid)
         bhs.updateDarcSettings()
 
-    if (typeof bhs.user.inputSettings !== "undefined" && bhs.user.inputSettings.glyph) {
+    if (typeof bhs.user.inputSettings !== "undefined" && typeof bhs.user.inputSettings.glyph !== "undefined" && bhs.user.inputSettings.glyph) {
         $("[id='id-glyphInput']").show()
         $("[id='id-addrInput']").hide()
         $("[id='ck-glyphs']").prop("checked", true)
@@ -141,7 +141,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
         $("[id='ck-glyphs']").prop("checked", false)
     }
 
-    if (typeof bhs.user.inputSettings !== "undefined" && bhs.user.inputSettings.tips) {
+    if (typeof bhs.user.inputSettings === "undefined" || typeof bhs.user.inputSettings.tips === "undefined" || bhs.user.inputSettings.tips) {
         $("[data-toggle='tooltip']").show()
         $("#ttipmsg").css("text-decoration", "none")
     } else {
@@ -321,7 +321,7 @@ blackHoleSuns.prototype.loadEntries = function () {
     bhs.purgeMap()
     $("#userItems").empty()
 
-    let fsearch = window.location.pathname == "/search.html" || window.location.pathname == "/totals.html"
+    let fsearch = window.location.pathname == "/search.html"
     if (fsearch)
         bhs.select()
     else
@@ -339,7 +339,10 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
                     </i>
                 </span>
                 <button id="btn-load" type="button"
-                    class="btn btn-sm btn-def text-center col-sm-2 col-4" onclick="bhs.loadEntries()">Load</button>&nbsp
+                    class="btn btn-sm btn-def text-center col-sm-2 col-4" onclick="bhs.loadEntries()">Load</button>&nbsp;
+                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                        data-placement="bottom" title="Load all entries for selected Player/Galaxy/Platform.">
+                    </i>
                 <div id="btn-utSettings" class="col-6 pointer align-vertical text-right txt-def">
                     <i class="fa fa-cog txt-def"></i>&nbsp;Settings&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
@@ -499,8 +502,8 @@ blackHoleSuns.prototype.entriesToCsv = function () {
     return out
 }
 
-blackHoleSuns.prototype.displayEntryList = function (entrylist, force) {
-    bhs.drawList(entrylist, force)
+blackHoleSuns.prototype.displayEntryList = function (entrylist) {
+    bhs.drawList(entrylist)
     $("#userItems").empty()
 
     if (window.location.pathname == "/totals.html")
@@ -592,7 +595,7 @@ function entryDblclk(evt) {
     } else {
         let l = {}
         l[e.addr] = e
-        bhs.drawList(l, true)
+        bhs.drawList(l)
     }
 }
 
@@ -648,7 +651,7 @@ blackHoleSuns.prototype.buildTotals = function () {
     totalsCol.forEach(t => {
         let l = /idname/ [Symbol.replace](totalsItems, t.id)
         l = /title/ [Symbol.replace](l, t.title)
-        h += /format/ [Symbol.replace](l, t.format+" bkg-def txt-def")
+        h += /format/ [Symbol.replace](l, t.format + " bkg-def txt-def")
     })
 
     $("#hdr-Player").html(h)
@@ -679,18 +682,15 @@ blackHoleSuns.prototype.buildTotals = function () {
             $("#itm-Player #" + t.id).hide()
     })
 
-    if (findex) {
-        $("#id-showall").show()
-        $("#ck-showall").change(function () {
-            if ($(this).prop("checked")) {
-                $("[id|='gal']").show()
-                $("#totals").find("#id-totalBHGP").css("border-bottom", "1px solid black")
-            } else {
-                $("[id|='gal']").hide()
-                $("#totals").find("#id-totalBHGP").css("border-bottom", "0px")
-            }
-        })
-    }
+    $("#ck-showall").change(function () {
+        if ($(this).prop("checked")) {
+            $("[id|='gal']").show()
+            $("#totals").find("#id-totalBHGP").css("border-bottom", "1px solid black")
+        } else {
+            $("[id|='gal']").hide()
+            $("#totals").find("#id-totalBHGP").css("border-bottom", "0px")
+        }
+    })
 }
 
 blackHoleSuns.prototype.displayTotals = function (e, refpath) {
@@ -1488,17 +1488,13 @@ blackHoleSuns.prototype.drawSingle = function (e) {
     Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"] * 2, opt["clr-bh"], e.blackhole ? opt["clr-exit"] : null))
 }
 
-blackHoleSuns.prototype.drawList = function (listEntry, force) {
+blackHoleSuns.prototype.drawList = function (listEntry) {
     let findex = window.location.pathname == "/" || window.location.pathname == "/index.html"
-    let fsearch = window.location.pathname == "/search.html"
-
-    if (!force && fsearch)
-        return
 
     let opt = bhs.extractMapOptions()
     let k = Object.keys(listEntry)
 
-    if (!findex && !fsearch)
+    if (!findex)
         opt.connection = false
 
     let out = {}
@@ -1606,11 +1602,14 @@ blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
     }
 }
 
+var findList = null
+
 blackHoleSuns.prototype.findClose = function (opt, xyz, up) {
     let out = []
-    let list = Object.keys(bhs.entries)
+    if (!findList)
+        findList = Object.keys(bhs.entries)
 
-    for (let i of list) {
+    for (let i of findList) {
         let e = bhs.entries[i]
 
         if (e.blackhole) {
