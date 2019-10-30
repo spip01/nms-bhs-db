@@ -37,6 +37,8 @@ $(document).ready(() => {
             bhs.status("deleting " + bhs.last[pnlBottom].addr)
         }
 
+        bhs.last = []
+
         await b.commit().then(() => {
             bhs.status("Delete successful.")
         }).catch(err => {
@@ -357,7 +359,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
     loc.find('#ck-hasbase').unbind("change")
     loc.find('#ck-hasbase').change(function () {
-        let pnl = $(this).closest("[id|='pnl'")
+        let pnl = $(this).closest("[id|='inp'")
 
         if ($(this).prop("checked")) {
             pnl.find("#id-isbase").show()
@@ -413,7 +415,7 @@ blackHoleSuns.prototype.changeAddr = function (evt) {
     if (addr !== "") {
         addr = reformatAddress(addr)
         let glyph = addrToGlyph(addr)
-        let pnl = $(evt).closest("[id|='pnl'")
+        let pnl = $(evt).closest("[id|='inp'")
 
         bhs.dispAddr(pnl, addr, glyph)
         bhs.getEntry(addr, bhs.displayListEntry)
@@ -425,7 +427,7 @@ blackHoleSuns.prototype.changeGlyph = function (evt) {
     let glyph = $(evt).val().toUpperCase()
     if (glyph !== "") {
         let addr = reformatAddress(glyph)
-        let pnl = $(evt).closest("[id|='pnl'")
+        let pnl = $(evt).closest("[id|='inp'")
 
         bhs.dispAddr(pnl, addr, glyph)
         bhs.getEntry(addr, bhs.displayListEntry)
@@ -433,7 +435,7 @@ blackHoleSuns.prototype.changeGlyph = function (evt) {
     }
 }
 
-blackHoleSuns.prototype.dispAddr = function (pnl, addr, glyph) {
+blackHoleSuns.prototype.dispAddr = function (pnl, addr, glyph, draw) {
     let loc = pnl.find("#id-glyphInput")
     loc.find("#id-addr").text(addr)
     loc.find("#id-glyph").val(glyph)
@@ -443,22 +445,24 @@ blackHoleSuns.prototype.dispAddr = function (pnl, addr, glyph) {
     loc.find("#id-glyph").text(glyph)
     loc.find("#id-hex").text(glyph)
 
-    bhs.drawSingle({
-        xyzs: addressToXYZ(addr)
-    })
+    if (typeof draw !== "undefined" && draw)
+        bhs.drawSingle({
+            xyzs: addressToXYZ(addr)
+        })
 }
 
 blackHoleSuns.prototype.searchRegion = function (evt) {
-    let reg = $(evt).closest("[id|='pnl']").find("#id-reg").val()
+    let reg = $(evt).closest("[id|='inp']").find("#id-reg").val()
     bhs.getEntryByRegion(reg, bhs.displayListEntry)
 }
 
 blackHoleSuns.prototype.delBase = function (evt) {
-    let reg = $(evt).closest("[id|='pnl']").find("#id-addr").val()
+    let reg = $(evt).closest("[id|='inp']").find("#id-addr").val()
     bhs.deleteBase(addr)
 }
 
 blackHoleSuns.prototype.displayListEntry = function (entry, zoom) {
+    bhs.drawSingle(entry)
     bhs.displaySingle(entry, pnlTop, zoom)
 
     if (entry.blackhole) {
@@ -490,10 +494,8 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
         bhs.last[idx].platform = bhs.user.platform
     }
 
-    bhs.drawSingle(entry)
-
     let loc = $("#" + panels[idx].id)
-    bhs.dispAddr(loc, entry.addr, addrToGlyph(entry.addr))
+    bhs.dispAddr(loc, entry.addr, addrToGlyph(entry.addr), false)
     loc.find("#id-sys").val(entry.sys)
     loc.find("#id-reg").val(entry.reg)
 

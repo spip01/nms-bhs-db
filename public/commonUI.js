@@ -103,7 +103,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
             bhs.setMapOptions(bhs.user)
 
             if (!ftotals) {
-                bhs.buildUserTable(bhs.user)
+                bhs.buildEntryList(bhs.user)
                 bhs.displaySettings(bhs.user)
             }
         }
@@ -328,22 +328,23 @@ blackHoleSuns.prototype.loadEntries = function () {
         bhs.getEntries(bhs.displayEntryList, bhs.displayEntry)
 }
 
-blackHoleSuns.prototype.buildUserTable = function (entry) {
+blackHoleSuns.prototype.buildEntryList = function (entry) {
     const table = `
         <div class="card-header bkg-def">
             <div class="row">
-                <span class="h4 col-sm-5 col-14 txt-def">System List&nbsp;
+                <div class="h4 col-7 txt-def">System List&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Hit 'Load' to download entries from server. Click on column titles to sort data based on column. 
                         Click on data entry to display in input section and highlight entry in map.  Once selected entry may be edited.">
                     </i>
-                </span>
+                </div>
                 <button id="btn-load" type="button"
-                    class="btn btn-sm btn-def text-center col-sm-2 col-4" onclick="bhs.loadEntries()">Load</button>&nbsp;
+                    class="btn btn-sm btn-def text-center col-4" onclick="bhs.loadEntries()">Load</button>&nbsp;&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Load all entries for selected Player/Galaxy/Platform.">
                     </i>
-                <div id="btn-utSettings" class="col-6 pointer align-vertical text-right txt-def">
+                <div class="h6 col-7 txt-def">Total Displayed: <span id="total"></span></div>
+                <div id="btn-utSettings" class="col-7 pointer align-vertical txt-def">
                     <i class="fa fa-cog txt-def"></i>&nbsp;Settings&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Opens date range and column selection panel. Checked column labels will be displayed in list. Actions take effect after hitting 'Save'.">
@@ -390,8 +391,11 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
             title
         </label>`
 
-    $("#entryTable").empty()
-    $("#entryTable").append(table)
+    let loc = $("#entryTable")
+    loc.empty()
+    loc.append(table)
+
+    let mh = $("#map").height() - loc.find(".card-header").height()
 
     const line = `<div id="idname" class="width h6">title&nbsp;<i id="up" class="fa fa-sort-asc pointer hidden"></i></div>`
 
@@ -402,10 +406,13 @@ blackHoleSuns.prototype.buildUserTable = function (entry) {
         h += /title/ [Symbol.replace](l, t.title)
     })
 
-    let loc = $("#userHeader")
+    loc = $("#userHeader")
     loc.append(h)
     loc.find("#lc-plat").text(entry.platform)
     loc.find("#lc-gal").text(entry.galaxy)
+
+    mh -= loc.height() / 3
+    loc.next("#userItems").height(mh)
 
     h = ""
     userTable.forEach(t => {
@@ -517,6 +524,8 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist) {
     let h = ""
 
     let keys = Object.keys(entrylist)
+    $("#entryTable").find("#total").text(keys.length)
+
     for (let i of keys) {
         let entry = entrylist[i]
 
@@ -1481,9 +1490,9 @@ blackHoleSuns.prototype.drawSingle = function (e) {
     let opt = bhs.extractMapOptions()
 
     let out = initout()
-    pushentry(out, e.xyzs, typeof e.addr === "undefined" ? e.addr + "<br>" + e.sys + "<br>" + e.reg : "")
+    pushentry(out, e.xyzs, typeof e.addr !== "undefined" ? e.addr + "<br>" + e.sys + "<br>" + e.reg : "")
     if (e.blackhole)
-        pushentry(out, e.x.xyzs, typeof e.addr === "undefined" ? e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg : "")
+        pushentry(out, e.x.xyzs, typeof e.addr !== "undefined" ? e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg : "")
 
     Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"] * 2, opt["clr-bh"], e.blackhole ? opt["clr-exit"] : null))
 }

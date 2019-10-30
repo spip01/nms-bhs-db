@@ -17,7 +17,7 @@ $(document).ready(() => {
         let page = window.location.pathname.replace(/(.*)\//, "$1")
         let loc = $("#navmenu").find("[href='" + page + "']")
         loc.addClass("clr-blue border rounded")
-        
+
         $("#banner").on("load", () => {
             let width = $("body").width()
             loc = $("[src='images/bhs-banner.jpg']")
@@ -49,10 +49,10 @@ $(document).ready(() => {
             eloc.find("#id-addr").val(end)
         }
 
-        if (range) 
+        if (range)
             $("#id-range").val(range)
 
-            dispAddr()
+        dispAddr()
     }
 })
 
@@ -103,7 +103,7 @@ function dispAddr(evt) {
         mapPoints("plymap", saddr, eaddr)
     }
 
-    if (typeof(Storage) !== "undefined") {
+    if (typeof (Storage) !== "undefined") {
         window.localStorage.setItem('navstart', saddr)
         window.localStorage.setItem('navend', eaddr)
         window.localStorage.setItem('navrange', range)
@@ -290,8 +290,8 @@ function changeMapLayout(zoom) {
 
 function mapPoints(plot, saddr, eaddr, axis1, axis2) {
     let w = $("#maplogo").width()
-    $("#logo").css("width", Math.min(w, 100)+"px")
-    $("#logo").height( Math.min(w, 100)+"px")
+    $("#logo").css("width", Math.min(w, 100) + "px")
+    $("#logo").height(Math.min(w, 100) + "px")
 
     let zero = {
         x: 2048,
