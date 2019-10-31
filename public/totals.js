@@ -12,11 +12,7 @@ $(document).ready(function () {
 blackHoleSuns.prototype.buildSelectPanel = async function () {
     let loc = $("#pnl-user #sel")
 
-    bhs.usersList = await bhs.getUserList()
-    bhs.usersList.unshift({
-        name: "--blank--",
-        uid: null
-    })
+    await bhs.getUserList(true)
 
     bhs.buildMenu(loc, "Player", bhs.usersList, bhs.select, {
         vertical: true,

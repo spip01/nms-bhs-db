@@ -329,6 +329,8 @@ blackHoleSuns.prototype.loadEntries = function () {
 }
 
 blackHoleSuns.prototype.buildEntryList = function (entry) {
+    let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
+
     const table = `
         <div class="card-header bkg-def">
             <div class="row">
@@ -411,8 +413,10 @@ blackHoleSuns.prototype.buildEntryList = function (entry) {
     loc.find("#lc-plat").text(entry.platform)
     loc.find("#lc-gal").text(entry.galaxy)
 
-    mh -= loc.height() / 3
-    loc.next("#userItems").height(mh)
+    if (findex) {
+        mh -= loc.height() / 3
+        loc.next("#userItems").height(mh)
+    }
 
     h = ""
     userTable.forEach(t => {

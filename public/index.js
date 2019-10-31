@@ -344,7 +344,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
         <br>`
 
     let h = /idname/g [Symbol.replace](panel, id)
-    h = /title/ [Symbol.replace](h, id == "pnl-S1" ? panels[pnlTop].name : panels[pnlBottom].name)
+    h = /title/ [Symbol.replace](h, id == "inp-S1" ? panels[pnlTop].name : panels[pnlBottom].name)
 
     $("#inp-" + id.stripID()).append(h)
 

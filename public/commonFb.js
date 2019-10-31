@@ -777,21 +777,32 @@ blackHoleSuns.prototype.getPoiList = function (nohide) {
     })
 }
 
-blackHoleSuns.prototype.getUserList = async function () {
+blackHoleSuns.prototype.getUserList = async function (addBlank) {
     let ref = bhs.fs.doc("bhs/Players")
     return await ref.get().then(doc => {
-        let list = []
+        bhs.usersList = []
         if (doc.exists) {
             let d = doc.data()
 
             for (let u of Object.keys(d)) {
-                list.push({
+                bhs.usersList.push({
                     name: u,
+
                 })
             }
+
+            bhs.usersList.sort((a, b) => 
+            a.name.toLowerCase() > b.name.toLowerCase() ? 1 :
+                a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0)
+
+            if (addBlank)
+                bhs.usersList.unshift({
+                    name: "--blank--",
+                    uid: null
+                })
         }
 
-        return list
+        return bhs.usersList
     }).catch(err => {
         console.log(err)
     })

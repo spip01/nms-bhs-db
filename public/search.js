@@ -13,21 +13,10 @@ $(document).ready(() => {
 blackHoleSuns.prototype.buildSelectPanel = async function () {
     let loc = $("#pnl-user")
 
-    bhs.usersList = await bhs.getUserList()
-
-    bhs.usersList.sort((a, b) => {
-        a = a.name.toLowerCase()
-        b = b.name.toLowerCase()
-        return a > b ? 1 : a < b ? -1 : 0
-    })
-
-    bhs.usersList.unshift({
-        name: "--blank--",
-        uid: null
-    })
+    await bhs.getUserList(true)
 
     bhs.buildMenu(loc, "Player", bhs.usersList, null, {
-        tip: "Search entries made by player. '--blank--' is to deselect a player."
+        tip: "Search entries made by player. '--blank--' is to deselect a player.",
     })
     bhs.buildMenu(loc, "Platform", platformList, null, {
         required: true,
@@ -73,8 +62,7 @@ blackHoleSuns.prototype.search = function () {
         end = end == "" ? Number.MAX_SAFE_INTEGER : firebase.firestore.Timestamp.fromDate(new Date(end)).seconds
 
         bhs.doSearch("created", start, end)
-    }
-    else
+    } else
         bhs.displayEntryList(bhs.entries)
 
 }
