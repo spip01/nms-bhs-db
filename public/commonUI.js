@@ -515,6 +515,7 @@ blackHoleSuns.prototype.entriesToCsv = function () {
 
 blackHoleSuns.prototype.displayEntryList = function (entrylist) {
     bhs.drawList(entrylist)
+    bhs.mapEntries(bhs.entries)
     $("#userItems").empty()
 
     if (window.location.pathname == "/totals.html")
@@ -1501,6 +1502,31 @@ blackHoleSuns.prototype.drawSingle = function (e) {
     Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"] * 2, opt["clr-bh"], e.blackhole ? opt["clr-exit"] : null))
 }
 
+blackHoleSuns.prototype.mapEntries = function (listentry) {
+    bhs.map = []
+    bhs.exitmap = []
+
+    Object.keys(listentry).forEach(a => {
+        let e = listentry[a]
+
+        if (e.blackhole) {
+            if (typeof bhs.map[e.xyzs.x] === "undefined")
+                bhs.map[e.xyzs.x] = []
+            if (typeof bhs.map[e.xyzs.x][e.xyzs.y] === "undefined")
+                bhs.map[e.xyzs.x][e.xyzs.y] = []
+
+            bhs.map[e.xyzs.x][e.xyzs.y][e.xyzs.z] = e
+
+            if (typeof bhs.exitmap[e.x.xyzs.x] === "undefined")
+                bhs.exitmap[e.x.xyzs.x] = []
+            if (typeof bhs.exitmap[e.x.xyzs.x][e.x.xyzs.y] === "undefined")
+                bhs.exitmap[e.x.xyzs.x][e.x.xyzs.y] = []
+
+            bhs.exitmap[e.x.xyzs.x][e.x.xyzs.y][e.x.xyzs.z] = e
+        }
+    })
+}
+
 blackHoleSuns.prototype.drawList = function (listEntry) {
     let findex = window.location.pathname == "/" || window.location.pathname == "/index.html"
 
@@ -1619,21 +1645,19 @@ var findList = null
 
 blackHoleSuns.prototype.findClose = function (opt, xyz, up) {
     let out = []
-    if (!findList)
-        findList = Object.keys(bhs.entries)
 
-    for (let i of findList) {
-        let e = bhs.entries[i]
+    let map = up ? bhs.exitmap : bhs.map
 
-        if (e.blackhole) {
-            let x = up ? e.x.xyzs.x : e.xyzs.x
-            let y = up ? e.x.xyzs.y : e.xyzs.y
-            let z = up ? e.x.xyzs.z : e.xyzs.z
+    let x = xyz.x
+    let y = xyz.y
+    let z = xyz.z
+    let r = opt.chainradius
 
-            if (Math.abs(x - xyz.x) <= opt.chainradius && Math.abs(y - xyz.y) <= opt.chainradius && Math.abs(z - xyz.z) <= opt.chainradius)
-                out.push(e)
-        }
-    }
+    for (let i = x - r; i < x + r; ++i)
+        for (let j = y - r; j < y + r; ++j)
+            for (let k = z - r; k < z + r; ++k)
+                if (typeof map[i] !== "undefined" && typeof map[i][j] !== "undefined" && typeof map[i][j][k] !== "undefined")
+                    out.push(map[i][j][k])
 
     return out
 }
