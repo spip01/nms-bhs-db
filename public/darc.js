@@ -41,6 +41,21 @@ blackHoleSuns.prototype.setGP = function () {
     if (g === "" || p === "")
         return
 
+    let ref = bhs.fs.doc("bhs/pageTotals")
+    const increment = firebase.firestore.FieldValue.increment(1)
+
+    let darc = {}
+    darc.routeGen = increment
+
+    if (bhs.user.uid !== "")
+        darc.noLogin = increment
+        
+    ref.set({
+        darc: darc
+    }, {
+        merge: true
+    })
+
     g = g.stripNumber()
 
     if (typeof bhs.orgList !== "undefined") {
@@ -202,7 +217,7 @@ blackHoleSuns.prototype.updateDarcSettings = function () {
 blackHoleSuns.prototype.showPOI = function (name) {
     const img = `<img id="img-pic" height="auto" width="wsize" />`
     let w = Math.min($("#mapcol").width() - 8, 400)
-    let h = /wsize/ [Symbol.replace](img, w+"px")
+    let h = /wsize/ [Symbol.replace](img, w + "px")
 
     $("#plymap").hide()
     let loc = $("#image")
@@ -227,7 +242,7 @@ blackHoleSuns.prototype.showPOI = function (name) {
 blackHoleSuns.prototype.showOrg = function (name) {
     const img = `<img id="img-pic" height="auto" width="wsize" />`
     let w = Math.min($("#mapcol").width() - 8, 400)
-    let h = /wsize/ [Symbol.replace](img, w+"px")
+    let h = /wsize/ [Symbol.replace](img, w + "px")
 
     $("#plymap").hide()
     let loc = $("#image")
@@ -558,8 +573,8 @@ function selectRoute(evt) {
 
 blackHoleSuns.prototype.buildDarcMap = function () {
     let w = $("#maplogo").width()
-    $("#logo").css("width", Math.min(w, 100)+"px")
-    $("#logo").height( Math.min(w, 100)+"px")
+    $("#logo").css("width", Math.min(w, 100) + "px")
+    $("#logo").height(Math.min(w, 100) + "px")
 
     let zero = {
         x: 2048,

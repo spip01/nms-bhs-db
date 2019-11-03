@@ -1628,9 +1628,6 @@ blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
                 pushentry(out, d.xyzs, d.addr + "<br>" + d.sys + "<br>" + d.reg)
                 pushentry(out, d.x.xyzs, d.x.addr + "<br>" + d.x.sys + "<br>" + d.x.reg)
 
-                if (bhs.displayResults)
-                    bhs.displayResults(d)
-
                 Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"], opt["clr-bh"], up ? opt["clr-exit"] : opt["clr-con"]))
 
                 bhs.drawChain(opt, up ? d.xyzs : d.x.xyzs, depth)

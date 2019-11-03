@@ -7,39 +7,37 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 })
 
-
 async function main() {
-    let urefs = await admin.firestore().collection("users").listDocuments()
+    let refs = await admin.firestore().collection("stars5/Euclid/PC-XBox")
 
-    for (let uref of urefs) { // user
-        uref = uref.collection("stars5")
-        let grefs = await uref.listDocuments()
+    let regname = {}
 
-        for (let gref of grefs) { // galaxy
-            let prefs = await gref.listCollections()
+    refs.get().then(snapshot => {
+        for (let doc of snapshot.docs) {
+            let e = doc.data()
 
-            for (let pref of prefs) { // platform
-                let snapshot = await pref.get()
-
-                for (let doc of snapshot.docs) {
-                    let b = doc.data()
-
-                    if (b.blackhole && typeof b.x === "undefined") {
-                        let ref = admin.firestore().doc("stars5/" + b.galaxy + "/" + b.platform + "/" + b.addr)
-                        let edoc = await ref.get()
-                        let e = edoc.data()
-
-                        console.log(e._name, ref.path, doc.ref.path)
-                        doc.ref.set({
-                            x: e.x
-                        }, {
-                            merge: true
-                        })
-                    }
-                }
+            let r = e.reg.split(" ")
+            if (r.length === 2) {
+                if (typeof regname[r] === "undefined")
+                    regname[r[1]] = 1
+                else
+                    regname[r[1]]++
             }
         }
-    }
+
+        let names = Object.keys(regname)
+
+        for (let doc of snapshot.docs) {
+            let e = doc.data()
+
+            for (let n of names) {
+                if (e.sys.includes(n))
+                    console.log(e.addr, e.sys)
+                if (e.blackhole && e.x.sys.includes(n))
+                    console.log(e.addr, e.x.sys)
+            }
+        }
+    })
 }
 
 main()
