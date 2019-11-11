@@ -34,12 +34,7 @@ blackHoleSuns.prototype.select = function () {
     bhs.getEntriesByName(bhs.displayEntryList, name, galaxy, platform)
 }
 
-blackHoleSuns.prototype.buildSearchPanel = function () {
-    let loc = $("#searchpnl")
-    loc.find("#btn-search").click(() => {
-        bhs.search()
-    })
-}
+blackHoleSuns.prototype.buildSearchPanel = function () {}
 
 blackHoleSuns.prototype.search = function () {
     let loc = $("#searchpnl")
@@ -65,6 +60,44 @@ blackHoleSuns.prototype.search = function () {
     } else
         bhs.displayEntryList(bhs.entries)
 
+}
+
+blackHoleSuns.prototype.searchReg = async function () {
+    let addr = $("#id-regaddr").val()
+    let r = parseInt($("#id-regradius").val())
+    addr = reformatAddress(addr)
+    let xyz = addressToXYZ(addr)
+    xyz.s = 0x79
+    $("#id-regaddr").val(xyzToAddress(xyz))
+
+
+    let galaxy = $("#btn-Galaxy").text().stripNumber()
+    let platform = $("#btn-Platform").text().stripNumber()
+
+    let ref = bhs.fs.collection("stars5/" + galaxy + "/" + platform)
+    bhs.entries = {}
+    let p =[]
+
+    for (let x = xyz.x - r; x <= xyz.x + r; ++x)
+        for (let y = xyz.y - r; y <= xyz.y + r; ++y)
+            for (let z = xyz.z - r; z <= xyz.z + r; ++z) {
+                let a = xyzToAddress({
+                    x: x,
+                    y: y,
+                    z: z,
+                    s: xyz.s
+                })
+
+                p.push(ref.doc(a).get().then(doc => {
+                    if (doc.exists) {
+                        let e = doc.data()
+                        bhs.entries[e.addr] = e
+                    }
+                }))
+            }
+
+    await Promise.all(p)
+    bhs.displayEntryList(bhs.entries, true)
 }
 
 blackHoleSuns.prototype.doSearch = function (type, s1, s2) {

@@ -273,6 +273,8 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
             if (ok) {
                 entry[1] = mergeObjects(entry[1], entry[0])
                 entry[2] = mergeObjects(entry[2], entry[0])
+                delete entry[1].type
+                delete entry[2].type
 
                 if (entry[0].type.match(/edit/i)) {
                     bhs.filestatus("row: " + (i + 1) + " editing disabled.", 0)
@@ -372,19 +374,21 @@ blackHoleSuns.prototype.fBatchUpdate = async function (entry, exit, check, i, ba
             }
         }
 
-        delete entry.type
         delete entry.owned
         entry.xyzs = addressToXYZ(entry.addr)
         entry.dist = calcDist(entry.addr)
 
         if (entry.blackhole && exit) {
             entry.connection = exit.addr
+
+            exit.modded = firebase.firestore.Timestamp.now()
+            exit.xyzs = addressToXYZ(exit.addr)
             exit.dist = calcDist(exit.addr)
             entry.towardsCtr = entry.dist - exit.dist
 
             entry.x = {}
             entry.x.addr = exit.addr
-            entry.x.xyzs = addressToXYZ(exit.addr)
+            entry.x.xyzs = exit.xyzs
             entry.x.dist = exit.dist
             entry.x.sys = exit.sys
             entry.x.reg = exit.reg
@@ -401,7 +405,6 @@ blackHoleSuns.prototype.fBatchUpdate = async function (entry, exit, check, i, ba
         ok = await bhs.fCheckBatchSize()
 
         if (ok && entry.blackhole && exit) {
-            exit.modded = firebase.firestore.Timestamp.now()
 
             let ref = bhs.getStarsColRef(exit.galaxy, exit.platform, exit.addr)
             batch.set(ref, exit, {
@@ -450,7 +453,6 @@ blackHoleSuns.prototype.fBatchDeleteBase = async function (entry, check) {
 
 blackHoleSuns.prototype.fBatchWriteBase = async function (entry, check) {
     if (!check) {
-        delete entry.type
         entry.modded = firebase.firestore.Timestamp.now()
         entry.xyzs = addressToXYZ(entry.addr)
         bhs.updateBase(entry)

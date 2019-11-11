@@ -47,7 +47,11 @@ blackHoleSuns.prototype.setGP = function () {
     let darc = {}
     darc.routeGen = increment
 
-    if (bhs.user.uid !== "")
+    let d = new Date()
+    let n = d.getFullYear()+"-"+(d.getMonth()+1)
+    darc[n] = increment
+    
+    if (bhs.user.uid === "")
         darc.noLogin = increment
         
     ref.set({

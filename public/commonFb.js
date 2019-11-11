@@ -564,7 +564,6 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, 
     platform = platform ? platform : bhs.user.platform
     let complete = false
 
-    let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
     let ref = bhs.getStarsColRef(galaxy, platform)
 
     if (uid || findex) {
@@ -596,13 +595,13 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, 
 
         if (findex && bhs.user.settings.start) {
             complete = false
-            let start = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.start)).seconds
+            let start = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.start))
             bhref = bhref.where("created", ">=", start)
         }
 
         if (findex && bhs.user.settings.end) {
             complete = false
-            let end = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.end)).seconds
+            let end = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.end))
             bhref = bhref.where("created", "<=", end)
         }
 
@@ -632,6 +631,15 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, 
         displayFcn(bhs.entries)
 
     if (singleDispFcn) {
+        ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()))
+        bhs.subscribe("entries", ref, singleDispFcn)
+    }
+}
+
+blackHoleSuns.prototype.getEntriesSub = function (singleDispFcn) {
+    if (singleDispFcn) {
+        let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform)
+        ref = ref.where("uid", "==", bhs.user.uid)
         ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()))
         bhs.subscribe("entries", ref, singleDispFcn)
     }
@@ -686,19 +694,34 @@ blackHoleSuns.prototype.getOrgEntries = async function (displayFcn, name, galaxy
 blackHoleSuns.prototype.getBases = async function (displayFcn, singleDispFcn) {
     let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform)
     ref = ref.where("uid", "==", bhs.user.uid)
+
+    if (findex && bhs.user.settings.start) {
+        let start = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.start))
+        ref = ref.where("created", ">=", start)
+    }
+
+    if (findex && bhs.user.settings.end) {
+        let end = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.end))
+        ref = ref.where("created", "<=", end)
+    }
+
     await ref.get().then(async snapshot => {
         for (let i = 0; i < snapshot.size; ++i)
             bhs.entries = bhs.addBaseList(snapshot.docs[i].data(), bhs.entries)
 
-        if (singleDispFcn) {
-            let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform)
-            ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()))
-            ref = ref.where("uid", "==", bhs.user.uid)
-            bhs.subscribe("bases", ref, singleDispFcn)
-        }
+        bhs.getBasesSub(singleDispFcn)
     }).catch(err => {
         console.log(err)
     })
+}
+
+blackHoleSuns.prototype.getBasesSub = function (singleDispFcn) {
+    if (singleDispFcn) {
+        let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform)
+        ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()))
+        ref = ref.where("uid", "==", bhs.user.uid)
+        bhs.subscribe("bases", ref, singleDispFcn)
+    }
 }
 
 blackHoleSuns.prototype.addBaseList = function (entry, list) {
@@ -791,8 +814,8 @@ blackHoleSuns.prototype.getUserList = async function (addBlank) {
                 })
             }
 
-            bhs.usersList.sort((a, b) => 
-            a.name.toLowerCase() > b.name.toLowerCase() ? 1 :
+            bhs.usersList.sort((a, b) =>
+                a.name.toLowerCase() > b.name.toLowerCase() ? 1 :
                 a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0)
 
             if (addBlank)
@@ -809,10 +832,6 @@ blackHoleSuns.prototype.getUserList = async function (addBlank) {
 }
 
 blackHoleSuns.prototype.getTotals = async function (displayFcn, dispHtml) {
-    let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
-    let ftotals = window.location.pathname == "/totals.html"
-    let fsearch = window.location.pathname == "/search.html"
-
     if (fsearch)
         return
 
@@ -952,9 +971,7 @@ blackHoleSuns.prototype.validateEntry = function (entry, nobh) {
         ok = false
     }
 
-    let fnmsce = window.location.pathname == "/nmsce.html" || window.location.pathname == "/cesearch.html"
-
-    if (ok && !entry.reg && !fnmsce) {
+    if (ok && !entry.reg && !fnmsce && !fcesearch) {
         error += "Missing region name. "
         ok = false
     }

@@ -147,12 +147,49 @@
                             <br>
                             <div class="row">
                                 <div class="col-4"></div>
-                                <button id="btn-search" type="button" class="col-6 btn btn-sm btn-def">Search
+                                <button id="btn-search" type="button" class="col-6 btn btn-sm btn-def"
+                                    onclick="bhs.search(this)">
+                                    Search
                                 </button>&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom"
                                     title="Search filters the 'System List' and adds the results to the map.">
-                                </i>&nbsp;
+                                </i>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+
+                    <div id="searchreg" class="card border pad-bottom">
+                        <div class="card-header txt-def h4 text-center">
+                            Search Region
+                        </div>
+                        <div class="card-body txt-def bkg-white">
+                            <div class="row">
+                                <div class="col-5 h6 txt-inp-def">Coordinates&nbsp;</div>
+                                <input id="id-regaddr" class="rounded col-8" placeholder="0000:0000:0000:0000">
+                            </div>
+                            <div class="row">
+                                <div class="col-5 h6 txt-inp-def">Radius&nbsp;</div>
+                                <input id="id-regradius" type="number" class="rounded col-8" min=1 max=2 value=1>&nbsp;
+                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom"
+                                    title="Distance away from center point. 1 equals a 3x3, 2 equals a 5x5.">
+                                </i>
+                            </div>
+                            <br>
+
+                            <div class="row">
+                                <div class="col-4"></div>
+                                <button id="btn-searchReg" type="button" class="col-6 btn btn-sm btn-def"
+                                    onclick="bhs.searchReg(this)">
+                                    Search
+                                </button>&nbsp;
+                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom"
+                                    title="Searches for a 5x5 region of black holes, system equal to 0079, centered on the address specified. 
+                                    Search is from selected galaxy & platform. Ignores player name. This does not download the entire set of entries.">
+                                </i>
                             </div>
                         </div>
                     </div>

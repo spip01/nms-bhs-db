@@ -87,15 +87,13 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
         name: "--blank--"
     })
 
-    let fsearch = window.location.pathname == "/cesearch.html"
-
     bhs.buildMenu(loc, "Civ/Org", bhs.orgList, bhs.saveUser, {
         labelsize: "col-lg-14 col-5",
         menusize: "col-lg-14 col-7"
     })
 
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, {
-        required: !fsearch,
+        required: !fcesearch,
         labelsize: "col-lg-14 col-5",
         menusize: "col-lg-14 col-7"
     })
@@ -107,7 +105,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
         menusize: "col-lg-14 col-7"
     })
 
-    if (fsearch)
+    if (fcesearch)
         $("#namereq").hide()
 
     $("#id-Player").change(function () {

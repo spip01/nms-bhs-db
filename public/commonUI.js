@@ -74,12 +74,6 @@ blackHoleSuns.prototype.toggleTips = function () {
 }
 
 blackHoleSuns.prototype.displayUser = async function (user, force) {
-    let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
-    let fpoi = window.location.pathname == "/poiorg.html"
-    let fdarc = window.location.pathname == "/darc.html"
-    let ftotals = window.location.pathname == "/totals.html"
-    let fsearch = window.location.pathname == "/searc.html"
-    let fnmsce = window.location.pathname == "/nmsce.html" || window.location.pathname == "/cesearch.html"
     let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform)
 
     bhs.user = mergeObjects(bhs.user, user)
@@ -87,10 +81,10 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     if (!findex)
         $("#fileupload").hide()
 
-    if (fpoi || fsearch)
+    if (fpoi)
         return
 
-    if (fnmsce)
+    if (fnmsce || fcesearch)
         nmsce.displayUser()
 
     else if (!fdarc) {
@@ -105,6 +99,8 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
             if (!ftotals) {
                 bhs.buildEntryList(bhs.user)
                 bhs.displaySettings(bhs.user)
+                bhs.getEntriesSub(bhs.displayEntry)
+                bhs.getBasesSub(bhs.displayEntry)
             }
         }
     }
@@ -192,15 +188,13 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
         name: "--blank--"
     })
 
-    let fsearch = window.location.pathname == "/cesearch.html"
-
     bhs.buildMenu(loc, "Civ/Org", bhs.orgList, bhs.saveUser, {
         labelsize: "col-sm-14 col-5",
         menusize: "col-sm-14 col-9",
     })
 
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, {
-        required: !fsearch,
+        required: !fcesearch,
         labelsize: "col-sm-7 col-6",
         menusize: "col-sm-7 col-8",
     })
@@ -212,7 +206,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
         menusize: "col-sm-7 col-8",
     })
 
-    if (fsearch)
+    if (fcesearch)
         $("#namereq").hide()
 
     $("#id-Player").change(function () {
@@ -321,7 +315,6 @@ blackHoleSuns.prototype.loadEntries = function () {
     bhs.purgeMap()
     $("#userItems").empty()
 
-    let fsearch = window.location.pathname == "/search.html"
     if (fsearch)
         bhs.select()
     else
@@ -329,8 +322,6 @@ blackHoleSuns.prototype.loadEntries = function () {
 }
 
 blackHoleSuns.prototype.buildEntryList = function (entry) {
-    let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
-
     const table = `
         <div class="card-header bkg-def">
             <div class="row">
@@ -426,6 +417,7 @@ blackHoleSuns.prototype.buildEntryList = function (entry) {
 
     loc = $("#id-utlistsel")
     loc.append(h)
+
     let userhdrloc = $("#userHeader")
 
     userTable.forEach(t => {
@@ -513,12 +505,12 @@ blackHoleSuns.prototype.entriesToCsv = function () {
     return out
 }
 
-blackHoleSuns.prototype.displayEntryList = function (entrylist) {
-    bhs.drawList(entrylist)
+blackHoleSuns.prototype.displayEntryList = function (entrylist, connection) {
+    bhs.drawList(entrylist, connection)
     bhs.mapEntries(bhs.entries)
     $("#userItems").empty()
 
-    if (window.location.pathname == "/totals.html")
+    if (ftotals)
         return
 
     const lineHdr = `<div id="gpa" class="border-bottom border-3" onclick="entryDblclk(this)">`
@@ -571,7 +563,7 @@ blackHoleSuns.prototype.displayEntryList = function (entrylist) {
 blackHoleSuns.prototype.displayEntry = function (entry, zoom) {
     bhs.drawSingle(entry, zoom)
 
-    if (window.location.pathname == "/totals.html")
+    if (ftotals)
         return
 
     let id = (entry.blackhole ? entry.connection : entry.addr).nameToId()
@@ -596,12 +588,10 @@ blackHoleSuns.prototype.displayEntry = function (entry, zoom) {
 }
 
 function entryDblclk(evt) {
-    let iftotals = window.location.pathname == "/totals.html" || window.location.pathname == "/search.html"
-
     let id = $(evt).prop("id")
     let e = bhs.entries[reformatAddress(id)]
 
-    if (!iftotals) {
+    if (!ftotals && !fsearch) {
         $("#delete").removeClass("disabled")
         $("#delete").removeAttr("disabled")
 
@@ -654,9 +644,6 @@ const totalsRows = [{
 }]
 
 blackHoleSuns.prototype.buildTotals = function () {
-    let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
-    let ftotals = window.location.pathname == "/totals.html"
-
     if (!bhs.user.galaxy || !bhs.user.platform)
         return
 
@@ -708,8 +695,6 @@ blackHoleSuns.prototype.buildTotals = function () {
 }
 
 blackHoleSuns.prototype.displayTotals = function (e, refpath) {
-    let findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
-
     if (!bhs.user.galaxy || !bhs.user.platform)
         return
 
@@ -823,8 +808,6 @@ blackHoleSuns.prototype.displayTotalsHtml = function (html, p) {
     if (p === "Players")
         $("#contrib").text("Total contributors: " + $("#itm-Players").children().length)
 
-    let ftotals = window.location.pathname == "/totals.html"
-
     if (ftotals)
         $("[id='totals-tip']").show()
 }
@@ -872,7 +855,7 @@ blackHoleSuns.prototype.sortTotals = function (evt) {
 }
 
 blackHoleSuns.prototype.clickUser = function (evt) {
-    if (window.location.pathname == "/totals.html") {
+    if (ftotals) {
         let id = $(evt).prop("id").stripID()
         if (id !== "PC-XBox" && id !== "PS4")
             return
@@ -1179,8 +1162,6 @@ blackHoleSuns.prototype.extractMapOptions = function () {
 }
 
 blackHoleSuns.prototype.setMapOptions = function (entry) {
-    let findex = window.location.pathname == "/" || window.location.pathname == "/index.html"
-    let fsearch = window.location.pathname == "/search.html"
     let opt = $("#mapoptions")
 
     if (!findex) {
@@ -1223,7 +1204,6 @@ blackHoleSuns.prototype.setMapOptions = function (entry) {
 }
 
 blackHoleSuns.prototype.resetMapOptions = function (entry) {
-    let findex = window.location.pathname == "/" || window.location.pathname == "/index.html"
     let opt = $("#mapoptions")
 
     opt = $("#mapkey")
@@ -1281,7 +1261,7 @@ blackHoleSuns.prototype.purgeMap = function () {
                 if (e.points.length > 0 && e.points[0].text) {
                     let addr = e.points[0].text.slice(0, 19)
 
-                    if (window.location.pathname == "/index.html" || window.location.pathname == "/")
+                    if (findex)
                         bhs.getEntry(addr, bhs.displayListEntry)
 
                     let opt = bhs.extractMapOptions()
@@ -1298,8 +1278,6 @@ blackHoleSuns.prototype.purgeMap = function () {
 }
 
 blackHoleSuns.prototype.buildMap = function () {
-    let fsearch = window.location.pathname == "/search.html"
-
     let w = $("#maplogo").width()
     $("#logo").width(w + "px")
     $("#logo").height(w + "px")
@@ -1435,7 +1413,6 @@ blackHoleSuns.prototype.buildMap = function () {
     map.find("#btn-redraw").unbind("click")
     map.find("#btn-redraw").click(() => {
         bhs.purgeMap()
-        let fsearch = window.location.pathname == "/search.html"
         if (!fsearch)
             bhs.drawList(bhs.entries)
     })
@@ -1527,14 +1504,11 @@ blackHoleSuns.prototype.mapEntries = function (listentry) {
     })
 }
 
-blackHoleSuns.prototype.drawList = function (listEntry) {
-    let findex = window.location.pathname == "/" || window.location.pathname == "/index.html"
-
+blackHoleSuns.prototype.drawList = function (listEntry, connection) {
     let opt = bhs.extractMapOptions()
     let k = Object.keys(listEntry)
 
-    if (!findex)
-        opt.connection = false
+    opt.connection = findex || connection ? opt.connection : false
 
     let out = {}
     out.bh = initout()
@@ -1660,8 +1634,6 @@ blackHoleSuns.prototype.findClose = function (opt, xyz, up) {
 }
 
 blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
-    let fsearch = window.location.pathname == "/search.html"
-
     let opt = bhs.extractMapOptions()
     let ctr = addressToXYZ(opt.ctrcord)
     ctr.z = 4096 - ctr.z

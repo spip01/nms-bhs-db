@@ -3,6 +3,14 @@
 // Copyright 2019 Black Hole Suns
 // Written by Stephen Piper
 
+const findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
+const fpoi = window.location.pathname == "/poiorg.html"
+const fdarc = window.location.pathname == "/darc.html"
+const ftotals = window.location.pathname == "/totals.html"
+const fsearch = window.location.pathname == "/search.html"
+const fnmsce = window.location.pathname == "/nmsce.html"
+const fcesearch = window.location.pathname == "/cesearch.html"
+
 function addGlyphButtons(loc, fcn) {
     const gbtn = `
         <button type="button" class="btn-def btn btn-sm col-sm-8x1 col-3 h6">

@@ -5,8 +5,6 @@
 
 var nmsce
 
-const searchwindow = window.location.pathname == "/cesearch.html"
-
 $(document).ready(() => {
     startUp()
 
@@ -68,7 +66,7 @@ function NMSCE() {
 }
 
 NMSCE.prototype.displayUser = function () {
-    if (bhs.user.galaxy !== "" && !searchwindow) {
+    if (bhs.user.galaxy !== "" && !fcesearch) {
         //nmsce.displaySettings(bhs.user)
         nmsce.getEntries(bhs.user, nmsce.displayList)
     }
@@ -79,7 +77,7 @@ NMSCE.prototype.buildPanel = function () {
 
     bhs.buildMenu(loc, "Lifeform", lifeformList)
     bhs.buildMenu(loc, "Economy", economyList, null, {
-        required: !searchwindow
+        required: !fcesearch
     })
 
     let gloc = loc.find("#glyphbuttons")
@@ -122,7 +120,7 @@ NMSCE.prototype.changeAddr = function (evt) {
 
         nmsce.dispAddr(pnl, addr, glyph)
 
-        if (!searchwindow)
+        if (!fcesearch)
             bhs.getEntry(addr, nmsce.displaySystem)
     }
 }
@@ -254,7 +252,7 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
                         entry[id] = $(loc).prop("checked")
                         break
                     case "img":
-                        if (!searchwindow && (entry.replaceImg || typeof entry[id] === "undefined")) {
+                        if (!fcesearch && (entry.replaceImg || typeof entry[id] === "undefined")) {
                             delete entry.replaceImg
 
                             let canvas = $("#id-canvas")[0]
@@ -270,7 +268,7 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
                         break
                 }
 
-                if (data.req && !searchwindow)
+                if (data.req && !fcesearch)
                     if (typeof entry[id] === "undefined" ||
                         (data.type === "string" || data.type === "menu") && entry[id] === "" ||
                         data.type === "num" && entry[id] === -1 ||
@@ -570,13 +568,13 @@ NMSCE.prototype.buildTypePanels = function () {
         let itm = pnl.find("#itm-" + id)
         if (obj.fields) {
             for (let f of obj.fields) {
-                if (searchwindow && !f.search)
+                if (fcesearch && !f.search)
                     continue
 
                 let l = ""
                 let id = f.name.nameToId()
 
-                if (searchwindow)
+                if (fcesearch)
                     f.required = false
 
                 switch (f.type) {
@@ -592,7 +590,7 @@ NMSCE.prototype.buildTypePanels = function () {
                                     let slist = t[flist.sub] ? t[flist.sub] : flist.list
                                     let sub
 
-                                    if (searchwindow && !flist.search)
+                                    if (fcesearch && !flist.search)
                                         continue
 
                                     if (slist) {
@@ -654,7 +652,7 @@ NMSCE.prototype.buildTypePanels = function () {
         }
     }
 
-    // if (searchwindow)
+    // if (fcesearch)
     //     $("[id|='search']").show()
 
     $(".map-areas area").mouseenter(function () {
@@ -1396,14 +1394,14 @@ NMSCE.prototype.displayList = function (entries) {
             continue
 
         let l = /idname/g [Symbol.replace](card, obj.name.nameToId())
-        if (searchwindow)
+        if (fcesearch)
             l = /hidden/ [Symbol.replace](l, obj.name.nameToId())
         l = /title/ [Symbol.replace](l, obj.name)
         h += /total/ [Symbol.replace](l, entries[obj.name.nameToId()].length)
 
         l = /format/ [Symbol.replace](row, "txt-def bkg-def")
 
-        if (searchwindow) {
+        if (fcesearch) {
             l = /col-md-2 col-3/ [Symbol.replace](l, "col-3")
             h += /col-md-12 col-11/ [Symbol.replace](l, "col-11")
 
@@ -1437,7 +1435,7 @@ NMSCE.prototype.displayList = function (entries) {
         for (let e of entries[obj.name.nameToId()]) {
             let l = /idname/ [Symbol.replace](row, e.id)
 
-            if (searchwindow) {
+            if (fcesearch) {
                 l = /col-md-2 col-3/ [Symbol.replace](l, "col-3")
                 l = /col-md-12 col-11/ [Symbol.replace](l, "col-11")
                 h += /wsize/ [Symbol.replace](l, "240px")
@@ -1524,7 +1522,7 @@ NMSCE.prototype.showSub = function (id) {
 }
 
 NMSCE.prototype.selectList = function (evt) {
-    if (searchwindow) {
+    if (fcesearch) {
         nmsce.buildModal(evt)
 
         let loc = $('#modal')
