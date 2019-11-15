@@ -1468,13 +1468,14 @@ var mapped = []
 var searched = []
 var searchedup = []
 
-blackHoleSuns.prototype.drawSingle = function (e, zoom) {
-    if (zoom) {
-        $("#inp-ctrcord").val(e.addr)
-        bhs.changeMapLayout(true, true)
-        bhs.traceZero(e)
-    }
+blackHoleSuns.prototype.zoomEntry = function (e, zoomBH) {
+    let a = zoomBH ? e.addr : e.connection
+    $("#inp-ctrcord").val(a)
+    bhs.changeMapLayout(true, true)
+    bhs.traceZero(a)
+}
 
+blackHoleSuns.prototype.drawSingle = function (e) {
     let opt = bhs.extractMapOptions()
 
     let out = initout()
@@ -1796,7 +1797,7 @@ blackHoleSuns.prototype.traceZero = function (addr) {
 
         let out = initout()
         pushentry(out, zero, "Galactic Center")
-        pushentry(out, addr.xyzs)
+        pushentry(out, addressToXYZ(addr))
         Plotly.addTraces('plymap', makedata(opt, out, 5, opt["clr-bh"], "#d0d0d0"))
     }
 }

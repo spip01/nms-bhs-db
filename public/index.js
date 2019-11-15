@@ -449,9 +449,11 @@ blackHoleSuns.prototype.dispAddr = function (pnl, addr, glyph, draw) {
         })
 }
 
-blackHoleSuns.prototype.searchRegion = function (evt) {
-    let reg = $(evt).closest("[id|='inp']").find("#id-reg").val()
-    bhs.getEntryByRegion(reg, bhs.displayListEntry)
+blackHoleSuns.prototype.searchRegion = async function (evt) {
+    let loc = $(evt).closest("[id|='inp']")
+    let reg = loc.find("#id-reg").val()
+    let e = await bhs.getEntryByRegion(reg)
+    bhs.zoomEntry(e, loc.prop("id") === "inp-S1")
 }
 
 blackHoleSuns.prototype.delBase = function (evt) {
@@ -459,8 +461,8 @@ blackHoleSuns.prototype.delBase = function (evt) {
     bhs.deleteBase(addr)
 }
 
-blackHoleSuns.prototype.displayListEntry = function (entry, zoom) {
-    bhs.drawSingle(entry, zoom)
+blackHoleSuns.prototype.displayListEntry = function (entry) {
+    bhs.drawSingle(entry)
     bhs.displaySingle(entry, pnlTop)
 
     if (entry.blackhole) {
@@ -476,15 +478,9 @@ blackHoleSuns.prototype.displayListEntry = function (entry, zoom) {
     }
 }
 
-blackHoleSuns.prototype.displaySingle = function (entry, idx, zoom) {
+blackHoleSuns.prototype.displaySingle = function (entry, idx) {
     if (!entry)
         return
-
-    if (zoom) {
-        $("#inp-ctrcord").val(entry.addr)
-        bhs.changeMapLayout(true, true)
-        bhs.traceZero(entry)
-    }
 
     bhs.last[idx] = entry
     if (idx === pnlBottom) {

@@ -278,7 +278,7 @@ blackHoleSuns.prototype.getEntry = function (addr, displayfcn, galaxy, platform)
 blackHoleSuns.prototype.getEntryByRegion = async function (reg, displayfcn) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform)
     ref = ref.where("reg", "==", reg)
-    await ref.get().then(async snapshot => {
+    return await ref.get().then(async snapshot => {
         if (!snapshot.empty) {
             let d
             let e = null
@@ -292,7 +292,10 @@ blackHoleSuns.prototype.getEntryByRegion = async function (reg, displayfcn) {
             if (!d.blackhole)
                 e = await bhs.getEntryByConnection(d.addr)
 
-            displayfcn(e ? e : d, $("#ck-zoomreg").prop("checked"))
+            if (typeof displayfcn === "function")
+                displayfcn(e ? e : d, $("#ck-zoomreg").prop("checked"))
+
+            return e ? e : d
         }
     }).catch(err => {
         console.log(err)
