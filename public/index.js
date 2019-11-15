@@ -460,11 +460,11 @@ blackHoleSuns.prototype.delBase = function (evt) {
 }
 
 blackHoleSuns.prototype.displayListEntry = function (entry, zoom) {
-    bhs.drawSingle(entry)
-    bhs.displaySingle(entry, pnlTop, zoom)
+    bhs.drawSingle(entry, zoom)
+    bhs.displaySingle(entry, pnlTop)
 
     if (entry.blackhole) {
-        bhs.displaySingle(entry.x, pnlBottom, zoom)
+        bhs.displaySingle(entry.x, pnlBottom)
 
         $("#" + panels[pnlTop].id + " #ck-single").prop("checked", false)
         $("#" + panels[pnlTop].id).show()

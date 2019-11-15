@@ -1468,7 +1468,13 @@ var mapped = []
 var searched = []
 var searchedup = []
 
-blackHoleSuns.prototype.drawSingle = function (e) {
+blackHoleSuns.prototype.drawSingle = function (e, zoom) {
+    if (zoom) {
+        $("#inp-ctrcord").val(e.addr)
+        bhs.changeMapLayout(true, true)
+        bhs.traceZero(e)
+    }
+
     let opt = bhs.extractMapOptions()
 
     let out = initout()

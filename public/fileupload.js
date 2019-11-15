@@ -151,6 +151,7 @@ Single System
 Edit
 Delete
 Delete Base
+Graph
 */
 
 var batch
@@ -255,8 +256,8 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
 
                 if (idx >= 0) {
                     if (row[idx] == "") {
-                        if (importTable[j].required === true || typeof importTable[j].required === "function" &&
-                            importTable[j].required(entry[2].addr, entry[0].type)) {
+                        if (!entry[0].type.match(/graph/i) && (importTable[j].required === true || typeof importTable[j].required === "function" &&
+                            importTable[j].required(entry[2].addr, entry[0].type))) {
                             bhs.filestatus("row: " + (i + 1) + " missing " + importTable[j].field, 0)
                             ok = false
                         }
@@ -276,7 +277,9 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                 delete entry[1].type
                 delete entry[2].type
 
-                if (entry[0].type.match(/edit/i)) {
+                if (entry[0].type.match(/graph/i)) {
+                    bhs.getEntry(entry[1].addr, bhs.displayListEntry)
+                } else if (entry[0].type.match(/edit/i)) {
                     bhs.filestatus("row: " + (i + 1) + " editing disabled.", 0)
                     //     if (typeof entry[2].addr === "undefined")
                     //         bhs.filestatus("row: " + (i + 1) + " no edit address.", 0)
@@ -295,10 +298,10 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                         bhs.filestatus("row: " + (i + 1) + " Base name required.", 0)
                     } else {
                         ok = await bhs.fBatchUpdate(entry[1], null, check, i, true)
-                        
+
                         if (ok) {
                             entry[1].basename = basename
-                            entry[1].owned = typeof entry[2].owned !== "undefined"?entry[2].owned:"mine"
+                            entry[1].owned = typeof entry[2].owned !== "undefined" ? entry[2].owned : "mine"
                             ok = await bhs.fBatchWriteBase(entry[1], null, check, i, true)
                         }
                     }
