@@ -133,21 +133,18 @@ blackHoleSuns.prototype.onAuthStateChanged = async function (usr) {
         $("#username").text(userName)
 
         let ref = bhs.getUsersColRef(usr.uid)
+        try {
+            let doc = await ref.get()
+            user = doc.data()
+        } catch {
+            user.firsttime = firebase.firestore.Timestamp.now()
+        }
+
         user.email = usr.email
         user.displayName = usr.displayName
         user.role = "user"
         user.lasttime = firebase.firestore.Timestamp.now()
-        await bhs.updateUser(user)
-
-        let doc = await ref.get()
-
-        if (doc.exists) {
-            user = doc.data()
-            if (typeof user.firsttime === "undefined") {
-                user.firsttime = user.lasttime
-                bhs.updateUser(user)
-            }
-        }
+        bhs.updateUser(user)
 
         // ref = bhs.fs.collection("users").where("_name", "==", "zeenewbian")
         // let snapshot = await ref.get()
