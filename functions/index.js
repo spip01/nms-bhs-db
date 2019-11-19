@@ -335,18 +335,20 @@ function applyEdits(ts, elist) {
                     line = null
                     break
                 case "update":
-                case "create":
+                case "create": {
+                    let w = ed.what
                     delete ed.what
                     line = stringify(ed)
-                    break
+                    console.log(w, line)
+                }
+                break
             }
 
             ref.delete()
         }
 
-        if (line) {
-            ts.write(line + "\n")
-        }
+        if (line)
+            ts.write(line)
 
         return true
     }
@@ -389,8 +391,12 @@ exports.systemUpdate = functions.firestore.document("stars5/{galaxy}/{platform}/
 
             // JSON.stringify([e.addr, e.reg, e.sys, e.x.addr, e.x.reg, e.x.sys])
             if (e.addr !== b.addr || e.reg !== b.reg || e.sys !== b.sys ||
-                e.x.addr !== b.x.addr || e.x.reg !== b.x.reg || e.x.sys !== b.x.sys)
+                e.x.addr !== b.x.addr || e.x.reg !== b.x.reg || e.x.sys !== b.x.sys) {
                 p.push(saveChange(e, "update"))
+
+                console.log("before", stringify(b))
+                console.log("after", stringify(e))
+            }
         }
 
         return Promise.all(p)
@@ -483,7 +489,7 @@ function doBackup() {
         for (let ref of refs)
             p.push(backupCols(ref, now))
 
-        return Promise.all(p).then(res=>{
+        return Promise.all(p).then(res => {
             return true
         })
     })

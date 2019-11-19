@@ -311,7 +311,8 @@ const lifeformList = [{
     name: "Korvax",
     match: /^k/i
 }, {
-    name: "none"
+    name: "none",
+    match: /^n/i
 }]
 
 const ownershipList = [{

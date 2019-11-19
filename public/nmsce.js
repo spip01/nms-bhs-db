@@ -186,13 +186,13 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
         entry = mergeObjects(entry, nmsce.last)
 
         let addr = loc.find("#id-addr").val()
-        if (nmsce.last.addr != addr) {
+        if (nmsce.last.addr !== addr) {
             ok = bhs.deleteEntry(nmsce.last)
             bhs.status("change address " + nmsce.last.addr)
         }
     }
 
-    if (!nmsce.last || nmsce.last.uid == bhs.user.uid) {
+    if (!nmsce.last || nmsce.last.uid === bhs.user.uid) {
         entry._name = user._name
         entry.org = user.org
         entry.uid = user.uid
@@ -221,64 +221,71 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
         let pnl = $("#typePanels #pnl-" + tab)
         entry.type = tab
 
-        let list = pnl.find(":input")
+        let list = pnl.find(":input :visible")
         for (let loc of list) {
-            if ($(loc).is(":visible")) {
-                let id = loc.id.stripID()
-                let r = $(loc).closest("[id|='row']")
-                let data = r.data()
+            let id = loc.id.stripID()
+            let r = $(loc).closest("[id|='row']")
+            let data = r.data()
 
-                if (typeof data === "undefined")
-                    continue
+            if (typeof data === "undefined")
+                continue
 
-                switch (data.type) {
-                    case "num":
-                    case "float":
-                    case "string":
-                        entry[id] = $(loc).val()
-                        break
-                    case "menu":
-                        entry[id] = $(loc).text()
-                        break
-                    case "array":
-                        if ($(loc).prop("checked")) {
-                            let aid = $(r).prop("id").stripID()
-                            if (typeof entry[aid] === "undefined")
-                                entry[aid] = {}
-                            entry[aid][id] = true
-                        }
-                        break
-                    case "checkbox":
-                        entry[id] = $(loc).prop("checked")
-                        break
-                    case "img":
-                        if (!fcesearch && (entry.replaceImg || typeof entry[id] === "undefined")) {
-                            delete entry.replaceImg
-
-                            let canvas = $("#id-canvas")[0]
-                            if (typeof canvas !== "undefined") {
-                                if (typeof entry[id] === "undefined")
-                                    entry[id] = "nmsce/" + uuidv4() + ".jpg"
-
-                                await canvas.toBlob(async blob => {
-                                    await bhs.fbstorage.ref().child(entry[id]).put(blob)
-                                }, "image/jpeg", .7)
-                            }
-                        }
-                        break
-                }
-
-                if (data.req && !fcesearch)
-                    if (typeof entry[id] === "undefined" ||
-                        (data.type === "string" || data.type === "menu") && entry[id] === "" ||
-                        data.type === "num" && entry[id] === -1 ||
-                        data.type === "img" && entry[id] === "") {
-
-                        bhs.status(id + " required. Entry not saved.", 0)
-                        ok = false
-                        break
+            switch (data.type) {
+                case "num":
+                case "float":
+                case "string":
+                    entry[id] = $(loc).val()
+                    break
+                case "menu":
+                    entry[id] = $(loc).text()
+                    break
+                case "array":
+                    if ($(loc).prop("checked")) {
+                        let aid = $(r).prop("id").stripID()
+                        if (typeof entry[aid] === "undefined")
+                            entry[aid] = {}
+                        entry[aid][id] = true
                     }
+                    break
+                case "checkbox":
+                    entry[id] = $(loc).prop("checked")
+                    break
+                case "img":
+                    if (!fcesearch && (entry.replaceImg || typeof entry[id] === "undefined")) {
+                        delete entry.replaceImg
+
+                        let canvas = $("#id-canvas")[0]
+                        if (typeof canvas !== "undefined") {
+                            if (typeof entry[id] === "undefined")
+                                entry[id] = "nmsce/" + uuidv4() + ".jpg"
+
+                            await canvas.toBlob(async blob => {
+                                await bhs.fbstorage.ref().child(entry[id]).put(blob)
+                            }, "image/jpeg", .7)
+                        }
+                    }
+                    break
             }
+
+            if (data.req && !fcesearch)
+                if (typeof entry[id] === "undefined" ||
+                    (data.type === "string" || data.type === "menu") && entry[id] === "" ||
+                    data.type === "number" && entry[id] === -1 ||
+                    data.type === "img" && entry[id] === "") {
+
+                    bhs.status(id + " required. Entry not saved.", 0)
+                    ok = false
+                    break
+                }
+        }
+
+        list = pnl.find("[id='map-selected'] :visible")
+        for (let loc of list) {
+            let pid = $(loc).closest("[id|='slist']").prop("id").stripID().stripID()
+            let id = $(loc).attr("alt")
+            if (typeof entry[pid] === "undefined")
+                entry[pid] = {}
+            entry[pid][id] = true
         }
 
         if (ok)
@@ -451,6 +458,8 @@ NMSCE.prototype.buildTypePanels = function () {
     const tTextImg = `<img src='pic' style="height:15px; width:auto;">`
     const tBlank = `
         <div class="col-sm-7 col-14"></div>`
+    const tSubBlank = `
+        <div id="slist-idname" class="col-sm-7 col-14 hidden"></div>`
     const tString = `
         <div class="col-sm-7 col-14">
             <div id="row-idname" data-type="string" data-req="ifreq" class="row">
@@ -458,9 +467,16 @@ NMSCE.prototype.buildTypePanels = function () {
                 <input id="id-idname" class="rounded col-md-7 col-9">
             </div>
         </div>`
+    const tSubString = `
+        <div id="slist-idname" class="col-sm-7 col-14 hidden">
+            <div id="row-idname" data-type="string" data-req="ifreq" class="row">
+                <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
+                <input id="id-idname" class="rounded col-md-7 col-9">
+            </div>
+        </div>`
     const tMap = `
-        <div id="slist-idname" class="container border-top border-bottom hidden">
-            <div id="row-idname" data-type="map" data-req="ifreq" class="row"></div>
+        <div id="slist-idname" class="col-lg-7 col-md-14 col-sm-7 col-14 hidden">
+            <div id="row-idname" data-type="map" data-req="ifreq" class="container border-top border-bottom"></div>
         </div>`
     const tLongString = `
         <div class="col-14">
@@ -471,6 +487,13 @@ NMSCE.prototype.buildTypePanels = function () {
         </div>`
     const tNumber = `
         <div class="col-sm-7 col-14">
+            <div id="row-idname" data-type="num" data-req="ifreq" class="row">
+                <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
+                <input id="id-idname" type="number" class="rounded col-md-5 col-6" min=0 max=range value=0>
+            </div>
+        </div>`
+    const tSubNumber = `
+        <div id="slist-idname" class="col-sm-7 col-14 hidden">
             <div id="row-idname" data-type="num" data-req="ifreq" class="row">
                 <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
                 <input id="id-idname" type="number" class="rounded col-md-5 col-6" min=0 max=range value=0>
@@ -522,12 +545,24 @@ NMSCE.prototype.buildTypePanels = function () {
             </div>
         </div>`
     const tImg = `
-        <div id="row-idname" data-type="img" data-req="ifreq" class="row text-center">
-            <div class="col-md-4 col-3 txt-inp-def h6">titlettip&nbsp;</div>
-            <input id="id-idname" type="file" class="col-10 form-control form-control-sm" 
-                accept="image/*" name="files[]" onchange="nmsce.loadScreenshot(this)">&nbsp
-        </div>
-        <br>`
+        <div id="row-idname" data-type="img" data-req="ifreq" class="col-13">
+            <div class="row">
+                <div class="col-3 txt-inp-def h6">titlettip&nbsp;</div>
+                    <input id="id-idname" type="file" class="col-10 form-control form-control-sm" 
+                        accept="image/*" name="files[]" onchange="nmsce.loadScreenshot(this)">&nbsp
+                </div>
+            </div>
+        </div>`
+
+    const tSubImg = `
+        <div id="slist-idname" class="col-13 hidden">
+            <div id="row-idname" data-type="img" data-req="ifreq" class="row">
+                <div class="col-3 txt-inp-def h6">titlettip&nbsp;</div>
+                    <input id="id-idname" type="file" class="col-10 form-control form-control-sm" 
+                        accept="image/*" name="files[]" onchange="nmsce.loadScreenshot(this)">&nbsp
+                </div>
+            </div>
+        </div>`
 
     let tabs = $("#typeTabs")
     let pnl = $("#typePanels")
@@ -593,31 +628,59 @@ NMSCE.prototype.buildTypePanels = function () {
                                     if (fcesearch && !flist.search)
                                         continue
 
-                                    if (slist) {
-                                        if (flist.type == "menu") {
-                                            l = /idname/ [Symbol.replace](tSubList, (t.name + "-" + flist.name).nameToId())
-                                            appenditem(itm, l, "", flist.name.nameToId())
+                                    switch (flist.type) {
+                                        case "menu":
+                                            if (slist) {
+                                                l = /idname/ [Symbol.replace](tSubList, (t.name + "-" + flist.name).nameToId())
+                                                appenditem(itm, l, "", flist.name.nameToId())
 
-                                            sub = itm.find("#slist-" + (t.name + "-" + flist.name).nameToId())
-                                            bhs.buildMenu(sub, flist.name, slist, f)
-                                        } else if (flist.type == "map") {
-                                            l = /idname/ [Symbol.replace](tMap, (t.name + "-" + flist.name).nameToId())
-                                            appenditem(itm, l, "", flist.name.nameToId())
+                                                sub = itm.find("#slist-" + (t.name + "-" + flist.name).nameToId())
+                                                bhs.buildMenu(sub, flist.name, slist, null, {tip:t[flist.ttip]})
+                                            }
+                                            break
 
-                                            sub = itm.find("#slist-" + (t.name + "-" + flist.name).nameToId())
-                                            sub = sub.find("#row-" + flist.name.nameToId())
+                                        case "map":
+                                            if (slist) {
+                                                l = /idname/ [Symbol.replace](tMap, (t.name + "-" + flist.name).nameToId())
+                                                appenditem(itm, l, "", flist.name.nameToId())
 
-                                            sub.append(slist[0].map)
-                                        } else if (flist.type == "array") {
-                                            l = /idname/ [Symbol.replace](tArray, (t.name + "-" + flist.name).nameToId())
-                                            appenditem(itm, l, "", flist.name.nameToId(), flist.ttip, null)
+                                                sub = itm.find("#slist-" + (t.name + "-" + flist.name).nameToId())
+                                                sub = sub.find("#row-" + flist.name.nameToId())
 
-                                            sub = itm.find("#slist-" + (t.name + "-" + flist.name).nameToId())
-                                            sub = sub.find("#row-" + flist.name.nameToId())
+                                                sub.append(slist[0].map)
+                                            }
+                                            break
 
-                                            for (let m of slist)
-                                                appenditem(sub, tArrayItm, m.name, m.name.nameToId(), null, null, m.img)
-                                        }
+                                        case "array":
+                                            if (slist) {
+                                                l = /idname/ [Symbol.replace](tArray, (t.name + "-" + flist.name).nameToId())
+                                                appenditem(itm, l, "", flist.name.nameToId(), flist.ttip, null)
+
+                                                sub = itm.find("#slist-" + (t.name + "-" + flist.name).nameToId())
+                                                sub = sub.find("#row-" + flist.name.nameToId())
+
+                                                for (let m of slist)
+                                                    appenditem(sub, tArrayItm, m.name, m.name.nameToId(), null, null, m.img)
+                                            }
+                                            break
+
+                                        case "number":
+                                            l = /idname/ [Symbol.replace](tSubNumber, (t.name + "-" + flist.name).nameToId())
+                                            l = /range/ [Symbol.replace](l, flist.range)
+                                            appenditem(itm, l, flist.name, id, flist.ttip, flist.required)
+                                            break
+                                        case "string":
+                                            l = /idname/ [Symbol.replace](tSubString, (t.name + "-" + flist.name).nameToId())
+                                            appenditem(itm, l, flist.name, id, flist.ttip, flist.required)
+                                            break
+                                        case "blank":
+                                            l = /idname/ [Symbol.replace](tSubBlank, (t.name + "-" + flist.name).nameToId())
+                                            itm.append(l)
+                                            break
+                                        case "img":
+                                            l = /idname/ [Symbol.replace](tSubImg, (t.name + "-" + flist.name).nameToId())
+                                            appenditem(itm, l, flist.name, id, flist.ttip, flist.required)
+                                            break
                                     }
                                 }
                             }
@@ -655,65 +718,32 @@ NMSCE.prototype.buildTypePanels = function () {
     // if (fcesearch)
     //     $("[id|='search']").show()
 
-    $(".map-areas area").mouseenter(function () {
+    $("area").mouseenter(function () {
         let id = $(this).attr("alt")
-        let loc = $(this).closest("[id|='map']").find(".map-hover [alt='" + id + "']")
+        let loc = $(this).closest("[id|='row']").find("#map-hover [alt='" + id + "']")
         loc.show()
         return false
     }).mouseleave(function () {
-        $(".map-hover img").hide()
+        let loc = $(this).closest("[id|='row']").find("#map-hover")
+        loc.find("img").hide()
         return false
     })
 }
 
 NMSCE.prototype.mapSelect = function (evt) {
     let id = $(evt).attr("alt")
-    let loc = $(evt).closest("[id|='map']")
-    let hloc = loc.find(".map-hover [alt='" + id + "']")
-    loc = loc.find(".map-select [alt='" + id + "']")
+    let loc = $(evt).closest("[id|='row']")
+    let hloc = loc.find("#map-hover [alt='" + id + "']")
+    let sloc = loc.find("#map-selected [alt='" + id + "']")
 
-    if (loc.is(":visible")) {
-        loc.hide()
+    if (sloc.is(":visible")) {
+        sloc.hide()
         hloc.show()
     } else {
-        loc.show()
+        sloc.show()
         hloc.hide()
     }
 }
-
-const wingAreaMap = `
-    <div id="map-fighter-wings">
-        <!-- Image Map Generated by http://www.image-map.net/ -->
-        <img class="map-image" src="images/fighter/wings/grey.jpg" />
-
-        <div class="map-select"></div>
-        <div class="map-hover"></div>
-        <img id="map-transparent" src="images/fighter/wings/blank.png" style="position:absolute" usemap="#fighter-wings-map" />
-
-        <map name="fighter-wings-map" class="map-areas">
-            <area alt="bowie-v" coords="10,98,89,192" shape="rect">
-            <area alt="bowie-h" coords="11,194,139,237" shape="rect">  
-            <area alt="shield" coords="9,240,143,295" shape="rect">
-            <area alt="droid" coords="99,150,183,188" shape="rect">
-            <area alt="halo" coords="152,199,258,294" shape="rect">
-            <area alt="starscream" coords="132,69,200,104" shape="rect">
-            <area alt="starjumper" coords="88,70,106,62,125,109,161,107,189,107,194,133,173,142,98,145" shape="poly">
-            <area alt="meca" coords="204,119,264,157,262,197,185,195" shape="poly">
-            <area alt="e" coords="270,196,350,237" shape="rect">
-            <area alt="shark-fin" coords="368,173,418,239" shape="rect">
-            <area alt="aftershock" coords="275,159,349,195" shape="rect">
-            <area alt="jet-tip" coords="259,118,358,155" shape="rect">
-            <area alt="vulture" coords="391,95,422,97,418,165,364,165" shape="poly">
-            <area alt="gull" coords="271,9,355,63" shape="rect">
-            <area alt="quasar" coords="398,82,370,49,410,2,423,3,417,82" shape="poly">
-            <area alt="shockwave" coords="302,68,302,112,246,112,215,118,202,105,227,68" shape="poly">
-            <area alt="jupiter" coords="308,69,309,114,370,110,394,87,378,61,352,69" shape="poly">
-            <area alt="stratus" coords="279,249,308,281" shape="rect">
-            <area alt="firefly" coords="310,249,340,283" shape="rect">
-            <area alt="serenity" coords="342,249,371,283" shape="rect">
-            <area alt="swordfish" coords="371,241,412,289" shape="rect">
-        </map>
-    </div>`
 
 NMSCE.prototype.selectType = function (btn) {
     $("#typePanels [id|='pnl']").hide()
@@ -732,51 +762,44 @@ NMSCE.prototype.selectSublist = function (btn) {
 
     pnl.find("[id|='slist']").hide()
 
-    const imgline = `<img alt="id" src="images/fighter/wings/path/fname.png" class="hidden" style="position:absolute; top:tpos; left:lpos" />`
+    const imgline = `<img alt="id" src="path/fname.png" class="hidden" style="position:absolute; top:tpos; left:lpos" />`
 
     for (let i of sub) {
         let ploc = pnl.find("#slist-" + (t + "-" + i.name).nameToId())
         ploc.show()
 
-        ploc.find("#map-image")
-        let loc = $(ploc[0])
-        let pos = loc.position()
+        if (i.type === "map" && ploc.length > 0) {
+            let loc = ploc.find("#map-image")
+            let pos = loc.position()
+            let path = loc.prop("src").replace(/(.*)\/.*/, "$1")
 
-        loc.find("#map-transparent").css({
-            top: pos.top + "px",
-            left: pos.left + "px"
-        })
-
-        let aloc = loc.find("map area")
-        let hloc = loc.find(".map-hover")
-
-        if (hloc.children().length === 0) {
-            let sloc = loc.find(".map-select")
-            hloc.empty()
-            sloc.empty()
-
-            loc = loc.next("img")
-            loc.css({
+            ploc.find("#map-transparent").css({
                 top: pos.top + "px",
                 left: pos.left + "px"
             })
 
-            for (let loc of aloc) {
-                $(loc).click(function () {
-                    nmsce.mapSelect(this)
-                })
+            let aloc = ploc.find("#map-areas")
+            let hloc = ploc.find("#map-hover")
+            let sloc = ploc.find("#map-selected")
 
-                let alt = $(loc).attr("alt")
-                let l = /id/ [Symbol.replace](imgline, alt)
-                l = /path/ [Symbol.replace](l, "hover")
-                l = /fname/ [Symbol.replace](l, alt)
-                l = /tpos/ [Symbol.replace](l, pos.top + "px")
-                l = /lpos/ [Symbol.replace](l, pos.left + "px")
+            if (hloc.children().length === 0) {
+                for (let loc of aloc.children()) {
+                    $(loc).click(function () {
+                        nmsce.mapSelect(this)
+                    })
 
-                hloc.append(l)
+                    let alt = $(loc).attr("alt")
+                    let l = /id/ [Symbol.replace](imgline, alt)
+                    l = /path/ [Symbol.replace](l, path)
+                    l = /fname/ [Symbol.replace](l, alt)
+                    l = /tpos/ [Symbol.replace](l, pos.top + "px")
+                    l = /lpos/ [Symbol.replace](l, pos.left + "px")
 
-                l = /hover/ [Symbol.replace](l, "select")
-                sloc.append(l)
+                    hloc.append(l)
+
+                    l = l.replace(/h(\d+).png/g, "s$1.png")
+                    sloc.append(l)
+                }
             }
         }
     }
@@ -1150,7 +1173,7 @@ NMSCE.prototype.addText = function (evt) {
         texts.push(text)
     } else {
         for (let i = 0; i < texts.length; ++i)
-            if (texts[i].sub == sub)
+            if (texts[i].sub === sub)
                 texts.splice(i, 1)
     }
 
@@ -1167,7 +1190,7 @@ NMSCE.prototype.setFont = function (btn) {
     let id = btn.closest("[id|='txt']").prop("id").stripID()
 
     for (let i = 0; i < texts.length; ++i)
-        if (texts[i].sub == id) {
+        if (texts[i].sub === id) {
             texts[i].font = font
 
             ctx.font = texts[i].fontsize + "px " + font
@@ -1186,7 +1209,7 @@ NMSCE.prototype.setColor = function (evt) {
     let ctx = canvas.getContext("2d")
 
     for (let i = 0; i < texts.length; ++i)
-        if (texts[i].sub == $(evt).prop("id").stripID())
+        if (texts[i].sub === $(evt).prop("id").stripID())
             texts[i].color = $(evt).val()
 
     nmsce.drawText()
@@ -1201,7 +1224,7 @@ NMSCE.prototype.setSize = function (evt) {
     let id = $(evt).prop("id").stripID()
 
     for (let i = 0; i < texts.length; ++i)
-        if (texts[i].sub == id) {
+        if (texts[i].sub === id) {
             texts[i].fontsize = parseInt($(evt).val())
 
             ctx.font = texts[i].fontsize + "px " + texts[i].font
@@ -1274,7 +1297,7 @@ NMSCE.prototype.handleMouseDown = function (e) {
     startX = parseInt(e.clientX - offsetX)
     startY = parseInt(e.clientY - offsetY)
 
-    for (var i = 0; i < texts.length && selectedText == -1; i++)
+    for (var i = 0; i < texts.length && selectedText === -1; i++)
         if (nmsce.textHittest(startX, startY, i))
             selectedText = i
 }
@@ -1595,6 +1618,103 @@ NMSCE.prototype.newDARC = function (evt) {
     }
 }
 
+const explorerMap = `
+    <div id="map-explorer">
+        <!-- Image Map Generated by http://www.image-map.net/ -->
+        <img id="map-image" src="images/explorer/bodies.png" />
+
+        <div id="map-selected"></div>
+        <div id="map-hover"></div>
+        <img id="map-transparent" src="images/explorer/blank.png" style="position:absolute" usemap="#explorer-map" />
+
+        <map name="explorer-map" id="map-areas">
+            <area alt="h3" coords="0,1,0,125,112,129,104,60" shape="poly">
+            <area alt="h4" coords="10,2,120,64,223,65,214,5" shape="poly">
+            <area alt="h5" coords="264,4,243,67,268,101,329,101,342,64,326,4" shape="poly">
+            <area alt="h6" coords="114,67,122,114,155,113,177,67" shape="poly">
+            <area alt="h7" coords="184,71,157,115,169,124,196,125,219,71" shape="poly">
+            <area alt="h8" coords="224,69,203,115,232,137,257,122,259,95,238,68" shape="poly">
+            <area alt="h9" coords="272,105,272,122,336,151,336,102" shape="poly">
+            <area alt="h10" coords="0,128,0,165,86,167,84,130" shape="poly">
+            <area alt="h11" coords="88,130,87,162,162,163,162,129,121,131" shape="poly">
+            <area alt="h12" coords="169,130,169,171,215,177,228,143,207,127" shape="poly">
+            <area alt="h13" coords="232,142,226,170,243,188,266,198,286,189,298,178,329,175,330,157,300,137,267,123" shape="poly">
+            <area alt="h14" coords="1,171,1,281,54,281,52,171" shape="poly">
+            <area alt="h15" coords="57,174,56,215,113,215,166,207,166,174" shape="poly">
+            <area alt="h16" coords="199,187,182,213,194,247,218,262,248,255,268,245,279,222,280,202,258,202,221,180" shape="poly">
+            <area alt="h17" coords="283,196,268,375,306,377,306,191" shape="poly">
+            <area alt="h18" coords="314,185,310,373,342,378,346,170" shape="poly">
+            <area alt="h19" coords="60,235,62,289,110,289,104,258,103,222" shape="poly">
+            <area alt="h20" coords="122,221,109,245,111,271,126,284,147,293,175,285,189,255,179,225,154,212" shape="poly">
+            <area alt="h21" coords="14,287,3,356,91,356,87,301" shape="poly">
+            <area alt="h22" coords="92,295,95,345,184,341,186,295,123,295" shape="poly">
+            <area alt="h23" coords="189,277,188,302,203,321,191,342,160,348,157,375,254,372,267,326,216,270" shape="poly">
+            <area alt="h24" coords="4,361,0,405,92,408,91,361" shape="poly">
+            <area alt="h25" coords="95,352,95,415,132,414,133,353" shape="poly">
+            <area alt="h26" coords="4,419,2,444,171,447,166,419" shape="poly">
+            <area alt="h27" coords="138,383,135,407,168,416,208,442,256,444,250,402" shape="poly">
+            <area alt="h28" coords="255,385,260,442,299,443,295,385" shape="poly">
+            <area alt="h29" coords="308,385,307,444,338,437,338,385" shape="poly">
+        </map>
+    </div>`
+
+const fighterBodiesMap = `
+    <div id="map-fighter-bodies"
+        <!-- Image Map Generated by http://www.image-map.net/ -->
+        <img id="map-image" src="images/fighter/bodies/bodies.png" />
+
+        <div id="map-selected"></div>
+        <div id="map-hover"></div>
+        <img id="map-transparent" src="images/blank.png" style="position:absolute" usemap="#fighter-bodies-map" />
+
+        <map name="fighter-bodies-map" id="map-areas">
+            <area alt="h3" coords="2,2,6,40,104,85,144,71,137,40,60,4" shape="poly">
+            <area alt="h2" coords="241,1,328,15,326,80,256,67" shape="poly">
+            <area alt="h5" coords="2,41,1,112,134,170,148,110" shape="poly">
+            <area alt="h7" coords="0,119,-1,193,166,253,173,196" shape="poly">
+            <area alt="h9" coords="2,203,2,269,261,346,260,307" shape="poly">
+            <area alt="h10" coords="5,273,2,357,271,399,302,398,305,363" shape="poly">
+            <area alt="h4" coords="151,32,158,95,196,123,321,153,348,104,242,64" shape="poly">
+            <area alt="h8" coords="154,107,162,181,325,242,345,170,226,141" shape="poly">
+            <area alt="h6" coords="176,192,174,268,284,306,348,280,346,254" shape="poly">
+        </map>
+    </div>`
+
+const fighterWingsMap = `
+    <div id="map-fighter-wings"
+        <!-- Image Map Generated by http://www.image-map.net/ -->
+        <img id="map-image" src="images/fighter/wings/wings.png" />
+
+        <div id="map-selected"></div>
+        <div id="map-hover"></div>
+        <img id="map-transparent" src="images/blank.png" style="position:absolute" usemap="#fighter-wings-map" />
+
+        <map name="fighter-wings-map" id="map-areas">
+            <area alt="h3" coords="0,2,53,0,44,191,3,211" shape="poly">
+            <area alt="h4" coords="56,1,53,51,102,48,165,19,117,1" shape="poly">
+            <area alt="h5" coords="118,48,174,20,172,1,213,1,215,50" shape="poly">
+            <area alt="h6" coords="221,11,217,63,315,41,323,4" shape="poly">
+            <area alt="h7" coords="53,55,49,173,98,172,98,55" shape="poly">
+            <area alt="h8" coords="105,52,104,103,171,101,208,85,208,54" shape="poly">
+            <area alt="h9" coords="218,65,230,93,306,86,339,107,340,75,344,7,311,51,259,55" shape="poly">
+            <area alt="h10" coords="175,103,192,125,255,119,300,112,299,90,221,96,210,86" shape="poly">
+            <area alt="h11" coords="250,121,249,133,345,141,348,109" shape="poly">
+            <area alt="h12" coords="104,173,133,177,149,164,174,116,143,108" shape="poly">
+            <area alt="h13" coords="4,216,0,251,30,267,108,268,108,195,47,192" shape="poly">
+            <area alt="h14" coords="125,189,120,211,164,200,197,167,185,155" shape="poly">
+            <area alt="h15" coords="120,212,118,224,214,230,211,213,174,205" shape="poly">
+            <area alt="h16" coords="116,225,117,253,200,255,224,235" shape="poly">
+            <area alt="h17" coords="192,131,208,163,200,178,173,195,212,203,218,218,241,204,266,176,297,173,270,143" shape="poly">
+            <area alt="h18" coords="279,135,303,179,300,197,291,221,321,253,347,221,347,184,315,148" shape="poly">
+            <area alt="h19" coords="203,255,205,281,242,284,270,243,314,271,325,261,285,219,293,188,266,184,238,232" shape="poly">
+            <area alt="h20" coords="5,272,6,390,101,390,109,274" shape="poly">
+            <area alt="h21" coords="114,272,103,394,215,391,220,299,180,264" shape="poly">
+            <area alt="h22" coords="242,288,243,316,275,334,297,334,324,312,324,280,294,260,266,261" shape="poly">
+            <area alt="h23" coords="226,333,223,394,286,395,287,341,249,328" shape="poly">
+            <area alt="h24" coords="292,337,292,397,342,398,345,335" shape="poly">
+        </map>
+    </div>`
+
 const shipList = [{
     name: "Fighter",
     slotTtip: `
@@ -1606,41 +1726,18 @@ const shipList = [{
     //     A - 35-50% damage, 15-20% shield<br>
     //     B - 15-30% damage, 5-10% shield<br>
     //     C - 5-10% damage`,
+    bodies: [{
+        map: fighterBodiesMap,
+    }],
     wings: [{
-        map: wingAreaMap,
+        map: fighterWingsMap,
     }],
 }, {
     name: "Hauler",
-    subType: [{
-        name: "Fan"
-    }, {
-        name: "Baller"
-    }, {
-        name: "Box"
-    }, {
-        name: "Mini"
-    }, ],
-    features: [{
-        name: "Tilt Wing"
-    }, {
-        name: "Gull Wing"
-    }, {
-        name: "C Wing"
-    }, {
-        name: "E Wing"
-    }, {
-        name: "Shield"
-    }, {
-        name: "Glowing"
-    }, {
-        name: "Streach Neck"
-    }, {
-        name: "Turbine"
-    }, ],
     slotTtip: `
-        T1 - 15-19 slots<br>
-        T2 - 20-29 slots<br>
-        T3 - 30-38 slots`,
+        T1 - 25-31 slots<br>
+        T2 - 32-39 slots<br>
+        T3 - 40-48 slots`,
     // classTtip: `
     //     S - 55-60% damage, 15-25% shield<br>
     //     A - 35-50% damage, 15-20% shield<br>
@@ -1667,7 +1764,9 @@ const shipList = [{
         T1 - 15 - 31 slots < br >
         T2 - 32 - 39 slots < br >
         T3 - 40 - 48 slots < br >`,
-    // classTtip: `
+    wings: [{
+        map: explorerMap,
+    }], // classTtip: `
     //     S - 10 - 20 % damage, 55 - 60 % shield, 30 - 35 % hyperdrive < br >
     //     A - 5 - 10 % damage, 45 - 50 % shield, 15 - 25 % hyperdrive < br >
     //     B - 0 - 5 % damage, 25 - 35 % shield, 5 - 10 % hyperdrive < br >
@@ -1677,6 +1776,8 @@ const shipList = [{
 }]
 
 const classList = [{
+    name: "Nothing Selected",
+}, {
     name: "S",
 }, {
     name: "A",
@@ -1687,6 +1788,8 @@ const classList = [{
 }]
 
 const slotList = [{
+    name: "Nothing Selected",
+}, {
     name: "T1",
 }, {
     name: "T2",
@@ -1859,6 +1962,8 @@ const resList = [{
 }, ]
 
 const colorList = [{
+    name: "Nothing Selected",
+}, {
     name: "Red",
 }, {
     name: "Orange",
@@ -2513,21 +2618,21 @@ const planetNumTip = `This is the first glyph in the portal address. Assigned to
 const objectList = [{
     name: "Ship",
     fields: [{
-        name: "Name",
-        type: "string"
-    }, {
-        name: "Wave",
-        type: "number",
-        ttip: "Wave based on looking away from spawn point after reload for 0, 29, 49 & 65 sec.",
-        range: "4",
-        search: true,
-    }, {
         name: "Type",
         type: "menu",
         list: shipList, // fighter, shuttle, etc.
         required: true,
         search: true,
         sublist: [{
+            name: "Name",
+            type: "string"
+        }, {
+            name: "Wave",
+            type: "number",
+            ttip: "Wave based on looking away from spawn point after reload for 0, 29, 49 & 65 sec.",
+            range: "4",
+            search: true,
+        }, {
             name: "Class",
             type: "menu",
             // ttip: "classTtip",
@@ -2541,30 +2646,41 @@ const objectList = [{
             list: slotList,
             search: true,
         }, {
+            name: "Primary Color",
+            type: "menu",
+            list: colorList,
+            required: true,
+            search: true,
+        }, {
+            name: "Secondary Color",
+            type: "menu",
+            list: colorList,
+            search: true,
+        }, {
+            name: "Tertiary Color",
+            type: "menu",
+            list: colorList,
+            search: true,
+        }, {
+            name: "Seed",
+            type: "string",
+            ttip: "Found in save file. Can be used to reskin ship.",
+        }, {
+            name: "Photo",
+            type: "img",
+            required: true,
+        }, {
+            name: "Bodies",
+            type: "map",
+            sub: "bodies",
+            single: true,
+            search: true,
+        }, {
             name: "Wings",
             type: "map",
             sub: "wings",
             search: true,
         }, ]
-    }, {
-        name: "Primary Color",
-        type: "menu",
-        list: colorList,
-        required: true,
-        search: true,
-    }, {
-        name: "Secondary Color",
-        type: "menu",
-        list: colorList,
-        search: true,
-    }, {
-        name: "Seed",
-        type: "string",
-        ttip: "Found in save file. Can be used to reskin ship.",
-    }, {
-        name: "Photo",
-        type: "img",
-        required: true,
     }]
 }, {
     name: "Freighter",

@@ -89,12 +89,6 @@ var importTable = [{
     format: reformatAddress,
     group: 1 // black hole
 }, {
-    match: /coord|addr/i,
-    field: "addr",
-    required: notBaseDel,
-    format: reformatAddress,
-    group: 2 // exit
-}, {
     match: /reg/i,
     field: "reg",
     required: true,
@@ -114,6 +108,11 @@ var importTable = [{
     field: "econ",
     format: formatEcon,
     group: 1 // black hole
+}, {
+    match: /coord|addr/i,
+    field: "addr",
+    format: reformatAddress,
+    group: 2 // exit
 }, {
     match: /reg/i,
     field: "reg",
@@ -246,7 +245,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
 
             let row = allrows[i].split(/[,\t]/)
 
-            if (row.length < 2 || row[importTable[inpCoordIdx].index] == "")
+            if (row.length < 2 || row[importTable[inpCoordIdx].index] === "" || row[importTable[inpCoordIdx].index] === "07FF:007F:07FF:0000")
                 ok = false
 
             for (let j = 0; j < importTable.length && ok; ++j) {
@@ -257,7 +256,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                 if (idx >= 0) {
                     if (row[idx] == "") {
                         if (!entry[0].type.match(/graph/i) && (importTable[j].required === true || typeof importTable[j].required === "function" &&
-                            importTable[j].required(entry[2].addr, entry[0].type))) {
+                                importTable[j].required(entry[1].addr, entry[2].addr, entry[0].type))) {
                             bhs.filestatus("row: " + (i + 1) + " missing " + importTable[j].field, 0)
                             ok = false
                         }
@@ -489,15 +488,15 @@ blackHoleSuns.prototype.filestatus = function (str, lvl) {
         $("#filestatus").append("<h6>" + str + "</h6>")
 }
 
-function notBase(addr, type) {
-    let t = typeof type !== "undefined" ? type.slice(0, 4).toLowerCase() : ""
-    return !(t === "base" || typeof addr !== "undefined" && addr === "0000:0000:0000:0000")
-}
+// function ckExitSysReq(bhaddr, exitaddr, type) {
+//     let t = typeof type !== "undefined" ? type.toLowerCase() : ""
+//     return !(t === "single" || typeof exitaddr !== "undefined" && exitaddr === bhaddr)
+// }
 
-function notBaseDel(addr, type) {
-    let t = typeof type !== "undefined" ? type.slice(0, 4).toLowerCase() : ""
-    return !(t === "base" || t === "dele" || typeof addr !== "undefined" && addr === "0000:0000:0000:0000")
-}
+// function ckExitAddrReq(bhaddr, exitaddr, type) {
+//     let t = typeof type !== "undefined" ? type.slice(0, 4).toLowerCase() : ""
+//     return !(t === "base" || typeof addr !== "undefined" && addr === "0000:0000:0000:0000")
+// }
 
 function formatOrg(val) {
     return formatListSel(val, bhs.orgList)
