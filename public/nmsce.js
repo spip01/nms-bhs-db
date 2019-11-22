@@ -832,6 +832,9 @@ const txtList = [{
     name: "Mode",
     ttip: "Only necessary for bases."
 }, {
+    name: "Ship Info",
+    ttip: "Ship size (T1, T2, T3)."
+}, {
     name: "Text",
     what: "txt",
     ttip: "Uses 'Input Text' field below. Add a '\\n' to seperate multiple lines."
@@ -1093,13 +1096,19 @@ NMSCE.prototype.addSavedText = function (text) {
         case "Platform":
             text.text = bhs.user.platform
             break
-        case "Mode":
-            let mloc = pnl.find("#btn-Game-Mode")
-            text.text = mloc.length === 1 ? mloc.text().stripMarginWS() : ""
-            break
-        case "Text":
-            $("#inp-Input-Text").val(text.text)
-            break
+        case "Mode": {
+            let loc = pnl.find("#btn-Game-Mode")
+            text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
+        }
+        break
+    case "Ship-Info": {
+        let loc = pnl.find("#btn-Slots :visible")
+        text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
+    }
+    break
+    case "Text":
+        $("#inp-Input-Text").val(text.text)
+        break
     }
 
     texts.push(text)
@@ -1157,13 +1166,19 @@ NMSCE.prototype.addText = function (evt) {
             case "Platform":
                 text.text = bhs.user.platform
                 break
-            case "Mode":
-                let mloc = pnl.find("#btn-Game-Mode")
-                text.text = mloc.length === 1 ? mloc.text().stripMarginWS() : ""
-                break
-            case "Text":
-                text.text = $("#inp-Input-Text").val()
-                break
+            case "Mode": {
+                let loc = pnl.find("#btn-Game-Mode")
+                text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
+            }
+            break
+        case "Ship-Info": {
+            let loc = pnl.find("#btn-Slots")
+            text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
+        }
+        break
+        case "Text":
+            text.text = $("#inp-Input-Text").val()
+            break
         }
 
         let ctx = txtcanvas.getContext("2d")
@@ -1261,10 +1276,8 @@ NMSCE.prototype.drawText = function () {
             for (let i = 0; i < l.length; ++i) {
                 ctx.fillText(l[i], text.x, text.y + i * (text.fontsize * 1.15))
             }
-        } else {
-            console.log(text.x, text.y)
+        } else
             ctx.fillText(text.text, text.x, text.y)
-        }
     }
 }
 
@@ -1443,14 +1456,16 @@ NMSCE.prototype.displayList = function (entries) {
         }
 
         for (let f of obj.fields) {
-            if (f.type !== "img") {
+            if (f.type !== "img" && f.type !== "map") {
                 let l = /idname/g [Symbol.replace](itm, f.name.nameToId())
                 h += /title/ [Symbol.replace](l, f.name)
 
                 if (typeof f.sublist !== "undefined")
                     for (let s of f.sublist) {
-                        let l = /idname/g [Symbol.replace](itm, s.name.nameToId())
-                        h += /title/ [Symbol.replace](l, s.name)
+                        if (s.type !== "img" && s.type !== "map") {
+                            let l = /idname/g [Symbol.replace](itm, s.name.nameToId())
+                            h += /title/ [Symbol.replace](l, s.name)
+                        }
                     }
             }
         }
@@ -1480,7 +1495,7 @@ NMSCE.prototype.displayList = function (entries) {
             }
 
             for (let f of obj.fields) {
-                if (f.type !== "img") {
+                if (f.type !== "img" && f.type !== "map") {
                     let l = /idname/g [Symbol.replace](itm, f.name.nameToId())
                     if (typeof e[f.name.nameToId()] !== "undefined") {
                         if (f.type === "array") {
@@ -1497,19 +1512,21 @@ NMSCE.prototype.displayList = function (entries) {
 
                     if (typeof f.sublist !== "undefined")
                         for (let s of f.sublist) {
-                            let l = /idname/g [Symbol.replace](itm, s.name.nameToId())
-                            if (typeof e[s.name.nameToId()] !== "undefined") {
-                                if (s.type === "array") {
-                                    let items = Object.keys(e[s.name.nameToId()])
-                                    let t = ""
-                                    for (let i of items)
-                                        t += i + " "
+                            if (s.type !== "img" && s.type !== "map") {
+                                let l = /idname/g [Symbol.replace](itm, s.name.nameToId())
+                                if (typeof e[s.name.nameToId()] !== "undefined") {
+                                    if (s.type === "array") {
+                                        let items = Object.keys(e[s.name.nameToId()])
+                                        let t = ""
+                                        for (let i of items)
+                                            t += i + " "
 
-                                    h += /title/ [Symbol.replace](l, t)
+                                        h += /title/ [Symbol.replace](l, t)
+                                    } else
+                                        h += /title/ [Symbol.replace](l, e[s.name.nameToId()])
                                 } else
-                                    h += /title/ [Symbol.replace](l, e[s.name.nameToId()])
-                            } else
-                                h += /title/ [Symbol.replace](l, "")
+                                    h += /title/ [Symbol.replace](l, "")
+                            }
                         }
                 }
             }
@@ -1529,13 +1546,24 @@ NMSCE.prototype.displayList = function (entries) {
 
         for (let e of entries[obj.name.nameToId()]) {
             let eloc = loc.find("#row-" + e.id)
-            for (let f of obj.fields)
+            for (let f of obj.fields) {
                 if (f.type === "img") {
                     let ref = bhs.fbstorage.ref().child(e[f.name])
                     ref.getDownloadURL().then(url => {
                         eloc.find("#img-pic").attr("src", url)
                     })
                 }
+
+                else if (typeof f.sublist !== "undefined")
+                    for (let s of f.sublist) {
+                        if (s.type === "img") {
+                            let ref = bhs.fbstorage.ref().child(e[s.name])
+                            ref.getDownloadURL().then(url => {
+                                eloc.find("#img-pic").attr("src", url)
+                            })
+                        }
+                    }
+            }
         }
     }
 }
@@ -2792,13 +2820,12 @@ const objectList = [{
         }, {
             name: "Wave",
             type: "number",
-            ttip: "Wave based on looking away from spawn point after reload for 0, 29, 49 & 65 sec.",
-            range: "4",
+            range: "6",
             search: true,
         }, {
             name: "Class",
             type: "menu",
-            // ttip: "classTtip",
+            ttip: "classTtip",
             list: classList,
             search: true,
         }, {
@@ -2833,13 +2860,12 @@ const objectList = [{
             type: "img",
             required: true,
         }, {
-            name: "Bodies",
+            name: "bodies",
             type: "map",
             sub: "bodies",
-            single: true,
             search: true,
         }, {
-            name: "Wings",
+            name: "wings",
             type: "map",
             sub: "wings",
             search: true,
@@ -2869,7 +2895,7 @@ const objectList = [{
         }, {
             name: "Class",
             type: "menu",
-            // ttipFld: "classTtip",
+            ttipFld: "classTtip",
             list: classList,
             search: true,
         }, ]

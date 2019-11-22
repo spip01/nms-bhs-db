@@ -355,10 +355,10 @@ blackHoleSuns.prototype.updateBase = async function (entry) {
         merge: true
     }).then(() => {
         bhs.status(entry.addr + " base saved.")
-        return true
+        return null
     }).catch(err => {
         bhs.status(entry.addr + " ERROR: " + err.code)
-        return false
+        return err.code
     })
 }
 

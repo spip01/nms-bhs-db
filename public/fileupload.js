@@ -327,7 +327,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
                         bhs.filestatus("row: " + (i + 1) + " " + err, 0)
 
                     else
-                        ok = await bhs.fBatchUpdate(entry[1], entry[2], check, i)
+                        ok = await bhs.fBatchUpdate(entry[1], !entry[1].deadzone ? entry[2] : null, check, i)
                 }
             }
         }
@@ -457,7 +457,11 @@ blackHoleSuns.prototype.fBatchWriteBase = async function (entry, check) {
     if (!check) {
         entry.modded = firebase.firestore.Timestamp.now()
         entry.xyzs = addressToXYZ(entry.addr)
-        bhs.updateBase(entry)
+        let err = bhs.updateBase(entry)
+        if (err)
+            bhs.filestatus(entry.addr + " ERROR: " + err.code, 0)
+        else
+            bhs.filestatus(entry.addr + " base saved.", 1)
     }
 
     return true

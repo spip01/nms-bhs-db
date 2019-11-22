@@ -675,7 +675,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
                 entry.owned = loc.find("#btn-Owned").text().stripNumber()
                 entry.owned = entry.owned !== "" ? entry.owned : "mine"
                 entry.sharepoi = loc.find("#ck-sharepoi").prop("checked")
-                ok = bhs.updateBase(entry)
+                ok = bhs.updateBase(entry) === null
             }
 
             delete entry.sharepoi
