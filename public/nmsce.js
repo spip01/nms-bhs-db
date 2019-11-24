@@ -43,12 +43,9 @@ $(document).ready(() => {
     })
 
     $("#cancel").click(() => {
-        if (nmsce.last)
-            nmsce.displaySingle(nmsce.last)
-        else {
-            nmsce.clearPanel("pnl-S1")
-            nmsce.clearPanel("typePanels")
-        }
+        nmsce.last = {}
+        nmsce.clearPanel("pnl-S1")
+        nmsce.clearPanel("typePanels")
     })
 
     $("#search").click(() => {
@@ -121,7 +118,7 @@ NMSCE.prototype.changeAddr = function (evt) {
         nmsce.dispAddr(pnl, addr, glyph)
 
         if (!fcesearch)
-            bhs.getEntry(addr, nmsce.displaySystem)
+            bhs.getEntry(addr, nmsce.displaySystem, null, null, true)
     }
 }
 
@@ -221,9 +218,12 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
         let pnl = $("#typePanels #pnl-" + tab)
         entry.type = tab
 
-        let list = pnl.find(":input :visible")
+        let list = pnl.find(":input")
         for (let loc of list) {
-            let id = loc.id.stripID()
+            if (!$(loc).is(":visible"))
+                continue
+
+            let id = $(loc).prop("id").stripID()
             let r = $(loc).closest("[id|='row']")
             let data = r.data()
 
@@ -238,6 +238,8 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
                     break
                 case "menu":
                     entry[id] = $(loc).text()
+                    if (entry[id] === "Nothing Selected")
+                        entry[id] = ""
                     break
                 case "array":
                     if ($(loc).prop("checked")) {
@@ -447,7 +449,7 @@ blackHoleSuns.prototype.status = function (str, clear) {
 NMSCE.prototype.buildTypePanels = function () {
     let nav = `<a class="nav-item nav-link txt-def h6 active" id="tab-idname" data-toggle="tab" href="#pnl-idname" role="tab" aria-controls="pnl-idname" aria-selected="true">title</a>`
     let header = `
-        <div class="tab-pane fade show active" id="pnl-idname" role="tabpanel" aria-labelledby="tab-idname">
+        <div class="tab-pane show active" id="pnl-idname" role="tabpanel" aria-labelledby="tab-idname">
             <div id="itm-idname" class="row"></div>
         </div>`
     const tReq = `&nbsp;<font style="color:red">*</font>`
@@ -474,8 +476,12 @@ NMSCE.prototype.buildTypePanels = function () {
                 <input id="id-idname" class="rounded col-md-7 col-9">
             </div>
         </div>`
-    const tMap = `
+    const tSubMap = `
         <div id="slist-idname" class="col-lg-7 col-md-14 col-sm-7 col-14 hidden">
+            <div id="row-idname" data-type="map" data-req="ifreq" class="container border-top border-bottom"></div>
+        </div>`
+    const tMap = `
+        <div class="col-lg-7 col-md-14 col-sm-7 col-14">
             <div id="row-idname" data-type="map" data-req="ifreq" class="container border-top border-bottom"></div>
         </div>`
     const tLongString = `
@@ -643,7 +649,7 @@ NMSCE.prototype.buildTypePanels = function () {
 
                                         case "map":
                                             if (slist) {
-                                                l = /idname/ [Symbol.replace](tMap, (t.name + "-" + flist.name).nameToId())
+                                                l = /idname/ [Symbol.replace](tSubMap, (t.name + "-" + flist.name).nameToId())
                                                 appenditem(itm, l, "", flist.name.nameToId())
 
                                                 sub = itm.find("#slist-" + (t.name + "-" + flist.name).nameToId())
@@ -669,11 +675,11 @@ NMSCE.prototype.buildTypePanels = function () {
                                         case "number":
                                             l = /idname/ [Symbol.replace](tSubNumber, (t.name + "-" + flist.name).nameToId())
                                             l = /range/ [Symbol.replace](l, flist.range)
-                                            appenditem(itm, l, flist.name, id, flist.ttip, flist.required)
+                                            appenditem(itm, l, flist.name, flist.name.nameToId(), flist.ttip, flist.required)
                                             break
                                         case "string":
                                             l = /idname/ [Symbol.replace](tSubString, (t.name + "-" + flist.name).nameToId())
-                                            appenditem(itm, l, flist.name, id, flist.ttip, flist.required)
+                                            appenditem(itm, l, flist.name, flist.name.nameToId(), flist.ttip, flist.required)
                                             break
                                         case "blank":
                                             l = /idname/ [Symbol.replace](tSubBlank, (t.name + "-" + flist.name).nameToId())
@@ -681,7 +687,7 @@ NMSCE.prototype.buildTypePanels = function () {
                                             break
                                         case "img":
                                             l = /idname/ [Symbol.replace](tSubImg, (t.name + "-" + flist.name).nameToId())
-                                            appenditem(itm, l, flist.name, id, flist.ttip, flist.required)
+                                            appenditem(itm, l, flist.name, flist.name.nameToId(), flist.ttip, flist.required)
                                             break
                                     }
                                 }
@@ -709,6 +715,13 @@ NMSCE.prototype.buildTypePanels = function () {
                     case "long string":
                         appenditem(itm, tLongString, f.name, id, f.ttip, f.required)
                         break
+                    case "map":
+                        l = /idname/ [Symbol.replace](tMap, (f.name).nameToId())
+                        appenditem(itm, l, "", f.name.nameToId())
+
+                        let mloc = itm.find("#row-" + f.name.nameToId())
+                        mloc.append(f.map)
+                        break
                     case "blank":
                         itm.append(tBlank)
                         break
@@ -719,6 +732,62 @@ NMSCE.prototype.buildTypePanels = function () {
 
     // if (fcesearch)
     //     $("[id|='search']").show()
+
+
+    const imgline = `<img alt="id" src="path/fname.png" class="hidden" data-group=grp style="position:absolute" />`
+
+    //    <div id="map-explorer">
+    //         <img id="map-image" src="images/explorer/bodies/bodies.png" />
+    //         <div id="map-selected"></div>
+    //         <div id="map-hover"></div>
+    //         <img id="map-transparent" src="images/explorer/bodies/blank.png" style="position:absolute" usemap="#explorer-map" />
+    //         <map name="explorer-map" id="map-areas">
+
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (evt) {
+        let id = $(evt.currentTarget).prop("id").stripID()
+        let mlist = $("#pnl-" + id).find("#map-image")
+        for (let mloc of mlist) {
+            let pos = $(mloc).position()
+
+            $(mloc).parent().find("img").css({
+                top: pos.top + "px",
+                left: pos.left + "px",
+            })
+        }
+    })
+
+    let areas = $("[id='map-areas']")
+    for (let loc of areas) {
+        let ploc = $(loc).closest("[id|='row']")
+
+        if (ploc.length > 0) {
+            let loc = ploc.find("#map-image")
+            let path = loc.prop("src").replace(/(.*)\/.*/, "$1")
+
+            let aloc = ploc.find("#map-areas")
+            let hloc = ploc.find("#map-hover")
+            let sloc = ploc.find("#map-selected")
+
+            if (hloc.children().length === 0) {
+                for (let loc of aloc.children()) {
+                    $(loc).click(function () {
+                        nmsce.mapSelect(this)
+                    })
+
+                    let alt = $(loc).attr("alt")
+                    let data = $(loc).data()
+                    let l = /id/ [Symbol.replace](imgline, alt)
+                    l = /path/ [Symbol.replace](l, path)
+                    l = /fname/ [Symbol.replace](l, alt)
+                    l = /grp/ [Symbol.replace](l, data.group?data.group:"")
+                    hloc.append(l)
+
+                    l = l.replace(/h(\d+).png/g, "s$1.png")
+                    sloc.append(l)
+                }
+            }
+        }
+    }
 
     $("area").mouseenter(function () {
         let id = $(this).attr("alt")
@@ -734,6 +803,7 @@ NMSCE.prototype.buildTypePanels = function () {
 
 NMSCE.prototype.mapSelect = function (evt) {
     let id = $(evt).attr("alt")
+    let ploc = $(evt).closest("[id|='pnl']")
     let loc = $(evt).closest("[id|='row']")
     let hloc = loc.find("#map-hover [alt='" + id + "']")
     let sloc = loc.find("#map-selected [alt='" + id + "']")
@@ -742,14 +812,14 @@ NMSCE.prototype.mapSelect = function (evt) {
         sloc.hide()
         hloc.show()
     } else {
-        sloc.show()
-        hloc.hide()
-    }
-}
+        let data = $(evt).data()
+        if (data.group) {
+           ploc.find("#map-hover [data-group='" + data.group + "']").hide()
+           ploc.find("#map-selected [data-group='" + data.group + "']").hide()
+        }
 
-NMSCE.prototype.selectType = function (btn) {
-    $("#typePanels [id|='pnl']").hide()
-    $("#typePanels").find("#pnl-" + btn.text().stripMarginWS()).show()
+        sloc.show()
+    }
 }
 
 NMSCE.prototype.selectSublist = function (btn) {
@@ -764,45 +834,18 @@ NMSCE.prototype.selectSublist = function (btn) {
 
     pnl.find("[id|='slist']").hide()
 
-    const imgline = `<img alt="id" src="path/fname.png" class="hidden" style="position:absolute; top:tpos; left:lpos" />`
-
     for (let i of sub) {
         let ploc = pnl.find("#slist-" + (t + "-" + i.name).nameToId())
         ploc.show()
 
-        if (i.type === "map" && ploc.length > 0) {
-            let loc = ploc.find("#map-image")
-            let pos = loc.position()
-            let path = loc.prop("src").replace(/(.*)\/.*/, "$1")
+        let mlist = ploc.find("#map-image")
+        for (let mloc of mlist) {
+            let pos = $(mloc).position()
 
-            ploc.find("#map-transparent").css({
+            $(mloc).parent().find("img").css({
                 top: pos.top + "px",
-                left: pos.left + "px"
+                left: pos.left + "px",
             })
-
-            let aloc = ploc.find("#map-areas")
-            let hloc = ploc.find("#map-hover")
-            let sloc = ploc.find("#map-selected")
-
-            if (hloc.children().length === 0) {
-                for (let loc of aloc.children()) {
-                    $(loc).click(function () {
-                        nmsce.mapSelect(this)
-                    })
-
-                    let alt = $(loc).attr("alt")
-                    let l = /id/ [Symbol.replace](imgline, alt)
-                    l = /path/ [Symbol.replace](l, path)
-                    l = /fname/ [Symbol.replace](l, alt)
-                    l = /tpos/ [Symbol.replace](l, pos.top + "px")
-                    l = /lpos/ [Symbol.replace](l, pos.left + "px")
-
-                    hloc.append(l)
-
-                    l = l.replace(/h(\d+).png/g, "s$1.png")
-                    sloc.append(l)
-                }
-            }
         }
     }
 }
@@ -1285,7 +1328,7 @@ NMSCE.prototype.redditShare = function (evt) {
     let canvas = document.getElementById("id-canvas")
 
     canvas.toBlob(blob => {
-        let name = "temp/" + uuidv4() + ".jpg"
+        let name = "reddit/" + uuidv4() + ".jpg"
         bhs.fbstorage.ref().child(name).put(blob).then(() => {
             bhs.fbstorage.ref().child(name).getDownloadURL().then(url => {
                 let u = "http://www.reddit.com/submit?url=" + encodeURI(url)
@@ -1390,6 +1433,7 @@ NMSCE.prototype.getEntries = async function (user, displayFcn, singleDispFcn) {
 
         let ref = bhs.fs.collection("nmsce/" + user.galaxy + "/" + type)
         ref = ref.where("uid", "==", user.uid)
+        ref = ref.orderBy("modded", "desc")
 
         let snapshot = await ref.get()
         for (let e of snapshot.docs)
@@ -1552,9 +1596,7 @@ NMSCE.prototype.displayList = function (entries) {
                     ref.getDownloadURL().then(url => {
                         eloc.find("#img-pic").attr("src", url)
                     })
-                }
-
-                else if (typeof f.sublist !== "undefined")
+                } else if (typeof f.sublist !== "undefined")
                     for (let s of f.sublist) {
                         if (s.type === "img") {
                             let ref = bhs.fbstorage.ref().child(e[s.name])
@@ -1888,17 +1930,61 @@ const exoticBodiesMap = `
         </map>
     </div>`
 
+const freighterCapitalMap = `
+    <div id="map-freighter-capital">
+        <!-- Image Map Generated by http://www.image-map.net/ -->
+        <img id="map-image" src="images/freighter/capital/capital.png" />
+
+        <div id="map-selected"></div>
+        <div id="map-hover"></div>
+        <img id="map-transparent" src="images/freighter/capital/blank.png" style="position:absolute" usemap="#freighter-capital-map" />
+            
+        <map name="freighter-capital-map" id="map-areas">
+            <area alt="h2" data-group=1 coords="12,-1,14,49,323,58,313,6" shape="poly">
+            <area alt="h3" data-group=1 coords="95,57,96,97,330,127,324,63" shape="poly">
+            <area alt="h4" data-group=1 coords="61,68,2,108,9,145,184,151,190,117,89,100" shape="poly">
+            <area alt="h5" data-group=1 coords="14,173,9,303,276,202,297,171,280,125,238,147" shape="poly">
+            <area alt="h6" data-group=1 coords="154,255,160,362,333,244,317,182,286,202" shape="poly">
+            <area alt="h7" data-group=2 coords="48,299,125,336" shape="rect">
+            <area alt="h8" data-group=2 coords="49,341,130,381" shape="rect">
+            <area alt="h9" data-group=1 coords="216,332,222,395,340,335,339,253" shape="poly">
+        </map>
+    </div>`
+
+const freighterCommonMap = `
+    <div id="map-freighter-common">
+        <!-- Image Map Generated by http://www.image-map.net/ -->
+        <img id="map-image" src="images/freighter/common/common.png" />
+
+        <div id="map-selected"></div>
+        <div id="map-hover"></div>
+        <img id="map-transparent" src="images/freighter/common/blank.png" style="position:absolute" usemap="#freighter-common-map" />
+            
+        <map name="freighter-common-map" id="map-areas">
+            <!--area alt="h2" data-group=1 coords="94,6,102,45,194,53,338,46,340,-1" shape="poly"-->
+            <area alt="h3" data-group=1 coords="4,19,9,86,171,86,190,62,98,48" shape="poly">
+            <area alt="h4" data-group=1 coords="13,94,8,162,160,166,158,110,115,92" shape="poly">
+            <area alt="h5" data-group=1 coords="160,93,197,133,332,127,316,56,217,67" shape="poly">
+            <area alt="h6" data-group=1 coords="18,164,10,218,138,227,166,204,153,168" shape="poly">
+            <area alt="h7" data-group=1 coords="174,136,172,196,345,201,342,136" shape="poly">
+            <area alt="h8" data-group=1 coords="10,222,7,333,175,279,152,233" shape="poly">
+            <area alt="h9" data-group=1 coords="184,205,194,279,331,253,333,208" shape="poly">
+            <area alt="h10" data-group=1 coords="14,340,10,395,171,379,195,356,172,286" shape="poly">
+            <area alt="h11" data-group=1 coords="188,288,204,365,342,329,342,284,286,277" shape="poly">
+        </map>
+    </div>`
+
 const shipList = [{
     name: "Fighter",
     slotTtip: `
         T1 - 15-19 slots<br>
         T2 - 20-29 slots<br>
         T3 - 30-38 slots`,
-    // classTtip: `
-    //     S - 55-60% damage, 15-25% shield<br>
-    //     A - 35-50% damage, 15-20% shield<br>
-    //     B - 15-30% damage, 5-10% shield<br>
-    //     C - 5-10% damage`,
+    classTtip: `
+        S - 55-60% damage, 15-25% shield<br>
+        A - 35-50% damage, 15-20% shield<br>
+        B - 15-30% damage, 5-10% shield<br>
+        C - 5-10% damage`,
     bodies: [{
         map: fighterBodiesMap,
     }],
@@ -1911,11 +1997,11 @@ const shipList = [{
         T1 - 25-31 slots<br>
         T2 - 32-39 slots<br>
         T3 - 40-48 slots`,
-    // classTtip: `
-    //     S - 55-60% damage, 15-25% shield<br>
-    //     A - 35-50% damage, 15-20% shield<br>
-    //     B - 15-30% damage, 5-10% shield<br>
-    //     C - 5-10% damage`,
+    classTtip: `
+        S - 55-60% damage, 15-25% shield<br>
+        A - 35-50% damage, 15-20% shield<br>
+        B - 15-30% damage, 5-10% shield<br>
+        C - 5-10% damage`,
     bodies: [{
         map: haulerBodiesMap,
     }],
@@ -1934,11 +2020,11 @@ const shipList = [{
     slotTtip: `
         T1 - 18-23 slots<br>
         T2 - 19-28 slots`,
-    // classTtip: `
-    //     S - 55-60% damage, 15-25% shield<br>
-    //     A - 35-50% damage, 15-20% shield<br>
-    //     B - 15-30% damage, 5-10% shield<br>
-    //     C - 5-10% damage`,
+    classTtip: `
+        S - 55-60% damage, 15-25% shield<br>
+        A - 35-50% damage, 15-20% shield<br>
+        B - 15-30% damage, 5-10% shield<br>
+        C - 5-10% damage`,
     bodies: [{
         map: shuttleBodiesMap,
     }],
@@ -1954,11 +2040,11 @@ const shipList = [{
     bodies: [{
         map: explorerBodiesMap,
     }],
-    // classTtip: `
-    //     S - 10 - 20 % damage, 55 - 60 % shield, 30 - 35 % hyperdrive < br >
-    //     A - 5 - 10 % damage, 45 - 50 % shield, 15 - 25 % hyperdrive < br >
-    //     B - 0 - 5 % damage, 25 - 35 % shield, 5 - 10 % hyperdrive < br >
-    //     C - 12 - 20 % shield, 0 - 5 % hyperdrive`,
+    classTtip: `
+        S - 10 - 20 % damage, 55 - 60 % shield, 30 - 35 % hyperdrive < br >
+        A - 5 - 10 % damage, 45 - 50 % shield, 15 - 25 % hyperdrive < br >
+        B - 0 - 5 % damage, 25 - 35 % shield, 5 - 10 % hyperdrive < br >
+        C - 12 - 20 % shield, 0 - 5 % hyperdrive`,
 }, {
     name: "Exotic",
     bodies: [{
@@ -2798,12 +2884,6 @@ const weatherList = [{
     name: "Withered"
 }]
 
-const freighterList = [{
-    name: "Sentinel"
-}, {
-    name: "Venator"
-}]
-
 const planetNumTip = `This is the first glyph in the portal address. Assigned to each celestial body according to their aphelion.`
 
 const objectList = [{
@@ -2877,28 +2957,15 @@ const objectList = [{
         name: "Name",
         type: "string"
     }, {
-        name: "Type",
+        name: "Slots",
         type: "menu",
-        list: freighterList,
-        required: true,
+        list: slotList,
         search: true,
-        sublist: [{
-            name: "Subtype",
-            sub: "subType",
-            search: true,
-        }, {
-            name: "Slots",
-            type: "menu",
-            ttipFld: "slotTtip",
-            list: slotList,
-            search: true,
-        }, {
-            name: "Class",
-            type: "menu",
-            ttipFld: "classTtip",
-            list: classList,
-            search: true,
-        }, ]
+    }, {
+        name: "Class",
+        type: "menu",
+        list: classList,
+        search: true,
     }, {
         name: "Primary Color",
         type: "menu",
@@ -2918,7 +2985,17 @@ const objectList = [{
         name: "Photo",
         type: "img",
         required: true,
-    }]
+    }, {
+        name: "capital",
+        type: "map",
+        map: freighterCapitalMap,
+        search: true,
+    }, {
+        name: "common",
+        type: "map",
+        map: freighterCommonMap,
+        search: true,
+    }, ]
 }, {
     name: "Multi-Tool",
     fields: [{
