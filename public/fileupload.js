@@ -457,7 +457,7 @@ blackHoleSuns.prototype.fBatchWriteBase = async function (entry, check) {
     if (!check) {
         entry.modded = firebase.firestore.Timestamp.now()
         entry.xyzs = addressToXYZ(entry.addr)
-        let err = bhs.updateBase(entry)
+        let err = await bhs.updateBase(entry)
         if (err)
             bhs.filestatus(entry.addr + " ERROR: " + err.code, 0)
         else
@@ -475,7 +475,7 @@ blackHoleSuns.prototype.fCheckBatchSize = async function (flush) {
             count = 0
             return true
         }).catch(err => {
-            bhs.filestatus("ERROR: " + err.code, 0)
+            bhs.filestatus("ERROR: " + err.code + " No system info saved.<br>Try running 'Check' to discover the rows that failed.", 0)
             console.log(err)
             return false
         })

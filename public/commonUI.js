@@ -744,32 +744,6 @@ blackHoleSuns.prototype.displayTotals = function (e, refpath) {
                 break
         }
     }
-
-    if (findex && refpath === "bhs/Players") {
-        let pnl = $("#itm-Player")
-        let html = ""
-
-        for (let g of Object.keys(e.galaxies)) {
-            for (let p of Object.keys(e.galaxies[g])) {
-                let id = "gal-" + g.nameToId() + "-" + p
-                let h = /idname/ [Symbol.replace](totalsItemsHdr, id)
-                h = />/ [Symbol.replace](h, " style='display:none'>")
-
-                let t = /galaxy/ [Symbol.replace](totalsRows[rowGalaxyPlatform].title, g)
-                t = /platform/ [Symbol.replace](t, p)
-
-                let l = /title/ [Symbol.replace](totalsItems, t)
-                h += /format/ [Symbol.replace](l, totalsCol[0].format)
-
-                l = /title/ [Symbol.replace](totalsItems, e.galaxies[g][p])
-                h += /format/ [Symbol.replace](l, totalsCol[1].format)
-
-                html += h + totalsItemsEnd
-            }
-        }
-
-        pnl.append(html)
-    }
 }
 
 blackHoleSuns.prototype.updateTotalsListView = function (e, refpath) {
