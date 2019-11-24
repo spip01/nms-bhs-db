@@ -33,8 +33,11 @@ $(document).ready(() => {
     nmsce.buildPanel()
     nmsce.buildTypePanels()
 
-    $("#save").click(() => {
-        nmsce.save()
+    $("#save").click(async () => {
+        if (await nmsce.save()){
+            nmsce.clearPanel("pnl-S1")
+            nmsce.clearPanel("typePanels")
+        }
     })
 
     $("#delete").click(() => {
@@ -43,7 +46,6 @@ $(document).ready(() => {
     })
 
     $("#cancel").click(() => {
-        nmsce.last = {}
         nmsce.clearPanel("pnl-S1")
         nmsce.clearPanel("typePanels")
     })
@@ -165,6 +167,10 @@ NMSCE.prototype.clearPanel = function (d) {
 
     pnl.find("[id|='menu']").each(function () {
         $(this).find("[id|='btn']").text("")
+    })
+
+    pnl.find("[id='map-selected'] img").each(function () {
+        $(this).hide()
     })
 
     nmsce.last = null
@@ -427,10 +433,13 @@ NMSCE.prototype.extractSearch = async function (user) {
 NMSCE.prototype.save = async function () {
     $("#status").empty()
 
-    nmsce.saveText()
+    let ok = false
 
-    if (bhs.saveUser())
-        await nmsce.extractEntry(nmsce.updateEntry)
+    if (await bhs.saveUser())
+        if (await nmsce.saveText())
+            ok = await nmsce.extractEntry(nmsce.updateEntry)
+
+    return ok
 }
 
 NMSCE.prototype.search = async function () {
@@ -734,7 +743,7 @@ NMSCE.prototype.buildTypePanels = function () {
     //     $("[id|='search']").show()
 
 
-    const imgline = `<img alt="id" src="path/fname.png" class="hidden" data-group=grp style="position:absolute" />`
+    const imgline = `<img alt="id" src="path/fname.png" class="hidden" style="position:absolute" />`
 
     //    <div id="map-explorer">
     //         <img id="map-image" src="images/explorer/bodies/bodies.png" />
@@ -779,7 +788,8 @@ NMSCE.prototype.buildTypePanels = function () {
                     let l = /id/ [Symbol.replace](imgline, alt)
                     l = /path/ [Symbol.replace](l, path)
                     l = /fname/ [Symbol.replace](l, alt)
-                    l = /grp/ [Symbol.replace](l, data.group?data.group:"")
+                    if (data.group)
+                        l = /style/ [Symbol.replace](l, "data-group=" + data.group + " style")
                     hloc.append(l)
 
                     l = l.replace(/h(\d+).png/g, "s$1.png")
@@ -814,8 +824,8 @@ NMSCE.prototype.mapSelect = function (evt) {
     } else {
         let data = $(evt).data()
         if (data.group) {
-           ploc.find("#map-hover [data-group='" + data.group + "']").hide()
-           ploc.find("#map-selected [data-group='" + data.group + "']").hide()
+            ploc.find("#map-hover [data-group='" + data.group + "']").hide()
+            ploc.find("#map-selected [data-group='" + data.group + "']").hide()
         }
 
         sloc.show()
@@ -838,11 +848,11 @@ NMSCE.prototype.selectSublist = function (btn) {
         let ploc = pnl.find("#slist-" + (t + "-" + i.name).nameToId())
         ploc.show()
 
-        let mlist = ploc.find("#map-image")
-        for (let mloc of mlist) {
+        let mloc = ploc.find("#map-image")
+        if (mloc.length > 0) {
             let pos = $(mloc).position()
 
-            $(mloc).parent().find("img").css({
+            ploc.find("img").css({
                 top: pos.top + "px",
                 left: pos.left + "px",
             })
@@ -1027,7 +1037,7 @@ NMSCE.prototype.loadScreenshot = function (evt) {
 
                 let logo = new Image()
                 logo.onload = function () {
-                    imgctx.drawImage(logo, canvas.width - 35, canvas.height - 35, 30, 30)
+                    imgctx.drawImage(logo, canvas.width - 60, canvas.height - 60, 50, 50)
                     ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
 
                     nmsce.showText()
@@ -1073,9 +1083,19 @@ var selectedText = -1
 var startX = 0
 var startY = 0
 
-NMSCE.prototype.saveText = function () {
-    bhs.updateUser({
-        nmscetext: texts
+NMSCE.prototype.saveText = async function () {
+    delete bhs.user.nmscetext // can't merge arrays correctly
+    bhs.user.nmscetext = texts
+
+    let ref = bhs.getUsersColRef(bhs.user.uid)
+    return await ref.set(bhs.user).then(() => {
+        return true
+    }).catch(err => {
+        if (bhs.status)
+            bhs.status("ERROR: " + err)
+
+        console.log(err)
+        return false
     })
 }
 
@@ -1092,11 +1112,6 @@ NMSCE.prototype.showText = function () {
             nmsce.addSavedText(bhs.user.nmscetext[i])
 
         nmsce.drawText()
-
-        let canvas = document.getElementById("id-canvas")
-        let ctx = canvas.getContext("2d")
-        ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
-        ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
     }
 }
 
@@ -1157,13 +1172,63 @@ NMSCE.prototype.addSavedText = function (text) {
     texts.push(text)
 }
 
-NMSCE.prototype.addText = function (evt) {
-    let canvas = document.getElementById("id-canvas")
-    let ctx = canvas.getContext("2d")
+NMSCE.prototype.reloadText = function () {
+    for (let text of texts) {
+        let sloc = $("#pnl-S1")
+        let id = $("#typeTabs .active").prop("id").stripID()
+        let pnl = $("#typePanels #pnl-" + id)
 
+        switch (text.sub) {
+            case "Player-Name":
+                text.text = bhs.user._name
+                break
+            case "System-Economy":
+                text.text = sloc.find("#btn-Economy").text().stripNumber()
+                break
+            case "System-Name":
+                text.text = sloc.find("#id-sys").val()
+                break
+            case "Coordinates":
+                text.text = sloc.find("#id-addrInput #id-addr").val()
+                break
+            case "Glyphs":
+                let loc = pnl.find("#id-Planet-Index")
+                let num = loc.length > 0 && loc.val() >= 0 ? loc.val() : 0
+                text.text = addrToGlyph(sloc.find("#id-addrInput #id-addr").val(), num)
+                break
+                // case "ck-objinfo":
+                //     text.text = "ship info"
+                //     text.color = $("#sel-objinfo").val()
+                //     break
+            case "Galaxy":
+                text.text = bhs.user.galaxy
+                break
+            case "Platform":
+                text.text = bhs.user.platform
+                break
+            case "Mode": {
+                let loc = pnl.find("#btn-Game-Mode :visible")
+                text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
+            }
+            break
+        case "Ship-Info": {
+            let loc = pnl.find("#btn-Slots :visible")
+            text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
+        }
+        break
+        case "Text":
+            text.text = $("#inp-Input-Text").val()
+            break
+        }
+    }
+
+    nmsce.drawText()
+}
+
+NMSCE.prototype.addText = function (evt) {
     let ck = $(evt).prop("checked")
     let id = $(evt).prop("id")
-    let sub = id.replace(/ck-(.*)/, "$1")
+    let sub = id.stripID()
     let itm = $(evt).closest("[id|='txt']")
 
     if (ck) {
@@ -1238,14 +1303,9 @@ NMSCE.prototype.addText = function (evt) {
     }
 
     nmsce.drawText()
-
-    ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
-    ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
 }
 
 NMSCE.prototype.setFont = function (btn) {
-    let canvas = document.getElementById("id-canvas")
-    let ctx = canvas.getContext("2d")
     let font = btn.text().stripMarginWS()
     let id = btn.closest("[id|='txt']").prop("id").stripID()
 
@@ -1259,23 +1319,14 @@ NMSCE.prototype.setFont = function (btn) {
         }
 
     nmsce.drawText()
-
-    ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
-    ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
 }
 
 NMSCE.prototype.setColor = function (evt) {
-    let canvas = document.getElementById("id-canvas")
-    let ctx = canvas.getContext("2d")
-
     for (let i = 0; i < texts.length; ++i)
         if (texts[i].sub === $(evt).prop("id").stripID())
             texts[i].color = $(evt).val()
 
     nmsce.drawText()
-
-    ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
-    ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
 }
 
 NMSCE.prototype.setSize = function (evt) {
@@ -1293,9 +1344,6 @@ NMSCE.prototype.setSize = function (evt) {
         }
 
     nmsce.drawText()
-
-    ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
-    ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
 }
 
 NMSCE.prototype.drawText = function () {
@@ -1322,6 +1370,12 @@ NMSCE.prototype.drawText = function () {
         } else
             ctx.fillText(text.text, text.x, text.y)
     }
+
+    let canvas = document.getElementById("id-canvas")
+    ctx = canvas.getContext("2d")
+
+    ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
+    ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
 }
 
 NMSCE.prototype.redditShare = function (evt) {
@@ -1375,9 +1429,6 @@ NMSCE.prototype.handleMouseMove = function (e) {
         return
 
     e.preventDefault()
-    let canvas = document.getElementById("id-canvas")
-    let ctx = canvas.getContext("2d")
-
     var cid = $(e.currentTarget).get(0)
     var canvasOffset = cid.getBoundingClientRect()
     var offsetX = canvasOffset.left
@@ -1396,9 +1447,6 @@ NMSCE.prototype.handleMouseMove = function (e) {
     text.y += dy
 
     nmsce.drawText()
-
-    ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
-    ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
 }
 
 NMSCE.prototype.updateEntry = async function (entry) {
@@ -1700,15 +1748,15 @@ const explorerBodiesMap = `
         <img id="map-transparent" src="images/explorer/bodies/blank.png" style="position:absolute" usemap="#explorer-map" />
 
         <map name="explorer-map" id="map-areas">
-            <area alt="h3" coords="0,1,0,125,112,129,104,60" shape="poly">
-            <area alt="h4" coords="10,2,120,64,223,65,214,5" shape="poly">
+            <area alt="h3" data-group=1 coords="0,1,0,125,112,129,104,60" shape="poly">
+            <area alt="h4" data-group=1 coords="10,2,120,64,223,65,214,5" shape="poly">
             <area alt="h5" coords="264,4,243,67,268,101,329,101,342,64,326,4" shape="poly">
             <area alt="h6" coords="114,67,122,114,155,113,177,67" shape="poly">
             <area alt="h7" coords="184,71,157,115,169,124,196,125,219,71" shape="poly">
             <area alt="h8" coords="224,69,203,115,232,137,257,122,259,95,238,68" shape="poly">
-            <area alt="h9" coords="272,105,272,122,336,151,336,102" shape="poly">
-            <area alt="h10" coords="0,128,0,165,86,167,84,130" shape="poly">
-            <area alt="h11" coords="88,130,87,162,162,163,162,129,121,131" shape="poly">
+            <area alt="h9" data-group=2 coords="272,105,272,122,336,151,336,102" shape="poly">
+            <area alt="h10" data-group=2 coords="0,128,0,165,86,167,84,130" shape="poly">
+            <area alt="h11" data-group=2 coords="88,130,87,162,162,163,162,129,121,131" shape="poly">
             <area alt="h12" coords="169,130,169,171,215,177,228,143,207,127" shape="poly">
             <area alt="h13" coords="232,142,226,170,243,188,266,198,286,189,298,178,329,175,330,157,300,137,267,123" shape="poly">
             <area alt="h14" coords="1,171,1,281,54,281,52,171" shape="poly">
@@ -1740,15 +1788,15 @@ const fighterBodiesMap = `
         <img id="map-transparent" src="images/fighter/bodies/blank.png" style="position:absolute" usemap="#fighter-bodies-map" />
 
         <map name="fighter-bodies-map" id="map-areas">
-            <area alt="h3" coords="2,2,6,40,104,85,144,71,137,40,60,4" shape="poly">
-            <area alt="h2" coords="241,1,328,15,326,80,256,67" shape="poly">
-            <area alt="h5" coords="2,41,1,112,134,170,148,110" shape="poly">
-            <area alt="h7" coords="0,119,-1,193,166,253,173,196" shape="poly">
-            <area alt="h9" coords="2,203,2,269,261,346,260,307" shape="poly">
-            <area alt="h10" coords="5,273,2,357,271,399,302,398,305,363" shape="poly">
-            <area alt="h4" coords="151,32,158,95,196,123,321,153,348,104,242,64" shape="poly">
-            <area alt="h8" coords="154,107,162,181,325,242,345,170,226,141" shape="poly">
-            <area alt="h6" coords="176,192,174,268,284,306,348,280,346,254" shape="poly">
+            <area alt="h2" data-group=1 coords="241,1,328,15,326,80,256,67" shape="poly">
+            <area alt="h3" data-group=1 coords="2,2,6,40,104,85,144,71,137,40,60,4" shape="poly">
+            <area alt="h4" data-group=1 coords="151,32,158,95,196,123,321,153,348,104,242,64" shape="poly">
+            <area alt="h5" data-group=1 coords="2,41,1,112,134,170,148,110" shape="poly">
+            <area alt="h6" data-group=1 coords="176,192,174,268,284,306,348,280,346,254" shape="poly">
+            <area alt="h7" data-group=1 coords="0,119,-1,193,166,253,173,196" shape="poly">
+            <area alt="h8" data-group=1 coords="154,107,162,181,325,242,345,170,226,141" shape="poly">
+            <area alt="h9" data-group=1 coords="2,203,2,269,261,346,260,307" shape="poly">
+            <area alt="h10" data-group=1 coords="5,273,2,357,271,399,302,398,305,363" shape="poly">
         </map>
     </div>`
 
@@ -1770,7 +1818,6 @@ const fighterWingsMap = `
             <area alt="h8" coords="105,52,104,103,171,101,208,85,208,54" shape="poly">
             <area alt="h9" coords="218,65,230,93,306,86,339,107,340,75,344,7,311,51,259,55" shape="poly">
             <area alt="h10" coords="175,103,192,125,255,119,300,112,299,90,221,96,210,86" shape="poly">
-            <area alt="h11" coords="250,121,249,133,345,141,348,109" shape="poly">
             <area alt="h12" coords="104,173,133,177,149,164,174,116,143,108" shape="poly">
             <area alt="h13" coords="4,216,0,251,30,267,108,268,108,195,47,192" shape="poly">
             <area alt="h14" coords="125,189,120,211,164,200,197,167,185,155" shape="poly">
@@ -1781,9 +1828,9 @@ const fighterWingsMap = `
             <area alt="h19" coords="203,255,205,281,242,284,270,243,314,271,325,261,285,219,293,188,266,184,238,232" shape="poly">
             <area alt="h20" coords="5,272,6,390,101,390,109,274" shape="poly">
             <area alt="h21" coords="114,272,103,394,215,391,220,299,180,264" shape="poly">
-            <area alt="h22" coords="242,288,243,316,275,334,297,334,324,312,324,280,294,260,266,261" shape="poly">
-            <area alt="h23" coords="226,333,223,394,286,395,287,341,249,328" shape="poly">
-            <area alt="h24" coords="292,337,292,397,342,398,345,335" shape="poly">
+            <area alt="h22" data-group=2 coords="242,288,243,316,275,334,297,334,324,312,324,280,294,260,266,261" shape="poly">
+            <area alt="h23" data-group=2 coords="226,333,223,394,286,395,287,341,249,328" shape="poly">
+            <area alt="h24" data-group=2 coords="292,337,292,397,342,398,345,335" shape="poly">
         </map>
     </div>`
 
@@ -1797,21 +1844,21 @@ const haulerBodiesMap = `
         <img id="map-transparent" src="images/hauler/bodies/blank.png" style="position:absolute" usemap="#hauler-bodies-map" />
             
         <map name="hauler-bodies-map" id="map-areas">
-            <area alt="h2" coords="8,23,7,89,111,90,107,61,118,47,110,5" shape="poly">
-            <area alt="h3" coords="121,6,119,48,113,67,215,99,229,41,201,7" shape="poly">
-            <area alt="h4" coords="221,22,241,55,242,84,270,88,347,40,343,1,240,8" shape="poly">
-            <area alt="h5" coords="3,93,3,155,92,154,91,94" shape="poly">
-            <area alt="h6" coords="97,92,99,147,179,154,200,100,147,86" shape="poly">
-            <area alt="h7" coords="203,104,184,151,283,157,271,92,232,94" shape="poly">
-            <area alt="h8" coords="277,87,286,154,311,159,349,124,348,93,324,77" shape="poly">
-            <area alt="h9" coords="2,161,-1,229,136,230,137,159" shape="poly">
-            <area alt="h10" coords="143,158,143,225,212,227,211,161" shape="poly">
-            <area alt="h11" coords="216,159,218,238,275,238,274,161" shape="poly">
-            <area alt="h12" coords="281,163,278,213,289,233,320,234,333,216,332,163" shape="poly">
-            <area alt="h13" coords="0,239,0,376,139,378,137,239" shape="poly">
-            <area alt="h14" coords="139,237,143,378,222,375,221,240" shape="poly">
-            <area alt="h15" coords="229,242,228,371,306,377,310,240" shape="poly">
-            <area alt="h16" coords="313,257,313,333,349,336,349,255" shape="poly">
+            <area alt="h2" data-group=1 coords="8,23,7,89,111,90,107,61,118,47,110,5" shape="poly">
+            <area alt="h3" data-group=1 coords="121,6,119,48,113,67,215,99,229,41,201,7" shape="poly">
+            <area alt="h4" data-group=2 coords="221,22,241,55,242,84,270,88,347,40,343,1,240,8" shape="poly">
+            <area alt="h5" data-group=1 coords="3,93,3,155,92,154,91,94" shape="poly">
+            <area alt="h6" data-group=1 coords="97,92,99,147,179,154,200,100,147,86" shape="poly">
+            <area alt="h7" data-group=1 coords="203,104,184,151,283,157,271,92,232,94" shape="poly">
+            <area alt="h8" data-group=2 coords="277,87,286,154,311,159,349,124,348,93,324,77" shape="poly">
+            <area alt="h9" data-group=1 coords="2,161,-1,229,136,230,137,159" shape="poly">
+            <area alt="h10" data-group=4 coords="143,158,143,225,212,227,211,161" shape="poly">
+            <area alt="h11" data-group=4 coords="216,159,218,238,275,238,274,161" shape="poly">
+            <area alt="h12" data-group=4 coords="281,163,278,213,289,233,320,234,333,216,332,163" shape="poly">
+            <area alt="h13" data-group=3 coords="0,239,0,376,139,378,137,239" shape="poly">
+            <area alt="h14" data-group=3 coords="139,237,143,378,222,375,221,240" shape="poly">
+            <area alt="h15" data-group=3 coords="229,242,228,371,306,377,310,240" shape="poly">
+            <area alt="h16" data-group=3 coords="313,257,313,333,349,336,349,255" shape="poly">
         </map>
     </div>`
 
@@ -1835,10 +1882,10 @@ const haulerWingsMap = `
             <area alt="h9" coords="259,114,263,138,295,152,291,241,266,261,265,292,341,267,338,121" shape="poly">
             <area alt="h10" coords="11,235,11,310,65,310,66,237" shape="poly">
             <area alt="h11" coords="88,270,94,308,196,306,195,257" shape="poly">
-            <area alt="h12" coords="9,319,9,389,75,390,80,318" shape="poly">
-            <area alt="h13" coords="90,315,88,388,163,391,163,313" shape="poly">
-            <area alt="h14" coords="167,314,169,395,227,394,226,310" shape="poly">
-            <area alt="h15" coords="235,310,235,395,297,397,292,310" shape="poly">
+            <area alt="h12" data-group=1 coords="9,319,9,389,75,390,80,318" shape="poly">
+            <area alt="h13" data-group=1 coords="90,315,88,388,163,391,163,313" shape="poly">
+            <area alt="h14" data-group=1 coords="167,314,169,395,227,394,226,310" shape="poly">
+            <area alt="h15" data-group=1 coords="235,310,235,395,297,397,292,310" shape="poly">
             <area alt="h16" coords="303,286,298,371,305,397,349,399,349,278" shape="poly">
         </map>
     </div>`
@@ -1915,18 +1962,18 @@ const exoticBodiesMap = `
         <img id="map-transparent" src="images/exotic/bodies/blank.png" style="position:absolute" usemap="#exotic-bodies-map" />
             
         <map name="exotic-bodies-map" id="map-areas">
-            <area alt="h2" coords="6,3,6,76,129,79,233,66,225,12,93,-1" shape="poly">
-            <area alt="h3" coords="270,230,345,198,340,19,263,2,286,96" shape="poly">
-            <area alt="h4" coords="25,81,32,161,81,179,157,180,139,82" shape="poly">
-            <area alt="h5" coords="148,79,175,235,251,236,281,97,224,77" shape="poly">
-            <area alt="h6" coords="11,169,6,239,47,241,116,213,113,195,51,175" shape="poly">
-            <area alt="h7" coords="63,242,130,212,128,301,70,294,51,289" shape="poly">
-            <area alt="h8" coords="132,237,132,302,344,298" shape="poly">
-            <area alt="h9" coords="221,259,343,283,335,213" shape="poly">
-            <area alt="h10" coords="14,314,13,366,88,388,74,299" shape="poly">
-            <area alt="h11" coords="104,310,108,385,160,390,155,311" shape="poly">
-            <area alt="h12" coords="167,334,165,363,275,395,271,341" shape="poly">
-            <area alt="h13" coords="203,309,346,307,339,388,305,389,279,339,212,322" shape="poly">
+            <area alt="h2" data-group=1 coords="6,3,6,76,129,79,233,66,225,12,93,-1" shape="poly">
+            <area alt="h3" data-group=2 coords="270,230,345,198,340,19,263,2,286,96" shape="poly">
+            <area alt="h4" data-group=1 coords="25,81,32,161,81,179,157,180,139,82" shape="poly">
+            <area alt="h5" data-group=4 coords="148,79,175,235,251,236,281,97,224,77" shape="poly">
+            <area alt="h6" data-group=4 coords="11,169,6,239,47,241,116,213,113,195,51,175" shape="poly">
+            <area alt="h7" data-group=2 coords="63,242,130,212,128,301,70,294,51,289" shape="poly">
+            <area alt="h8" data-group=3 coords="132,237,132,302,344,298" shape="poly">
+            <area alt="h9" data-group=3 coords="221,259,343,283,335,213" shape="poly">
+            <area alt="h10" data-group=4 coords="14,314,13,366,88,388,74,299" shape="poly">
+            <area alt="h11" data-group=5 coords="104,310,108,385,160,390,155,311" shape="poly">
+            <area alt="h12" data-group=5 coords="167,334,165,363,275,395,271,341" shape="poly">
+            <area alt="h13" data-group=5 coords="203,309,346,307,339,388,305,389,279,339,212,322" shape="poly">
         </map>
     </div>`
 
