@@ -33,8 +33,8 @@ $(document).ready(() => {
     nmsce.buildPanel()
     nmsce.buildTypePanels()
 
-    $("#save").click(async () => {
-        if (await nmsce.save()){
+    $("#save").click(() => {
+        if (nmsce.save()) {
             nmsce.clearPanel("pnl-S1")
             nmsce.clearPanel("typePanels")
         }
@@ -179,34 +179,32 @@ NMSCE.prototype.clearPanel = function (d) {
     $("#delete").prop("disabled", true)
 }
 
-NMSCE.prototype.extractEntry = async function (fcn, user) {
-    if (typeof user === "undefined")
-        user = bhs.user
-
+NMSCE.prototype.extractEntry = async function (fcn) {
     let entry = {}
+
+    let loc = $("#pnl-S1")
 
     if (nmsce.last) {
         entry = mergeObjects(entry, nmsce.last)
 
-        let addr = loc.find("#id-addr").val()
-        if (nmsce.last.addr !== addr) {
-            ok = bhs.deleteEntry(nmsce.last)
-            bhs.status("change address " + nmsce.last.addr)
-        }
+        // let addr = loc.find("#id-addr").val()
+        // if (nmsce.last.addr !== addr) {
+        //     ok = bhs.deleteEntry(nmsce.last)
+        //     bhs.status("change address " + nmsce.last.addr)
+        // }
     }
 
     if (!nmsce.last || nmsce.last.uid === bhs.user.uid) {
-        entry._name = user._name
-        entry.org = user.org
-        entry.uid = user.uid
-        entry.platform = user.platform
-        entry.galaxy = user.galaxy
+        entry._name = bhs.user._name
+        entry.org = bhs.user.org
+        entry.uid = bhs.user.uid
+        entry.platform = bhs.user.platform
+        entry.galaxy = bhs.user.galaxy
     }
 
     entry.version = "beyond"
     entry.page = "nmsce"
 
-    let loc = $("#pnl-S1")
     entry.addr = loc.find("#id-addr").val()
     entry.sys = loc.find("#id-sys").val()
     entry.reg = loc.find("#id-reg").val()
@@ -224,26 +222,27 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
         let pnl = $("#typePanels #pnl-" + tab)
         entry.type = tab
 
-        let list = pnl.find(":input")
-        for (let loc of list) {
-            if (!$(loc).is(":visible"))
+        let list = pnl.find("[id|='row']")
+        for (let rloc of list) {
+            if (!$(rloc).is(":visible"))
                 continue
 
-            let id = $(loc).prop("id").stripID()
-            let r = $(loc).closest("[id|='row']")
-            let data = r.data()
+            let id = $(rloc).prop("id").stripID()
+            let loc = $(rloc).find(":input")
+            let data = $(rloc).data()
+            let val = loc.val()
 
             if (typeof data === "undefined")
                 continue
 
             switch (data.type) {
-                case "num":
+                case "number":
                 case "float":
                 case "string":
-                    entry[id] = $(loc).val()
+                    entry[id] = val
                     break
                 case "menu":
-                    entry[id] = $(loc).text()
+                    entry[id] = $(rloc).find("[id|='btn']").text()
                     if (entry[id] === "Nothing Selected")
                         entry[id] = ""
                     break
@@ -258,6 +257,17 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
                 case "checkbox":
                     entry[id] = $(loc).prop("checked")
                     break
+                case "map":
+                    list = $(rloc).find("[id='map-selected'] :visible")
+                    for (let loc of list) {
+                        let alt = $(loc).attr("alt")
+                        if (typeof entry[id] === "undefined" || nmsce.last) {
+                            nmsce.last = null
+                            entry[id] = {}
+                        }
+                        entry[id][alt] = true
+                    }
+                    break
                 case "img":
                     if (!fcesearch && (entry.replaceImg || typeof entry[id] === "undefined")) {
                         delete entry.replaceImg
@@ -267,8 +277,8 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
                             if (typeof entry[id] === "undefined")
                                 entry[id] = "nmsce/" + uuidv4() + ".jpg"
 
-                            await canvas.toBlob(async blob => {
-                                await bhs.fbstorage.ref().child(entry[id]).put(blob)
+                            canvas.toBlob(blob => {
+                                bhs.fbstorage.ref().child(entry[id]).put(blob)
                             }, "image/jpeg", .7)
                         }
                     }
@@ -278,22 +288,13 @@ NMSCE.prototype.extractEntry = async function (fcn, user) {
             if (data.req && !fcesearch)
                 if (typeof entry[id] === "undefined" ||
                     (data.type === "string" || data.type === "menu") && entry[id] === "" ||
-                    data.type === "number" && entry[id] === -1 ||
+                    (data.type === "number" || data.type === "float") && entry[id] === -1 ||
                     data.type === "img" && entry[id] === "") {
 
                     bhs.status(id + " required. Entry not saved.", 0)
                     ok = false
                     break
                 }
-        }
-
-        list = pnl.find("[id='map-selected'] :visible")
-        for (let loc of list) {
-            let pid = $(loc).closest("[id|='slist']").prop("id").stripID().stripID()
-            let id = $(loc).attr("alt")
-            if (typeof entry[pid] === "undefined")
-                entry[pid] = {}
-            entry[pid][id] = true
         }
 
         if (ok)
@@ -319,27 +320,36 @@ NMSCE.prototype.displaySingle = async function (entry) {
 
     let pnl = $("#typePanels #pnl-" + entry.type)
 
-    let list = pnl.find(":input")
-    for (let loc of list) {
-        let id = loc.id.stripID()
-        let r = $(loc).closest("[id|='row']")
-        let rid = r.prop("id").stripID()
-        let data = r.data()
+    let list = pnl.find("[id|='row'] ")
+    for (let row of list) {
+        let data = $(row).data()
+        let loc = $(row).find(":input")
+        let id = $(row).prop("id").stripID()
 
         switch (data.type) {
-            case "num":
+            case "number":
             case "float":
             case "string":
-                $(loc).val(entry[id])
+                loc.val(entry[id])
                 break
             case "menu":
-                $(loc).text(entry[id])
+                $(row).find("#item-" + entry[id]).click()
                 break
             case "array":
-                $(loc).prop("checked", typeof entry[rid] !== "undefined" && entry[rid][id] ? true : false)
+                for (let ck of loc) {
+                    let ckid = $(ck).prop("id").stripID()
+                    $(ck).prop("checked", typeof entry[id] !== "undefined" && entry[id][ckid] ? true : false)
+                }
                 break
             case "checkbox":
-                $(loc).prop("checked", entry[id] ? true : false)
+                loc.prop("checked", entry[id] ? true : false)
+                break
+            case "map":
+                $(row).find("#map-selected img").hide()
+                if (typeof entry[id] === "object")
+                    for (let s of Object.keys(entry[id]))
+                        if (entry[id][s])
+                            $(row).find("#map-selected [alt='" + s + "']").show()
                 break
             case "img":
                 break
@@ -373,42 +383,53 @@ NMSCE.prototype.extractSearch = async function (user) {
     if (sys) ref = ref.where("sys", "==", sys)
     if (reg) ref = ref.where("life", "==", reg)
 
-    let list = pnl.find(":input")
-    for (let loc of list) {
-        if ($(loc).is(":visible")) {
-            let id = loc.id.stripID()
+    let list = pnl.find("[id|='row']")
+    for (let rloc of list) {
+        if (!$(rloc).is(":visible"))
+            continue
 
-            let rloc = $(loc).closest("[id|='row']")
-            let rdata = rloc.data()
-            let sloc = rloc.find("#sck-" + id)
+        let rdata = $(rloc).data()
 
-            if (typeof rdata === "undefined")
-                continue
+        if (typeof rdata === "undefined")
+            continue
 
-            let val = null
+        let loc = $(rloc).find(":input")
+        let id = $(rloc).prop("id").stripID()
+        let sloc = $(rloc).find("#sck-" + id)
+        let val = $(loc).val()
 
-            switch (rdata.type) {
-                case "num":
-                case "float":
-                case "string":
-                    val = $(loc).val()
-                    if (val) ref = ref.where(id, "==", val)
-                    break
-                case "menu":
-                    val = $(loc).text()
-                    if (val) ref = ref.where(id, "==", val)
-                    break
-                case "array":
-                    if (sloc.prop("checked")) {
-                        let aid = $(rloc).prop("id").stripID()
-                        ref = ref.where(aid + "." + id, "==", $(loc).prop("checked"))
-                    }
-                    break
-                case "checkbox":
-                    if (sloc.prop("checked"))
-                        ref = ref.where(id, "==", $(loc).prop("checked"))
-                    break
-            }
+        switch (rdata.type) {
+            case "number":
+            case "float":
+                if (val && val != -1)
+                    ref = ref.where(id, "==", val)
+                break
+            case "string":
+                if (val)
+                    ref = ref.where(id, "==", val)
+                break
+            case "menu":
+                val = $(rloc).find("#btn-" + id).text()
+                if (val && val !== "Nothing Selected")
+                    ref = ref.where(id, "==", val)
+                break
+            case "array":
+                if (sloc.prop("checked")) {
+                    let aid = $(rloc).prop("id").stripID()
+                    ref = ref.where(aid + "." + id, "==", $(loc).prop("checked"))
+                }
+                break
+            case "checkbox":
+                if (sloc.prop("checked"))
+                    ref = ref.where(id, "==", $(loc).prop("checked"))
+                break
+            case "map":
+                let sel = $(rloc).find("#map-selected :visible")
+                for (let loc of sel) {
+                    let alt = $(loc).attr("alt")
+                    ref = ref.where(id + "." + alt, "==", true)
+                }
+                break
         }
     }
 
@@ -430,22 +451,35 @@ NMSCE.prototype.extractSearch = async function (user) {
     }
 }
 
-NMSCE.prototype.save = async function () {
+NMSCE.prototype.save = function () {
     $("#status").empty()
 
-    let ok = false
+    let user = bhs.extractUser()
 
-    if (await bhs.saveUser())
-        if (await nmsce.saveText())
-            ok = await nmsce.extractEntry(nmsce.updateEntry)
+    if (bhs.user.uid && bhs.validateUser(user)) {
+        bhs.user = mergeObjects(bhs.user, user)
+        delete bhs.user.nmscetext
+        bhs.user.nmscetext = texts
 
-    return ok
+        let ref = bhs.getUsersColRef(bhs.user.uid)
+        ref.set(bhs.user).then(() => {
+            return true
+        }).catch(err => {
+            if (bhs.status)
+                bhs.status("ERROR: " + err)
+
+            console.log(err)
+            return false
+        })
+
+        nmsce.extractEntry(nmsce.updateEntry)
+    }
 }
 
-NMSCE.prototype.search = async function () {
+NMSCE.prototype.search = function () {
     $("#status").empty()
     let user = bhs.extractUser()
-    await nmsce.extractSearch(user)
+    nmsce.extractSearch(user)
 }
 
 blackHoleSuns.prototype.status = function (str, clear) {
@@ -468,18 +502,18 @@ NMSCE.prototype.buildTypePanels = function () {
         </div>`
     const tTextImg = `<img src='pic' style="height:15px; width:auto;">`
     const tBlank = `
-        <div class="col-sm-7 col-14"></div>`
+        <div class="col-lg-7 col-md-14 col-sm-7 col-14"></div>`
     const tSubBlank = `
-        <div id="slist-idname" class="col-sm-7 col-14 hidden"></div>`
+        <div id="slist-idname" class="col-lg-7 col-md-14 col-sm-7 col-14 hidden"></div>`
     const tString = `
-        <div class="col-sm-7 col-14">
+        <div class="col-lg-7 col-md-14 col-sm-7 col-14">
             <div id="row-idname" data-type="string" data-req="ifreq" class="row">
                 <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
                 <input id="id-idname" class="rounded col-md-7 col-9">
             </div>
         </div>`
     const tSubString = `
-        <div id="slist-idname" class="col-sm-7 col-14 hidden">
+        <div id="slist-idname" class="col-lg-7 col-md-14 col-sm-7 col-14 hidden">
             <div id="row-idname" data-type="string" data-req="ifreq" class="row">
                 <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
                 <input id="id-idname" class="rounded col-md-7 col-9">
@@ -501,28 +535,28 @@ NMSCE.prototype.buildTypePanels = function () {
             </div>
         </div>`
     const tNumber = `
-        <div class="col-sm-7 col-14">
-            <div id="row-idname" data-type="num" data-req="ifreq" class="row">
+        <div class="col-lg-7 col-md-14 col-sm-7 col-14">
+            <div id="row-idname" data-type="number" data-req="ifreq" class="row">
                 <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
-                <input id="id-idname" type="number" class="rounded col-md-5 col-6" min=0 max=range value=0>
+                <input id="id-idname" type="number" class="rounded col-md-5 col-6" min=0 max=range value=-1>
             </div>
         </div>`
     const tSubNumber = `
-        <div id="slist-idname" class="col-sm-7 col-14 hidden">
-            <div id="row-idname" data-type="num" data-req="ifreq" class="row">
+        <div id="slist-idname" class="col-lg-7 col-md-14 col-sm-7 col-14 hidden">
+            <div id="row-idname" data-type="number" data-req="ifreq" class="row">
                 <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
-                <input id="id-idname" type="number" class="rounded col-md-5 col-6" min=0 max=range value=0>
+                <input id="id-idname" type="number" class="rounded col-md-5 col-6" min=0 max=range value=-1>
             </div>
         </div>`
     const tFloat = `
-        <div class="col-sm-7 col-14">
+        <div class="col-lg-7 col-md-14 col-sm-7 col-14">
             <div id="row-idname" data-type="float" data-req="ifreq" class="row">
                 <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
                 <input id="id-idname" type="number" class="rounded col-md-5 col-6" step=0.1 min=0 max=range value=-1>
             </div>
         </div>`
     const tList = `
-        <div id="list-idname" class="col-sm-7 col-14">
+        <div id="list-idname" class="col-lg-7 col-md-14 col-sm-7 col-14">
             <div id="row-idname" data-type="menu" data-req="ifreq" class="row">
                 <div id="id-idname" class="col-12"></div>
             </div>
@@ -543,7 +577,7 @@ NMSCE.prototype.buildTypePanels = function () {
             </div>
         </label>`
     const tCkItem = `
-        <div id="row-idname" data-type="checkbox" data-req="false" class=col-sm-7 col-14">
+        <div id="row-idname" data-type="checkbox" data-req="false" class="col-lg-7 col-md-14 col-sm-7 col-14">
             <label id="id-idname" class="h6 txt-inp-def row">
                 titlettip&nbsp
                 <label id="search-idname" class="h6 txt-inp-def hidden" style="color:blue">
@@ -554,7 +588,7 @@ NMSCE.prototype.buildTypePanels = function () {
             </label>
         </div>`
     const tSubList = `
-        <div id="slist-idname" class="col-sm-7 col-14 hidden">
+        <div id="slist-idname" class="col-lg-7 col-md-14 col-sm-7 col-14 hidden">
             <div id="row-idname" data-type="menu" data-req="ifreq" class="row">
                 <div id="id-idname" class="col-12"></div>
             </div>
@@ -1099,10 +1133,6 @@ NMSCE.prototype.saveText = async function () {
     })
 }
 
-NMSCE.prototype.clearText = function () {
-    nmsce.loadScreenshot()
-}
-
 NMSCE.prototype.showText = function () {
     if (typeof bhs.user.nmscetext !== "undefined") {
         texts = []
@@ -1306,6 +1336,8 @@ NMSCE.prototype.addText = function (evt) {
 }
 
 NMSCE.prototype.setFont = function (btn) {
+    let canvas = document.getElementById("id-canvas")
+    let ctx = canvas.getContext("2d")
     let font = btn.text().stripMarginWS()
     let id = btn.closest("[id|='txt']").prop("id").stripID()
 
@@ -1449,7 +1481,7 @@ NMSCE.prototype.handleMouseMove = function (e) {
     nmsce.drawText()
 }
 
-NMSCE.prototype.updateEntry = async function (entry) {
+NMSCE.prototype.updateEntry = function (entry) {
     entry.modded = firebase.firestore.Timestamp.now()
 
     if (typeof entry.created === "undefined")
@@ -1462,9 +1494,7 @@ NMSCE.prototype.updateEntry = async function (entry) {
     } else
         ref = ref.doc(entry.id)
 
-    await ref.set(entry, {
-        merge: true
-    }).then(() => {
+    ref.set(entry).then(() => {
         bhs.status(entry.addr + " saved.")
     }).catch(err => {
         bhs.status("ERROR: " + err.code)
@@ -1507,10 +1537,10 @@ NMSCE.prototype.displayList = function (entries) {
                 </div>
             </div>
             <div id="sub-idname" class="container-flex h6 hidden">
-                <div id="list-idname" class="scrollbar" style="overflow-y: scroll; height: 180px">`
+                <div id="list-idname" class="scrollbar" style="overflow-y: scroll; height: 220px">`
     const row = `   <div id="row-idname" class="row border-bottom border-3 border-black format" onclick="nmsce.selectList(this)">
                         <div id="id-Photo" class="col-md-2 col-3">
-                            <img id="img-pic" height="auto" width="wsize" />
+                            <img id="img-pic" class="img-fluid" />
                         </div>
                         <div class="col-md-12 col-11">
                             <div class="row">`
@@ -1691,7 +1721,7 @@ NMSCE.prototype.selectList = function (evt) {
 NMSCE.prototype.buildModal = function (evt) {
     const row = `  
         <div id="id-Photo" class="row">
-            <img id="img-pic" height="auto" width="wsize" />
+            <img id="img-pic" class="img-fluid" />
         </div>
         <div class="row">`
     const itm = `   <div id="id-idname" class="col-7">tname: title</div>`
@@ -1882,10 +1912,10 @@ const haulerWingsMap = `
             <area alt="h9" coords="259,114,263,138,295,152,291,241,266,261,265,292,341,267,338,121" shape="poly">
             <area alt="h10" coords="11,235,11,310,65,310,66,237" shape="poly">
             <area alt="h11" coords="88,270,94,308,196,306,195,257" shape="poly">
-            <area alt="h12" data-group=1 coords="9,319,9,389,75,390,80,318" shape="poly">
-            <area alt="h13" data-group=1 coords="90,315,88,388,163,391,163,313" shape="poly">
-            <area alt="h14" data-group=1 coords="167,314,169,395,227,394,226,310" shape="poly">
-            <area alt="h15" data-group=1 coords="235,310,235,395,297,397,292,310" shape="poly">
+            <area alt="h12" data-group=5 coords="9,319,9,389,75,390,80,318" shape="poly">
+            <area alt="h13" data-group=5 coords="90,315,88,388,163,391,163,313" shape="poly">
+            <area alt="h14" data-group=5 coords="167,314,169,395,227,394,226,310" shape="poly">
+            <area alt="h15" data-group=5 coords="235,310,235,395,297,397,292,310" shape="poly">
             <area alt="h16" coords="303,286,298,371,305,397,349,399,349,278" shape="poly">
         </map>
     </div>`
@@ -2081,16 +2111,16 @@ const shipList = [{
 }, {
     name: "Explorer",
     slotTtip: `
-        T1 - 15 - 31 slots < br >
-        T2 - 32 - 39 slots < br >
-        T3 - 40 - 48 slots < br >`,
+        T1 - 15 - 31 slots <br>
+        T2 - 32 - 39 slots <br>
+        T3 - 40 - 48 slots <br>`,
     bodies: [{
         map: explorerBodiesMap,
     }],
     classTtip: `
-        S - 10 - 20 % damage, 55 - 60 % shield, 30 - 35 % hyperdrive < br >
-        A - 5 - 10 % damage, 45 - 50 % shield, 15 - 25 % hyperdrive < br >
-        B - 0 - 5 % damage, 25 - 35 % shield, 5 - 10 % hyperdrive < br >
+        S - 10 - 20 % damage, 55 - 60 % shield, 30 - 35 % hyperdrive <br>
+        A - 5 - 10 % damage, 45 - 50 % shield, 15 - 25 % hyperdrive <br>
+        B - 0 - 5 % damage, 25 - 35 % shield, 5 - 10 % hyperdrive <br>
         C - 12 - 20 % shield, 0 - 5 % hyperdrive`,
 }, {
     name: "Exotic",
@@ -2288,37 +2318,33 @@ const resList = [{
 const colorList = [{
     name: "Nothing Selected",
 }, {
-    name: "Red",
-}, {
-    name: "Orange",
-}, {
-    name: "Yellow",
-}, {
-    name: "Green",
-}, {
     name: "Blue",
-}, {
-    name: "Purple",
 }, {
     name: "Black",
 }, {
-    name: "Grey",
-}, {
-    name: "White",
-}, {
-    name: "Cream",
-}, {
-    name: "Tan",
+    name: "Bronze",
 }, {
     name: "Chrome",
 }, {
-    name: "Bronze",
-}, {
     name: "Gold",
+}, {
+    name: "Green",
+}, {
+    name: "Grey",
+}, {
+    name: "Orange",
 }, {
     name: "Pink",
 }, {
-    name: "Salmon",
+    name: "Purple",
+}, {
+    name: "Red",
+}, {
+    name: "Tan",
+}, {
+    name: "White",
+}, {
+    name: "Yellow",
 }, ]
 
 const fontList = [{
@@ -2943,7 +2969,8 @@ const objectList = [{
         search: true,
         sublist: [{
             name: "Name",
-            type: "string"
+            type: "string",
+            search: true,
         }, {
             name: "Wave",
             type: "number",
@@ -3002,7 +3029,8 @@ const objectList = [{
     name: "Freighter",
     fields: [{
         name: "Name",
-        type: "string"
+        type: "string",
+        search: true,
     }, {
         name: "Slots",
         type: "menu",
@@ -3047,7 +3075,8 @@ const objectList = [{
     name: "Multi-Tool",
     fields: [{
         name: "Name",
-        type: "string"
+        type: "string",
+        search: true,
     }, {
         name: "Type",
         type: "menu",
@@ -3076,6 +3105,7 @@ const objectList = [{
     }, {
         name: "Planet Name",
         type: "string",
+        search: true,
     }, {
         name: "Planet Index",
         type: "number",
@@ -3138,6 +3168,7 @@ const objectList = [{
     fields: [{
         name: "Name",
         type: "string",
+        search: true,
     }, {
         name: "Type",
         type: "menu",
@@ -3162,10 +3193,10 @@ const objectList = [{
         name: "Height",
         type: "float",
         range: 15.0,
+        search: true,
     }, {
         name: "Description",
         type: "long string",
-        search: true,
     }, {
         name: "Planet Name",
         type: "string",
@@ -3214,6 +3245,22 @@ const objectList = [{
         type: "checkbox",
         search: true,
     }, {
+        name: "Grass Color",
+        type: "menu",
+        list: colorList,
+        required: true,
+        search: true,
+    }, {
+        name: "Water Color",
+        type: "menu",
+        list: colorList,
+        search: true,
+    }, {
+        name: "Sky Color",
+        type: "menu",
+        list: colorList,
+        search: true,
+    }, {
         name: "Notes",
         type: "long string",
     }, {
@@ -3258,11 +3305,6 @@ const objectList = [{
         list: baseList,
         search: true,
         required: true,
-    }, {
-        name: "POI",
-        type: "checkbox",
-        ttip: "Point of interest.",
-        search: true,
     }, {
         name: "Description",
         type: "long string",
