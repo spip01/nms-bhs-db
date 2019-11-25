@@ -110,12 +110,28 @@
     max-width: 7.1%;
   }
 
-  .col-8x1 {
+  .col-p125 {
     -webkit-box-flex: 0;
     box-flex: 0;
     -ms-flex: 0 0 12.4%;
     flex: 0 0 12.4%;
     max-width: 12.4%;
+  }
+
+  .col-p250{
+    -webkit-box-flex: 0;
+    box-flex: 0;
+    -ms-flex: 0 0 24.9%;
+    flex: 0 0 24.9%;
+    max-width: 24.9%;
+  }
+
+  .col-p333 {
+    -webkit-box-flex: 0;
+    box-flex: 0;
+    -ms-flex: 0 0 33.2%;
+    flex: 0 0 33.2%;
+    max-width: 33.2%;
   }
 
   @media (min-width: 768px) {
@@ -231,14 +247,31 @@
       max-width: 7.1%;
     }
 
-    .col-sm-8x1 {
+    .col-sm-p125 {
       -webkit-box-flex: 0;
       box-flex: 0;
       -ms-flex: 0 0 12.4%;
       flex: 0 0 12.4%;
       max-width: 12.4%;
     }
-  }
+
+
+    .col-sm-p250,
+    .col-sm-p250 {
+      -webkit-box-flex: 0;
+      box-flex: 0;
+      -ms-flex: 0 0 24.9%;
+      flex: 0 0 24.9%;
+      max-width: 24.9%;
+    }
+  
+    .col-sm-p333 {
+      -webkit-box-flex: 0;
+      box-flex: 0;
+      -ms-flex: 0 0 33.2%;
+      flex: 0 0 33.2%;
+      max-width: 33.2%;
+    }  }
 
   @media (min-width: 992px) {
     .col-md-14 {
@@ -353,13 +386,30 @@
       max-width: 7.1%;
     }
 
-    .col-md-8x1 {
+    .col-md-p125 {
       -webkit-box-flex: 0;
       box-flex: 0;
       -ms-flex: 0 0 12.4%;
       flex: 0 0 12.4%;
       max-width: 12.4%;
     }
+
+    .col-md-p250,
+    .col-md-p250 {
+      -webkit-box-flex: 0;
+      box-flex: 0;
+      -ms-flex: 0 0 24.9%;
+      flex: 0 0 24.9%;
+      max-width: 24.9%;
+    }
+  
+    .col-md-p333 {
+      -webkit-box-flex: 0;
+      box-flex: 0;
+      -ms-flex: 0 0 33.2%;
+      flex: 0 0 33.2%;
+      max-width: 33.2%;
+    } 
   }
 
   @media (min-width: 1200px) {
@@ -475,13 +525,30 @@
       max-width: 7.1%;
     }
 
-    .col-lg-8x1 {
+    .col-lg-p125 {
       -webkit-box-flex: 0;
       box-flex: 0;
       -ms-flex: 0 0 12.4%;
       flex: 0 0 12.4%;
       max-width: 12.4%;
     }
+
+    .col-lg-p250,
+    .col-lg-p250 {
+      -webkit-box-flex: 0;
+      box-flex: 0;
+      -ms-flex: 0 0 24.9%;
+      flex: 0 0 24.9%;
+      max-width: 24.9%;
+    }
+  
+    .col-lg-p333 {
+      -webkit-box-flex: 0;
+      box-flex: 0;
+      -ms-flex: 0 0 33.2%;
+      flex: 0 0 33.2%;
+      max-width: 33.2%;
+    } 
   }
 
   @media print {

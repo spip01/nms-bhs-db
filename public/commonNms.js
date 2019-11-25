@@ -13,7 +13,7 @@ const fcesearch = window.location.pathname == "/cesearch.html"
 
 function addGlyphButtons(loc, fcn) {
     const gbtn = `
-        <button type="button" class="btn-def btn btn-sm col-sm-8x1 col-3 h6">
+        <button type="button" class="btn-def btn btn-sm col-sm-p125 col-3 h6">
             <span class="h5 glyph">title</span>
             -title
         </button>`

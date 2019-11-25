@@ -247,15 +247,22 @@ NMSCE.prototype.extractEntry = async function (fcn) {
                         entry[id] = ""
                     break
                 case "array":
-                    if ($(loc).prop("checked")) {
-                        let aid = $(r).prop("id").stripID()
-                        if (typeof entry[aid] === "undefined")
-                            entry[aid] = {}
-                        entry[aid][id] = true
+                    for (let ckloc of loc) {
+                        if ($(ckloc).is(":visible")) {
+                            let cid = $(ckloc).prop("id").stripID()
+                            if (typeof entry[id] === "undefined")
+                                entry[id] = {}
+                            entry[id][cid] = $(ckloc).prop("checked")
+                        }
                     }
                     break
                 case "checkbox":
-                    entry[id] = $(loc).prop("checked")
+                    for (let ckloc of loc) {
+                        if ($(ckloc).is(":visible")) {
+                            let cid = $(ckloc).prop("id").stripID()
+                            entry[cid] = $(ckloc).prop("checked")
+                        }
+                    }
                     break
                 case "map":
                     list = $(rloc).find("[id='map-selected'] :visible")
@@ -313,10 +320,14 @@ NMSCE.prototype.displaySingle = async function (entry) {
 
     let loc = $("#pnl-S1")
     loc.find("#id-addr").val(entry.addr)
+    let glyph = addrToGlyph(entry.addr)
+    loc.find("#id-glyph").text(glyph)
+    loc.find("#id-hex").text(glyph)
     loc.find("#id-sys").val(entry.sys)
     loc.find("#id-reg").val(entry.reg)
     loc.find("#btn-Lifeform").text(entry.life)
     loc.find("#btn-Economy").text(entry.econ)
+    loc.find("#id-by").text(entry._name)
 
     let pnl = $("#typePanels #pnl-" + entry.type)
 
@@ -395,7 +406,6 @@ NMSCE.prototype.extractSearch = async function (user) {
 
         let loc = $(rloc).find(":input")
         let id = $(rloc).prop("id").stripID()
-        let sloc = $(rloc).find("#sck-" + id)
         let val = $(loc).val()
 
         switch (rdata.type) {
@@ -414,14 +424,20 @@ NMSCE.prototype.extractSearch = async function (user) {
                     ref = ref.where(id, "==", val)
                 break
             case "array":
-                if (sloc.prop("checked")) {
-                    let aid = $(rloc).prop("id").stripID()
-                    ref = ref.where(aid + "." + id, "==", $(loc).prop("checked"))
+                for (let sloc of $(rloc).find("[id|='sck']")) {
+                    if ($(sloc).prop("checked")) {
+                        let aid = $(sloc).prop("id").stripID()
+                        ref = ref.where(id + "." + aid, "==", $(rloc).find("#ck-" + aid).prop("checked"))
+                    }
                 }
                 break
             case "checkbox":
-                if (sloc.prop("checked"))
-                    ref = ref.where(id, "==", $(loc).prop("checked"))
+                for (let sloc of $(rloc).find("[id|='sck']")) {
+                    if ($(sloc).prop("checked")) {
+                        let aid = $(sloc).prop("id").stripID()
+                        ref = ref.where(aid, "==", $(rloc).find("#ck-" + aid).prop("checked"))
+                    }
+                }
                 break
             case "map":
                 let sel = $(rloc).find("#map-selected :visible")
@@ -773,18 +789,10 @@ NMSCE.prototype.buildTypePanels = function () {
         }
     }
 
-    // if (fcesearch)
-    //     $("[id|='search']").show()
-
+    if (fcesearch)
+        $("[id|='search']").show()
 
     const imgline = `<img alt="id" src="path/fname.png" class="hidden" style="position:absolute" />`
-
-    //    <div id="map-explorer">
-    //         <img id="map-image" src="images/explorer/bodies/bodies.png" />
-    //         <div id="map-selected"></div>
-    //         <div id="map-hover"></div>
-    //         <img id="map-transparent" src="images/explorer/bodies/blank.png" style="position:absolute" usemap="#explorer-map" />
-    //         <map name="explorer-map" id="map-areas">
 
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (evt) {
         let id = $(evt.currentTarget).prop("id").stripID()
@@ -1537,15 +1545,15 @@ NMSCE.prototype.displayList = function (entries) {
                 </div>
             </div>
             <div id="sub-idname" class="container-flex h6 hidden">
-                <div id="list-idname" class="scrollbar" style="overflow-y: scroll; height: 220px">`
-    const row = `   <div id="row-idname" class="row border-bottom border-3 border-black format" onclick="nmsce.selectList(this)">
-                        <div id="id-Photo" class="col-md-2 col-3">
+                <div id="list-idname" class="scrollbar row" style="overflow-y: scroll; height: 220px">`
+    const row = `     
+                     <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black format" onclick="nmsce.selectList(this)">
+                        <div id="id-Photo" class="row">
                             <img id="img-pic" class="img-fluid" />
                         </div>
-                        <div class="col-md-12 col-11">
-                            <div class="row">`
-    const itm = `              <div id="id-idname" class="col-lg-2 col-md-3 col-4 border">title</div>`
-    const end = `</div></div></div>`
+                        <div class="row">`
+    const itm = `           <div id="id-idname" class="col-md-7 col-14 border">title</div>`
+    const end = `</div>`
 
     let h = ""
 
@@ -1555,16 +1563,14 @@ NMSCE.prototype.displayList = function (entries) {
 
         let l = /idname/g [Symbol.replace](card, obj.name.nameToId())
         if (fcesearch)
-            l = /hidden/ [Symbol.replace](l, obj.name.nameToId())
+            l = /hidden/ [Symbol.replace](l, "")
         l = /title/ [Symbol.replace](l, obj.name)
         h += /total/ [Symbol.replace](l, entries[obj.name.nameToId()].length)
 
         l = /format/ [Symbol.replace](row, "txt-def bkg-def")
+        h += l
 
         if (fcesearch) {
-            l = /col-md-2 col-3/ [Symbol.replace](l, "col-3")
-            h += /col-md-12 col-11/ [Symbol.replace](l, "col-11")
-
             l = /idname/g [Symbol.replace](itm, "Player")
             h += /title/ [Symbol.replace](l, "Player")
             l = /idname/g [Symbol.replace](itm, "Coords")
@@ -1572,7 +1578,6 @@ NMSCE.prototype.displayList = function (entries) {
             l = /idname/g [Symbol.replace](itm, "Economy")
             h += /title/ [Symbol.replace](l, "Economy")
         } else {
-            h += l
             l = /idname/g [Symbol.replace](itm, "Coords")
             h += /title/ [Symbol.replace](l, "Coordinates")
         }
@@ -1592,16 +1597,13 @@ NMSCE.prototype.displayList = function (entries) {
             }
         }
 
-        h += end
+        h += end + end
 
         for (let e of entries[obj.name.nameToId()]) {
             let l = /idname/ [Symbol.replace](row, e.id)
+            h += l
 
             if (fcesearch) {
-                l = /col-md-2 col-3/ [Symbol.replace](l, "col-3")
-                l = /col-md-12 col-11/ [Symbol.replace](l, "col-11")
-                h += /wsize/ [Symbol.replace](l, "240px")
-
                 l = /idname/g [Symbol.replace](itm, "Player")
                 h += /title/ [Symbol.replace](l, e._name)
                 l = /idname/g [Symbol.replace](itm, "Coords")
@@ -1610,8 +1612,6 @@ NMSCE.prototype.displayList = function (entries) {
                 l = /idname/g [Symbol.replace](itm, "Economy")
                 h += /title/ [Symbol.replace](l, e.econ)
             } else {
-                h += /wsize/ [Symbol.replace](l, "120px")
-
                 l = /idname/g [Symbol.replace](itm, "Coords")
                 h += /title/ [Symbol.replace](l, e.addr)
             }
@@ -1653,10 +1653,10 @@ NMSCE.prototype.displayList = function (entries) {
                 }
             }
 
-            h += end
+            h += end + end
         }
 
-        h += end
+        h += end + end + end
     }
 
     $("#id-table").html(h)
@@ -2152,6 +2152,8 @@ const slotList = [{
 }, ]
 
 const mtList = [{
+    name: "Nothing Selected"
+}, {
     name: "Alien",
 }, {
     name: "Experimental",
@@ -2162,6 +2164,8 @@ const mtList = [{
 }, ]
 
 const sentinelList = [{
+    name: "Nothing Selected"
+}, {
     name: "Low"
 }, {
     name: "High"
@@ -2170,6 +2174,8 @@ const sentinelList = [{
 }]
 
 const baseList = [{
+    name: "Nothing Selected"
+}, {
     name: "Race Track"
 }, {
     name: "Maze"
@@ -2190,6 +2196,8 @@ const baseList = [{
 }, ]
 
 const faunaList = [{
+    name: "Nothing Selected"
+}, {
     name: "Anastomus - Striders"
 }, {
     name: "Anomalous"
@@ -2240,6 +2248,8 @@ const faunaList = [{
 }]
 
 const faunaProductKilled = [{
+    name: "Nothing Selected"
+}, {
     name: "Diplo Chunks"
 }, {
     name: "Feline Liver"
@@ -2268,6 +2278,8 @@ const faunaProductKilled = [{
 }]
 
 const faunaProductTamed = [{
+    name: "Nothing Selected"
+}, {
     name: "Crab 'Apple'"
 }, {
     name: "Creature Egg"
