@@ -257,18 +257,39 @@ blackHoleSuns.prototype.getEntry = function (addr, displayfcn, galaxy, platform,
     platform = platform ? platform : bhs.user.platform
     let ref = bhs.getStarsColRef(galaxy, platform, addr)
 
+    const pnlTop = 0
+    const pnlBottom = 1
+
     return ref.get().then(async doc => {
         if (doc.exists) {
             let d = doc.data()
             let e = null
 
-            if (!d.blackhole && !connection)
-                e = await bhs.getEntryByConnection(d.addr, galaxy, platform)
+            bhs.last[pnlTop] = d
+            bhs.last[pnlBottom] = null
+
+            if (!connection) {
+                if (!d.blackhole) {
+                    e = await bhs.getEntryByConnection(d.addr, galaxy, platform)
+
+                    if (e) {
+                        bhs.last[pnlTop] = e
+                        bhs.last[pnlBottom] = d
+                    }
+                } else {
+                    e = await bhs.getEntry(d.connection, null, galaxy, platform, true)
+
+                    if (e) {
+                        bhs.last[pnlTop] = d
+                        bhs.last[pnlBottom] = e
+                    }
+                }
+            }
 
             if (displayfcn)
-                displayfcn(e ? e : d)
+                displayfcn(bhs.last[pnlTop])
 
-            return e ? e : d
+            return bhs.last[pnlTop]
         } else
             return null
     }).catch(err => {

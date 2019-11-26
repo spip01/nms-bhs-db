@@ -482,12 +482,6 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
     if (!entry)
         return
 
-    bhs.last[idx] = entry
-    if (idx === pnlBottom) {
-        bhs.last[idx].galaxy = bhs.user.galaxy
-        bhs.last[idx].platform = bhs.user.platform
-    }
-
     let loc = $("#" + panels[idx].id)
     bhs.dispAddr(loc, entry.addr, addrToGlyph(entry.addr), false)
     loc.find("#id-sys").val(entry.sys)
@@ -604,7 +598,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
             ok = bhs.deleteEntry(lastentry)
             bhs.status("change address " + lastentry.addr)
 
-            if (listentry.basename) {
+            if (lastentry.basename) {
                 ok = bhs.deleteBase(lastentry.addr)
                 bhs.status("change base address" + lastentry.addr)
             }

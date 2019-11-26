@@ -34,19 +34,19 @@ $(document).ready(() => {
     nmsce.buildTypePanels()
 
     $("#save").click(() => {
-        if (nmsce.save()) {
-            nmsce.clearPanel("pnl-S1")
-            nmsce.clearPanel("typePanels")
-        }
+        nmsce.save()
+        //nmsce.clearPanel("pnl-S1")
+        nmsce.clearPanel("typePanels")
     })
 
     $("#delete").click(() => {
         $("#status").empty()
-        //bhs.deleteEntry($("#pnl-S1 #id-addr").val())
+        if (nmsce.last)
+            nmsce.deleteEntry(nmsce.last)
     })
 
     $("#cancel").click(() => {
-        nmsce.clearPanel("pnl-S1")
+        // nmsce.clearPanel("pnl-S1")
         nmsce.clearPanel("typePanels")
     })
 
@@ -119,8 +119,10 @@ NMSCE.prototype.changeAddr = function (evt) {
 
         nmsce.dispAddr(pnl, addr, glyph)
 
-        if (!fcesearch)
+        if (!fcesearch) {
+            nmsce.lastsys = null
             bhs.getEntry(addr, nmsce.displaySystem, null, null, true)
+        }
     }
 }
 
@@ -138,6 +140,8 @@ NMSCE.prototype.dispAddr = function (pnl, addr, glyph) {
 NMSCE.prototype.displaySystem = function (entry) {
     let loc = $("#pnl-S1")
 
+    nmsce.lastsys = entry
+
     loc.find("#id-addr").val(entry.addr)
     loc.find("#id-glyph").html(addrToGlyph(entry.addr))
     loc.find("#id-sys").val(entry.sys)
@@ -152,10 +156,6 @@ NMSCE.prototype.displaySystem = function (entry) {
         loc.find("#btn-Economy").text(l.number + " " + entry.econ)
         loc.find("#btn-Economy").attr("style", "background-color: " + l.color + ";")
     }
-
-    $("#entrybuttons").show()
-    $("#delete").removeClass("disabled")
-    $("#delete").removeAttr("disabled")
 }
 
 NMSCE.prototype.clearPanel = function (d) {
@@ -181,20 +181,14 @@ NMSCE.prototype.clearPanel = function (d) {
 
 NMSCE.prototype.extractEntry = async function (fcn) {
     let entry = {}
+    let ok = true
 
     let loc = $("#pnl-S1")
 
-    if (nmsce.last) {
-        entry = mergeObjects(entry, nmsce.last)
+    if (nmsce.lastsys)
+        entry = mergeObjects({}, nmsce.lastsys)
 
-        // let addr = loc.find("#id-addr").val()
-        // if (nmsce.last.addr !== addr) {
-        //     ok = bhs.deleteEntry(nmsce.last)
-        //     bhs.status("change address " + nmsce.last.addr)
-        // }
-    }
-
-    if (!nmsce.last || nmsce.last.uid === bhs.user.uid) {
+    if (!nmsce.lastsys || entry.uid === bhs.user.uid) {
         entry._name = bhs.user._name
         entry.org = bhs.user.org
         entry.uid = bhs.user.uid
@@ -205,108 +199,130 @@ NMSCE.prototype.extractEntry = async function (fcn) {
     entry.version = "beyond"
     entry.page = "nmsce"
 
-    entry.addr = loc.find("#id-addr").val()
-    entry.sys = loc.find("#id-sys").val()
-    entry.reg = loc.find("#id-reg").val()
-    entry.life = loc.find("#btn-Lifeform").text().stripNumber()
-    entry.econ = loc.find("#btn-Economy").text().stripNumber()
+    let addr = loc.find("#id-addr").val()
+    let sys = loc.find("#id-sys").val()
+    let reg = loc.find("#id-reg").val()
+    let life = loc.find("#btn-Lifeform").text().stripNumber()
+    let econ = loc.find("#btn-Economy").text().stripNumber()
 
-    let ok = bhs.validateEntry(entry, true) === ""
+    if (!nmsce.lastsys || entry.addr !== addr || entry.sys !== sys ||
+        entry.reg !== reg || entry.life !== life || entry.econ !== econ) {
 
-    if (ok) {
+        entry.addr = addr
+        entry.sys = sys
+        entry.reg = reg
+        entry.life = life
+        entry.econ = econ
         entry.xyzs = addressToXYZ(entry.addr)
 
-        bhs.updateEntry(entry)
-
-        let tab = $("#typeTabs .active").prop("id").stripID()
-        let pnl = $("#typePanels #pnl-" + tab)
-        entry.type = tab
-
-        let list = pnl.find("[id|='row']")
-        for (let rloc of list) {
-            if (!$(rloc).is(":visible"))
-                continue
-
-            let id = $(rloc).prop("id").stripID()
-            let loc = $(rloc).find(":input")
-            let data = $(rloc).data()
-            let val = loc.val()
-
-            if (typeof data === "undefined")
-                continue
-
-            switch (data.type) {
-                case "number":
-                case "float":
-                case "string":
-                    entry[id] = val
-                    break
-                case "menu":
-                    entry[id] = $(rloc).find("[id|='btn']").text()
-                    if (entry[id] === "Nothing Selected")
-                        entry[id] = ""
-                    break
-                case "array":
-                    for (let ckloc of loc) {
-                        if ($(ckloc).is(":visible")) {
-                            let cid = $(ckloc).prop("id").stripID()
-                            if (typeof entry[id] === "undefined")
-                                entry[id] = {}
-                            entry[id][cid] = $(ckloc).prop("checked")
-                        }
-                    }
-                    break
-                case "checkbox":
-                    for (let ckloc of loc) {
-                        if ($(ckloc).is(":visible")) {
-                            let cid = $(ckloc).prop("id").stripID()
-                            entry[cid] = $(ckloc).prop("checked")
-                        }
-                    }
-                    break
-                case "map":
-                    list = $(rloc).find("[id='map-selected'] :visible")
-                    for (let loc of list) {
-                        let alt = $(loc).attr("alt")
-                        if (typeof entry[id] === "undefined" || nmsce.last) {
-                            nmsce.last = null
-                            entry[id] = {}
-                        }
-                        entry[id][alt] = true
-                    }
-                    break
-                case "img":
-                    if (!fcesearch && (entry.replaceImg || typeof entry[id] === "undefined")) {
-                        delete entry.replaceImg
-
-                        let canvas = $("#id-canvas")[0]
-                        if (typeof canvas !== "undefined") {
-                            if (typeof entry[id] === "undefined")
-                                entry[id] = "nmsce/" + uuidv4() + ".jpg"
-
-                            canvas.toBlob(blob => {
-                                bhs.fbstorage.ref().child(entry[id]).put(blob)
-                            }, "image/jpeg", .7)
-                        }
-                    }
-                    break
-            }
-
-            if (data.req && !fcesearch)
-                if (typeof entry[id] === "undefined" ||
-                    (data.type === "string" || data.type === "menu") && entry[id] === "" ||
-                    (data.type === "number" || data.type === "float") && entry[id] === -1 ||
-                    data.type === "img" && entry[id] === "") {
-
-                    bhs.status(id + " required. Entry not saved.", 0)
-                    ok = false
-                    break
-                }
-        }
+        ok = bhs.validateEntry(entry, true) === ""
 
         if (ok)
-            fcn(entry)
+            bhs.updateEntry(entry)
     }
+
+    if (!ok)
+        return ok
+
+    if (nmsce.last)
+        entry = mergeObjects(entry, nmsce.last)
+
+    if (!nmsce.last || entry.uid === bhs.user.uid) {
+        entry._name = bhs.user._name
+        entry.org = bhs.user.org
+        entry.uid = bhs.user.uid
+        entry.platform = bhs.user.platform
+        entry.galaxy = bhs.user.galaxy
+    }
+
+    let tab = $("#typeTabs .active").prop("id").stripID()
+    let pnl = $("#typePanels #pnl-" + tab)
+    entry.type = tab
+
+    let list = pnl.find("[id|='row']")
+    for (let rloc of list) {
+        if (!$(rloc).is(":visible"))
+            continue
+
+        let id = $(rloc).prop("id").stripID()
+        let loc = $(rloc).find(":input")
+        let data = $(rloc).data()
+        let val = loc.val()
+
+        if (typeof data === "undefined")
+            continue
+
+        switch (data.type) {
+            case "number":
+            case "float":
+            case "string":
+                entry[id] = val
+                break
+            case "menu":
+                entry[id] = $(rloc).find("[id|='btn']").text()
+                if (entry[id] === "Nothing Selected")
+                    entry[id] = ""
+                break
+            case "array":
+                for (let ckloc of loc) {
+                    if ($(ckloc).is(":visible")) {
+                        let cid = $(ckloc).prop("id").stripID()
+                        if (typeof entry[id] === "undefined")
+                            entry[id] = {}
+                        entry[id][cid] = $(ckloc).prop("checked")
+                    }
+                }
+                break
+            case "checkbox":
+                for (let ckloc of loc) {
+                    if ($(ckloc).is(":visible")) {
+                        let cid = $(ckloc).prop("id").stripID()
+                        entry[cid] = $(ckloc).prop("checked")
+                    }
+                }
+                break
+            case "map":
+                list = $(rloc).find("[id='map-selected'] :visible")
+                for (let loc of list) {
+                    let alt = $(loc).attr("alt")
+                    if (typeof entry[id] === "undefined" || nmsce.last) {
+                        nmsce.last = null
+                        entry[id] = {}
+                    }
+                    entry[id][alt] = true
+                }
+                break
+            case "img":
+                if (!fcesearch && (entry.replaceImg || typeof entry[id] === "undefined")) {
+                    delete entry.replaceImg
+
+                    let canvas = $("#id-canvas")[0]
+                    if (typeof canvas !== "undefined") {
+                        if (typeof entry[id] === "undefined")
+                            entry[id] = "nmsce/" + uuidv4() + ".jpg"
+
+                        canvas.toBlob(blob => {
+                            bhs.fbstorage.ref().child(entry[id]).put(blob)
+                        }, "image/jpeg", .7)
+                    }
+                }
+                break
+        }
+
+        if (data.req && !fcesearch)
+            if (typeof entry[id] === "undefined" ||
+                (data.type === "string" || data.type === "menu") && entry[id] === "" ||
+                (data.type === "number" || data.type === "float") && entry[id] === -1 ||
+                data.type === "img" && entry[id] === "") {
+
+                bhs.status(id + " required. Entry not saved.", 0)
+                ok = false
+                break
+            }
+    }
+
+    if (ok)
+        fcn(entry)
 
     return ok
 }
@@ -315,19 +331,8 @@ NMSCE.prototype.displaySingle = async function (entry) {
     let tloc = $("#tab-" + entry.type.nameToId())
     tloc.click()
 
-    let img = $("#imgtable")
-    img.hide()
-
-    let loc = $("#pnl-S1")
-    loc.find("#id-addr").val(entry.addr)
-    let glyph = addrToGlyph(entry.addr)
-    loc.find("#id-glyph").text(glyph)
-    loc.find("#id-hex").text(glyph)
-    loc.find("#id-sys").val(entry.sys)
-    loc.find("#id-reg").val(entry.reg)
-    loc.find("#btn-Lifeform").text(entry.life)
-    loc.find("#btn-Economy").text(entry.econ)
-    loc.find("#id-by").text(entry._name)
+    nmsce.lastsys = null
+    bhs.getEntry(entry.addr, nmsce.displaySystem, null, null, true)
 
     let pnl = $("#typePanels #pnl-" + entry.type)
 
@@ -939,7 +944,7 @@ const txtList = [{
     //     ttip: "Use a personal logo from your local machine."
 }]
 
-NMSCE.prototype.loadScreenshot = function (evt) {
+NMSCE.prototype.loadScreenshot = function (evt, src) {
     const hdr = `
         <div  class="row"> 
             <i class="fa fa-question-circle-o text-danger h6 col-4" data-toggle="tooltip" data-html="true"
@@ -1016,7 +1021,6 @@ NMSCE.prototype.loadScreenshot = function (evt) {
             l = /ttip/ [Symbol.replace](l, "")
 
         h += l
-
     }
 
     let loc = $("#img-text")
@@ -1046,7 +1050,7 @@ NMSCE.prototype.loadScreenshot = function (evt) {
     texts = []
     selectedText = -1
 
-    if (typeof evt !== "undefined") {
+    if (evt) {
         img = img.find("#id-canvas")
         img.mousedown(e => {
             nmsce.handleMouseDown(e)
@@ -1072,6 +1076,8 @@ NMSCE.prototype.loadScreenshot = function (evt) {
         let reader = new FileReader()
         reader.onload = function () {
             let img = new Image()
+            img.crossOrigin = "anonymous"
+
             img.onload = function () {
                 canvas.width = imgcanvas.width = txtcanvas.width = width
                 canvas.height = imgcanvas.height = txtcanvas.height = img.height * width / img.width
@@ -1095,6 +1101,13 @@ NMSCE.prototype.loadScreenshot = function (evt) {
     } else {
         let canvas = document.getElementById("id-canvas")
         let ctx = canvas.getContext("2d")
+        let imgctx = imgcanvas.getContext("2d");
+        let width = $("#id-img").width()
+
+        canvas.width = imgcanvas.width = txtcanvas.width = width
+        canvas.height = imgcanvas.height = txtcanvas.height = src.height() * width / src.width()
+        imgctx.drawImage(src[0], 0, 0, canvas.width, canvas.height)
+
         ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
     }
 }
@@ -1198,7 +1211,7 @@ NMSCE.prototype.addSavedText = function (text) {
         }
         break
     case "Ship-Info": {
-        let loc = pnl.find("#btn-Slots :visible")
+        let loc = pnl.find("#btn-Slots")
         text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
     }
     break
@@ -1245,12 +1258,12 @@ NMSCE.prototype.reloadText = function () {
                 text.text = bhs.user.platform
                 break
             case "Mode": {
-                let loc = pnl.find("#btn-Game-Mode :visible")
+                let loc = pnl.find("#btn-Game-Mode")
                 text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
             }
             break
         case "Ship-Info": {
-            let loc = pnl.find("#btn-Slots :visible")
+            let loc = pnl.find("#btn-Slots")
             text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
         }
         break
@@ -1489,6 +1502,17 @@ NMSCE.prototype.handleMouseMove = function (e) {
     nmsce.drawText()
 }
 
+NMSCE.prototype.deleteEntry = function (entry) {
+    let ref = bhs.fs.doc("nmsce/" + entry.galaxy + "/" + entry.type + "/" + entry.id)
+
+    ref.delete().then(() => {
+        bhs.status(entry.addr + " deleted.")
+    }).catch(err => {
+        bhs.status("ERROR: " + err.code)
+        console.log(err)
+    })
+}
+
 NMSCE.prototype.updateEntry = function (entry) {
     entry.modded = firebase.firestore.Timestamp.now()
 
@@ -1549,7 +1573,7 @@ NMSCE.prototype.displayList = function (entries) {
     const row = `     
                      <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black format" onclick="nmsce.selectList(this)">
                         <div id="id-Photo" class="row">
-                            <img id="img-pic" class="img-fluid" />
+                            <img id="img-pic" class="img-fluid" crossorigin="anonymous">
                         </div>
                         <div class="row">`
     const itm = `           <div id="id-idname" class="col-md-7 col-14 border">title</div>`
@@ -1695,6 +1719,8 @@ NMSCE.prototype.showSub = function (id) {
 }
 
 NMSCE.prototype.selectList = function (evt) {
+    let src = $(evt).find("#img-pic")
+
     if (fcesearch) {
         nmsce.buildModal(evt)
 
@@ -1703,7 +1729,6 @@ NMSCE.prototype.selectList = function (evt) {
 
         let width = loc.width()
 
-        let src = $(evt).find("#img-pic")
 
         loc.find("#img-pic").css("width", width + "px")
         loc.find("#img-pic").attr("src", src.attr("src"))
@@ -1715,6 +1740,11 @@ NMSCE.prototype.selectList = function (evt) {
 
         nmsce.last = e
         nmsce.displaySingle(e)
+
+        nmsce.loadScreenshot(null, src);
+
+        $("#delete").removeClass("disabled")
+        $("#delete").removeAttr("disabled")
     }
 }
 

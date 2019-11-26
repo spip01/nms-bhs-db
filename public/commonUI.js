@@ -589,13 +589,12 @@ blackHoleSuns.prototype.displayEntry = function (entry, zoom) {
 
 function entryDblclk(evt) {
     let id = $(evt).prop("id")
-    let e = bhs.entries[reformatAddress(id)]
 
     if (!ftotals && !fsearch) {
         $("#delete").removeClass("disabled")
         $("#delete").removeAttr("disabled")
 
-        bhs.displayListEntry(e)
+        bhs.getEntry(reformatAddress(id), bhs.displayListEntry)
     } else {
         let l = {}
         l[e.addr] = e
