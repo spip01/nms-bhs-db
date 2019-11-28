@@ -265,6 +265,7 @@ blackHoleSuns.prototype.getEntry = function (addr, displayfcn, galaxy, platform,
             let d = doc.data()
             let e = null
 
+            bhs.last = []
             bhs.last[pnlTop] = d
             bhs.last[pnlBottom] = null
 

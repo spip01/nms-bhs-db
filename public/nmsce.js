@@ -4,6 +4,9 @@
 // Written by Stephen Piper
 
 var nmsce
+const displayPath = "/nmsce/disp/"
+const originalPath = "/nmsce/orig/"
+const thumbnailPath = "/nmsce/disp/thumb/"
 
 $(document).ready(() => {
     startUp()
@@ -46,7 +49,7 @@ $(document).ready(() => {
     })
 
     $("#cancel").click(() => {
-        // nmsce.clearPanel("pnl-S1")
+        nmsce.clearPanel("pnl-S1")
         nmsce.clearPanel("typePanels")
     })
 
@@ -293,17 +296,19 @@ NMSCE.prototype.extractEntry = async function (fcn) {
                 }
                 break
             case "img":
-                if (!fcesearch && (entry.replaceImg || typeof entry[id] === "undefined")) {
-                    delete entry.replaceImg
-
+                if (!fcesearch) {
                     let canvas = $("#id-canvas")[0]
                     if (typeof canvas !== "undefined") {
                         if (typeof entry[id] === "undefined")
-                            entry[id] = "nmsce/" + uuidv4() + ".jpg"
+                            entry[id] = uuidv4() + ".jpg"
 
                         canvas.toBlob(blob => {
-                            bhs.fbstorage.ref().child(entry[id]).put(blob)
-                        }, "image/jpeg", .7)
+                            bhs.fbstorage.ref().child(displayPath + entry[id]).put(blob)
+                        }, "image/jpeg", .9)
+
+                        imgcanvas.toBlob(blob => {
+                            bhs.fbstorage.ref().child(originalPath + entry[id]).put(blob)
+                        }, "image/jpeg", .9)
                     }
                 }
                 break
@@ -944,7 +949,7 @@ const txtList = [{
     //     ttip: "Use a personal logo from your local machine."
 }]
 
-NMSCE.prototype.loadScreenshot = function (evt, src) {
+NMSCE.prototype.loadScreenshot = async function (evt, fname) {
     const hdr = `
         <div  class="row"> 
             <i class="fa fa-question-circle-o text-danger h6 col-4" data-toggle="tooltip" data-html="true"
@@ -989,9 +994,6 @@ NMSCE.prototype.loadScreenshot = function (evt, src) {
         <i class="fa fa-question-circle-o text-danger h6 col-4" data-toggle="tooltip" data-html="true"
             data-placement="bottom" title="ttext">
         </i> `
-
-    if (nmsce.last)
-        nmsce.last.replaceImg = true
 
     let img = $("#imgtable")
     img.show()
@@ -1047,48 +1049,43 @@ NMSCE.prototype.loadScreenshot = function (evt, src) {
         }
     }
 
-    texts = []
     selectedText = -1
 
+    img = img.find("#id-canvas")
+    img.mousedown(e => {
+        nmsce.handleMouseDown(e)
+    })
+    img.mousemove(e => {
+        nmsce.handleMouseMove(e)
+    })
+    img.mouseup(e => {
+        nmsce.handleMouseUp(e)
+    })
+    img.mouseout(e => {
+        nmsce.handleMouseOut(e)
+    })
+
+    let imgctx = imgcanvas.getContext("2d")
+    let canvas = img[0]
+    let width = $("#id-img").width()
+    canvas.width = imgcanvas.width = txtcanvas.width = width
+
     if (evt) {
-        img = img.find("#id-canvas")
-        img.mousedown(e => {
-            nmsce.handleMouseDown(e)
-        })
-        img.mousemove(e => {
-            nmsce.handleMouseMove(e)
-        })
-        img.mouseup(e => {
-            nmsce.handleMouseUp(e)
-        })
-        img.mouseout(e => {
-            nmsce.handleMouseOut(e)
-        })
-
-        let imgctx = imgcanvas.getContext("2d")
-
-        let canvas = img[0]
-        let ctx = canvas.getContext("2d")
-
-        let width = $("#id-img").width()
-
         let file = evt.files[0]
         let reader = new FileReader()
+
         reader.onload = function () {
             let img = new Image()
             img.crossOrigin = "anonymous"
 
             img.onload = function () {
-                canvas.width = imgcanvas.width = txtcanvas.width = width
                 canvas.height = imgcanvas.height = txtcanvas.height = img.height * width / img.width
                 imgctx.drawImage(img, 0, 0, canvas.width, canvas.height)
 
                 let logo = new Image()
                 logo.onload = function () {
                     imgctx.drawImage(logo, canvas.width - 60, canvas.height - 60, 50, 50)
-                    ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
-
-                    nmsce.showText()
+                    nmsce.drawText()
                 }
 
                 logo.src = "/images/nmsce-logo.png"
@@ -1099,16 +1096,32 @@ NMSCE.prototype.loadScreenshot = function (evt, src) {
 
         reader.readAsDataURL(file)
     } else {
-        let canvas = document.getElementById("id-canvas")
-        let ctx = canvas.getContext("2d")
-        let imgctx = imgcanvas.getContext("2d");
-        let width = $("#id-img").width()
+        let img = new Image()
+        img.crossOrigin = "anonymous"
 
-        canvas.width = imgcanvas.width = txtcanvas.width = width
-        canvas.height = imgcanvas.height = txtcanvas.height = src.height() * width / src.width()
-        imgctx.drawImage(src[0], 0, 0, canvas.width, canvas.height)
+        let url = await bhs.fbstorage.ref().child(originalPath + fname).getDownloadURL()
+        var xhr = new XMLHttpRequest()
+        xhr.responseType = 'blob'
+        xhr.onload = function (event) {
+            var blob = xhr.response;
+        }
+        xhr.open('GET', url)
+        xhr.send()
 
-        ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
+        img.onload = function () {
+            canvas.height = imgcanvas.height = txtcanvas.height = img.height * width / img.width
+            imgctx.drawImage(img, 0, 0);
+
+            let logo = new Image()
+            logo.onload = function () {
+                imgctx.drawImage(logo, canvas.width - 60, canvas.height - 60, 50, 50)
+                nmsce.drawText()
+            }
+
+            logo.src = "/images/nmsce-logo.png"
+        }
+
+        img.src = url;
     }
 }
 
@@ -1211,7 +1224,7 @@ NMSCE.prototype.addSavedText = function (text) {
         }
         break
     case "Ship-Info": {
-        let loc = pnl.find("#btn-Slots")
+        let loc = pnl.find("#btn-Slots :visible")
         text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
     }
     break
@@ -1432,11 +1445,16 @@ NMSCE.prototype.drawText = function () {
 }
 
 NMSCE.prototype.redditShare = function (evt) {
+    if (!nmsce.last) {
+        nmsce.last = {}
+        nmsce.last.uid = bhs.user.uid
+        nmsce.last.Photo = uuidv4() + ".jpg"
+    }
+
     let canvas = document.getElementById("id-canvas")
 
     canvas.toBlob(blob => {
-        let name = "reddit/" + uuidv4() + ".jpg"
-        bhs.fbstorage.ref().child(name).put(blob).then(() => {
+        bhs.fbstorage.ref().child(displayPath + nmsce.last.Photo).put(blob).then(() => {
             bhs.fbstorage.ref().child(name).getDownloadURL().then(url => {
                 let u = "http://www.reddit.com/submit?url=" + encodeURI(url)
                 window.open(u);
@@ -1694,14 +1712,16 @@ NMSCE.prototype.displayList = function (entries) {
             let eloc = loc.find("#row-" + e.id)
             for (let f of obj.fields) {
                 if (f.type === "img") {
-                    let ref = bhs.fbstorage.ref().child(e[f.name])
+                    e[f.name] = e[f.name].replace(/.*\/(.*)/, "$1")
+                    let ref = bhs.fbstorage.ref().child(thumbnailPath + e[f.name])
                     ref.getDownloadURL().then(url => {
                         eloc.find("#img-pic").attr("src", url)
                     })
                 } else if (typeof f.sublist !== "undefined")
                     for (let s of f.sublist) {
                         if (s.type === "img") {
-                            let ref = bhs.fbstorage.ref().child(e[s.name])
+                            e[s.name] = e[s.name].replace(/.*\/(.*)/, "$1")
+                            let ref = bhs.fbstorage.ref().child(thumbnailPath + e[s.name])
                             ref.getDownloadURL().then(url => {
                                 eloc.find("#img-pic").attr("src", url)
                             })
@@ -1729,7 +1749,6 @@ NMSCE.prototype.selectList = function (evt) {
 
         let width = loc.width()
 
-
         loc.find("#img-pic").css("width", width + "px")
         loc.find("#img-pic").attr("src", src.attr("src"))
     } else {
@@ -1741,7 +1760,7 @@ NMSCE.prototype.selectList = function (evt) {
         nmsce.last = e
         nmsce.displaySingle(e)
 
-        nmsce.loadScreenshot(null, src);
+        nmsce.loadScreenshot(null, e.Photo);
 
         $("#delete").removeClass("disabled")
         $("#delete").removeAttr("disabled")
@@ -1871,13 +1890,14 @@ const fighterWingsMap = `
 
         <map name="fighter-wings-map" id="map-areas">
             <area alt="h3" coords="0,2,53,0,44,191,3,211" shape="poly">
-            <area alt="h4" coords="56,1,53,51,102,48,165,19,117,1" shape="poly">
-            <area alt="h5" coords="118,48,174,20,172,1,213,1,215,50" shape="poly">
-            <area alt="h6" coords="221,11,217,63,315,41,323,4" shape="poly">
+            <area alt="h4" coords="59,9,58,30,122,27,118,10" shape="poly">
+            <area alt="h5" coords="62,33,62,54,121,44,118,30" shape="poly">
+            <area alt="h6" coords="263,3,260,46,339,16,320,3" shape="poly">
             <area alt="h7" coords="53,55,49,173,98,172,98,55" shape="poly">
             <area alt="h8" coords="105,52,104,103,171,101,208,85,208,54" shape="poly">
             <area alt="h9" coords="218,65,230,93,306,86,339,107,340,75,344,7,311,51,259,55" shape="poly">
             <area alt="h10" coords="175,103,192,125,255,119,300,112,299,90,221,96,210,86" shape="poly">
+            <area alt="h11" coords="255,120,255,133,319,137,346,129,341,110" shape="poly">
             <area alt="h12" coords="104,173,133,177,149,164,174,116,143,108" shape="poly">
             <area alt="h13" coords="4,216,0,251,30,267,108,268,108,195,47,192" shape="poly">
             <area alt="h14" coords="125,189,120,211,164,200,197,167,185,155" shape="poly">
@@ -1891,7 +1911,9 @@ const fighterWingsMap = `
             <area alt="h22" data-group=2 coords="242,288,243,316,275,334,297,334,324,312,324,280,294,260,266,261" shape="poly">
             <area alt="h23" data-group=2 coords="226,333,223,394,286,395,287,341,249,328" shape="poly">
             <area alt="h24" data-group=2 coords="292,337,292,397,342,398,345,335" shape="poly">
-        </map>
+            <area alt="h25" data-group=3  coords="170,3,171,48,207,47,204,5" shape="poly">
+            <area alt="h26" data-group=3 coords="128,7,131,45,169,44,167,7" shape="poly">
+            <area alt="h27" data-group=3 coords="212,6,215,49,250,49,253,6" shape="poly">       </map>
     </div>`
 
 const haulerBodiesMap = `
