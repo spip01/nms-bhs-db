@@ -84,10 +84,13 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     if (fpoi)
         return
 
-    if (fnmsce || fcesearch)
-        nmsce.displayUser()
+    if (fnmsce || fcesearch) {
+        let changed = user.uid && (!nmsce.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform)
+    
+        if (changed)
+            nmsce.displayUser()
 
-    else if (!fdarc) {
+    } else if (!fdarc) {
         bhs.getActiveContest(bhs.displayContest)
         bhs.buildTotals()
         bhs.getTotals(bhs.displayTotals, bhs.displayTotalsHtml)

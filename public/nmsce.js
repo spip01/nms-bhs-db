@@ -37,9 +37,11 @@ $(document).ready(() => {
     nmsce.buildTypePanels()
 
     $("#save").click(() => {
-        nmsce.save()
-        //nmsce.clearPanel("pnl-S1")
-        nmsce.clearPanel("typePanels")
+        if (nmsce.save()) {
+            //nmsce.clearPanel("pnl-S1")
+            nmsce.clearPanel("typePanels")
+            $("#imgtable").hide()
+        }
     })
 
     $("#delete").click(() => {
@@ -49,8 +51,9 @@ $(document).ready(() => {
     })
 
     $("#cancel").click(() => {
-        nmsce.clearPanel("pnl-S1")
+        //nmsce.clearPanel("pnl-S1")
         nmsce.clearPanel("typePanels")
+        $("#imgtable").hide()
     })
 
     $("#search").click(() => {
@@ -60,6 +63,7 @@ $(document).ready(() => {
     $("#clear").click(() => {
         nmsce.clearPanel("pnl-S1")
         nmsce.clearPanel("typePanels")
+        $("#imgtable").hide()
     })
 })
 
@@ -70,7 +74,7 @@ function NMSCE() {
 NMSCE.prototype.displayUser = function () {
     if (bhs.user.galaxy !== "" && !fcesearch) {
         //nmsce.displaySettings(bhs.user)
-        nmsce.getEntries(bhs.user, nmsce.displayList)
+        nmsce.getEntries(bhs.user, nmsce.displayList, nmsce.displayList)
     }
 }
 
@@ -303,6 +307,7 @@ NMSCE.prototype.extractEntry = async function (fcn) {
                             entry[id] = uuidv4() + ".jpg"
 
                         canvas.toBlob(blob => {
+                            nmsce.saved = blob
                             bhs.fbstorage.ref().child(displayPath + entry[id]).put(blob)
                         }, "image/jpeg", .9)
 
@@ -498,7 +503,7 @@ NMSCE.prototype.save = function () {
             return false
         })
 
-        nmsce.extractEntry(nmsce.updateEntry)
+        return nmsce.extractEntry(nmsce.updateEntry)
     }
 }
 
@@ -1085,7 +1090,7 @@ NMSCE.prototype.loadScreenshot = async function (evt, fname) {
                 let logo = new Image()
                 logo.onload = function () {
                     imgctx.drawImage(logo, canvas.width - 60, canvas.height - 60, 50, 50)
-                    nmsce.drawText()
+                    nmsce.showText()
                 }
 
                 logo.src = "/images/nmsce-logo.png"
@@ -1115,7 +1120,7 @@ NMSCE.prototype.loadScreenshot = async function (evt, fname) {
             let logo = new Image()
             logo.onload = function () {
                 imgctx.drawImage(logo, canvas.width - 60, canvas.height - 60, 50, 50)
-                nmsce.drawText()
+                nmsce.showText()
             }
 
             logo.src = "/images/nmsce-logo.png"
@@ -1455,7 +1460,7 @@ NMSCE.prototype.redditShare = function (evt) {
 
     canvas.toBlob(blob => {
         bhs.fbstorage.ref().child(displayPath + nmsce.last.Photo).put(blob).then(() => {
-            bhs.fbstorage.ref().child(name).getDownloadURL().then(url => {
+            bhs.fbstorage.ref().child(displayPath + nmsce.last.Photo).getDownloadURL().then(url => {
                 let u = "http://www.reddit.com/submit?url=" + encodeURI(url)
                 window.open(u);
             })
@@ -1569,7 +1574,7 @@ NMSCE.prototype.getEntries = async function (user, displayFcn, singleDispFcn) {
 
         if (typeof singleDispFcn === "function") {
             ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()))
-            bhs.subscribe("nmsceentries-" + "type", ref, singleDispFcn)
+            bhs.subscribe("nmsceentries-" + type, ref, singleDispFcn)
         }
     }
 
@@ -1577,7 +1582,7 @@ NMSCE.prototype.getEntries = async function (user, displayFcn, singleDispFcn) {
         displayFcn(nmsce.entries)
 }
 
-NMSCE.prototype.displayList = function (entries) {
+NMSCE.prototype.displayList = function (entries, path) {
     const card = `
         <div class="container-flex h5">
             <div id="ttl-idname" class="card-header bkg-def txt-def" onclick="nmsce.showSub('#sub-idname')">
@@ -1599,47 +1604,61 @@ NMSCE.prototype.displayList = function (entries) {
 
     let h = ""
 
+    let e = entries
+
+    if (path) {
+        nmsce.entries[entries.type].push(entries)
+        entries = {}
+        entries[e.type] = []
+        entries[e.type].push(e)
+    }
+
     for (let obj of objectList) {
         if (typeof entries[obj.name.nameToId()] === "undefined")
             continue
 
-        let l = /idname/g [Symbol.replace](card, obj.name.nameToId())
-        if (fcesearch)
-            l = /hidden/ [Symbol.replace](l, "")
-        l = /title/ [Symbol.replace](l, obj.name)
-        h += /total/ [Symbol.replace](l, entries[obj.name.nameToId()].length)
+        if (path && e.type != obj.name.nameToId())
+            continue
 
-        l = /format/ [Symbol.replace](row, "txt-def bkg-def")
-        h += l
+        if (!path) {
+            let l = /idname/g [Symbol.replace](card, obj.name.nameToId())
+            if (fcesearch)
+                l = /hidden/ [Symbol.replace](l, "")
+            l = /title/ [Symbol.replace](l, obj.name)
+            h += /total/ [Symbol.replace](l, entries[obj.name.nameToId()].length)
 
-        if (fcesearch) {
-            l = /idname/g [Symbol.replace](itm, "Player")
-            h += /title/ [Symbol.replace](l, "Player")
-            l = /idname/g [Symbol.replace](itm, "Coords")
-            h += /title/ [Symbol.replace](l, "Glyphs")
-            l = /idname/g [Symbol.replace](itm, "Economy")
-            h += /title/ [Symbol.replace](l, "Economy")
-        } else {
-            l = /idname/g [Symbol.replace](itm, "Coords")
-            h += /title/ [Symbol.replace](l, "Coordinates")
-        }
+            l = /format/ [Symbol.replace](row, "txt-def bkg-def")
+            h += l
 
-        for (let f of obj.fields) {
-            if (f.type !== "img" && f.type !== "map") {
-                let l = /idname/g [Symbol.replace](itm, f.name.nameToId())
-                h += /title/ [Symbol.replace](l, f.name)
-
-                if (typeof f.sublist !== "undefined")
-                    for (let s of f.sublist) {
-                        if (s.type !== "img" && s.type !== "map") {
-                            let l = /idname/g [Symbol.replace](itm, s.name.nameToId())
-                            h += /title/ [Symbol.replace](l, s.name)
-                        }
-                    }
+            if (fcesearch) {
+                l = /idname/g [Symbol.replace](itm, "Player")
+                h += /title/ [Symbol.replace](l, "Player")
+                l = /idname/g [Symbol.replace](itm, "Coords")
+                h += /title/ [Symbol.replace](l, "Glyphs")
+                l = /idname/g [Symbol.replace](itm, "Economy")
+                h += /title/ [Symbol.replace](l, "Economy")
+            } else {
+                l = /idname/g [Symbol.replace](itm, "Coords")
+                h += /title/ [Symbol.replace](l, "Coordinates")
             }
-        }
 
-        h += end + end
+            for (let f of obj.fields) {
+                if (f.type !== "img" && f.type !== "map") {
+                    let l = /idname/g [Symbol.replace](itm, f.name.nameToId())
+                    h += /title/ [Symbol.replace](l, f.name)
+
+                    if (typeof f.sublist !== "undefined")
+                        for (let s of f.sublist) {
+                            if (s.type !== "img" && s.type !== "map") {
+                                let l = /idname/g [Symbol.replace](itm, s.name.nameToId())
+                                h += /title/ [Symbol.replace](l, s.name)
+                            }
+                        }
+                }
+            }
+
+            h += end + end
+        }
 
         for (let e of entries[obj.name.nameToId()]) {
             let l = /idname/ [Symbol.replace](row, e.id)
@@ -1698,35 +1717,52 @@ NMSCE.prototype.displayList = function (entries) {
             h += end + end
         }
 
-        h += end + end + end
+        if (!path)
+            h += end + end + end
     }
 
-    $("#id-table").html(h)
     let loc = $("#id-table")
 
-    for (let obj of objectList) {
-        if (typeof entries[obj.name.nameToId()] === "undefined")
-            continue
+    if (path) {
+        let rloc = loc.find("#list-" + e.type + " #row-" + e.id)
+        if (rloc.length === 1)
+            rloc.replaceWith(h)
+        else {
+            rloc = loc.find("#list-" + e.type + " #row-idname")
+            rloc.after(h)
+        }
 
-        for (let e of entries[obj.name.nameToId()]) {
-            let eloc = loc.find("#row-" + e.id)
-            for (let f of obj.fields) {
-                if (f.type === "img") {
-                    e[f.name] = e[f.name].replace(/.*\/(.*)/, "$1")
-                    let ref = bhs.fbstorage.ref().child(thumbnailPath + e[f.name])
-                    ref.getDownloadURL().then(url => {
-                        eloc.find("#img-pic").attr("src", url)
-                    })
-                } else if (typeof f.sublist !== "undefined")
-                    for (let s of f.sublist) {
-                        if (s.type === "img") {
-                            e[s.name] = e[s.name].replace(/.*\/(.*)/, "$1")
-                            let ref = bhs.fbstorage.ref().child(thumbnailPath + e[s.name])
-                            ref.getDownloadURL().then(url => {
-                                eloc.find("#img-pic").attr("src", url)
-                            })
+        rloc = loc.find("#list-" + e.type + " #row-" + e.id)
+
+        let url = URL.createObjectURL(nmsce.saved);
+        rloc.find("#img-pic").attr("src", url)
+    } else {
+        loc.append(h)
+
+        for (let obj of objectList) {
+            if (typeof entries[obj.name.nameToId()] === "undefined")
+                continue
+
+            for (let e of entries[obj.name.nameToId()]) {
+                let eloc = loc.find("#row-" + e.id)
+                for (let f of obj.fields) {
+                    if (f.type === "img") {
+                        e[f.name] = e[f.name].replace(/.*\/(.*)/, "$1")
+                        let ref = bhs.fbstorage.ref().child(thumbnailPath + e[f.name])
+                        ref.getDownloadURL().then(url => {
+                            eloc.find("#img-pic").attr("src", url)
+                        })
+                    } else if (typeof f.sublist !== "undefined")
+                        for (let s of f.sublist) {
+                            if (s.type === "img") {
+                                e[s.name] = e[s.name].replace(/.*\/(.*)/, "$1")
+                                let ref = bhs.fbstorage.ref().child(thumbnailPath + e[s.name])
+                                ref.getDownloadURL().then(url => {
+                                    eloc.find("#img-pic").attr("src", url)
+                                })
+                            }
                         }
-                    }
+                }
             }
         }
     }
