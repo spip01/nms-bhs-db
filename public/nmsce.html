@@ -3,12 +3,14 @@
 
 <head>
     <title>No Man's Sky Coordinate Exchange (NMSCE)</title>
-    <meta name="description" content="Data entry for No Man's Sky Coordinate Exchange (NMSCE)">
+    <meta name="description"
+        content="Search for ships, freighters, multi-tools, planets & bases found throughout the No Man's Sky Galaxies.">
     <meta name="subject" content="Coordinate exchange for the game No Man's Sky.">
     <meta name="author" content="Stephen Piper">
     <meta name="designer" content="Stephen Piper">
     <meta name="copyright" content="Black Hole Suns">
     <meta name="Classification" content="Game">
+    <meta name="keywords" content="nmsce,nms,coordinate exchange,no mans sky,reddit">
 
     <link rel="shortcut icon" href="images/nmsce.ico">
     <script src="env.js"></script>
@@ -57,17 +59,17 @@
     <script src="nmsce.js"></script>
 
     <link rel="stylesheet" type="text/css" href="local.css">
+    <link rel="stylesheet" type="text/css" href="nmsce.css">
     <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
 </head>
 
 <body>
     <div id="cemenus"></div>
 
-    <div id="javascript">
+    <div id="javascript" class="container-fluid">
         <div class="row">
             <div class="col-2">
-                <img itemprop="logo" src="images/nmsce-logo.png" alt="nmsce logo"
-                    style="top:10px; width:40px; height:40px">
+                <img itemprop="logo" src="images/nmsce-logo.png" alt="nmsce logo" style="top:10px; width:40px; height:40px">
             </div>
             <!--googleoff:all-->
             <div class="text-danger h6 col-12">
@@ -84,15 +86,14 @@
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div id="loggedout" class="row text-danger h5">
-            <h4>Welcome to the 
-                <span itemprop="description">No Man's Sky Coordinate Exchange data entry page.</span>
-                <!--googleoff: all-->
-                Please login.
-                <!--googleon: all-->
-            </h4>
+            Welcome to the
+            <span itemprop="description">No Man's Sky Coordinate Exchange search page.</span>
+            <!--googleoff: all-->
+            Login NOT required.
+            <!--googleon: all-->
         </div>
 
-        <div class="card card-body pad-bottom bkg-def">
+        <div class="card card-body pad-bottom" style=" background-color: #d9dcec;">
             <div class="row">
                 <div class="col-md-7 col-14">
                     <div id="panels" class="card card-body">
@@ -101,11 +102,10 @@
                             <div class="card-body">
                                 <div id="id-addrInput">
                                     <div class="row">
-                                        <div class="col-sm-4 col-7 h6 txt-inp-def">Coordinates<span
-                                                class="h5 text-danger">&nbsp;*</span>&nbsp;
+                                        <div class="col-sm-4 col-7 h6 txt-inp-def">Coordinates&nbsp;
                                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                                 data-html="true" data-placement="bottom"
-                                                title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
+                                                title="Search at a specific address.<br>Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
                                                 A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
                                             </i>
                                         </div>
@@ -135,14 +135,14 @@
                                 <div id="id-glyphInput" class="hidden">
                                     <div class="row">
                                         <div class="col-sm-3 col-3 h6 txt-inp-def">
-                                            Glyph<span class="h5 text-danger">&nbsp;*</span>&nbsp;
+                                            Glyph&nbsp;
                                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
-                                                data-html="true" data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
+                                                data-html="true" data-placement="bottom" title="Search at a specific address.<br>Enter value using the glyph buttons or a <span class='h5'>12</span> 
                                                 digit hex, 0-9 a-f, value can be entered directly in the field.">
                                             </i>
                                         </div>
                                         <input id="id-glyph" class="rounded col-sm-7 col-7 h4 glyph"
-                                            onchange="nmsce.changeAddr(this)">
+                                            onchange="nmsce.changeGlyph(this)">
                                         <div class="col-4">
                                             <label class="h6 txt-inp-def">
                                                 <input id="ck-glyphs" type="checkbox"
@@ -165,19 +165,13 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-sm-4 col-7  h6 txt-inp-def">System Name<span
-                                            class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
+                                    <div class="col-sm-4 col-7  h6 txt-inp-def">System Name</div>
                                     <input id="id-sys" class="rounded col-sm-5 col-7">
                                 </div>
 
                                 <div class="row">
                                     <div class="col-sm-4 col-7 h6 txt-inp-def">Region Name</div>
                                     <input id="id-reg" class="rounded col-sm-5 col-7">&nbsp
-                                </div>
-
-                                <div id="id-byrow" class="row">
-                                    <div class="col-sm-4 col-7  h6 txt-inp-def">Entered by&nbsp;</div>
-                                    <div id="id-by" class="col-sm-5 col-7 txt-inp-def"></div>
                                 </div>
 
                                 <div class="row">
@@ -203,6 +197,7 @@
                             </nav>
                             <div class="card-body">
                                 <div class="tab-content" id="typePanels"></div>
+                                <div id="imgtable" class="row hidden"></div>
                             </div>
                         </div>
                         <br>
@@ -211,64 +206,23 @@
                             <div class="row">
                                 <div class="col-7">
                                     <div class="row">
-                                        <button id="save" type="button"
-                                            class="col-4 btn btn-sm btn-def">Save</button>&nbsp;
-                                        <button id="delete" type="button" class="col-4 btn btn-sm btn-def disabled"
-                                            disabled>Delete</button>&nbsp;
-                                        <button id="cancel" type="button"
-                                            class="col-4 btn btn-def  btn-sm">Cancel</button>&nbsp;
-                                    </div>
-                                    <br>
-                                    <div class="row">
-                                        <div class="text-danger h6">
-                                            <span>*</span>&nbsp;Required Entry,&nbsp;
-                                            <i id="ttipmsg" class="fa fa-question-circle-o">&nbsp;Tool Tip</i>
-                                        </div>
+                                        <button id="search" type="button"
+                                            class="col-5 btn btn-sm btn-def">Search</button>&nbsp;
+                                        <button id="clear" type="button"
+                                            class="col-5 btn btn-sm btn-def">Reset</button>&nbsp;
                                     </div>
                                 </div>
                                 <div id="status" class="border col-7 text-danger scrollbar container-fluid"
-                                    style="overflow-y: scroll; height: 50px"></div>
+                                    style="overflow-y: scroll; height: 40px">
+                                </div>
+                            </div>
+                            <div class="row text-danger h6">
+                                <i id="ttipmsg" class="fa fa-question-circle-o">&nbsp;Tool Tip</i>
+                            </div>
+                            <div class="row h6" style="color:blue">**&nbsp;First checkbox is to include item in
+                                search. Second is the value.
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <div id="imgtable" class="card card-body hidden">
-            <div class="row">
-                <div class="col-lg-10 col-md-9 col-14">
-                    <div id="id-img" class="row">
-                        <canvas id="id-canvas" class="border"></canvas>
-                    </div>
-                    <br>
-                    <div class="row">
-                        <div class="col-7">
-                            <button onclick="nmsce.redditShare(this)"><img src="images/reddit.png"
-                                    style="width:20px; height:20px" title="Share to reddit"
-                                    alt="Share to reddit"></button>&nbsp;
-                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                                data-placement="bottom"
-                                title="Opens a new tab with reddit post. Select community, title & flair. Then post.">
-                            </i>
-                        </div>
-                        <div class="col-7 text-right">
-                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                                data-placement="top" title="You can position text by clicking and dragging.">
-                            </i>
-                        </div>
-                    </div>
-                </div>
-                <br>
-
-                <div class="col-lg-4 col-md-5 col-14">
-                    <div clss="row">
-                        <div id="img-text" class="txt-inp-def h6 border-top"></div>
-                    </div>
-                    <div clss="row">
-                        <button class="btn btn-sm btn-def col-2" onclick="nmsce.clearText()">Reset</button>&nbsp;
-                        <button class="btn btn-sm btn-def col-2" onclick="nmsce.reloadText()">Reload</button>
                     </div>
                 </div>
             </div>
@@ -278,12 +232,9 @@
         <div class="card pad-bottom">
             <div class="card-header bkg-def txt-def">
                 <div class="row">
-                    <div class="col-4 h3"> Entry List&nbsp;
-                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                            data-placement="bottom"
-                            title="Click on a heading to open list. Click on an entry to select it.">
-                        </i>
-                    </div>
+                    <div class="col-4 h3">Found</div>
+                    <div id="id-galaxy" class="col-4 h4"></div>
+                    <div id="id-platform" class="col-2 h4"></div>
                 </div>
             </div>
 
@@ -295,6 +246,26 @@
     <div class="clr-creme text-right h7">
         <i class="fa fa-copyright"></i> 2019 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     </div>
+
+    <div id="modal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-def btn-sm" data-dismiss="modal"
+                        onclick="nmsce.newDARC(this)">DARC</button>
+                    <button type="button" class="btn btn-def btn-sm" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>

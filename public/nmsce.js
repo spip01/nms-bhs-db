@@ -41,6 +41,7 @@ $(document).ready(() => {
             //nmsce.clearPanel("pnl-S1")
             nmsce.clearPanel("typePanels")
             $("#imgtable").hide()
+            $("[id|='slist']").hide()
         }
     })
 
@@ -53,6 +54,7 @@ $(document).ready(() => {
     $("#cancel").click(() => {
         //nmsce.clearPanel("pnl-S1")
         nmsce.clearPanel("typePanels")
+        $("[id|='slist']").hide()
         $("#imgtable").hide()
     })
 
@@ -63,6 +65,7 @@ $(document).ready(() => {
     $("#clear").click(() => {
         nmsce.clearPanel("pnl-S1")
         nmsce.clearPanel("typePanels")
+        $("[id|='slist']").hide()
         $("#imgtable").hide()
     })
 })
@@ -72,7 +75,7 @@ function NMSCE() {
 }
 
 NMSCE.prototype.displayUser = function () {
-    if (bhs.user.galaxy !== "" && !fcesearch) {
+    if (bhs.user.galaxy !== "" && !fnmsce) {
         //nmsce.displaySettings(bhs.user)
         nmsce.getEntries(bhs.user, nmsce.displayList, nmsce.displayList)
     }
@@ -83,7 +86,7 @@ NMSCE.prototype.buildPanel = function () {
 
     bhs.buildMenu(loc, "Lifeform", lifeformList)
     bhs.buildMenu(loc, "Economy", economyList, null, {
-        required: !fcesearch
+        required: !fnmsce
     })
 
     let gloc = loc.find("#glyphbuttons")
@@ -126,7 +129,7 @@ NMSCE.prototype.changeAddr = function (evt) {
 
         nmsce.dispAddr(pnl, addr, glyph)
 
-        if (!fcesearch) {
+        if (!fnmsce) {
             nmsce.lastsys = null
             bhs.getEntry(addr, nmsce.displaySystem, null, null, true)
         }
@@ -300,7 +303,7 @@ NMSCE.prototype.extractEntry = async function (fcn) {
                 }
                 break
             case "img":
-                if (!fcesearch) {
+                if (!fnmsce) {
                     let canvas = $("#id-canvas")[0]
                     if (typeof canvas !== "undefined") {
                         if (typeof entry[id] === "undefined")
@@ -319,7 +322,7 @@ NMSCE.prototype.extractEntry = async function (fcn) {
                 break
         }
 
-        if (data.req && !fcesearch)
+        if (data.req && !fnmsce)
             if (typeof entry[id] === "undefined" ||
                 (data.type === "string" || data.type === "menu") && entry[id] === "" ||
                 (data.type === "number" || data.type === "float") && entry[id] === -1 ||
@@ -683,13 +686,13 @@ NMSCE.prototype.buildTypePanels = function () {
         let itm = pnl.find("#itm-" + id)
         if (obj.fields) {
             for (let f of obj.fields) {
-                if (fcesearch && !f.search)
+                if (fnmsce && !f.search)
                     continue
 
                 let l = ""
                 let id = f.name.nameToId()
 
-                if (fcesearch)
+                if (fnmsce)
                     f.required = false
 
                 switch (f.type) {
@@ -705,7 +708,7 @@ NMSCE.prototype.buildTypePanels = function () {
                                     let slist = t[flist.sub] ? t[flist.sub] : flist.list
                                     let sub
 
-                                    if (fcesearch && !flist.search)
+                                    if (fnmsce && !flist.search)
                                         continue
 
                                     switch (flist.type) {
@@ -804,7 +807,7 @@ NMSCE.prototype.buildTypePanels = function () {
         }
     }
 
-    if (fcesearch)
+    if (fnmsce)
         $("[id|='search']").show()
 
     const imgline = `<img alt="id" src="path/fname.png" class="hidden" style="position:absolute" />`
@@ -1453,7 +1456,7 @@ NMSCE.prototype.redditShare = function (evt) {
     if (!nmsce.last) {
         nmsce.last = {}
         nmsce.last.uid = bhs.user.uid
-        nmsce.last.Photo = uuidv4() + ".jpg"
+        nmsce.last.Photo = uuidv4() + "_r.jpg"
     }
 
     let canvas = document.getElementById("id-canvas")
@@ -1530,6 +1533,16 @@ NMSCE.prototype.deleteEntry = function (entry) {
 
     ref.delete().then(() => {
         bhs.status(entry.addr + " deleted.")
+
+        let ref = bhs.fbstorage.ref().child(originalPath + entry.Photo)
+        ref.delete()
+
+        ref = bhs.fbstorage.ref().child(displayPath + entry.Photo)
+        if (entry.Photo.location("_r.jpg") === -1)
+            ref.delete()
+            
+        ref = bhs.fbstorage.ref().child(thumbnailPath + entry.Photo)
+        ref.delete()
     }).catch(err => {
         bhs.status("ERROR: " + err.code)
         console.log(err)
@@ -1592,7 +1605,7 @@ NMSCE.prototype.displayList = function (entries, path) {
                 </div>
             </div>
             <div id="sub-idname" class="container-flex h6 hidden">
-                <div id="list-idname" class="scrollbar row" style="overflow-y: scroll; height: 220px">`
+                <div id="list-idname" class="scrollbar row" style="overflow-y: scroll; height: 550px">`
     const row = `     
                      <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black format" onclick="nmsce.selectList(this)">
                         <div id="id-Photo" class="row">
@@ -1622,7 +1635,7 @@ NMSCE.prototype.displayList = function (entries, path) {
 
         if (!path) {
             let l = /idname/g [Symbol.replace](card, obj.name.nameToId())
-            if (fcesearch)
+            if (fnmsce)
                 l = /hidden/ [Symbol.replace](l, "")
             l = /title/ [Symbol.replace](l, obj.name)
             h += /total/ [Symbol.replace](l, entries[obj.name.nameToId()].length)
@@ -1630,7 +1643,7 @@ NMSCE.prototype.displayList = function (entries, path) {
             l = /format/ [Symbol.replace](row, "txt-def bkg-def")
             h += l
 
-            if (fcesearch) {
+            if (fnmsce) {
                 l = /idname/g [Symbol.replace](itm, "Player")
                 h += /title/ [Symbol.replace](l, "Player")
                 l = /idname/g [Symbol.replace](itm, "Coords")
@@ -1664,7 +1677,7 @@ NMSCE.prototype.displayList = function (entries, path) {
             let l = /idname/ [Symbol.replace](row, e.id)
             h += l
 
-            if (fcesearch) {
+            if (fnmsce) {
                 l = /idname/g [Symbol.replace](itm, "Player")
                 h += /title/ [Symbol.replace](l, e._name)
                 l = /idname/g [Symbol.replace](itm, "Coords")
@@ -1766,6 +1779,23 @@ NMSCE.prototype.displayList = function (entries, path) {
             }
         }
     }
+
+    $("#row-idname [id|='id']").click(function () {
+        let id = $(this).prop("id")
+        let loc = $(this).closest("[id|='list']")
+        let list = loc.children()
+        list.sort((a, b) => {
+            if ($(a).prop("id") === "row-idname") return -1
+            if ($(b).prop("id") === "row-idname") return 1
+
+            let av = $(a).find("#" + id).text().stripMarginWS().toLowerCase()
+            let bv = $(b).find("#" + id).text().stripMarginWS().toLowerCase()
+
+            return av > bv ? 1 : av < bv ? -1 : 0
+        })
+        loc.empty()
+        loc.append(list)
+    })
 }
 
 NMSCE.prototype.showSub = function (id) {
@@ -1775,9 +1805,12 @@ NMSCE.prototype.showSub = function (id) {
 }
 
 NMSCE.prototype.selectList = function (evt) {
+    if ($(evt).prop("id") === "row-idname")
+        return
+
     let src = $(evt).find("#img-pic")
 
-    if (fcesearch) {
+    if (fnmsce) {
         nmsce.buildModal(evt)
 
         let loc = $('#modal')
@@ -1871,7 +1904,7 @@ const explorerBodiesMap = `
             <area alt="h8" coords="224,69,203,115,232,137,257,122,259,95,238,68" shape="poly">
             <area alt="h9" data-group=2 coords="272,105,272,122,336,151,336,102" shape="poly">
             <area alt="h10" data-group=2 coords="0,128,0,165,86,167,84,130" shape="poly">
-            <area alt="h11" data-group=2 coords="88,130,87,162,162,163,162,129,121,131" shape="poly">
+            <area alt="h11" data-group=2 data-group=2 coords="88,130,87,162,162,163,162,129,121,131" shape="poly">
             <area alt="h12" coords="169,130,169,171,215,177,228,143,207,127" shape="poly">
             <area alt="h13" coords="232,142,226,170,243,188,266,198,286,189,298,178,329,175,330,157,300,137,267,123" shape="poly">
             <area alt="h14" coords="1,171,1,281,54,281,52,171" shape="poly">
@@ -1903,15 +1936,18 @@ const fighterBodiesMap = `
         <img id="map-transparent" src="images/fighter/bodies/blank.png" style="position:absolute" usemap="#fighter-bodies-map" />
 
         <map name="fighter-bodies-map" id="map-areas">
-            <area alt="h2" data-group=1 coords="241,1,328,15,326,80,256,67" shape="poly">
-            <area alt="h3" data-group=1 coords="2,2,6,40,104,85,144,71,137,40,60,4" shape="poly">
-            <area alt="h4" data-group=1 coords="151,32,158,95,196,123,321,153,348,104,242,64" shape="poly">
-            <area alt="h5" data-group=1 coords="2,41,1,112,134,170,148,110" shape="poly">
-            <area alt="h6" data-group=1 coords="176,192,174,268,284,306,348,280,346,254" shape="poly">
-            <area alt="h7" data-group=1 coords="0,119,-1,193,166,253,173,196" shape="poly">
-            <area alt="h8" data-group=1 coords="154,107,162,181,325,242,345,170,226,141" shape="poly">
-            <area alt="h9" data-group=1 coords="2,203,2,269,261,346,260,307" shape="poly">
-            <area alt="h10" data-group=1 coords="5,273,2,357,271,399,302,398,305,363" shape="poly">
+            <area alt="h2" data-group=1 coords="85,4,107,62,140,68,158,47,137,17" shape="poly">
+            <area alt="h3" data-group=1 coords="3,34,25,81,114,101,115,76,63,44" shape="poly">
+            <area alt="h5" data-group=1 coords="6,89,10,143,124,176,131,153,32,89" shape="poly">
+            <area alt="h7" data-group=1 coords="0,153,4,212,151,255,153,226,37,160" shape="poly">
+            <area alt="h9" data-group=1 coords="13,226,7,243,39,291,219,335,221,314,53,235" shape="poly">
+            <area alt="h10" data-group=1 coords="6,295,4,363,236,397,255,379,47,300" shape="poly">
+            <area alt="h4" data-group=1 coords="189,4,163,19,197,77,304,98,339,65" shape="poly">
+            <area alt="h8" data-group=1 coords="176,69,156,81,173,131,290,174,326,155,300,117,213,89" shape="poly">
+            <area alt="h6" data-group=1 coords="177,141,155,155,172,209,221,221,314,218,316,186" shape="poly">
+            <area alt="h11" data-group=2 coords="219,235,205,248,207,293,234,305,263,289,267,247" shape="poly">
+            <area alt="h12" data-group=2 coords="289,234,269,306,340,308,328,238" shape="poly">
+            <area alt="h13" data-group=2 coords="278,318,276,378,336,379,340,322" shape="poly">
         </map>
     </div>`
 
@@ -1925,31 +1961,30 @@ const fighterWingsMap = `
         <img id="map-transparent" src="images/fighter/wings/blank.png" style="position:absolute" usemap="#fighter-wings-map" />
 
         <map name="fighter-wings-map" id="map-areas">
-            <area alt="h3" coords="0,2,53,0,44,191,3,211" shape="poly">
-            <area alt="h4" coords="59,9,58,30,122,27,118,10" shape="poly">
-            <area alt="h5" coords="62,33,62,54,121,44,118,30" shape="poly">
-            <area alt="h6" coords="263,3,260,46,339,16,320,3" shape="poly">
-            <area alt="h7" coords="53,55,49,173,98,172,98,55" shape="poly">
-            <area alt="h8" coords="105,52,104,103,171,101,208,85,208,54" shape="poly">
-            <area alt="h9" coords="218,65,230,93,306,86,339,107,340,75,344,7,311,51,259,55" shape="poly">
-            <area alt="h10" coords="175,103,192,125,255,119,300,112,299,90,221,96,210,86" shape="poly">
-            <area alt="h11" coords="255,120,255,133,319,137,346,129,341,110" shape="poly">
-            <area alt="h12" coords="104,173,133,177,149,164,174,116,143,108" shape="poly">
-            <area alt="h13" coords="4,216,0,251,30,267,108,268,108,195,47,192" shape="poly">
-            <area alt="h14" coords="125,189,120,211,164,200,197,167,185,155" shape="poly">
-            <area alt="h15" coords="120,212,118,224,214,230,211,213,174,205" shape="poly">
-            <area alt="h16" coords="116,225,117,253,200,255,224,235" shape="poly">
-            <area alt="h17" coords="192,131,208,163,200,178,173,195,212,203,218,218,241,204,266,176,297,173,270,143" shape="poly">
-            <area alt="h18" coords="279,135,303,179,300,197,291,221,321,253,347,221,347,184,315,148" shape="poly">
-            <area alt="h19" coords="203,255,205,281,242,284,270,243,314,271,325,261,285,219,293,188,266,184,238,232" shape="poly">
-            <area alt="h20" coords="5,272,6,390,101,390,109,274" shape="poly">
-            <area alt="h21" coords="114,272,103,394,215,391,220,299,180,264" shape="poly">
-            <area alt="h22" data-group=2 coords="242,288,243,316,275,334,297,334,324,312,324,280,294,260,266,261" shape="poly">
-            <area alt="h23" data-group=2 coords="226,333,223,394,286,395,287,341,249,328" shape="poly">
-            <area alt="h24" data-group=2 coords="292,337,292,397,342,398,345,335" shape="poly">
-            <area alt="h25" data-group=3  coords="170,3,171,48,207,47,204,5" shape="poly">
-            <area alt="h26" data-group=3 coords="128,7,131,45,169,44,167,7" shape="poly">
-            <area alt="h27" data-group=3 coords="212,6,215,49,250,49,253,6" shape="poly">       </map>
+            <area alt="h2" coords="1,1,9,203,46,189,50,5" shape="poly">
+            <area alt="h11" data-group=3 coords="60,11,65,42,156,44,160,21" shape="poly">
+            <area alt="h27" data-group=3 coords="179,10,184,54,212,57,216,9" shape="poly">
+            <area alt="h25" data-group=3 coords="226,8,223,52,257,55,262,13" shape="poly">
+            <area alt="h26" data-group=3 coords="273,7,266,25,273,51,301,51,312,19" shape="poly">
+            <area alt="h7" data-group=4 data-group=4 coords="59,52,49,116,59,164,84,168,99,122,84,55" shape="poly">
+            <area alt="h8" data-group=4 coords="99,55,102,89,134,97,205,91,209,66,145,48" shape="poly">
+            <area alt="h9" data-group=4 coords="218,61,221,91,313,93,332,108,337,79,344,9,322,26,303,63" shape="poly">
+            <area alt="h12" coords="97,160,123,172,146,151,161,107,133,102" shape="poly">
+            <area alt="h10" data-group=4 coords="210,99,219,134,329,130,327,110" shape="poly">
+            <area alt="h13" coords="2,212,5,252,37,262,106,261,107,197,53,191" shape="poly">
+            <area alt="h14" coords="111,180,121,206,198,158,189,146" shape="poly">
+            <area alt="h15" coords="127,207,127,216,210,223,202,207" shape="poly">
+            <area alt="h16" coords="122,221,117,234,125,253,211,247,212,233" shape="poly">
+            <area alt="h17" data-group=4 coords="189,131,211,159,206,173,171,181,173,195,211,201,217,210,241,203,235,182,297,174,280,157" shape="poly">
+            <area alt="h18" data-group=4 coords="272,141,316,192,291,199,311,245,342,224,346,187,297,139" shape="poly">
+            <area alt="h19" data-group=4 coords="214,256,221,266,312,265,314,252,277,220,280,187,268,187" shape="poly">
+            <area alt="h20" data-group=4 coords="1,275,3,386,100,388,102,274" shape="poly">
+            <area alt="h21" data-group=4 coords="121,268,113,320,129,386,182,392,226,359,224,290,180,257" shape="poly">
+            <area alt="h28" data-group=4 coords="227,273,231,292,272,350,285,333,253,272" shape="poly">
+            <area alt="h4" data-group=4 coords="273,272,287,295,345,289,329,274" shape="poly">
+            <area alt="h5" data-group=4 coords="284,310,291,322,340,311,338,294" shape="poly">
+            <area alt="h6" data-group=4 coords="238,346,237,389,288,388,333,364,327,339,281,357" shape="poly">
+        </map>
     </div>`
 
 const haulerBodiesMap = `
@@ -3071,6 +3106,7 @@ const objectList = [{
             name: "Name",
             type: "string",
             search: true,
+            required: true,
         }, {
             name: "Wave",
             type: "number",
@@ -3131,6 +3167,7 @@ const objectList = [{
         name: "Name",
         type: "string",
         search: true,
+        required: true,
     }, {
         name: "Slots",
         type: "menu",
@@ -3177,6 +3214,7 @@ const objectList = [{
         name: "Name",
         type: "string",
         search: true,
+        required: true,
     }, {
         name: "Type",
         type: "menu",
@@ -3269,6 +3307,7 @@ const objectList = [{
         name: "Name",
         type: "string",
         search: true,
+        required: true,
     }, {
         name: "Type",
         type: "menu",
@@ -3313,9 +3352,10 @@ const objectList = [{
 }, {
     name: "Planet",
     fields: [{
-        name: "Name", // menu on search page??? like poi
+        name: "Name",
         type: "string",
         search: true,
+        required: true,
     }, {
         name: "Planet Index",
         range: 15,

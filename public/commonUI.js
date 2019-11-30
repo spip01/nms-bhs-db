@@ -84,7 +84,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     if (fpoi)
         return
 
-    if (fnmsce || fcesearch) {
+    if (fcedata || fnmsce) {
         let changed = user.uid && (!nmsce.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform)
     
         if (changed)
@@ -197,7 +197,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     })
 
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, {
-        required: !fcesearch,
+        required: !fnmsce,
         labelsize: "col-sm-7 col-6",
         menusize: "col-sm-7 col-8",
     })
@@ -209,7 +209,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
         menusize: "col-sm-7 col-8",
     })
 
-    if (fcesearch)
+    if (fnmsce)
         $("#namereq").hide()
 
     $("#id-Player").change(function () {

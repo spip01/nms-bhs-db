@@ -1002,7 +1002,7 @@ blackHoleSuns.prototype.validateEntry = function (entry, nobh) {
         ok = false
     }
 
-    if (ok && !entry.reg && !fnmsce && !fcesearch) {
+    if (ok && !entry.reg && !fcedata && !fnmsce) {
         error += "Missing region name. "
         ok = false
     }
@@ -1012,7 +1012,7 @@ blackHoleSuns.prototype.validateEntry = function (entry, nobh) {
         ok = false
     }
 
-    if (ok && !entry.econ && fnmsce) {
+    if (ok && !entry.econ && fcedata) {
         err += "Missing economy."
         ok = false
     }

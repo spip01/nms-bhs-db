@@ -93,7 +93,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     })
 
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, {
-        required: !fcesearch,
+        required: !fnmsce,
         labelsize: "col-lg-14 col-5",
         menusize: "col-lg-14 col-7"
     })
@@ -105,7 +105,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
         menusize: "col-lg-14 col-7"
     })
 
-    if (fcesearch)
+    if (fnmsce)
         $("#namereq").hide()
 
     $("#id-Player").change(function () {
