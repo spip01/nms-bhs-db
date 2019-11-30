@@ -21,6 +21,11 @@ blackHoleSuns.prototype.doLoggedout = function () {
 blackHoleSuns.prototype.doLoggedin = function (user) {
     bhs.getUser(bhs.displayUser)
 
+    if (findex || fdarc) {
+        let ref = bhs.fs.doc("admin/state")
+        bhs.subscribe("admin-state", ref, bhs.showError)
+    }
+
     if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
         let ref = bhs.fs.doc("admin/" + bhs.user.uid)
         ref.get().then(doc => {
@@ -29,6 +34,11 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
 
                 if (role.includes("editor") || role.includes("admin"))
                     $("#poiorg").show()
+
+                if (role.includes("owner")) {
+                    $("#setError").show()
+                    $("#genDARC").show()
+                }
 
                 if (role.includes("admin")) {
                     $("#id-export").show()
@@ -55,6 +65,38 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
 
     $("#save").removeClass("disabled")
     $("#save").removeAttr("disabled")
+}
+
+blackHoleSuns.prototype.setError = function () {
+    let ref = bhs.fs.doc("admin/state")
+    ref.get().then(doc => {
+        let e = doc.data()
+        if (doc.exists)
+            e.errorMode = !e.errorMode
+        else {
+            e = {}
+            e.errorMode = true
+        }
+
+        doc.ref.set(e, {
+            merge: true
+        })
+    })
+}
+
+blackHoleSuns.prototype.showError = function (e) {
+    if (findex || fdarc) {
+        if (e.errorMode) {
+            $("#banner").hide()
+            $("#error").show()
+            $("#jssite").hide()
+        }
+        else {
+            $("#banner").show()
+            $("#error").hide()
+            $("#jssite").show()
+        }
+    }
 }
 
 blackHoleSuns.prototype.setAdmin = function (clear) {
@@ -86,7 +128,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
 
     if (fcedata || fnmsce) {
         let changed = user.uid && (!nmsce.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform)
-    
+
         if (changed)
             nmsce.displayUser()
 
