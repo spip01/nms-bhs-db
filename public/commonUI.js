@@ -90,8 +90,7 @@ blackHoleSuns.prototype.showError = function (e) {
             $("#banner").hide()
             $("#error").show()
             $("#jssite").hide()
-        }
-        else {
+        } else {
             $("#banner").show()
             $("#error").hide()
             $("#jssite").show()
@@ -158,7 +157,9 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     $("body").css("background-color", bhs.user.role === "admin" ? "green" : "black")
 
     let pnl = $("#pnl-user")
-    pnl.find("#id-Player").val(bhs.user._name)
+    if (!fnmsce)
+        pnl.find("#id-Player").val(bhs.user._name)
+        
     pnl.find("#btn-Platform").text(bhs.user.platform)
     pnl.find("#btn-Civ-Org").text(bhs.user.org)
 
@@ -203,7 +204,7 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
                     </div>
                 </div>
 
-                <div id="id-Civ-Org" class="col-lg-4 col-md-7 col-sm-3 col-14"></div>
+                <div id="id-Civ-Org" class="col-lg-4 col-md-7 col-sm-3 col-14 hidden"></div>
                 <div id="id-Galaxy" class="col-lg-3 col-md-7 col-sm-3 col-14"></div>
                 <div id="id-Platform" class="col-lg-2 col-md-7 col-sm-3 col-14"></div>
             </div>
@@ -257,22 +258,27 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
         }
     })
 
-    loc.find("#fileupload").show()
-    $("#ck-fileupload").change(function (event) {
-        if ($(this).prop("checked")) {
-            panels.forEach(p => {
-                $("#" + p.id).hide()
-            })
-            $("#entrybuttons").hide()
-            $("#upload").show()
-        } else {
-            panels.forEach(p => {
-                $("#" + p.id).show()
-            })
-            $("#entrybuttons").show()
-            $("#upload").hide()
-        }
-    })
+    if (!fnmsce)
+        $("#id-Civ-Org").show()
+
+    if (findex) {
+        loc.find("#fileupload").show()
+        $("#ck-fileupload").change(function (event) {
+            if ($(this).prop("checked")) {
+                panels.forEach(p => {
+                    $("#" + p.id).hide()
+                })
+                $("#entrybuttons").hide()
+                $("#upload").show()
+            } else {
+                panels.forEach(p => {
+                    $("#" + p.id).show()
+                })
+                $("#entrybuttons").show()
+                $("#upload").hide()
+            }
+        })
+    }
 }
 
 blackHoleSuns.prototype.displayContest = function (contest) {

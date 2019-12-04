@@ -111,7 +111,7 @@
                                                 A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
                                             </i>
                                         </div>
-                                        <input id="id-addr" class="rounded col-xl-4 col-sm-5 col-7"
+                                        <input id="id-addr" class="rounded col-xl-4 col-sm-5 col-7" type="text"
                                             placeholder="0000:0000:0000:0000" onchange="nmsce.changeAddr(this)">
                                         <div class="col-5">
                                             <label class="h6 txt-inp-def">
@@ -140,12 +140,11 @@
                                         <div class="col-sm-3 col-4 h6 txt-inp-def">
                                             Glyph&nbsp;<span class="text-danger">*</span>&nbsp;
                                             <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
-                                                data-html="true" data-placement="bottom"
-                                                title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
-                                                            digit hex, 0-9 a-f, value can be entered directly in the field.">
+                                                data-html="true" data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
+                                                digit hex, 0-9 a-f, value can be entered directly in the field.">
                                             </i>
                                         </div>
-                                        <input id="id-glyph"
+                                        <input id="id-glyph" type="text"
                                             class="rounded col-xl-5 col-lg-7 col-md-10 col-sm-6 col-10 h4 glyph"
                                             onchange="nmsce.changeAddr(this)">
                                         <div class="col">
@@ -194,9 +193,9 @@
                     </div>
                     <br>
 
-                            <nav>
-                                <div class="nav nav-tabs" id="typeTabs" role="tablist">
-                            </nav>
+                    <nav>
+                        <div class="nav nav-tabs" id="typeTabs" role="tablist">
+                    </nav>
                     <div class="card card-body">
                         <div class="tab-content" id="typePanels"></div>
                     </div>
@@ -204,44 +203,44 @@
 
                 <div class="col-md-7 col-14">
                     <div id="pnl-map" class="card card-body"></div>
-                        <br>
+                    <br>
 
-                        <div id="entrybuttons" class="card card-body">
-                            <div class="row">
-                                    <div class="col-sm-7 col-14">
-                                            <div class="row">
-                                        <button id="search" type="button"
-                                            class="col-4 btn btn-sm btn-def">Search</button>&nbsp;
-                                        <button id="clear" type="button"
-                                            class="col-4 btn btn-sm btn-def">Reset</button>&nbsp;
-                                        </div>
-                                        <br>
-                                            <div class="row">
-                                                <div class="text-danger h6">
-                                                    <span>*</span>&nbsp;Required Entry,&nbsp;
-                                                    <i id="ttipmsg" class="fa fa-question-circle-o">&nbsp;Tool Tip</i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div id="status" class="border col text-danger scrollbar container-fluid"
-                                            style="overflow-y: scroll; height: 50px"></div>
-                                        </div>
+                    <div id="entrybuttons" class="card card-body">
+                        <div class="row">
+                            <div class="col-sm-7 col-14">
+                                <div class="row">
+                                    <button id="search" type="button"
+                                        class="col-4 btn btn-sm btn-def">Search</button>&nbsp;
+                                    <button id="clear" type="button"
+                                        class="col-4 btn btn-sm btn-def">Reset</button>&nbsp;
+                                </div>
+                                <br>
+                                <div class="row">
+                                    <div class="text-danger h6">
+                                        <span>*</span>&nbsp;Required Entry,&nbsp;
+                                        <i id="ttipmsg" class="fa fa-question-circle-o">&nbsp;Tool Tip</i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="status" class="border col text-danger scrollbar container-fluid"
+                                style="overflow-y: scroll; height: 50px"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <br>
+    </div>
+    <br>
 
-        <div class="card pad-bottom">
-            <div class="card-header bkg-def txt-def">
-                <div class="row">
-                    <div class="col-4 h3">Found</div>
-                </div>
+    <div class="card pad-bottom">
+        <div class="card-header bkg-def txt-def">
+            <div class="row">
+                <div class="col-4 h3">Found</div>
             </div>
-
-            <div id="id-table" class="card-body"></div>
         </div>
+
+        <div id="id-table" class="card-body"></div>
+    </div>
     </div>
 
     <br>

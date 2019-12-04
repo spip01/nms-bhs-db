@@ -191,7 +191,7 @@ NMSCE.prototype.clearPanel = function (sys) {
     $("#reddit").prop("disabled", true)
 }
 
-NMSCE.prototype.extractEntry = async function (fcn) {
+NMSCE.prototype.extractEntry = async function () {
     let entry = {}
     let ok = true
 
@@ -228,90 +228,78 @@ NMSCE.prototype.extractEntry = async function (fcn) {
         entry.xyzs = addressToXYZ(entry.addr)
 
         ok = bhs.validateEntry(entry, true) === ""
-
         if (ok)
             bhs.updateEntry(entry)
     }
 
-    if (!ok)
-        return ok
+    if (ok) {
+        if (nmsce.last)
+            entry = mergeObjects(entry, nmsce.last)
 
-    if (nmsce.last)
-        entry = mergeObjects(entry, nmsce.last)
-
-    if (!nmsce.last || entry.uid === bhs.user.uid) {
-        entry._name = bhs.user._name
-        entry.org = bhs.user.org
-        entry.uid = bhs.user.uid
-        entry.platform = bhs.user.platform
-        entry.galaxy = bhs.user.galaxy
-    }
-
-    let tab = $("#typeTabs .active").prop("id").stripID()
-    let pnl = $("#typePanels #pnl-" + tab)
-    entry.type = tab
-
-    let list = pnl.find("[id|='row']")
-    for (let rloc of list) {
-        if (!$(rloc).is(":visible"))
-            continue
-
-        let id = $(rloc).prop("id").stripID()
-        let loc = $(rloc).find(":input")
-        let data = $(rloc).data()
-        let val = loc.val()
-
-        if (typeof data === "undefined")
-            continue
-
-        switch (data.type) {
-            case "number":
-            case "float":
-            case "string":
-                entry[id] = val
-                break
-            case "menu":
-                entry[id] = $(rloc).find("[id|='btn']").text()
-                if (entry[id] === "Nothing Selected")
-                    entry[id] = ""
-                break
-            case "array":
-                for (let ckloc of loc) {
-                    if ($(ckloc).is(":visible")) {
-                        let cid = $(ckloc).prop("id").stripID()
-                        if (typeof entry[id] === "undefined")
-                            entry[id] = {}
-                        entry[id][cid] = $(ckloc).prop("checked")
-                    }
-                }
-                break
-            case "checkbox":
-                for (let ckloc of loc) {
-                    if ($(ckloc).is(":visible")) {
-                        let cid = $(ckloc).prop("id").stripID()
-                        entry[cid] = $(ckloc).prop("checked")
-                    }
-                }
-                break
-            case "img":
-                if (!fnmsce) {
-                    let canvas = $("#id-canvas")[0]
-                    if (typeof canvas !== "undefined" && typeof entry[id] === "undefined")
-                        entry[id] = uuidv4() + ".jpg"
-                }
-                break
+        if (!nmsce.last || entry.uid === bhs.user.uid) {
+            entry._name = bhs.user._name
+            entry.org = bhs.user.org
+            entry.uid = bhs.user.uid
+            entry.platform = bhs.user.platform
+            entry.galaxy = bhs.user.galaxy
         }
 
-        if (data.req && !fnmsce)
-            if (typeof entry[id] === "undefined" ||
-                (data.type === "string" || data.type === "menu") && entry[id] === "" ||
-                (data.type === "number" || data.type === "float") && entry[id] === -1 ||
-                data.type === "img" && entry[id] === "") {
+        let tab = $("#typeTabs .active").prop("id").stripID()
+        let pnl = $("#typePanels #pnl-" + tab)
+        entry.type = tab
 
-                bhs.status(id + " required. Entry not saved.", 0)
-                ok = false
-                break
+        let list = pnl.find("[id|='row']")
+        for (let rloc of list) {
+            if (!$(rloc).is(":visible"))
+                continue
+
+            let id = $(rloc).prop("id").stripID()
+            let loc = $(rloc).find(":input")
+            let data = $(rloc).data()
+            let val = loc.val()
+
+            if (typeof data === "undefined")
+                continue
+
+            switch (data.type) {
+                case "number":
+                case "float":
+                case "string":
+                    entry[id] = val
+                    break
+                case "menu":
+                    entry[id] = $(rloc).find("[id|='btn']").text()
+                    if (entry[id] === "Nothing Selected")
+                        entry[id] = ""
+                    break
+                case "checkbox":
+                    for (let ckloc of loc) {
+                        if ($(ckloc).is(":visible")) {
+                            let cid = $(ckloc).prop("id").stripID()
+                            entry[cid] = $(ckloc).prop("checked")
+                        }
+                    }
+                    break
+                case "img":
+                    if (!fnmsce) {
+                        let canvas = $("#id-canvas")[0]
+                        if (typeof canvas !== "undefined" && typeof entry[id] === "undefined")
+                            entry[id] = uuidv4() + ".jpg"
+                    }
+                    break
             }
+
+            if (data.req && !fnmsce)
+                if (typeof entry[id] === "undefined" ||
+                    (data.type === "string" || data.type === "menu") && entry[id] === "" ||
+                    (data.type === "number" || data.type === "float") && entry[id] === -1 ||
+                    data.type === "img" && entry[id] === "") {
+
+                    bhs.status(id + " required. Entry not saved.", 0)
+                    ok = false
+                    break
+                }
+        }
     }
 
     if (ok) {
@@ -332,7 +320,7 @@ NMSCE.prototype.extractEntry = async function (fcn) {
             }
         }
 
-        fcn(entry)
+        nmsce.updateEntry(entry)
 
         let disp = document.createElement('canvas')
         nmsce.drawText(disp, 1024)
@@ -391,12 +379,6 @@ NMSCE.prototype.displaySingle = async function (entry) {
             case "menu":
                 $(row).find("#item-" + entry[id]).click()
                 break
-            case "array":
-                for (let ck of loc) {
-                    let ckid = $(ck).prop("id").stripID()
-                    $(ck).prop("checked", typeof entry[id] !== "undefined" && entry[id][ckid] ? true : false)
-                }
-                break
             case "checkbox":
                 loc.prop("checked", entry[id] ? true : false)
                 break
@@ -420,10 +402,10 @@ NMSCE.prototype.displaySingle = async function (entry) {
     }
 }
 
-NMSCE.prototype.extractSearch = async function () {
+NMSCE.prototype.executeSearch = async function (entry) {
     let player = $("#id-Player").val()
     let platform = $("#btn-Platform").text().stripMarginWS()
-    let galaxy = $("#btn-Galaxy").text().stripMarginWS()
+    let galaxy = $("#btn-Galaxy").text().stripNumber()
 
     let tab = $("#typeTabs .active").prop("id").stripID()
     let pnl = $("#typePanels #pnl-" + tab)
@@ -437,7 +419,7 @@ NMSCE.prototype.extractSearch = async function () {
     let life = loc.find("#btn-Lifeform").text().stripNumber()
     let econ = loc.find("#btn-Economy").text().stripNumber()
 
-    if (player !== bhs.user._name) ref = ref.where("_name", "==", player)
+    if (player) ref = ref.where("_name", "==", player)
     if (platform) ref = ref.where("platform", "==", platform)
     if (addr) ref = ref.where("addr", "==", addr)
     if (econ) ref = ref.where("econ", "==", econ)
@@ -474,14 +456,6 @@ NMSCE.prototype.extractSearch = async function () {
                 if (val && val !== "Nothing Selected")
                     ref = ref.where(id, "==", val)
                 break
-            case "array":
-                for (let sloc of $(rloc).find("[id|='sck']")) {
-                    if ($(sloc).prop("checked")) {
-                        let aid = $(sloc).prop("id").stripID()
-                        ref = ref.where(id + "." + aid, "==", $(rloc).find("#ck-" + aid).prop("checked"))
-                    }
-                }
-                break
             case "checkbox":
                 for (let sloc of $(rloc).find("[id|='sck']")) {
                     if ($(sloc).prop("checked")) {
@@ -490,13 +464,21 @@ NMSCE.prototype.extractSearch = async function () {
                     }
                 }
                 break
-            case "map":
-                let sel = $(rloc).find("#map-selected :visible")
-                for (let loc of sel) {
-                    let alt = $(loc).attr("alt")
+        }
+    }
+
+    loc = $("[id='map-selected']")
+    for (let page of loc) {
+        if ($(page).is(":visible")) {
+            let id = $(page).closest("[id|='row']").prop("id").stripID()
+
+            let sel = $(page).children()
+            for (let s of sel) {
+                if ($(s).is(":visible")) {
+                    let alt = $(s).attr("alt")
                     ref = ref.where(id + "." + alt, "==", true)
                 }
-                break
+            }
         }
     }
 
@@ -538,14 +520,13 @@ NMSCE.prototype.save = function () {
             return false
         })
 
-        return nmsce.extractEntry(nmsce.updateEntry)
+        return nmsce.extractEntry()
     }
 }
 
 NMSCE.prototype.search = function () {
     $("#status").empty()
-    let user = bhs.extractUser()
-    nmsce.extractSearch(user)
+    nmsce.executeSearch()
 }
 
 blackHoleSuns.prototype.status = function (str, clear) {
@@ -1466,15 +1447,7 @@ NMSCE.prototype.displayList = function (entries, path) {
                 if (f.type !== "img" && f.type !== "map") {
                     let l = /idname/g [Symbol.replace](itm, f.name.nameToId())
                     if (typeof e[f.name.nameToId()] !== "undefined") {
-                        if (f.type === "array") {
-                            let items = Object.keys(e[f.name.nameToId()])
-
-                            for (let i of items)
-                                t += i + " "
-
-                            h += /title/ [Symbol.replace](l, t)
-                        } else
-                            h += /title/ [Symbol.replace](l, e[f.name.nameToId()])
+                        h += /title/ [Symbol.replace](l, e[f.name.nameToId()])
                     } else
                         h += /title/ [Symbol.replace](l, "")
 
@@ -1482,17 +1455,9 @@ NMSCE.prototype.displayList = function (entries, path) {
                         for (let s of f.sublist) {
                             if (s.type !== "img" && s.type !== "map") {
                                 let l = /idname/g [Symbol.replace](itm, s.name.nameToId())
-                                if (typeof e[s.name.nameToId()] !== "undefined") {
-                                    if (s.type === "array") {
-                                        let items = Object.keys(e[s.name.nameToId()])
-                                        let t = ""
-                                        for (let i of items)
-                                            t += i + " "
-
-                                        h += /title/ [Symbol.replace](l, t)
-                                    } else
-                                        h += /title/ [Symbol.replace](l, e[s.name.nameToId()])
-                                } else
+                                if (typeof e[s.name.nameToId()] !== "undefined")
+                                    h += /title/ [Symbol.replace](l, e[s.name.nameToId()])
+                                else
                                     h += /title/ [Symbol.replace](l, "")
                             }
                         }
