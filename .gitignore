@@ -2,8 +2,8 @@
 /bhs/*console_files/
 /bhs/*console.html
 *.log
-bootstrap.min.css
-bootstrap.min.js
+bootstrap.css
+bootstrap.js
 *.env
 env.js
 *.cache

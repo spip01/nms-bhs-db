@@ -7,29 +7,24 @@ var nmsce
 const displayPath = "/nmsce/disp/"
 const originalPath = "/nmsce/orig/"
 const thumbnailPath = "/nmsce/disp/thumb/"
+const redditPath = "/nmsce/reddit/"
 
 $(document).ready(() => {
     startUp()
 
     $("#cemenus").load("cemenus.html", () => {
         let page = window.location.pathname.replace(/(.*)\//, "$1")
-        let loc = $("#navmenu").find("[href='" + page + "']")
-        loc.addClass("clr-blue border rounded")
-
-        // $("#menuimg").on("load", () => {
-        //     let height = $("#menuitems").height()
-        //     let loc = $("[src='images/nmsce-logo.png']")
-        //     let iheight = loc.height()
-        //     let width = loc.width() * height / iheight
-
-        //     loc.css("width",width+"px")
-        //     loc.height(height+"px")
-        // })
+        let loc = $("[href='" + page + "']")
+        $("#pagename").html(loc.text())
     })
 
     nmsce = new NMSCE()
 
     nmsce.last = null
+
+    nmsce.logo = new Image()
+    nmsce.logo.crossOrigin = "anonymous"
+    nmsce.logo.src = "/images/nmsce-logo.png"
 
     bhs.buildUserPanel()
 
@@ -37,12 +32,8 @@ $(document).ready(() => {
     nmsce.buildTypePanels()
 
     $("#save").click(() => {
-        if (nmsce.save()) {
-            //nmsce.clearPanel("pnl-S1")
-            nmsce.clearPanel("typePanels")
-            $("#imgtable").hide()
-            $("[id|='slist']").hide()
-        }
+        if (nmsce.save())
+            nmsce.clearPanel()
     })
 
     $("#delete").click(() => {
@@ -52,10 +43,7 @@ $(document).ready(() => {
     })
 
     $("#cancel").click(() => {
-        //nmsce.clearPanel("pnl-S1")
-        nmsce.clearPanel("typePanels")
-        $("[id|='slist']").hide()
-        $("#imgtable").hide()
+        nmsce.clearPanel()
     })
 
     $("#search").click(() => {
@@ -63,10 +51,7 @@ $(document).ready(() => {
     })
 
     $("#clear").click(() => {
-        nmsce.clearPanel("pnl-S1")
-        nmsce.clearPanel("typePanels")
-        $("[id|='slist']").hide()
-        $("#imgtable").hide()
+        nmsce.clearPanel(true)
     })
 })
 
@@ -76,7 +61,7 @@ function NMSCE() {
 
 NMSCE.prototype.displayUser = function () {
     if (bhs.user.galaxy !== "" && !fnmsce) {
-        //nmsce.displaySettings(bhs.user)
+        nmsce.restoreText(bhs.user.imageText)
         nmsce.getEntries(bhs.user, nmsce.displayList, nmsce.displayList)
     }
 }
@@ -84,9 +69,16 @@ NMSCE.prototype.displayUser = function () {
 NMSCE.prototype.buildPanel = function () {
     let loc = $("#pnl-S1")
 
-    bhs.buildMenu(loc, "Lifeform", lifeformList)
+    bhs.buildMenu(loc, "Lifeform", lifeformList, null, {
+        required: !fnmsce,
+        labelsize: "col-lg-5 col-md-4 col-sm-3 col-5",
+        menusize: "col",
+    })
+
     bhs.buildMenu(loc, "Economy", economyList, null, {
-        required: !fnmsce
+        required: !fnmsce,
+        labelsize: "col-lg-5 col-md-4 col-sm-3 col-5",
+        menusize: "col",
     })
 
     let gloc = loc.find("#glyphbuttons")
@@ -168,25 +160,35 @@ NMSCE.prototype.displaySystem = function (entry) {
     }
 }
 
-NMSCE.prototype.clearPanel = function (d) {
-    let pnl = $("#" + d)
+NMSCE.prototype.clearPanel = function (sys) {
+    let pnl = sys ? $("[id|='pnl']") : $("#typePanels")
 
     pnl.find("input").each(function () {
         $(this).val("")
     })
 
     pnl.find("[id|='menu']").each(function () {
-        $(this).find("[id|='btn']").text("")
+        if ($(this).prop("id").stripID() !== "Type")
+            $(this).find("[id|='btn']").text("")
     })
 
-    pnl.find("[id='map-selected'] img").each(function () {
+    $("[id='map-selected'] img").each(function () {
         $(this).hide()
     })
 
     nmsce.last = null
 
+    nmsce.restoreText()
+
+    let canvas = document.getElementById("id-canvas")
+    let ctx = canvas.getContext("2d")
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
     $("#delete").addClass("disabled")
     $("#delete").prop("disabled", true)
+
+    $("#reddit").addClass("disabled")
+    $("#reddit").prop("disabled", true)
 }
 
 NMSCE.prototype.extractEntry = async function (fcn) {
@@ -291,33 +293,11 @@ NMSCE.prototype.extractEntry = async function (fcn) {
                     }
                 }
                 break
-            case "map":
-                list = $(rloc).find("[id='map-selected'] :visible")
-                for (let loc of list) {
-                    let alt = $(loc).attr("alt")
-                    if (typeof entry[id] === "undefined" || nmsce.last) {
-                        nmsce.last = null
-                        entry[id] = {}
-                    }
-                    entry[id][alt] = true
-                }
-                break
             case "img":
                 if (!fnmsce) {
                     let canvas = $("#id-canvas")[0]
-                    if (typeof canvas !== "undefined") {
-                        if (typeof entry[id] === "undefined")
-                            entry[id] = uuidv4() + ".jpg"
-
-                        canvas.toBlob(blob => {
-                            nmsce.saved = blob
-                            bhs.fbstorage.ref().child(displayPath + entry[id]).put(blob)
-                        }, "image/jpeg", .9)
-
-                        imgcanvas.toBlob(blob => {
-                            bhs.fbstorage.ref().child(originalPath + entry[id]).put(blob)
-                        }, "image/jpeg", .9)
-                    }
+                    if (typeof canvas !== "undefined" && typeof entry[id] === "undefined")
+                        entry[id] = uuidv4() + ".jpg"
                 }
                 break
         }
@@ -334,8 +314,55 @@ NMSCE.prototype.extractEntry = async function (fcn) {
             }
     }
 
-    if (ok)
+    if (ok) {
+        loc = $("[id='map-selected']")
+        for (let page of loc) {
+            if ($(page).is(":visible")) {
+                let id = $(page).closest("[id|='row']").prop("id").stripID()
+                if (typeof entry[id] === "undefined")
+                    entry[id] = {}
+
+                let sel = $(page).children()
+                for (let s of sel) {
+                    if ($(s).is(":visible")) {
+                        let alt = $(s).attr("alt")
+                        entry[id][alt] = true
+                    }
+                }
+            }
+        }
+
         fcn(entry)
+
+        let disp = document.createElement('canvas')
+        nmsce.drawText(disp, 1024)
+        disp.toBlob(blob => {
+            nmsce.saved = blob
+            bhs.fbstorage.ref().child(displayPath + entry.Photo).put(blob).then(() => {
+                bhs.status("Saved " + displayPath + entry.Photo)
+            })
+        }, "image/jpeg", .9)
+
+        let thumb = document.createElement('canvas')
+        nmsce.drawText(thumb, 300)
+        thumb.toBlob(blob => {
+            nmsce.saved = blob
+            bhs.fbstorage.ref().child(thumbnailPath + entry.Photo).put(blob).then(() => {
+                bhs.status("Saved " + thumbnailPath + entry.Photo)
+            })
+        }, "image/jpeg", .7)
+
+        let orig = document.createElement('canvas')
+        let ctx = orig.getContext("2d")
+        orig.width = 1024
+        orig.height = nmsce.screenshot.height * 1024 / nmsce.screenshot.width
+        ctx.drawImage(nmsce.screenshot, 0, 0, orig.width, orig.height)
+        orig.toBlob(blob => {
+            bhs.fbstorage.ref().child(originalPath + entry.Photo).put(blob).then(() => {
+                bhs.status("Saved " + originalPath + entry.Photo)
+            })
+        }, "image/jpeg", .9)
+    }
 
     return ok
 }
@@ -373,25 +400,30 @@ NMSCE.prototype.displaySingle = async function (entry) {
             case "checkbox":
                 loc.prop("checked", entry[id] ? true : false)
                 break
-            case "map":
-                $(row).find("#map-selected img").hide()
-                if (typeof entry[id] === "object")
-                    for (let s of Object.keys(entry[id]))
-                        if (entry[id][s])
-                            $(row).find("#map-selected [alt='" + s + "']").show()
-                break
-            case "img":
-                break
+        }
+    }
+
+    let loc = $("[id='map-selected']")
+    for (let page of loc) {
+        if ($(page).is(":visible")) {
+            let id = $(page).closest("[id|='row']").prop("id").stripID()
+            if (typeof entry[id] !== "undefined") {
+                let sel = $(page).children()
+
+                for (let s of sel) {
+                    let alt = $(s).attr("alt")
+                    if (entry[id][alt])
+                        $(s).show()
+                }
+            }
         }
     }
 }
 
-NMSCE.prototype.extractSearch = async function (user) {
-    if (typeof user === "undefined")
-        user = bhs.user
-
-    let platform = user.platform
-    let galaxy = user.galaxy
+NMSCE.prototype.extractSearch = async function () {
+    let player = $("#id-Player").val()
+    let platform = $("#btn-Platform").text().stripMarginWS()
+    let galaxy = $("#btn-Galaxy").text().stripMarginWS()
 
     let tab = $("#typeTabs .active").prop("id").stripID()
     let pnl = $("#typePanels #pnl-" + tab)
@@ -405,7 +437,8 @@ NMSCE.prototype.extractSearch = async function (user) {
     let life = loc.find("#btn-Lifeform").text().stripNumber()
     let econ = loc.find("#btn-Economy").text().stripNumber()
 
-    if (user._name !== bhs.user._name) ref = ref.where("_name", "==", user._name)
+    if (player !== bhs.user._name) ref = ref.where("_name", "==", player)
+    if (platform) ref = ref.where("platform", "==", platform)
     if (addr) ref = ref.where("addr", "==", addr)
     if (econ) ref = ref.where("econ", "==", econ)
     if (life) ref = ref.where("life", "==", life)
@@ -492,8 +525,7 @@ NMSCE.prototype.save = function () {
 
     if (bhs.user.uid && bhs.validateUser(user)) {
         bhs.user = mergeObjects(bhs.user, user)
-        delete bhs.user.nmscetext
-        bhs.user.nmscetext = texts
+        bhs.user.imageText = nmsce.extractImgText()
 
         let ref = bhs.getUsersColRef(bhs.user.uid)
         ref.set(bhs.user).then(() => {
@@ -523,341 +555,98 @@ blackHoleSuns.prototype.status = function (str, clear) {
     $("#status").append("<h6>" + str + "</h6>")
 }
 
+let nav = `<a class="nav-item nav-link txt-def h6 active" id="tab-idname" data-toggle="tab" href="#hdr-idname" role="tab" aria-controls="pnl-idname" aria-selected="true">title</a>`
+let header = `
+    <div id="hdr-idname" class="tab-pane show active" role="tabpanel" aria-labelledby="tab-idname">
+        <div id="pnl-idname" class="row no-padding"></div>
+    </div>`
+let mapHeader = `<div id="pnl-idname" class="row no-padding border rounded" style="display:none"></div>`
+const tSubList = `<div id="slist-idname" class="row no-padding" style="display:none"></div>`
+
+const tReq = `&nbsp;<font style="color:red">*</font>`
+const tText = `&nbsp;
+    <scope data-toggle="tooltip" data-html="true" data-placement="bottom" title="ttext">
+        <i class="fa fa-question-circle-o text-danger h6"></i>
+    </scope>`
+
+const inpHdr = `<div class="col-md-7 col-14">`
+const inpLongHdr = `<div class="col-14">`
+const inpShipHdr = `<div class="col-lg-7 col-md-14 col-sm-7 col-14">`
+const inpEnd = `</div>`
+
+const tString = `
+    <div id="row-idname" data-type="string" data-req="ifreq" class="row">
+        <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
+        <input id="id-idname" class="rounded col-9">
+    </div>`
+const tMap = `<div id="row-idname" data-type="map" data-req="ifreq"></div>`
+const tLongString = `
+    <div id="row-idname" data-type="string" data-req="ifreq" class="row">
+        <div class=" col-sm-5 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
+        <input id="id-idname" class="rounded col-9">
+    </div>`
+const tNumber = `
+    <div id="row-idname" data-type="number" data-req="ifreq" class="row">
+        <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
+        <input id="id-idname" type="number" class="rounded col-7" min=-1 max=range value=-1>
+    </div>`
+const tFloat = `
+    <div id="row-idname" data-type="float" data-req="ifreq" class="row">
+        <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
+        <input id="id-idname" type="number" class="rounded col-7" step=0.1 min=-1 max=range value=-1>
+    </div>`
+const tMenu = `
+    <div id="row-idname" data-type="menu" data-req="ifreq">
+        <div id="id-idname"></div>
+    </div>`
+const tCkItem = `
+    <div id="row-idname" data-type="checkbox" data-req="false">
+        <label id="id-idname" class="h6 txt-inp-def row">
+            titlettip&nbsp
+            <label id="search-idname" class="h6 txt-inp-def hidden" style="color:blue">
+                **&nbsp;
+                <input id="sck-idname" type="checkbox">
+            </label>          
+            <input id="ck-idname" type="checkbox">
+        </label>
+    </div>`
+const tImg = `
+    <div id="row-idname" data-type="img" data-req="ifreq" class="row">
+        <div class="col-3 txt-inp-def h6">titlettip&nbsp;</div>
+        <input id="id-idname" type="file" class="col-10 form-control form-control-sm" 
+            accept="image/*" name="files[]" onchange="nmsce.loadScreenshot(this)">&nbsp
+    </div>`
+
 NMSCE.prototype.buildTypePanels = function () {
-    let nav = `<a class="nav-item nav-link txt-def h6 active" id="tab-idname" data-toggle="tab" href="#pnl-idname" role="tab" aria-controls="pnl-idname" aria-selected="true">title</a>`
-    let header = `
-        <div class="tab-pane show active" id="pnl-idname" role="tabpanel" aria-labelledby="tab-idname">
-            <div id="itm-idname" class="row"></div>
-        </div>`
-    const tReq = `&nbsp;<font style="color:red">*</font>`
-    const tText = `&nbsp;
-        <div data-toggle="tooltip" data-html="true" data-placement="bottom" title="ttext">
-            <i class="fa fa-question-circle-o text-danger h6"></i>
-        </div>`
-    const tTextImg = `<img src='pic' style="height:15px; width:auto;">`
-    const tBlank = `
-        <div class="col-lg-7 col-md-14 col-sm-7 col-14"></div>`
-    const tSubBlank = `
-        <div id="slist-idname" class="col-lg-7 col-md-14 col-sm-7 col-14 hidden"></div>`
-    const tString = `
-        <div class="col-lg-7 col-md-14 col-sm-7 col-14">
-            <div id="row-idname" data-type="string" data-req="ifreq" class="row">
-                <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
-                <input id="id-idname" class="rounded col-md-7 col-9">
-            </div>
-        </div>`
-    const tSubString = `
-        <div id="slist-idname" class="col-lg-7 col-md-14 col-sm-7 col-14 hidden">
-            <div id="row-idname" data-type="string" data-req="ifreq" class="row">
-                <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
-                <input id="id-idname" class="rounded col-md-7 col-9">
-            </div>
-        </div>`
-    const tSubMap = `
-        <div id="slist-idname" class="col-lg-7 col-md-14 col-sm-7 col-14 hidden">
-            <div id="row-idname" data-type="map" data-req="ifreq" class="container border-top border-bottom"></div>
-        </div>`
-    const tMap = `
-        <div class="col-lg-7 col-md-14 col-sm-7 col-14">
-            <div id="row-idname" data-type="map" data-req="ifreq" class="container border-top border-bottom"></div>
-        </div>`
-    const tLongString = `
-        <div class="col-14">
-            <div id="row-idname" data-type="string" data-req="ifreq" class="row">
-                <div class="col-md-4 col-3 h6 txt-inp-def">titlettip&nbsp;</div>
-                <input id="id-idname" class="rounded col-md-9 col-10">
-            </div>
-        </div>`
-    const tNumber = `
-        <div class="col-lg-7 col-md-14 col-sm-7 col-14">
-            <div id="row-idname" data-type="number" data-req="ifreq" class="row">
-                <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
-                <input id="id-idname" type="number" class="rounded col-md-5 col-6" min=0 max=range value=-1>
-            </div>
-        </div>`
-    const tSubNumber = `
-        <div id="slist-idname" class="col-lg-7 col-md-14 col-sm-7 col-14 hidden">
-            <div id="row-idname" data-type="number" data-req="ifreq" class="row">
-                <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
-                <input id="id-idname" type="number" class="rounded col-md-5 col-6" min=0 max=range value=-1>
-            </div>
-        </div>`
-    const tFloat = `
-        <div class="col-lg-7 col-md-14 col-sm-7 col-14">
-            <div id="row-idname" data-type="float" data-req="ifreq" class="row">
-                <div class="col-md-6 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
-                <input id="id-idname" type="number" class="rounded col-md-5 col-6" step=0.1 min=0 max=range value=-1>
-            </div>
-        </div>`
-    const tList = `
-        <div id="list-idname" class="col-lg-7 col-md-14 col-sm-7 col-14">
-            <div id="row-idname" data-type="menu" data-req="ifreq" class="row">
-                <div id="id-idname" class="col-12"></div>
-            </div>
-        </div>`
-    const tArray = `
-        <div id="slist-idname" class="container border-top border-bottom hidden">
-            <div id="row-idname" data-type="array" data-req="ifreq" class="row"></div>
-        </div>`
-    const tArrayItm = `
-        <label id="id-idname" class="col-sm-3 col-4 h6 txt-inp-def">
-            <div class="row">
-                <label id="search-idname" class="h6 txt-inp-def hidden" style="color:blue">
-                    **&nbsp;
-                    <input id="sck-idname" type="checkbox">
-                </label>    
-                <input id="ck-idname" type="checkbox">
-                &nbsp;titlettip&nbsp;
-            </div>
-        </label>`
-    const tCkItem = `
-        <div id="row-idname" data-type="checkbox" data-req="false" class="col-lg-7 col-md-14 col-sm-7 col-14">
-            <label id="id-idname" class="h6 txt-inp-def row">
-                titlettip&nbsp
-                <label id="search-idname" class="h6 txt-inp-def hidden" style="color:blue">
-                    **&nbsp;
-                    <input id="sck-idname" type="checkbox">
-                </label>          
-                <input id="ck-idname" type="checkbox">
-            </label>
-        </div>`
-    const tSubList = `
-        <div id="slist-idname" class="col-lg-7 col-md-14 col-sm-7 col-14 hidden">
-            <div id="row-idname" data-type="menu" data-req="ifreq" class="row">
-                <div id="id-idname" class="col-12"></div>
-            </div>
-        </div>`
-    const tImg = `
-        <div id="row-idname" data-type="img" data-req="ifreq" class="col-13">
-            <div class="row">
-                <div class="col-3 txt-inp-def h6">titlettip&nbsp;</div>
-                    <input id="id-idname" type="file" class="col-10 form-control form-control-sm" 
-                        accept="image/*" name="files[]" onchange="nmsce.loadScreenshot(this)">&nbsp
-                </div>
-            </div>
-        </div>`
-
-    const tSubImg = `
-        <div id="slist-idname" class="col-13 hidden">
-            <div id="row-idname" data-type="img" data-req="ifreq" class="row">
-                <div class="col-3 txt-inp-def h6">titlettip&nbsp;</div>
-                    <input id="id-idname" type="file" class="col-10 form-control form-control-sm" 
-                        accept="image/*" name="files[]" onchange="nmsce.loadScreenshot(this)">&nbsp
-                </div>
-            </div>
-        </div>`
-
     let tabs = $("#typeTabs")
     let pnl = $("#typePanels")
-
-    let appenditem = (itm, add, title, id, ttip, req, img) => {
-        let l = add
-
-        if (img) {
-            l = /title/ [Symbol.replace](l, tTextImg)
-            l = /pic/ [Symbol.replace](l, img)
-        } else
-            l = /title/ [Symbol.replace](l, title + (req ? tReq : ""))
-
-        if (ttip) {
-            l = /ttip/ [Symbol.replace](l, tText)
-            l = /ttext/ [Symbol.replace](l, ttip)
-        } else
-            l = /ttip/ [Symbol.replace](l, "")
-
-        l = /idname/g [Symbol.replace](l, id)
-        l = /ifreq/ [Symbol.replace](l, req ? true : false)
-
-        itm.append(l)
-    }
+    let first = true
 
     for (let obj of objectList) {
         let id = obj.name.nameToId()
         let h = /idname/g [Symbol.replace](nav, id)
+        if (!first)
+            h = /active/ [Symbol.replace](h, "")
         h = /title/ [Symbol.replace](h, obj.name)
         tabs.append(h)
 
         h = /idname/g [Symbol.replace](header, id)
+        if (!first)
+            h = /show active/ [Symbol.replace](h, "")
         pnl.append(h)
 
-        nav = /active/ [Symbol.replace](nav, "")
-        header = /show active/ [Symbol.replace](header, "")
+        h = /idname/g [Symbol.replace](mapHeader, id)
+        if (first)
+            h = /style.*"/g [Symbol.replace](h, id)
+        $("#pnl-map").append(h)
 
-        let itm = pnl.find("#itm-" + id)
-        if (obj.fields) {
-            for (let f of obj.fields) {
-                if (fnmsce && !f.search)
-                    continue
+        first = false
 
-                let l = ""
-                let id = f.name.nameToId()
-
-                if (fnmsce)
-                    f.required = false
-
-                switch (f.type) {
-                    case "menu":
-                        appenditem(itm, tList, "", id)
-                        let lst = itm.find("#list-" + id)
-                        bhs.buildMenu(lst, f.name, f.list, f.sublist ? nmsce.selectSublist : null, f)
-
-                        if (f.sublist) {
-                            for (let t of f.list) {
-                                for (let j = 0; j < f.sublist.length; ++j) {
-                                    let flist = f.sublist[j]
-                                    let slist = t[flist.sub] ? t[flist.sub] : flist.list
-                                    let sub
-
-                                    if (fnmsce && !flist.search)
-                                        continue
-
-                                    switch (flist.type) {
-                                        case "menu":
-                                            if (slist) {
-                                                l = /idname/ [Symbol.replace](tSubList, (t.name + "-" + flist.name).nameToId())
-                                                appenditem(itm, l, "", flist.name.nameToId())
-
-                                                sub = itm.find("#slist-" + (t.name + "-" + flist.name).nameToId())
-                                                bhs.buildMenu(sub, flist.name, slist, null, {
-                                                    tip: t[flist.ttip]
-                                                })
-                                            }
-                                            break
-
-                                        case "map":
-                                            if (slist) {
-                                                l = /idname/ [Symbol.replace](tSubMap, (t.name + "-" + flist.name).nameToId())
-                                                appenditem(itm, l, "", flist.name.nameToId())
-
-                                                sub = itm.find("#slist-" + (t.name + "-" + flist.name).nameToId())
-                                                sub = sub.find("#row-" + flist.name.nameToId())
-
-                                                sub.append(slist[0].map)
-                                            }
-                                            break
-
-                                        case "array":
-                                            if (slist) {
-                                                l = /idname/ [Symbol.replace](tArray, (t.name + "-" + flist.name).nameToId())
-                                                appenditem(itm, l, "", flist.name.nameToId(), flist.ttip, null)
-
-                                                sub = itm.find("#slist-" + (t.name + "-" + flist.name).nameToId())
-                                                sub = sub.find("#row-" + flist.name.nameToId())
-
-                                                for (let m of slist)
-                                                    appenditem(sub, tArrayItm, m.name, m.name.nameToId(), null, null, m.img)
-                                            }
-                                            break
-
-                                        case "number":
-                                            l = /idname/ [Symbol.replace](tSubNumber, (t.name + "-" + flist.name).nameToId())
-                                            l = /range/ [Symbol.replace](l, flist.range)
-                                            appenditem(itm, l, flist.name, flist.name.nameToId(), flist.ttip, flist.required)
-                                            break
-                                        case "string":
-                                            l = /idname/ [Symbol.replace](tSubString, (t.name + "-" + flist.name).nameToId())
-                                            appenditem(itm, l, flist.name, flist.name.nameToId(), flist.ttip, flist.required)
-                                            break
-                                        case "blank":
-                                            l = /idname/ [Symbol.replace](tSubBlank, (t.name + "-" + flist.name).nameToId())
-                                            itm.append(l)
-                                            break
-                                        case "img":
-                                            l = /idname/ [Symbol.replace](tSubImg, (t.name + "-" + flist.name).nameToId())
-                                            appenditem(itm, l, flist.name, flist.name.nameToId(), flist.ttip, flist.required)
-                                            break
-                                    }
-                                }
-                            }
-                        }
-                        break
-
-                    case "number":
-                        l = /range/ [Symbol.replace](tNumber, f.range)
-                        appenditem(itm, l, f.name, id, f.ttip, f.required)
-                        break
-                    case "float":
-                        l = /range/ [Symbol.replace](tFloat, f.range)
-                        appenditem(itm, l, f.name, id, f.ttip, f.required)
-                        break
-                    case "img":
-                        appenditem(itm, tImg, f.name, id, f.ttip, f.required)
-                        break
-                    case "checkbox":
-                        appenditem(itm, tCkItem, f.name, id, f.ttip, f.required)
-                        break
-                    case "string":
-                        appenditem(itm, tString, f.name, id, f.ttip, f.required)
-                        break
-                    case "long string":
-                        appenditem(itm, tLongString, f.name, id, f.ttip, f.required)
-                        break
-                    case "map":
-                        l = /idname/ [Symbol.replace](tMap, (f.name).nameToId())
-                        appenditem(itm, l, "", f.name.nameToId())
-
-                        let mloc = itm.find("#row-" + f.name.nameToId())
-                        mloc.append(f.map)
-                        break
-                    case "blank":
-                        itm.append(tBlank)
-                        break
-                }
-            }
-        }
+        nmsce.addPanel(obj.fields, "pnl", id)
     }
 
     if (fnmsce)
         $("[id|='search']").show()
-
-    const imgline = `<img alt="id" src="path/fname.png" class="hidden" style="position:absolute" />`
-
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function (evt) {
-        let id = $(evt.currentTarget).prop("id").stripID()
-        let mlist = $("#pnl-" + id).find("#map-image")
-        for (let mloc of mlist) {
-            let pos = $(mloc).position()
-
-            $(mloc).parent().find("img").css({
-                top: pos.top + "px",
-                left: pos.left + "px",
-            })
-        }
-    })
-
-    let areas = $("[id='map-areas']")
-    for (let loc of areas) {
-        let ploc = $(loc).closest("[id|='row']")
-
-        if (ploc.length > 0) {
-            let loc = ploc.find("#map-image")
-            let path = loc.prop("src").replace(/(.*)\/.*/, "$1")
-
-            let aloc = ploc.find("#map-areas")
-            let hloc = ploc.find("#map-hover")
-            let sloc = ploc.find("#map-selected")
-
-            if (hloc.children().length === 0) {
-                for (let loc of aloc.children()) {
-                    $(loc).click(function () {
-                        nmsce.mapSelect(this)
-                    })
-
-                    let alt = $(loc).attr("alt")
-                    let data = $(loc).data()
-                    let l = /id/ [Symbol.replace](imgline, alt)
-                    l = /path/ [Symbol.replace](l, path)
-                    l = /fname/ [Symbol.replace](l, alt)
-                    if (data.group)
-                        l = /style/ [Symbol.replace](l, "data-group=" + data.group + " style")
-                    hloc.append(l)
-
-                    l = l.replace(/h(\d+).png/g, "s$1.png")
-                    sloc.append(l)
-                }
-            }
-        }
-    }
 
     $("area").mouseenter(function () {
         let id = $(this).attr("alt")
@@ -869,6 +658,154 @@ NMSCE.prototype.buildTypePanels = function () {
         loc.find("img").hide()
         return false
     })
+
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (evt) {
+        let id = $(evt.currentTarget).prop("id").stripID()
+
+        let mloc = $("#pnl-map")
+        mloc.find("[id|='pnl']").hide()
+        mloc = mloc.find("#pnl-" + id)
+        mloc.show()
+
+        let mlist = mloc.find("#map-image")
+        for (let mloc of mlist) {
+            let pos = $(mloc).position()
+
+            $(mloc).parent().find("img").css({
+                top: pos.top + "px",
+                left: pos.left + "px",
+            })
+        }
+    })
+}
+
+NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
+    let appenditem = (loc, add, title, id, ttip, req, long) => {
+        let h = long ? long : inpHdr
+        let l = /title/ [Symbol.replace](add, title + (req ? tReq : ""))
+
+        if (ttip) {
+            l = /ttip/ [Symbol.replace](l, tText)
+            l = /ttext/ [Symbol.replace](l, ttip)
+        } else
+            l = /ttip/ [Symbol.replace](l, "")
+
+        l = /idname/g [Symbol.replace](l, id)
+        l = /ifreq/ [Symbol.replace](l, req ? true : false)
+
+        h += l + inpEnd
+        loc.append(h)
+    }
+
+    let itm = $("#" + pnl + "-" + itmid)
+    for (let f of list) {
+        if (fnmsce) {
+            f.required = false
+            if (!f.search)
+                continue
+        }
+
+        let l = ""
+        let id = f.name.nameToId()
+
+        switch (f.type) {
+            case "number":
+                l = /range/ [Symbol.replace](tNumber, f.range)
+                appenditem(itm, l, f.name, id, f.ttip, f.required)
+                break
+            case "float":
+                l = /range/ [Symbol.replace](tFloat, f.range)
+                appenditem(itm, l, f.name, id, f.ttip, f.required)
+                break
+            case "img":
+                appenditem(itm, tImg, f.name, id, f.ttip, f.required, inpLongHdr)
+                break
+            case "checkbox":
+                appenditem(itm, tCkItem, f.name, id, f.ttip, f.required)
+                break
+            case "string":
+                appenditem(itm, tString, f.name, id, f.ttip, f.required)
+                break
+            case "long string":
+                appenditem(itm, tLongString, f.name, id, f.ttip, f.required, inpLongHdr)
+                break
+            case "blank":
+                itm.append(inpHdr + inpEnd)
+                break
+            case "menu":
+                appenditem(itm, tMenu, "", id)
+                let lst = itm.find("#row-" + id)
+                bhs.buildMenu(lst, f.name, f.list, f.sublist ? nmsce.selectSublist : null, f)
+
+                if (f.sublist) {
+                    for (let s of f.list) {
+                        let iid = s.name.nameToId()
+                        l = /idname/ [Symbol.replace](tSubList, iid)
+                        appenditem(itm, l, s.name, iid, null, null, inpLongHdr)
+
+                        let loc = $("#pnl-map #" + itm.prop("id"))
+                        appenditem(loc, l, s.name, iid, null, null, inpLongHdr)
+
+                        nmsce.addPanel(f.sublist, "slist", iid, s, itmid)
+                    }
+                }
+                break
+            case "map":
+                let iid = itmid.nameToId()
+                let mloc = $("#pnl-map")
+                let map = f.map
+
+                if (pid) {
+                    if (!slist[f.name])
+                        continue
+
+                    mloc = mloc.find("#slist-" + iid)
+                    map = slist[f.name]
+                } else
+                    mloc = mloc.find("#pnl-" + iid)
+
+                iid = f.name.nameToId()
+                l = /idname/ [Symbol.replace](tMap, iid)
+                appenditem(mloc, l, "", id, null, null, inpShipHdr)
+
+                mloc = mloc.find("#row-" + iid)
+                mloc.append(map)
+
+                nmsce.loadMap(mloc)
+                break
+        }
+    }
+}
+
+const imgline = `<img alt="id" src="path/fname.png" class="hidden" style="position:absolute" />`
+
+NMSCE.prototype.loadMap = function (ploc) {
+    let loc = ploc.find("#map-image")
+    let path = loc.prop("src").replace(/(.*)\/.*/, "$1")
+
+    let aloc = ploc.find("#map-areas")
+    let hloc = ploc.find("#map-hover")
+    let sloc = ploc.find("#map-selected")
+
+    if (hloc.children().length === 0) {
+        for (let loc of aloc.children()) {
+            $(loc).click(function () {
+                nmsce.mapSelect(this)
+            })
+
+            let alt = $(loc).attr("alt")
+            let data = $(loc).data()
+            let l = /id/ [Symbol.replace](imgline, alt)
+            l = /path/ [Symbol.replace](l, path)
+            l = /fname/ [Symbol.replace](l, alt)
+            if (data.group)
+                l = /style/ [Symbol.replace](l, "data-group=" + data.group + " style")
+            hloc.append(l)
+
+            l = l.replace(/h(\d+).png/g, "s$1.png")
+            sloc.append(l)
+        }
+    }
 }
 
 NMSCE.prototype.mapSelect = function (evt) {
@@ -893,173 +830,238 @@ NMSCE.prototype.mapSelect = function (evt) {
 }
 
 NMSCE.prototype.selectSublist = function (btn) {
-    let t = btn.text().stripMarginWS()
-    let f = btn.prop("id").slice(4)
-    let pnl = btn.closest("[id|='pnl']")
-    let p = pnl.prop("id").slice(4)
+    $("[id|='slist']").hide()
 
-    let pidx = getIndex(objectList, "name", p)
-    let fidx = getIndex(objectList[pidx].fields, "name", f)
-    let sub = objectList[pidx].fields[fidx].sublist
+    let id = btn.text().stripMarginWS().nameToId()
+    $("[id='slist-" + id + "']").show()
 
-    pnl.find("[id|='slist']").hide()
+    let mloc = $("#pnl-map")
+    let mlist = mloc.find("[id='map-image']")
+    for (let mloc of mlist) {
+        let pos = $(mloc).position()
 
-    for (let i of sub) {
-        let ploc = pnl.find("#slist-" + (t + "-" + i.name).nameToId())
-        ploc.show()
-
-        let mloc = ploc.find("#map-image")
-        if (mloc.length > 0) {
-            let pos = $(mloc).position()
-
-            ploc.find("img").css({
-                top: pos.top + "px",
-                left: pos.left + "px",
-            })
-        }
+        $(mloc).parent().find("img").css({
+            top: pos.top + "px",
+            left: pos.left + "px",
+        })
     }
 }
 
-let logocanvas = document.createElement('canvas')
-let imgcanvas = document.createElement('canvas')
 let txtcanvas = document.createElement('canvas')
 
-const txtList = [{
-    name: "Player Name"
-}, {
-    name: "System Name"
-}, {
-    name: "System Economy"
-}, {
-    name: "Coordinates"
-}, {
-    name: "Glyphs",
-    font: "glyph",
-    label: "NMS Glyphs"
-}, {
-    name: "Galaxy"
-}, {
-    name: "Platform",
-    ttip: "Only necessary for bases."
-}, {
-    name: "Mode",
-    ttip: "Only necessary for bases."
-}, {
-    name: "Ship Info",
-    ttip: "Ship size (T1, T2, T3)."
-}, {
-    name: "Text",
-    what: "txt",
-    ttip: "Uses 'Input Text' field below. Add a '\\n' to seperate multiple lines."
-    // }, {
-    //     name: "Logo",
-    //     what: "logo",
-    //     ttip: "Use a personal logo from your local machine."
-}]
+NMSCE.prototype.loadImgText = function (clear) {
+    const ckbox = `
+        <label class="col-3">
+            <input id="ck-idname" type="checkbox" data-loc="src" onchange="nmsce.ckImgText(this, true)">
+            &nbsp;title
+        </label>`
+
+    const textInp = `
+        <div class="col-14" style="padding-left:15px">
+            <label class="col-3 txt-inp-def">
+                <input id="ck-text" type="checkbox" data-loc="#id-text"
+                    onchange="nmsce.ckImgText(this, true)">
+                Text&nbsp;&nbsp;
+                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
+                    data-placement="bottom"
+                    title="Use Line break, <br>, to separate multiple lines.">
+                </i>
+            </label>
+            <input id="id-text" class="rounded col-10" type="text">
+        </div>
+        <br>`
+
+    $("#img-text").html(textInp)
+
+    let appenditem = (title, src) => {
+        let h = /idname/ [Symbol.replace](ckbox, title.nameToId())
+        h = /title/ [Symbol.replace](h, title)
+        h = /src/ [Symbol.replace](h, src)
+
+        $("#img-text").append(h)
+
+        if (clear || typeof nmsce.imageText === "undefined" || typeof nmsce.imageText[title.nameToId()] === "undefined")
+            nmsce.initTxtItem(title.nameToId())
+    }
+
+    let active = $("#typePanels .active")
+    let type = active.prop("id").stripID()
+    let objIdx = getIndex(objectList, "name", type)
+    let obj = objectList[objIdx]
+
+    for (let txt of obj.imgText)
+        appenditem(txt.name, txt.id)
+
+    for (let fld of obj.fields) {
+        if (fld.imgText)
+            appenditem(fld.name, "#typePanels .active #id-" + fld.name.nameToId())
+
+        if (typeof fld.sublist !== "undefined")
+            for (let sub of fld.sublist)
+                if (sub.imgText)
+                    appenditem(sub.name, "#typePanels .active #id-" + sub.name.nameToId() + " :visible")
+    }
+
+    bhs.buildMenu($("#imgtable"), "Font", fontList, nmsce.setFont, {
+        labelsize: "col-5",
+        menusize: "col",
+    })
+}
+
+NMSCE.prototype.initTxtItem = function (id) {
+    if (typeof nmsce.imageText === "undefined")
+        nmsce.imageText = {}
+    if (typeof nmsce.imageText[id] === "undefined")
+        nmsce.imageText[id] = {}
+
+    nmsce.imageText[id] = {
+        font: id === "Glyphs" ? "glyph" : "Arial",
+        fSize: 18,
+        color: "#ffffff",
+        x: 20,
+        y: 20,
+        ck: false,
+        sel: false,
+        width: 0,
+        height: 0,
+        text: ""
+    }
+}
+
+NMSCE.prototype.ckImgText = function (evt, draw) {
+    let id = $(evt).prop("id").stripID()
+    let ck = $(evt).prop("checked")
+
+    if (typeof nmsce.imageText[id] === "undefined")
+        nmsce.initTxtItem(id)
+
+    if (ck) {
+        let data = $(evt).data()
+        let loc = $(data.loc)
+        let type = loc.attr("type")
+        let text = ""
+
+        switch (type) {
+            case "button":
+                text = loc.text().stripNumber()
+                break
+            case "number":
+                text = loc.val()
+                text = text === -1 ? "" : parseInt(text)
+                break
+            case "float":
+                text = loc.val()
+                text = text === -1 ? "" : parseFloat(text)
+                break
+            default:
+                text = loc.val()
+                if (id === "Glyphs") {
+                    let loc = $("#id-Planet-Index :visible")
+                    let num = loc.length > 0 && loc.val() > 0 ? loc.val() : 0
+                    text = addrToGlyph(text, num)
+                }
+                break
+        }
+
+        nmsce.imageText[id].text = text
+        nmsce.imageText[id].ck = true
+        nmsce.imageText[id].sel = true
+        nmsce.imageText[id] = nmsce.measureText(nmsce.imageText[id])
+    } else {
+        nmsce.imageText[id].text = ""
+        nmsce.imageText[id].ck = false
+        nmsce.imageText[id].sel = false
+        nmsce.imageText[id].width = 0
+        nmsce.imageText[id].height = 0
+    }
+
+    if (draw)
+        nmsce.drawText()
+}
+
+NMSCE.prototype.restoreText = function (iTxt, draw) {
+    if (typeof iTxt !== "undefined" && iTxt)
+        nmsce.imageText = iTxt
+
+    if (typeof nmsce.imageText === "undefined")
+        return
+
+    let loc = $("#img-text")
+
+    let keys = Object.keys(nmsce.imageText)
+    for (let id of keys) {
+        let f = nmsce.imageText[id]
+
+        let floc = loc.find("#ck-" + id)
+
+        if (floc.length > 0) {
+            floc.prop("checked", f.ck)
+            nmsce.ckImgText(floc)
+            f.sel = false
+        }
+    }
+
+    if (draw)
+        nmsce.drawText()
+}
+
+NMSCE.prototype.extractImgText = function () {
+    let s = mergeObjects({}, nmsce.imageText)
+    let keys = Object.keys(s)
+    for (let k of keys) {
+        let f = s[k]
+        delete f.width
+        delete f.height
+        if (f.name !== "Text" && f.text !== "")
+            delete f.text
+        delete f.sel
+    }
+
+    return s
+}
 
 NMSCE.prototype.loadScreenshot = async function (evt, fname) {
-    const hdr = `
-        <div  class="row"> 
-            <i class="fa fa-question-circle-o text-danger h6 col-4" data-toggle="tooltip" data-html="true"
-                data-placement="bottom" title="Text overlay is generated from current values. To change display
-                toggle checkbox off and back on.">
-            </i>            
-            <div class="col-2 text-center">Color</div>
-            <div class="col-2 text-center">Size</div>
-            <div class="col-5">&nbsp;&nbsp;Font</div>
-        </div>`
+    nmsce.loadImgText()
+    nmsce.restoreText()
 
-    const itm = `
-        <div id="txt-idname" class="row"> 
-            <label class="col-4">
-                <input id="ck-idname" type="checkbox" onchange="nmsce.addText(this)">
-                titlettip&nbsp;
-            </label>
-            <input id="sel-idname" class="col-2 bkg-def" style="border-color:black" onchange="nmsce.setColor(this)" type="color" value="#ffffff">&nbsp;
-            <input id="size-idname" class="col-2" onchange="nmsce.setSize(this)" type="number" value=16 min=0>
-            <div id="id-" class="col-5"></div>
-        </div>`
+    if (evt) {
+        let file = evt.files[0]
+        let reader = new FileReader()
+        reader.onload = function () {
+            nmsce.screenshot = new Image()
+            nmsce.screenshot.crossOrigin = "anonymous"
+            nmsce.screenshot.src = reader.result
 
-    const txt = `
-        <br>
-        <div id="inp-idname" class="row"> 
-            <div class="col-3">Input Text</div>
-            <input id="inp-Input-Text" class="col-10" type="text" onchange="nmsce.addText(this)">
-        </div>`
+            nmsce.screenshot.onload = function () {
+                nmsce.drawText()
+            }
+        }
+        reader.readAsDataURL(file)
+    } else {
+        let img = new Image()
+        img.crossOrigin = "anonymous"
 
-    const logo = `
-        <br>
-        <div id="txt-idname" class="row"> 
-            <label class="col-4">
-                <input id="ck-idname" type="checkbox" onchange="nmsce.addText(this)">
-                titlettip&nbsp;
-            </label>
-            <input id="id-idname" type="file" class="col-9 form-control form-control-sm" 
-                accept="image/*" name="files[]" onchange="nmsce.loadLogo(this)">&nbsp
-        </div>`
+        let url = await bhs.fbstorage.ref().child(originalPath + fname).getDownloadURL()
+        var xhr = new XMLHttpRequest()
+        xhr.responseType = 'blob'
+        xhr.onload = function (event) {
+            var blob = xhr.response
+            nmsce.screenshot = new Image()
+            nmsce.screenshot.crossOrigin = "anonymous"
+            nmsce.screenshot.src = url
 
-    const ttip = `&nbsp;
-        <i class="fa fa-question-circle-o text-danger h6 col-4" data-toggle="tooltip" data-html="true"
-            data-placement="bottom" title="ttext">
-        </i> `
+            nmsce.screenshot.onload = function () {
+                nmsce.drawText()
+            }
+        }
+        xhr.open('GET', url)
+        xhr.send()
+    }
 
     let img = $("#imgtable")
     img.show()
-
-    let h = hdr
-    let l = ""
-    for (let i of txtList) {
-        switch (i.what) {
-            case "logo":
-                l = logo
-                break
-            case "txt":
-                l = itm + txt
-                break
-            default:
-                l = itm
-                break
-        }
-
-        l = /idname/g [Symbol.replace](l, i.name.nameToId())
-        l = /title/ [Symbol.replace](l, i.name)
-
-        if (i.ttip) {
-            l = /ttip/ [Symbol.replace](l, ttip)
-            l = /ttext/ [Symbol.replace](l, i.ttip)
-        } else
-            l = /ttip/ [Symbol.replace](l, "")
-
-        h += l
-    }
-
-    let loc = $("#img-text")
-    loc.empty()
-    loc.append(h)
-
-    let height = 0
-    let fnt = loc.find("[id|='txt']")
-    for (let loc of fnt) {
-        let id = $(loc).prop("id")
-        id = id.stripID().idToName()
-        let i = getIndex(txtList, "name", id)
-        if (typeof txtList[i].font === "undefined") {
-            bhs.buildMenu($(loc), "", fontList, nmsce.setFont, {
-                nolabel: true
-            })
-            $(loc).find("#btn-").text("Arial")
-            height = $(loc).height()
-        } else {
-            let lbl = $(loc).find("#id-")
-            lbl.text(txtList[i].label)
-            if (height > 0)
-                lbl.height(height)
-        }
-    }
-
-    selectedText = -1
-
     img = img.find("#id-canvas")
+
     img.mousedown(e => {
         nmsce.handleMouseDown(e)
     })
@@ -1072,398 +1074,140 @@ NMSCE.prototype.loadScreenshot = async function (evt, fname) {
     img.mouseout(e => {
         nmsce.handleMouseOut(e)
     })
-
-    let imgctx = imgcanvas.getContext("2d")
-    let canvas = img[0]
-    let width = $("#id-img").width()
-    canvas.width = imgcanvas.width = txtcanvas.width = width
-
-    if (evt) {
-        let file = evt.files[0]
-        let reader = new FileReader()
-
-        reader.onload = function () {
-            let img = new Image()
-            img.crossOrigin = "anonymous"
-
-            img.onload = function () {
-                canvas.height = imgcanvas.height = txtcanvas.height = img.height * width / img.width
-                imgctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-
-                let logo = new Image()
-                logo.onload = function () {
-                    imgctx.drawImage(logo, canvas.width - 60, canvas.height - 60, 50, 50)
-                    nmsce.showText()
-                }
-
-                logo.src = "/images/nmsce-logo.png"
-            }
-
-            img.src = reader.result
-        }
-
-        reader.readAsDataURL(file)
-    } else {
-        let img = new Image()
-        img.crossOrigin = "anonymous"
-
-        let url = await bhs.fbstorage.ref().child(originalPath + fname).getDownloadURL()
-        var xhr = new XMLHttpRequest()
-        xhr.responseType = 'blob'
-        xhr.onload = function (event) {
-            var blob = xhr.response;
-        }
-        xhr.open('GET', url)
-        xhr.send()
-
-        img.onload = function () {
-            canvas.height = imgcanvas.height = txtcanvas.height = img.height * width / img.width
-            imgctx.drawImage(img, 0, 0);
-
-            let logo = new Image()
-            logo.onload = function () {
-                imgctx.drawImage(logo, canvas.width - 60, canvas.height - 60, 50, 50)
-                nmsce.showText()
-            }
-
-            logo.src = "/images/nmsce-logo.png"
-        }
-
-        img.src = url;
-    }
 }
 
-// NMSCE.prototype.loadLogo = function (evt) {
-//     let ctx = logocanvas.getContext("2d")
-//     let file = evt.files[0]
+var mfLoc
 
-//     if (file.type.match('image.*')) {
-//         let reader = new FileReader()
-//         reader.onload = function () {
-//             let img = new Image()
-//             img.onload = function () {
-//                 logocanvas.width = canvas.width
-//                 logocanvas.height = canvas.height
-//                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-//             }
+NMSCE.prototype.measureText = function (t) {
+    if (!mfLoc)
+        mfLoc = $("#measurefont")
 
-//             img.src = reader.result
-//         }
+    mfLoc.css("font", t.fSize + "px " + t.font)
+    mfLoc.html(t.text)
 
-//         reader.readAsDataURL(file)
-//     }
-// }
+    t.width = mfLoc.width()
+    t.height = mfLoc.height()
 
-var texts = []
-var selectedText = -1
-var startX = 0
-var startY = 0
-
-NMSCE.prototype.saveText = async function () {
-    delete bhs.user.nmscetext // can't merge arrays correctly
-    bhs.user.nmscetext = texts
-
-    let ref = bhs.getUsersColRef(bhs.user.uid)
-    return await ref.set(bhs.user).then(() => {
-        return true
-    }).catch(err => {
-        if (bhs.status)
-            bhs.status("ERROR: " + err)
-
-        console.log(err)
-        return false
-    })
-}
-
-NMSCE.prototype.showText = function () {
-    if (typeof bhs.user.nmscetext !== "undefined") {
-        texts = []
-        let list = Object.keys(bhs.user.nmscetext)
-
-        for (let i of list)
-            nmsce.addSavedText(bhs.user.nmscetext[i])
-
-        nmsce.drawText()
-    }
-}
-
-NMSCE.prototype.addSavedText = function (text) {
-    let loc = $("#img-text #txt-" + text.sub)
-    loc.find("#ck-" + text.sub).prop("checked", true)
-    loc.find("#size-" + text.sub).val(text.fontsize)
-    loc.find("#sel-" + text.sub).val(text.color)
-    loc.find("#btn-").text(text.font)
-
-    let sloc = $("#pnl-S1")
-    let id = $("#typeTabs .active").prop("id").stripID()
-    let pnl = $("#typePanels #pnl-" + id)
-
-    switch (text.sub) {
-        case "Player-Name":
-            text.text = bhs.user._name
-            break
-        case "System-Economy":
-            text.text = sloc.find("#btn-Economy").text().stripNumber()
-            break
-        case "System-Name":
-            text.text = sloc.find("#id-sys").val()
-            break
-        case "Coordinates":
-            text.text = sloc.find("#id-addrInput #id-addr").val()
-            break
-        case "Glyphs":
-            let loc = pnl.find("#id-Planet-Index")
-            let num = loc.length > 0 && loc.val() >= 0 ? loc.val() : 0
-            text.text = addrToGlyph(sloc.find("#id-addrInput #id-addr").val(), num)
-            break
-            // case "ck-objinfo":
-            //     text.text = "ship info"
-            //     text.color = $("#sel-objinfo").val()
-            //     break
-        case "Galaxy":
-            text.text = bhs.user.galaxy
-            break
-        case "Platform":
-            text.text = bhs.user.platform
-            break
-        case "Mode": {
-            let loc = pnl.find("#btn-Game-Mode")
-            text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
-        }
-        break
-    case "Ship-Info": {
-        let loc = pnl.find("#btn-Slots :visible")
-        text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
-    }
-    break
-    case "Text":
-        $("#inp-Input-Text").val(text.text)
-        break
-    }
-
-    texts.push(text)
-}
-
-NMSCE.prototype.reloadText = function () {
-    for (let text of texts) {
-        let sloc = $("#pnl-S1")
-        let id = $("#typeTabs .active").prop("id").stripID()
-        let pnl = $("#typePanels #pnl-" + id)
-
-        switch (text.sub) {
-            case "Player-Name":
-                text.text = bhs.user._name
-                break
-            case "System-Economy":
-                text.text = sloc.find("#btn-Economy").text().stripNumber()
-                break
-            case "System-Name":
-                text.text = sloc.find("#id-sys").val()
-                break
-            case "Coordinates":
-                text.text = sloc.find("#id-addrInput #id-addr").val()
-                break
-            case "Glyphs":
-                let loc = pnl.find("#id-Planet-Index")
-                let num = loc.length > 0 && loc.val() >= 0 ? loc.val() : 0
-                text.text = addrToGlyph(sloc.find("#id-addrInput #id-addr").val(), num)
-                break
-                // case "ck-objinfo":
-                //     text.text = "ship info"
-                //     text.color = $("#sel-objinfo").val()
-                //     break
-            case "Galaxy":
-                text.text = bhs.user.galaxy
-                break
-            case "Platform":
-                text.text = bhs.user.platform
-                break
-            case "Mode": {
-                let loc = pnl.find("#btn-Game-Mode")
-                text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
-            }
-            break
-        case "Ship-Info": {
-            let loc = pnl.find("#btn-Slots")
-            text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
-        }
-        break
-        case "Text":
-            text.text = $("#inp-Input-Text").val()
-            break
-        }
-    }
-
-    nmsce.drawText()
-}
-
-NMSCE.prototype.addText = function (evt) {
-    let ck = $(evt).prop("checked")
-    let id = $(evt).prop("id")
-    let sub = id.stripID()
-    let itm = $(evt).closest("[id|='txt']")
-
-    if (ck) {
-        var text = {
-            font: itm.find("#btn-").text(),
-            fontsize: parseInt(itm.find("#size-" + sub).val()),
-            sub: sub,
-            color: itm.find("#sel-" + sub).val(),
-            x: 20,
-            y: texts.length * 20 + 20,
-        }
-
-        let sloc = $("#pnl-S1")
-        let id = $("#typeTabs .active").prop("id").stripID()
-        let pnl = $("#typePanels #pnl-" + id)
-
-        switch ($(evt).prop("id").stripID()) {
-            case "Player-Name":
-                text.text = bhs.user._name
-                break
-            case "System-Economy":
-                text.text = sloc.find("#btn-Economy").text().stripNumber()
-                break
-            case "System-Name":
-                text.text = sloc.find("#id-sys").val()
-                break
-            case "Coordinates":
-                text.text = sloc.find("#id-addrInput #id-addr").val()
-                break
-            case "Glyphs":
-                text.font = "glyph"
-                let loc = pnl.find("#id-Planet-Index")
-                let num = loc.length > 0 && loc.val() >= 0 ? loc.val() : 0
-                text.text = addrToGlyph(sloc.find("#id-addrInput #id-addr").val(), num)
-                break
-                // case "ck-objinfo":
-                //     text.text = "ship info"
-                //     text.color = $("#sel-objinfo").val()
-                //     break
-            case "Galaxy":
-                text.text = bhs.user.galaxy
-                break
-            case "Platform":
-                text.text = bhs.user.platform
-                break
-            case "Mode": {
-                let loc = pnl.find("#btn-Game-Mode")
-                text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
-            }
-            break
-        case "Ship-Info": {
-            let loc = pnl.find("#btn-Slots")
-            text.text = loc.length === 1 ? loc.text().stripMarginWS() : ""
-        }
-        break
-        case "Text":
-            text.text = $("#inp-Input-Text").val()
-            break
-        }
-
-        let ctx = txtcanvas.getContext("2d")
-        ctx.font = text.fontsize + "px " + text.font
-        ctx.fillStyle = text.color
-        text.width = ctx.measureText(text.text).width
-        text.height = text.fontsize
-
-        texts.push(text)
-    } else {
-        for (let i = 0; i < texts.length; ++i)
-            if (texts[i].sub === sub)
-                texts.splice(i, 1)
-    }
-
-    nmsce.drawText()
-}
-
-NMSCE.prototype.setFont = function (btn) {
-    let canvas = document.getElementById("id-canvas")
-    let ctx = canvas.getContext("2d")
-    let font = btn.text().stripMarginWS()
-    let id = btn.closest("[id|='txt']").prop("id").stripID()
-
-    for (let i = 0; i < texts.length; ++i)
-        if (texts[i].sub === id) {
-            texts[i].font = font
-
-            ctx.font = texts[i].fontsize + "px " + font
-            texts[i].width = ctx.measureText(texts[i].text).width
-            texts[i].height = texts[i].fontsize
-        }
-
-    nmsce.drawText()
+    return t
 }
 
 NMSCE.prototype.setColor = function (evt) {
-    for (let i = 0; i < texts.length; ++i)
-        if (texts[i].sub === $(evt).prop("id").stripID())
-            texts[i].color = $(evt).val()
+    let color = $(evt).val()
+
+    let keys = Object.keys(nmsce.imageText)
+    for (let id of keys) {
+        let text = nmsce.imageText[id]
+
+        if (text.sel)
+            text.color = color
+    }
 
     nmsce.drawText()
 }
 
 NMSCE.prototype.setSize = function (evt) {
-    let canvas = document.getElementById("id-canvas")
-    let ctx = canvas.getContext("2d")
-    let id = $(evt).prop("id").stripID()
+    let size = parseInt($(evt).val())
 
-    for (let i = 0; i < texts.length; ++i)
-        if (texts[i].sub === id) {
-            texts[i].fontsize = parseInt($(evt).val())
+    let keys = Object.keys(nmsce.imageText)
+    for (let id of keys) {
+        let text = nmsce.imageText[id]
 
-            ctx.font = texts[i].fontsize + "px " + texts[i].font
-            texts[i].width = ctx.measureText(texts[i].text).width
-            texts[i].height = texts[i].fontsize
+        if (text.sel) {
+            text.fSize = size
+            text = nmsce.measureText(text)
         }
+    }
 
     nmsce.drawText()
 }
 
-NMSCE.prototype.drawText = function () {
-    let ctx = txtcanvas.getContext("2d")
-    ctx.clearRect(0, 0, txtcanvas.width, txtcanvas.height)
+NMSCE.prototype.setFont = function (evt) {
+    let font = $(evt).text()
 
-    for (let text of texts) {
-        if (text.font === "glyph") {
-            ctx.fillStyle = text.color
-            ctx.fillRect(text.x - 2, text.y - text.height, text.width + 4, text.height + 4)
-            ctx.fillStyle = "#000000"
-            ctx.fillRect(text.x - 1, text.y - text.height + 1, text.width + 2, text.height + 2)
+    let keys = Object.keys(nmsce.imageText)
+    for (let id of keys) {
+        let text = nmsce.imageText[id]
+
+        if (text.sel) {
+            text.font = id === "Glyphs" ? "glyph" : font
+            text = nmsce.measureText(text)
         }
-
-        ctx.font = text.fontsize + "px " + text.font
-        ctx.fillStyle = text.color
-
-        if (text.text.includes("\\n")) {
-            let l = text.text.split("\\n")
-
-            for (let i = 0; i < l.length; ++i) {
-                ctx.fillText(l[i], text.x, text.y + i * (text.fontsize * 1.15))
-            }
-        } else
-            ctx.fillText(text.text, text.x, text.y)
     }
 
-    let canvas = document.getElementById("id-canvas")
-    ctx = canvas.getContext("2d")
+    nmsce.drawText()
+}
 
-    ctx.drawImage(imgcanvas, 0, 0, canvas.width, canvas.height)
+NMSCE.prototype.drawText = function (alt, altw) {
+    let canvas = alt ? alt : document.getElementById("id-canvas")
+
+    let width = $("#id-img").width()
+    let scale = altw ? altw / width : 1
+    width = altw ? altw : width
+
+    let ctx = txtcanvas.getContext("2d")
+    txtcanvas.width = width
+    txtcanvas.height = nmsce.screenshot.height * width / nmsce.screenshot.width
+    ctx.clearRect(0, 0, txtcanvas.width, txtcanvas.height)
+
+    let loc = $("#img-text")
+    let keys = Object.keys(nmsce.imageText)
+    for (let id of keys) {
+        let text = nmsce.imageText[id]
+        let tloc = loc.find("#ck-" + id)
+
+        if (text.ck && tloc.is(":visible")) {
+            if (id === "Glyphs") {
+                text.font = "glyph"
+
+                ctx.fillStyle = text.color
+                ctx.fillRect((text.x - 2) * scale, (text.y - text.height) * scale, (text.width + 4) * scale, (text.height + 4) * scale)
+                ctx.fillStyle = "#000000"
+                ctx.fillRect((text.x - 1) * scale, (text.y - text.height + 1) * scale, (text.width + 2) * scale, (text.height + 2) * scale)
+            }
+
+            ctx.font = (text.fSize * scale) + "px " + text.font
+            ctx.fillStyle = text.color
+
+            if (text.text.includes("<br>")) {
+                let l = text.text.split("<br>")
+
+                for (let i = 0; i < l.length; ++i)
+                    ctx.fillText(l[i], (text.x) * scale, (text.y + i * (text.fSize * 1.15)) * scale)
+            } else
+                ctx.fillText(text.text, (text.x) * scale, (text.y) * scale)
+
+            if (text.sel && !altw) {
+                ctx.strokeStyle = "white"
+                ctx.setLineDash([2, 2]);
+                ctx.beginPath()
+                ctx.rect(text.x - 2, text.y - text.fSize + 2, text.width + 3, text.height + 3)
+                ctx.stroke();
+            }
+        }
+    }
+
+    canvas.width = width
+    canvas.height = nmsce.screenshot.height * width / nmsce.screenshot.width
+    let w = canvas.height * .09
+
+    ctx = canvas.getContext("2d")
+    ctx.drawImage(nmsce.screenshot, 0, 0, canvas.width, canvas.height)
     ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
+    ctx.drawImage(nmsce.logo, canvas.width - w - 5, canvas.height - w - 5, w, w)
 }
 
 NMSCE.prototype.redditShare = function (evt) {
     if (!nmsce.last) {
         nmsce.last = {}
         nmsce.last.uid = bhs.user.uid
-        nmsce.last.Photo = uuidv4() + "_r.jpg"
+        nmsce.last.Photo = uuidv4() + ".jpg"
     }
 
-    let canvas = document.getElementById("id-canvas")
-
-    canvas.toBlob(blob => {
-        bhs.fbstorage.ref().child(displayPath + nmsce.last.Photo).put(blob).then(() => {
-            bhs.fbstorage.ref().child(displayPath + nmsce.last.Photo).getDownloadURL().then(url => {
+    let disp = document.createElement('canvas')
+    nmsce.drawText(disp, 900)
+    disp.toBlob(blob => {
+        bhs.fbstorage.ref().child(redditPath + nmsce.last.Photo).put(blob).then(() => {
+            bhs.fbstorage.ref().child(redditPath + nmsce.last.Photo).getDownloadURL().then(url => {
                 let u = "http://www.reddit.com/submit?url=" + encodeURI(url)
                 window.open(u);
             })
@@ -1472,58 +1216,86 @@ NMSCE.prototype.redditShare = function (evt) {
     }, "image/jpeg", .7)
 }
 
-NMSCE.prototype.textHittest = function (x, y, textIndex) {
-    var text = texts[textIndex]
-    return (x >= text.x && x <= text.x + text.width && y >= text.y - text.height && y <= text.y)
+NMSCE.prototype.textHittest = function (x, y, text) {
+    return (x >= text.x && x <= text.x + text.width && y >= text.y - text.fSize && y <= text.y - text.fSize + text.height)
 }
 
 NMSCE.prototype.handleMouseDown = function (e) {
     e.preventDefault()
 
-    var canvas = $(e.currentTarget).get(0)
-    var canvasOffset = canvas.getBoundingClientRect()
+    let canvas = $(e.currentTarget).get(0)
+    let canvasOffset = canvas.getBoundingClientRect()
 
-    var offsetX = canvasOffset.left
-    var offsetY = canvasOffset.top
-    startX = parseInt(e.clientX - offsetX)
-    startY = parseInt(e.clientY - offsetY)
+    let offsetX = canvasOffset.left
+    let offsetY = canvasOffset.top
+    let startX = parseInt(e.clientX - offsetX)
+    let startY = parseInt(e.clientY - offsetY)
 
-    for (var i = 0; i < texts.length && selectedText === -1; i++)
-        if (nmsce.textHittest(startX, startY, i))
-            selectedText = i
+    let keys = Object.keys(nmsce.imageText)
+
+    if (!e.shiftKey)
+        for (let k of keys) {
+            let text = nmsce.imageText[k]
+            text.sel = false
+        }
+
+    let loc = $("#imgtable")
+    for (let k of keys) {
+        let text = nmsce.imageText[k]
+
+        if (text.ck && nmsce.textHittest(startX, startY, text)) {
+            text.sel = true
+            nmsce.startX = startX
+            nmsce.startY = startY
+
+            loc.find("#btn-Font").text(text.font)
+            loc.find("#sel-size").val(text.fSize)
+            loc.find("#sel-color").val(text.color)
+
+            if (!e.shiftKey)
+                break
+        }
+    }
+
+    nmsce.drawText()
 }
 
 NMSCE.prototype.handleMouseUp = function (e) {
     e.preventDefault()
-    selectedText = -1
+    delete nmsce.startX
+    delete nmsce.starty
 }
 
 NMSCE.prototype.handleMouseOut = function (e) {
     e.preventDefault()
-    selectedText = -1
 }
 
 NMSCE.prototype.handleMouseMove = function (e) {
-    if (selectedText < 0)
+    e.preventDefault()
+    if (typeof nmsce.startX === "undefined")
         return
 
-    e.preventDefault()
-    var cid = $(e.currentTarget).get(0)
-    var canvasOffset = cid.getBoundingClientRect()
-    var offsetX = canvasOffset.left
-    var offsetY = canvasOffset.top
+    let cid = $(e.currentTarget).get(0)
+    let canvasOffset = cid.getBoundingClientRect()
+    let offsetX = canvasOffset.left
+    let offsetY = canvasOffset.top
     let mouseX = parseInt(e.clientX - offsetX)
     let mouseY = parseInt(e.clientY - offsetY)
 
-    var text = texts[selectedText]
+    let dx = mouseX - nmsce.startX
+    let dy = mouseY - nmsce.startY
+    nmsce.startX = mouseX
+    nmsce.startY = mouseY
 
-    var dx = mouseX - startX
-    var dy = mouseY - startY
-    startX = mouseX
-    startY = mouseY
+    let keys = Object.keys(nmsce.imageText)
+    for (let k of keys) {
+        let text = nmsce.imageText[k]
 
-    text.x += dx
-    text.y += dy
+        if (text.sel) {
+            text.x += dx
+            text.y += dy
+        }
+    }
 
     nmsce.drawText()
 }
@@ -1540,7 +1312,7 @@ NMSCE.prototype.deleteEntry = function (entry) {
         ref = bhs.fbstorage.ref().child(displayPath + entry.Photo)
         if (entry.Photo.location("_r.jpg") === -1)
             ref.delete()
-            
+
         ref = bhs.fbstorage.ref().child(thumbnailPath + entry.Photo)
         ref.delete()
     }).catch(err => {
@@ -1829,10 +1601,13 @@ NMSCE.prototype.selectList = function (evt) {
         nmsce.last = e
         nmsce.displaySingle(e)
 
-        nmsce.loadScreenshot(null, e.Photo);
+        nmsce.loadScreenshot(null, e.Photo)
 
         $("#delete").removeClass("disabled")
         $("#delete").removeAttr("disabled")
+
+        $("#reddit").removeClass("disabled")
+        $("#reddit").removeAttr("disabled")
     }
 }
 
@@ -2185,12 +1960,8 @@ const shipList = [{
         A - 35-50% damage, 15-20% shield<br>
         B - 15-30% damage, 5-10% shield<br>
         C - 5-10% damage`,
-    bodies: [{
-        map: fighterBodiesMap,
-    }],
-    wings: [{
-        map: fighterWingsMap,
-    }],
+    bodies: fighterBodiesMap,
+    wings: fighterWingsMap,
 }, {
     name: "Hauler",
     slotTtip: `
@@ -2202,12 +1973,8 @@ const shipList = [{
         A - 35-50% damage, 15-20% shield<br>
         B - 15-30% damage, 5-10% shield<br>
         C - 5-10% damage`,
-    bodies: [{
-        map: haulerBodiesMap,
-    }],
-    wings: [{
-        map: haulerWingsMap,
-    }],
+    bodies: haulerBodiesMap,
+    wings: haulerWingsMap,
 }, {
     name: "Shuttle",
     slotList: [{
@@ -2225,21 +1992,15 @@ const shipList = [{
         A - 35-50% damage, 15-20% shield<br>
         B - 15-30% damage, 5-10% shield<br>
         C - 5-10% damage`,
-    bodies: [{
-        map: shuttleBodiesMap,
-    }],
-    wings: [{
-        map: shuttleWingsMap,
-    }],
+    bodies: shuttleBodiesMap,
+    wings: shuttleWingsMap,
 }, {
     name: "Explorer",
     slotTtip: `
         T1 - 15 - 31 slots <br>
         T2 - 32 - 39 slots <br>
         T3 - 40 - 48 slots <br>`,
-    bodies: [{
-        map: explorerBodiesMap,
-    }],
+    bodies: explorerBodiesMap,
     classTtip: `
         S - 10 - 20 % damage, 55 - 60 % shield, 30 - 35 % hyperdrive <br>
         A - 5 - 10 % damage, 45 - 50 % shield, 15 - 25 % hyperdrive <br>
@@ -2247,9 +2008,7 @@ const shipList = [{
         C - 12 - 20 % shield, 0 - 5 % hyperdrive`,
 }, {
     name: "Exotic",
-    bodies: [{
-        map: exoticBodiesMap,
-    }],
+    bodies: exoticBodiesMap,
 }]
 
 const classList = [{
@@ -3096,6 +2855,26 @@ const planetNumTip = `This is the first glyph in the portal address. Assigned to
 
 const objectList = [{
     name: "Ship",
+    imgText: [{
+        id: "#id-Player",
+        name: "Player"
+    }, {
+        id: "#btn-Galaxy",
+        name: "Galaxy"
+    }, {
+        id: "#id-addrInput #id-addr",
+        name: "Coords"
+    }, {
+        id: "#id-addrInput #id-addr",
+        name: "Glyphs",
+        font: "glyph"
+    }, {
+        id: "#id-sys",
+        name: "System"
+    }, {
+        id: "#btn-Economy",
+        name: "Economy"
+    }],
     fields: [{
         name: "Type",
         type: "menu",
@@ -3107,16 +2886,20 @@ const objectList = [{
             type: "string",
             search: true,
             required: true,
+            imgText: true,
+            ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
         }, {
             name: "Wave",
             type: "number",
             range: "6",
+            imgText: true,
             search: true,
         }, {
             name: "Class",
             type: "menu",
             ttip: "classTtip",
             list: classList,
+            imgText: true,
             search: true,
         }, {
             name: "Slots",
@@ -3124,6 +2907,7 @@ const objectList = [{
             ttip: "slotTtip",
             sub: "slotList",
             list: slotList,
+            imgText: true,
             search: true,
         }, {
             name: "Primary Color",
@@ -3144,6 +2928,7 @@ const objectList = [{
         }, {
             name: "Seed",
             type: "string",
+            imgText: true,
             ttip: "Found in save file. Can be used to reskin ship.",
         }, {
             name: "Photo",
@@ -3163,11 +2948,32 @@ const objectList = [{
     }]
 }, {
     name: "Freighter",
+    imgText: [{
+        id: "#id-Player",
+        name: "Player"
+    }, {
+        id: "#btn-Galaxy",
+        name: "Galaxy"
+    }, {
+        id: "#id-addrInput #id-addr",
+        name: "Coords"
+    }, {
+        id: "#id-addrInput #id-addr",
+        name: "Glyphs",
+        font: "glyph"
+    }, {
+        id: "#id-sys",
+        name: "System"
+    }, {
+        id: "#btn-Economy",
+        name: "Economy"
+    }],
     fields: [{
         name: "Name",
         type: "string",
         search: true,
         required: true,
+        ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
     }, {
         name: "Slots",
         type: "menu",
@@ -3210,16 +3016,36 @@ const objectList = [{
     }, ]
 }, {
     name: "Multi-Tool",
+    imgText: [{
+        id: "#id-Player",
+        name: "Player"
+    }, {
+        id: "#btn-Galaxy",
+        name: "Galaxy"
+    }, {
+        id: "#id-addrInput #id-addr",
+        name: "Coords"
+    }, {
+        id: "#id-addrInput #id-addr",
+        name: "Glyphs",
+        font: "glyph"
+    }, {
+        id: "#id-sys",
+        name: "System"
+    }],
     fields: [{
         name: "Name",
         type: "string",
         search: true,
         required: true,
+        imgText: true,
+        ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
     }, {
         name: "Type",
         type: "menu",
         list: mtList,
         required: true,
+        imgText: true,
         search: true,
     }, {
         name: "Class",
@@ -3227,11 +3053,13 @@ const objectList = [{
         list: classList,
         // ttipFld: "classTtip",
         required: true,
+        imgText: true,
         search: true,
     }, {
         name: "Slots",
         type: "number",
         required: true,
+        imgText: true,
         search: true,
     }, {
         name: "Space Station",
@@ -3243,6 +3071,7 @@ const objectList = [{
     }, {
         name: "Planet Name",
         type: "string",
+        imgText: true,
         search: true,
     }, {
         name: "Planet Index",
@@ -3251,12 +3080,14 @@ const objectList = [{
         ttip: planetNumTip,
     }, {
         name: "Latitude",
+        imgText: true,
         type: "string",
     }, {
         name: "Longitude",
+        imgText: true,
         type: "string",
     }, {
-        name: "Location Notes",
+        name: "Notes",
         type: "long string",
     }, {
         name: "Primary Color",
@@ -3272,6 +3103,7 @@ const objectList = [{
     }, {
         name: "Seed",
         type: "string",
+        imgText: true,
         ttip: "Found in save file. Can be used to reskin MT.",
     }, {
         name: "Photo",
@@ -3303,11 +3135,30 @@ const objectList = [{
     // }]
 }, {
     name: "Fauna",
+    imgText: [{
+        id: "#id-Player",
+        name: "Player"
+    }, {
+        id: "#btn-Galaxy",
+        name: "Galaxy"
+    }, {
+        id: "#id-addrInput #id-addr",
+        name: "Coords"
+    }, {
+        id: "#id-addrInput #id-addr",
+        name: "Glyphs",
+        font: "glyph"
+    }, {
+        id: "#id-sys",
+        name: "System"
+    }],
     fields: [{
         name: "Name",
         type: "string",
         search: true,
         required: true,
+        imgText: true,
+        ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
     }, {
         name: "Type",
         type: "menu",
@@ -3332,12 +3183,15 @@ const objectList = [{
         name: "Height",
         type: "float",
         range: 15.0,
+        imgText: true,
         search: true,
     }, {
         name: "Description",
+        imgText: true,
         type: "long string",
     }, {
         name: "Planet Name",
+        imgText: true,
         type: "string",
     }, {
         name: "Planet Index",
@@ -3351,11 +3205,30 @@ const objectList = [{
     }]
 }, {
     name: "Planet",
+    imgText: [{
+        id: "#id-Player",
+        name: "Player"
+    }, {
+        id: "#btn-Galaxy",
+        name: "Galaxy"
+    }, {
+        id: "#id-addrInput #id-addr",
+        name: "Coords"
+    }, {
+        id: "#id-addrInput #id-addr",
+        name: "Glyphs",
+        font: "glyph"
+    }, {
+        id: "#id-sys",
+        name: "System"
+    }],
     fields: [{
         name: "Name",
         type: "string",
         search: true,
         required: true,
+        imgText: true,
+        ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
     }, {
         name: "Planet Index",
         range: 15,
@@ -3366,6 +3239,7 @@ const objectList = [{
         type: "menu",
         list: biomeList,
         required: true,
+        imgText: true,
         search: true,
     }, {
         name: "Extreme Weather",
@@ -3389,19 +3263,23 @@ const objectList = [{
         type: "menu",
         list: colorList,
         required: true,
+        imgText: true,
         search: true,
     }, {
         name: "Water Color",
         type: "menu",
         list: colorList,
+        imgText: true,
         search: true,
     }, {
         name: "Sky Color",
         type: "menu",
         list: colorList,
+        imgText: true,
         search: true,
     }, {
         name: "Notes",
+        imgText: true,
         type: "long string",
     }, {
         name: "Photo",
@@ -3410,15 +3288,40 @@ const objectList = [{
     }]
 }, {
     name: "Base",
+    imgText: [{
+        id: "#id-Player",
+        name: "Player"
+    }, {
+        id: "#btn-Galaxy",
+        name: "Galaxy"
+    }, {
+        id: "#btn-Platform",
+        name: "Platform"
+    }, {
+        id: "#id-addrInput #id-addr",
+        name: "Coords"
+    }, {
+        id: "#id-addrInput #id-addr",
+        name: "Glyphs",
+        font: "glyph"
+    }, {
+        id: "#id-sys",
+        name: "System"
+    }, {
+        id: "#btn-Economy",
+        name: "Economy"
+    }],
     fields: [{
         name: "Base Name",
         type: "string",
         required: true,
+        imgText: true,
         search: true,
     }, {
         name: "Owner",
         type: "string",
         required: true,
+        imgText: true,
         search: true,
     }, {
         name: "Planet Index",
@@ -3431,23 +3334,28 @@ const objectList = [{
         list: modeList,
         required: true,
         ttip: "Bases are only visible by players using the same game mode.",
+        imgText: true,
         search: true,
     }, {
         name: "Latitude",
         type: "string",
+        imgText: true,
         ttip: "Helpful finding bases on crowded planets.",
     }, {
         name: "Longitude",
+        imgText: true,
         type: "string",
     }, {
         name: "Type",
         type: "menu",
         list: baseList,
         search: true,
+        imgText: true,
         required: true,
     }, {
         name: "Description",
         type: "long string",
+        imgText: true,
         search: true,
     }, {
         name: "Photo",

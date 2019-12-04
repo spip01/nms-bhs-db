@@ -51,9 +51,9 @@ blackHoleSuns.prototype.buildFilePanel = function () {
             if (bhs.fileSelected)
                 bhs.readTextFile(bhs.fileSelected, $(this).prop("id"))
             else
-                $("#filestatus").prepend("<h7>No file selected</h7>")
+                $("#filestatus").prepend("No file selected")
         } else
-            $("#filestatus").prepend("<h7>Invalid user info</h7>")
+            $("#filestatus").prepend("Invalid user info")
     })
 
     $("#uploadedFile").unbind("change")

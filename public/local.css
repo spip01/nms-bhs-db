@@ -17,7 +17,6 @@ h7 {
 }
 
 @media only screen and (max-width: 767px) {
-
     .h1,
     h1 {
         font-size: 1.62rem
@@ -52,26 +51,9 @@ h7 {
     h7 {
         font-size: 0.41rem;
     }
-
-    .sticky {
-        width: 87%;
-    }
-
-    .hide-sm {
-        display: none;
-    }
-
-    .small {
-        font-size: 70%;
-    }
-
-    body {
-        font-size: .7rem;
-    }
 }
 
 @media only screen and (min-width: 768px) {
-
     .h1,
     h1 {
         font-size: 2rem
@@ -106,40 +88,6 @@ h7 {
     h7 {
         font-size: 0.5rem;
     }
-
-    .sticky {
-        width: 93%;
-    }
-
-    .hide-sm {
-        display: none;
-    }
-}
-
-@media only screen and (min-width: 992px) {
-    .sticky {
-        width: 94.5%;
-    }
-}
-
-@media only screen and (min-width: 1200px) {
-    .sticky {
-        width: 95.5%;
-    }
-}
-
-@media print {
-    .noprint {
-        display: none !important;
-    }
-
-    .row-header {
-        display: table-header-group !important;
-    }
-
-    [id|='row-'] {
-        font-size: 0.5rem !important;
-    }
 }
 
 @font-face {
@@ -167,12 +115,7 @@ body {
     cursor: progress !important;
 }
 
-.sticky {
-    position: fixed;
-    z-index: 1;
-    background-color: white;
-}
-
+.row,
 [class|='col-'] {
     padding-left: 1px !important;
     padding-right: 1px !important;

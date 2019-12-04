@@ -120,8 +120,8 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
 
     bhs.user = mergeObjects(bhs.user, user)
 
-    if (!findex)
-        $("#fileupload").hide()
+    if (findex)
+        $("#fileupload").show()
 
     if (fpoi)
         return
@@ -196,24 +196,20 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     const panel = `
         <div id="pnl-user">
             <div class="row">
-                <div class="col-sm-7 col-14">
+                <div class="col-lg-5 col-md-7 col-sm-5 col-14">
                     <div class="row">
-                        <div class="col-sm-14 col-5 h6 txt-inp-def">Player Name<span id="namereq" class="h5 text-danger">&nbsp;*</span></div>
-                        <input id="id-Player" class="rounded col-lg-10 col-md-11 col-sm-8 col-9 h5" type="text">
+                        <div class="col-md-14 col-sm-14 col-6 h6 txt-inp-def">Player Name<span id="namereq" class="h5 text-danger">&nbsp;*</span></div>
+                        <input id="id-Player" class="rounded col h5" type="text">
                     </div>
                 </div>
 
-                <div class="col-sm-7 col-14">
-                    <div id="id-Civ-Org"></div>
-                </div>
+                <div id="id-Civ-Org" class="col-lg-4 col-md-7 col-sm-3 col-14"></div>
+                <div id="id-Galaxy" class="col-lg-3 col-md-7 col-sm-3 col-14"></div>
+                <div id="id-Platform" class="col-lg-2 col-md-7 col-sm-3 col-14"></div>
             </div>
 
-            <div class="row">
-                <div id="id-Galaxy" class="col-sm-7 col-14"></div>
-                <div id="id-Platform" class="col-sm-7 col-14"></div>
-            </div>
             <div class="row text-right">
-                <label id="fileupload" class="h5 text-right align-bottom">
+                <label id="fileupload" class="h5 text-right align-bottom hidden">
                     <input id="ck-fileupload" type="checkbox">
                     &nbsp;File Upload&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
@@ -234,21 +230,21 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     })
 
     bhs.buildMenu(loc, "Civ/Org", bhs.orgList, bhs.saveUser, {
-        labelsize: "col-sm-14 col-5",
-        menusize: "col-sm-14 col-9",
+        labelsize: "col-md-14 col-sm-14 col-6",
+        menusize: "col",
     })
 
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, {
         required: !fnmsce,
-        labelsize: "col-sm-7 col-6",
-        menusize: "col-sm-7 col-8",
+        labelsize: "col-lg-14 col-md-6 col-sm-14 col-6",
+        menusize: "col",
     })
 
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, {
         tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
         required: true,
-        labelsize: "col-sm-7 col-6",
-        menusize: "col-sm-7 col-8",
+        labelsize: "col-lg-14 col-md-6 col-sm-14 col-6",
+        menusize: "col",
     })
 
     if (fnmsce)

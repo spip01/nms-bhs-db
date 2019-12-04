@@ -1,75 +1,82 @@
 <!--googleoff:all-->
 <div class="container-fluid">
     <div id="navmenu" class="row">
-        <div id="menulogo" class="col-lg-2 col-md-3 col-sm-4 col-5">
-            <img id="menuimg" src="images/nmsce-logo.png" alt="nmsce logo" style="top:10px; width:80px; height:80px">
+        <div id="menulogo" class="col-lg-2 col-3">
+            <img id="menuimg" src="images/nmsce-logo.png" alt="nmsce logo" style="width:80px; height:80px">
         </div>
-        <div class="col-lg-12 col-md-11 col-sm-10 col-9">
+
+        <div class="col-lg-3 col-5">
             <br>
-            <div id="menuitems" class="row h5">
-                <a class="col-lg-4 col-md-4 col-sm-7 col-14 txt-def h4" href="nmsce.html">CE Search</a>
-                <a class="col-lg-4 col-md-5 col-sm-7 col-14 txt-def h4" href="cedata.html">CE Data</a>
-                <a class="col-lg-4 col-md-5 col-sm-7 col-14 txt-def h4" href="darc.html">BHS DARC</a>
-                <a class="col-lg-4 col-md-4 col-sm-7 col-14 txt-def" href="nav.html">BHS Star Nav</a>
-                <a class="col-lg-4 col-md-5 col-sm-7 col-14 txt-def" href="glyph.html">BHS Glyph Converter</a>
+            <div id="navmenu" class="dropdown">
+                <button type="button" class="btn-def text-center no-border dropdown-toggle" data-toggle="dropdown">
+                    <h4 id="pagename"></h4>
+                </button>
+                <div class="dropdown-menu bkg-def">
+                    <a class="no-border dropdown-item btn-def h4" href="nmsce.html">NMSCE Search</a>
+                    <a class="no-border dropdown-item btn-def h4" href="cedata.html">NMSCE Data</a>
+                    <a class="no-border dropdown-item btn-def h4" href="darc.html">BHS DARC</a>
+                    <a class="no-border dropdown-item btn-def h4" href="index.html">BHS Data</a>
+                    <a class="no-border dropdown-item btn-def h4" href="nav.html">Star Nav</a>
+                    <a class="no-border dropdown-item btn-def h4" href="glyph.html">Glyph Converter</a>
+                </div>
+            </div>
+        </div>
 
-                <div class="col-lg-4 col-md-5 col-sm-7 col-14 txt-def">
-                    <div id="full-usermenu">
-                        <button id="login" type="button" class="btn-def no-border" onclick="bhs.logIn()">
-                            Login
+        <div class="col">
+            <br>
+            <div id="full-usermenu">
+                <button id="login" type="button" class="btn-def no-border h4" onclick="bhs.logIn()">
+                    Login
+                </button>
+
+                <div id="usermenu" class="dropdown" style="display: none">
+                    <button type="button" class="row btn-def no-border dropdown-toggle" data-toggle="dropdown">
+                        <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
+                        <h4 id="username">User</h4>
+                    </button>
+
+                    <div class="dropdown-menu bkg-def text-center">
+                        <button id="logout" type="button" class="no-border dropdown-item btn-def h4"
+                            onclick="bhs.logOut()">Logout</button>
+                        <button id="tooltip" type="button" class="no-border dropdown-item btn-def h4"
+                            onclick="bhs.toggleTips()">
+                            Toggle Tooltip Display
                         </button>
-
-                        <div id="usermenu" class="dropdown" style="display: none">
-                            <button type="button" class="row btn-def no-border dropdown-toggle" data-toggle="dropdown">
-                                <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
-                                <h6 id="username">User</h6>
-                            </button>
-
-                            <div class="dropdown-menu bkg-def text-center">
-                                <button id="logout" type="button" class="no-border text-center dropdown-item btn-def"
-                                    onclick="bhs.logOut()">Logout</button>
-                                <button id="tooltip" type="button" class="no-border text-center dropdown-item btn-def"
-                                    onclick="bhs.toggleTips()">
-                                    Toggle Tooltip Display
-                                </button>
-                                <button id="admin" type="button"
-                                    class="h5 no-border text-center dropdown-item btn-def hidden"
-                                    onclick="bhs.setAdmin()">
-                                    Admin Edit
-                                </button>
-                            </div>
-                        </div>
+                        <button id="admin" type="button" class="h5 no-border dropdown-item btn-def h4 hidden"
+                            onclick="bhs.setAdmin()">
+                            Admin Edit
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div id="contest" class="row hidden"></div>
-
-<div class="row border-top">
-    <!--a href="https://twitter.com/nmsblkholesuns" class="col-4 text-center clr-creme h6">Follow us on
-        Twitter</a-->
-    <a href="https://www.reddit.com/r/NMSCoordinateExchange/" class="col-7 text-center clr-creme h6">NMSCE
-        Reddit</a>
-    <!--a href="https://discord.blackholesuns.com/" class="col-4 text-center clr-creme h6">Talk to us on Discord</a-->
-</div>
-
-<div id="loginpnl" class="card bkg-def pad-bottom" style="display:none">
-    <div class="card-header">
-        <div class="h4 txt-def text-center">Login NMSCE</div>
+    <div class="row border-top">
+        <a href="https://www.reddit.com/r/NMSCoordinateExchange/" class="col-7 text-center clr-creme h5">NMSCE
+            Reddit</a>
+        <a class="col-7 text-center clr-creme h5" href=" https://discordapp.com/invite/TEeK8tp/">Report
+            Problems&nbsp;
+            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                data-placement="bottom" title="This will take you to the Discord BHS trouble-tickets channel.">
+            </i>
+        </a>
     </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-5">&nbsp;</div>
-            <div id="lgoogle" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Google</div>
+
+    <div id="loginpnl" class="card bkg-def pad-bottom" style="display:none">
+        <div class="card-header">
+            <div class="h4 txt-def text-center">Login NMSCE</div>
         </div>
-        <div class="row">
-            <div class="col-5">&nbsp;</div>
-            <div id="lgithub" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Github</div>
-        </div>
-        <!--div class="row">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-5">&nbsp;</div>
+                <div id="lgoogle" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Google</div>
+            </div>
+            <div class="row">
+                <div class="col-5">&nbsp;</div>
+                <div id="lgithub" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Github</div>
+            </div>
+            <!--div class="row">
             <div class="col-5">&nbsp;</div>
             <div id="ltwitch" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Twitch</div>
         </div>
@@ -81,13 +88,13 @@
             <div class="col-5">&nbsp;</div>
             <div id="lreddit" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Reddit</div>
         </div-->
-    </div>
+        </div>
 
-    <div class="card-footer">
-        <div class="row">
-            <div class="col-6">&nbsp;</div>
-            <div id="lcancel" class="h6 text-center col-2 btn-sm bkg-light-gray">Cancel</div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-6">&nbsp;</div>
+                <div id="lcancel" class="h6 text-center col-2 btn-sm bkg-light-gray">Cancel</div>
+            </div>
         </div>
     </div>
-</div>
-<!--googleon:all-->
+    <!--googleon:all-->
