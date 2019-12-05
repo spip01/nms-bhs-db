@@ -31,6 +31,9 @@ $(document).ready(() => {
     nmsce.buildPanel()
     nmsce.buildTypePanels()
 
+    if (fnmsce)
+        nmsce.getLatest(nmsce.displayList, nmsce.displayList)
+
     $("#save").click(() => {
         if (nmsce.save())
             nmsce.clearPanel()
@@ -40,18 +43,6 @@ $(document).ready(() => {
         $("#status").empty()
         if (nmsce.last)
             nmsce.deleteEntry(nmsce.last)
-    })
-
-    $("#cancel").click(() => {
-        nmsce.clearPanel()
-    })
-
-    $("#search").click(() => {
-        nmsce.search()
-    })
-
-    $("#clear").click(() => {
-        nmsce.clearPanel(true)
     })
 })
 
@@ -332,7 +323,7 @@ NMSCE.prototype.extractEntry = async function () {
         }, "image/jpeg", .9)
 
         let thumb = document.createElement('canvas')
-        nmsce.drawText(thumb, 300)
+        nmsce.drawText(thumb, 400)
         thumb.toBlob(blob => {
             nmsce.saved = blob
             bhs.fbstorage.ref().child(thumbnailPath + entry.Photo).put(blob).then(() => {
@@ -487,6 +478,8 @@ NMSCE.prototype.executeSearch = async function (entry) {
     if (snapshot.empty)
         bhs.status("Nothing Found.", true)
     else {
+        $("#results").show()
+
         let found = {}
         found[tab] = []
 
@@ -494,6 +487,8 @@ NMSCE.prototype.executeSearch = async function (entry) {
 
         for (let doc of snapshot.docs)
             found[tab].push(doc.data())
+
+        found[tab].sort((a, b) => b.modded.seconds - a.modded.seconds)
 
         $("#id-table").empty()
         nmsce.displayList(found)
@@ -546,9 +541,9 @@ const tSubList = `<div id="slist-idname" class="row no-padding" style="display:n
 
 const tReq = `&nbsp;<font style="color:red">*</font>`
 const tText = `&nbsp;
-    <scope data-toggle="tooltip" data-html="true" data-placement="bottom" title="ttext">
+    <span data-toggle="tooltip" data-html="true" data-placement="bottom" title="ttext">
         <i class="fa fa-question-circle-o text-danger h6"></i>
-    </scope>`
+    </span>`
 
 const inpHdr = `<div class="col-md-7 col-14">`
 const inpLongHdr = `<div class="col-14">`
@@ -1346,6 +1341,115 @@ NMSCE.prototype.getEntries = async function (user, displayFcn, singleDispFcn) {
 
     if (typeof displayFcn === "function")
         displayFcn(nmsce.entries)
+}
+
+NMSCE.prototype.getLatest = async function () {
+    const img = `
+        <div class="cover-item bkg-white">
+            <img src="url" data-path="dbpath" onclick="nmsce.displaySel(this)"/>
+            <div class="row">
+                <div class="col-7 txt-inp-def text-center h4">galaxy</div>
+                <div class="col-7 txt-inp-def text-center h4">by</div>
+            </div>
+        </div>`
+
+    nmsce.entries = {}
+    let d = new Date();
+    d.setDate(d.getDate() - $("#displaysince").val())
+    d = firebase.firestore.Timestamp.fromDate(d)
+
+    $("#latestEntries").empty()
+
+    let ref = bhs.fs.collection("nmsce")
+    ref.get().then(snapshot => {
+        for (let doc of snapshot.docs)
+            for (let t of objectList) {
+                let type = t.name
+                nmsce.entries[type] = []
+
+                let ref = doc.ref.collection(type)
+                ref = ref.where("created", ">=", d)
+
+                ref.get().then(snapshot => {
+                    for (let doc of snapshot.docs) {
+                        let e = doc.data()
+                        e.Photo = e.Photo.replace(/.*\/(.*)/, "$1")
+
+                        let ref = bhs.fbstorage.ref().child(thumbnailPath + e.Photo)
+                        ref.getDownloadURL().then(url => {
+                            let h = /url/ [Symbol.replace](img, url)
+                            h = /dbpath/ [Symbol.replace](h, doc.ref.path)
+                            h = /galaxy/ [Symbol.replace](h, e.galaxy)
+                            h = /by/ [Symbol.replace](h, e._name)
+
+                            $("#latestEntries").append(h)
+                        })
+                    }
+                })
+            }
+    })
+}
+
+NMSCE.prototype.displaySel = async function (evt) {
+    let row = `
+        <div id="id-idname" class="row border-bottom txt-inp-def h4">
+            <div class="col-5 ">title</div>
+            <div class="col font clr-def">value</div>
+        </div>`
+
+    let loc = $("#imageinfo")
+    loc.show()
+
+    let data = $(evt).data()
+    let ref = bhs.fs.doc(data.path)
+    let doc = await ref.get()
+
+    if (doc.exists) {
+        let e = doc.data()
+        let idx = getIndex(objectList, "name", e.type)
+        let obj = objectList[idx]
+
+        e.Photo = e.Photo.replace(/.*\/(.*)/, "$1")
+        let ref = bhs.fbstorage.ref().child(displayPath + e.Photo)
+        ref.getDownloadURL().then(url => {
+            $("#dispimage").attr("src", url)
+        })
+
+        loc = loc.find("#imagedata")
+        loc.empty()
+
+        for (let fld of obj.imgText) {
+            let h = /idname/ [Symbol.replace](row, fld.id)
+            h = /title/ [Symbol.replace](h, fld.name)
+            h = /value/ [Symbol.replace](h, fld.name === "Glyphs" ? addrToGlyph(e[fld.field], e.Planet_Index) : e[fld.field])
+            h = /font/ [Symbol.replace](h, fld.font ? fld.font : "")
+            loc.append(h)
+        }
+
+        for (let fld of obj.fields) {
+            if (fld.imgText) {
+                let id = fld.name.nameToId()
+                let h = /idname/ [Symbol.replace](row, id)
+                h = /title/ [Symbol.replace](h, fld.name)
+                h = /value/ [Symbol.replace](h, e[id])
+                h = /font/ [Symbol.replace](h, "")
+                loc.append(h)
+            }
+
+            if (fld.type === "sublist") {
+                for (let sub of fld.sublist) {
+                    if (sub.imgText) {
+                        let id = sub.name.nameToId()
+                        let h = /idname/ [Symbol.replace](row, id)
+                        h = /title/ [Symbol.replace](h, sub.name)
+                        h = /value/ [Symbol.replace](h, e[id])
+                        h = /font/ [Symbol.replace](h, "")
+                        loc.append(h)
+                    }
+                }
+            }
+        }
+    }
 }
 
 NMSCE.prototype.displayList = function (entries, path) {
@@ -2822,22 +2926,28 @@ const objectList = [{
     name: "Ship",
     imgText: [{
         id: "#id-Player",
+        field: "_name",
         name: "Player"
     }, {
         id: "#btn-Galaxy",
+        field: "galaxy",
         name: "Galaxy"
     }, {
         id: "#id-addrInput #id-addr",
+        field: "addr",
         name: "Coords"
     }, {
         id: "#id-addrInput #id-addr",
         name: "Glyphs",
+        field: "addr",
         font: "glyph"
     }, {
         id: "#id-sys",
+        field: "sys",
         name: "System"
     }, {
         id: "#btn-Economy",
+        field: "econ",
         name: "Economy"
     }],
     fields: [{
@@ -2915,22 +3025,28 @@ const objectList = [{
     name: "Freighter",
     imgText: [{
         id: "#id-Player",
+        field: "_name",
         name: "Player"
     }, {
         id: "#btn-Galaxy",
+        field: "galaxy",
         name: "Galaxy"
     }, {
         id: "#id-addrInput #id-addr",
+        field: "addr",
         name: "Coords"
     }, {
         id: "#id-addrInput #id-addr",
         name: "Glyphs",
+        field: "addr",
         font: "glyph"
     }, {
         id: "#id-sys",
+        field: "sys",
         name: "System"
     }, {
         id: "#btn-Economy",
+        field: "econ",
         name: "Economy"
     }],
     fields: [{
@@ -2983,19 +3099,24 @@ const objectList = [{
     name: "Multi-Tool",
     imgText: [{
         id: "#id-Player",
+        field: "_name",
         name: "Player"
     }, {
         id: "#btn-Galaxy",
+        field: "galaxy",
         name: "Galaxy"
     }, {
         id: "#id-addrInput #id-addr",
+        field: "addr",
         name: "Coords"
     }, {
         id: "#id-addrInput #id-addr",
+        field: "addr",
         name: "Glyphs",
         font: "glyph"
     }, {
         id: "#id-sys",
+        field: "sys",
         name: "System"
     }],
     fields: [{
@@ -3102,19 +3223,24 @@ const objectList = [{
     name: "Fauna",
     imgText: [{
         id: "#id-Player",
+        field: "_name",
         name: "Player"
     }, {
         id: "#btn-Galaxy",
+        field: "galaxy",
         name: "Galaxy"
     }, {
         id: "#id-addrInput #id-addr",
+        field: "addr",
         name: "Coords"
     }, {
         id: "#id-addrInput #id-addr",
+        field: "addr",
         name: "Glyphs",
         font: "glyph"
     }, {
         id: "#id-sys",
+        field: "sys",
         name: "System"
     }],
     fields: [{
@@ -3172,19 +3298,24 @@ const objectList = [{
     name: "Planet",
     imgText: [{
         id: "#id-Player",
+        field: "_name",
         name: "Player"
     }, {
         id: "#btn-Galaxy",
+        field: "galaxy",
         name: "Galaxy"
     }, {
         id: "#id-addrInput #id-addr",
+        field: "addr",
         name: "Coords"
     }, {
         id: "#id-addrInput #id-addr",
         name: "Glyphs",
+        field: "addr",
         font: "glyph"
     }, {
         id: "#id-sys",
+        field: "sys",
         name: "System"
     }],
     fields: [{
@@ -3255,25 +3386,32 @@ const objectList = [{
     name: "Base",
     imgText: [{
         id: "#id-Player",
+        field: "_name",
         name: "Player"
     }, {
         id: "#btn-Galaxy",
+        field: "galaxy",
         name: "Galaxy"
     }, {
         id: "#btn-Platform",
+        field: "platform",
         name: "Platform"
     }, {
         id: "#id-addrInput #id-addr",
+        field: "addr",
         name: "Coords"
     }, {
         id: "#id-addrInput #id-addr",
+        field: "addr",
         name: "Glyphs",
         font: "glyph"
     }, {
         id: "#id-sys",
+        field: "sys",
         name: "System"
     }, {
         id: "#btn-Economy",
+        field: "econ",
         name: "Economy"
     }],
     fields: [{
