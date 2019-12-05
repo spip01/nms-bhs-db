@@ -1368,6 +1368,26 @@ NMSCE.prototype.getLatest = async function () {
                 nmsce.entries[type] = []
 
                 let ref = doc.ref.collection(type)
+                ref = ref.where("created.seconds", ">=", d.seconds)
+
+                ref.get().then(snapshot => {
+                    for (let doc of snapshot.docs) {
+                        let e = doc.data()
+                        e.Photo = e.Photo.replace(/.*\/(.*)/, "$1")
+
+                        let ref = bhs.fbstorage.ref().child(thumbnailPath + e.Photo)
+                        ref.getDownloadURL().then(url => {
+                            let h = /url/ [Symbol.replace](img, url)
+                            h = /dbpath/ [Symbol.replace](h, doc.ref.path)
+                            h = /galaxy/ [Symbol.replace](h, e.galaxy)
+                            h = /by/ [Symbol.replace](h, e._name)
+
+                            $("#latestEntries").append(h)
+                        })
+                    }
+                })
+
+                ref = doc.ref.collection(type)
                 ref = ref.where("created", ">=", d)
 
                 ref.get().then(snapshot => {
@@ -2365,6 +2385,30 @@ const biomeList = [{
 }, {
     name: 'Irradiated',
 }]
+
+const glitchList = [{
+        name: "Bubble"
+    },    {
+        name: "Cable Pod"
+    },    {
+        name: "Calcishroom"
+    },    {
+        name: "Capilliary Shell"
+    },    {
+        name: "Electric Cube"
+    },    {
+        name: "Glitching Separator"
+    },    {
+        name: "Hexplate Bush"
+    },    {
+        name: "Light Fissure"
+    },    {
+        name: "Ossified Star"
+    },    {
+        name: "Rattle Spine"
+    },    {
+        name: "Terbium Growth"
+    }]
 
 const weatherList = [{
     name: "Absent"
@@ -3371,6 +3415,12 @@ const objectList = [{
         name: "Sky Color",
         type: "menu",
         list: colorList,
+        imgText: true,
+        search: true,
+    }, {
+        name: "Glitches",
+        type: "menu",
+        list: glitchList,
         imgText: true,
         search: true,
     }, {
