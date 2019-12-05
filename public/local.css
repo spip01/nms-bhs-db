@@ -6,16 +6,6 @@
     --breakpoint-xl: 1200px;
 */
 
-.h7,
-h7 {
-    margin-bottom: .5rem;
-    font-family: inherit;
-    font-weight: 500;
-    line-height: 1.2;
-    color: inherit;
-    font-size: 0.75rem;
-}
-
 @media only screen and (max-width: 767px) {
     .h1,
     h1 {
@@ -45,11 +35,6 @@ h7 {
     .h6,
     h6 {
         font-size: 0.61rem
-    }
-
-    .h7,
-    h7 {
-        font-size: 0.41rem;
     }
 }
 
@@ -82,11 +67,6 @@ h7 {
     .h6,
     h6 {
         font-size: 0.75rem
-    }
-
-    .h7,
-    h7 {
-        font-size: 0.5rem;
     }
 }
 

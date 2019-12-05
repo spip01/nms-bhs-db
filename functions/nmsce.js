@@ -19,10 +19,10 @@ const fs = require('fs')
 //     })
 
 //     for (let file of files) {
-//         if (file.name < "nmsce/disp/454ede5d-ca23-4b6f-8e6d-1cc171ce2311.jpg") {
-//             console.log("skip", file.name)
-//             continue
-//         }
+//         // if (file.name < "nmsce/disp/thumb/91d18622-fb6c-4b82-b62c-e075a83decd2.jpg") {
+//         //     console.log("skip", file.name)
+//         //     continue
+//         // }
 
 //         let f = bucket.file(file.name)
 //         console.log("start", file.name)
@@ -35,7 +35,7 @@ const fs = require('fs')
 //         await f.download({
 //             destination: tempLocalFile
 //         })
-//         await spawn('convert', [tempLocalFile, "-resize", "350", "-quality", "50%", tempLocalThumbFile], {
+//         await spawn('convert', [tempLocalFile, "-resize", "400", "-quality", "70%", tempLocalThumbFile], {
 //             capture: ['stdout', 'stderr']
 //         })
 

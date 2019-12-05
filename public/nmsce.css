@@ -1,5 +1,4 @@
 body {
-    font-size: .75rem !important;
     background-color: #060f3f !important;
 }
 
@@ -11,17 +10,21 @@ body {
     background-color: #060f3f;
 }
 
-.txt-def {
-    color: #ffee00;
-    background-color: #060f3f;
+.cover-container {
+    height: 310px;
+    width: 100%;
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
-.txt-inp-def {
-    color: black;
-}
-
-.btn-def {
-    background-color: #060f3f;
-    border-color: #ffee00;
-    color: #ffee00;
+.cover-item {
+    position: relative;
+    display: inline-block;
+    margin: 8px 8px;
+    box-shadow: 2px 2px 4px #888;
+    border-top-right-radius: 4px;
+    width: auto;
+    height: auto;
+    vertical-align: top;
 }
