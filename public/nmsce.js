@@ -32,7 +32,7 @@ $(document).ready(() => {
     nmsce.buildTypePanels()
 
     if (fnmsce)
-        nmsce.getLatest(nmsce.displayList, nmsce.displayList)
+        nmsce.getLatest(nmsce.displayResults)
 
     $("#save").click(() => {
         if (nmsce.save())
@@ -311,6 +311,8 @@ NMSCE.prototype.extractEntry = async function () {
             }
         }
 
+        entry.id = entry.Name
+        entry.Photo = entry.Name
         nmsce.updateEntry(entry)
 
         let disp = document.createElement('canvas')
@@ -393,7 +395,7 @@ NMSCE.prototype.displaySingle = async function (entry) {
     }
 }
 
-NMSCE.prototype.executeSearch = async function (entry) {
+NMSCE.prototype.executeSearch = async function (fcn) {
     let player = $("#id-Player").val()
     let platform = $("#btn-Platform").text().stripMarginWS()
     let galaxy = $("#btn-Galaxy").text().stripNumber()
@@ -473,26 +475,11 @@ NMSCE.prototype.executeSearch = async function (entry) {
         }
     }
 
-    let snapshot = await ref.get()
-
-    if (snapshot.empty)
-        bhs.status("Nothing Found.", true)
-    else {
-        $("#results").show()
-
-        let found = {}
-        found[tab] = []
-
-        bhs.status("Found " + snapshot.size + " items.", true)
-
+    nmsce.clearResults()
+    ref.get().then(snapshot => {
         for (let doc of snapshot.docs)
-            found[tab].push(doc.data())
-
-        found[tab].sort((a, b) => b.modded.seconds - a.modded.seconds)
-
-        $("#id-table").empty()
-        nmsce.displayList(found)
-    }
+            fcn(doc.data(), doc.ref.path)
+    })
 }
 
 NMSCE.prototype.save = function () {
@@ -521,7 +508,7 @@ NMSCE.prototype.save = function () {
 
 NMSCE.prototype.search = function () {
     $("#status").empty()
-    nmsce.executeSearch()
+    nmsce.executeSearch(nmsce.displayResults)
 }
 
 blackHoleSuns.prototype.status = function (str, clear) {
@@ -1144,7 +1131,7 @@ NMSCE.prototype.drawText = function (alt, altw) {
             ctx.font = (text.fSize * scale) + "px " + text.font
             ctx.fillStyle = text.color
 
-            if (text.text.includes("<br>")) {
+            if (typeof text.text !== "undefined" && text.text.includes("<br>")) {
                 let l = text.text.split("<br>")
 
                 for (let i = 0; i < l.length; ++i)
@@ -1173,12 +1160,6 @@ NMSCE.prototype.drawText = function (alt, altw) {
 }
 
 NMSCE.prototype.redditShare = function (evt) {
-    if (!nmsce.last) {
-        nmsce.last = {}
-        nmsce.last.uid = bhs.user.uid
-        nmsce.last.Photo = uuidv4() + ".jpg"
-    }
-
     let disp = document.createElement('canvas')
     nmsce.drawText(disp, 900)
     disp.toBlob(blob => {
@@ -1300,15 +1281,14 @@ NMSCE.prototype.deleteEntry = function (entry) {
 NMSCE.prototype.updateEntry = function (entry) {
     entry.modded = firebase.firestore.Timestamp.now()
 
+    if (typeof entry.clickcount === "undefined")
+        entry.clickcount = 0
+
     if (typeof entry.created === "undefined")
         entry.created = firebase.firestore.Timestamp.now()
 
     let ref = bhs.fs.collection("nmsce/" + entry.galaxy + "/" + entry.type)
-    if (typeof entry.id === "undefined") {
-        ref = ref.doc()
-        entry.id = ref.id
-    } else
-        ref = ref.doc(entry.id)
+    ref = ref.doc(entry.id)
 
     ref.set(entry).then(() => {
         bhs.status(entry.addr + " saved.")
@@ -1343,7 +1323,47 @@ NMSCE.prototype.getEntries = async function (user, displayFcn, singleDispFcn) {
         displayFcn(nmsce.entries)
 }
 
-NMSCE.prototype.getLatest = async function () {
+NMSCE.prototype.getLatest = async function (fcn) {
+    let d = new Date();
+    d.setDate(d.getDate() - $("#displaysince").val())
+    d = firebase.firestore.Timestamp.fromDate(d)
+
+    nmsce.clearResults()
+
+    let ref = bhs.fs.collection("nmsce")
+    ref.get().then(snapshot => {
+        for (let doc of snapshot.docs)
+            for (let t of objectList) {
+                let type = t.name
+
+                let ref = doc.ref.collection(type)
+                ref = ref.where("created.seconds", ">=", d.seconds)
+
+                ref.get().then(snapshot => {
+                    for (let doc of snapshot.docs)
+                        fcn(doc.data(), doc.ref.path)
+                })
+
+                ref = doc.ref.collection(type)
+                ref = ref.where("created", ">=", d)
+
+                ref.get().then(snapshot => {
+                    for (let doc of snapshot.docs)
+                        fcn(doc.data(), doc.ref.path)
+                })
+
+                ref = doc.ref.collection(type)
+                ref = ref.where("created", ">=", firebase.firestore.Timestamp.fromDate(new Date()))
+                bhs.subscribe("nmsce-latest-" + ref.path, ref, fcn)
+            }
+    })
+}
+
+NMSCE.prototype.clearResults = function () {
+    $("#latestEntries").empty()
+}
+
+NMSCE.prototype.displayResults = function (e, path) {
     const img = `
         <div class="cover-item bkg-white">
             <img src="url" data-path="dbpath" onclick="nmsce.displaySel(this)"/>
@@ -1353,60 +1373,14 @@ NMSCE.prototype.getLatest = async function () {
             </div>
         </div>`
 
-    nmsce.entries = {}
-    let d = new Date();
-    d.setDate(d.getDate() - $("#displaysince").val())
-    d = firebase.firestore.Timestamp.fromDate(d)
+    let ref = bhs.fbstorage.ref().child(thumbnailPath + e.Photo)
+    ref.getDownloadURL().then(url => {
+        let h = /url/ [Symbol.replace](img, url)
+        h = /dbpath/ [Symbol.replace](h, path)
+        h = /galaxy/ [Symbol.replace](h, e.galaxy)
+        h = /by/ [Symbol.replace](h, e._name)
 
-    $("#latestEntries").empty()
-
-    let ref = bhs.fs.collection("nmsce")
-    ref.get().then(snapshot => {
-        for (let doc of snapshot.docs)
-            for (let t of objectList) {
-                let type = t.name
-                nmsce.entries[type] = []
-
-                let ref = doc.ref.collection(type)
-                ref = ref.where("created.seconds", ">=", d.seconds)
-
-                ref.get().then(snapshot => {
-                    for (let doc of snapshot.docs) {
-                        let e = doc.data()
-                        e.Photo = e.Photo.replace(/.*\/(.*)/, "$1")
-
-                        let ref = bhs.fbstorage.ref().child(thumbnailPath + e.Photo)
-                        ref.getDownloadURL().then(url => {
-                            let h = /url/ [Symbol.replace](img, url)
-                            h = /dbpath/ [Symbol.replace](h, doc.ref.path)
-                            h = /galaxy/ [Symbol.replace](h, e.galaxy)
-                            h = /by/ [Symbol.replace](h, e._name)
-
-                            $("#latestEntries").append(h)
-                        })
-                    }
-                })
-
-                ref = doc.ref.collection(type)
-                ref = ref.where("created", ">=", d)
-
-                ref.get().then(snapshot => {
-                    for (let doc of snapshot.docs) {
-                        let e = doc.data()
-                        e.Photo = e.Photo.replace(/.*\/(.*)/, "$1")
-
-                        let ref = bhs.fbstorage.ref().child(thumbnailPath + e.Photo)
-                        ref.getDownloadURL().then(url => {
-                            let h = /url/ [Symbol.replace](img, url)
-                            h = /dbpath/ [Symbol.replace](h, doc.ref.path)
-                            h = /galaxy/ [Symbol.replace](h, e.galaxy)
-                            h = /by/ [Symbol.replace](h, e._name)
-
-                            $("#latestEntries").append(h)
-                        })
-                    }
-                })
-            }
+        $("#latestEntries").append(h)
     })
 }
 
@@ -1414,7 +1388,7 @@ NMSCE.prototype.displaySel = async function (evt) {
     let row = `
         <div id="id-idname" class="row border-bottom txt-inp-def h4">
             <div class="col-5 ">title</div>
-            <div class="col font clr-def">value</div>
+            <div id="val-idname" class="col font clr-def">value</div>
         </div>`
 
     let loc = $("#imageinfo")
@@ -1426,10 +1400,20 @@ NMSCE.prototype.displaySel = async function (evt) {
 
     if (doc.exists) {
         let e = doc.data()
+
+        if (typeof e.clickcount === "undefined")
+            e.clickcount = 0
+
+        e.clickcount++
+        doc.ref.set(e).then(() => {
+            console.log("count")
+        }).catch(err => {
+            console.log(JSON.stringify(err))
+        })
+
         let idx = getIndex(objectList, "name", e.type)
         let obj = objectList[idx]
 
-        e.Photo = e.Photo.replace(/.*\/(.*)/, "$1")
         let ref = bhs.fbstorage.ref().child(displayPath + e.Photo)
         ref.getDownloadURL().then(url => {
             $("#dispimage").attr("src", url)
@@ -1439,7 +1423,7 @@ NMSCE.prototype.displaySel = async function (evt) {
         loc.empty()
 
         for (let fld of obj.imgText) {
-            let h = /idname/ [Symbol.replace](row, fld.id)
+            let h = /idname/g [Symbol.replace](row, fld.name.nameToId())
             h = /title/ [Symbol.replace](h, fld.name)
             h = /value/ [Symbol.replace](h, fld.name === "Glyphs" ? addrToGlyph(e[fld.field], e.Planet_Index) : e[fld.field])
             h = /font/ [Symbol.replace](h, fld.font ? fld.font : "")
@@ -1449,7 +1433,7 @@ NMSCE.prototype.displaySel = async function (evt) {
         for (let fld of obj.fields) {
             if (fld.imgText) {
                 let id = fld.name.nameToId()
-                let h = /idname/ [Symbol.replace](row, id)
+                let h = /idname/g [Symbol.replace](row, id)
                 h = /title/ [Symbol.replace](h, fld.name)
                 h = /value/ [Symbol.replace](h, e[id])
                 h = /font/ [Symbol.replace](h, "")
@@ -1460,7 +1444,7 @@ NMSCE.prototype.displaySel = async function (evt) {
                 for (let sub of fld.sublist) {
                     if (sub.imgText) {
                         let id = sub.name.nameToId()
-                        let h = /idname/ [Symbol.replace](row, id)
+                        let h = /idname/g [Symbol.replace](row, id)
                         h = /title/ [Symbol.replace](h, sub.name)
                         h = /value/ [Symbol.replace](h, e[id])
                         h = /font/ [Symbol.replace](h, "")
@@ -1737,7 +1721,7 @@ NMSCE.prototype.buildModal = function (evt) {
 }
 
 NMSCE.prototype.newDARC = function (evt) {
-    let addr = $(".modal-body #coords").text()
+    let addr = $(evt).text()
 
     if (typeof (Storage) !== "undefined")
         window.localStorage.setItem('nmsceaddr', addr)
@@ -2387,28 +2371,28 @@ const biomeList = [{
 }]
 
 const glitchList = [{
-        name: "Bubble"
-    },    {
-        name: "Cable Pod"
-    },    {
-        name: "Calcishroom"
-    },    {
-        name: "Capilliary Shell"
-    },    {
-        name: "Electric Cube"
-    },    {
-        name: "Glitching Separator"
-    },    {
-        name: "Hexplate Bush"
-    },    {
-        name: "Light Fissure"
-    },    {
-        name: "Ossified Star"
-    },    {
-        name: "Rattle Spine"
-    },    {
-        name: "Terbium Growth"
-    }]
+    name: "Bubble"
+}, {
+    name: "Cable Pod"
+}, {
+    name: "Calcishroom"
+}, {
+    name: "Capilliary Shell"
+}, {
+    name: "Electric Cube"
+}, {
+    name: "Glitching Separator"
+}, {
+    name: "Hexplate Bush"
+}, {
+    name: "Light Fissure"
+}, {
+    name: "Ossified Star"
+}, {
+    name: "Rattle Spine"
+}, {
+    name: "Terbium Growth"
+}]
 
 const weatherList = [{
     name: "Absent"

@@ -213,7 +213,7 @@ blackHoleSuns.prototype.updateDarcSettings = function () {
     if (typeof (Storage) !== "undefined") {
         let nmsce = window.localStorage.getItem('nmsceaddr')
         if (nmsce)
-            $("#id-end").val(glyphToAddr(nmsce))
+            $("#id-end").val(reformatAddress(nmsce))
         window.localStorage.removeItem('nmsceaddr')
     }
 }

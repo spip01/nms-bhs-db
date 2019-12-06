@@ -8,24 +8,23 @@ admin.initializeApp({
 })
 
 async function main() {
-    let ref = admin.firestore().collection("stars5/Euclid/PC-XBox")
-
-    ref.get().then(async snapshot => {
-        for (let doc of snapshot.docs) {
-            let e = doc.data()
-
-            if (typeof e.uid === "undefined" && typeof e._name === "undefined") {
-                console.log("uid", e.addr)
-
-                let ref = admin.firestore().collection("stars5/Euclid/PC-XBox")
-                ref = ref.where("connection","==",e.addr)
-
-                let doc =await ref.get()
-                if (doc.exists) {
-                    let d = doc.data()
-                    console.log("found", d.addr, d.uid, d._name)
+    let ref = admin.firestore().collection("nmsce")
+       ref.listDocuments().then(refs => {
+        for (let ref of refs) {
+            console.log(ref.path)
+            ref.listCollections().then(async refs =>{
+                for (let ref of refs) {
+                    console.log(ref.path)
+                    let snapshot = await ref.get()
+                    for (let doc of snapshot.docs) {
+                        let e = doc.data()
+                        e.Photo = e.Photo.replace(/.*\/(.*)/, "$1")
+                        e.clickcount = 0
+                        console.log("set",doc.ref.path)
+                        doc.ref.set(e)
+                    }
                 }
-            }
+            })
         }
     })
 }
