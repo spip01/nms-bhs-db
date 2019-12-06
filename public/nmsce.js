@@ -224,6 +224,9 @@ NMSCE.prototype.extractEntry = async function () {
     }
 
     if (ok) {
+        delete entry.created
+        delete entry.x
+
         if (nmsce.last)
             entry = mergeObjects(entry, nmsce.last)
 
@@ -1334,14 +1337,6 @@ NMSCE.prototype.getLatest = async function (fcn) {
         for (let doc of snapshot.docs)
             for (let t of objectList) {
                 let type = t.name
-
-                let ref = doc.ref.collection(type)
-                ref = ref.where("created.seconds", ">=", d.seconds)
-
-                ref.get().then(snapshot => {
-                    for (let doc of snapshot.docs)
-                        fcn(doc.data(), doc.ref.path)
-                })
 
                 ref = doc.ref.collection(type)
                 ref = ref.where("created", ">=", d)

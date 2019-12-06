@@ -18,9 +18,9 @@ async function main() {
                     let snapshot = await ref.get()
                     for (let doc of snapshot.docs) {
                         let e = doc.data()
-                        e.Photo = e.Photo.replace(/.*\/(.*)/, "$1")
-                        e.clickcount = 0
-                        console.log("set",doc.ref.path)
+                        let cdate = new admin.firestore.Timestamp(e.created.seconds, e.created.nanoseconds)
+                        console.log(cdate.seconds < e.modded.seconds, cdate, e.modded)
+                        e.created = cdate.seconds < e.modded.seconds ? e.modded : cdate
                         doc.ref.set(e)
                     }
                 }
