@@ -311,14 +311,13 @@ NMSCE.prototype.extractEntry = async function () {
             }
         }
 
-        entry.id = entry.Name
-        entry.Photo = entry.Name
+        entry.id = entry.Name.nameToId()
+        entry.Photo = entry.id+".jpg"
         nmsce.updateEntry(entry)
 
         let disp = document.createElement('canvas')
         nmsce.drawText(disp, 1024)
         disp.toBlob(blob => {
-            nmsce.saved = blob
             bhs.fbstorage.ref().child(displayPath + entry.Photo).put(blob).then(() => {
                 bhs.status("Saved " + displayPath + entry.Photo)
             })
@@ -1592,8 +1591,10 @@ NMSCE.prototype.displayList = function (entries, path) {
 
         rloc = loc.find("#list-" + e.type + " #row-" + e.id)
 
-        let url = URL.createObjectURL(nmsce.saved);
-        rloc.find("#img-pic").attr("src", url)
+        if (typeof nmsce.saved !== "undefined") {
+            let url = URL.createObjectURL(nmsce.saved)
+            rloc.find("#img-pic").attr("src", url)
+        }
     } else {
         loc.append(h)
 
@@ -1605,7 +1606,6 @@ NMSCE.prototype.displayList = function (entries, path) {
                 let eloc = loc.find("#row-" + e.id)
                 for (let f of obj.fields) {
                     if (f.type === "img") {
-                        e[f.name] = e[f.name].replace(/.*\/(.*)/, "$1")
                         let ref = bhs.fbstorage.ref().child(thumbnailPath + e[f.name])
                         ref.getDownloadURL().then(url => {
                             eloc.find("#img-pic").attr("src", url)
@@ -1613,7 +1613,6 @@ NMSCE.prototype.displayList = function (entries, path) {
                     } else if (typeof f.sublist !== "undefined")
                         for (let s of f.sublist) {
                             if (s.type === "img") {
-                                e[s.name] = e[s.name].replace(/.*\/(.*)/, "$1")
                                 let ref = bhs.fbstorage.ref().child(thumbnailPath + e[s.name])
                                 ref.getDownloadURL().then(url => {
                                     eloc.find("#img-pic").attr("src", url)
