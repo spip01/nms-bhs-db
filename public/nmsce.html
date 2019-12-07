@@ -111,15 +111,16 @@
                                 <div id="id-addrInput">
                                     <div class="row">
                                         <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">Coords<span
-                                            class="h5 text-danger">&nbsp;*</span>&nbsp;
+                                                class="h5 text-danger">&nbsp;*</span>&nbsp;
                                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                                 data-html="true" data-placement="bottom"
                                                 title="Search at a specific address.<br>Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
                                                     A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
                                             </i>
                                         </div>
-                                        <input id="id-addr" class="rounded col-xl-5 col-lg-6 col-md-11 col-sm-5 col-11" type="text"
-                                            placeholder="0000:0000:0000:0000" onchange="nmsce.changeAddr(this)">
+                                        <input id="id-addr" class="rounded col-xl-5 col-lg-6 col-md-11 col-sm-5 col-11"
+                                            type="text" placeholder="0000:0000:0000:0000"
+                                            onchange="nmsce.changeAddr(this)">
                                         <div class="col">
                                             <label class="h6 txt-inp-def">
                                                 <input id="ck-glyphs" type="checkbox"
@@ -152,8 +153,8 @@
                                             </i>
                                         </div>
                                         <input id="id-glyph" type="text"
-                                        class="rounded col-xl-5 col-lg-8 col-md-14 col-sm-7 col-14 h5 glyph"
-                                        onchange="nmsce.changeAddr(this)">
+                                            class="rounded col-xl-5 col-lg-8 col-md-14 col-sm-7 col-14 h5 glyph"
+                                            onchange="nmsce.changeAddr(this)">
                                         <div class="col">
                                             <label class="h6 txt-inp-def">
                                                 <input id="ck-glyphs" type="checkbox"
@@ -177,9 +178,9 @@
 
                                 <div class="row">
                                     <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">System<span
-                                        class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
-                                        <input id="id-sys" class="rounded col-xl-4 col-md-7 col-sm-5 col-7">
-                                    </div>
+                                            class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
+                                    <input id="id-sys" class="rounded col-xl-4 col-md-7 col-sm-5 col-7">
+                                </div>
 
                                 <div class="row">
                                     <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Region</div>
@@ -239,18 +240,30 @@
         <br>
 
         <div class="card bkg-def border">
-            <div class="card-header txt-def h4">
+            <div class="card-header txt-def h3">
                 <div class="row">
-                    <div class="col-4">Entries</div>
-                    <label class="col-6 h5">
+                    <div class="col-lg-p333 col-7">Entries</div>
+                    <label class="col-lg-p333 col-7 h4">
                         Show last&nbsp;
                         <input id="displaysince" class="col-2" type="text" value=1
                             onchange="nmsce.getLatest(nmsce.displayResults, this)">
-                        &nbsp;days.
+                        &nbsp;days.&nbsp;
+                    </label>
+                    <label class="col-lg-p333 col-7 h4">
+                        <input id="displaysince" class="col-2" type="checkbox" onchange="if($(this).prop('checked')){
+                                $('#favorites').show()
+                                $('#latestEntries').hide()
+                            }else{
+                                $('#favorites').hide()
+                                $('#latestEntries').show()
+                            }">
+                        &nbsp;Favorites
+                    </label>
                 </div>
             </div>
 
             <div class="card-body">
+                <div id="favorites" class="cover-container" style="display:none"></div>
                 <div id="latestEntries" class="cover-container"></div>
                 <br>
                 <div id="imageinfo" class="row bkg-white txt-center" style="display:none">

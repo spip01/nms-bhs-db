@@ -448,8 +448,14 @@ NMSCE.prototype.executeSearch = async function (fcn) {
         }
     }
 
+    if (bhs.user.uid === "")
+        ref = ref.limit(50)
+
     nmsce.clearResults()
     ref.get().then(snapshot => {
+        if (bhs.user.uid === "" && snapshot.size === 50)
+            bhs.status("Showing 50 entries. Refine selection to see better matches.")
+
         for (let doc of snapshot.docs)
             fcn(doc.data(), doc.ref.path)
     })
@@ -1388,6 +1394,17 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
                 ref = doc.ref.collection(type)
                 ref = ref.where("created", ">=", firebase.firestore.Timestamp.fromDate(new Date()))
                 bhs.subscribe("nmsce-latest-" + ref.path, ref, fcn)
+
+                if ($("#favorites").children().length === 0) {
+                    ref = doc.ref.collection(type)
+                    ref = ref.orderBy("clickcount")
+                    ref = ref.limit(1)
+
+                    ref.get().then(snapshot => {
+                        for (let doc of snapshot.docs)
+                            fcn(doc.data(), doc.ref.path, "#favorites")
+                    })
+                }
             }
     })
 }
@@ -1396,7 +1413,7 @@ NMSCE.prototype.clearResults = function () {
     $("#latestEntries").empty()
 }
 
-NMSCE.prototype.displayResults = function (e, path) {
+NMSCE.prototype.displayResults = function (e, path, inID) {
     const img = `
         <div class="cover-item bkg-white">
             <img id="id-idname" src="images/blank.png" data-src="url" class="cover-img" data-path="dbpath" onclick="nmsce.displaySel(this)" />
@@ -1420,7 +1437,7 @@ NMSCE.prototype.displayResults = function (e, path) {
             }, {
                 root: $('#latestEntries')[0],
                 rootMargin: '0px 0px 0px 0px',
-                threshold: 1.0
+                threshold: .1
             }
         )
     }
@@ -1428,19 +1445,23 @@ NMSCE.prototype.displayResults = function (e, path) {
     let ref = bhs.fbstorage.ref().child(thumbnailPath + e.Photo)
     ref.getDownloadURL().then(url => {
         let h = img
-        if (window.IntersectionObserver)
+        if (window.IntersectionObserver && !inID)
             h = /url/ [Symbol.replace](h, url)
         else
-            h = /images\/blank\.png / [Symbol.replace](h, url)
+            h = /images\/blank\.png/ [Symbol.replace](h, url)
         h = /idname/ [Symbol.replace](h, idname)
         h = /dbpath/ [Symbol.replace](h, path)
         h = /galaxy/ [Symbol.replace](h, e.galaxy)
         h = /by/ [Symbol.replace](h, e._name)
 
-        $("#latestEntries").prepend(h)
+        if (inID)
+            $(inID).append(h)
+        else {
+            $("#latestEntries").prepend(h)
 
-        if (io)
-            io.observe($('#id-' + idname)[0])
+            if (io)
+                io.observe($('#id-' + idname)[0])
+        }
     })
 }
 
@@ -1656,7 +1677,7 @@ NMSCE.prototype.displayList = function (entries, path) {
             }, {
                 root: $('#id-table')[0],
                 rootMargin: '0px 0px 0px 0px',
-                threshold: 1.0
+                threshold: .1
             }
         )
     }
@@ -1938,17 +1959,16 @@ const haulerBodiesMap = `
         <img id="map-transparent" src="images/hauler/bodies/blank.png" style="position:absolute" usemap="#hauler-bodies-map" />
             
         <map name="hauler-bodies-map" id="map-areas">
-            <area alt="h2" data-group=1 coords="8,23,7,89,111,90,107,61,118,47,110,5" shape="poly">
-            <area alt="h3" data-group=1 coords="121,6,119,48,113,67,215,99,229,41,201,7" shape="poly">
-            <area alt="h4" data-group=2 coords="221,22,241,55,242,84,270,88,347,40,343,1,240,8" shape="poly">
-            <area alt="h5" data-group=1 coords="3,93,3,155,92,154,91,94" shape="poly">
-            <area alt="h6" data-group=1 coords="97,92,99,147,179,154,200,100,147,86" shape="poly">
-            <area alt="h7" data-group=1 coords="203,104,184,151,283,157,271,92,232,94" shape="poly">
-            <area alt="h8" data-group=2 coords="277,87,286,154,311,159,349,124,348,93,324,77" shape="poly">
-            <area alt="h9" data-group=1 coords="2,161,-1,229,136,230,137,159" shape="poly">
-            <area alt="h10" data-group=4 coords="143,158,143,225,212,227,211,161" shape="poly">
-            <area alt="h11" data-group=4 coords="216,159,218,238,275,238,274,161" shape="poly">
-            <area alt="h12" data-group=4 coords="281,163,278,213,289,233,320,234,333,216,332,163" shape="poly">
+            <area alt="h2" data-group=1 coords="9,6,7,80,101,81,97,54,110,9" shape="poly">
+            <area alt="h3" data-group=1 coords="128,8,113,40,112,69,177,77,201,88,215,52,198,17" shape="poly">
+            <area alt="h4" data-group=2 coords="208,15,222,43,241,52,234,85,270,87,303,60,347,11" shape="poly">
+            <area alt="h5" data-group=1 coords="11,93,9,149,81,149,81,99" shape="poly">
+            <area alt="h17" data-group=1 coords="85,95,86,150,135,151,126,126,153,93" shape="poly">
+            <area alt="h6" data-group=1 coords="161,94,129,125,144,150,203,155,217,118,207,95" shape="poly">
+            <area alt="h18" data-group=2 coords="216,98,249,151,335,142,342,92" shape="poly">
+            <area alt="h9" data-group=1 coords="17,167,15,229,134,231,130,171" shape="poly">
+            <area alt="h7" data-group=1 coords="173,164,143,195,144,220,228,223,216,164" shape="poly">
+            <area alt="h8" data-group=2 coords="254,157,252,223,285,227,340,177,318,159" shape="poly">
             <area alt="h13" data-group=3 coords="0,239,0,376,139,378,137,239" shape="poly">
             <area alt="h14" data-group=3 coords="139,237,143,378,222,375,221,240" shape="poly">
             <area alt="h15" data-group=3 coords="229,242,228,371,306,377,310,240" shape="poly">
@@ -1994,16 +2014,17 @@ const shuttleBodiesMap = `
         <img id="map-transparent" src="images/shuttle/bodies/blank.png" style="position:absolute" usemap="#shuttle-bodies-map" />
             
         <map name="shuttle-bodies-map" id="map-areas">
-            <area alt="h2" coords="6,3,3,45,87,45,96,31,93,-1" shape="poly">
-            <area alt="h3" coords="97,1,97,50,186,53,188,5" shape="poly">
+            <area alt="h2" data-group=1 coords="8,2,4,31,72,41,83,24,80,1" shape="poly">
+            <area alt="h3" data-group=1 coords="97,1,100,41,177,47,179,3" shape="poly">
+            <area alt="h18" data-group=1 coords="13,41,4,49,6,81,66,81,65,47" shape="poly">
+            <area alt="h6" data-group=1 coords="84,36,72,56,77,89,94,96,101,84,135,79,136,53,97,46" shape="poly">
+            <area alt="h5" data-group=1 coords="23,87,22,127,56,131,81,111,66,92,50,85" shape="poly">
+            <area alt="h9" coords="23,132,3,187,73,187,107,178,145,172,134,143" shape="poly">
             <area alt="h4" coords="189,2,192,51,319,74,348,55,345,2" shape="poly">
-            <area alt="h5" coords="6,66,4,131,57,129,69,101,42,66" shape="poly">
-            <area alt="h6" coords="70,46,60,77,76,103,94,89,125,89,137,73,133,59,96,55" shape="poly">
-            <area alt="h8" coords="188,63,197,148,348,139,343,81,265,68" shape="poly">
+            <area alt="h8" data-group=2 coords="188,63,197,148,348,139,343,81,265,68" shape="poly">
             <area alt="h7" coords="106,99,116,133,183,151,190,116,180,71" shape="poly">
-            <area alt="h9" coords="3,135,5,193,69,186,145,172,137,141" shape="poly">
             <area alt="h10" coords="58,191,57,225,199,227,195,168" shape="poly">
-            <area alt="h11" coords="201,152,201,219,281,207,343,207,341,150" shape="poly">
+            <area alt="h11" data-group=2 coords="201,152,201,219,281,207,343,207,341,150" shape="poly">
             <area alt="h12" coords="5,235,5,282,133,276,137,236" shape="poly">
             <area alt="h13" coords="150,231,149,267,198,285,244,267,243,228" shape="poly">
             <area alt="h14" coords="258,215,254,273,342,276,337,212" shape="poly">
