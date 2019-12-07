@@ -11,21 +11,56 @@ body {
     background-color: #060f3f;
 }
 
-.cover-container {
-    height: 310px;
-    width: 100%;
-    white-space: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
+.btn-def {
+    background-color: #060f3f;
 }
 
-.cover-item {
-    position: relative;
-    display: inline-block;
-    margin: 8px 8px;
-    box-shadow: 2px 2px 4px #888;
-    border-top-right-radius: 4px;
-    width: auto;
-    height: auto;
-    vertical-align: top;
+@media (max-width: 766px) {
+    .cover-container {
+        height: 200px;
+        width: 100%;
+        white-space: wrap;
+        overflow-x: hidden;
+        overflow-y: auto;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+    }
+
+    .cover-item {
+        position: relative;
+        margin: 8px 8px;
+        box-shadow: 2px 2px 4px #888;
+        border-top-right-radius: 4px;
+    }
+
+    .cover-img {
+        height: auto;
+        width: 220px;
+    }
+}
+
+@media (min-width: 767px) {
+    .cover-container {
+        height: 200px;
+        width: 100%;
+        white-space: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+    
+    .cover-item {
+        position: relative;
+        display: inline-block;
+        margin: 4px 4px;
+        box-shadow: 2px 2px 4px #888;
+        border-top-right-radius: 4px;
+        vertical-align: top;
+    }
+
+    .cover-img {
+        height: 150px;
+        width: auto;
+    }
 }

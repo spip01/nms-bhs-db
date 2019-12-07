@@ -101,7 +101,7 @@
                             <div class="card-body">
                                 <div id="id-addrInput">
                                     <div class="row">
-                                        <div class="col-sm-3 col-5 h6 txt-inp-def">Coords<span
+                                        <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">Coords<span
                                                 class="h5 text-danger">&nbsp;*</span>&nbsp;
                                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                                 data-html="true" data-placement="bottom"
@@ -109,9 +109,9 @@
                                                 A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
                                             </i>
                                         </div>
-                                        <input id="id-addr" class="rounded col-xl-4 col-sm-5 col-7" type="text"
+                                        <input id="id-addr" class="rounded col-xl-5 col-lg-6 col-md-11 col-sm-5 col-11" type="text"
                                             placeholder="0000:0000:0000:0000" onchange="nmsce.changeAddr(this)">
-                                        <div class="col-5">
+                                        <div class="col">
                                             <label class="h6 txt-inp-def">
                                                 <input id="ck-glyphs" type="checkbox"
                                                     onchange="nmsce.setGlyphInput(this)">
@@ -125,9 +125,9 @@
                                     </div>
 
                                     <div class="row">
-                                        <div class="col-lg-2 col-3 h6 txt-inp-def">Glyphs</div>
+                                        <div class="col-lg-3 col-md-5 col-sm-2 col-5 h6 txt-inp-def">Glyphs</div>
                                         <div id="id-glyph"
-                                            class="col-lg-7 col-md-11 col-sm-6 col-11 h4 text-center txt-inp-def glyph">
+                                            class="col-lg-9 col-md-14 col-sm-7 col-14 h5 text-center txt-inp-def glyph">
                                         </div>
                                         <div id="id-hex" class="col text-center txt-inp-def"></div>
                                     </div>
@@ -135,7 +135,7 @@
 
                                 <div id="id-glyphInput" class="hidden">
                                     <div class="row">
-                                        <div class="col-sm-3 col-4 h6 txt-inp-def">
+                                        <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">
                                             Glyph&nbsp;<span class="text-danger">*</span>&nbsp;
                                             <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
                                                 data-html="true" data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
@@ -143,7 +143,7 @@
                                             </i>
                                         </div>
                                         <input id="id-glyph" type="text"
-                                            class="rounded col-xl-5 col-lg-7 col-md-10 col-sm-6 col-10 h4 glyph"
+                                            class="rounded col-xl-5 col-lg-8 col-md-14 col-sm-7 col-14 h5 glyph"
                                             onchange="nmsce.changeAddr(this)">
                                         <div class="col">
                                             <label class="h6 txt-inp-def">
@@ -161,30 +161,30 @@
                                     <div id="glyphbuttons" class="row"></div>
 
                                     <div class="row">
-                                        <div class="col-sm-3 col-5 h6 txt-inp-def">Coords&nbsp;</div>
+                                        <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Coords&nbsp;</div>
                                         <div id="id-addr" class="col txt-inp-def"></div>
                                     </div>
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-sm-3 col-5 h6 txt-inp-def">System<span
+                                    <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">System<span
                                             class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
-                                    <input id="id-sys" class="rounded col-xl-4 col-sm-5 col-7">
+                                    <input id="id-sys" class="rounded col-xl-4 col-md-7 col-sm-5 col-7">
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-sm-3 col-5 h6 txt-inp-def">Region</div>
-                                    <input id="id-reg" class="rounded col-xl-4 col-sm-5 col-7">&nbsp
+                                    <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Region</div>
+                                    <input id="id-reg" class="rounded col-xl-4 col-md-7 col-sm-5 col-7">&nbsp
                                 </div>
 
                                 <div id="id-byrow" class="row">
-                                    <div class="col-sm-3 col-5 h6 txt-inp-def">Entered by&nbsp;</div>
+                                    <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Entered by&nbsp;</div>
                                     <div id="id-by" class="col txt-inp-def"></div>
                                 </div>
 
                                 <div class="row">
-                                    <div id="id-Lifeform" class="col-xl-5 col-lg-7 col-14"></div>
-                                    <div id="id-Economy" class="col-xl-5 col-lg-7 col-14"></div>
+                                    <div id="id-Lifeform" class="col-xl-6 col-lg-7 col-14"></div>
+                                    <div id="id-Economy" class="col-xl-6 col-lg-7 col-14"></div>
                                 </div>
                             </div>
                         </div>
@@ -205,13 +205,13 @@
 
                     <div id="entrybuttons" class="card card-body">
                         <div class="row">
-                            <div class="col-sm-7 col-14">
+                            <div class="col-lg-7 col-14">
                                 <div class="row">
                                     <button id="save" type="button" class="col-4 btn btn-sm btn-def">Save</button>&nbsp;
                                     <button id="delete" type="button" class="col-4 btn btn-sm btn-def disabled"
                                         disabled>Delete</button>&nbsp;
                                     <button id="cancel" type="button"
-                                        class="col-4 btn btn-def  btn-sm" onclick="nmsce.clearPanel()">Cancel</button>&nbsp;
+                                        class="col-5 btn btn-def  btn-sm" onclick="nmsce.clearPanel()">Cancel</button>&nbsp;
                                 </div>
                                 <br>
                                 <div class="row">
@@ -264,12 +264,12 @@
 
                     <div class="row border-top">
                         <br>
-                        <div id="id-Font" class="col-6"></div>
-                        <label class="col-4 txt-inp-def">Size
+                        <div id="id-Font" class="col-14 h5"></div>
+                        <label class="col-sm-7 col-14 txt-inp-def">Size
                             <input id="sel-size" class="col-8" onchange="nmsce.setSize(this)" type="number" value=18
                                 min=0>
                         </label>
-                        <label class="col-4 txt-inp-def">Color
+                        <label class="col-sm-7 col-14 txt-inp-def">Color
                             <input id="sel-color" class="col-7 bkg-def" style="border-color:black"
                                 onchange="nmsce.setColor(this)" type="color" value="#ffffff">&nbsp;
                         </label>
@@ -278,8 +278,8 @@
                     <br>
 
                     <div clss="row border-top">
-                        <button class="btn btn-sm btn-def col-3" onclick="nmsce.loadImgText(true)">Reset</button>&nbsp;
-                        <button class="btn btn-sm btn-def col-3" onclick="nmsce.restoreText(null, true)">Reload</button>
+                        <button class="btn btn-sm btn-def col-5" onclick="nmsce.loadImgText(true)">Reset</button>&nbsp;
+                        <button class="btn btn-sm btn-def col-5" onclick="nmsce.restoreText(null, true)">Reload</button>
                     </div>
                 </div>
             </div>

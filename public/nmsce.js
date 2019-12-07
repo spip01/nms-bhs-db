@@ -62,13 +62,13 @@ NMSCE.prototype.buildPanel = function () {
 
     bhs.buildMenu(loc, "Lifeform", lifeformList, null, {
         required: !fnmsce,
-        labelsize: "col-lg-5 col-md-4 col-sm-3 col-5",
+        labelsize: "col-xl-7 col-lg-7 col-md-5 col-sm-3 col-5",
         menusize: "col",
     })
 
     bhs.buildMenu(loc, "Economy", economyList, null, {
         required: !fnmsce,
-        labelsize: "col-lg-5 col-md-4 col-sm-3 col-5",
+        labelsize: "col-xl-7 col-lg-7 col-md-5 col-sm-3 col-5",
         menusize: "col",
     })
 
@@ -314,37 +314,8 @@ NMSCE.prototype.extractEntry = async function () {
             }
         }
 
-        entry.id = entry.Name.nameToId()
-        entry.Photo = entry.id+".jpg"
         nmsce.updateEntry(entry)
-
-        let disp = document.createElement('canvas')
-        nmsce.drawText(disp, 1024)
-        disp.toBlob(blob => {
-            bhs.fbstorage.ref().child(displayPath + entry.Photo).put(blob).then(() => {
-                bhs.status("Saved " + displayPath + entry.Photo)
-            })
-        }, "image/jpeg", .9)
-
-        let thumb = document.createElement('canvas')
-        nmsce.drawText(thumb, 400)
-        thumb.toBlob(blob => {
-            nmsce.saved = blob
-            bhs.fbstorage.ref().child(thumbnailPath + entry.Photo).put(blob).then(() => {
-                bhs.status("Saved " + thumbnailPath + entry.Photo)
-            })
-        }, "image/jpeg", .7)
-
-        let orig = document.createElement('canvas')
-        let ctx = orig.getContext("2d")
-        orig.width = 1024
-        orig.height = nmsce.screenshot.height * 1024 / nmsce.screenshot.width
-        ctx.drawImage(nmsce.screenshot, 0, 0, orig.width, orig.height)
-        orig.toBlob(blob => {
-            bhs.fbstorage.ref().child(originalPath + entry.Photo).put(blob).then(() => {
-                bhs.status("Saved " + originalPath + entry.Photo)
-            })
-        }, "image/jpeg", .9)
+        nmsce.updateScreenshots(entry)
     }
 
     return ok
@@ -534,9 +505,9 @@ const tText = `&nbsp;
         <i class="fa fa-question-circle-o text-danger h6"></i>
     </span>`
 
-const inpHdr = `<div class="col-md-7 col-14">`
+const inpHdr = `<div class="col-lg-7 col-14">`
 const inpLongHdr = `<div class="col-14">`
-const inpShipHdr = `<div class="col-lg-7 col-md-14 col-sm-7 col-14">`
+const inpShipHdr = `<div class="col-14">`
 const inpEnd = `</div>`
 
 const tString = `
@@ -700,6 +671,10 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
             case "menu":
                 appenditem(itm, tMenu, "", id)
                 let lst = itm.find("#row-" + id)
+
+                if (f.ttip)
+                    f.tip = slist ? slist[f.ttip] : f.ttip
+
                 bhs.buildMenu(lst, f.name, f.list, f.sublist ? nmsce.selectSublist : null, f)
 
                 if (f.sublist) {
@@ -816,24 +791,22 @@ let txtcanvas = document.createElement('canvas')
 
 NMSCE.prototype.loadImgText = function (clear) {
     const ckbox = `
-        <label class="col-3">
+        <label class="col-xl-p333 col-7">
             <input id="ck-idname" type="checkbox" data-loc="src" onchange="nmsce.ckImgText(this, true)">
             &nbsp;title
         </label>`
 
     const textInp = `
-        <div class="col-14" style="padding-left:15px">
-            <label class="col-3 txt-inp-def">
-                <input id="ck-text" type="checkbox" data-loc="#id-text"
-                    onchange="nmsce.ckImgText(this, true)">
-                Text&nbsp;&nbsp;
-                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
-                    data-placement="bottom"
-                    title="Use Line break, <br>, to separate multiple lines.">
-                </i>
-            </label>
-            <input id="id-text" class="rounded col-10" type="text">
-        </div>
+        <label class="col-13 txt-inp-def">
+            <input id="ck-text" type="checkbox" data-loc="#id-text"
+                onchange="nmsce.ckImgText(this, true)">
+            Text&nbsp;&nbsp;
+            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
+                data-placement="bottom"
+                title="Use Line break, <br>, to separate multiple lines.">
+            </i>&nbsp;
+            <input id="id-text" class="rounded col-8" type="text">
+       </label>
         <br>`
 
     $("#img-text").html(textInp)
@@ -859,12 +832,12 @@ NMSCE.prototype.loadImgText = function (clear) {
 
     for (let fld of obj.fields) {
         if (fld.imgText)
-            appenditem(fld.name, "#typePanels .active #id-" + fld.name.nameToId())
+            appenditem(fld.name, "#typePanels .active #row-" + fld.name.nameToId())
 
         if (typeof fld.sublist !== "undefined")
             for (let sub of fld.sublist)
                 if (sub.imgText)
-                    appenditem(sub.name, "#typePanels .active #id-" + sub.name.nameToId() + " :visible")
+                    appenditem(sub.name, "#typePanels .active #row-" + sub.name.nameToId() + " :visible")
     }
 
     bhs.buildMenu($("#imgtable"), "Font", fontList, nmsce.setFont, {
@@ -901,12 +874,19 @@ NMSCE.prototype.ckImgText = function (evt, draw) {
         nmsce.initTxtItem(id)
 
     if (ck) {
+        let text = ""
         let data = $(evt).data()
         let loc = $(data.loc)
-        let type = loc.attr("type")
-        let text = ""
+        let type = loc.data()
+        if (typeof type === "undefined" || typeof type.type === "undefined")
+            type = loc.attr("type")
+        else {
+            type = type.type
+            loc = type === "menu" ? loc.find("#btn-" + id) : loc.find("#id-" + id)
+        }
 
         switch (type) {
+            case "menu":
             case "button":
                 text = loc.text().stripNumber()
                 break
@@ -921,7 +901,7 @@ NMSCE.prototype.ckImgText = function (evt, draw) {
             default:
                 text = loc.val()
                 if (id === "Glyphs") {
-                    let loc = $("#id-Planet-Index :visible")
+                    let loc = $("#typePanels .active #id-Planet-Index")
                     let num = loc.length > 0 && loc.val() > 0 ? loc.val() : 0
                     text = addrToGlyph(text, num)
                 }
@@ -1104,15 +1084,15 @@ NMSCE.prototype.setFont = function (evt) {
 
 NMSCE.prototype.drawText = function (alt, altw) {
     let canvas = alt ? alt : document.getElementById("id-canvas")
-
     let width = $("#id-img").width()
-    let scale = altw ? altw / width : 1
-    width = altw ? altw : width
 
     let ctx = txtcanvas.getContext("2d")
     txtcanvas.width = width
     txtcanvas.height = nmsce.screenshot.height * width / nmsce.screenshot.width
     ctx.clearRect(0, 0, txtcanvas.width, txtcanvas.height)
+
+    canvas.width = altw ? altw : width
+    canvas.height = nmsce.screenshot.height * canvas.width / nmsce.screenshot.width
 
     let loc = $("#img-text")
     let keys = Object.keys(nmsce.imageText)
@@ -1121,25 +1101,31 @@ NMSCE.prototype.drawText = function (alt, altw) {
         let tloc = loc.find("#ck-" + id)
 
         if (text.ck && tloc.is(":visible")) {
+            if (text.x + text.width > txtcanvas.width)
+                text.x = txtcanvas.width - text.width
+
+            if (text.y + text.height > txtcanvas.height)
+                text.y = txtcanvas.height - text.height
+
             if (id === "Glyphs") {
                 text.font = "glyph"
 
                 ctx.fillStyle = text.color
-                ctx.fillRect((text.x - 2) * scale, (text.y - text.height) * scale, (text.width + 4) * scale, (text.height + 4) * scale)
+                ctx.fillRect(text.x - 2, text.y - text.height, text.width + 4, text.height + 4)
                 ctx.fillStyle = "#000000"
-                ctx.fillRect((text.x - 1) * scale, (text.y - text.height + 1) * scale, (text.width + 2) * scale, (text.height + 2) * scale)
+                ctx.fillRect(text.x - 1, text.y - text.height + 1, text.width + 2, text.height + 2)
             }
 
-            ctx.font = (text.fSize * scale) + "px " + text.font
+            ctx.font = text.fSize + "px " + text.font
             ctx.fillStyle = text.color
 
             if (typeof text.text !== "undefined" && text.text.includes("<br>")) {
                 let l = text.text.split("<br>")
 
                 for (let i = 0; i < l.length; ++i)
-                    ctx.fillText(l[i], (text.x) * scale, (text.y + i * (text.fSize * 1.15)) * scale)
+                    ctx.fillText(l[i], text.x, text.y + i * text.fSize * 1.15)
             } else
-                ctx.fillText(text.text, (text.x) * scale, (text.y) * scale)
+                ctx.fillText(text.text, text.x, text.y)
 
             if (text.sel && !altw) {
                 ctx.strokeStyle = "white"
@@ -1151,8 +1137,6 @@ NMSCE.prototype.drawText = function (alt, altw) {
         }
     }
 
-    canvas.width = width
-    canvas.height = nmsce.screenshot.height * width / nmsce.screenshot.width
     let w = canvas.height * .09
 
     ctx = canvas.getContext("2d")
@@ -1280,6 +1264,42 @@ NMSCE.prototype.deleteEntry = function (entry) {
     })
 }
 
+NMSCE.prototype.updateScreenshots = function (entry) {
+    if (typeof entry.id === "undefined")
+        entry.id = entry.Name.nameToId().toLowerCase()
+
+    if (typeof entry.Photo === "undefined")
+        entry.Photo = entry.type + "_" + entry.id + ".jpg"
+
+    let disp = document.createElement('canvas')
+    nmsce.drawText(disp, 1024)
+    disp.toBlob(blob => {
+        bhs.fbstorage.ref().child(displayPath + entry.Photo).put(blob).then(() => {
+            // bhs.status("Saved " + displayPath + entry.Photo)
+        })
+    }, "image/jpeg", .9)
+
+    let thumb = document.createElement('canvas')
+    nmsce.drawText(thumb, 400)
+    thumb.toBlob(blob => {
+        nmsce.saved = blob
+        bhs.fbstorage.ref().child(thumbnailPath + entry.Photo).put(blob).then(() => {
+            // bhs.status("Saved " + thumbnailPath + entry.Photo)
+        })
+    }, "image/jpeg", .7)
+
+    let orig = document.createElement('canvas')
+    let ctx = orig.getContext("2d")
+    orig.width = 1024
+    orig.height = nmsce.screenshot.height * 1024 / nmsce.screenshot.width
+    ctx.drawImage(nmsce.screenshot, 0, 0, orig.width, orig.height)
+    orig.toBlob(blob => {
+        bhs.fbstorage.ref().child(originalPath + entry.Photo).put(blob).then(() => {
+            // bhs.status("Saved " + originalPath + entry.Photo)
+        })
+    }, "image/jpeg", .9)
+}
+
 NMSCE.prototype.updateEntry = function (entry) {
     entry.modded = firebase.firestore.Timestamp.now()
 
@@ -1289,11 +1309,17 @@ NMSCE.prototype.updateEntry = function (entry) {
     if (typeof entry.created === "undefined")
         entry.created = firebase.firestore.Timestamp.now()
 
+    if (typeof entry.id === "undefined")
+        entry.id = entry.Name.nameToId().toLowerCase()
+
+    if (typeof entry.Photo === "undefined")
+        entry.Photo = entry.type + "_" + entry.id + ".jpg"
+
     let ref = bhs.fs.collection("nmsce/" + entry.galaxy + "/" + entry.type)
     ref = ref.doc(entry.id)
 
     ref.set(entry).then(() => {
-        bhs.status(entry.addr + " saved.")
+        bhs.status(entry.id + " saved.")
     }).catch(err => {
         bhs.status("ERROR: " + err.code)
         console.log(err)
@@ -1325,9 +1351,18 @@ NMSCE.prototype.getEntries = async function (user, displayFcn, singleDispFcn) {
         displayFcn(nmsce.entries)
 }
 
-NMSCE.prototype.getLatest = async function (fcn) {
-    let d = new Date();
-    d.setDate(d.getDate() - $("#displaysince").val())
+NMSCE.prototype.getLatest = async function (fcn, evt) {
+    let s = parseInt($("#displaysince").val())
+    if (s <= 0) {
+        $("#displaysince").val(0)
+        return
+    } else if (s > 30) {
+        s = 30
+        $("#displaysince").val(s)
+    }
+
+    let d = new Date()
+    d.setDate(d.getDate() - s)
     d = firebase.firestore.Timestamp.fromDate(d)
 
     nmsce.clearResults()
@@ -1360,29 +1395,56 @@ NMSCE.prototype.clearResults = function () {
 NMSCE.prototype.displayResults = function (e, path) {
     const img = `
         <div class="cover-item bkg-white">
-            <img src="url" data-path="dbpath" onclick="nmsce.displaySel(this)"/>
+            <img id="id-idname" src="images/blank.png" data-src="url" class="cover-img" data-path="dbpath" onclick="nmsce.displaySel(this)" />
             <div class="row">
                 <div class="col-7 txt-inp-def text-center h4">galaxy</div>
                 <div class="col-7 txt-inp-def text-center h4">by</div>
             </div>
         </div>`
 
+    let idname = (e.type + "-" + e.id).nameToId()
+
+    if (window.IntersectionObserver) {
+        var io = new IntersectionObserver(
+            evts => {
+                for (let evt of evts) {
+                    if (evt.intersectionRatio > 0) {
+                        evt.target.src = evt.target.dataset.src
+                        io.unobserve(evt.target)
+                    }
+                }
+            }, {
+                root: $('#latestEntries')[0],
+                rootMargin: '0px 0px 0px 0px',
+                threshold: 1.0
+            }
+        )
+    }
+
     let ref = bhs.fbstorage.ref().child(thumbnailPath + e.Photo)
     ref.getDownloadURL().then(url => {
-        let h = /url/ [Symbol.replace](img, url)
+        let h = img
+        if (window.IntersectionObserver)
+            h = /url/ [Symbol.replace](h, url)
+        else
+            h = /images\/blank\.png / [Symbol.replace](h, url)
+        h = /idname/ [Symbol.replace](h, idname)
         h = /dbpath/ [Symbol.replace](h, path)
         h = /galaxy/ [Symbol.replace](h, e.galaxy)
         h = /by/ [Symbol.replace](h, e._name)
 
-        $("#latestEntries").append(h)
+        $("#latestEntries").prepend(h)
+
+        if (io)
+            io.observe($('#id-' + idname)[0])
     })
 }
 
 NMSCE.prototype.displaySel = async function (evt) {
     let row = `
-        <div id="id-idname" class="row border-bottom txt-inp-def h4">
-            <div class="col-5 ">title</div>
-            <div id="val-idname" class="col font clr-def">value</div>
+        <div id="id-idname" class="row border-bottom txt-inp-def h5">
+            <div class="col-lg-4 col-7">title</div>
+            <div id="val-idname" class="col-lg-10 col-7 font clr-def">value</div>
         </div>`
 
     let loc = $("#imageinfo")
@@ -1409,17 +1471,20 @@ NMSCE.prototype.displaySel = async function (evt) {
         let obj = objectList[idx]
 
         let ref = bhs.fbstorage.ref().child(displayPath + e.Photo)
+        loc = $("#dispimage")
+        loc.css("width", loc.width() + "px")
+        loc.css("height", "auto")
         ref.getDownloadURL().then(url => {
             $("#dispimage").attr("src", url)
         })
 
-        loc = loc.find("#imagedata")
+        loc = $("#imagedata")
         loc.empty()
 
         for (let fld of obj.imgText) {
             let h = /idname/g [Symbol.replace](row, fld.name.nameToId())
             h = /title/ [Symbol.replace](h, fld.name)
-            h = /value/ [Symbol.replace](h, fld.name === "Glyphs" ? addrToGlyph(e[fld.field], e.Planet_Index) : e[fld.field])
+            h = /value/ [Symbol.replace](h, fld.name === "Glyphs" ? addrToGlyph(e[fld.field], e["Planet-Index"]) : e[fld.field])
             h = /font/ [Symbol.replace](h, fld.font ? fld.font : "")
             loc.append(h)
         }
@@ -1464,7 +1529,7 @@ NMSCE.prototype.displayList = function (entries, path) {
     const row = `     
                      <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black format" onclick="nmsce.selectList(this)">
                         <div id="id-Photo" class="row">
-                            <img id="img-pic" class="img-fluid" crossorigin="anonymous">
+                            <img id="img-pic" src="images/blank.png" class="img-fluid" crossorigin="anonymous">
                         </div>
                         <div class="row">`
     const itm = `           <div id="id-idname" class="col-md-7 col-14 border">title</div>`
@@ -1575,6 +1640,23 @@ NMSCE.prototype.displayList = function (entries, path) {
 
     let loc = $("#id-table")
 
+    if (window.IntersectionObserver) {
+        var io = new IntersectionObserver(
+            evts => {
+                for (let evt of evts) {
+                    if (evt.intersectionRatio > 0) {
+                        evt.target.src = evt.target.dataset.src
+                        io.unobserve(evt.target)
+                    }
+                }
+            }, {
+                root: $('#id-table')[0],
+                rootMargin: '0px 0px 0px 0px',
+                threshold: 1.0
+            }
+        )
+    }
+
     if (path) {
         let rloc = loc.find("#list-" + e.type + " #row-" + e.id)
         if (rloc.length === 1)
@@ -1588,7 +1670,11 @@ NMSCE.prototype.displayList = function (entries, path) {
 
         if (typeof nmsce.saved !== "undefined") {
             let url = URL.createObjectURL(nmsce.saved)
-            rloc.find("#img-pic").attr("src", url)
+            if (window.IntersectionObserver) {
+                rloc.find("#img-pic").attr("data-src", url)
+                io.observe(rloc.find("#img-pic")[0])
+            } else
+                rloc.find("#img-pic").attr("src", url)
         }
     } else {
         loc.append(h)
@@ -1603,14 +1689,22 @@ NMSCE.prototype.displayList = function (entries, path) {
                     if (f.type === "img") {
                         let ref = bhs.fbstorage.ref().child(thumbnailPath + e[f.name])
                         ref.getDownloadURL().then(url => {
-                            eloc.find("#img-pic").attr("src", url)
+                            if (window.IntersectionObserver) {
+                                eloc.find("#img-pic").attr("data-src", url)
+                                io.observe(eloc.find("#img-pic")[0])
+                            } else
+                                eloc.find("#img-pic").attr("src", url)
                         })
                     } else if (typeof f.sublist !== "undefined")
                         for (let s of f.sublist) {
                             if (s.type === "img") {
                                 let ref = bhs.fbstorage.ref().child(thumbnailPath + e[s.name])
                                 ref.getDownloadURL().then(url => {
-                                    eloc.find("#img-pic").attr("src", url)
+                                    if (window.IntersectionObserver) {
+                                        eloc.find("#img-pic").attr("data-src", url)
+                                        io.observe(eloc.find("#img-pic")[0])
+                                    } else
+                                        eloc.find("#img-pic").attr("src", url)
                                 })
                             }
                         }
@@ -1618,6 +1712,7 @@ NMSCE.prototype.displayList = function (entries, path) {
             }
         }
     }
+
 
     $("#row-idname [id|='id']").click(function () {
         let id = $(this).prop("id")
@@ -2125,23 +2220,25 @@ const sentinelList = [{
 const baseList = [{
     name: "Nothing Selected"
 }, {
-    name: "Race Track"
-}, {
-    name: "Maze"
-}, {
-    name: "Farm"
-}, {
-    name: "Maze"
-}, {
-    name: "Low Orbit"
-}, {
-    name: "Under Water"
-}, {
-    name: "Large"
-}, {
     name: "Civ Capital"
 }, {
     name: "Civ Hub"
+}, {
+    name: "Farm"
+}, {
+    name: "Garden"
+}, {
+    name: "Large"
+}, {
+    name: "Low Orbit"
+}, {
+    name: "Maze"
+}, {
+    name: "Point of Interest"
+}, {
+    name: "Race Track"
+}, {
+    name: "Under Water"
 }, ]
 
 const faunaList = [{
@@ -2300,6 +2397,8 @@ const colorList = [{
     name: "Purple",
 }, {
     name: "Red",
+}, {
+    name: "Silver",
 }, {
     name: "Tan",
 }, {
@@ -3443,7 +3542,7 @@ const objectList = [{
         name: "Economy"
     }],
     fields: [{
-        name: "Base Name",
+        name: "Name",
         type: "string",
         required: true,
         imgText: true,

@@ -197,16 +197,16 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     const panel = `
         <div id="pnl-user">
             <div class="row">
-                <div class="col-lg-5 col-md-7 col-sm-5 col-14">
+                <div class="col-lg-7 col-md-7 col-sm-7 col-14">
                     <div class="row">
                         <div class="col-md-14 col-sm-14 col-6 h6 txt-inp-def">Player Name<span id="namereq" class="h5 text-danger">&nbsp;*</span></div>
                         <input id="id-Player" class="rounded col h5" type="text">
                     </div>
                 </div>
 
-                <div id="id-Civ-Org" class="col-lg-4 col-md-7 col-sm-3 col-14 hidden"></div>
-                <div id="id-Galaxy" class="col-lg-3 col-md-7 col-sm-3 col-14"></div>
-                <div id="id-Platform" class="col-lg-2 col-md-7 col-sm-3 col-14"></div>
+                <div id="id-Civ-Org" class="col-lg-7 col-md-7 col-sm-7 col-14 hidden"></div>
+                <div id="id-Galaxy" class="col-lg-7 col-md-7 col-sm-7 col-14"></div>
+                <div id="id-Platform" class="col-lg-7 col-md-7 col-sm-7 col-14"></div>
             </div>
 
             <div class="row text-right">
@@ -231,20 +231,20 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     })
 
     bhs.buildMenu(loc, "Civ/Org", bhs.orgList, bhs.saveUser, {
-        labelsize: "col-md-14 col-sm-14 col-6",
+        labelsize: "col-md-14 col-sm-14 col-5",
         menusize: "col",
     })
 
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, {
         required: !fnmsce,
-        labelsize: "col-lg-14 col-md-6 col-sm-14 col-6",
+        labelsize: "col-lg-7 col-md-14 col-sm-14 col-5",
         menusize: "col",
     })
 
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, {
         tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
         required: true,
-        labelsize: "col-lg-14 col-md-6 col-sm-14 col-6",
+        labelsize: "col-lg-7 col-md-14 col-sm-14 col-5",
         menusize: "col",
     })
 

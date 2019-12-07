@@ -96,7 +96,7 @@
 
         <div class="card pad-bottom">
             <label class="card-header txt-def h4">
-                <input id="ck-glyphs" type="checkbox" onchange='if ($(this).prop("checked")) 
+                <input type="checkbox" onchange='if ($(this).prop("checked")) 
                         $("#searchPanel").css("display","inherit") 
                     else 
                         $("#searchPanel").hide()'>
@@ -110,17 +110,17 @@
                             <div class="card-body">
                                 <div id="id-addrInput">
                                     <div class="row">
-                                        <div class="col-sm-3 col-5 h6 txt-inp-def">Coords<span
-                                                class="h5 text-danger">&nbsp;*</span>&nbsp;
+                                        <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">Coords<span
+                                            class="h5 text-danger">&nbsp;*</span>&nbsp;
                                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                                 data-html="true" data-placement="bottom"
                                                 title="Search at a specific address.<br>Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
                                                     A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
                                             </i>
                                         </div>
-                                        <input id="id-addr" class="rounded col-xl-4 col-sm-5 col-7" type="text"
+                                        <input id="id-addr" class="rounded col-xl-5 col-lg-6 col-md-11 col-sm-5 col-11" type="text"
                                             placeholder="0000:0000:0000:0000" onchange="nmsce.changeAddr(this)">
-                                        <div class="col-5">
+                                        <div class="col">
                                             <label class="h6 txt-inp-def">
                                                 <input id="ck-glyphs" type="checkbox"
                                                     onchange="nmsce.setGlyphInput(this)">
@@ -134,9 +134,9 @@
                                     </div>
 
                                     <div class="row">
-                                        <div class="col-lg-2 col-3 h6 txt-inp-def">Glyphs</div>
+                                        <div class="col-lg-3 col-md-5 col-sm-2 col-5 h6 txt-inp-def">Glyphs</div>
                                         <div id="id-glyph"
-                                            class="col-lg-7 col-md-11 col-sm-6 col-11 h4 text-center txt-inp-def glyph">
+                                            class="col-lg-9 col-md-14 col-sm-7 col-14 h5 text-center txt-inp-def glyph">
                                         </div>
                                         <div id="id-hex" class="col text-center txt-inp-def"></div>
                                     </div>
@@ -144,7 +144,7 @@
 
                                 <div id="id-glyphInput" class="hidden">
                                     <div class="row">
-                                        <div class="col-sm-3 col-4 h6 txt-inp-def">
+                                        <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">
                                             Glyph&nbsp;<span class="text-danger">*</span>&nbsp;
                                             <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
                                                 data-html="true" data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
@@ -152,8 +152,8 @@
                                             </i>
                                         </div>
                                         <input id="id-glyph" type="text"
-                                            class="rounded col-xl-5 col-lg-7 col-md-10 col-sm-6 col-10 h4 glyph"
-                                            onchange="nmsce.changeAddr(this)">
+                                        class="rounded col-xl-5 col-lg-8 col-md-14 col-sm-7 col-14 h5 glyph"
+                                        onchange="nmsce.changeAddr(this)">
                                         <div class="col">
                                             <label class="h6 txt-inp-def">
                                                 <input id="ck-glyphs" type="checkbox"
@@ -170,30 +170,30 @@
                                     <div id="glyphbuttons" class="row"></div>
 
                                     <div class="row">
-                                        <div class="col-sm-3 col-5 h6 txt-inp-def">Coords&nbsp;</div>
+                                        <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Coords&nbsp;</div>
                                         <div id="id-addr" class="col txt-inp-def"></div>
                                     </div>
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-sm-3 col-5 h6 txt-inp-def">System<span
-                                            class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
-                                    <input id="id-sys" class="rounded col-xl-4 col-sm-5 col-7">
-                                </div>
+                                    <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">System<span
+                                        class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
+                                        <input id="id-sys" class="rounded col-xl-4 col-md-7 col-sm-5 col-7">
+                                    </div>
 
                                 <div class="row">
-                                    <div class="col-sm-3 col-5 h6 txt-inp-def">Region</div>
-                                    <input id="id-reg" class="rounded col-xl-4 col-sm-5 col-7">&nbsp
+                                    <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Region</div>
+                                    <input id="id-reg" class="rounded col-xl-4 col-md-7 col-sm-5 col-7">&nbsp
                                 </div>
 
                                 <div id="id-byrow" class="row">
-                                    <div class="col-sm-3 col-5 h6 txt-inp-def">Entered by&nbsp;</div>
+                                    <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Entered by&nbsp;</div>
                                     <div id="id-by" class="col txt-inp-def"></div>
                                 </div>
 
                                 <div class="row">
-                                    <div id="id-Lifeform" class="col-xl-5 col-lg-7 col-14"></div>
-                                    <div id="id-Economy" class="col-xl-5 col-lg-7 col-14"></div>
+                                    <div id="id-Lifeform" class="col-xl-6 col-lg-7 col-14"></div>
+                                    <div id="id-Economy" class="col-xl-6 col-lg-7 col-14"></div>
                                 </div>
                             </div>
                         </div>
@@ -214,7 +214,7 @@
 
                     <div id="entrybuttons" class="card card-body">
                         <div class="row">
-                            <div class="col-sm-7 col-14">
+                            <div class="col-lg-7 col-14">
                                 <div class="row">
                                     <button id="search" type="button" class="col-4 btn btn-sm btn-def"
                                         onclick="nmsce.search()">Search</button>&nbsp;
@@ -238,36 +238,32 @@
         </div>
         <br>
 
-        <div class="card">
+        <div class="card bkg-def border">
             <div class="card-header txt-def h4">
                 <div class="row">
                     <div class="col-4">Entries</div>
-                    <label class="col-5">
+                    <label class="col-6 h5">
                         Show last&nbsp;
-                        <input id="displaysince" type="number" value=7 min=0 max=30
-                            onchange="nmsce.getLatest(nmsce.displayResults)">
+                        <input id="displaysince" class="col-2" type="text" value=1
+                            onchange="nmsce.getLatest(nmsce.displayResults, this)">
                         &nbsp;days.
                 </div>
             </div>
-        </div>
 
-        <div class="card-body">
-            <div class="row-fluid">
-                <div class="cover-container">
-                    <div id="latestEntries" class="cover-container"></div>
-                </div>
-            </div>
-            <br>
-            <div id="imageinfo" class="row" style="display:none">
-                <img id="dispimage" class="col-11" />
-                <div class="col-3 bkg-white">
+            <div class="card-body">
+                <div id="latestEntries" class="cover-container"></div>
+                <br>
+                <div id="imageinfo" class="row bkg-white txt-center" style="display:none">
                     <br>
-                    <div id="imagedata"></div>
-                    <br><br><br><br>
-                    <div class="row" onclick="nmsce.newDARC('#imagedata #val-Coords')" class="text-center">
-                        <div class="col text-center">
-                            <img src="images/bhs-logo.png" style="height:80px; width:80px;" />
-                            <span class="txt-inp-def h4">&nbsp;DARC</span>
+                    <img id="dispimage" class="col-xl-10 col-lg-9 col-md-10 col-14" />
+                    <div class="col-xl-4 col-lg-5 col-md-4 col-14">
+                        <div id="imagedata"></div>
+                        <br>
+                        <div class="row" onclick="nmsce.newDARC('#imagedata #val-Coords')" class="text-center">
+                            <div class="col text-center">
+                                <img src="images/bhs-logo.png" style="height:80px; width:80px;" />
+                                <span class="txt-inp-def h4">&nbsp;DARC</span>
+                            </div>
                         </div>
                     </div>
                 </div>
