@@ -1103,9 +1103,13 @@ NMSCE.prototype.drawText = function (alt, altw) {
         if (text.ck && tloc.is(":visible")) {
             if (text.x + text.width > txtcanvas.width)
                 text.x = txtcanvas.width - text.width
+            else if (text.x < 0)
+                text.x = 0
 
-            if (text.y + text.height > txtcanvas.height)
-                text.y = txtcanvas.height - text.height
+            if (text.y > txtcanvas.height)
+                text.y = txtcanvas.height
+            else if (text.y - text.height < 0)
+                text.y = text.height
 
             if (id === "Glyphs") {
                 text.font = "glyph"
@@ -1899,7 +1903,7 @@ const fighterWingsMap = `
 
         <map name="fighter-wings-map" id="map-areas">
             <area alt="h2" coords="1,1,9,203,46,189,50,5" shape="poly">
-            <area alt="h11" data-group=3 coords="60,11,65,42,156,44,160,21" shape="poly">
+            <area alt="h11" coords="60,11,65,42,156,44,160,21" shape="poly">
             <area alt="h27" data-group=3 coords="179,10,184,54,212,57,216,9" shape="poly">
             <area alt="h25" data-group=3 coords="226,8,223,52,257,55,262,13" shape="poly">
             <area alt="h26" data-group=3 coords="273,7,266,25,273,51,301,51,312,19" shape="poly">
@@ -1915,7 +1919,7 @@ const fighterWingsMap = `
             <area alt="h17" data-group=4 coords="189,131,211,159,206,173,171,181,173,195,211,201,217,210,241,203,235,182,297,174,280,157" shape="poly">
             <area alt="h18" data-group=4 coords="272,141,316,192,291,199,311,245,342,224,346,187,297,139" shape="poly">
             <area alt="h19" data-group=4 coords="214,256,221,266,312,265,314,252,277,220,280,187,268,187" shape="poly">
-            <area alt="h20" data-group=4 coords="1,275,3,386,100,388,102,274" shape="poly">
+            <area alt="h20" coords="1,275,3,386,100,388,102,274" shape="poly">
             <area alt="h21" data-group=4 coords="121,268,113,320,129,386,182,392,226,359,224,290,180,257" shape="poly">
             <area alt="h28" data-group=4 coords="227,273,231,292,272,350,285,333,253,272" shape="poly">
             <area alt="h4" data-group=4 coords="273,272,287,295,345,289,329,274" shape="poly">
