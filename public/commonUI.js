@@ -32,6 +32,12 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
             if (doc.exists) {
                 let role = doc.data().roles
 
+                if (role.includes("nmsceEditor"))
+                    $("#voting #edchoice").show()
+
+                if (role.includes("admin"))
+                    $("#voting #bhspoi").show()
+
                 if (role.includes("editor") || role.includes("admin"))
                     $("#poiorg").show()
 
@@ -159,7 +165,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     let pnl = $("#pnl-user")
     if (!fnmsce)
         pnl.find("#id-Player").val(bhs.user._name)
-        
+
     pnl.find("#btn-Platform").text(bhs.user.platform)
     pnl.find("#btn-Civ-Org").text(bhs.user.org)
 
@@ -251,12 +257,13 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     if (fnmsce)
         $("#namereq").hide()
 
-    $("#id-Player").change(function () {
-        if (bhs.user.uid) {
-            let user = bhs.extractUser()
-            bhs.changeName(this, user)
-        }
-    })
+    if (findex)
+        $("#id-Player").change(function () {
+            if (bhs.user.uid) {
+                let user = bhs.extractUser()
+                bhs.changeName(this, user)
+            }
+        })
 
     if (!fnmsce)
         $("#id-Civ-Org").show()

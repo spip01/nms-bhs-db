@@ -31,8 +31,13 @@ $(document).ready(() => {
     nmsce.buildPanel()
     nmsce.buildTypePanels()
 
-    if (fnmsce)
+    if (fnmsce) {
+        bhs.buildMenu($("#resultshdr"), "show", showTypesList, nmsce.selDisplay, {
+            nolabel: true
+        })
+        $("#resultshdr #btn-show").text("Latest")
         nmsce.getLatest(nmsce.displayResults)
+    }
 
     $("#save").click(() => {
         if (nmsce.save())
@@ -48,6 +53,32 @@ $(document).ready(() => {
 
 function NMSCE() {
 
+}
+
+const showTypesList = [{
+    name: "Latest",
+    id: "latest"
+}, {
+    name: "Search",
+    id: "results"
+}, {
+    name: "Clicks",
+    id: "clicks"
+}, {
+    name: "Favorites",
+    id: "favorites"
+}, {
+    name: "Editors Choice",
+    id: "edchoice"
+}]
+
+NMSCE.prototype.selDisplay = function (evt) {
+    $(".cover-container").hide()
+
+    let i = getIndex(showTypesList, "name", $(evt).text())
+    let loc = $("#" + showTypesList[i].id)
+    loc.show()
+    $("#numFound").text(loc.children().length)
 }
 
 NMSCE.prototype.displayUser = function () {
@@ -373,6 +404,11 @@ NMSCE.prototype.executeSearch = async function (fcn) {
     let platform = $("#btn-Platform").text().stripMarginWS()
     let galaxy = $("#btn-Galaxy").text().stripNumber()
 
+    if (galaxy === "") {
+        bhs.status("No Galaxy Selected.")
+        return
+    }
+
     let tab = $("#typeTabs .active").prop("id").stripID()
     let pnl = $("#typePanels #pnl-" + tab)
 
@@ -451,13 +487,21 @@ NMSCE.prototype.executeSearch = async function (fcn) {
     if (bhs.user.uid === "")
         ref = ref.limit(50)
 
-    nmsce.clearResults()
+    $("#results").empty()
+    $("#item-Search").click()
+
     ref.get().then(snapshot => {
         if (bhs.user.uid === "" && snapshot.size === 50)
-            bhs.status("Showing 50 entries. Refine selection to see better matches.")
+            bhs.status("Showing first 50 matches. Login to see more matches or refine selection to see better matches.")
+        if (snapshot.size === 0) {
+            bhs.status("Nothing Found.")
+            return
+        }
 
         for (let doc of snapshot.docs)
-            fcn(doc.data(), doc.ref.path)
+            fcn(doc.data(), doc.ref.path, "#results")
+
+        $("#numFound").text(snapshot.size)
     })
 }
 
@@ -1316,6 +1360,15 @@ NMSCE.prototype.updateEntry = function (entry) {
     if (typeof entry.clickcount === "undefined")
         entry.clickcount = 0
 
+    if (typeof entry.favorite === "undefined")
+        entry.favorite = 0
+
+    if (typeof entry.edchoice === "undefined")
+        entry.edchoice = 0
+
+    if (typeof entry.bhspoi === "undefined")
+        entry.bhspoi = 0
+
     if (typeof entry.created === "undefined")
         entry.created = firebase.firestore.Timestamp.now()
 
@@ -1375,7 +1428,8 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
     d.setDate(d.getDate() - s)
     d = firebase.firestore.Timestamp.fromDate(d)
 
-    nmsce.clearResults()
+    $("#latest").empty()
+    $("#item-Latest").click()
 
     let ref = bhs.fs.collection("nmsce")
     ref.get().then(snapshot => {
@@ -1387,8 +1441,13 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
                 ref = ref.where("created", ">=", d)
 
                 ref.get().then(snapshot => {
+                    let t = $("#numFound").text()
+                    t = t !== "" ? parseInt(t) : 0
+                    t += snapshot.size
+                    $("#numFound").text(t)
+
                     for (let doc of snapshot.docs)
-                        fcn(doc.data(), doc.ref.path)
+                        fcn(doc.data(), doc.ref.path, "#latest")
                 })
 
                 ref = doc.ref.collection(type)
@@ -1397,20 +1456,44 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
 
                 if ($("#favorites").children().length === 0) {
                     ref = doc.ref.collection(type)
-                    ref = ref.orderBy("clickcount")
+                    ref = ref.orderBy("favorite", "desc")
                     ref = ref.limit(1)
 
                     ref.get().then(snapshot => {
-                        for (let doc of snapshot.docs)
-                            fcn(doc.data(), doc.ref.path, "#favorites")
+                        for (let doc of snapshot.docs) {
+                            if (doc.data().favorite > 0)
+                                fcn(doc.data(), doc.ref.path, "#favorites")
+                        }
+                    })
+                }
+
+                if ($("#clicks").children().length === 0) {
+                    ref = doc.ref.collection(type)
+                    ref = ref.orderBy("clickcount", "desc")
+                    ref = ref.limit(1)
+
+                    ref.get().then(snapshot => {
+                        for (let doc of snapshot.docs) {
+                            if (doc.data().clickcount > 0)
+                                fcn(doc.data(), doc.ref.path, "#clicks")
+                        }
+                    })
+                }
+
+                if ($("#edchoice").children().length === 0) {
+                    ref = doc.ref.collection(type)
+                    ref = ref.orderBy("edchoice", "desc")
+                    ref = ref.limit(1)
+
+                    ref.get().then(snapshot => {
+                        for (let doc of snapshot.docs) {
+                            if (doc.data().edchoice > 0)
+                                fcn(doc.data(), doc.ref.path, "#edchoice")
+                        }
                     })
                 }
             }
     })
-}
-
-NMSCE.prototype.clearResults = function () {
-    $("#latestEntries").empty()
 }
 
 NMSCE.prototype.displayResults = function (e, path, inID) {
@@ -1435,7 +1518,7 @@ NMSCE.prototype.displayResults = function (e, path, inID) {
                     }
                 }
             }, {
-                root: $('#latestEntries')[0],
+                root: $('#latest')[0],
                 rootMargin: '0px 0px 0px 0px',
                 threshold: .1
             }
@@ -1457,7 +1540,7 @@ NMSCE.prototype.displayResults = function (e, path, inID) {
         if (inID)
             $(inID).append(h)
         else {
-            $("#latestEntries").prepend(h)
+            $("#latest").prepend(h)
 
             if (io)
                 io.observe($('#id-' + idname)[0])
@@ -1465,11 +1548,23 @@ NMSCE.prototype.displayResults = function (e, path, inID) {
     })
 }
 
+NMSCE.prototype.vote = function (evt) {
+    if (nmsce.last) {
+        let id = $(evt).prop("id")
+        let e = {}
+        e[id] = typeof nmsce.last[id] === "undefined" ? 1 : nmsce.last[id] + 1
+        let ref = bhs.fs.doc("nmsce/" + nmsce.last.galaxy + "/" + nmsce.last.type + "/" + nmsce.last.id)
+        ref.set(e, {
+            merge: true
+        })
+    }
+}
+
 NMSCE.prototype.displaySel = async function (evt) {
     let row = `
         <div id="id-idname" class="row border-bottom txt-inp-def h5">
-            <div class="col-lg-4 col-7">title</div>
-            <div id="val-idname" class="col-lg-10 col-7 font clr-def">value</div>
+            <div class="col-lg-5 col-7">title</div>
+            <div id="val-idname" class="col-lg-9 col-7 font clr-def">value</div>
         </div>`
 
     let loc = $("#imageinfo")
@@ -1481,15 +1576,16 @@ NMSCE.prototype.displaySel = async function (evt) {
 
     if (doc.exists) {
         let e = doc.data()
+        nmsce.last = e
 
         if (typeof e.clickcount === "undefined")
             e.clickcount = 0
 
         e.clickcount++
-        doc.ref.set(e).then(() => {
-            console.log("count")
-        }).catch(err => {
-            console.log(JSON.stringify(err))
+        doc.ref.set({
+            clickcount: e.clickcount
+        }, {
+            merge: true
         })
 
         let idx = getIndex(objectList, "name", e.type)
@@ -1524,7 +1620,7 @@ NMSCE.prototype.displaySel = async function (evt) {
                 loc.append(h)
             }
 
-            if (fld.type === "sublist") {
+            if (typeof fld.sublist !== "undefined") {
                 for (let sub of fld.sublist) {
                     if (sub.imgText) {
                         let id = sub.name.nameToId()
@@ -1537,6 +1633,14 @@ NMSCE.prototype.displaySel = async function (evt) {
                 }
             }
         }
+
+        let d = e.created.toDate().toDateLocalTimeString()
+
+        let h = /idname/g [Symbol.replace](row, "date")
+        h = /title/ [Symbol.replace](h, "Date")
+        h = /value/ [Symbol.replace](h, d)
+        h = /font/ [Symbol.replace](h, "")
+        loc.append(h)
     }
 }
 
@@ -3591,15 +3695,6 @@ const objectList = [{
         ttip: "Bases are only visible by players using the same game mode.",
         imgText: true,
         search: true,
-    }, {
-        name: "Latitude",
-        type: "string",
-        imgText: true,
-        ttip: "Helpful finding bases on crowded planets.",
-    }, {
-        name: "Longitude",
-        imgText: true,
-        type: "string",
     }, {
         name: "Type",
         type: "menu",

@@ -241,42 +241,43 @@
 
         <div class="card bkg-def border">
             <div class="card-header txt-def h3">
-                <div class="row">
-                    <div class="col-lg-p333 col-7">Entries</div>
+                <div id="resultshdr" class="row">
+                    <div class="col-lg-p333 col-7 h4"><span id="numFound"></span> Entries found.</div>
                     <label class="col-lg-p333 col-7 h4">
                         Show last&nbsp;
                         <input id="displaysince" class="col-2" type="text" value=1
                             onchange="nmsce.getLatest(nmsce.displayResults, this)">
                         &nbsp;days.&nbsp;
                     </label>
-                    <label class="col-lg-p333 col-7 h4">
-                        <input id="displaysince" class="col-2" type="checkbox" onchange="if($(this).prop('checked')){
-                                $('#favorites').show()
-                                $('#latestEntries').hide()
-                            }else{
-                                $('#favorites').hide()
-                                $('#latestEntries').show()
-                            }">
-                        &nbsp;Favorites
-                    </label>
+                    <div id="id-show" class="col-lg-p333 col-7 clr-def h4"></div>
                 </div>
             </div>
 
             <div class="card-body">
                 <div id="favorites" class="cover-container" style="display:none"></div>
-                <div id="latestEntries" class="cover-container"></div>
+                <div id="clicks" class="cover-container" style="display:none"></div>
+                <div id="results" class="cover-container" style="display:none"></div>
+                <div id="edchoice" class="cover-container" style="display:none"></div>
+                <div id="latest" class="cover-container"></div>
                 <br>
                 <div id="imageinfo" class="row bkg-white txt-center" style="display:none">
-                    <br>
                     <img id="dispimage" class="col-xl-10 col-lg-9 col-md-10 col-14" />
                     <div class="col-xl-4 col-lg-5 col-md-4 col-14">
                         <div id="imagedata"></div>
-                        <br>
                         <div class="row" onclick="nmsce.newDARC('#imagedata #val-Coords')" class="text-center">
                             <div class="col text-center">
                                 <img src="images/bhs-logo.png" style="height:80px; width:80px;" />
                                 <span class="txt-inp-def h4">&nbsp;DARC</span>
                             </div>
+                        </div>
+                        <div id="voting" class="row">
+                            <button id="favorite" type="button" class="col-4 btn btn-sm btn-def"
+                            onclick="nmsce.vote(this)">Favorite</button>&nbsp;
+                            <button id="edchoice" type="button" class="col-4 btn btn-sm btn-def" style="display:none"
+                            onclick="nmsce.vote(this)">Editors</button>&nbsp;
+                            <button id="bhspoi" type="button" class="col-4 btn btn-sm btn-def" style="display:none"
+                            onclick="nmsce.vote(this)">BHS Poi</button>&nbsp;
+
                         </div>
                     </div>
                 </div>

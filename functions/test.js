@@ -9,18 +9,20 @@ admin.initializeApp({
 
 async function main() {
     let ref = admin.firestore().collection("nmsce")
-       ref.listDocuments().then(refs => {
+    ref.listDocuments().then(refs => {
         for (let ref of refs) {
-            console.log(ref.path)
-            ref.listCollections().then(async refs =>{
+            ref.listCollections().then(async refs => {
                 for (let ref of refs) {
-                    console.log(ref.path)
                     let snapshot = await ref.get()
                     for (let doc of snapshot.docs) {
+                        console.log(doc.ref.path)
                         let e = doc.data()
-                        let cdate = new admin.firestore.Timestamp(e.created.seconds, e.created.nanoseconds)
-                        console.log(cdate.seconds < e.modded.seconds, cdate, e.modded)
-                        e.created = cdate.seconds < e.modded.seconds ? e.modded : cdate
+
+                        e.favorite = 0
+                        e.edchoice = 0
+                        e.bhspoi = 0
+                        e.clickcount = 0
+
                         doc.ref.set(e)
                     }
                 }

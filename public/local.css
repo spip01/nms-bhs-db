@@ -7,6 +7,7 @@
 */
 
 @media only screen and (max-width: 767px) {
+
     .h1,
     h1 {
         font-size: 1.62rem
@@ -39,6 +40,7 @@
 }
 
 @media only screen and (min-width: 768px) {
+
     .h1,
     h1 {
         font-size: 2rem
@@ -225,7 +227,7 @@ body {
 }
 
 .bkg-black {
-    background-color:black;
+    background-color: black;
 }
 
 .bkg-green {
