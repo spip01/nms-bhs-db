@@ -109,8 +109,9 @@
                                                 A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
                                             </i>
                                         </div>
-                                        <input id="id-addr" class="rounded col-xl-5 col-lg-6 col-md-11 col-sm-5 col-11" type="text"
-                                            placeholder="0000:0000:0000:0000" onchange="nmsce.changeAddr(this)">
+                                        <input id="id-addr" class="rounded col-xl-5 col-lg-6 col-md-11 col-sm-5 col-11"
+                                            type="text" placeholder="0000:0000:0000:0000"
+                                            onchange="nmsce.changeAddr(this)">
                                         <div class="col">
                                             <label class="h6 txt-inp-def">
                                                 <input id="ck-glyphs" type="checkbox"
@@ -197,10 +198,6 @@
                     <div class="card card-body">
                         <div class="tab-content" id="typePanels"></div>
                     </div>
-                </div>
-
-                <div class="col-md-7 col-14">
-                    <div id="pnl-map" class="card card-body"></div>
                     <br>
 
                     <div id="entrybuttons" class="card card-body">
@@ -210,8 +207,8 @@
                                     <button id="save" type="button" class="col-4 btn btn-sm btn-def">Save</button>&nbsp;
                                     <button id="delete" type="button" class="col-4 btn btn-sm btn-def disabled"
                                         disabled>Delete</button>&nbsp;
-                                    <button id="cancel" type="button"
-                                        class="col-5 btn btn-def  btn-sm" onclick="nmsce.clearPanel()">Cancel</button>&nbsp;
+                                    <button id="cancel" type="button" class="col-5 btn btn-def  btn-sm"
+                                        onclick="nmsce.clearPanel()">Cancel</button>&nbsp;
                                 </div>
                                 <br>
                                 <div class="row">
@@ -225,6 +222,11 @@
                                 style="overflow-y: scroll; height: 50px"></div>
                         </div>
                     </div>
+                    <br>
+                </div>
+
+                <div class="col-md-7 col-14">
+                    <div id="pnl-map" class="card card-body"></div>
                 </div>
             </div>
 

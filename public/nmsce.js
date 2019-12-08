@@ -349,14 +349,14 @@ NMSCE.prototype.extractEntry = async function () {
         nmsce.updateScreenshots(entry)
     }
 
-    return ok
+    return ok ? entry : false
 }
 
 NMSCE.prototype.displaySingle = async function (entry) {
     let tloc = $("#tab-" + entry.type.nameToId())
     tloc.click()
 
-    nmsce.lastsys = null
+    nmsce.lastsys = entry
     bhs.getEntry(entry.addr, nmsce.displaySystem, null, null, true)
 
     let pnl = $("#typePanels #pnl-" + entry.type)
@@ -397,6 +397,14 @@ NMSCE.prototype.displaySingle = async function (entry) {
             }
         }
     }
+
+    nmsce.loadScreenshot(null, entry.Photo)
+
+    $("#delete").removeClass("disabled")
+    $("#delete").removeAttr("disabled")
+
+    $("#reddit").removeClass("disabled")
+    $("#reddit").removeAttr("disabled")
 }
 
 NMSCE.prototype.executeSearch = async function (fcn) {
@@ -565,6 +573,11 @@ const tString = `
         <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" class="rounded col-9">
     </div>`
+const tName = `
+    <div id="row-idname" data-type="string" data-req="ifreq" class="row">
+        <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
+        <input id="id-idname" class="rounded col-9" onchange="nmsce.getEntry(this)">
+    </div>`
 const tMap = `<div id="row-idname" data-type="map" data-req="ifreq"></div>`
 const tLongString = `
     <div id="row-idname" data-type="string" data-req="ifreq" class="row">
@@ -710,7 +723,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 appenditem(itm, tCkItem, f.name, id, f.ttip, f.required)
                 break
             case "string":
-                appenditem(itm, tString, f.name, id, f.ttip, f.required)
+                appenditem(itm, f.name === "Name" ? tName : tString, f.name, id, f.ttip, f.required)
                 break
             case "long string":
                 appenditem(itm, tLongString, f.name, id, f.ttip, f.required, inpLongHdr)
@@ -842,7 +855,7 @@ let txtcanvas = document.createElement('canvas')
 NMSCE.prototype.loadImgText = function (clear) {
     const ckbox = `
         <label class="col-xl-p333 col-7">
-            <input id="ck-idname" type="checkbox" data-loc="src" onchange="nmsce.ckImgText(this, true)">
+            <input id="ck-idname" type="checkbox" ftype loc row sub onchange="nmsce.ckImgText(this, true)">
             &nbsp;title
         </label>`
 
@@ -861,10 +874,13 @@ NMSCE.prototype.loadImgText = function (clear) {
 
     $("#img-text").html(textInp)
 
-    let appenditem = (title, src) => {
+    let appenditem = (title, type, loc, row, sub) => {
         let h = /idname/ [Symbol.replace](ckbox, title.nameToId())
         h = /title/ [Symbol.replace](h, title)
-        h = /src/ [Symbol.replace](h, src)
+        h = /ftype/ [Symbol.replace](h, "data-type='" + type + "'")
+        h = /loc/ [Symbol.replace](h, "data-loc='" + loc + "'")
+        h = /sub/ [Symbol.replace](h, sub ? "data-sub='" + sub + "'" : "")
+        h = /row/ [Symbol.replace](h, row ? "data-row='" + row + "'" : "")
 
         $("#img-text").append(h)
 
@@ -878,16 +894,16 @@ NMSCE.prototype.loadImgText = function (clear) {
     let obj = objectList[objIdx]
 
     for (let txt of obj.imgText)
-        appenditem(txt.name, txt.id)
+        appenditem(txt.name, txt.type, txt.id)
 
     for (let fld of obj.fields) {
         if (fld.imgText)
-            appenditem(fld.name, "#typePanels .active #row-" + fld.name.nameToId())
+            appenditem(fld.name, fld.type, "#typePanels .active", "#row-" + fld.name.nameToId())
 
         if (typeof fld.sublist !== "undefined")
             for (let sub of fld.sublist)
                 if (sub.imgText)
-                    appenditem(sub.name, "#typePanels .active #row-" + sub.name.nameToId() + " :visible")
+                    appenditem(sub.name, sub.type, "#typePanels .active", "#row-" + fld.name.nameToId(), "#row-" + sub.name.nameToId())
     }
 
     bhs.buildMenu($("#imgtable"), "Font", fontList, nmsce.setFont, {
@@ -927,34 +943,39 @@ NMSCE.prototype.ckImgText = function (evt, draw) {
         let text = ""
         let data = $(evt).data()
         let loc = $(data.loc)
-        let type = loc.data()
-        if (typeof type === "undefined" || typeof type.type === "undefined")
-            type = loc.attr("type")
-        else {
-            type = type.type
-            loc = type === "menu" ? loc.find("#btn-" + id) : loc.find("#id-" + id)
+
+        if (data.row)
+            loc = loc.find(data.row)
+
+        if (data.sub) {
+            let btn = loc.find("[id|='btn']").text().stripMarginWS()
+            loc = $(data.loc).find("#slist-" + btn)
+            loc = loc.find(data.sub)
         }
 
-        switch (type) {
+        if (data.row || data.type === "menu")
+            loc = loc.find("[id|='" + (data.type === "menu" ? "btn" : "id") + "']")
+
+        switch (data.type) {
             case "menu":
-            case "button":
                 text = loc.text().stripNumber()
                 break
             case "number":
                 text = loc.val()
-                text = text === -1 ? "" : parseInt(text)
+                text = text === -1 ? "" : text.toString()
                 break
             case "float":
                 text = loc.val()
-                text = text === -1 ? "" : parseFloat(text)
+                text = text === -1 ? "" : text.toString()
+                break
+            case "glyph":
+                text = loc.val()
+                loc = $("#typePanels .active #id-Planet-Index")
+                let num = loc.length > 0 && loc.val() > 0 ? loc.val() : 0
+                text = addrToGlyph(text, num)
                 break
             default:
                 text = loc.val()
-                if (id === "Glyphs") {
-                    let loc = $("#typePanels .active #id-Planet-Index")
-                    let num = loc.length > 0 && loc.val() > 0 ? loc.val() : 0
-                    text = addrToGlyph(text, num)
-                }
                 break
         }
 
@@ -1301,14 +1322,13 @@ NMSCE.prototype.deleteEntry = function (entry) {
     let ref = bhs.fs.doc("nmsce/" + entry.galaxy + "/" + entry.type + "/" + entry.id)
 
     ref.delete().then(() => {
-        bhs.status(entry.addr + " deleted.")
+        bhs.status(entry.id + " deleted.")
 
         let ref = bhs.fbstorage.ref().child(originalPath + entry.Photo)
         ref.delete()
 
         ref = bhs.fbstorage.ref().child(displayPath + entry.Photo)
-        if (entry.Photo.location("_r.jpg") === -1)
-            ref.delete()
+        ref.delete()
 
         ref = bhs.fbstorage.ref().child(thumbnailPath + entry.Photo)
         ref.delete()
@@ -1387,6 +1407,20 @@ NMSCE.prototype.updateEntry = function (entry) {
         bhs.status("ERROR: " + err.code)
         console.log(err)
     })
+}
+
+NMSCE.prototype.getEntry = async function (evt) {
+    let id = $(evt).val().nameToId().toLowerCase()
+    let type = $("#typePanels .active").prop("id").stripID()
+    let gal = $("#btn-Galaxy").text().stripNumber()
+
+    if (gal && type && id) {
+        let ref = bhs.fs.doc("nmsce/" + gal + "/" + type + "/" + id)
+        ref.get().then(doc => {
+            if (doc.exists)
+                nmsce.displaySingle(doc.data())
+        })
+    }
 }
 
 NMSCE.prototype.getEntries = async function (user, displayFcn, singleDispFcn) {
@@ -1871,35 +1905,13 @@ NMSCE.prototype.selectList = function (evt) {
     if ($(evt).prop("id") === "row-idname")
         return
 
-    let src = $(evt).find("#img-pic")
+    let type = $(evt).closest("[id|='sub']").prop("id").stripID()
+    let id = $(evt).prop("id").stripID()
+    let i = getIndex(nmsce.entries[type], "id", id)
+    let e = nmsce.entries[type][i]
 
-    if (fnmsce) {
-        nmsce.buildModal(evt)
-
-        let loc = $('#modal')
-        loc.modal("show")
-
-        let width = loc.width()
-
-        loc.find("#img-pic").css("width", width + "px")
-        loc.find("#img-pic").attr("src", src.attr("src"))
-    } else {
-        let type = $(evt).closest("[id|='sub']").prop("id").stripID()
-        let id = $(evt).prop("id").stripID()
-        let i = getIndex(nmsce.entries[type], "id", id)
-        let e = nmsce.entries[type][i]
-
-        nmsce.last = e
-        nmsce.displaySingle(e)
-
-        nmsce.loadScreenshot(null, e.Photo)
-
-        $("#delete").removeClass("disabled")
-        $("#delete").removeAttr("disabled")
-
-        $("#reddit").removeClass("disabled")
-        $("#reddit").removeAttr("disabled")
-    }
+    nmsce.last = e
+    nmsce.displaySingle(e)
 }
 
 NMSCE.prototype.buildModal = function (evt) {
@@ -2288,9 +2300,9 @@ const shipList = [{
 }, {
     name: "Explorer",
     slotTtip: `
-        T1 - 15 - 31 slots <br>
-        T2 - 32 - 39 slots <br>
-        T3 - 40 - 48 slots <br>`,
+        T1 - 15-19 slots<br>
+        T2 - 20-29 slots<br>
+        T3 - 30-38 slots`,
     bodies: explorerBodiesMap,
     classTtip: `
         S - 10 - 20 % damage, 55 - 60 % shield, 30 - 35 % hyperdrive <br>
@@ -2300,6 +2312,7 @@ const shipList = [{
 }, {
     name: "Exotic",
     bodies: exoticBodiesMap,
+    classTtip: `Always S Class`,
 }]
 
 const classList = [{
@@ -3177,28 +3190,34 @@ const objectList = [{
     imgText: [{
         id: "#id-Player",
         field: "_name",
-        name: "Player"
+        name: "Player",
+        type: "text",
     }, {
-        id: "#btn-Galaxy",
+        id: "#id-Galaxy",
         field: "galaxy",
-        name: "Galaxy"
+        name: "Galaxy",
+        type: "menu",
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
-        name: "Coords"
+        name: "Coords",
+        type: "text",
     }, {
         id: "#id-addrInput #id-addr",
         name: "Glyphs",
         field: "addr",
-        font: "glyph"
+        font: "glyph",
+        type: "glyph",
     }, {
         id: "#id-sys",
         field: "sys",
-        name: "System"
+        name: "System",
+        type: "text",
     }, {
-        id: "#btn-Economy",
+        id: "#id-Economy",
         field: "econ",
-        name: "Economy"
+        name: "Economy",
+        type: "menu",
     }],
     fields: [{
         name: "Type",
@@ -3276,28 +3295,34 @@ const objectList = [{
     imgText: [{
         id: "#id-Player",
         field: "_name",
-        name: "Player"
+        name: "Player",
+        type: "text",
     }, {
-        id: "#btn-Galaxy",
+        id: "#id-Galaxy",
         field: "galaxy",
-        name: "Galaxy"
+        name: "Galaxy",
+        type: "menu",
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
-        name: "Coords"
+        name: "Coords",
+        type: "text",
     }, {
         id: "#id-addrInput #id-addr",
         name: "Glyphs",
         field: "addr",
-        font: "glyph"
+        font: "glyph",
+        type: "glyph",
     }, {
         id: "#id-sys",
         field: "sys",
-        name: "System"
+        name: "System",
+        type: "text",
     }, {
-        id: "#btn-Economy",
+        id: "#id-Economy",
         field: "econ",
-        name: "Economy"
+        name: "Economy",
+        type: "menu",
     }],
     fields: [{
         name: "Name",
@@ -3350,24 +3375,29 @@ const objectList = [{
     imgText: [{
         id: "#id-Player",
         field: "_name",
-        name: "Player"
+        name: "Player",
+        type: "text",
     }, {
-        id: "#btn-Galaxy",
+        id: "#id-Galaxy",
         field: "galaxy",
-        name: "Galaxy"
+        name: "Galaxy",
+        type: "menu",
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
-        name: "Coords"
+        name: "Coords",
+        type: "text",
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Glyphs",
-        font: "glyph"
+        font: "glyph",
+        type: "glyph",
     }, {
         id: "#id-sys",
         field: "sys",
-        name: "System"
+        name: "System",
+        type: "text",
     }],
     fields: [{
         name: "Name",
@@ -3474,24 +3504,29 @@ const objectList = [{
     imgText: [{
         id: "#id-Player",
         field: "_name",
-        name: "Player"
+        name: "Player",
+        type: "text",
     }, {
-        id: "#btn-Galaxy",
+        id: "#id-Galaxy",
         field: "galaxy",
-        name: "Galaxy"
+        name: "Galaxy",
+        type: "menu",
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
-        name: "Coords"
+        name: "Coords",
+        type: "text",
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Glyphs",
-        font: "glyph"
+        font: "glyph",
+        type: "glyph",
     }, {
         id: "#id-sys",
         field: "sys",
-        name: "System"
+        name: "System",
+        type: "text",
     }],
     fields: [{
         name: "Name",
@@ -3549,24 +3584,29 @@ const objectList = [{
     imgText: [{
         id: "#id-Player",
         field: "_name",
-        name: "Player"
+        name: "Player",
+        type: "text",
     }, {
-        id: "#btn-Galaxy",
+        id: "#id-Galaxy",
         field: "galaxy",
-        name: "Galaxy"
+        name: "Galaxy",
+        type: "menu",
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
-        name: "Coords"
+        name: "Coords",
+        type: "text",
     }, {
         id: "#id-addrInput #id-addr",
         name: "Glyphs",
         field: "addr",
-        font: "glyph"
+        font: "glyph",
+        type: "glyph",
     }, {
         id: "#id-sys",
         field: "sys",
-        name: "System"
+        name: "System",
+        type: "text",
     }],
     fields: [{
         name: "Name",
@@ -3643,32 +3683,39 @@ const objectList = [{
     imgText: [{
         id: "#id-Player",
         field: "_name",
-        name: "Player"
+        name: "Player",
+        type: "text",
     }, {
-        id: "#btn-Galaxy",
+        id: "#id-Galaxy",
         field: "galaxy",
-        name: "Galaxy"
+        name: "Galaxy",
+        type: "menu",
     }, {
-        id: "#btn-Platform",
+        id: "#id-Platform",
         field: "platform",
-        name: "Platform"
+        name: "Platform",
+        type: "menu",
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
-        name: "Coords"
+        name: "Coords",
+        type: "text",
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Glyphs",
-        font: "glyph"
+        font: "glyph",
+        type: "glyph",
     }, {
         id: "#id-sys",
         field: "sys",
-        name: "System"
+        name: "System",
+        type: "text",
     }, {
-        id: "#btn-Economy",
+        id: "#id-Economy",
         field: "econ",
-        name: "Economy"
+        name: "Economy",
+        type: "menu",
     }],
     fields: [{
         name: "Name",
