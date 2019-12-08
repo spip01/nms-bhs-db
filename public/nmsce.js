@@ -1457,7 +1457,7 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
                 if ($("#favorites").children().length === 0) {
                     ref = doc.ref.collection(type)
                     ref = ref.orderBy("favorite", "desc")
-                    ref = ref.limit(1)
+                    ref = ref.limit(2)
 
                     ref.get().then(snapshot => {
                         for (let doc of snapshot.docs) {
@@ -1470,7 +1470,7 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
                 if ($("#clicks").children().length === 0) {
                     ref = doc.ref.collection(type)
                     ref = ref.orderBy("clickcount", "desc")
-                    ref = ref.limit(1)
+                    ref = ref.limit(2)
 
                     ref.get().then(snapshot => {
                         for (let doc of snapshot.docs) {
@@ -1483,7 +1483,7 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
                 if ($("#edchoice").children().length === 0) {
                     ref = doc.ref.collection(type)
                     ref = ref.orderBy("edchoice", "desc")
-                    ref = ref.limit(1)
+                    ref = ref.limit(2)
 
                     ref.get().then(snapshot => {
                         for (let doc of snapshot.docs) {
