@@ -15,15 +15,13 @@ async function main() {
                 for (let ref of refs) {
                     let snapshot = await ref.get()
                     for (let doc of snapshot.docs) {
-                        console.log(doc.ref.path)
+                        // console.log(doc.ref.path)
                         let e = doc.data()
 
-                        e.favorite = 0
-                        e.edchoice = 0
-                        e.bhspoi = 0
-                        e.clickcount = 0
-
-                        doc.ref.set(e)
+                        if (typeof e.Name === "undefined")
+                            console.log("no name", doc.ref.path)
+                        else if (e.id.includes("-") && e.Name !== "" && e.id !== e.Name.nameToId() && e.id !== e.Name.nameToId().toLowerCase())
+                            console.log(JSON.stringify(e.id), JSON.stringify(e.Name))
                     }
                 }
             })
@@ -32,3 +30,7 @@ async function main() {
 }
 
 main()
+
+String.prototype.nameToId = function () {
+    return /[^a-z0-9_-]/ig [Symbol.replace](this, "-")
+}

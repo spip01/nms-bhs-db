@@ -46,6 +46,7 @@ $(document).ready(() => {
 
     $("#delete").click(() => {
         $("#status").empty()
+
         if (nmsce.last)
             nmsce.deleteEntry(nmsce.last)
     })
@@ -205,6 +206,8 @@ NMSCE.prototype.clearPanel = function (sys) {
     let canvas = document.getElementById("id-canvas")
     let ctx = canvas.getContext("2d")
     ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    $("#save").text("Save")
 
     $("#delete").addClass("disabled")
     $("#delete").prop("disabled", true)
@@ -399,6 +402,10 @@ NMSCE.prototype.displaySingle = async function (entry) {
     }
 
     nmsce.loadScreenshot(null, entry.Photo)
+
+    $("#posted").text(entry.reddit ? "Posted" : "")
+
+    $("#save").text("UPDATE")
 
     $("#delete").removeClass("disabled")
     $("#delete").removeAttr("disabled")
@@ -1232,6 +1239,14 @@ NMSCE.prototype.redditShare = function (evt) {
         })
 
     }, "image/jpeg", .7)
+
+    let ref = bhs.fs.doc("nmsce/" + nmsce.last.galaxy + "/" + nmsce.last.type + "/" + nmsce.last.id)
+    ref.set({
+        reddit: true
+    }, {
+        merge: true
+    }).then(() => $("#posted").text("Posted"))
+
 }
 
 NMSCE.prototype.textHittest = function (x, y, text) {
@@ -1323,6 +1338,7 @@ NMSCE.prototype.deleteEntry = function (entry) {
 
     ref.delete().then(() => {
         bhs.status(entry.id + " deleted.")
+        $("#save").text("Save")
 
         let ref = bhs.fbstorage.ref().child(originalPath + entry.Photo)
         ref.delete()
