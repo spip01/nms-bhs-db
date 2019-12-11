@@ -110,7 +110,7 @@
                                             </i>
                                         </div>
                                         <input id="id-addr" class="rounded col-xl-5 col-lg-6 col-md-11 col-sm-5 col-11"
-                                            type="text" placeholder="0000:0000:0000:0000"
+                                            type="text" placeholder="0000:0000:0000:0000" maxength="19"
                                             onchange="nmsce.changeAddr(this)">
                                         <div class="col">
                                             <label class="h6 txt-inp-def">
@@ -143,7 +143,7 @@
                                                 digit hex, 0-9 a-f, value can be entered directly in the field.">
                                             </i>
                                         </div>
-                                        <input id="id-glyph" type="text"
+                                        <input id="id-glyph" type="text" maxength="19"
                                             class="rounded col-xl-5 col-lg-8 col-md-14 col-sm-7 col-14 h5 glyph"
                                             onchange="nmsce.changeAddr(this)">
                                         <div class="col">
@@ -292,7 +292,7 @@
         <div class="card pad-bottom">
             <div class="card-header bkg-def txt-def">
                 <div class="row">
-                    <div class="col-4 h3"> Entry List&nbsp;
+                    <div class="col-4 h3">Entry List&nbsp;
                         <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                             data-placement="bottom"
                             title="Click on a heading to open list. Click on an entry to select it.">

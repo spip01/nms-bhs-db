@@ -161,7 +161,8 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                                 A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
                             </i>
                         </div>
-                        <input id="id-addr" class="rounded col-sm-5 col-9 h6" placeholder="0000:0000:0000:0000" onchange="bhs.changeAddr(this)">
+                        <input id="id-addr" class="rounded col-sm-5 col-9 h6" placeholder="0000:0000:0000:0000" 
+                            maxength="19" onchange="bhs.changeAddr(this)">
                         <div class="col-lg-4 col-md-7 col-sm-4 col-7">
                             <label class="h6 txt-inp-def">
                                 <input id="ck-glyphs" type="checkbox" onchange="bhs.setGlyphInput(this)">
@@ -195,7 +196,8 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                                 digit hex, 0-9 a-f, value can be entered directly in the field.">
                             </i>
                         </div>
-                        <input id="id-glyph" class="rounded col-lg-7 col-md-9 col-sm-7 col-9 h5 glyph" onchange="bhs.changeGlyph(this)">
+                        <input id="id-glyph" class="rounded col-lg-7 col-md-9 col-sm-7 col-9 h5 glyph" maxength="19"
+                            onchange="bhs.changeGlyph(this)">
                         <div class="col-lg-4 col-md-9 col-sm-4 col-9">
                             <label class="h6 txt-inp-def">
                                 <input id="ck-glyphs" type="checkbox" onchange="bhs.setGlyphInput(this)">

@@ -87,8 +87,8 @@
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div id="loggedout" class="row text-danger h4">
-            Welcome to the
-            <span itemprop="description">No Man's Sky Coordinate Exchange search page.</span>
+            Welcome to the&nbsp;
+            <span itemprop="description">No Man's Sky Coordinate Exchange search page.</span>&nbsp;
             <!--googleoff: all-->
             Login NOT required.
             <!--googleon: all-->
@@ -96,11 +96,8 @@
 
         <div class="card pad-bottom">
             <label class="card-header txt-def h4">
-                <input type="checkbox" onchange='if ($(this).prop("checked")) 
-                        $("#searchPanel").css("display","inherit") 
-                    else 
-                        $("#searchPanel").hide()'>
-                &nbsp;Show Search Panel
+                <input type="checkbox" onchange="nmsce.showSearchPanel(this)">
+                &nbsp;Check to show search input panel.
             </label>
             <div id="searchPanel" class="card-body bkg-white" style="display:none">
                 <div class="col-md-7 col-14">
@@ -110,8 +107,7 @@
                             <div class="card-body">
                                 <div id="id-addrInput">
                                     <div class="row">
-                                        <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">Coords<span
-                                                class="h5 text-danger">&nbsp;*</span>&nbsp;
+                                        <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">Coords&nbsp;
                                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                                 data-html="true" data-placement="bottom"
                                                 title="Search at a specific address.<br>Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
@@ -119,7 +115,7 @@
                                             </i>
                                         </div>
                                         <input id="id-addr" class="rounded col-xl-5 col-lg-6 col-md-11 col-sm-5 col-11"
-                                            type="text" placeholder="0000:0000:0000:0000"
+                                            type="text" placeholder="0000:0000:0000:0000" maxlength=19
                                             onchange="nmsce.changeAddr(this)">
                                         <div class="col">
                                             <label class="h6 txt-inp-def">
@@ -146,13 +142,13 @@
                                 <div id="id-glyphInput" class="hidden">
                                     <div class="row">
                                         <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">
-                                            Glyph&nbsp;<span class="text-danger">*</span>&nbsp;
+                                            Glyph&nbsp;
                                             <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
                                                 data-html="true" data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
                                                     digit hex, 0-9 a-f, value can be entered directly in the field.">
                                             </i>
                                         </div>
-                                        <input id="id-glyph" type="text"
+                                        <input id="id-glyph" type="text" maxength="19"
                                             class="rounded col-xl-5 col-lg-8 col-md-14 col-sm-7 col-14 h5 glyph"
                                             onchange="nmsce.changeAddr(this)">
                                         <div class="col">
@@ -177,19 +173,13 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">System<span
-                                            class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
+                                    <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">System</div>
                                     <input id="id-sys" class="rounded col-xl-4 col-md-7 col-sm-5 col-7">
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Region</div>
                                     <input id="id-reg" class="rounded col-xl-4 col-md-7 col-sm-5 col-7">&nbsp
-                                </div>
-
-                                <div id="id-byrow" class="row">
-                                    <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Entered by&nbsp;</div>
-                                    <div id="id-by" class="col txt-inp-def"></div>
                                 </div>
 
                                 <div class="row">
@@ -207,12 +197,8 @@
                     <div class="card card-body">
                         <div class="tab-content" id="typePanels"></div>
                     </div>
-                </div>
 
-                <div class="col-md-7 col-14">
-                    <div id="pnl-map" class="card card-body"></div>
                     <br>
-
                     <div id="entrybuttons" class="card card-body">
                         <div class="row">
                             <div class="col-lg-7 col-14">
@@ -220,20 +206,27 @@
                                     <button id="search" type="button" class="col-4 btn btn-sm btn-def"
                                         onclick="nmsce.search()">Search</button>&nbsp;
                                     <button id="clear" type="button" class="col-4 btn btn-sm btn-def"
-                                        onclick="nmsce.clearPanel(true)">Reset</button>&nbsp;
+                                        onclick="nmsce.clearPanel()">Reset</button>&nbsp;
                                 </div>
                                 <br>
-                                <div class="row">
-                                    <div class="text-danger h6">
-                                        <span>*</span>&nbsp;Required Entry,&nbsp;
-                                        <i id="ttipmsg" class="fa fa-question-circle-o">&nbsp;Tool Tip</i>
-                                    </div>
-                                </div>
                             </div>
                             <div id="status" class="border col text-danger scrollbar container-fluid"
                                 style="overflow-y: scroll; height: 50px"></div>
                         </div>
+                        <br>
+                        <div class="row">
+                            <div class="text-danger h6">
+                                * Required Entry,&nbsp;
+                                <i id="ttipmsg" class="fa fa-question-circle-o">&nbsp;Tool Tip</i><br>
+                                <span id="search-key" class="txt-inp-def hidden">**&nbsp;First checkbox includes the
+                                    value in the search. The second checkbox is the value.</span>
+                            </div>
+                        </div>
                     </div>
+                </div>
+
+                <div class="col-md-7 col-14">
+                    <div id="pnl-map" class="card card-body"></div>
                 </div>
             </div>
         </div>
@@ -243,7 +236,7 @@
             <div class="card-header txt-def h3">
                 <div id="resultshdr" class="row">
                     <div class="col-lg-p333 col-7 h4"><span id="numFound"></span> Entries found.</div>
-                    <label class="col-lg-p333 col-7 h4">
+                    <label id="showlast"class="col-lg-p333 col-7 h4">
                         Show last&nbsp;
                         <input id="displaysince" class="col-2" type="text" value=1
                             onchange="nmsce.getLatest(nmsce.displayResults, this)">
@@ -253,7 +246,7 @@
                 </div>
             </div>
 
-            <div class="card-body">
+            <div class="card-body" style="padding-top:4px">
                 <div id="favorites" class="cover-container" style="display:none"></div>
                 <div id="clicks" class="cover-container" style="display:none"></div>
                 <div id="results" class="cover-container" style="display:none"></div>
@@ -264,21 +257,27 @@
                     <img id="dispimage" class="col-xl-10 col-lg-9 col-md-10 col-14" />
                     <div class="col-xl-4 col-lg-5 col-md-4 col-14">
                         <div id="imagedata"></div>
-                        <div class="row" onclick="nmsce.newDARC('#imagedata #val-Coords')" class="text-center">
-                            <div class="col text-center">
-                                <img src="images/bhs-logo.png" style="height:80px; width:80px;" />
-                                <span class="txt-inp-def h4">&nbsp;DARC</span>
-                            </div>
-                        </div>
                         <div id="voting" class="row">
                             <button id="favorite" type="button" class="col-4 btn btn-sm btn-def"
-                            onclick="nmsce.vote(this)">Favorite</button>&nbsp;
+                                onclick="nmsce.vote(this)">Favorite</button>&nbsp;
                             <button id="edchoice" type="button" class="col-4 btn btn-sm btn-def" style="display:none"
-                            onclick="nmsce.vote(this)">Editors</button>&nbsp;
+                                onclick="nmsce.vote(this)">Editors</button>&nbsp;
                             <button id="bhspoi" type="button" class="col-4 btn btn-sm btn-def" style="display:none"
-                            onclick="nmsce.vote(this)">BHS Poi</button>&nbsp;
+                                onclick="nmsce.vote(this)">BHS Poi</button>&nbsp;
 
                         </div>
+                        <br>
+                        <div class="row" onclick="nmsce.newDARC('#imagedata #val-Coords')" class="pointer text-center">
+                            <div class="col text-center">
+                                <img src="images/bhs-logo.png" style="height:80px; width:80px;" />
+                                <span class="txt-inp-def h4">&nbsp;DaRC</span>&nbsp;
+                                <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom"
+                                    title="Open window with Black Hole Sun's Distance and Route Calculator. Enters coordinate of selected item as the destination coord.">
+                                </i>
+                            </div>
+                        </div>
+                        <br>
                     </div>
                 </div>
             </div>

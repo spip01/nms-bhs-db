@@ -77,6 +77,8 @@ NMSCE.prototype.selDisplay = function (evt) {
     $(".cover-container").hide()
 
     let i = getIndex(showTypesList, "name", $(evt).text())
+    $("#showlast").css("visibility", showTypesList[i].id === "latest" ? "visible" : "hidden")
+
     let loc = $("#" + showTypesList[i].id)
     loc.show()
     $("#numFound").text(loc.children().length)
@@ -109,12 +111,24 @@ NMSCE.prototype.buildPanel = function () {
 }
 
 NMSCE.prototype.setGlyphInput = function (evt) {
-    if (typeof bhs.inputSettings === "undefined" || bhs.inputSettings.glyph !== $(evt).prop("checked")) {
-        bhs.updateUser({
-            inputSettings: {
-                glyph: $(evt).prop("checked")
-            }
-        })
+    if (bhs.user.uid) {
+        if (typeof bhs.inputSettings === "undefined" || bhs.inputSettings.glyph !== $(evt).prop("checked")) {
+            bhs.updateUser({
+                inputSettings: {
+                    glyph: $(evt).prop("checked")
+                }
+            })
+        }
+    } else {
+        if ($(evt).prop("checked")) {
+            $("[id='id-glyphInput']").show()
+            $("[id='id-addrInput']").hide()
+            $("[id='ck-glyphs']").prop("checked", true)
+        } else {
+            $("[id='id-glyphInput']").hide()
+            $("[id='id-addrInput']").show()
+            $("[id='ck-glyphs']").prop("checked", false)
+        }
     }
 }
 
@@ -183,11 +197,32 @@ NMSCE.prototype.displaySystem = function (entry) {
     }
 }
 
-NMSCE.prototype.clearPanel = function (sys) {
-    let pnl = sys ? $("[id|='pnl']") : $("#typePanels")
+NMSCE.prototype.showSearchPanel = function (evt) {
+    if ($(evt).prop("checked")) {
+        $("#searchPanel").css("display", "inherit")
+
+        let loc = $("#typePanels .active")
+        loc = loc.find("#menu-Type")
+        if (loc.length > 0) {
+            let btn = loc.find("[id|='btn']")
+            if (btn.text().stripMarginWS() === "") {
+                let item = loc.find("[id|='item']").first()
+                item.click()
+            }
+        }
+    } else
+        $("#searchPanel").hide()
+}
+
+NMSCE.prototype.clearPanel = function () {
+    let pnl = fnmsce ? $("#searchPanel") : $("#typePanels")
 
     pnl.find("input").each(function () {
-        $(this).val("")
+        let type = $(this).prop("type")
+        if (type === "checkbox" || type === "radio")
+            $(this).prop("checked", false)
+        else
+            $(this).val("")
     })
 
     pnl.find("[id|='menu']").each(function () {
@@ -201,19 +236,21 @@ NMSCE.prototype.clearPanel = function (sys) {
 
     nmsce.last = null
 
-    nmsce.restoreText()
+    if (!fnmsce) {
+        nmsce.restoreText()
 
-    let canvas = document.getElementById("id-canvas")
-    let ctx = canvas.getContext("2d")
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+        let canvas = document.getElementById("id-canvas")
+        let ctx = canvas.getContext("2d")
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    $("#save").text("Save")
+        $("#save").text("Save")
 
-    $("#delete").addClass("disabled")
-    $("#delete").prop("disabled", true)
+        $("#delete").addClass("disabled")
+        $("#delete").prop("disabled", true)
 
-    $("#reddit").addClass("disabled")
-    $("#reddit").prop("disabled", true)
+        $("#reddit").addClass("disabled")
+        $("#reddit").prop("disabled", true)
+    }
 }
 
 NMSCE.prototype.extractEntry = async function () {
@@ -474,12 +511,9 @@ NMSCE.prototype.executeSearch = async function (fcn) {
                     ref = ref.where(id, "==", val)
                 break
             case "checkbox":
-                for (let sloc of $(rloc).find("[id|='sck']")) {
-                    if ($(sloc).prop("checked")) {
-                        let aid = $(sloc).prop("id").stripID()
-                        ref = ref.where(aid, "==", $(rloc).find("#ck-" + aid).prop("checked"))
-                    }
-                }
+                let cloc = $(rloc).find("input:checked")
+                if (cloc.length > 0)
+                    ref = ref.where(id, "==", cloc.prop("id") === "id-True")
                 break
         }
     }
@@ -508,10 +542,11 @@ NMSCE.prototype.executeSearch = async function (fcn) {
     ref.get().then(snapshot => {
         if (bhs.user.uid === "" && snapshot.size === 50)
             bhs.status("Showing first 50 matches. Login to see more matches or refine selection to see better matches.")
-        if (snapshot.size === 0) {
-            bhs.status("Nothing Found.")
+
+        bhs.status((snapshot.size === 0 ? "No" : snapshot.size) + " matching entries found.")
+
+        if (snapshot.size === 0) 
             return
-        }
 
         for (let doc of snapshot.docs)
             fcn(doc.data(), doc.ref.path, "#results")
@@ -605,14 +640,18 @@ const tMenu = `
     <div id="row-idname" data-type="menu" data-req="ifreq">
         <div id="id-idname"></div>
     </div>`
+const tRadio = `
+    <div id="row-idname" data-type="radio" data-req="ifreq" class="row">
+        <div class="radio col-7 h6 txt-inp-def" data-toggle="grp-idname"">titlettip:&nbsp;</div>
+    </div>`
+const tRadioItem = `
+    <label class="h6 txt-inp-def row">titlettip&nbsp;
+        <input type="radio" class="radio col" id="id-title" name="grp-idname">
+    </label>`
 const tCkItem = `
     <div id="row-idname" data-type="checkbox" data-req="false">
         <label id="id-idname" class="h6 txt-inp-def row">
             titlettip&nbsp
-            <label id="search-idname" class="h6 txt-inp-def hidden" style="color:blue">
-                **&nbsp;
-                <input id="sck-idname" type="checkbox">
-            </label>          
             <input id="ck-idname" type="checkbox">
         </label>
     </div>`
@@ -688,7 +727,7 @@ NMSCE.prototype.buildTypePanels = function () {
 NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
     let appenditem = (loc, add, title, id, ttip, req, long) => {
         let h = long ? long : inpHdr
-        let l = /title/ [Symbol.replace](add, title + (req ? tReq : ""))
+        let l = /title/g [Symbol.replace](add, title + (req ? tReq : ""))
 
         if (ttip) {
             l = /ttip/ [Symbol.replace](l, tText)
@@ -727,7 +766,14 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 appenditem(itm, tImg, f.name, id, f.ttip, f.required, inpLongHdr)
                 break
             case "checkbox":
-                appenditem(itm, tCkItem, f.name, id, f.ttip, f.required)
+                if (fnmsce) {
+                    appenditem(itm, tRadio, f.name, id, f.ttip)
+                    let btn = itm.find("#row-" + id)
+                    btn.attr("data-type", "checkbox")
+                    appenditem(btn, tRadioItem, "True", id, null, null, `<div class="col-3">`)
+                    appenditem(btn, tRadioItem, "False", id, null, null, `<div class="col-3">`)
+                } else
+                    appenditem(itm, tCkItem, f.name, id, f.ttip, f.required)
                 break
             case "string":
                 appenditem(itm, f.name === "Name" ? tName : tString, f.name, id, f.ttip, f.required)
@@ -745,7 +791,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 if (f.ttip)
                     f.tip = slist ? slist[f.ttip] : f.ttip
 
-                bhs.buildMenu(lst, f.name, f.list, f.sublist ? nmsce.selectSublist : null, f)
+                bhs.buildMenu(lst, f.name, f.sub ? slist[f.sub] : f.list, f.sublist ? nmsce.selectSublist : null, f)
 
                 if (f.sublist) {
                     for (let s of f.list) {
@@ -758,6 +804,15 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
 
                         nmsce.addPanel(f.sublist, "slist", iid, s, itmid)
                     }
+                }
+                break
+            case "radio":
+                if (slist[f.sub]) {
+                    appenditem(itm, tRadio, f.name, id, typeof slist[f.ttip] === "string" ? slist[f.ttip] : null, f.required, inpLongHdr)
+                    let btn = itm.find("#row-" + id)
+
+                    for (let i of slist[f.sub])
+                        appenditem(btn, tRadioItem, i.name, id, typeof slist[f.ttip] === "object" ? slist[f.ttip][i.name] : null, null, `<div class="col-3">`)
                 }
                 break
             case "map":
@@ -1548,12 +1603,10 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
 
 NMSCE.prototype.displayResults = function (e, path, inID) {
     const img = `
-        <div class="cover-item bkg-white">
+        <div class="cover-item bkg-white txt-inp-def h5">
             <img id="id-idname" src="images/blank.png" data-src="url" class="cover-img" data-path="dbpath" onclick="nmsce.displaySel(this)" />
-            <div class="row">
-                <div class="col-7 txt-inp-def text-center h4">galaxy</div>
-                <div class="col-7 txt-inp-def text-center h4">by</div>
-            </div>
+            <br>galaxy
+            <br>by
         </div>`
 
     let idname = (e.type + "-" + e.id).nameToId()
@@ -2268,72 +2321,7 @@ const freighterCommonMap = `
         </map>
     </div>`
 
-const shipList = [{
-    name: "Fighter",
-    slotTtip: `
-        T1 - 15-19 slots<br>
-        T2 - 20-29 slots<br>
-        T3 - 30-38 slots`,
-    classTtip: `
-        S - 55-60% damage, 15-25% shield<br>
-        A - 35-50% damage, 15-20% shield<br>
-        B - 15-30% damage, 5-10% shield<br>
-        C - 5-10% damage`,
-    bodies: fighterBodiesMap,
-    wings: fighterWingsMap,
-}, {
-    name: "Hauler",
-    slotTtip: `
-        T1 - 25-31 slots<br>
-        T2 - 32-39 slots<br>
-        T3 - 40-48 slots`,
-    classTtip: `
-        S - 55-60% damage, 15-25% shield<br>
-        A - 35-50% damage, 15-20% shield<br>
-        B - 15-30% damage, 5-10% shield<br>
-        C - 5-10% damage`,
-    bodies: haulerBodiesMap,
-    wings: haulerWingsMap,
-}, {
-    name: "Shuttle",
-    slotList: [{
-        name: "Nothing Selected"
-    }, {
-        name: "T1"
-    }, {
-        name: "T2"
-    }],
-    slotTtip: `
-        T1 - 18-23 slots<br>
-        T2 - 19-28 slots`,
-    classTtip: `
-        S - 55-60% damage, 15-25% shield<br>
-        A - 35-50% damage, 15-20% shield<br>
-        B - 15-30% damage, 5-10% shield<br>
-        C - 5-10% damage`,
-    bodies: shuttleBodiesMap,
-    wings: shuttleWingsMap,
-}, {
-    name: "Explorer",
-    slotTtip: `
-        T1 - 15-19 slots<br>
-        T2 - 20-29 slots<br>
-        T3 - 30-38 slots`,
-    bodies: explorerBodiesMap,
-    classTtip: `
-        S - 10 - 20 % damage, 55 - 60 % shield, 30 - 35 % hyperdrive <br>
-        A - 5 - 10 % damage, 45 - 50 % shield, 15 - 25 % hyperdrive <br>
-        B - 0 - 5 % damage, 25 - 35 % shield, 5 - 10 % hyperdrive <br>
-        C - 12 - 20 % shield, 0 - 5 % hyperdrive`,
-}, {
-    name: "Exotic",
-    bodies: exoticBodiesMap,
-    classTtip: `Always S Class`,
-}]
-
 const classList = [{
-    name: "Nothing Selected",
-}, {
     name: "S",
 }, {
     name: "A",
@@ -2344,14 +2332,98 @@ const classList = [{
 }]
 
 const slotList = [{
-    name: "Nothing Selected",
-}, {
     name: "T1",
 }, {
     name: "T2",
 }, {
     name: "T3",
 }, ]
+
+const shipList = [{
+    name: "Fighter",
+    slotList: slotList,
+    classList: classList,
+    // slotTtip: {
+    //     T1: `15-19 slots`,
+    //     T2: `20-29 slots`,
+    //     T3: `30-38 slots`,
+    // },
+    slotTtip: `
+        T1: 15-19 slots<br>
+        T2: 20-29 slots<br>
+        T3: 30-38 slots`,
+    classTtip: `
+        C: 5-10% Damage | 0% Shield | 0% Hyperdrive<br>
+        B: 15-30% Damage | 5-10% Shield | 0% Hyperdrive<br>
+        A: 35-50% Damage | 15-20% Shield | 0% Hyperdrive<br>
+        S: 55-60% Damage | 15-25% Shield | 0% Hyperdrive`,
+    bodies: fighterBodiesMap,
+    wings: fighterWingsMap,
+}, {
+    name: "Hauler",
+    slotList: slotList,
+    classList: classList,
+    // slotTtip: {
+    //     T1: "25-31 slots",
+    //     T2: "32-39 slots",
+    //     T3: "40-48 slots",
+    // },
+    slotTtip: `
+        T1: 25-31 slots<br>
+        T2: 32-39 slots<br>
+        T3: 40-48 slots`,
+    classTtip: `
+        C: 0% Damage | 12-20% Shield | 0-5% Hyperdrive<br>
+        B: 0-5% Damage | 25-35% Shield | 5-10% Hyperdrive<br>
+        A: 5-10% Damage | 40-50% Shield | 15-25% Hyperdrive<br>
+        S: 10-20% Damage | 55-60% Shield | 30-35% Hyperdrive`,
+    bodies: haulerBodiesMap,
+    wings: haulerWingsMap,
+}, {
+    name: "Shuttle",
+    slotList: [{
+        name: "T1"
+    }, {
+        name: "T2"
+    }],
+    classList: classList,
+    // slotTtip: {
+    //     T1: "18-23 slots",
+    //     T2: "19-28 slots"
+    // },
+    slotTtip: `
+        T1: 18-23 slots<br>
+        T2: 19-28 slots`,
+    classTtip: `
+        C: 0% Damage | 0% Shield | 0% Hyperdrive<br>
+        B: 0-5% Damage | 0-5% Shield | 0-5% Hyperdrive<br>
+        A: 5-10% Damage | 5-10% Shield | 5-10% Hyperdrive<br>
+        S: 15-20% Damage | 15-20% Shield | 15-20% Hyperdrive`,
+    bodies: shuttleBodiesMap,
+    wings: shuttleWingsMap,
+}, {
+    name: "Explorer",
+    bodies: explorerBodiesMap,
+    slotList: slotList,
+    classList: classList,
+    // slotTtip: {
+    //     T1: `15-19 slots`,
+    //     T2: `20-29 slots`,
+    //     T3: `30-38 slots`,
+    // },
+    slotTtip: `
+        T1: 15-19 slots<br>
+        T2: 20-29 slots<br>
+        T3: 30-38 slots`,
+    classTtip: `
+        C: 0% Damage | 0% Shield | 7-15% Hyperdrive<br>
+        B: 0% Damage | 0-8% Shield | 20-30% Hyperdrive<br>
+        A: 0% Damage | 10-15% Shield | 35-45% Hyperdrive<br>
+        S: 0% Damage | 20-25% Shield | 50-65% Hyperdrive`
+}, {
+    name: "Exotic",
+    bodies: exoticBodiesMap,
+}]
 
 const mtList = [{
     name: "Nothing Selected"
@@ -3247,7 +3319,7 @@ const objectList = [{
             search: true,
             required: true,
             imgText: true,
-            ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
+            ttip: "This is required because it is the only unique identifier available to prevent duplicate entries."
         }, {
             name: "Wave",
             type: "number",
@@ -3258,7 +3330,7 @@ const objectList = [{
             name: "Class",
             type: "menu",
             ttip: "classTtip",
-            list: classList,
+            sub: "classList",
             imgText: true,
             search: true,
         }, {
@@ -3266,7 +3338,6 @@ const objectList = [{
             type: "menu",
             ttip: "slotTtip",
             sub: "slotList",
-            list: slotList,
             imgText: true,
             search: true,
         }, {

@@ -116,7 +116,7 @@
                     <div id="w-end">
                         <div class="row">
                             <div class="col-md-3 col-sm-2 col-4 h6 txt-inp-def">End</div>
-                            <input id="id-addr" class="rounded col-md-5 col-sm-4 col-9"
+                            <input id="id-addr" class="rounded col-md-5 col-sm-4 col-9" maxength="19"
                                 placeholder="0000:0000:0000:0000" onchange="dispAddr(this)">
                         </div>
                         <div class="row">
@@ -142,7 +142,7 @@
                                 </i>
                             </div>
                             <input id="id-glyph" class="rounded col-lg-6 col-md-8 col-sm-6 col-11 glyph h5"
-                                onchange="dispGlyph(this)">
+                                maxength="19" onchange="dispGlyph(this)">
                             <label class="h6 txt-inp-def col-lg-4 col-md-14 col-sm-4 col-14">
                                 <input id="ck-glyphs" type="checkbox" onchange="setGlyphInput(this)">
                                 Input Coords&nbsp;
@@ -164,7 +164,7 @@
                         <div class="row">
                             <div class="col-lg-3 col-md-4 col-sm-3 col-3 h6 txt-inp-def">End</div>
                             <input id="id-glyph" class="rounded col-lg-6 col-md-8 col-sm-6 col-11 glyph h5"
-                                onchange="dispGlyph(this)">
+                                maxength="19" onchange="dispGlyph(this)">
                         </div>
                         <div class="row">
                             <div class="col-md-3 col-4 h6 txt-inp-def">Coords</div>
@@ -215,8 +215,8 @@
                             <br>
                             <div class="row">
                                 <a id="maplogo" class="col-sm-14 col-8">
-                                    <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo" width="20px"
-                                        height="20px">
+                                    <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo"
+                                        width="20px" height="20px">
                                 </a>
                                 <div class="col-sm-14 col-5">
                                     <br>

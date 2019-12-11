@@ -212,6 +212,8 @@ blackHoleSuns.prototype.updateUser = async function (user) {
             return false
         })
     }
+    else   
+        return false
 }
 
 blackHoleSuns.prototype.changeName = function (loc, user) {
