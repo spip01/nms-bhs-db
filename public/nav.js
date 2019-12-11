@@ -15,8 +15,8 @@ $(document).ready(() => {
         $("#login").hide()
 
         let page = window.location.pathname.replace(/(.*)\//, "$1")
-        let loc = $("#navmenu").find("[href='" + page + "']")
-        loc.addClass("clr-blue border rounded")
+        let loc = $("[href='" + page + "']")
+        $("#pagename").html(loc.text())
 
         $("#banner").on("load", () => {
             let width = $("body").width()
