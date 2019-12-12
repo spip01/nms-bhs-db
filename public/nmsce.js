@@ -2318,9 +2318,10 @@ const freighterCapitalMap = `
             <area alt="h4" data-group=1 coords="61,68,2,108,9,145,184,151,190,117,89,100" shape="poly">
             <area alt="h5" data-group=1 coords="14,173,9,303,276,202,297,171,280,125,238,147" shape="poly">
             <area alt="h6" data-group=1 coords="154,255,160,362,333,244,317,182,286,202" shape="poly">
-            <area alt="h7" data-group=2 coords="48,299,125,336" shape="rect">
-            <area alt="h8" data-group=2 coords="49,341,130,381" shape="rect">
             <area alt="h9" data-group=1 coords="216,332,222,395,340,335,339,253" shape="poly">
+            <area alt="h7" data-group=2 coords="36,303,35,335,86,328,88,297" shape="poly">
+            <area alt="h8" data-group=2 coords="28,348,32,384,98,379,104,358,73,347" shape="poly">
+            <area alt="h10" coords="108,301,98,334,108,351,141,358,151,332,138,309" shape="poly">
         </map>
     </div>`
 
