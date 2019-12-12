@@ -1021,12 +1021,15 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
 }
 
 blackHoleSuns.prototype.saveUser = async function () {
-    let user = bhs.extractUser()
+    if (!fnmsce) {
+        let user = bhs.extractUser()
 
-    if (bhs.user.uid)
-        return bhs.validateUser(user) ? bhs.updateUser(user) : false
-    else
-        return false
+        if (bhs.user.uid)
+            return bhs.validateUser(user) ? bhs.updateUser(user) : false
+        else
+            return false
+    } else
+        return true
 }
 
 blackHoleSuns.prototype.extractUser = function () {

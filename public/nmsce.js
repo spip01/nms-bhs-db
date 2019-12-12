@@ -217,6 +217,8 @@ NMSCE.prototype.showSearchPanel = function (evt) {
 NMSCE.prototype.clearPanel = function () {
     let pnl = fnmsce ? $("#searchPanel") : $("#typePanels")
 
+    $("#typePanels #row-Class").hide()
+
     pnl.find("input").each(function () {
         let type = $(this).prop("type")
         if (type === "checkbox" || type === "radio")
@@ -226,8 +228,7 @@ NMSCE.prototype.clearPanel = function () {
     })
 
     pnl.find("[id|='menu']").each(function () {
-        if ($(this).prop("id").stripID() !== "Type")
-            $(this).find("[id|='btn']").text("")
+        $(this).find("[id|='btn']").text("")
     })
 
     $("[id='map-selected'] img").each(function () {
@@ -545,7 +546,7 @@ NMSCE.prototype.executeSearch = async function (fcn) {
 
         bhs.status((snapshot.size === 0 ? "No" : snapshot.size) + " matching entries found.")
 
-        if (snapshot.size === 0) 
+        if (snapshot.size === 0)
             return
 
         for (let doc of snapshot.docs)
@@ -772,8 +773,16 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                     btn.attr("data-type", "checkbox")
                     appenditem(btn, tRadioItem, "True", id, null, null, `<div class="col-3">`)
                     appenditem(btn, tRadioItem, "False", id, null, null, `<div class="col-3">`)
-                } else
+                    if (f.onchange) {
+                        btn.find("#id-True").change(f.onchange)
+                        btn.find("#id-False").change(f.onchange)
+                    }
+                } else {
                     appenditem(itm, tCkItem, f.name, id, f.ttip, f.required)
+                    if (f.onchange) {
+                        itm.find("#id-" + id).change(f.onchange)
+                    }
+                }
                 break
             case "string":
                 appenditem(itm, f.name === "Name" ? tName : tString, f.name, id, f.ttip, f.required)
@@ -839,7 +848,19 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 nmsce.loadMap(mloc)
                 break
         }
+
+        if (f.startState === "hidden")
+            itm.find("#row-" + id).hide()
     }
+}
+
+function selectClass() {
+    let loc = $("#typePanels .active")
+    loc = loc.find("#row-Class")
+    if ($(this).find("input").prop("checked"))
+        loc.show()
+    else
+        loc.hide()
 }
 
 const imgline = `<img alt="id" src="path/fname.png" class="hidden" style="position:absolute" />`
@@ -1744,6 +1765,9 @@ NMSCE.prototype.displaySel = async function (evt) {
         h = /value/ [Symbol.replace](h, d)
         h = /font/ [Symbol.replace](h, "")
         loc.append(h)
+
+        if(e.type === "Ship" && !e.firstwave)
+            loc.find("#id-Class").hide()
     }
 }
 
@@ -2108,29 +2132,29 @@ const fighterWingsMap = `
         <img id="map-transparent" src="images/fighter/wings/blank.png" style="position:absolute" usemap="#fighter-wings-map" />
 
         <map name="fighter-wings-map" id="map-areas">
-            <area alt="h2" coords="1,1,9,203,46,189,50,5" shape="poly">
-            <area alt="h11" coords="60,11,65,42,156,44,160,21" shape="poly">
-            <area alt="h27" data-group=3 coords="179,10,184,54,212,57,216,9" shape="poly">
-            <area alt="h25" data-group=3 coords="226,8,223,52,257,55,262,13" shape="poly">
-            <area alt="h26" data-group=3 coords="273,7,266,25,273,51,301,51,312,19" shape="poly">
-            <area alt="h7" data-group=4 data-group=4 coords="59,52,49,116,59,164,84,168,99,122,84,55" shape="poly">
-            <area alt="h8" data-group=4 coords="99,55,102,89,134,97,205,91,209,66,145,48" shape="poly">
-            <area alt="h9" data-group=4 coords="218,61,221,91,313,93,332,108,337,79,344,9,322,26,303,63" shape="poly">
-            <area alt="h12" coords="97,160,123,172,146,151,161,107,133,102" shape="poly">
-            <area alt="h10" data-group=4 coords="210,99,219,134,329,130,327,110" shape="poly">
-            <area alt="h13" coords="2,212,5,252,37,262,106,261,107,197,53,191" shape="poly">
-            <area alt="h14" coords="111,180,121,206,198,158,189,146" shape="poly">
-            <area alt="h15" coords="127,207,127,216,210,223,202,207" shape="poly">
-            <area alt="h16" coords="122,221,117,234,125,253,211,247,212,233" shape="poly">
-            <area alt="h17" data-group=4 coords="189,131,211,159,206,173,171,181,173,195,211,201,217,210,241,203,235,182,297,174,280,157" shape="poly">
-            <area alt="h18" data-group=4 coords="272,141,316,192,291,199,311,245,342,224,346,187,297,139" shape="poly">
-            <area alt="h19" data-group=4 coords="214,256,221,266,312,265,314,252,277,220,280,187,268,187" shape="poly">
-            <area alt="h20" coords="1,275,3,386,100,388,102,274" shape="poly">
-            <area alt="h21" data-group=4 coords="121,268,113,320,129,386,182,392,226,359,224,290,180,257" shape="poly">
-            <area alt="h28" data-group=4 coords="227,273,231,292,272,350,285,333,253,272" shape="poly">
-            <area alt="h4" data-group=4 coords="273,272,287,295,345,289,329,274" shape="poly">
-            <area alt="h5" data-group=4 coords="284,310,291,322,340,311,338,294" shape="poly">
-            <area alt="h6" data-group=4 coords="238,346,237,389,288,388,333,364,327,339,281,357" shape="poly">
+            <area alt="h2" coords="6,10,0,199,37,197,45,185,50,6" shape="poly">
+            <area alt="h11" coords="57,-1,56,25,97,31,157,23,151,9" shape="poly">
+            <area alt="h29" coords="124,29,124,49,184,64,200,58,192,25,168,24" shape="poly">
+            <area alt="h27" coords="200,7,211,49,235,48,238,5" shape="poly">
+            <area alt="h25" coords="241,6,240,45,274,47,275,6" shape="poly">
+            <area alt="h26" coords="281,13,280,45,306,47,317,26,309,7" shape="poly">
+            <area alt="h8" coords="104,51,83,66,83,85,101,102,126,106,187,89,188,72,132,55" shape="poly">
+            <area alt="h9" coords="216,55,225,87,307,83,320,101,334,102,333,80,349,10,329,12,308,53" shape="poly">
+            <area alt="h7" coords="63,80,80,79,95,136,95,165,82,186,63,189,48,164,48,138" shape="poly">
+            <area alt="h12" coords="106,168,127,172,141,161,163,110,147,103" shape="poly">
+            <area alt="h10" coords="200,89,181,100,182,114,203,124,298,113,293,92" shape="poly">
+            <area alt="h6" coords="203,135,197,183,294,156,300,139,291,122" shape="poly">
+            <area alt="h28" coords="304,119,321,109,347,191,336,215,307,164" shape="poly">
+            <area alt="h13" coords="46,197,4,216,4,242,40,262,105,261,106,197" shape="poly">
+            <area alt="h14" coords="114,190,127,201,189,165,189,149" shape="poly">
+            <area alt="h15" coords="124,205,124,217,210,223,210,209" shape="poly">
+            <area alt="h16" coords="127,222,116,231,124,249,213,246,209,232,154,231" shape="poly">
+            <area alt="h19" coords="216,237,217,248,244,250,261,235,294,246,306,241,270,196,277,171,267,167,232,220" shape="poly">
+            <area alt="h18" coords="285,176,281,187,320,243,317,249,299,252,299,264,316,295,348,262,348,241" shape="poly">
+            <area alt="h20" coords="6,275,7,362,25,387,84,387,104,368,104,275" shape="poly">
+            <area alt="h21" coords="153,260,113,293,115,363,163,393,210,377,226,358,227,295,203,259" shape="poly">
+            <area alt="h17" coords="246,267,228,337,271,354,293,346,294,327,348,317,348,303,281,296" shape="poly">
+            <area alt="h4" coords="297,350,271,357,270,373,334,383,347,366" shape="poly">
         </map>
     </div>`
 
@@ -2144,20 +2168,21 @@ const haulerBodiesMap = `
         <img id="map-transparent" src="images/hauler/bodies/blank.png" style="position:absolute" usemap="#hauler-bodies-map" />
             
         <map name="hauler-bodies-map" id="map-areas">
-            <area alt="h2" data-group=1 coords="9,6,7,80,101,81,97,54,110,9" shape="poly">
-            <area alt="h3" data-group=1 coords="128,8,113,40,112,69,177,77,201,88,215,52,198,17" shape="poly">
-            <area alt="h4" data-group=2 coords="208,15,222,43,241,52,234,85,270,87,303,60,347,11" shape="poly">
-            <area alt="h5" data-group=1 coords="11,93,9,149,81,149,81,99" shape="poly">
-            <area alt="h17" data-group=1 coords="85,95,86,150,135,151,126,126,153,93" shape="poly">
-            <area alt="h6" data-group=1 coords="161,94,129,125,144,150,203,155,217,118,207,95" shape="poly">
-            <area alt="h18" data-group=2 coords="216,98,249,151,335,142,342,92" shape="poly">
-            <area alt="h9" data-group=1 coords="17,167,15,229,134,231,130,171" shape="poly">
-            <area alt="h7" data-group=1 coords="173,164,143,195,144,220,228,223,216,164" shape="poly">
-            <area alt="h8" data-group=2 coords="254,157,252,223,285,227,340,177,318,159" shape="poly">
-            <area alt="h13" data-group=3 coords="0,239,0,376,139,378,137,239" shape="poly">
-            <area alt="h14" data-group=3 coords="139,237,143,378,222,375,221,240" shape="poly">
-            <area alt="h15" data-group=3 coords="229,242,228,371,306,377,310,240" shape="poly">
-            <area alt="h16" data-group=3 coords="313,257,313,333,349,336,349,255" shape="poly">
+            <area alt="h7" coords="43,7,45,63,138,63,118,30,126,3" shape="poly">
+            <area alt="h9" coords="140,0,131,26,147,64,230,65,216,31,230,3" shape="poly">
+            <area alt="h3" coords="246,3,226,28,248,65,281,72,296,87,322,77,325,25,298,2" shape="poly">
+            <area alt="h2" coords="14,66,11,112,148,109,134,66" shape="poly">
+            <area alt="h17" coords="10,120,9,173,65,172,62,150,74,119" shape="poly">
+            <area alt="h5" coords="98,115,72,132,71,160,117,172,159,170,156,120" shape="poly">
+            <area alt="h19" coords="166,116,166,162,202,177,222,178,246,128,202,112" shape="poly">
+            <area alt="h6" coords="270,116,251,130,248,163,264,175,323,177,346,146,340,119" shape="poly">
+            <area alt="h4" coords="1,195,31,264,54,265,144,206,144,176,67,180" shape="poly">
+            <area alt="h18" coords="134,218,168,264,190,265,256,255,260,198" shape="poly">
+            <area alt="h8" coords="273,198,272,263,282,267,339,232,332,200" shape="poly">
+            <area alt="h13" coords="4,268,119,378" shape="rect">
+            <area alt="h14" coords="122,268,193,378" shape="rect">
+            <area alt="h15" coords="201,267,271,376" shape="rect">
+            <area alt="h16" coords="275,276,276,375,346,378,343,264,294,266" shape="poly">
         </map>
     </div>`
 
@@ -2171,21 +2196,22 @@ const haulerWingsMap = `
         <img id="map-transparent" src="images/hauler/wings/blank.png" style="position:absolute" usemap="#hauler-wings-map" />
             
         <map name="hauler-wings-map" id="map-areas">
-            <area alt="h2" coords="0,3,2,133,86,107,86,8" shape="poly">
-            <area alt="h3" coords="97,1,91,118,118,120,160,90,174,36,156,6" shape="poly">
-            <area alt="h4" coords="204,9,202,49,269,55,264,99,345,106,345,1" shape="poly">
-            <area alt="h5" coords="127,123,144,167,184,134,222,109,261,102,258,70,206,53,173,75,164,95" shape="poly">
-            <area alt="h6" coords="1,141,4,232,43,226,88,190,110,144,106,123" shape="poly">
-            <area alt="h7" coords="99,179,71,246,83,261,205,251,225,234,212,191" shape="poly">
-            <area alt="h8" coords="201,128,235,230,207,281,215,295,239,288,273,239,277,189,240,118" shape="poly">
-            <area alt="h9" coords="259,114,263,138,295,152,291,241,266,261,265,292,341,267,338,121" shape="poly">
-            <area alt="h10" coords="11,235,11,310,65,310,66,237" shape="poly">
-            <area alt="h11" coords="88,270,94,308,196,306,195,257" shape="poly">
-            <area alt="h12" data-group=5 coords="9,319,9,389,75,390,80,318" shape="poly">
-            <area alt="h13" data-group=5 coords="90,315,88,388,163,391,163,313" shape="poly">
-            <area alt="h14" data-group=5 coords="167,314,169,395,227,394,226,310" shape="poly">
-            <area alt="h15" data-group=5 coords="235,310,235,395,297,397,292,310" shape="poly">
-            <area alt="h16" coords="303,286,298,371,305,397,349,399,349,278" shape="poly">
+            <area alt="h2" coords="3,4,2,128,77,104,79,12" shape="poly">
+            <area alt="h3" coords="90,3,92,119,126,109,152,76,158,42,135,7" shape="poly">
+            <area alt="h4" coords="236,19,221,41,277,53,267,95,348,94,347,0" shape="poly">
+            <area alt="h5" coords="131,138,145,137,259,78,250,59,218,53,207,31,168,57" shape="poly">
+            <area alt="h6" coords="4,137,3,237,76,197,98,157,101,125" shape="poly">
+            <area alt="h17" coords="120,148,111,163,127,177,158,172,205,147,199,119,156,144" shape="poly">
+            <area alt="h7" coords="97,181,73,251,211,245,220,227,214,212,150,186" shape="poly">
+            <area alt="h8" coords="206,123,237,229,210,287,243,287,273,239,275,199,238,123" shape="poly">
+            <area alt="h9" coords="256,115,262,143,295,168,304,245,273,265,262,286,272,287,340,261,341,134,296,116" shape="poly">
+            <area alt="h10" coords="22,237,4,264,23,309,64,311,54,272,61,234" shape="poly">
+            <area alt="h11" coords="93,270,92,301,193,300,188,259" shape="poly">
+            <area alt="h12" coords="8,315,8,385,73,389,80,317" shape="poly">
+            <area alt="h13" coords="90,317,85,388,151,389,159,364,161,319" shape="poly">
+            <area alt="h14" coords="170,313,168,389,220,391,228,313" shape="poly">
+            <area alt="h15" coords="237,314,236,391,276,399,293,375,272,303" shape="poly">
+            <area alt="h16" coords="313,280,297,369,314,396,343,397,348,279" shape="poly">
         </map>
     </div>`
 
@@ -2339,7 +2365,17 @@ const slotList = [{
     name: "T3",
 }, ]
 
-const shipList = [{
+const occurenceList = [{
+    name: "Nothing Seleted",
+}, {
+    name: "Frequent",
+}, {
+    name: "Occasional",
+}, {
+    name: "Rare",
+}, ]
+
+const shipList = [ {
     name: "Fighter",
     slotList: slotList,
     classList: classList,
@@ -3274,46 +3310,40 @@ const weatherList = [{
 const planetNumTip = `This is the first glyph in the portal address. Assigned to each celestial body according to their aphelion.`
 
 const objectList = [{
-    name: "Ship",
-    imgText: [{
-        id: "#id-Player",
-        field: "_name",
-        name: "Player",
-        type: "text",
-    }, {
-        id: "#id-Galaxy",
-        field: "galaxy",
-        name: "Galaxy",
-        type: "menu",
-    }, {
-        id: "#id-addrInput #id-addr",
-        field: "addr",
-        name: "Coords",
-        type: "text",
-    }, {
-        id: "#id-addrInput #id-addr",
-        name: "Glyphs",
-        field: "addr",
-        font: "glyph",
-        type: "glyph",
-    }, {
-        id: "#id-sys",
-        field: "sys",
-        name: "System",
-        type: "text",
-    }, {
-        id: "#id-Economy",
-        field: "econ",
-        name: "Economy",
-        type: "menu",
-    }],
-    fields: [{
-        name: "Type",
-        type: "menu",
-        list: shipList, // fighter, shuttle, etc.
-        required: true,
-        search: true,
-        sublist: [{
+        name: "Ship",
+        imgText: [{
+            id: "#id-Player",
+            field: "_name",
+            name: "Player",
+            type: "text",
+        }, {
+            id: "#id-Galaxy",
+            field: "galaxy",
+            name: "Galaxy",
+            type: "menu",
+        }, {
+            id: "#id-addrInput #id-addr",
+            field: "addr",
+            name: "Coords",
+            type: "text",
+        }, {
+            id: "#id-addrInput #id-addr",
+            name: "Glyphs",
+            field: "addr",
+            font: "glyph",
+            type: "glyph",
+        }, {
+            id: "#id-sys",
+            field: "sys",
+            name: "System",
+            type: "text",
+        }, {
+            id: "#id-Economy",
+            field: "econ",
+            name: "Economy",
+            type: "menu",
+        }],
+        fields: [{
             name: "Name",
             type: "string",
             search: true,
@@ -3321,25 +3351,52 @@ const objectList = [{
             imgText: true,
             ttip: "This is required because it is the only unique identifier available to prevent duplicate entries."
         }, {
-            name: "Wave",
-            type: "number",
-            range: "6",
-            imgText: true,
-            search: true,
-        }, {
-            name: "Class",
+            name: "Type",
             type: "menu",
-            ttip: "classTtip",
-            sub: "classList",
-            imgText: true,
+            list: shipList, // fighter, shuttle, etc.
+            ttip: "Select ship type to select ship size and parts.",
+            required: true,
             search: true,
-        }, {
-            name: "Slots",
-            type: "menu",
-            ttip: "slotTtip",
-            sub: "slotList",
-            imgText: true,
-            search: true,
+            sublist: [{
+                name: "Frequency",
+                ttip: "Arrival frequency.",
+                type: "menu",
+                list: occurenceList,
+                imgText: true,
+                search: true,
+            }, {
+                name: "First Wave",
+                ttip: "This is only useful on space stations.",
+                type: "checkbox",
+                onchange: selectClass,
+                imgText: true,
+                search: true,
+            }, {
+                name: "Class",
+                type: "menu",
+                ttip: "classTtip",
+                sub: "classList",
+                startState: "hidden",
+                imgText: true,
+                search: true,
+            }, {
+                name: "Slots",
+                type: "menu",
+                ttip: "slotTtip",
+                sub: "slotList",
+                imgText: true,
+                search: true,
+            }, {
+                name: "bodies",
+                type: "map",
+                sub: "bodies",
+                search: true,
+            }, {
+                name: "wings",
+                type: "map",
+                sub: "wings",
+                search: true,
+            }]
         }, {
             name: "Primary Color",
             type: "menu",
@@ -3365,485 +3422,475 @@ const objectList = [{
             name: "Photo",
             type: "img",
             required: true,
+        }]
+    },
+    {
+        name: "Freighter",
+        imgText: [{
+            id: "#id-Player",
+            field: "_name",
+            name: "Player",
+            type: "text",
         }, {
-            name: "bodies",
-            type: "map",
-            sub: "bodies",
+            id: "#id-Galaxy",
+            field: "galaxy",
+            name: "Galaxy",
+            type: "menu",
+        }, {
+            id: "#id-addrInput #id-addr",
+            field: "addr",
+            name: "Coords",
+            type: "text",
+        }, {
+            id: "#id-addrInput #id-addr",
+            name: "Glyphs",
+            field: "addr",
+            font: "glyph",
+            type: "glyph",
+        }, {
+            id: "#id-sys",
+            field: "sys",
+            name: "System",
+            type: "text",
+        }, {
+            id: "#id-Economy",
+            field: "econ",
+            name: "Economy",
+            type: "menu",
+        }],
+        fields: [{
+            name: "Name",
+            type: "string",
+            search: true,
+            required: true,
+            ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
+        }, {
+            name: "Slots",
+            type: "menu",
+            list: slotList,
             search: true,
         }, {
-            name: "wings",
+            name: "Primary Color",
+            type: "menu",
+            list: colorList,
+            required: true,
+            search: true,
+        }, {
+            name: "Secondary Color",
+            type: "menu",
+            list: colorList,
+            search: true,
+        }, {
+            name: "Seed",
+            type: "string",
+            ttip: "Found in save file. Can be used to reskin ship.",
+        }, {
+            name: "Photo",
+            type: "img",
+            required: true,
+        }, {
+            name: "capital",
             type: "map",
-            sub: "wings",
+            map: freighterCapitalMap,
+            search: true,
+        }, {
+            name: "common",
+            type: "map",
+            map: freighterCommonMap,
             search: true,
         }, ]
-    }]
-}, {
-    name: "Freighter",
-    imgText: [{
-        id: "#id-Player",
-        field: "_name",
-        name: "Player",
-        type: "text",
-    }, {
-        id: "#id-Galaxy",
-        field: "galaxy",
-        name: "Galaxy",
-        type: "menu",
-    }, {
-        id: "#id-addrInput #id-addr",
-        field: "addr",
-        name: "Coords",
-        type: "text",
-    }, {
-        id: "#id-addrInput #id-addr",
-        name: "Glyphs",
-        field: "addr",
-        font: "glyph",
-        type: "glyph",
-    }, {
-        id: "#id-sys",
-        field: "sys",
-        name: "System",
-        type: "text",
-    }, {
-        id: "#id-Economy",
-        field: "econ",
-        name: "Economy",
-        type: "menu",
-    }],
-    fields: [{
-        name: "Name",
-        type: "string",
-        search: true,
-        required: true,
-        ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
-    }, {
-        name: "Slots",
-        type: "menu",
-        list: slotList,
-        search: true,
-    }, {
-        name: "Class",
-        type: "menu",
-        list: classList,
-        search: true,
-    }, {
-        name: "Primary Color",
-        type: "menu",
-        list: colorList,
-        required: true,
-        search: true,
-    }, {
-        name: "Secondary Color",
-        type: "menu",
-        list: colorList,
-        search: true,
-    }, {
-        name: "Seed",
-        type: "string",
-        ttip: "Found in save file. Can be used to reskin ship.",
-    }, {
-        name: "Photo",
-        type: "img",
-        required: true,
-    }, {
-        name: "capital",
-        type: "map",
-        map: freighterCapitalMap,
-        search: true,
-    }, {
-        name: "common",
-        type: "map",
-        map: freighterCommonMap,
-        search: true,
-    }, ]
-}, {
-    name: "Multi-Tool",
-    imgText: [{
-        id: "#id-Player",
-        field: "_name",
-        name: "Player",
-        type: "text",
-    }, {
-        id: "#id-Galaxy",
-        field: "galaxy",
-        name: "Galaxy",
-        type: "menu",
-    }, {
-        id: "#id-addrInput #id-addr",
-        field: "addr",
-        name: "Coords",
-        type: "text",
-    }, {
-        id: "#id-addrInput #id-addr",
-        field: "addr",
-        name: "Glyphs",
-        font: "glyph",
-        type: "glyph",
-    }, {
-        id: "#id-sys",
-        field: "sys",
-        name: "System",
-        type: "text",
-    }],
-    fields: [{
-        name: "Name",
-        type: "string",
-        search: true,
-        required: true,
-        imgText: true,
-        ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
-    }, {
-        name: "Type",
-        type: "menu",
-        list: mtList,
-        required: true,
-        imgText: true,
-        search: true,
-    }, {
-        name: "Class",
-        type: "menu",
-        list: classList,
-        // ttipFld: "classTtip",
-        required: true,
-        imgText: true,
-        search: true,
-    }, {
-        name: "Slots",
-        type: "number",
-        required: true,
-        imgText: true,
-        search: true,
-    }, {
-        name: "Space Station",
-        type: "checkbox",
-        search: true,
-    }, {
-        name: "",
-        type: "blank",
-    }, {
-        name: "Planet Name",
-        type: "string",
-        imgText: true,
-        search: true,
-    }, {
-        name: "Planet Index",
-        type: "number",
-        range: 15,
-        ttip: planetNumTip,
-    }, {
-        name: "Latitude",
-        imgText: true,
-        type: "string",
-    }, {
-        name: "Longitude",
-        imgText: true,
-        type: "string",
-    }, {
-        name: "Notes",
-        type: "long string",
-    }, {
-        name: "Primary Color",
-        type: "menu",
-        list: colorList,
-        required: true,
-        search: true,
-    }, {
-        name: "Secondary Color",
-        type: "menu",
-        list: colorList,
-        search: true,
-    }, {
-        name: "Seed",
-        type: "string",
-        imgText: true,
-        ttip: "Found in save file. Can be used to reskin MT.",
-    }, {
-        name: "Photo",
-        type: "img",
-        required: true,
-    }]
-    // }, {
-    // name: "Flora",
-    // fields: [{
-    //     name: "Name",
-    //     type: "string",
-    // }, {
-    //     name: "Description",
-    //     type: "long string",
-    //     required: true,
-    //     search: true,
-    // }, {
-    //     name: "Planet Name",
-    //     type: "string",
-    // }, {
-    //     name: "Planet Index",
-    //     type: "number",
-    //     range: 15,
-    //     ttip: planetNumTip,
-    // }, {
-    //     name: "Photo",
-    //     type: "img",
-    //     required: true,
-    // }]
-}, {
-    name: "Fauna",
-    imgText: [{
-        id: "#id-Player",
-        field: "_name",
-        name: "Player",
-        type: "text",
-    }, {
-        id: "#id-Galaxy",
-        field: "galaxy",
-        name: "Galaxy",
-        type: "menu",
-    }, {
-        id: "#id-addrInput #id-addr",
-        field: "addr",
-        name: "Coords",
-        type: "text",
-    }, {
-        id: "#id-addrInput #id-addr",
-        field: "addr",
-        name: "Glyphs",
-        font: "glyph",
-        type: "glyph",
-    }, {
-        id: "#id-sys",
-        field: "sys",
-        name: "System",
-        type: "text",
-    }],
-    fields: [{
-        name: "Name",
-        type: "string",
-        search: true,
-        required: true,
-        imgText: true,
-        ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
-    }, {
-        name: "Type",
-        type: "menu",
-        list: faunaList,
-        search: true,
-        required: true,
-    }, {
-        name: "Predator",
-        type: "checkbox",
-        search: true,
-    }, {
-        name: "Killed Product",
-        type: "menu",
-        list: faunaProductKilled,
-        search: true,
-    }, {
-        name: "Tamed Product",
-        type: "menu",
-        list: faunaProductTamed,
-        search: true,
-    }, {
-        name: "Height",
-        type: "float",
-        range: 15.0,
-        imgText: true,
-        search: true,
-    }, {
-        name: "Description",
-        imgText: true,
-        type: "long string",
-    }, {
-        name: "Planet Name",
-        imgText: true,
-        type: "string",
-    }, {
-        name: "Planet Index",
-        type: "number",
-        range: 15,
-        ttip: planetNumTip,
-    }, {
-        name: "Photo",
-        type: "img",
-        required: true,
-    }]
-}, {
-    name: "Planet",
-    imgText: [{
-        id: "#id-Player",
-        field: "_name",
-        name: "Player",
-        type: "text",
-    }, {
-        id: "#id-Galaxy",
-        field: "galaxy",
-        name: "Galaxy",
-        type: "menu",
-    }, {
-        id: "#id-addrInput #id-addr",
-        field: "addr",
-        name: "Coords",
-        type: "text",
-    }, {
-        id: "#id-addrInput #id-addr",
-        name: "Glyphs",
-        field: "addr",
-        font: "glyph",
-        type: "glyph",
-    }, {
-        id: "#id-sys",
-        field: "sys",
-        name: "System",
-        type: "text",
-    }],
-    fields: [{
-        name: "Name",
-        type: "string",
-        search: true,
-        required: true,
-        imgText: true,
-        ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
-    }, {
-        name: "Planet Index",
-        range: 15,
-        type: "number",
-        ttip: planetNumTip,
-    }, {
-        name: "Biome",
-        type: "menu",
-        list: biomeList,
-        required: true,
-        imgText: true,
-        search: true,
-    }, {
-        name: "Extreme Weather",
-        type: "checkbox",
-        ttip: "Any deadly weather pattern.",
-        search: true,
-    }, {
-        name: "Sentinels",
-        type: "menu",
-        list: sentinelList,
-        ttip: `Low - Sentinels only guard secure facilities<br>
+    },
+    {
+        name: "Multi-Tool",
+        imgText: [{
+            id: "#id-Player",
+            field: "_name",
+            name: "Player",
+            type: "text",
+        }, {
+            id: "#id-Galaxy",
+            field: "galaxy",
+            name: "Galaxy",
+            type: "menu",
+        }, {
+            id: "#id-addrInput #id-addr",
+            field: "addr",
+            name: "Coords",
+            type: "text",
+        }, {
+            id: "#id-addrInput #id-addr",
+            field: "addr",
+            name: "Glyphs",
+            font: "glyph",
+            type: "glyph",
+        }, {
+            id: "#id-sys",
+            field: "sys",
+            name: "System",
+            type: "text",
+        }],
+        fields: [{
+            name: "Name",
+            type: "string",
+            search: true,
+            required: true,
+            imgText: true,
+            ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
+        }, {
+            name: "Type",
+            type: "menu",
+            list: mtList,
+            required: true,
+            imgText: true,
+            search: true,
+        }, {
+            name: "Class",
+            type: "menu",
+            list: classList,
+            // ttipFld: "classTtip",
+            required: true,
+            imgText: true,
+            search: true,
+        }, {
+            name: "Slots",
+            type: "number",
+            required: true,
+            imgText: true,
+            search: true,
+        }, {
+            name: "Space Station",
+            type: "checkbox",
+            search: true,
+        }, {
+            name: "",
+            type: "blank",
+        }, {
+            name: "Planet Name",
+            type: "string",
+            imgText: true,
+            search: true,
+        }, {
+            name: "Planet Index",
+            type: "number",
+            range: 15,
+            ttip: planetNumTip,
+        }, {
+            name: "Latitude",
+            imgText: true,
+            type: "string",
+        }, {
+            name: "Longitude",
+            imgText: true,
+            type: "string",
+        }, {
+            name: "Notes",
+            type: "long string",
+        }, {
+            name: "Primary Color",
+            type: "menu",
+            list: colorList,
+            required: true,
+            search: true,
+        }, {
+            name: "Secondary Color",
+            type: "menu",
+            list: colorList,
+            search: true,
+        }, {
+            name: "Seed",
+            type: "string",
+            imgText: true,
+            ttip: "Found in save file. Can be used to reskin MT.",
+        }, {
+            name: "Photo",
+            type: "img",
+            required: true,
+        }]
+        // }, {
+        // name: "Flora",
+        // fields: [{
+        //     name: "Name",
+        //     type: "string",
+        // }, {
+        //     name: "Description",
+        //     type: "long string",
+        //     required: true,
+        //     search: true,
+        // }, {
+        //     name: "Planet Name",
+        //     type: "string",
+        // }, {
+        //     name: "Planet Index",
+        //     type: "number",
+        //     range: 15,
+        //     ttip: planetNumTip,
+        // }, {
+        //     name: "Photo",
+        //     type: "img",
+        //     required: true,
+        // }]
+    },
+    {
+        name: "Fauna",
+        imgText: [{
+            id: "#id-Player",
+            field: "_name",
+            name: "Player",
+            type: "text",
+        }, {
+            id: "#id-Galaxy",
+            field: "galaxy",
+            name: "Galaxy",
+            type: "menu",
+        }, {
+            id: "#id-addrInput #id-addr",
+            field: "addr",
+            name: "Coords",
+            type: "text",
+        }, {
+            id: "#id-addrInput #id-addr",
+            field: "addr",
+            name: "Glyphs",
+            font: "glyph",
+            type: "glyph",
+        }, {
+            id: "#id-sys",
+            field: "sys",
+            name: "System",
+            type: "text",
+        }],
+        fields: [{
+            name: "Name",
+            type: "string",
+            search: true,
+            required: true,
+            imgText: true,
+            ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
+        }, {
+            name: "Type",
+            type: "menu",
+            list: faunaList,
+            search: true,
+            required: true,
+        }, {
+            name: "Predator",
+            type: "checkbox",
+            search: true,
+        }, {
+            name: "Killed Product",
+            type: "menu",
+            list: faunaProductKilled,
+            search: true,
+        }, {
+            name: "Tamed Product",
+            type: "menu",
+            list: faunaProductTamed,
+            search: true,
+        }, {
+            name: "Height",
+            type: "float",
+            range: 15.0,
+            imgText: true,
+            search: true,
+        }, {
+            name: "Description",
+            imgText: true,
+            type: "long string",
+        }, {
+            name: "Planet Name",
+            imgText: true,
+            type: "string",
+        }, {
+            name: "Planet Index",
+            type: "number",
+            range: 15,
+            ttip: planetNumTip,
+        }, {
+            name: "Photo",
+            type: "img",
+            required: true,
+        }]
+    },
+    {
+        name: "Planet",
+        imgText: [{
+            id: "#id-Player",
+            field: "_name",
+            name: "Player",
+            type: "text",
+        }, {
+            id: "#id-Galaxy",
+            field: "galaxy",
+            name: "Galaxy",
+            type: "menu",
+        }, {
+            id: "#id-addrInput #id-addr",
+            field: "addr",
+            name: "Coords",
+            type: "text",
+        }, {
+            id: "#id-addrInput #id-addr",
+            name: "Glyphs",
+            field: "addr",
+            font: "glyph",
+            type: "glyph",
+        }, {
+            id: "#id-sys",
+            field: "sys",
+            name: "System",
+            type: "text",
+        }],
+        fields: [{
+            name: "Name",
+            type: "string",
+            search: true,
+            required: true,
+            imgText: true,
+            ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
+        }, {
+            name: "Planet Index",
+            range: 15,
+            type: "number",
+            ttip: planetNumTip,
+        }, {
+            name: "Biome",
+            type: "menu",
+            list: biomeList,
+            required: true,
+            imgText: true,
+            search: true,
+        }, {
+            name: "Extreme Weather",
+            type: "checkbox",
+            ttip: "Any deadly weather pattern.",
+            search: true,
+        }, {
+            name: "Sentinels",
+            type: "menu",
+            list: sentinelList,
+            ttip: `Low - Sentinels only guard secure facilities<br>
             High - Patrols are present throughout the planet (orange icon)<br>
             Aggressive - Patrols are present throughout the planet and Sentinels will attack on sight (red icon)<br>`,
-        search: true,
-    }, {
-        name: "Predators",
-        type: "checkbox",
-        search: true,
-    }, {
-        name: "Grass Color",
-        type: "menu",
-        list: colorList,
-        required: true,
-        imgText: true,
-        search: true,
-    }, {
-        name: "Water Color",
-        type: "menu",
-        list: colorList,
-        imgText: true,
-        search: true,
-    }, {
-        name: "Sky Color",
-        type: "menu",
-        list: colorList,
-        imgText: true,
-        search: true,
-    }, {
-        name: "Glitches",
-        type: "menu",
-        list: glitchList,
-        imgText: true,
-        search: true,
-    }, {
-        name: "Notes",
-        imgText: true,
-        type: "long string",
-    }, {
-        name: "Photo",
-        type: "img",
-        required: true,
-    }]
-}, {
-    name: "Base",
-    imgText: [{
-        id: "#id-Player",
-        field: "_name",
-        name: "Player",
-        type: "text",
-    }, {
-        id: "#id-Galaxy",
-        field: "galaxy",
-        name: "Galaxy",
-        type: "menu",
-    }, {
-        id: "#id-Platform",
-        field: "platform",
-        name: "Platform",
-        type: "menu",
-    }, {
-        id: "#id-addrInput #id-addr",
-        field: "addr",
-        name: "Coords",
-        type: "text",
-    }, {
-        id: "#id-addrInput #id-addr",
-        field: "addr",
-        name: "Glyphs",
-        font: "glyph",
-        type: "glyph",
-    }, {
-        id: "#id-sys",
-        field: "sys",
-        name: "System",
-        type: "text",
-    }, {
-        id: "#id-Economy",
-        field: "econ",
-        name: "Economy",
-        type: "menu",
-    }],
-    fields: [{
-        name: "Name",
-        type: "string",
-        required: true,
-        imgText: true,
-        search: true,
-    }, {
-        name: "Owner",
-        type: "string",
-        required: true,
-        imgText: true,
-        search: true,
-    }, {
-        name: "Planet Index",
-        type: "number",
-        range: 15,
-        ttip: planetNumTip,
-    }, {
-        name: "Game Mode",
-        type: "menu",
-        list: modeList,
-        required: true,
-        ttip: "Bases are only visible by players using the same game mode.",
-        imgText: true,
-        search: true,
-    }, {
-        name: "Type",
-        type: "menu",
-        list: baseList,
-        search: true,
-        imgText: true,
-        required: true,
-    }, {
-        name: "Description",
-        type: "long string",
-        imgText: true,
-        search: true,
-    }, {
-        name: "Photo",
-        type: "img",
-        required: true,
-    }]
-}];
+            search: true,
+        }, {
+            name: "Predators",
+            type: "checkbox",
+            search: true,
+        }, {
+            name: "Grass Color",
+            type: "menu",
+            list: colorList,
+            required: true,
+            imgText: true,
+            search: true,
+        }, {
+            name: "Water Color",
+            type: "menu",
+            list: colorList,
+            imgText: true,
+            search: true,
+        }, {
+            name: "Sky Color",
+            type: "menu",
+            list: colorList,
+            imgText: true,
+            search: true,
+        }, {
+            name: "Glitches",
+            type: "menu",
+            list: glitchList,
+            imgText: true,
+            search: true,
+        }, {
+            name: "Notes",
+            imgText: true,
+            type: "long string",
+        }, {
+            name: "Photo",
+            type: "img",
+            required: true,
+        }]
+    },
+    {
+        name: "Base",
+        imgText: [{
+            id: "#id-Player",
+            field: "_name",
+            name: "Player",
+            type: "text",
+        }, {
+            id: "#id-Galaxy",
+            field: "galaxy",
+            name: "Galaxy",
+            type: "menu",
+        }, {
+            id: "#id-Platform",
+            field: "platform",
+            name: "Platform",
+            type: "menu",
+        }, {
+            id: "#id-addrInput #id-addr",
+            field: "addr",
+            name: "Coords",
+            type: "text",
+        }, {
+            id: "#id-addrInput #id-addr",
+            field: "addr",
+            name: "Glyphs",
+            font: "glyph",
+            type: "glyph",
+        }, {
+            id: "#id-sys",
+            field: "sys",
+            name: "System",
+            type: "text",
+        }, {
+            id: "#id-Economy",
+            field: "econ",
+            name: "Economy",
+            type: "menu",
+        }],
+        fields: [{
+            name: "Name",
+            type: "string",
+            required: true,
+            imgText: true,
+            search: true,
+        }, {
+            name: "Owner",
+            type: "string",
+            required: true,
+            imgText: true,
+            search: true,
+        }, {
+            name: "Planet Index",
+            type: "number",
+            range: 15,
+            ttip: planetNumTip,
+        }, {
+            name: "Game Mode",
+            type: "menu",
+            list: modeList,
+            required: true,
+            ttip: "Bases are only visible by players using the same game mode.",
+            imgText: true,
+            search: true,
+        }, {
+            name: "Type",
+            type: "menu",
+            list: baseList,
+            search: true,
+            imgText: true,
+            required: true,
+        }, {
+            name: "Description",
+            type: "long string",
+            imgText: true,
+            search: true,
+        }, {
+            name: "Photo",
+            type: "img",
+            required: true,
+        }]
+    }
+];

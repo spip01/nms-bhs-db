@@ -107,30 +107,31 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
 
     if (fnmsce)
         $("#namereq").hide()
+    else {
+        $("#id-Player").change(function () {
+            if (bhs.user.uid) {
+                let user = bhs.extractUser()
+                bhs.changeName(this, user)
+            }
+        })
 
-    $("#id-Player").change(function () {
-        if (bhs.user.uid) {
-            let user = bhs.extractUser()
-            bhs.changeName(this, user)
-        }
-    })
-
-    loc.find("#fileupload").show()
-    $("#ck-fileupload").change(function (event) {
-        if ($(this).prop("checked")) {
-            panels.forEach(p => {
-                $("#" + p.id).hide()
-            })
-            $("#entrybuttons").hide()
-            $("#upload").show()
-        } else {
-            panels.forEach(p => {
-                $("#" + p.id).show()
-            })
-            $("#entrybuttons").show()
-            $("#upload").hide()
-        }
-    })
+        loc.find("#fileupload").show()
+        $("#ck-fileupload").change(function (event) {
+            if ($(this).prop("checked")) {
+                panels.forEach(p => {
+                    $("#" + p.id).hide()
+                })
+                $("#entrybuttons").hide()
+                $("#upload").show()
+            } else {
+                panels.forEach(p => {
+                    $("#" + p.id).show()
+                })
+                $("#entrybuttons").show()
+                $("#upload").hide()
+            }
+        })
+    }
 }
 
 const pnlTop = 0
