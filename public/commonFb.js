@@ -212,8 +212,7 @@ blackHoleSuns.prototype.updateUser = async function (user) {
             console.log(err)
             return false
         })
-    }
-    else   
+    } else
         return false
 }
 
@@ -909,9 +908,10 @@ blackHoleSuns.prototype.subscribe = function (what, ref, displayFcn) {
     if (displayFcn) {
         bhs.unsubscribe(what)
         bhs.unsub[what] = ref.onSnapshot(snapshot => {
-            if (snapshot.exists)
-                displayFcn(snapshot.data(), snapshot.ref.path)
-            else
+            if (typeof snapshot.exists !== "undefined") {
+                if (snapshot.exists)
+                    displayFcn(snapshot.data(), snapshot.ref.path)
+            } else
                 snapshot.docChanges().forEach(change => {
                     displayFcn(change.doc.data(), change.doc.ref.path)
                 })

@@ -70,7 +70,7 @@ const showTypesList = [{
     id: "favorites"
 }, {
     name: "Editors Choice",
-    id: "edchoice"
+    id: "editors"
 }]
 
 NMSCE.prototype.selDisplay = function (evt) {
@@ -1508,17 +1508,20 @@ NMSCE.prototype.updateScreenshots = function (entry) {
 NMSCE.prototype.updateEntry = function (entry) {
     entry.modded = firebase.firestore.Timestamp.now()
 
-    if (typeof entry.clickcount === "undefined")
-        entry.clickcount = 0
+    if (typeof entry.votes === "undefined")
+        entry.votes = {}
 
-    if (typeof entry.favorite === "undefined")
-        entry.favorite = 0
+    if (typeof entry.votes.clickcount === "undefined")
+        entry.votes.clickcount = 0
 
-    if (typeof entry.edchoice === "undefined")
-        entry.edchoice = 0
+    if (typeof entry.votes.favorite === "undefined")
+        entry.votes.favorite = 0
 
-    if (typeof entry.bhspoi === "undefined")
-        entry.bhspoi = 0
+    if (typeof entry.votes.edchoice === "undefined")
+        entry.votes.edchoice = 0
+
+    if (typeof entry.votes.bhspoi === "undefined")
+        entry.votes.bhspoi = 0
 
     if (typeof entry.created === "undefined")
         entry.created = firebase.firestore.Timestamp.now()
@@ -1621,12 +1624,12 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
 
                 if ($("#favorites").children().length === 0) {
                     ref = doc.ref.collection(type)
-                    ref = ref.orderBy("favorite", "desc")
+                    ref = ref.orderBy("votes.favorite", "desc")
                     ref = ref.limit(2)
 
                     ref.get().then(snapshot => {
                         for (let doc of snapshot.docs) {
-                            if (doc.data().favorite > 0)
+                            if (doc.data().votes.favorite > 0)
                                 fcn(doc.data(), doc.ref.path, "#favorites")
                         }
                     })
@@ -1634,26 +1637,26 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
 
                 if ($("#clicks").children().length === 0) {
                     ref = doc.ref.collection(type)
-                    ref = ref.orderBy("clickcount", "desc")
+                    ref = ref.orderBy("votes.clickcount", "desc")
                     ref = ref.limit(2)
 
                     ref.get().then(snapshot => {
                         for (let doc of snapshot.docs) {
-                            if (doc.data().clickcount > 0)
+                            if (doc.data().votes.clickcount > 0)
                                 fcn(doc.data(), doc.ref.path, "#clicks")
                         }
                     })
                 }
 
-                if ($("#edchoice").children().length === 0) {
+                if ($("#editors").children().length === 0) {
                     ref = doc.ref.collection(type)
-                    ref = ref.orderBy("edchoice", "desc")
+                    ref = ref.orderBy("votes.edchoice", "desc")
                     ref = ref.limit(2)
 
                     ref.get().then(snapshot => {
                         for (let doc of snapshot.docs) {
-                            if (doc.data().edchoice > 0)
-                                fcn(doc.data(), doc.ref.path, "#edchoice")
+                            if (doc.data().votes.edchoice > 0)
+                                fcn(doc.data(), doc.ref.path, "#editors")
                         }
                     })
                 }
@@ -1663,12 +1666,12 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
 
 NMSCE.prototype.displayResults = function (e, path, inID) {
     const img = `
-        <div class="cover-item bkg-white txt-inp-def h5">
-            <img id="id-idname" src="images/blank.png" data-src="url" data-path="dbpath" onclick="nmsce.selectResult(this)"
-                onload="nmsce.imgLoad(this, $('.cover-container').height()*1.3, $('.cover-container').height()-32)" />
-            <br>galaxy
-            <br>by
-        </div>`
+    <div class="cover-item bkg-white txt-inp-def h5 align-top">
+        galaxy<br>
+        by<br>
+        <img id="id-idname" src="images/blank.png" data-src="url" data-path="dbpath" onclick="nmsce.selectResult(this)"
+            onload="nmsce.imgLoad(this, $('.cover-container').height()*1.3, $('.cover-container').height()-32)" />
+    </div>`
 
     let idname = (e.type + "-" + e.id).nameToId()
 
@@ -1712,12 +1715,37 @@ NMSCE.prototype.displayResults = function (e, path, inID) {
     })
 }
 
-NMSCE.prototype.vote = function (evt) {
-    if (nmsce.last) {
+NMSCE.prototype.vote = async function (evt) {
+    if (nmsce.last && bhs.user.uid !== "") {
+        let v = 1
+        let e = nmsce.last
         let id = $(evt).prop("id")
 
-        e[id] = typeof nmsce.last[id] === "undefined" ? 1 : nmsce.last[id] + 1
-        let ref = bhs.fs.doc("nmsce/" + nmsce.last.galaxy + "/" + nmsce.last.type + "/" + nmsce.last.id)
+        let ref = bhs.fs.doc("nmsce/" + e.galaxy + "/" + e.type + "/" + e.id)
+
+        e = {}
+        e.uid = bhs.user.uid
+
+        let vref = ref.collection("votes")
+        vref = vref.doc(bhs.user.uid)
+        let doc = await vref.get()
+        if (doc.exists) {
+            e = doc.data()
+            v = typeof e[id] === "undefined" || e[id] === false ? 1 : -1
+        }
+
+        e[id] = v === 1 ? true : false
+
+        doc.ref.set(e, {
+            merge: true
+        })
+
+        nmsce.showVotes(e)
+
+        e = {}
+        e.votes = {}
+        e.votes[id] = firebase.firestore.FieldValue.increment(v)
+
         ref.set(e, {
             merge: true
         })
@@ -1742,15 +1770,19 @@ NMSCE.prototype.selectResult = async function (evt) {
         let e = doc.data()
         nmsce.last = e
 
-        if (typeof e.clickcount === "undefined")
-            e.clickcount = 0
-
-        e.clickcount++
-        doc.ref.set({
-            clickcount: e.clickcount
-        }, {
+        let v = {}
+        v.votes = {}
+        v.votes.clickcount = firebase.firestore.FieldValue.increment(1)
+        doc.ref.set(v, {
             merge: true
         })
+
+        if (bhs.user.uid !== "") {
+            let ref = bhs.fs.doc("nmsce/" + e.galaxy + "/" + e.type + "/" + e.id + "/votes/" + bhs.user.uid)
+            ref.get().then(doc => {
+                nmsce.showVotes(doc.data())
+            })
+        }
 
         let idx = getIndex(objectList, "name", e.type)
         let obj = objectList[idx]
@@ -1774,8 +1806,8 @@ NMSCE.prototype.selectResult = async function (evt) {
         }
 
         for (let fld of obj.fields) {
+            let id = fld.name.nameToId()
             if (fld.imgText && typeof e[id] !== "undefined" && e[id] !== -1 && e[id] !== "") {
-                let id = fld.name.nameToId()
                 let h = /idname/g [Symbol.replace](row, id)
                 h = /title/ [Symbol.replace](h, fld.name)
                 h = /value/ [Symbol.replace](h, e[id])
@@ -1785,8 +1817,8 @@ NMSCE.prototype.selectResult = async function (evt) {
 
             if (typeof fld.sublist !== "undefined") {
                 for (let sub of fld.sublist) {
+                    let id = sub.name.nameToId()
                     if (sub.imgText && typeof e[id] !== "undefined" && e[id] !== -1 && e[id] !== "") {
-                        let id = sub.name.nameToId()
                         let h = /idname/g [Symbol.replace](row, id)
                         h = /title/ [Symbol.replace](h, sub.name)
                         h = /value/ [Symbol.replace](h, e[id])
@@ -1804,6 +1836,30 @@ NMSCE.prototype.selectResult = async function (evt) {
         h = /value/ [Symbol.replace](h, d)
         h = /font/ [Symbol.replace](h, "")
         loc.append(h)
+    }
+}
+
+NMSCE.prototype.showVotes = function (entry, path) {
+    const shvote = function (loc, tf) {
+        if (tf) {
+            loc.removeClass("fa-square")
+            loc.addClass("fa-check-square")
+            loc.css("color", "green")
+        } else {
+            loc.removeClass("fa-square")
+            loc.addClass("fa-check-square")
+            loc.css("color", "grey")
+        }
+    }
+
+    if (typeof entry !== "undefined") {
+        $("#favorite").css("color", entry.favorite ? "green" : "grey")
+        shvote($("#voted-edchoice"), entry.edchoice)
+        shvote($("#voted-bhspoi"), entry.bhspoi)
+    } else {
+        $("#favorite").css("color", "grey")
+        shvote($("#voted-edchoice"), false)
+        shvote($("#voted-bhspoi"), false)
     }
 }
 

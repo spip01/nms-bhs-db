@@ -16,6 +16,23 @@ blackHoleSuns.prototype.doLoggedout = function () {
 
     $("#save").addClass("disabled")
     $("#save").prop("disabled", true)
+
+    $("#favorite").hide()
+    $("#edchoice").hide()
+    $("#bhspoi").hide()
+    $("#poiorg").hide()
+    $("#setError").hide()
+    $("#genDARC").hide()
+    $("#id-export").hide()
+    $("#btn-create").hide()
+    $("#btn-export").hide()
+    $("#admin").hide()
+    $("#recalc").hide()
+    $("#updateDARC").hide()
+    $("#genDARC").hide()
+    $("#genPOI").hide()
+    $("#backupBHS").hide()
+    $("#testing").hide()
 }
 
 blackHoleSuns.prototype.doLoggedin = function (user) {
@@ -26,8 +43,7 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
         bhs.subscribe("admin-state", ref, bhs.showError)
     }
 
-    if (role.includes("nmsceEditor"))
-        $("#voting #favorite").show()
+    $("#favorite").show()
 
     if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
         let ref = bhs.fs.doc("admin/" + bhs.user.uid)
@@ -36,10 +52,10 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
                 let role = doc.data().roles
 
                 if (role.includes("nmsceEditor"))
-                    $("#voting #edchoice").show()
+                    $("#edchoice").show()
 
                 if (role.includes("admin"))
-                    $("#voting #bhspoi").show()
+                    $("#bhspoi").show()
 
                 if (role.includes("editor") || role.includes("admin"))
                     $("#poiorg").show()

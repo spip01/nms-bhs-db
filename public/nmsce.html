@@ -248,23 +248,27 @@
                 <div id="favorites" class="cover-container" style="display:none"></div>
                 <div id="clicks" class="cover-container" style="display:none"></div>
                 <div id="results" class="cover-container" style="display:none"></div>
-                <div id="edchoice" class="cover-container" style="display:none"></div>
+                <div id="editors" class="cover-container" style="display:none"></div>
                 <div id="latest" class="cover-container"></div>
                 <br>
                 <div id="imageinfo" class="row bkg-white txt-center" style="display:none">
-                    <div id="imgcol"  class="col-xl-10 col-lg-9 col-md-10 col-14">
-                        <img id="dispimage" onload="nmsce.setDispImgSize(this)"/>
+                    <div id="imgcol" class="col-xl-10 col-lg-9 col-md-10 col-14">
+                        <img id="dispimage" onload="nmsce.setDispImgSize(this)" />
                     </div>
                     <div class="col-xl-4 col-lg-5 col-md-4 col-14">
                         <div id="imagedata"></div>
-                        <div id="voting" class="row">
-                            <button id="favorite" type="button" class="col-4 btn btn-sm btn-def" style="display:none"
-                                onclick="nmsce.vote(this)">Favorite</button>&nbsp;
-                            <button id="edchoice" type="button" class="col-4 btn btn-sm btn-def" style="display:none"
-                                onclick="nmsce.vote(this)">Editors</button>&nbsp;
-                            <button id="bhspoi" type="button" class="col-4 btn btn-sm btn-def" style="display:none"
-                                onclick="nmsce.vote(this)">BHS Poi</button>&nbsp;
-
+                        <div class="row">
+                            <i id="favorite" class="col-2 fas fa-thumbs-up pointer h2" style="color:grey" onclick="nmsce.vote(this)"></i>
+                        </div>
+                        <div class="row">
+                            <button id="edchoice" type="button" class="col-4 btn btn-sm btn-def hidden"
+                                onclick="nmsce.vote(this)">Editors</button>&nbsp;&nbsp;
+                            <i id="voted-edchoice" class="fas fa-square h3" style="color:grey"></i>
+                        </div>
+                        <div class="row">
+                            <button id="bhspoi" type="button" class="col-4 btn btn-sm btn-def hidden"
+                                onclick="nmsce.vote(this)">BHS Poi</button>&nbsp;&nbsp;
+                            <i id="voted-bhspoi" class="fas fa-square h3"  style="color:grey"></i>
                         </div>
                         <br>
                         <div class="row" onclick="nmsce.newDARC('#imagedata #val-Coords')" class="pointer text-center">

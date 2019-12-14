@@ -11,22 +11,36 @@ async function main() {
     let ref = admin.firestore().collection("nmsce")
     ref.listDocuments().then(async refs => {
         for (let ref of refs) {
-            // ref.listCollections().then(async refs => {
-            //     for (let ref of refs) {
-                    ref = ref.collection("Ship")
+            ref.listCollections().then(async refs => {
+                for (let ref of refs) {
+                    // ref = ref.collection("Ship")
                     let snapshot = await ref.get()
                     console.log(ref.path, snapshot.size)
                     for (let doc of snapshot.docs) {
-                        // console.log(doc.ref.path)
                         let e = doc.data()
 
-                        if (!e["First-Wave"]) {
-                            delete e.Class
-                            doc.ref.set(e)
-                        }
+                        delete e.clickcount
+                        delete e.favorite
+                        delete e.edchoice
+                        delete e.bhspoi
+
+                        e.votes = {}
+                        e.votes.clickcount = 0
+                        e.votes.favorite = 0
+                        e.votes.edchoice = 0
+                        e.votes.bhspoi = 0
+
+                        console.log(doc.ref.path)
+                        doc.ref.set(e)
+
+                        let ref = doc.ref.collection("votes")
+                        await ref.get().then(snapshot => {
+                            for (let doc of snapshot.docs)
+                                doc.ref.delete()
+                        })
                     }
-            //     }
-            // })
+                }
+            })
         }
     })
 }
