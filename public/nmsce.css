@@ -43,7 +43,7 @@ body {
         padding: 0px 0px !important;
         white-space: nowrap;
         overflow-x: auto;
-        overflow-y: hidden;
+        overflow-y: auto;
     }
     
     .cover-item {

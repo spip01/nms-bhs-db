@@ -486,7 +486,7 @@ NMSCE.prototype.executeSearch = async function (fcn) {
         if (fld.type === "text")
             val = loc.val()
         else if (fld.type === "menu")
-            val = loc.find("button").text().stripNumber()
+            val = loc.find("#btn-"+fld.id.stripID()).text().stripNumber()
 
         if (val !== "")
             ref = ref.where(fld.field, "==", val)
@@ -518,8 +518,11 @@ NMSCE.prototype.executeSearch = async function (fcn) {
                 break
             case "menu":
                 val = $(rloc).find("#btn-" + id).text()
-                if (val && val !== "Nothing Selected")
-                    ref = ref.where(id, "==", val)
+                if (val) {
+                    val = val.stripNumber()
+                    if (val !== "Nothing Selected")
+                        ref = ref.where(id, "==", val)
+                }
                 break
             case "checkbox":
                 let cloc = $(rloc).find("input:checked")
@@ -1928,8 +1931,8 @@ NMSCE.prototype.displayList = function (entries, path) {
             l = /format/ [Symbol.replace](row, "txt-def bkg-def")
             h += l
 
-                l = /idname/g [Symbol.replace](itm, "Coords")
-                h += /title/ [Symbol.replace](l, "Coordinates")
+            l = /idname/g [Symbol.replace](itm, "Coords")
+            h += /title/ [Symbol.replace](l, "Coordinates")
 
             for (let f of obj.fields) {
                 if (f.type !== "img" && f.type !== "map") {
