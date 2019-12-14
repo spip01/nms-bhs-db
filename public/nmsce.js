@@ -1928,17 +1928,8 @@ NMSCE.prototype.displayList = function (entries, path) {
             l = /format/ [Symbol.replace](row, "txt-def bkg-def")
             h += l
 
-            if (fnmsce) {
-                l = /idname/g [Symbol.replace](itm, "Player")
-                h += /title/ [Symbol.replace](l, "Player")
-                l = /idname/g [Symbol.replace](itm, "Coords")
-                h += /title/ [Symbol.replace](l, "Glyphs")
-                l = /idname/g [Symbol.replace](itm, "Economy")
-                h += /title/ [Symbol.replace](l, "Economy")
-            } else {
                 l = /idname/g [Symbol.replace](itm, "Coords")
                 h += /title/ [Symbol.replace](l, "Coordinates")
-            }
 
             for (let f of obj.fields) {
                 if (f.type !== "img" && f.type !== "map") {
@@ -1954,6 +1945,11 @@ NMSCE.prototype.displayList = function (entries, path) {
                         }
                 }
             }
+
+            l = /idname/g [Symbol.replace](itm, "Favorite")
+            h += /title/ [Symbol.replace](l, "Favorite")
+            l = /idname/g [Symbol.replace](itm, "Editors-Choice")
+            h += /title/ [Symbol.replace](l, "Editors-Choice")
 
             h += end + end
         }
@@ -1995,6 +1991,11 @@ NMSCE.prototype.displayList = function (entries, path) {
                         }
                 }
             }
+
+            l = /idname/g [Symbol.replace](itm, "Favorite")
+            h += /title/ [Symbol.replace](l, e.votes.favorite)
+            l = /idname/g [Symbol.replace](itm, "Editors-Choice")
+            h += /title/ [Symbol.replace](l, e.votes.edchoice)
 
             h += end + end
         }
