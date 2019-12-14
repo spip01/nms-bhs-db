@@ -9,22 +9,24 @@ admin.initializeApp({
 
 async function main() {
     let ref = admin.firestore().collection("nmsce")
-    ref.listDocuments().then(refs => {
+    ref.listDocuments().then(async refs => {
         for (let ref of refs) {
-            ref.listCollections().then(async refs => {
-                for (let ref of refs) {
+            // ref.listCollections().then(async refs => {
+            //     for (let ref of refs) {
+                    ref = ref.collection("Ship")
                     let snapshot = await ref.get()
+                    console.log(ref.path, snapshot.size)
                     for (let doc of snapshot.docs) {
                         // console.log(doc.ref.path)
                         let e = doc.data()
 
-                        if (typeof e.Name === "undefined")
-                            console.log("no name", doc.ref.path)
-                        else if (e.id.includes("-") && e.Name !== "" && e.id !== e.Name.nameToId() && e.id !== e.Name.nameToId().toLowerCase())
-                            console.log(JSON.stringify(e.id), JSON.stringify(e.Name))
+                        if (!e["First-Wave"]) {
+                            delete e.Class
+                            doc.ref.set(e)
+                        }
                     }
-                }
-            })
+            //     }
+            // })
         }
     })
 }

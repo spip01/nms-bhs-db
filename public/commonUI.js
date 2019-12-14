@@ -26,6 +26,9 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
         bhs.subscribe("admin-state", ref, bhs.showError)
     }
 
+    if (role.includes("nmsceEditor"))
+        $("#voting #favorite").show()
+
     if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
         let ref = bhs.fs.doc("admin/" + bhs.user.uid)
         ref.get().then(doc => {

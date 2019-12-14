@@ -217,7 +217,10 @@ NMSCE.prototype.showSearchPanel = function (evt) {
 NMSCE.prototype.clearPanel = function () {
     let pnl = fnmsce ? $("#searchPanel") : $("#typePanels")
 
-    $("#typePanels #row-Class").hide()
+    let loc = $("#typePanels #hdr-Ship")
+    loc.find("#row-Class").hide()
+    loc.find("#row-Latitude").hide()
+    loc.find("#row-Longitude").hide()
 
     pnl.find("input").each(function () {
         let type = $(this).prop("type")
@@ -658,7 +661,7 @@ const tRadioItem = `
         <input type="radio" class="radio col" id="id-title" name="grp-idname">
     </label>`
 const tCkItem = `
-    <div id="row-idname" data-type="checkbox" data-req="false">
+    <div id="row-idname" data-type="checkbox" data-req="false" style="padding-left:15px">
         <label id="id-idname" class="h6 txt-inp-def row">
             titlettip&nbsp
             <input id="ck-idname" type="checkbox">
@@ -862,13 +865,30 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
     }
 }
 
-function selectClass() {
-    let loc = $("#typePanels .active")
-    loc = loc.find("#row-Class")
-    if ($(this).find("input").prop("checked"))
-        loc.show()
+function showClass() {
+    let loc = $("#typePanels #hdr-Ship")
+    if ($(this).find("input").prop("checked") || loc.find("#ck-Crashed").prop("checked"))
+        loc.find("#row-Class").show()
     else
-        loc.hide()
+        loc.find("#row-Class").hide()
+}
+
+function showClassLatLong() {
+    let loc = $("#typePanels #hdr-Ship")
+    if ($(this).find("input").prop("checked")) {
+        loc.find("#row-Class").show()
+        loc.find("#row-Latitude").show()
+        loc.find("#row-Longitude").show()
+        loc.find("#row-Planet-Index").show()
+        loc.find("#row-Planet-Name").show()
+    } else {
+        if (!loc.find("#ck-First-Wave").prop("checked"))
+            loc.find("#row-Class").hide()
+        loc.find("#row-Latitude").hide()
+        loc.find("#row-Longitude").hide()
+        loc.find("#row-Planet-Index").hide()
+        loc.find("#row-Planet-Name").hide()
+    }
 }
 
 const imgline = `<img alt="id" src="path/fname.png" class="hidden" style="position:absolute" />`
@@ -1644,7 +1664,7 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
 NMSCE.prototype.displayResults = function (e, path, inID) {
     const img = `
         <div class="cover-item bkg-white txt-inp-def h5">
-            <img id="id-idname" src="images/blank.png" data-src="url" data-path="dbpath" onclick="nmsce.displaySel(this)"
+            <img id="id-idname" src="images/blank.png" data-src="url" data-path="dbpath" onclick="nmsce.selectResult(this)"
                 onload="nmsce.imgLoad(this, $('.cover-container').height()*1.3, $('.cover-container').height()-32)" />
             <br>galaxy
             <br>by
@@ -1695,7 +1715,7 @@ NMSCE.prototype.displayResults = function (e, path, inID) {
 NMSCE.prototype.vote = function (evt) {
     if (nmsce.last) {
         let id = $(evt).prop("id")
-        let e = {}
+
         e[id] = typeof nmsce.last[id] === "undefined" ? 1 : nmsce.last[id] + 1
         let ref = bhs.fs.doc("nmsce/" + nmsce.last.galaxy + "/" + nmsce.last.type + "/" + nmsce.last.id)
         ref.set(e, {
@@ -1704,7 +1724,7 @@ NMSCE.prototype.vote = function (evt) {
     }
 }
 
-NMSCE.prototype.displaySel = async function (evt) {
+NMSCE.prototype.selectResult = async function (evt) {
     let row = `
         <div id="id-idname" class="row border-bottom txt-inp-def h5">
             <div class="col-lg-5 col-7">title</div>
@@ -1754,7 +1774,7 @@ NMSCE.prototype.displaySel = async function (evt) {
         }
 
         for (let fld of obj.fields) {
-            if (fld.imgText) {
+            if (fld.imgText && typeof e[id] !== "undefined" && e[id] !== -1 && e[id] !== "") {
                 let id = fld.name.nameToId()
                 let h = /idname/g [Symbol.replace](row, id)
                 h = /title/ [Symbol.replace](h, fld.name)
@@ -1765,7 +1785,7 @@ NMSCE.prototype.displaySel = async function (evt) {
 
             if (typeof fld.sublist !== "undefined") {
                 for (let sub of fld.sublist) {
-                    if (sub.imgText) {
+                    if (sub.imgText && typeof e[id] !== "undefined" && e[id] !== -1 && e[id] !== "") {
                         let id = sub.name.nameToId()
                         let h = /idname/g [Symbol.replace](row, id)
                         h = /title/ [Symbol.replace](h, sub.name)
@@ -1780,13 +1800,10 @@ NMSCE.prototype.displaySel = async function (evt) {
         let d = e.created.toDate().toDateLocalTimeString()
 
         let h = /idname/g [Symbol.replace](row, "date")
-        h = /title/ [Symbol.replace](h, "Date")
+        h = /title/ [Symbol.replace](h, "Added")
         h = /value/ [Symbol.replace](h, d)
         h = /font/ [Symbol.replace](h, "")
         loc.append(h)
-
-        if (e.type === "Ship" && !e.firstwave)
-            loc.find("#id-Class").hide()
     }
 }
 
@@ -3436,20 +3453,6 @@ const objectList = [{
             required: true,
             search: true,
             sublist: [{
-                name: "Frequency",
-                ttip: "Arrival frequency.",
-                type: "menu",
-                list: occurenceList,
-                imgText: true,
-                search: true,
-            }, {
-                name: "First Wave",
-                ttip: "This is only useful on space stations.",
-                type: "checkbox",
-                onchange: selectClass,
-                imgText: true,
-                search: true,
-            }, {
                 name: "Class",
                 type: "menu",
                 ttip: "classTtip",
@@ -3475,6 +3478,47 @@ const objectList = [{
                 sub: "wings",
                 search: true,
             }]
+        }, {
+            name: "Frequency",
+            ttip: "Arrival frequency.",
+            type: "menu",
+            list: occurenceList,
+            imgText: true,
+            search: true,
+        }, {
+            name: "Crashed",
+            type: "checkbox",
+            onchange: showClassLatLong,
+            imgText: true,
+            search: true,
+        }, {
+            name: "Latitude",
+            type: "string",
+            startState: "hidden",
+            imgText: true,
+        }, {
+            name: "Longitude",
+            type: "string",
+            imgText: true,
+            startState: "hidden",
+        }, {
+            name: "Planet Name",
+            type: "string",
+            imgText: true,
+            startState: "hidden",
+        }, {
+            name: "Planet Index",
+            type: "number",
+            imgText: true,
+            range: 15,
+            startState: "hidden",
+        }, {
+            name: "First Wave",
+            ttip: "This is only useful on space stations.",
+            type: "checkbox",
+            onchange: showClass,
+            imgText: true,
+            search: true,
         }, {
             name: "Primary Color",
             ttip: "Preferably body color but that doesn't work with all paint schemes.",
