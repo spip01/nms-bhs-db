@@ -202,15 +202,29 @@
 
                     <div id="entrybuttons" class="card card-body">
                         <div class="row">
-                            <div class="col-lg-7 col-14">
-                                <div class="row">
-                                    <button id="save" type="button" class="col-4 btn btn-sm btn-def">Save</button>&nbsp;
-                                    <button id="delete" type="button" class="col-4 btn btn-sm btn-def disabled"
+                            <div class="col-lg-5 col-14">
+                                <div class="row" style="padding-top:2px;">
+                                    <button id="save" type="button" class="col-6 btn btn-sm btn-def">Save</button>&nbsp;
+                                    <button id="delete" type="button" class="col-6 btn btn-sm btn-def disabled"
                                         disabled>Delete</button>&nbsp;
-                                    <button id="cancel" type="button" class="col-5 btn btn-def  btn-sm"
+                                </div>
+                                <div class="row" style="padding-top:2px;">
+                                    <button id="cancel" type="button" class="col-6 btn btn-def  btn-sm"
                                         onclick="nmsce.clearPanel()">Cancel</button>&nbsp;
                                 </div>
-                                <br>
+                                <div class="row" style="padding-top:2px;">
+                                    <button id="search" type="button" class="col-6 btn btn-sm btn-def"
+                                        onclick="nmsce.search()">Search</button>&nbsp;
+                                    <button id="showall" type="button" class="col-6 btn btn-sm btn-def"
+                                        onclick="nmsce.showAll()">Show All</button>&nbsp;
+                                </div>
+                            </div>
+
+                            <div class="col">
+                                <div class="row">
+                                    <div id="status" class="border text-danger scrollbar container"
+                                        style="overflow-y: scroll; height: 50px"></div>
+                                </div>
                                 <div class="row">
                                     <div class="text-danger h6">
                                         <span>*</span>&nbsp;Required Entry,&nbsp;
@@ -218,8 +232,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <div id="status" class="border col text-danger scrollbar container-fluid"
-                                style="overflow-y: scroll; height: 50px"></div>
                         </div>
                     </div>
                     <br>

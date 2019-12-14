@@ -453,8 +453,6 @@ NMSCE.prototype.displaySingle = async function (entry) {
 }
 
 NMSCE.prototype.executeSearch = async function (fcn) {
-    let player = $("#id-Player").val()
-    let platform = $("#btn-Platform").text().stripMarginWS()
     let galaxy = $("#btn-Galaxy").text().stripNumber()
 
     if (galaxy === "") {
@@ -465,22 +463,31 @@ NMSCE.prototype.executeSearch = async function (fcn) {
     let tab = $("#typeTabs .active").prop("id").stripID()
     let pnl = $("#typePanels #pnl-" + tab)
 
+    if (fcedata)
+        nmsce.hideDisplayList(tab)
+
     let ref = bhs.fs.collection("nmsce/" + galaxy + "/" + tab)
 
-    let loc = $("#pnl-S1")
-    let addr = loc.find("#id-addr").val()
-    let sys = loc.find("#id-sys").val()
-    let reg = loc.find("#id-reg").val()
-    let life = loc.find("#btn-Lifeform").text().stripNumber()
-    let econ = loc.find("#btn-Economy").text().stripNumber()
+    let obj = null
+    let i = getIndex(objectList, "name", tab)
+    if (i > -1)
+        obj = objectList[i]
 
-    if (player) ref = ref.where("_name", "==", player)
-    if (platform) ref = ref.where("platform", "==", platform)
-    if (addr) ref = ref.where("addr", "==", addr)
-    if (econ) ref = ref.where("econ", "==", econ)
-    if (life) ref = ref.where("life", "==", life)
-    if (sys) ref = ref.where("sys", "==", sys)
-    if (reg) ref = ref.where("life", "==", reg)
+    for (let fld of obj.imgText) {
+        if (fld.name === "Galaxy")
+            continue
+
+        let loc = $(fld.id)
+
+        let val = ""
+        if (fld.type === "text")
+            val = loc.val()
+        else if (fld.type === "menu")
+            val = loc.find("button").text().stripNumber()
+
+        if (val !== "")
+            ref = ref.where(fld.field, "==", val)
+    }
 
     let list = pnl.find("[id|='row']")
     for (let rloc of list) {
@@ -519,7 +526,7 @@ NMSCE.prototype.executeSearch = async function (fcn) {
         }
     }
 
-    loc = $("[id='map-selected']")
+    let loc = $("[id='map-selected']")
     for (let page of loc) {
         if ($(page).is(":visible")) {
             let id = $(page).closest("[id|='row']").prop("id").stripID()
@@ -582,7 +589,8 @@ NMSCE.prototype.save = function () {
 
 NMSCE.prototype.search = function () {
     $("#status").empty()
-    nmsce.executeSearch(nmsce.displayResults)
+
+    nmsce.executeSearch(fnmsce ? nmsce.displayResults : nmsce.displayInList)
 }
 
 blackHoleSuns.prototype.status = function (str, clear) {
@@ -1239,14 +1247,25 @@ NMSCE.prototype.setFont = function (evt) {
 NMSCE.prototype.drawText = function (alt, altw) {
     let canvas = alt ? alt : document.getElementById("id-canvas")
     let width = $("#id-img").width()
+    let sw = nmsce.screenshot.width
+    let sh = nmsce.screenshot.height
+
+    if (sh > sw) { // vertical
+        txtcanvas.height = Math.min(width, sh)
+        txtcanvas.width = sw * txtcanvas.height / sh
+
+        canvas.height = Math.min(altw ? altw : width, sw)
+        canvas.width = sw * canvas.height / sh
+    } else {
+        txtcanvas.width = Math.min(width, sw)
+        txtcanvas.height = sh * txtcanvas.width / sw
+
+        canvas.width = Math.min(altw ? altw : width, sw)
+        canvas.height = nmsce.screenshot.height * canvas.width / nmsce.screenshot.width
+    }
 
     let ctx = txtcanvas.getContext("2d")
-    txtcanvas.width = width
-    txtcanvas.height = nmsce.screenshot.height * width / nmsce.screenshot.width
     ctx.clearRect(0, 0, txtcanvas.width, txtcanvas.height)
-
-    canvas.width = altw ? altw : width
-    canvas.height = nmsce.screenshot.height * canvas.width / nmsce.screenshot.width
 
     let loc = $("#img-text")
     let keys = Object.keys(nmsce.imageText)
@@ -1625,7 +1644,8 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
 NMSCE.prototype.displayResults = function (e, path, inID) {
     const img = `
         <div class="cover-item bkg-white txt-inp-def h5">
-            <img id="id-idname" src="images/blank.png" data-src="url" class="cover-img" data-path="dbpath" onclick="nmsce.displaySel(this)" />
+            <img id="id-idname" src="images/blank.png" data-src="url" data-path="dbpath" onclick="nmsce.displaySel(this)"
+                onload="nmsce.imgLoad(this, $('.cover-container').height()*1.3, $('.cover-container').height()-32)" />
             <br>galaxy
             <br>by
         </div>`
@@ -1716,11 +1736,10 @@ NMSCE.prototype.displaySel = async function (evt) {
         let obj = objectList[idx]
 
         let ref = bhs.fbstorage.ref().child(displayPath + e.Photo)
-        loc = $("#dispimage")
-        loc.css("width", loc.width() + "px")
-        loc.css("height", "auto")
         ref.getDownloadURL().then(url => {
-            $("#dispimage").attr("src", url)
+            $("#dispimage").width("auto")
+            $("#dispimage").height("auto")
+            $("#dispimage").prop("src", url)
         })
 
         loc = $("#imagedata")
@@ -1766,9 +1785,26 @@ NMSCE.prototype.displaySel = async function (evt) {
         h = /font/ [Symbol.replace](h, "")
         loc.append(h)
 
-        if(e.type === "Ship" && !e.firstwave)
+        if (e.type === "Ship" && !e.firstwave)
             loc.find("#id-Class").hide()
     }
+}
+
+NMSCE.prototype.hideDisplayList = function (tab) {
+    let loc = $("#id-table #list-" + tab)
+    loc.find("[id|='row']").hide()
+    loc.find("#row-idname").show()
+}
+
+NMSCE.prototype.showAll = function () {
+    let loc = $("#id-table")
+    loc.find("[id|='row']").show()
+}
+
+NMSCE.prototype.displayInList = function (entry) {
+    let tab = entry.type.nameToId()
+    let loc = $("#id-table #list-" + tab)
+    loc.find("#row-" + entry.id).show()
 }
 
 NMSCE.prototype.displayList = function (entries, path) {
@@ -1785,7 +1821,7 @@ NMSCE.prototype.displayList = function (entries, path) {
     const row = `     
                      <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black format" onclick="nmsce.selectList(this)">
                         <div id="id-Photo" class="row">
-                            <img id="img-pic" src="images/blank.png" class="img-fluid" crossorigin="anonymous">
+                            <img id="img-pic" src="images/blank.png" onload="nmsce.imgLoad(this, $('#row-idname').width(), $('#row-idname').width())")">
                         </div>
                         <div class="row">`
     const itm = `           <div id="id-idname" class="col-md-7 col-14 border">title</div>`
@@ -1969,7 +2005,6 @@ NMSCE.prototype.displayList = function (entries, path) {
         }
     }
 
-
     $("#row-idname [id|='id']").click(function () {
         let id = $(this).prop("id")
         let loc = $(this).closest("[id|='list']")
@@ -1986,6 +2021,48 @@ NMSCE.prototype.displayList = function (entries, path) {
         loc.empty()
         loc.append(list)
     })
+}
+
+NMSCE.prototype.imgLoad = function (evt, maxw, maxh) {
+    let h = $(evt).height()
+    let w = $(evt).width()
+
+    let out = nmsce.calcImgSize(w, h, maxw, maxh)
+
+    $(evt).height(out.height)
+    $(evt).width(out.width)
+}
+
+NMSCE.prototype.calcImgSize = function (width, height, maxw, maxh) {
+    let sh = height * maxw / width
+    let sw = width * maxh / height
+
+    let oh = height > width ? maxh : sh
+    let ow = height > width ? sw : maxw
+
+    if (oh > maxh) {
+        ow = ow * (oh - maxh) / maxh
+        oh = maxh
+    } else if (ow > maxw) {
+        oh = oh * (ow - maxw) / maxw
+        ow = maxw
+    }
+
+    return ({
+        height: oh,
+        width: ow
+    })
+}
+
+NMSCE.prototype.setDispImgSize = function (evt) {
+    let w = $(evt).width()
+    let h = $(evt).height()
+    let width = $("#imgcol").width()
+
+    let out = nmsce.calcImgSize(w, h, width, width)
+
+    $("#dispimage").width(out.width)
+    $("#dispimage").height(out.height)
 }
 
 NMSCE.prototype.showSub = function (id) {
@@ -2376,7 +2453,7 @@ const occurenceList = [{
     name: "Rare",
 }, ]
 
-const shipList = [ {
+const shipList = [{
     name: "Fighter",
     slotList: slotList,
     classList: classList,
@@ -3400,17 +3477,20 @@ const objectList = [{
             }]
         }, {
             name: "Primary Color",
+            ttip: "Preferably body color but that doesn't work with all paint schemes.",
             type: "menu",
             list: colorList,
             required: true,
             search: true,
         }, {
             name: "Secondary Color",
+            ttip: "Preferably wing color but that doesn't work with all paint schemes especially on bodies with two-tone paint jobs.",
             type: "menu",
             list: colorList,
             search: true,
         }, {
             name: "Tertiary Color",
+            ttip: "Preferably markings color but that doesn't work with all paint schemes.",
             type: "menu",
             list: colorList,
             search: true,

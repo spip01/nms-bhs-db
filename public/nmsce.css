@@ -34,11 +34,6 @@ body {
         box-shadow: 2px 2px 4px #888;
         border-top-right-radius: 4px;
     }
-
-    .cover-img {
-        height: auto;
-        width: 220px;
-    }
 }
 
 @media (min-width: 767px) {
@@ -58,10 +53,5 @@ body {
         box-shadow: 2px 2px 4px #888;
         border-top-right-radius: 4px;
         vertical-align: top;
-    }
-
-    .cover-img {
-        height: 150px;
-        width: auto;
     }
 }

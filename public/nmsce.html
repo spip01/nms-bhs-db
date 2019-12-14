@@ -234,7 +234,7 @@
             <div class="card-header txt-def h3">
                 <div id="resultshdr" class="row">
                     <div class="col-lg-p333 col-7 h4"><span id="numFound"></span> Entries found.</div>
-                    <label id="showlast"class="col-lg-p333 col-7 h4">
+                    <label id="showlast" class="col-lg-p333 col-7 h4">
                         Show last&nbsp;
                         <input id="displaysince" class="col-2" type="text" value=1
                             onchange="nmsce.getLatest(nmsce.displayResults, this)">
@@ -244,7 +244,7 @@
                 </div>
             </div>
 
-            <div class="card-body" style="padding-top:4px">
+            <div class="card-body" style="padding: 4px 4px;">
                 <div id="favorites" class="cover-container" style="display:none"></div>
                 <div id="clicks" class="cover-container" style="display:none"></div>
                 <div id="results" class="cover-container" style="display:none"></div>
@@ -252,7 +252,9 @@
                 <div id="latest" class="cover-container"></div>
                 <br>
                 <div id="imageinfo" class="row bkg-white txt-center" style="display:none">
-                    <img id="dispimage" class="col-xl-10 col-lg-9 col-md-10 col-14" />
+                    <div id="imgcol"  class="col-xl-10 col-lg-9 col-md-10 col-14">
+                        <img id="dispimage" onload="nmsce.setDispImgSize(this)"/>
+                    </div>
                     <div class="col-xl-4 col-lg-5 col-md-4 col-14">
                         <div id="imagedata"></div>
                         <div id="voting" class="row">
