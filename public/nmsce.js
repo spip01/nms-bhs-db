@@ -486,7 +486,7 @@ NMSCE.prototype.executeSearch = async function (fcn) {
         if (fld.type === "text")
             val = loc.val()
         else if (fld.type === "menu")
-            val = loc.find("#btn-"+fld.id.stripID()).text().stripNumber()
+            val = loc.find("#btn-" + fld.id.stripID()).text().stripNumber()
 
         if (val !== "")
             ref = ref.where(fld.field, "==", val)
@@ -1897,7 +1897,7 @@ NMSCE.prototype.displayList = function (entries, path) {
     const row = `     
                      <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black format" onclick="nmsce.selectList(this)">
                         <div id="id-Photo" class="row">
-                            <img id="img-pic" src="images/blank.png" onload="nmsce.imgLoad(this, $('#row-idname').width(), $('#row-idname').width())")">
+                            <img id="img-pic" src="" onload="nmsce.imgLoad(this, $(this).parent().width(), $(this).parent().width())">
                         </div>
                         <div class="row">`
     const itm = `           <div id="id-idname" class="col-md-7 col-14 border">title</div>`
@@ -2039,11 +2039,7 @@ NMSCE.prototype.displayList = function (entries, path) {
 
         if (typeof nmsce.saved !== "undefined") {
             let url = URL.createObjectURL(nmsce.saved)
-            if (window.IntersectionObserver) {
-                rloc.find("#img-pic").attr("data-src", url)
-                io.observe(rloc.find("#img-pic")[0])
-            } else
-                rloc.find("#img-pic").attr("src", url)
+            rloc.find("#img-pic").attr("src", url)
         }
     } else {
         loc.append(h)
@@ -2100,11 +2096,11 @@ NMSCE.prototype.displayList = function (entries, path) {
     })
 }
 
-NMSCE.prototype.imgLoad = function (evt, maxw, maxh) {
-    let h = $(evt).height()
-    let w = $(evt).width()
+NMSCE.prototype.imgLoad = function (evt, width, height) {
+    let h = evt.naturalHeight
+    let w = evt.naturalWidth
 
-    let out = nmsce.calcImgSize(w, h, maxw, maxh)
+    let out = nmsce.calcImgSize(w, h, width, height)
 
     $(evt).height(out.height)
     $(evt).width(out.width)
