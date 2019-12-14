@@ -1669,7 +1669,7 @@ NMSCE.prototype.displayResults = function (e, path, inID) {
     <div class="cover-item bkg-white txt-inp-def h5 align-top">
         galaxy<br>
         by<br>
-        <img id="id-idname" src="images/blank.png" data-src="url" data-path="dbpath" onclick="nmsce.selectResult(this)"
+        <img id="id-idname" src="images/blank.png" data-src="url" data-path="dbpath" class="pointer" onclick="nmsce.selectResult(this)"
             onload="nmsce.imgLoad(this, $('.cover-container').height()*1.3, $('.cover-container').height()-32)" />
     </div>`
 
@@ -1846,8 +1846,8 @@ NMSCE.prototype.showVotes = function (entry, path) {
             loc.addClass("fa-check-square")
             loc.css("color", "green")
         } else {
-            loc.removeClass("fa-square")
-            loc.addClass("fa-check-square")
+            loc.removeClass("fa-check-square")
+            loc.addClass("fa-square")
             loc.css("color", "grey")
         }
     }
