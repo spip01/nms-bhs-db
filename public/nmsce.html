@@ -249,6 +249,7 @@
                 <div id="clicks" class="cover-container" style="display:none"></div>
                 <div id="results" class="cover-container" style="display:none"></div>
                 <div id="editors" class="cover-container" style="display:none"></div>
+                <div id="visited" class="cover-container" style="display:none"></div>
                 <div id="latest" class="cover-container"></div>
                 <br>
                 <div id="imageinfo" class="row bkg-white txt-center" style="display:none">
@@ -257,18 +258,33 @@
                     </div>
                     <div class="col-xl-4 col-lg-5 col-md-4 col-14">
                         <div id="imagedata"></div>
-                        <div class="row">
-                            <i id="favorite" class="col-2 fas fa-thumbs-up pointer h2" style="color:grey" onclick="nmsce.vote(this)"></i>
-                        </div>
-                        <div class="row">
-                            <button id="edchoice" type="button" class="col-4 btn btn-sm btn-def hidden"
-                                onclick="nmsce.vote(this)">Editors</button>&nbsp;&nbsp;
-                            <i id="voted-edchoice" class="fas fa-square h3" style="color:grey"></i>
-                        </div>
-                        <div class="row">
-                            <button id="bhspoi" type="button" class="col-4 btn btn-sm btn-def hidden"
-                                onclick="nmsce.vote(this)">BHS Poi</button>&nbsp;&nbsp;
-                            <i id="voted-bhspoi" class="fas fa-square h3"  style="color:grey"></i>
+                        <div class="row border-top border-bottom">
+                            <i id="favorite" class="col-3 fas fa-thumbs-up pointer h2" style="color:grey"
+                                onclick="nmsce.vote(this)"></i>
+                            <div id="visited" class="col-4 pointer txt-inp-def h5" onclick="nmsce.vote(this)">
+                                <span class="row">
+                                    <i id="voted-visited" class="fas fa-square h3" style="color:grey"></i>
+                                    &nbsp;Visited
+                                </span>
+                            </div>
+                            <div id="report" class="col-7 pointer text-danger h5" onclick="nmsce.vote(this)">
+                                <span class="row">
+                                    <i id="voted-report" class="fas fa-square h3" style="color:grey"></i>
+                                    &nbsp;Report
+                                </span>
+                            </div>
+                            <div id="edchoice" class="col-7 txt-inp-def h5 pointer hidden" onclick="nmsce.vote(this)">
+                                <span class="row">
+                                    <i id="voted-edchoice" class="fas fa-square h3" style="color:grey"></i>
+                                    &nbsp;Editors Choice
+                                </span>
+                            </div>
+                            <div id="bhspoi" class="col-7 txt-inp-def h5 align-bottom pointer hidden" onclick="nmsce.vote(this)">
+                                <span class="row">
+                                    <i id="voted-bhspoi" class="fas fa-square h3" style="color:grey"></i>
+                                    &nbsp;BHS Poi
+                                </span>
+                            </div>
                         </div>
                         <br>
                         <div class="row" onclick="nmsce.newDARC('#imagedata #val-Coords')" class="pointer text-center">

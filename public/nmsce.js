@@ -63,15 +63,18 @@ const showTypesList = [{
     name: "Search",
     id: "results"
 }, {
-    name: "Clicks",
-    id: "clicks"
+    name: "Editors Choice",
+    id: "editors"
 }, {
     name: "Favorites",
     id: "favorites"
 }, {
-    name: "Editors Choice",
-    id: "editors"
-}]
+    name: "Visited",
+    id: "visited"
+}, {
+    name: "Clicks",
+    id: "clicks"
+}, ]
 
 NMSCE.prototype.selDisplay = function (evt) {
     $(".cover-container").hide()
@@ -560,7 +563,7 @@ NMSCE.prototype.executeSearch = async function (fcn) {
                             colorlist.push(c)
                     }
                 }
-                if (list.length > 0)
+                if (colorlist.length > 0)
                     ref = ref.where(id, "array-contains-any", colorlist)
                 break
             case "menu":
@@ -1626,20 +1629,15 @@ NMSCE.prototype.updateEntry = function (entry) {
 }
 
 NMSCE.prototype.initVotes = function (entry) {
-    if (typeof entry.votes === "undefined")
+    if (typeof entry.votes === "undefined") {
         entry.votes = {}
-
-    if (typeof entry.votes.clickcount === "undefined")
         entry.votes.clickcount = 0
-
-    if (typeof entry.votes.favorite === "undefined")
+        entry.votes.visited = 0
+        entry.votes.report = 0
         entry.votes.favorite = 0
-
-    if (typeof entry.votes.edchoice === "undefined")
         entry.votes.edchoice = 0
-
-    if (typeof entry.votes.bhspoi === "undefined")
         entry.votes.bhspoi = 0
+    }
 }
 
 NMSCE.prototype.getEntry = async function (evt) {
@@ -1725,6 +1723,19 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
                         for (let doc of snapshot.docs) {
                             if (doc.data().votes.favorite > 0)
                                 fcn(doc.data(), doc.ref.path, "#favorites")
+                        }
+                    })
+                }
+
+                if ($("#visited").children().length === 0) {
+                    ref = doc.ref.collection(type)
+                    ref = ref.orderBy("votes.visited", "desc")
+                    ref = ref.limit(2)
+
+                    ref.get().then(snapshot => {
+                        for (let doc of snapshot.docs) {
+                            if (doc.data().votes.visited > 0)
+                                fcn(doc.data(), doc.ref.path, "#visited")
                         }
                     })
                 }
@@ -1837,10 +1848,11 @@ NMSCE.prototype.vote = async function (evt) {
         nmsce.showVotes(e)
 
         e = {}
-        e.votes = {}
-        e.votes[id] = firebase.firestore.FieldValue.increment(v)
+        e[id] = firebase.firestore.FieldValue.increment(v)
 
-        ref.set(e, {
+        ref.set({
+            votes: e
+        }, {
             merge: true
         })
     }
@@ -1960,10 +1972,14 @@ NMSCE.prototype.showVotes = function (entry, path) {
         $("#favorite").css("color", entry.favorite ? "green" : "grey")
         shvote($("#voted-edchoice"), entry.edchoice)
         shvote($("#voted-bhspoi"), entry.bhspoi)
+        shvote($("#voted-visited"), entry.visited)
+        shvote($("#voted-report"), entry.report)
     } else {
         $("#favorite").css("color", "grey")
         shvote($("#voted-edchoice"), false)
         shvote($("#voted-bhspoi"), false)
+        shvote($("#voted-visited"), false)
+        shvote($("#voted-report"), false)
     }
 }
 
@@ -2007,11 +2023,9 @@ NMSCE.prototype.displayList = function (entries, path) {
     let h = ""
 
     let e = entries
-    let found = false
 
     if (path) {
         let i = getIndex(nmsce.entries[e.type], "id", e.id)
-        found = i !== -1
         if (i === -1)
             nmsce.entries[entries.type].push(e)
         else
@@ -2026,10 +2040,10 @@ NMSCE.prototype.displayList = function (entries, path) {
         if (typeof entries[obj.name.nameToId()] === "undefined")
             continue
 
-        if (found && e.type != obj.name.nameToId())
+        if (path && e.type != obj.name.nameToId())
             continue
 
-        if (!found) {
+        if (!path) {
             let l = /idname/g [Symbol.replace](card, obj.name.nameToId())
             if (fnmsce)
                 l = /hidden/ [Symbol.replace](l, "")
@@ -2061,6 +2075,8 @@ NMSCE.prototype.displayList = function (entries, path) {
             h += /title/ [Symbol.replace](l, "Favorite")
             l = /idname/g [Symbol.replace](itm, "Editors-Choice")
             h += /title/ [Symbol.replace](l, "Editors-Choice")
+            l = /idname/g [Symbol.replace](itm, "Visited")
+            h += /title/ [Symbol.replace](l, "Visited")
 
             h += end + end
         }
@@ -2103,6 +2119,8 @@ NMSCE.prototype.displayList = function (entries, path) {
 
             l = /idname/g [Symbol.replace](itm, "Favorite")
             h += /title/ [Symbol.replace](l, e.votes.favorite)
+            l = /idname/g [Symbol.replace](itm, "Visited")
+            h += /title/ [Symbol.replace](l, e.votes.visited)
             l = /idname/g [Symbol.replace](itm, "Editors-Choice")
             h += /title/ [Symbol.replace](l, e.votes.edchoice)
 

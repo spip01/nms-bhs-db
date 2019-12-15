@@ -8,6 +8,9 @@ admin.initializeApp({
 })
 
 async function main() {
+    let vote = {}
+    vote.report = 0
+
     let ref = admin.firestore().collection("nmsce")
     ref.listDocuments().then(async refs => {
         for (let ref of refs) {
@@ -17,27 +20,11 @@ async function main() {
                     let snapshot = await ref.get()
                     console.log(ref.path, snapshot.size)
                     for (let doc of snapshot.docs) {
-                        let e = doc.data()
-                        let colors = []
-
-                        if (e["Primary-Color"])
-                            colors.push(e["Primary-Color"])
-
-                        if (e["Secondary-Color"])
-                            colors.push(e["Secondary-Color"])
-
-                        if (e["Tertiary-Color"])
-                            colors.push(e["Tertiary-Color"])
-
-                        if (colors.length > 0) {
-                            console.log(doc.ref.path, JSON.stringify(colors))
-
-                            doc.ref.set({
-                                Color: colors
-                            }, {
-                                merge: true
-                            })
-                        }
+                        doc.ref.set({
+                            votes: vote
+                        }, {
+                            merge: true
+                        })
                     }
                 }
             })
