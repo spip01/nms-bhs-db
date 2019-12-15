@@ -18,26 +18,26 @@ async function main() {
                     console.log(ref.path, snapshot.size)
                     for (let doc of snapshot.docs) {
                         let e = doc.data()
+                        let colors = []
 
-                        delete e.clickcount
-                        delete e.favorite
-                        delete e.edchoice
-                        delete e.bhspoi
+                        if (e["Primary-Color"])
+                            colors.push(e["Primary-Color"])
 
-                        e.votes = {}
-                        e.votes.clickcount = 0
-                        e.votes.favorite = 0
-                        e.votes.edchoice = 0
-                        e.votes.bhspoi = 0
+                        if (e["Secondary-Color"])
+                            colors.push(e["Secondary-Color"])
 
-                        console.log(doc.ref.path)
-                        doc.ref.set(e)
+                        if (e["Tertiary-Color"])
+                            colors.push(e["Tertiary-Color"])
 
-                        let ref = doc.ref.collection("votes")
-                        await ref.get().then(snapshot => {
-                            for (let doc of snapshot.docs)
-                                doc.ref.delete()
-                        })
+                        if (colors.length > 0) {
+                            console.log(doc.ref.path, JSON.stringify(colors))
+
+                            doc.ref.set({
+                                Color: colors
+                            }, {
+                                merge: true
+                            })
+                        }
                     }
                 }
             })

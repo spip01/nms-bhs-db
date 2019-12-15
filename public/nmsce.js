@@ -342,6 +342,20 @@ NMSCE.prototype.extractEntry = async function () {
                 case "string":
                     entry[id] = val
                     break
+                case "color":
+                    let cmnu = $(rloc).find("[id|='btn']")
+                    for (let loc of cmnu) {
+                        let c = $(loc).text().stripMarginWS()
+
+                        if ($(loc).is(":visible") && c && c !== "Nothing Selected") {
+                            if (typeof entry[id] === "undefined")
+                                entry[id] = []
+
+                            if (!entry[id].includes(c))
+                                entry[id].push(c)
+                        }
+                    }
+                    break
                 case "menu":
                     entry[id] = $(rloc).find("[id|='btn']").text()
                     if (entry[id] === "Nothing Selected")
@@ -415,18 +429,30 @@ NMSCE.prototype.displaySingle = async function (entry) {
         let data = $(row).data()
         let loc = $(row).find(":input")
         let id = $(row).prop("id").stripID()
+        let fld = entry[id]
 
         switch (data.type) {
             case "number":
             case "float":
             case "string":
-                loc.val(entry[id])
+                loc.val(fld)
+                break
+            case "color":
+                $(row).find("[id|='id']").hide()
+                let i = 0
+
+                for (; i < fld.length; ++i) {
+                    $(row).find("#id-" + i).show()
+                    $(row).find("#btn-" + i).text(fld[i])
+                }
+
+                $(row).find("#id-" + i).show()
                 break
             case "menu":
-                $(row).find("#item-" + entry[id]).click()
+                $(row).find("#item-" + fld).click()
                 break
             case "checkbox":
-                loc.prop("checked", entry[id] ? true : false)
+                loc.prop("checked", fld ? true : false)
                 break
         }
     }
@@ -500,6 +526,8 @@ NMSCE.prototype.executeSearch = async function (fcn) {
     }
 
     let list = pnl.find("[id|='row']")
+    let colorlist = []
+
     for (let rloc of list) {
         if (!$(rloc).is(":visible"))
             continue
@@ -522,6 +550,18 @@ NMSCE.prototype.executeSearch = async function (fcn) {
             case "string":
                 if (val)
                     ref = ref.where(id, "==", val)
+                break
+            case "color":
+                let cmnu = $(rloc).find("[id|='btn']")
+                for (let loc of cmnu) {
+                    let c = $(loc).text().stripMarginWS()
+                    if ($(loc).is(":visible") && c && c !== "Nothing Selected") {
+                        if (!colorlist.includes(c))
+                            colorlist.push(c)
+                    }
+                }
+                if (list.length > 0)
+                    ref = ref.where(id, "array-contains-any", colorlist)
                 break
             case "menu":
                 val = $(rloc).find("#btn-" + id).text()
@@ -561,18 +601,37 @@ NMSCE.prototype.executeSearch = async function (fcn) {
     $("#item-Search").click()
 
     ref.get().then(snapshot => {
+        if (snapshot.size === 0) {
+            bhs.status("No matching entries found.")
+            return
+        }
+
         if (bhs.user.uid === "" && snapshot.size === 50)
             bhs.status("Showing first 50 matches. Login to see more matches or refine selection to see better matches.")
 
-        bhs.status((snapshot.size === 0 ? "No" : snapshot.size) + " matching entries found.")
+        let size = 0
 
-        if (snapshot.size === 0)
-            return
+        for (let doc of snapshot.docs) {
+            let e = doc.data()
+            let found = true
 
-        for (let doc of snapshot.docs)
-            fcn(doc.data(), doc.ref.path, "#results")
+            if (colorlist.length > 1) { // no array-contains-all
+                for (let c of colorlist) {
+                    if (!e.Color.includes(c)) {
+                        found = false
+                        break
+                    }
+                }
+            }
 
-        $("#numFound").text(snapshot.size)
+            if (found) {
+                size++
+                fcn(e, doc.ref.path, "#results")
+            }
+        }
+
+        bhs.status(size + " matching entries found.")
+        $("#numFound").text(size)
     })
 }
 
@@ -658,6 +717,7 @@ const tFloat = `
         <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" type="number" class="rounded col-7" step=0.1 min=-1 max=range value=-1>
     </div>`
+const tColor = `<div id="row-idname" data-type="color" data-req="ifreq" class="row h6 txt-inp-def">titlettip:&nbsp</div>`
 const tMenu = `
     <div id="row-idname" data-type="menu" data-req="ifreq">
         <div id="id-idname"></div>
@@ -836,6 +896,21 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                     }
                 }
                 break
+            case "color":
+                appenditem(itm, tColor, f.name, id, f.ttip, f.required, inpLongHdr)
+                let clr = itm.find("#row-" + id)
+
+                for (let i = 0; i < f.max; ++i) {
+                    let h = "<div id='id-" + i + "' " + (i > 0 ? " class='hidden'" : "") + "></div>"
+                    clr.append(h)
+
+                    let itm = clr.find("#id-" + i)
+                    bhs.buildMenu(clr, i.toString(), f.list, nmsce.showColor, {
+                        labelsize: "col-1",
+                        menusize: "col"
+                    })
+                }
+                break
             case "radio":
                 if (slist[f.sub]) {
                     appenditem(itm, tRadio, f.name, id, typeof slist[f.ttip] === "string" ? slist[f.ttip] : null, f.required, inpLongHdr)
@@ -873,6 +948,16 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
         if (f.startState === "hidden")
             itm.find("#row-" + id).hide()
     }
+}
+
+NMSCE.prototype.showColor = function (evt) {
+    let cur = $(evt).closest("[id|='id']")
+    let n = parseInt(cur.prop("id").stripID())
+
+    cur = cur.closest("[id|='row']")
+    cur = cur.find("#id-" + (n + 1))
+
+    cur.show()
 }
 
 function showClass() {
@@ -1517,21 +1602,7 @@ NMSCE.prototype.updateScreenshots = function (entry) {
 
 NMSCE.prototype.updateEntry = function (entry) {
     entry.modded = firebase.firestore.Timestamp.now()
-
-    if (typeof entry.votes === "undefined")
-        entry.votes = {}
-
-    if (typeof entry.votes.clickcount === "undefined")
-        entry.votes.clickcount = 0
-
-    if (typeof entry.votes.favorite === "undefined")
-        entry.votes.favorite = 0
-
-    if (typeof entry.votes.edchoice === "undefined")
-        entry.votes.edchoice = 0
-
-    if (typeof entry.votes.bhspoi === "undefined")
-        entry.votes.bhspoi = 0
+    nmsce.initVotes(entry)
 
     if (typeof entry.created === "undefined")
         entry.created = firebase.firestore.Timestamp.now()
@@ -1546,11 +1617,29 @@ NMSCE.prototype.updateEntry = function (entry) {
     ref = ref.doc(entry.id)
 
     ref.set(entry).then(() => {
+        nmsce.displayList(entry, ref.path)
         bhs.status(entry.id + " saved.")
     }).catch(err => {
         bhs.status("ERROR: " + err.code)
         console.log(err)
     })
+}
+
+NMSCE.prototype.initVotes = function (entry) {
+    if (typeof entry.votes === "undefined")
+        entry.votes = {}
+
+    if (typeof entry.votes.clickcount === "undefined")
+        entry.votes.clickcount = 0
+
+    if (typeof entry.votes.favorite === "undefined")
+        entry.votes.favorite = 0
+
+    if (typeof entry.votes.edchoice === "undefined")
+        entry.votes.edchoice = 0
+
+    if (typeof entry.votes.bhspoi === "undefined")
+        entry.votes.bhspoi = 0
 }
 
 NMSCE.prototype.getEntry = async function (evt) {
@@ -1581,11 +1670,6 @@ NMSCE.prototype.getEntries = async function (user, displayFcn, singleDispFcn) {
         let snapshot = await ref.get()
         for (let e of snapshot.docs)
             nmsce.entries[type].push(e.data())
-
-        if (typeof singleDispFcn === "function") {
-            ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()))
-            bhs.subscribe("nmsceentries-" + type, ref, singleDispFcn)
-        }
     }
 
     if (typeof displayFcn === "function")
@@ -1820,7 +1904,17 @@ NMSCE.prototype.selectResult = async function (evt) {
             if (fld.imgText && typeof e[id] !== "undefined" && e[id] !== -1 && e[id] !== "") {
                 let h = /idname/g [Symbol.replace](row, id)
                 h = /title/ [Symbol.replace](h, fld.name)
-                h = /value/ [Symbol.replace](h, e[id])
+
+                if (fld.type === "color") {
+                    let t = ""
+                    for (let c of fld)
+                        t += c + ", "
+
+                    t = t.slice(0, t.length - 2)
+                    h = /value/ [Symbol.replace](h, t)
+                } else
+                    h = /value/ [Symbol.replace](h, e[id])
+
                 h = /font/ [Symbol.replace](h, "")
                 loc.append(h)
             }
@@ -1913,15 +2007,17 @@ NMSCE.prototype.displayList = function (entries, path) {
     let h = ""
 
     let e = entries
+    let found = false
 
     if (path) {
-        let i = getIndex(nmsce.entries[type], "id", e.id)
+        let i = getIndex(nmsce.entries[e.type], "id", e.id)
+        found = i !== -1
         if (i === -1)
             nmsce.entries[entries.type].push(e)
         else
             nmsce.entries[entries.type][i] = e
 
-            entries = {}
+        entries = {}
         entries[e.type] = []
         entries[e.type].push(e)
     }
@@ -1930,10 +2026,10 @@ NMSCE.prototype.displayList = function (entries, path) {
         if (typeof entries[obj.name.nameToId()] === "undefined")
             continue
 
-        if (path && e.type != obj.name.nameToId())
+        if (found && e.type != obj.name.nameToId())
             continue
 
-        if (!path) {
+        if (!found) {
             let l = /idname/g [Symbol.replace](card, obj.name.nameToId())
             if (fnmsce)
                 l = /hidden/ [Symbol.replace](l, "")
@@ -1973,24 +2069,22 @@ NMSCE.prototype.displayList = function (entries, path) {
             let l = /idname/ [Symbol.replace](row, e.id)
             h += l
 
-            if (fnmsce) {
-                l = /idname/g [Symbol.replace](itm, "Player")
-                h += /title/ [Symbol.replace](l, e._name)
-                l = /idname/g [Symbol.replace](itm, "Coords")
-                l = /border/ [Symbol.replace](l, "border glyph")
-                h += /title/ [Symbol.replace](l, addrToGlyph(e.addr, e["Planet-Index"]))
-                l = /idname/g [Symbol.replace](itm, "Economy")
-                h += /title/ [Symbol.replace](l, e.econ)
-            } else {
-                l = /idname/g [Symbol.replace](itm, "Coords")
-                h += /title/ [Symbol.replace](l, e.addr)
-            }
+            l = /idname/g [Symbol.replace](itm, "Coords")
+            h += /title/ [Symbol.replace](l, e.addr)
 
             for (let f of obj.fields) {
                 if (f.type !== "img" && f.type !== "map") {
-                    let l = /idname/g [Symbol.replace](itm, f.name.nameToId())
-                    if (typeof e[f.name.nameToId()] !== "undefined") {
-                        h += /title/ [Symbol.replace](l, e[f.name.nameToId()])
+                    let id = f.name.nameToId()
+                    let l = /idname/g [Symbol.replace](itm, id)
+                    if (typeof e[id] !== "undefined") {
+                        if (f.type === "color") {
+                            let t = ""
+                            for (let c of e[id])
+                                t += c + ", "
+                            t = t.slice(0, t.length - 2)
+                            h += /title/ [Symbol.replace](l, t)
+                        } else
+                            h += /title/ [Symbol.replace](l, e[id])
                     } else
                         h += /title/ [Symbol.replace](l, "")
 
@@ -2111,8 +2205,7 @@ NMSCE.prototype.displayList = function (entries, path) {
 NMSCE.prototype.imgLoaded = function (evt, width, height) {
     let h = evt.naturalHeight
     let w = evt.naturalWidth
-    if (h === 250 && w === 400)
-        debugger
+
     let out = nmsce.calcImgSize(w, h, width, height)
 
     $(evt).height(out.height)
@@ -2429,16 +2522,17 @@ const shuttleWingsMap = `
             <area alt="h11" coords="299,92,292,136,329,137,335,111,346,76,329,66" shape="poly">
             <area alt="h8" coords="11,156,81,184" shape="rect">
             <area alt="h22" coords="96,154,166,188" shape="rect">
-            <area alt="h17" coords="171,206,184,223,236,197,236,166,209,162" shape="poly">
-            <area alt="h13" coords="263,160,242,189,258,204,298,186,299,169" shape="poly">
-            <area alt="h15" coords="318,140,295,203,342,203,340,143" shape="poly">
             <area alt="h12" coords="1,200,156,233" shape="rect">
             <area alt="h16" coords="2,242,162,290" shape="rect">
             <area alt="h19" coords="4,295,167,343" shape="rect">
-            <area alt="h24" coords="228,216,174,267,171,303,236,334,237,312,207,278,236,240" shape="poly">
-            <area alt="h23" coords="240,248,234,277,253,265,342,242,336,221,268,218" shape="poly">
-            <area alt="h18" coords="232,286,247,316,336,315,336,291,266,268" shape="poly">
-        </map>
+            <area alt="h17" coords="170,188,177,203,234,175,228,151,203,150" shape="poly">
+            <area alt="h13" coords="238,183,258,193,298,174,276,154" shape="poly">
+            <area alt="h15" coords="308,191,317,196,344,192,337,139,324,137" shape="poly">
+            <area alt="h24" coords="228,183,174,227,176,260,240,280,244,269,210,235,240,194" shape="poly">
+            <area alt="h23" coords="246,241,261,230,337,211,338,199,270,202,237,224" shape="poly">
+            <area alt="h18" coords="241,251,253,276,341,274,338,255,270,231" shape="poly">
+            <area alt="h21" coords="174,281,174,345,221,344,307,330,300,291,237,287" shape="poly">
+                </map>
     </div>`
 
 const exoticBodiesMap = `
@@ -3591,23 +3685,11 @@ const objectList = [{
             imgText: true,
             search: true,
         }, {
-            name: "Primary Color",
-            ttip: "Preferably body color but that doesn't work with all paint schemes.",
-            type: "menu",
+            name: "Color",
+            type: "color",
             list: colorList,
+            max: 4,
             required: true,
-            search: true,
-        }, {
-            name: "Secondary Color",
-            ttip: "Preferably wing color but that doesn't work with all paint schemes especially on bodies with two-tone paint jobs.",
-            type: "menu",
-            list: colorList,
-            search: true,
-        }, {
-            name: "Tertiary Color",
-            ttip: "Preferably markings color but that doesn't work with all paint schemes.",
-            type: "menu",
-            list: colorList,
             search: true,
         }, {
             name: "Seed",
@@ -3666,15 +3748,11 @@ const objectList = [{
             list: slotList,
             search: true,
         }, {
-            name: "Primary Color",
-            type: "menu",
+            name: "Color",
+            type: "color",
             list: colorList,
+            max: 2,
             required: true,
-            search: true,
-        }, {
-            name: "Secondary Color",
-            type: "menu",
-            list: colorList,
             search: true,
         }, {
             name: "Seed",
@@ -3782,15 +3860,11 @@ const objectList = [{
             name: "Notes",
             type: "long string",
         }, {
-            name: "Primary Color",
-            type: "menu",
+            name: "Color",
+            type: "color",
+            max: 2,
             list: colorList,
             required: true,
-            search: true,
-        }, {
-            name: "Secondary Color",
-            type: "menu",
-            list: colorList,
             search: true,
         }, {
             name: "Seed",
@@ -3802,29 +3876,6 @@ const objectList = [{
             type: "img",
             required: true,
         }]
-        // }, {
-        // name: "Flora",
-        // fields: [{
-        //     name: "Name",
-        //     type: "string",
-        // }, {
-        //     name: "Description",
-        //     type: "long string",
-        //     required: true,
-        //     search: true,
-        // }, {
-        //     name: "Planet Name",
-        //     type: "string",
-        // }, {
-        //     name: "Planet Index",
-        //     type: "number",
-        //     range: 15,
-        //     ttip: planetNumTip,
-        // }, {
-        //     name: "Photo",
-        //     type: "img",
-        //     required: true,
-        // }]
     },
     {
         name: "Fauna",
