@@ -214,29 +214,35 @@ NMSCE.prototype.showSearchPanel = function (evt) {
         $("#searchPanel").hide()
 }
 
-NMSCE.prototype.clearPanel = function () {
-    let pnl = fnmsce ? $("#searchPanel") : $("#typePanels")
+NMSCE.prototype.clearPanel = function (all) {
+    const clr = (pnl) => {
+        pnl.find("input").each(function () {
+            let type = $(this).prop("type")
+            if (type === "checkbox" || type === "radio")
+                $(this).prop("checked", false)
+            else
+                $(this).val("")
+        })
+
+        pnl.find("[id|='menu']").each(function () {
+            if (!fcedata || $(this).prop("id").stripID() !== "Type")
+                $(this).find("[id|='btn']").text("")
+        })
+    }
+
+    clr($("#typePanels"))
+
+    if (all)
+        clr($("#pnl-S1"))
+
+    $("[id='map-selected'] img").each(function () {
+        $(this).hide()
+    })
 
     let loc = $("#typePanels #hdr-Ship")
     loc.find("#row-Class").hide()
     loc.find("#row-Latitude").hide()
     loc.find("#row-Longitude").hide()
-
-    pnl.find("input").each(function () {
-        let type = $(this).prop("type")
-        if (type === "checkbox" || type === "radio")
-            $(this).prop("checked", false)
-        else
-            $(this).val("")
-    })
-
-    pnl.find("[id|='menu']").each(function () {
-        $(this).find("[id|='btn']").text("")
-    })
-
-    $("[id='map-selected'] img").each(function () {
-        $(this).hide()
-    })
 
     nmsce.last = null
 
@@ -376,8 +382,7 @@ NMSCE.prototype.extractEntry = async function () {
         for (let page of loc) {
             if ($(page).is(":visible")) {
                 let id = $(page).closest("[id|='row']").prop("id").stripID()
-                if (typeof entry[id] === "undefined")
-                    entry[id] = {}
+                entry[id] = {}
 
                 let sel = $(page).children()
                 for (let s of sel) {
@@ -427,6 +432,8 @@ NMSCE.prototype.displaySingle = async function (entry) {
     }
 
     let loc = $("[id='map-selected']")
+    loc.find("img").hide()
+
     for (let page of loc) {
         if ($(page).is(":visible")) {
             let id = $(page).closest("[id|='row']").prop("id").stripID()
@@ -1673,7 +1680,7 @@ NMSCE.prototype.displayResults = function (e, path, inID) {
         galaxy<br>
         by<br>
         <img id="id-idname" src="images/blank.png" data-src="url" data-path="dbpath" class="pointer" onclick="nmsce.selectResult(this)"
-            onload="nmsce.imgLoad(this, $('.cover-container').height()*1.3, $('.cover-container').height()-32)" />
+            onload="nmsce.imgLoaded(this, $('.cover-container').height()*1.3, $('.cover-container').height()-48)" />
     </div>`
 
     let idname = (e.type + "-" + e.id).nameToId()
@@ -1897,7 +1904,7 @@ NMSCE.prototype.displayList = function (entries, path) {
     const row = `     
                      <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black format" onclick="nmsce.selectList(this)">
                         <div id="id-Photo" class="row">
-                            <img id="img-pic" src="" onload="nmsce.imgLoad(this, $(this).parent().width(), $(this).parent().width())">
+                            <img id="img-pic" src="" onload="nmsce.imgLoaded(this, $(this).parent().width(), $(this).parent().width())">
                         </div>
                         <div class="row">`
     const itm = `           <div id="id-idname" class="col-md-7 col-14 border">title</div>`
@@ -1908,8 +1915,13 @@ NMSCE.prototype.displayList = function (entries, path) {
     let e = entries
 
     if (path) {
-        nmsce.entries[entries.type].push(entries)
-        entries = {}
+        let i = getIndex(nmsce.entries[type], "id", e.id)
+        if (i === -1)
+            nmsce.entries[entries.type].push(e)
+        else
+            nmsce.entries[entries.type][i] = e
+
+            entries = {}
         entries[e.type] = []
         entries[e.type].push(e)
     }
@@ -2096,10 +2108,11 @@ NMSCE.prototype.displayList = function (entries, path) {
     })
 }
 
-NMSCE.prototype.imgLoad = function (evt, width, height) {
+NMSCE.prototype.imgLoaded = function (evt, width, height) {
     let h = evt.naturalHeight
     let w = evt.naturalWidth
-
+    if (h === 250 && w === 400)
+        debugger
     let out = nmsce.calcImgSize(w, h, width, height)
 
     $(evt).height(out.height)
@@ -2114,10 +2127,10 @@ NMSCE.prototype.calcImgSize = function (width, height, maxw, maxh) {
     let ow = height > width ? sw : maxw
 
     if (oh > maxh) {
-        ow = ow * (oh - maxh) / maxh
+        ow = ow * maxh / oh
         oh = maxh
     } else if (ow > maxw) {
-        oh = oh * (ow - maxw) / maxw
+        oh = oh * maxw / ow
         ow = maxw
     }
 
@@ -2818,6 +2831,8 @@ const colorList = [{
     name: "Silver",
 }, {
     name: "Tan",
+}, {
+    name: "Teal",
 }, {
     name: "White",
 }, {
