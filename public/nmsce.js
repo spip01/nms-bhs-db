@@ -347,13 +347,12 @@ NMSCE.prototype.extractEntry = async function () {
                     break
                 case "color":
                     let cmnu = $(rloc).find("[id|='btn']")
+                    entry[id] = []
+                    
                     for (let loc of cmnu) {
                         let c = $(loc).text().stripMarginWS()
 
                         if ($(loc).is(":visible") && c && c !== "Nothing Selected") {
-                            if (typeof entry[id] === "undefined")
-                                entry[id] = []
-
                             if (!entry[id].includes(c))
                                 entry[id].push(c)
                         }
@@ -385,7 +384,8 @@ NMSCE.prototype.extractEntry = async function () {
                 if (typeof entry[id] === "undefined" ||
                     (data.type === "string" || data.type === "menu") && entry[id] === "" ||
                     (data.type === "number" || data.type === "float") && entry[id] === -1 ||
-                    data.type === "img" && entry[id] === "") {
+                    data.type === "img" && entry[id] === "" ||
+                    data.type == "color" && entry[id].length === 0) {
 
                     bhs.status(id + " required. Entry not saved.", 0)
                     ok = false
