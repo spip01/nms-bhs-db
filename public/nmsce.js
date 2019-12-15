@@ -675,10 +675,10 @@ blackHoleSuns.prototype.status = function (str, clear) {
 let nav = `<a class="nav-item nav-link txt-def h6 active" id="tab-idname" data-toggle="tab" href="#hdr-idname" role="tab" aria-controls="pnl-idname" aria-selected="true">title</a>`
 let header = `
     <div id="hdr-idname" class="tab-pane show active" role="tabpanel" aria-labelledby="tab-idname">
-        <div id="pnl-idname" class="row no-padding"></div>
+        <div id="pnl-idname" class="row"></div>
     </div>`
-let mapHeader = `<div id="pnl-idname" class="row no-padding border rounded" style="display:none"></div>`
-const tSubList = `<div id="slist-idname" class="row no-padding" style="display:none"></div>`
+let mapHeader = `<div id="pnl-idname" class="row border rounded" style="display:none"></div>`
+const tSubList = `<div id="slist-idname" class="row" style="display:none"></div>`
 
 const tReq = `&nbsp;<font style="color:red">*</font>`
 const tText = `&nbsp;
@@ -703,8 +703,8 @@ const tName = `
     </div>`
 const tMap = `<div id="row-idname" data-type="map" data-req="ifreq"></div>`
 const tLongString = `
-    <div id="row-idname" data-type="string" data-req="ifreq" class="row">
-        <div class=" col-sm-5 col-5 h6 txt-inp-def">titlettip&nbsp;</div>
+    <div id="row-idname" data-type="string" data-req="ifreq" class="row pl-15">
+        <div class="col-3 h6 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" class="rounded col-9">
     </div>`
 const tNumber = `
@@ -717,7 +717,7 @@ const tFloat = `
         <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" type="number" class="rounded col-7" step=0.1 min=-1 max=range value=-1>
     </div>`
-const tColor = `<div id="row-idname" data-type="color" data-req="ifreq" class="row h6 txt-inp-def">titlettip:&nbsp</div>`
+const tColor = `<div id="row-idname" data-type="color" data-req="ifreq" class="row h6 txt-inp-def pl-30">titlettip:&nbsp</div>`
 const tMenu = `
     <div id="row-idname" data-type="menu" data-req="ifreq">
         <div id="id-idname"></div>
@@ -739,7 +739,7 @@ const tCkItem = `
     </div>`
 const tImg = `
     <div id="row-idname" data-type="img" data-req="ifreq" class="row">
-        <div class="col-3 txt-inp-def h6">titlettip&nbsp;</div>
+        <div class="col-3 txt-inp-def h6 pl-30">titlettip&nbsp;</div>
         <input id="id-idname" type="file" class="col-10 form-control form-control-sm" 
             accept="image/*" name="files[]" onchange="nmsce.loadScreenshot(this)">&nbsp
     </div>`

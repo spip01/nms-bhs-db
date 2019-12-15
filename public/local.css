@@ -301,9 +301,17 @@ body {
     text-indent: -40px;
 }
 
-/* .no-padding {
+ .no-padding {
     padding: 0px 0px !important;
-} */
+} 
+
+.pl-15 {
+    padding-left: 15px !important;
+} 
+
+.pl-30 {
+    padding-left: 30px !important;
+} 
 
 @-webkit-keyframes pulse {
     from {
