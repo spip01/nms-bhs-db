@@ -259,18 +259,26 @@
                     <div class="col-xl-4 col-lg-5 col-md-4 col-14">
                         <div id="imagedata"></div>
                         <div class="row border-top border-bottom">
-                            <i id="favorite" class="col-3 fas fa-thumbs-up pointer h2" style="color:grey"
+                            <i id="favorite" class="col-7 fas fa-thumbs-up pointer h2" style="color:grey"
                                 onclick="nmsce.vote(this)"></i>
-                            <div id="visited" class="col-4 pointer txt-inp-def h5" onclick="nmsce.vote(this)">
+                            <div id="visited" class="col-7 pointer txt-inp-def h5" onclick="nmsce.vote(this)">
                                 <span class="row">
                                     <i id="voted-visited" class="fas fa-square h3" style="color:grey"></i>
-                                    &nbsp;Visited
+                                    &nbsp;Visited&nbsp;
+                                    <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip" data-html="true"
+                                        data-placement="bottom"
+                                        title="If you retrieved an item or visited a location.">
+                                    </i>
                                 </span>
                             </div>
                             <div id="report" class="col-7 pointer text-danger h5" onclick="nmsce.vote(this)">
                                 <span class="row">
                                     <i id="voted-report" class="fas fa-square h3" style="color:grey"></i>
-                                    &nbsp;Report
+                                    &nbsp;Report&nbsp;
+                                    <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip" data-html="true"
+                                        data-placement="bottom"
+                                        title="Something about this entry is offensive.">
+                                    </i>
                                 </span>
                             </div>
                             <div id="edchoice" class="col-7 txt-inp-def h5 pointer hidden" onclick="nmsce.vote(this)">
