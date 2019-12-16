@@ -2477,8 +2477,6 @@ const haulerWingsMap = `
             <area alt="h6" coords="4,137,3,237,76,197,98,157,101,125" shape="poly">
             <area alt="h17" coords="120,148,111,163,127,177,158,172,205,147,199,119,156,144" shape="poly">
             <area alt="h7" coords="97,181,73,251,211,245,220,227,214,212,150,186" shape="poly">
-            <area alt="h8" coords="206,123,237,229,210,287,243,287,273,239,275,199,238,123" shape="poly">
-            <area alt="h9" coords="256,115,262,143,295,168,304,245,273,265,262,286,272,287,340,261,341,134,296,116" shape="poly">
             <area alt="h10" coords="22,237,4,264,23,309,64,311,54,272,61,234" shape="poly">
             <area alt="h11" coords="93,270,92,301,193,300,188,259" shape="poly">
             <area alt="h12" coords="8,315,8,385,73,389,80,317" shape="poly">
@@ -2486,6 +2484,9 @@ const haulerWingsMap = `
             <area alt="h14" coords="170,313,168,389,220,391,228,313" shape="poly">
             <area alt="h15" coords="237,314,236,391,276,399,293,375,272,303" shape="poly">
             <area alt="h16" coords="313,280,297,369,314,396,343,397,348,279" shape="poly">
+            <area alt="h8" coords="210,126,236,208,235,244,216,282,230,281,261,236,260,204,233,128" shape="poly">
+            <area alt="h9" coords="239,125,251,139,277,148,283,256,257,269,240,278,264,286,291,269,307,242,306,169,293,143,269,123" shape="poly">
+            <area alt="h18" coords="293,115,292,131,333,157,327,255,311,266,300,266,292,281,309,289,344,271,348,147,320,117" shape="poly">
         </map>
     </div>`
 
@@ -4141,6 +4142,9 @@ const objectList = [{
             imgText: true,
             search: true,
         }, {
+            // name: "Tags",
+            // type: "tags",
+            // db: "tags/baseTags",
             name: "Type",
             type: "menu",
             list: baseList,
