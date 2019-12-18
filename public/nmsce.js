@@ -247,6 +247,10 @@ NMSCE.prototype.clearPanel = function (all) {
     loc.find("#row-Latitude").hide()
     loc.find("#row-Longitude").hide()
 
+    $("[id='add-Tags']").hide()
+    $("[id='btn-Tags']").text("Tags")
+    $("[id='list-Tags']").empty()
+
     nmsce.last = null
 
     if (!fnmsce) {
@@ -345,17 +349,24 @@ NMSCE.prototype.extractEntry = async function () {
                 case "string":
                     entry[id] = val
                     break
+                case "tags":
+                    let tloc = $(rloc).find("[id|='tag']")
+                    entry[id] = []
+
+                    for (let loc of tloc) {
+                        let t = $(loc).text()
+                        if (t && !entry[id].includes(t))
+                            entry[id].push(t)
+                    }
+                    break
                 case "color":
                     let cmnu = $(rloc).find("[id|='btn']")
                     entry[id] = []
-                    
+
                     for (let loc of cmnu) {
                         let c = $(loc).text().stripMarginWS()
-
-                        if ($(loc).is(":visible") && c && c !== "Nothing Selected") {
-                            if (!entry[id].includes(c))
-                                entry[id].push(c)
-                        }
+                        if (c && c !== "Nothing Selected" && !entry[id].includes(c))
+                            entry[id].push(c)
                     }
                     break
                 case "menu":
@@ -380,39 +391,53 @@ NMSCE.prototype.extractEntry = async function () {
                     break
             }
 
-            if (data.req && !fnmsce)
-                if (typeof entry[id] === "undefined" ||
-                    (data.type === "string" || data.type === "menu") && entry[id] === "" ||
-                    (data.type === "number" || data.type === "float") && entry[id] === -1 ||
-                    data.type === "img" && entry[id] === "" ||
-                    data.type == "color" && entry[id].length === 0) {
+            if (ok && data.req && !fnmsce) {
+                ok = typeof entry[id] !== "undefined"
 
-                    bhs.status(id + " required. Entry not saved.", 0)
-                    ok = false
-                    break
-                }
-        }
-    }
-
-    if (ok) {
-        loc = $("[id='map-selected']")
-        for (let page of loc) {
-            if ($(page).is(":visible")) {
-                let id = $(page).closest("[id|='row']").prop("id").stripID()
-                entry[id] = {}
-
-                let sel = $(page).children()
-                for (let s of sel) {
-                    if ($(s).is(":visible")) {
-                        let alt = $(s).attr("alt")
-                        entry[id][alt] = true
+                if (ok)
+                    switch (data.type) {
+                        case "string":
+                        case "menu":
+                        case "img":
+                            ok = entry[id] !== ""
+                            break
+                        case "number":
+                        case "float":
+                            ok = entry[id] !== -1 && entry[id] !== ""
+                            break
+                        case "color":
+                        case "tags":
+                            ok = entry[id].length > 0
+                            break
                     }
+
+                if (!ok) {
+                    bhs.status(id + " required. Entry not saved.", 0)
+                    break
                 }
             }
         }
 
-        nmsce.updateEntry(entry)
-        nmsce.updateScreenshots(entry)
+        if (ok) {
+            loc = $("[id='map-selected']")
+            for (let page of loc) {
+                if ($(page).is(":visible")) {
+                    let id = $(page).closest("[id|='row']").prop("id").stripID()
+                    entry[id] = {}
+
+                    let sel = $(page).children()
+                    for (let s of sel) {
+                        if ($(s).is(":visible")) {
+                            let alt = $(s).attr("alt")
+                            entry[id][alt] = true
+                        }
+                    }
+                }
+            }
+
+            nmsce.updateEntry(entry)
+            nmsce.updateScreenshots(entry)
+        }
     }
 
     return ok ? entry : false
@@ -440,16 +465,18 @@ NMSCE.prototype.displaySingle = async function (entry) {
             case "string":
                 loc.val(fld)
                 break
+            case "tags":
+                $(row).find("#list-Tags").empty()
+                if (fld)
+                    for (let t of fld) {
+                        let h = /idname/ [Symbol.replace](tTag, t.nameToId())
+                        h = /title/ [Symbol.replace](h, t)
+                        $(row).find("#list-Tags").append(h)
+                    }
+                break
             case "color":
-                $(row).find("[id|='id']").hide()
-                let i = 0
-
-                for (; i < fld.length; ++i) {
-                    $(row).find("#id-" + i).show()
+                for (let i = 0; i < fld.length; ++i)
                     $(row).find("#btn-" + i).text(fld[i])
-                }
-
-                $(row).find("#id-" + i).show()
                 break
             case "menu":
                 $(row).find("#item-" + fld).click()
@@ -548,21 +575,34 @@ NMSCE.prototype.executeSearch = async function (fcn) {
             case "number":
             case "float":
                 if (val && val != -1)
-                    ref = ref.where(id, "==", val)
+                    ref = ref.where(id, rdata.search ? rdata.search : "==", val)
                 break
             case "string":
                 if (val)
                     ref = ref.where(id, "==", val)
                 break
+            case "tags":
+                let tlocs = $(rloc).find("[id|='tag']")
+                let tlist = []
+
+                for (let loc of tlocs) {
+                    let t = $(loc).text()
+                    if (t && !tlist.includes(t))
+                        tlist.push(t)
+                }
+
+                if (tlist.length > 0)
+                    ref = ref.where(id, "array-contains-any", tlist)
+                break
             case "color":
                 let cmnu = $(rloc).find("[id|='btn']")
+
                 for (let loc of cmnu) {
                     let c = $(loc).text().stripMarginWS()
-                    if ($(loc).is(":visible") && c && c !== "Nothing Selected") {
-                        if (!colorlist.includes(c))
-                            colorlist.push(c)
-                    }
+                    if (c && c !== "Nothing Selected" && !colorlist.includes(c))
+                        colorlist.push(c)
                 }
+
                 if (colorlist.length > 0)
                     ref = ref.where(id, "array-contains-any", colorlist)
                 break
@@ -699,11 +739,6 @@ const tString = `
         <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" class="rounded col-9">
     </div>`
-const tName = `
-    <div id="row-idname" data-type="string" data-req="ifreq" class="row">
-        <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
-        <input id="id-idname" class="rounded col-9" onchange="nmsce.getEntry(this)">
-    </div>`
 const tMap = `<div id="row-idname" data-type="map" data-req="ifreq"></div>`
 const tLongString = `
     <div id="row-idname" data-type="string" data-req="ifreq" class="row pl-15">
@@ -711,27 +746,40 @@ const tLongString = `
         <input id="id-idname" class="rounded col-9">
     </div>`
 const tNumber = `
-    <div id="row-idname" data-type="number" data-req="ifreq" class="row">
+    <div id="row-idname" data-type="number" data-req="ifreq" data-search="stype" class="row">
         <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" type="number" class="rounded col-7" min=-1 max=range value=-1>
     </div>`
 const tFloat = `
-    <div id="row-idname" data-type="float" data-req="ifreq" class="row">
+    <div id="row-idname" data-type="float" data-req="ifreq" data-search="stype" class="row">
         <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" type="number" class="rounded col-7" step=0.1 min=-1 max=range value=-1>
     </div>`
 const tColor = `<div id="row-idname" data-type="color" data-req="ifreq" class="row h6 txt-inp-def pl-30">titlettip:&nbsp</div>`
+const tTags = `
+    <div id="row-idname" class="row" data-type="tags" data-req="ifreq">
+        <div id="id-idname" class="col-4"></div>
+        <div id="add-idname" class="col-10 row hidden">
+            <input id="txt-idname" type="text" class="col-7"></input>
+            <button id="add-idname" type="text" class="col-2 btn btn-def btn-sm" onclick="nmsce.newTag(this)">Add</button>
+            <button id="cancel-idname" type="text" class="col-3 btn btn-def btn-sm" onclick="nmsce.cancelTag(this)">Cancel</button>
+        </div>
+        <div class="col-9 border">
+            <div id="list-idname" class="row"></div>
+        </div>
+    </div>`
+const tTag = `<div id="tag-idname" class="col border" style="border-radius:8px; background-color:#c0c0c0" onclick="nmsce.deleteTag(this)">title</div>`
 const tMenu = `
     <div id="row-idname" data-type="menu" data-req="ifreq">
         <div id="id-idname"></div>
     </div>`
 const tRadio = `
     <div id="row-idname" data-type="radio" data-req="ifreq" class="row">
-        <div class="radio col-7 h6 txt-inp-def" data-toggle="grp-idname"">titlettip:&nbsp;</div>
+        <div class="radio col-3 h6 txt-inp-def" style="padding-left:45px" data-toggle="grp-idname"">titlettip:&nbsp;</div>
     </div>`
 const tRadioItem = `
-    <label class="h6 txt-inp-def row">titlettip&nbsp;
-        <input type="radio" class="radio col" id="id-title" name="grp-idname">
+    <label class="h6 txt-inp-def">titlettip&nbsp;
+        <input type="radio" class="radio" id="id-title" name="grp-idname">
     </label>`
 const tCkItem = `
     <div id="row-idname" data-type="checkbox" data-req="false" style="padding-left:15px">
@@ -841,10 +889,12 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
         switch (f.type) {
             case "number":
                 l = /range/ [Symbol.replace](tNumber, f.range)
+                l = /stype/ [Symbol.replace](l, f.searchType ? f.searchType : "")
                 appenditem(itm, l, f.name, id, f.ttip, f.required)
                 break
             case "float":
                 l = /range/ [Symbol.replace](tFloat, f.range)
+                l = /stype/ [Symbol.replace](l, f.searchType ? f.searchType : "")
                 appenditem(itm, l, f.name, id, f.ttip, f.required)
                 break
             case "img":
@@ -869,7 +919,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 }
                 break
             case "string":
-                appenditem(itm, f.name === "Name" ? tName : tString, f.name, id, f.ttip, f.required)
+                appenditem(itm, tString, f.name, id, f.ttip, f.required)
                 break
             case "long string":
                 appenditem(itm, tLongString, f.name, id, f.ttip, f.required, inpLongHdr)
@@ -899,16 +949,45 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                     }
                 }
                 break
+            case "tags":
+                appenditem(itm, tTags, "", id, f.ttip, f.required, inpLongHdr)
+                let ref = bhs.fs.doc("tags/" + itmid)
+                ref.get().then(doc => {
+                    let tags = []
+
+                    if (doc.exists) {
+
+                        let list = doc.data()
+                        for (let t of list.tags)
+                            tags.push({
+                                name: t
+                            })
+
+                        tags.sort((a, b) => a > b ? -1 : 1)
+                    }
+
+                    if (fcedata)
+                        tags.unshift({
+                            name: "Add new tag"
+                        })
+
+                    let pnl = doc.ref.id
+                    bhs.buildMenu($("#pnl-" + pnl), "Tags", tags, nmsce.addTag, {
+                        nolabel: true
+                    })
+
+                    $("#pnl-" + pnl + " #btn-Tags").text("Tags")
+                })
+                break
             case "color":
                 appenditem(itm, tColor, f.name, id, f.ttip, f.required, inpLongHdr)
                 let clr = itm.find("#row-" + id)
 
                 for (let i = 0; i < f.max; ++i) {
-                    let h = "<div id='id-" + i + "' " + (i > 0 ? " class='hidden'" : "") + "></div>"
+                    let h = "<div id='id-" + i + "'></div>"
                     clr.append(h)
 
-                    let itm = clr.find("#id-" + i)
-                    bhs.buildMenu(clr, i.toString(), f.list, nmsce.showColor, {
+                    bhs.buildMenu(clr, i.toString(), f.list, null, {
                         labelsize: "col-1",
                         menusize: "col"
                     })
@@ -920,7 +999,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                     let btn = itm.find("#row-" + id)
 
                     for (let i of slist[f.sub])
-                        appenditem(btn, tRadioItem, i.name, id, typeof slist[f.ttip] === "object" ? slist[f.ttip][i.name] : null, null, `<div class="col-3">`)
+                        appenditem(btn, tRadioItem, i.name, id, null, null, `<div class="col-2">`)
                 }
                 break
             case "map":
@@ -953,14 +1032,65 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
     }
 }
 
-NMSCE.prototype.showColor = function (evt) {
-    let cur = $(evt).closest("[id|='id']")
-    let n = parseInt(cur.prop("id").stripID())
+NMSCE.prototype.addTag = function (evt) {
+    let pnl = $(evt).closest("[id|='pnl']")
+    let row = $(evt).closest("[id|='row']")
+    let text = $(evt).text().stripMarginWS()
 
-    cur = cur.closest("[id|='row']")
-    cur = cur.find("#id-" + (n + 1))
+    if (row.find("#list-Tags").children().length >= 4) {
+        row.find("#btn-Tags").text("Tags")
+        return
+    }
 
-    cur.show()
+    if (text === "Add new tag")
+        row.find("[id|='add']").show()
+    else {
+        let h = /idname/ [Symbol.replace](tTag, text.nameToId())
+        h = /title/ [Symbol.replace](h, text)
+
+        row.find("#list-Tags").append(h)
+        row.find("#btn-Tags").text("Tags")
+    }
+}
+
+NMSCE.prototype.deleteTag = function (evt) {
+    $(evt).remove()
+}
+
+NMSCE.prototype.newTag = function (evt) {
+    let row = $(evt).closest("[id|='row']")
+    let text = row.find("[id|='txt']").val().toLowerCase()
+
+    if (text !== "" && row.find("#item-" + text.nameToId()).length === 0) {
+        let pnl = $(evt).closest("[id|='pnl']").prop("id").stripID()
+        let ref = bhs.fs.doc("tags/" + pnl)
+
+        ref.set({
+            tags: firebase.firestore.FieldValue.arrayUnion(text)
+        }, {
+            merge: true
+        })
+
+        $(evt).val("")
+        let h = row.find("#item-Add-new-tag")[0].outerHTML
+        h = /Add-new-tag/ [Symbol.replace](h, text.nameToId())
+        h = /Add new tag/ [Symbol.replace](h, text)
+        row.find("#list").append(h)
+
+        h = /idname/ [Symbol.replace](tTag, text.nameToId())
+        h = /title/ [Symbol.replace](h, text)
+        row.find("#list-Tags").append(h)
+    }
+
+    row.find("[id|='add']").hide()
+    row.find("#btn-Tags").text("Tags")
+}
+
+NMSCE.prototype.cancelTag = function (evt) {
+    let row = $(evt).closest("[id|='row']")
+    row.find("[id|='add']").hide()
+    $(evt).val("")
+    row.find("#btn-Tags").text("Tags")
 }
 
 function showClass() {
@@ -1569,7 +1699,7 @@ NMSCE.prototype.deleteEntry = function (entry) {
 
 NMSCE.prototype.updateScreenshots = function (entry) {
     if (typeof entry.id === "undefined")
-        entry.id = entry.Name.nameToId().toLowerCase()
+        entry.id = entry.addr.nameToId() + "-" + entry.Name.nameToId().toLowerCase()
 
     if (typeof entry.Photo === "undefined")
         entry.Photo = entry.type + "_" + entry.id + ".jpg"
@@ -1611,7 +1741,7 @@ NMSCE.prototype.updateEntry = function (entry) {
         entry.created = firebase.firestore.Timestamp.now()
 
     if (typeof entry.id === "undefined")
-        entry.id = entry.Name.nameToId().toLowerCase()
+        entry.id = entry.addr.nameToId() + "-" + entry.Name.nameToId().toLowerCase()
 
     if (typeof entry.Photo === "undefined")
         entry.Photo = entry.type + "_" + entry.id + ".jpg"
@@ -1917,12 +2047,16 @@ NMSCE.prototype.selectResult = async function (evt) {
                 let h = /idname/g [Symbol.replace](row, id)
                 h = /title/ [Symbol.replace](h, fld.name)
 
-                if (fld.type === "color") {
+                if (fld.type === "color" || fld.type === "tags") {
                     let t = ""
-                    for (let c of fld)
-                        t += c + ", "
 
-                    t = t.slice(0, t.length - 2)
+                    if (fld) {
+                        for (let c of fld)
+                            t += c + ", "
+
+                        t = t.slice(0, t.length - 2)
+                    }
+
                     h = /value/ [Symbol.replace](h, t)
                 } else
                     h = /value/ [Symbol.replace](h, e[id])
@@ -2093,11 +2227,13 @@ NMSCE.prototype.displayList = function (entries, path) {
                     let id = f.name.nameToId()
                     let l = /idname/g [Symbol.replace](itm, id)
                     if (typeof e[id] !== "undefined") {
-                        if (f.type === "color") {
+                        if (f.type === "color" || f.type === "tags") {
                             let t = ""
-                            for (let c of e[id])
-                                t += c + ", "
-                            t = t.slice(0, t.length - 2)
+                            if (e[id]) {
+                                for (let c of e[id])
+                                    t += c + ", "
+                                t = t.slice(0, t.length - 2)
+                            }
                             h += /title/ [Symbol.replace](l, t)
                         } else
                             h += /title/ [Symbol.replace](l, e[id])
@@ -2656,11 +2792,6 @@ const shipList = [{
     name: "Fighter",
     slotList: slotList,
     classList: classList,
-    // slotTtip: {
-    //     T1: `15-19 slots`,
-    //     T2: `20-29 slots`,
-    //     T3: `30-38 slots`,
-    // },
     slotTtip: `
         T1: 15-19 slots<br>
         T2: 20-29 slots<br>
@@ -2676,11 +2807,6 @@ const shipList = [{
     name: "Hauler",
     slotList: slotList,
     classList: classList,
-    // slotTtip: {
-    //     T1: "25-31 slots",
-    //     T2: "32-39 slots",
-    //     T3: "40-48 slots",
-    // },
     slotTtip: `
         T1: 25-31 slots<br>
         T2: 32-39 slots<br>
@@ -2700,10 +2826,6 @@ const shipList = [{
         name: "T2"
     }],
     classList: classList,
-    // slotTtip: {
-    //     T1: "18-23 slots",
-    //     T2: "19-28 slots"
-    // },
     slotTtip: `
         T1: 18-23 slots<br>
         T2: 19-28 slots`,
@@ -2719,11 +2841,6 @@ const shipList = [{
     bodies: explorerBodiesMap,
     slotList: slotList,
     classList: classList,
-    // slotTtip: {
-    //     T1: `15-19 slots`,
-    //     T2: `20-29 slots`,
-    //     T3: `30-38 slots`,
-    // },
     slotTtip: `
         T1: 15-19 slots<br>
         T2: 20-29 slots<br>
@@ -3638,7 +3755,7 @@ const objectList = [{
             search: true,
             sublist: [{
                 name: "Class",
-                type: "menu",
+                type: "radio",
                 ttip: "classTtip",
                 sub: "classList",
                 startState: "hidden",
@@ -3646,7 +3763,7 @@ const objectList = [{
                 search: true,
             }, {
                 name: "Slots",
-                type: "menu",
+                type: "radio",
                 ttip: "slotTtip",
                 sub: "slotList",
                 imgText: true,
@@ -3763,8 +3880,8 @@ const objectList = [{
             ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
         }, {
             name: "Slots",
-            type: "menu",
-            list: slotList,
+            type: "number",
+            searchType: ">=",
             search: true,
         }, {
             name: "Color",
@@ -3833,7 +3950,6 @@ const objectList = [{
             name: "Type",
             type: "menu",
             list: mtList,
-            required: true,
             imgText: true,
             search: true,
         }, {
@@ -3841,22 +3957,17 @@ const objectList = [{
             type: "menu",
             list: classList,
             // ttipFld: "classTtip",
-            required: true,
             imgText: true,
             search: true,
         }, {
             name: "Slots",
             type: "number",
-            required: true,
-            imgText: true,
             search: true,
+            searchType: ">="
         }, {
             name: "Space Station",
             type: "checkbox",
             search: true,
-        }, {
-            name: "",
-            type: "blank",
         }, {
             name: "Planet Name",
             type: "string",
@@ -3939,15 +4050,6 @@ const objectList = [{
             search: true,
             required: true,
         }, {
-            name: "Predator",
-            type: "checkbox",
-            search: true,
-        }, {
-            name: "Killed Product",
-            type: "menu",
-            list: faunaProductKilled,
-            search: true,
-        }, {
             name: "Tamed Product",
             type: "menu",
             list: faunaProductTamed,
@@ -3958,10 +4060,11 @@ const objectList = [{
             range: 15.0,
             imgText: true,
             search: true,
+            searchType: ">="
         }, {
-            name: "Description",
-            imgText: true,
-            type: "long string",
+            name: "Tags",
+            type: "tags",
+            search: true,
         }, {
             name: "Planet Name",
             imgText: true,
@@ -4062,15 +4165,9 @@ const objectList = [{
             imgText: true,
             search: true,
         }, {
-            name: "Glitches",
-            type: "menu",
-            list: glitchList,
-            imgText: true,
+            name: "Tags",
+            type: "tags",
             search: true,
-        }, {
-            name: "Notes",
-            imgText: true,
-            type: "long string",
         }, {
             name: "Photo",
             type: "img",
@@ -4142,19 +4239,8 @@ const objectList = [{
             imgText: true,
             search: true,
         }, {
-            // name: "Tags",
-            // type: "tags",
-            // db: "tags/baseTags",
-            name: "Type",
-            type: "menu",
-            list: baseList,
-            search: true,
-            imgText: true,
-            required: true,
-        }, {
-            name: "Description",
-            type: "long string",
-            imgText: true,
+            name: "Tags",
+            type: "tags",
             search: true,
         }, {
             name: "Photo",

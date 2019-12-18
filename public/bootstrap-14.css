@@ -100,6 +100,12 @@
   max-width: 33.2%;
 }
 
+.col-p200 {
+  -ms-flex: 0 0 19.9%;
+  flex: 0 0 19.9%;
+  max-width: 19.9%;
+}
+
 @media (min-width: 576px) {
   .col-sm-14 {
     -ms-flex: 0 0 99.8%;
