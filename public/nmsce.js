@@ -376,11 +376,14 @@ NMSCE.prototype.extractEntry = async function () {
                     break
                 case "checkbox":
                     for (let ckloc of loc) {
-                        if ($(ckloc).is(":visible")) {
-                            let cid = $(ckloc).prop("id").stripID()
-                            entry[cid] = $(ckloc).prop("checked")
-                        }
+                        let cid = $(ckloc).prop("id").stripID()
+                        entry[cid] = $(ckloc).prop("checked")
                     }
+                    break
+                case "radio":
+                    for (let rloc of loc)
+                        if ($(rloc).is(":visible") && $(rloc).is(":checked"))
+                            entry[id] = $(rloc).prop("id").stripID()
                     break
                 case "img":
                     if (!fnmsce) {
@@ -480,6 +483,10 @@ NMSCE.prototype.displaySingle = async function (entry) {
                 break
             case "menu":
                 $(row).find("#item-" + fld).click()
+                break
+            case "radio":
+                $(row).find("input").prop("checked", false)
+                $(row).find("#id-" + fld).prop("checked", true)
                 break
             case "checkbox":
                 loc.prop("checked", fld ? true : false)
@@ -618,6 +625,11 @@ NMSCE.prototype.executeSearch = async function (fcn) {
                 let cloc = $(rloc).find("input:checked")
                 if (cloc.length > 0)
                     ref = ref.where(id, "==", cloc.prop("id") === "id-True")
+                break
+            case "radio":
+                for (let rloc of loc)
+                    if ($(rloc).is(":visible") && $(rloc).is(":checked"))
+                        ref = ref.where(id, "==", $(rloc).prop("id").stripID())
                 break
         }
     }
@@ -775,7 +787,7 @@ const tMenu = `
     </div>`
 const tRadio = `
     <div id="row-idname" data-type="radio" data-req="ifreq" class="row">
-        <div class="radio col-3 h6 txt-inp-def" style="padding-left:45px" data-toggle="grp-idname"">titlettip:&nbsp;</div>
+        <div class="radio col-5 h6 txt-inp-def" style="padding-left:45px" data-toggle="grp-idname"">titlettip:&nbsp;</div>
     </div>`
 const tRadioItem = `
     <label class="h6 txt-inp-def">titlettip&nbsp;
@@ -902,7 +914,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 break
             case "checkbox":
                 if (fnmsce) {
-                    appenditem(itm, tRadio, f.name, id, f.ttip)
+                    appenditem(itm, tRadio, f.name, id, f.ttip, null, inpLongHdr)
                     let btn = itm.find("#row-" + id)
                     btn.attr("data-type", "checkbox")
                     appenditem(btn, tRadioItem, "True", id, null, null, `<div class="col-3">`)
@@ -1312,6 +1324,11 @@ NMSCE.prototype.ckImgText = function (evt, draw) {
                 loc = $("#typePanels .active #id-Planet-Index")
                 let num = loc.length > 0 && loc.val() > 0 ? loc.val() : 0
                 text = addrToGlyph(text, num)
+                break
+            case "radio":
+                for (let rloc of loc)
+                    if ($(rloc).is(":visible") && $(rloc).is(":checked"))
+                        text = $(rloc).prop("id").stripID()
                 break
             default:
                 text = loc.val()
