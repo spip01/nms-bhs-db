@@ -39,8 +39,8 @@ $(document).ready(() => {
         nmsce.getLatest(nmsce.displayResults)
     }
 
-    $("#save").click(() => {
-        if (nmsce.save())
+    $("#save").click(async () => {
+        if (await nmsce.save())
             nmsce.clearPanel()
     })
 
@@ -247,9 +247,18 @@ NMSCE.prototype.clearPanel = function (all) {
     loc.find("#row-Latitude").hide()
     loc.find("#row-Longitude").hide()
 
-    $("[id='add-Tags']").hide()
-    $("[id='btn-Tags']").text("Tags")
-    $("[id='list-Tags']").empty()
+    let tags = $("[data-type='tags']")
+
+    for (let loc of tags) {
+        let id = $(loc).prop("id").stripID()
+
+        $(loc).find("#btn-" + id).removeAttr("disabled")
+        $(loc).find("#btn-" + id).removeClass("disabled")
+
+        $(loc).find("#add-" + id).hide()
+        $(loc).find("#btn-" + id).text(id.idToName())
+        $(loc).find("#list-" + id).empty()
+    }
 
     nmsce.last = null
 
@@ -359,16 +368,6 @@ NMSCE.prototype.extractEntry = async function () {
                             entry[id].push(t)
                     }
                     break
-                case "color":
-                    let cmnu = $(rloc).find("[id|='btn']")
-                    entry[id] = []
-
-                    for (let loc of cmnu) {
-                        let c = $(loc).text().stripMarginWS()
-                        if (c && c !== "Nothing Selected" && !entry[id].includes(c))
-                            entry[id].push(c)
-                    }
-                    break
                 case "menu":
                     entry[id] = $(rloc).find("[id|='btn']").text()
                     if (entry[id] === "Nothing Selected")
@@ -408,7 +407,6 @@ NMSCE.prototype.extractEntry = async function () {
                         case "float":
                             ok = entry[id] !== -1 && entry[id] !== ""
                             break
-                        case "color":
                         case "tags":
                             ok = entry[id].length > 0
                             break
@@ -438,12 +436,13 @@ NMSCE.prototype.extractEntry = async function () {
                 }
             }
 
+            entry.imageText = bhs.user.imageText
             nmsce.updateEntry(entry)
             nmsce.updateScreenshots(entry)
         }
     }
 
-    return ok ? entry : false
+    return ok
 }
 
 NMSCE.prototype.displaySingle = async function (entry) {
@@ -469,17 +468,13 @@ NMSCE.prototype.displaySingle = async function (entry) {
                 loc.val(fld)
                 break
             case "tags":
-                $(row).find("#list-Tags").empty()
+                $(row).find("#list-" + id).empty()
                 if (fld)
                     for (let t of fld) {
                         let h = /idname/ [Symbol.replace](tTag, t.nameToId())
                         h = /title/ [Symbol.replace](h, t)
-                        $(row).find("#list-Tags").append(h)
+                        $(row).find("#list-" + id).append(h)
                     }
-                break
-            case "color":
-                for (let i = 0; i < fld.length; ++i)
-                    $(row).find("#btn-" + i).text(fld[i])
                 break
             case "menu":
                 $(row).find("#item-" + fld).click()
@@ -512,9 +507,12 @@ NMSCE.prototype.displaySingle = async function (entry) {
         }
     }
 
+    if (entry.imageText)
+        bhs.user.imageText = entry.imageText
+
     nmsce.loadScreenshot(null, entry.Photo)
 
-    $("#posted").text(entry.reddit ? "Posted" : "")
+    $("#posted").text(entry.reddit ? "Posted" + (typeof entry.reddit !== "boolean" ? entry.reddit.toDate() : "") : "")
 
     $("#save").text("UPDATE")
 
@@ -601,18 +599,6 @@ NMSCE.prototype.executeSearch = async function (fcn) {
                 if (tlist.length > 0)
                     ref = ref.where(id, "array-contains-any", tlist)
                 break
-            case "color":
-                let cmnu = $(rloc).find("[id|='btn']")
-
-                for (let loc of cmnu) {
-                    let c = $(loc).text().stripMarginWS()
-                    if (c && c !== "Nothing Selected" && !colorlist.includes(c))
-                        colorlist.push(c)
-                }
-
-                if (colorlist.length > 0)
-                    ref = ref.where(id, "array-contains-any", colorlist)
-                break
             case "menu":
                 val = $(rloc).find("#btn-" + id).text()
                 if (val) {
@@ -687,6 +673,8 @@ NMSCE.prototype.executeSearch = async function (fcn) {
 
         bhs.status(size + " matching entries found.")
         $("#numFound").text(size)
+    }).catch(err => {
+        bhs.status("Search error: " + err.message)
     })
 }
 
@@ -711,7 +699,7 @@ NMSCE.prototype.save = function () {
         })
 
         return nmsce.extractEntry()
-    }
+    } else return false
 }
 
 NMSCE.prototype.search = function () {
@@ -767,20 +755,19 @@ const tFloat = `
         <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" type="number" class="rounded col-7" step=0.1 min=-1 max=range value=-1>
     </div>`
-const tColor = `<div id="row-idname" data-type="color" data-req="ifreq" class="row h6 txt-inp-def pl-30">titlettip:&nbsp</div>`
 const tTags = `
     <div id="row-idname" class="row" data-type="tags" data-req="ifreq">
-        <div id="id-idname" class="col-4"></div>
+        <div id="id-idname" class="col-3"></div>&nbsp;ttip
         <div id="add-idname" class="col-10 row hidden">
             <input id="txt-idname" type="text" class="col-7"></input>
             <button id="add-idname" type="text" class="col-2 btn btn-def btn-sm" onclick="nmsce.newTag(this)">Add</button>
             <button id="cancel-idname" type="text" class="col-3 btn btn-def btn-sm" onclick="nmsce.cancelTag(this)">Cancel</button>
         </div>
-        <div class="col-9 border">
+        <div class="col-10 border">
             <div id="list-idname" class="row"></div>
         </div>
     </div>`
-const tTag = `<div id="tag-idname" class="col border" style="border-radius:8px; background-color:#c0c0c0" onclick="nmsce.deleteTag(this)">title</div>`
+const tTag = `<div id="tag-idname" class="col border pointer" style="border-radius:8px; background-color:#d0d0d0" onclick="nmsce.deleteTag(this)">title</div>`
 const tMenu = `
     <div id="row-idname" data-type="menu" data-req="ifreq">
         <div id="id-idname"></div>
@@ -963,45 +950,43 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 break
             case "tags":
                 appenditem(itm, tTags, "", id, f.ttip, f.required, inpLongHdr)
-                let ref = bhs.fs.doc("tags/" + itmid)
-                ref.get().then(doc => {
-                    let tags = []
+                let rloc = itm.find("#row-" + id)
+                if (f.max)
+                    rloc.data("max", f.max)
 
-                    if (doc.exists) {
-
-                        let list = doc.data()
-                        for (let t of list.tags)
-                            tags.push({
-                                name: t
-                            })
-
-                        tags.sort((a, b) => a > b ? -1 : 1)
-                    }
-
-                    if (fcedata)
-                        tags.unshift({
-                            name: "Add new tag"
-                        })
-
-                    let pnl = doc.ref.id
-                    bhs.buildMenu($("#pnl-" + pnl), "Tags", tags, nmsce.addTag, {
+                if (f.list) {
+                    bhs.buildMenu(rloc, f.name, f.list, nmsce.addTag, {
                         nolabel: true
                     })
 
-                    $("#pnl-" + pnl + " #btn-Tags").text("Tags")
-                })
-                break
-            case "color":
-                appenditem(itm, tColor, f.name, id, f.ttip, f.required, inpLongHdr)
-                let clr = itm.find("#row-" + id)
+                    itm.find("#btn-" + id).text(f.name)
+                } else {
+                    let ref = bhs.fs.doc("tags/" + itmid)
+                    ref.get().then(doc => {
+                        let tags = []
 
-                for (let i = 0; i < f.max; ++i) {
-                    let h = "<div id='id-" + i + "'></div>"
-                    clr.append(h)
+                        if (doc.exists) {
 
-                    bhs.buildMenu(clr, i.toString(), f.list, null, {
-                        labelsize: "col-1",
-                        menusize: "col"
+                            let list = doc.data()
+                            for (let t of list.tags)
+                                tags.push({
+                                    name: t
+                                })
+
+                            tags.sort((a, b) => a > b ? -1 : 1)
+                        }
+
+                        if (fcedata)
+                            tags.unshift({
+                                name: "Add new tag"
+                            })
+
+                        // let pnl = doc.ref.id
+                        bhs.buildMenu(rloc, f.name, tags, nmsce.addTag, {
+                            nolabel: true
+                        })
+
+                        rloc.find("#btn-" + id).text(f.name)
                     })
                 }
                 break
@@ -1045,32 +1030,61 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
 }
 
 NMSCE.prototype.addTag = function (evt) {
-    let pnl = $(evt).closest("[id|='pnl']")
     let row = $(evt).closest("[id|='row']")
+    let data = row.data()
     let text = $(evt).text().stripMarginWS()
+    let id = row.prop("id").stripID()
 
-    if (row.find("#list-Tags").children().length >= 4) {
-        row.find("#btn-Tags").text("Tags")
+    if (data.max && row.find("#list-" + id).children().length >= data.max) {
+        row.find("#btn-" + id).text(id.idToName())
         return
     }
 
     if (text === "Add new tag")
-        row.find("[id|='add']").show()
+        row.find("#add-" + id).show()
     else {
         let h = /idname/ [Symbol.replace](tTag, text.nameToId())
         h = /title/ [Symbol.replace](h, text)
 
-        row.find("#list-Tags").append(h)
-        row.find("#btn-Tags").text("Tags")
+        row.find("#list-" + id).append(h)
+        row.find("#btn-" + id).text(id.idToName())
+
+        if (fnmsce) {
+            $(evt).closest("[id|='pnl']")
+
+            let tags = $("[data-type='tags']")
+            for (let loc of tags) {
+                $(loc).find("[id|='btn']").first().prop("disabled", true)
+                $(loc).find("[id|='btn']").first().addClass("disabled")
+            }
+
+            row.find("[id|='btn']").first().removeAttr("disabled")
+            row.find("[id|='btn']").first().removeClass("disabled")
+        }
     }
 }
 
 NMSCE.prototype.deleteTag = function (evt) {
+    if (fnmsce) {
+        let row = $(evt).closest("[id|='row']")
+        let id = row.prop("id").stripID()
+        let list = row.find("#list-" + id)
+
+        if (list.length === 1) {
+            let tags = $("[data-type='tags']")
+            for (let loc of tags) {
+                $(loc).find("[id|='btn']").first().removeAttr("disabled")
+                $(loc).find("[id|='btn']").first().removeClass("disabled")
+            }
+        }
+    }
+
     $(evt).remove()
 }
 
 NMSCE.prototype.newTag = function (evt) {
     let row = $(evt).closest("[id|='row']")
+    let id = row.prop("id").stripID()
     let text = row.find("[id|='txt']").val().toLowerCase()
 
     if (text !== "" && row.find("#item-" + text.nameToId()).length === 0) {
@@ -1085,24 +1099,27 @@ NMSCE.prototype.newTag = function (evt) {
 
         $(evt).val("")
         let h = row.find("#item-Add-new-tag")[0].outerHTML
-        h = /Add-new-tag/ [Symbol.replace](h, text.nameToId())
+        let id = text.nameToId()
+        h = /Add-new-tag/ [Symbol.replace](h, id)
         h = /Add new tag/ [Symbol.replace](h, text)
         row.find("#list").append(h)
+        bhs.bindMenuChange(row.find("#item-" + id), nmsce.addTag)
 
-        h = /idname/ [Symbol.replace](tTag, text.nameToId())
+        h = /idname/ [Symbol.replace](tTag, id)
         h = /title/ [Symbol.replace](h, text)
-        row.find("#list-Tags").append(h)
+        row.find("#list-" + row.prop("id").stripID()).append(h)
     }
 
-    row.find("[id|='add']").hide()
-    row.find("#btn-Tags").text("Tags")
+    row.find("#add-" + id).hide()
+    row.find("#txt-" + id).val("")
+    row.find("#btn-" + id).text(row.prop("id").stripID())
 }
 
 NMSCE.prototype.cancelTag = function (evt) {
     let row = $(evt).closest("[id|='row']")
     row.find("[id|='add']").hide()
-    $(evt).val("")
-    row.find("#btn-Tags").text("Tags")
+    row.find("[id|='txt']").first().val("")
+    row.find("[id|='btn']").first().text(row.prop("id").stripID())
 }
 
 function showClass() {
@@ -1219,8 +1236,8 @@ NMSCE.prototype.loadImgText = function (clear) {
                 data-placement="bottom"
                 title="Use Line break, <br>, to separate multiple lines.">
             </i>&nbsp;
-            <input id="id-text" class="rounded col-8" type="text">
-       </label>
+            <input id="id-text" class="rounded col-8" type="text" onchange="nmsce.ckImgText(this, true)">
+        </label>
         <br>`
 
     $("#img-text").html(textInp)
@@ -1352,7 +1369,7 @@ NMSCE.prototype.ckImgText = function (evt, draw) {
 }
 
 NMSCE.prototype.restoreText = function (iTxt, draw) {
-    if (typeof iTxt !== "undefined" && iTxt)
+    if (iTxt)
         nmsce.imageText = iTxt
 
     if (typeof nmsce.imageText === "undefined")
@@ -1363,6 +1380,9 @@ NMSCE.prototype.restoreText = function (iTxt, draw) {
     let keys = Object.keys(nmsce.imageText)
     for (let id of keys) {
         let f = nmsce.imageText[id]
+
+        if (id === "text" && f.text)
+            loc.find("#id-text").val(f.text)
 
         let floc = loc.find("#ck-" + id)
 
@@ -1384,7 +1404,7 @@ NMSCE.prototype.extractImgText = function () {
         let f = s[k]
         delete f.width
         delete f.height
-        if (f.name !== "Text" && f.text !== "")
+        if (k !== "text")
             delete f.text
         delete f.sel
     }
@@ -1602,7 +1622,7 @@ NMSCE.prototype.redditShare = function (evt) {
 
     let ref = bhs.fs.doc("nmsce/" + nmsce.last.galaxy + "/" + nmsce.last.type + "/" + nmsce.last.id)
     ref.set({
-        reddit: true
+        reddit: firebase.firestore.Timestamp.now()
     }, {
         merge: true
     }).then(() => $("#posted").text("Posted"))
@@ -2064,7 +2084,7 @@ NMSCE.prototype.selectResult = async function (evt) {
                 let h = /idname/g [Symbol.replace](row, id)
                 h = /title/ [Symbol.replace](h, fld.name)
 
-                if (fld.type === "color" || fld.type === "tags") {
+                if (fld.type === "tags") {
                     let t = ""
 
                     if (fld) {
@@ -2244,7 +2264,7 @@ NMSCE.prototype.displayList = function (entries, path) {
                     let id = f.name.nameToId()
                     let l = /idname/g [Symbol.replace](itm, id)
                     if (typeof e[id] !== "undefined") {
-                        if (f.type === "color" || f.type === "tags") {
+                        if (f.type === "tags") {
                             let t = ""
                             if (e[id]) {
                                 for (let c of e[id])
@@ -2434,41 +2454,41 @@ NMSCE.prototype.selectList = function (evt) {
     nmsce.displaySingle(e)
 }
 
-NMSCE.prototype.buildModal = function (evt) {
-    const row = `  
-        <div id="id-Photo" class="row">
-            <img id="img-pic" class="img-fluid" />
-        </div>
-        <div class="row">`
-    const itm = `   <div id="id-idname" class="col-7">tname: title</div>`
-    const glyph = ` <div id="id-idname" class="col-7">tname: <span id="coords" class="glyph">title</span></div>`
-    const end = `</div>`
+// NMSCE.prototype.buildModal = function (evt) {
+//     const row = `  
+//         <div id="id-Photo" class="row">
+//             <img id="img-pic" class="img-fluid" />
+//         </div>
+//         <div class="row">`
+//     const itm = `   <div id="id-idname" class="col-7">tname: title</div>`
+//     const glyph = ` <div id="id-idname" class="col-7">tname: <span id="coords" class="glyph">title</span></div>`
+//     const end = `</div>`
 
-    let loc = $(evt).closest("[id|='sub']")
-    let title = loc.prop("id").stripID().idToName()
+//     let loc = $(evt).closest("[id|='sub']")
+//     let title = loc.prop("id").stripID().idToName()
 
-    loc = $("#modal")
-    loc.find(".modal-title").text(title)
+//     loc = $("#modal")
+//     loc.find(".modal-title").text(title)
 
-    loc = loc.find(".modal-body")
+//     loc = loc.find(".modal-body")
 
-    let h = row
+//     let h = row
 
-    let items = $(evt).find("[id|='id']")
-    for (let i of items) {
-        let id = $(i).prop("id").stripID()
-        if (id !== "Photo") {
-            let t = $(i).text()
-            if (t) {
-                let l = /idname/ [Symbol.replace](id === "Coords" ? glyph : itm, id)
-                l = /tname/ [Symbol.replace](l, id.idToName())
-                h += /title/ [Symbol.replace](l, t)
-            }
-        }
-    }
+//     let items = $(evt).find("[id|='id']")
+//     for (let i of items) {
+//         let id = $(i).prop("id").stripID()
+//         if (id !== "Photo") {
+//             let t = $(i).text()
+//             if (t) {
+//                 let l = /idname/ [Symbol.replace](id === "Coords" ? glyph : itm, id)
+//                 l = /tname/ [Symbol.replace](l, id.idToName())
+//                 h += /title/ [Symbol.replace](l, t)
+//             }
+//         }
+//     }
 
-    loc.html(h + end)
-}
+//     loc.html(h + end)
+// }
 
 NMSCE.prototype.newDARC = function (evt) {
     let addr = $(evt).text()
@@ -3018,41 +3038,67 @@ const faunaProductTamed = [{
     name: "Wild Milk"
 }]
 
-const resList = [{
-    name: "Ammonia",
+const resourceList = [{
+    name: "Magnetised Ferrite"
 }, {
-    name: "Cadmium",
+    name: "Sodium"
 }, {
-    name: "Cobalt",
+    name: "Cobalt"
 }, {
-    name: "Copper",
+    name: "Salt"
 }, {
-    name: "Dioxite",
+    name: "Copper"
 }, {
-    name: "Emeril",
+    name: "Cadmium"
 }, {
-    name: "Gold",
+    name: "Emeril"
 }, {
-    name: "Indium",
+    name: "Indium"
 }, {
-    name: "Magnetized Ferrite",
+    name: "Paraffinium"
 }, {
-    name: "Paraffinum",
+    name: "Pyrite"
 }, {
-    name: "Phosphorus",
+    name: "Ammonia"
 }, {
-    name: "Pyrite",
+    name: "Uranium"
 }, {
-    name: "Salt",
+    name: "Dioxite"
 }, {
-    name: "Silver",
+    name: "Phosphorus"
 }, {
-    name: "Uranium",
+    name: "Silver"
+}, {
+    name: "Gold"
+}, {
+    name: "Sulphurine"
+}, {
+    name: "Radon"
+}, {
+    name: "Nitrogen"
+}, {
+    name: "Activated Copper"
+}, {
+    name: "Activated Cadmium"
+}, {
+    name: "Activated Emeril"
+}, {
+    name: "Activated Indium"
+}, {
+    name: "Fungal Mould"
+}, {
+    name: "Frost Crystal"
+}, {
+    name: "Gamma Root"
+}, {
+    name: "Cactus Flesh"
+}, {
+    name: "Solanium"
+}, {
+    name: "Star Bulb"
 }, ]
 
 const colorList = [{
-    name: "Nothing Selected",
-}, {
     name: "Blue",
 }, {
     name: "Black",
@@ -3143,7 +3189,7 @@ const biomeList = [{
 }]
 
 const glitchList = [{
-    name: "Bubble"
+    name: "Bubble Cluster"
 }, {
     name: "Cable Pod"
 }, {
@@ -3231,7 +3277,7 @@ const weatherList = [{
 }, {
     name: "Burning Air"
 }, {
-    name: "Burning Gas Clouds"
+    name: "Burning Clouds"
 }, {
     name: "Caustic Dust"
 }, {
@@ -3375,7 +3421,7 @@ const weatherList = [{
 }, {
     name: "Gamma Dust"
 }, {
-    name: "Gas Clouds"
+    name: "Clouds"
 }, {
     name: "Gelid"
 }, {
@@ -3497,7 +3543,7 @@ const weatherList = [{
 }, {
     name: "No Atmosphere"
 }, {
-    name: "Noxious Gas Storms"
+    name: "Noxious Storms"
 }, {
     name: "Noxious Gases"
 }, {
@@ -3637,7 +3683,7 @@ const weatherList = [{
 }, {
     name: "Superheated Drizzle"
 }, {
-    name: "Superheated Gas Pockets"
+    name: "Superheated Pockets"
 }, {
     name: "Superheated Rain"
 }, {
@@ -3839,7 +3885,7 @@ const objectList = [{
             search: true,
         }, {
             name: "Color",
-            type: "color",
+            type: "tags",
             list: colorList,
             max: 4,
             required: true,
@@ -3902,7 +3948,7 @@ const objectList = [{
             search: true,
         }, {
             name: "Color",
-            type: "color",
+            type: "tags",
             list: colorList,
             max: 2,
             required: true,
@@ -4008,7 +4054,7 @@ const objectList = [{
             type: "long string",
         }, {
             name: "Color",
-            type: "color",
+            type: "tags",
             max: 2,
             list: colorList,
             required: true,
@@ -4081,6 +4127,7 @@ const objectList = [{
         }, {
             name: "Tags",
             type: "tags",
+            max: 4,
             search: true,
         }, {
             name: "Planet Name",
@@ -4182,8 +4229,17 @@ const objectList = [{
             imgText: true,
             search: true,
         }, {
+            name: "Resources",
+            type: "tags",
+            list: resourceList,
+            ttip: "For searching you can only use items in 1 of these fields.",
+            max: 6,
+            search: true,
+        }, {
             name: "Tags",
             type: "tags",
+            ttip: "For searching you can only use items in 1 of these fields.",
+            max: 4,
             search: true,
         }, {
             name: "Photo",
@@ -4258,6 +4314,7 @@ const objectList = [{
         }, {
             name: "Tags",
             type: "tags",
+            max: 4,
             search: true,
         }, {
             name: "Photo",

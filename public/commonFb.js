@@ -1016,7 +1016,7 @@ blackHoleSuns.prototype.validateEntry = function (entry, nobh) {
     }
 
     if (ok && !entry.econ && fcedata) {
-        err += "Missing economy."
+        error += "Missing economy."
         ok = false
     }
 

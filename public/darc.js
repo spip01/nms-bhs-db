@@ -20,6 +20,11 @@ $(document).ready(() => {
             })
             bhs.displayResults(bhs.route)
         }
+
+        let nmsce = window.localStorage.getItem('nmsceaddr')
+        if (nmsce)
+            $("#id-end").val(reformatAddress(nmsce))
+        window.localStorage.removeItem('nmsceaddr')
     }
 })
 
@@ -48,12 +53,12 @@ blackHoleSuns.prototype.setGP = function () {
     darc.routeGen = increment
 
     let d = new Date()
-    let n = d.getFullYear()+"-"+(d.getMonth()+1)
+    let n = d.getFullYear() + "-" + (d.getMonth() + 1)
     darc[n] = increment
-    
+
     if (bhs.user.uid === "")
         darc.noLogin = increment
-        
+
     ref.set({
         darc: darc
     }, {
@@ -208,13 +213,6 @@ blackHoleSuns.prototype.updateDarcSettings = function () {
         $("#id-maxJumps").val(typeof bhs.user.darcSettings.maxJumps !== "undefined" ? bhs.user.darcSettings.maxJumps : 20)
         $("#id-start").val(typeof bhs.user.darcSettings.start !== "undefined" ? bhs.user.darcSettings.start : "")
         $("#id-end").val(typeof bhs.user.darcSettings.end !== "undefined" ? bhs.user.darcSettings.end : "")
-    }
-
-    if (typeof (Storage) !== "undefined") {
-        let nmsce = window.localStorage.getItem('nmsceaddr')
-        if (nmsce)
-            $("#id-end").val(reformatAddress(nmsce))
-        window.localStorage.removeItem('nmsceaddr')
     }
 }
 

@@ -1023,20 +1023,23 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
         h = /rgbcolor/ [Symbol.replace](h, "background-color: " + (typeof l.color === "undefined" ? "#f4f4f4" : l.color) + ";")
 
         mlist.append(h)
-
-        mlist.find("#item-" + lid).unbind("click")
-        mlist.find("#item-" + lid).click(function () {
-            let name = $(this).text().stripMarginWS()
-            let btn = menu.find("#btn-" + id)
-            btn.text(name)
-
-            if (typeof changefcn === "function")
-                changefcn(btn)
-
-            if ($(this).attr("style"))
-                btn.attr("style", $(this).attr("style"))
-        })
+        bhs.bindMenuChange(mlist.find("#item-" + lid), changefcn)
     }
+}
+
+blackHoleSuns.prototype.bindMenuChange = function (loc, fcn) {
+    loc.unbind("click")
+    loc.click(function () {
+        let name = $(this).text().stripMarginWS()
+        let btn = $(this).closest("[id|='id']").find("[id|='btn']").first()
+        btn.text(name)
+
+        if (typeof fcn === "function")
+            fcn(btn)
+
+        if ($(this).attr("style"))
+            btn.attr("style", $(this).attr("style"))
+    })
 }
 
 blackHoleSuns.prototype.saveUser = async function () {
