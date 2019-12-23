@@ -217,7 +217,7 @@ NMSCE.prototype.showSearchPanel = function (evt) {
         $("#searchPanel").hide()
 }
 
-NMSCE.prototype.clearPanel = function (all) {
+NMSCE.prototype.clearPanel = function (all, savelast) {
     const clr = (pnl) => {
         pnl.find("input").each(function () {
             let type = $(this).prop("type")
@@ -247,6 +247,9 @@ NMSCE.prototype.clearPanel = function (all) {
     loc.find("#row-Latitude").hide()
     loc.find("#row-Longitude").hide()
 
+    $("#redditlink").val("")
+    $("#posted").empty()
+
     let tags = $("[data-type='tags']")
 
     for (let loc of tags) {
@@ -260,16 +263,18 @@ NMSCE.prototype.clearPanel = function (all) {
         $(loc).find("#list-" + id).empty()
     }
 
-    nmsce.last = null
+    if (!savelast)
+        nmsce.last = null
 
     if (!fnmsce) {
-        nmsce.restoreText()
+        nmsce.restoreText(bhs.user.imageText)
 
         let canvas = document.getElementById("id-canvas")
         let ctx = canvas.getContext("2d")
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
         $("#save").text("Save")
+        $("#updateScreenshot").hide()
 
         $("#delete").addClass("disabled")
         $("#delete").prop("disabled", true)
@@ -436,9 +441,14 @@ NMSCE.prototype.extractEntry = async function () {
                 }
             }
 
-            entry.imageText = bhs.user.imageText
-            nmsce.updateEntry(entry)
-            nmsce.updateScreenshots(entry)
+            entry.redditlink = $("#redditlink").val()
+
+            if (!$("#ck-updateScreenshot").is(":visible") || $("#ck-updateScreenshot").prop("checked")) {
+                entry.imageText = bhs.user.imageText
+                nmsce.updateEntry(entry)
+                nmsce.updateScreenshots(entry)
+            } else
+                nmsce.updateEntry(entry)
         }
     }
 
@@ -446,48 +456,62 @@ NMSCE.prototype.extractEntry = async function () {
 }
 
 NMSCE.prototype.displaySingle = async function (entry) {
+    nmsce.clearPanel(true, true)
+
+    $('html, body').animate({
+        scrollTop: ($('#typeTabs').offset().top)
+    }, 500);
+
     let tloc = $("#tab-" + entry.type.nameToId())
     tloc.click()
 
-    nmsce.lastsys = entry
     bhs.getEntry(entry.addr, nmsce.displaySystem, null, null, true)
 
-    let pnl = $("#typePanels #pnl-" + entry.type)
+    let disp = function (flds, pnl) {
+        for (let fld of flds) {
+            let id = fld.name.nameToId()
+            let row = pnl.find("#row-" + id)
 
-    let list = pnl.find("[id|='row'] ")
-    for (let row of list) {
-        let data = $(row).data()
-        let loc = $(row).find(":input")
-        let id = $(row).prop("id").stripID()
-        let fld = entry[id]
+            if (typeof entry[id] === "undefined")
+                continue
 
-        switch (data.type) {
-            case "number":
-            case "float":
-            case "string":
-                loc.val(fld)
-                break
-            case "tags":
-                $(row).find("#list-" + id).empty()
-                if (fld)
-                    for (let t of fld) {
-                        let h = /idname/ [Symbol.replace](tTag, t.nameToId())
-                        h = /title/ [Symbol.replace](h, t)
-                        $(row).find("#list-" + id).append(h)
-                    }
-                break
-            case "menu":
-                $(row).find("#item-" + fld).click()
-                break
-            case "radio":
-                $(row).find("input").prop("checked", false)
-                $(row).find("#id-" + fld).prop("checked", true)
-                break
-            case "checkbox":
-                loc.prop("checked", fld ? true : false)
-                break
+            switch (fld.type) {
+                case "number":
+                case "float":
+                case "string":
+                    row.find("input").val(entry[id])
+                    break
+                case "tags":
+                    row.find("#list-" + id).empty()
+                    if (entry[id])
+                        for (let t of entry[id]) {
+                            let h = /idname/ [Symbol.replace](tTag, t.nameToId())
+                            h = /title/ [Symbol.replace](h, t)
+                            row.find("#list-" + id).append(h)
+                        }
+                    break
+                case "menu":
+                    row.find("#item-" + entry[id].nameToId()).click()
+
+                    if (fld.sublist)
+                        disp(fld.sublist, pnl.find("#slist-" + entry[id].nameToId()))
+                    break
+                case "radio":
+                    row.find("#id-" + entry[id].nameToId()).click()
+                    break
+                case "checkbox":
+                    if (entry[id] !== row.find("input").prop("checked"))
+                        row.find("input").click()
+                    break
+            }
         }
     }
+
+    let pnl = $("#typePanels #pnl-" + entry.type)
+    let idx = getIndex(objectList, "name", entry.type)
+    let obj = objectList[idx]
+
+    disp(obj.fields, pnl)
 
     let loc = $("[id='map-selected']")
     loc.find("img").hide()
@@ -512,15 +536,20 @@ NMSCE.prototype.displaySingle = async function (entry) {
 
     nmsce.loadScreenshot(null, entry.Photo)
 
-    $("#posted").text(entry.reddit ? "Posted" + (typeof entry.reddit !== "boolean" ? entry.reddit.toDate() : "") : "")
+    $("#redditlink").val(entry.redditlink ? entry.redditlink : "")
 
     $("#save").text("UPDATE")
+    $("#updateScreenshot").show()
+    $("#ck-updateScreenshot").prop("checked", false)
 
     $("#delete").removeClass("disabled")
     $("#delete").removeAttr("disabled")
 
     $("#reddit").removeClass("disabled")
+
     $("#reddit").removeAttr("disabled")
+    $("#posted").html(entry.reddit ? "Posted&nbsp;" +
+        (typeof entry.reddit !== "boolean" ? "<span class='txt-inp-def h6'>" + entry.reddit.toDate() + "</span>" : "") : "")
 }
 
 NMSCE.prototype.executeSearch = async function (fcn) {
@@ -1228,7 +1257,7 @@ NMSCE.prototype.loadImgText = function (clear) {
         </label>`
 
     const textInp = `
-        <label class="col-13 txt-inp-def">
+        <label class="col-13 txt-inp-def pl-15">
             <input id="ck-text" type="checkbox" data-loc="#id-text"
                 onchange="nmsce.ckImgText(this, true)">
             Text&nbsp;&nbsp;
@@ -1414,7 +1443,7 @@ NMSCE.prototype.extractImgText = function () {
 
 NMSCE.prototype.loadScreenshot = async function (evt, fname) {
     nmsce.loadImgText()
-    nmsce.restoreText()
+    nmsce.restoreText(bhs.user.imageText)
 
     if (evt) {
         let file = evt.files[0]
@@ -1633,6 +1662,8 @@ NMSCE.prototype.textHittest = function (x, y, text) {
     return (x >= text.x && x <= text.x + text.width && y >= text.y - text.fSize && y <= text.y - text.fSize + text.height)
 }
 
+var lastsel = 0
+
 NMSCE.prototype.handleMouseDown = function (e) {
     e.preventDefault()
 
@@ -1650,6 +1681,7 @@ NMSCE.prototype.handleMouseDown = function (e) {
         for (let k of keys) {
             let text = nmsce.imageText[k]
             text.sel = false
+            lastsel = 0
         }
 
     let loc = $("#imgtable")
@@ -1657,7 +1689,7 @@ NMSCE.prototype.handleMouseDown = function (e) {
         let text = nmsce.imageText[k]
 
         if (text.ck && nmsce.textHittest(startX, startY, text)) {
-            text.sel = true
+            text.sel = ++lastsel
             nmsce.startX = startX
             nmsce.startY = startY
 
@@ -1713,12 +1745,65 @@ NMSCE.prototype.handleMouseMove = function (e) {
     nmsce.drawText()
 }
 
+NMSCE.prototype.alignText = function (how) {
+    let keys = Object.keys(nmsce.imageText)
+    let top = 0,
+        left = 0,
+        right = Number.MAX_SAFE_INTEGER,
+        bottom = Number.MAX_SAFE_INTEGER,
+        sel=0,
+        width = 0
+
+    for (let k of keys) {
+        let text = nmsce.imageText[k]
+
+        if (text.sel) {
+            top = Math.max(top, text.y)
+            bottom = Math.min(bottom, text.y + text.height)
+            left = Math.max(left, text.x)
+            right = Math.min(right, text.x + text.width)
+            width += text.width
+            sel++
+        }
+    }
+
+    let space = (right - left  - width) / (sel - 1)
+
+    for (let k of keys) {
+        let text = nmsce.imageText[k]
+
+        if (text.sel) {
+            switch (how) {
+                case "top":
+                    text.y = top
+                    break
+                case "bottom":
+                    text.y = bottom - text.height
+                    break
+                case "left":
+                    text.x = left
+                    break
+                case "right":
+                    text.x = right - text.width
+                    break
+                // case "justify":
+                //     text.x = left
+                //     left += text.width + space
+                // break
+            }
+        }
+    }
+
+    nmsce.drawText()
+}
+
 NMSCE.prototype.deleteEntry = function (entry) {
     let ref = bhs.fs.doc("nmsce/" + entry.galaxy + "/" + entry.type + "/" + entry.id)
 
     ref.delete().then(() => {
         bhs.status(entry.id + " deleted.")
         $("#save").text("Save")
+        $("#updateScreenshot").hide()
 
         let ref = bhs.fbstorage.ref().child(originalPath + entry.Photo)
         ref.delete()
@@ -1735,12 +1820,6 @@ NMSCE.prototype.deleteEntry = function (entry) {
 }
 
 NMSCE.prototype.updateScreenshots = function (entry) {
-    if (typeof entry.id === "undefined")
-        entry.id = entry.addr.nameToId() + "-" + entry.Name.nameToId().toLowerCase()
-
-    if (typeof entry.Photo === "undefined")
-        entry.Photo = entry.type + "_" + entry.id + ".jpg"
-
     let disp = document.createElement('canvas')
     nmsce.drawText(disp, 1024)
     disp.toBlob(blob => {
@@ -1815,8 +1894,10 @@ NMSCE.prototype.getEntry = async function (evt) {
     if (gal && type && id) {
         let ref = bhs.fs.doc("nmsce/" + gal + "/" + type + "/" + id)
         ref.get().then(doc => {
-            if (doc.exists)
+            if (doc.exists) {
+                nmsce.last = doc.data()
                 nmsce.displaySingle(doc.data())
+            }
         })
     }
 }
@@ -2116,9 +2197,17 @@ NMSCE.prototype.selectResult = async function (evt) {
             }
         }
 
+        if (e.redditlink) {
+            let h = /idname/g [Symbol.replace](row, "link")
+            h = /title/ [Symbol.replace](h, "")
+            h = /value/ [Symbol.replace](h, "<a href='" + e.redditlink + "'>Reddit Post Link</a>")
+            h = /font/ [Symbol.replace](h, "")
+            loc.append(h)
+        }
+
         let d = e.created.toDate().toDateLocalTimeString()
 
-        let h = /idname/g [Symbol.replace](row, "date")
+        h = /idname/g [Symbol.replace](row, "date")
         h = /title/ [Symbol.replace](h, "Added")
         h = /value/ [Symbol.replace](h, d)
         h = /font/ [Symbol.replace](h, "")
@@ -4107,11 +4196,10 @@ const objectList = [{
             imgText: true,
             ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
         }, {
-            name: "Type",
+            name: "Genus",
             type: "menu",
             list: faunaList,
             search: true,
-            required: true,
         }, {
             name: "Tamed Product",
             type: "menu",

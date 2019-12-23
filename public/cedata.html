@@ -208,6 +208,14 @@
                                     <button id="delete" type="button" class="col-6 btn btn-sm btn-def disabled"
                                         disabled>Delete</button>&nbsp;
                                 </div>
+                                <div id="updateScreenshot" class="row" style="padding-top:2px; display:none">
+                                    <input id="ck-updateScreenshot" type="checkbox">
+                                    <span class="txt-inp-def h6">Update Screenshot</span>&nbsp;
+                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                        data-html="true" data-placement="bottom"
+                                        title="Select wether to overwrite currently saved screenshot with the updated one below.">
+                                    </i>
+                                </div>
                                 <div class="row" style="padding-top:2px;">
                                     <button id="cancel" type="button" class="col-6 btn btn-def  btn-sm"
                                         onclick="nmsce.clearPanel()">Cancel</button>&nbsp;
@@ -260,14 +268,14 @@
                                     alt="Share to reddit"></button>&nbsp;
                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                                 data-placement="bottom"
-                                title="Enable by selecting saved entry from entry list. Opens a NEW tab with reddit post. Select community, title & flair. Then post.">
+                                title="You can only submit an entry after it has been saved. Opens a NEW tab with reddit post. Select community, title & flair. Then post.">
                             </i>
                         </div>
-                        <div id="posted" class="col-3 text-danger h4"></div>
-                        <div class="col text-right">
-                            <i class="fa fa-question-circle-o text-danger h4" data-toggle="tooltip" data-html="true"
-                                data-placement="top" title="You can position text by clicking and dragging.">
-                            </i>
+                        <div class="col-10">
+                            <div id="posted" class="row text-danger h4"></div>
+                            <label class="row txt-inp-def">Reddit Link&nbsp;
+                                <input id="redditlink" class="col-8" type="text">
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -279,7 +287,7 @@
                     </div>
                     <br>
 
-                    <div class="row border-top">
+                    <div class="row border-top border-bottom">
                         <br>
                         <div id="id-Font" class="col-14 h5"></div>
                         <label class="col-sm-7 col-14 txt-inp-def">Size
@@ -290,13 +298,36 @@
                             <input id="sel-color" class="col-7 bkg-def" style="border-color:black"
                                 onchange="nmsce.setColor(this)" type="color" value="#ffffff">&nbsp;
                         </label>
+                        <span id="measurefont" style="visibility:hidden; float:left; white-space: nowrap;"></span>
                     </div>
-                    <span id="measurefont" style="visibility:hidden; float:left; white-space: nowrap;"></span>
                     <br>
 
-                    <div clss="row border-top">
-                        <button class="btn btn-sm btn-def col-5" onclick="nmsce.loadImgText(true)">Reset</button>&nbsp;
-                        <button class="btn btn-sm btn-def col-5" onclick="nmsce.restoreText(null, true)">Reload</button>
+                    <div clss="row">
+                        <button class="btn btn-sm btn-def h6 col-5"
+                            onclick="nmsce.loadImgText(true)">Reset</button>&nbsp;
+                        <button class="btn btn-sm btn-def h6 col-5"
+                            onclick="nmsce.restoreText(null, true)">Reload</button>
+                    </div>
+                    <br>
+                    <div clss="row">
+                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="top" title="You can position text by clicking and dragging.">
+                        </i>&nbsp;
+                        <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('left')">
+                            <i class="fas fa-align-left"></i>
+                        </button>&nbsp;
+                        <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('right')">
+                            <i class="fas fa-align-right"></i>
+                        </button>&nbsp;
+                        <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('top')">
+                            <i class="fas fa-align-left" style="transform: rotate(90deg);"></i>
+                        </button>&nbsp;
+                        <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('bottom')">
+                            <i class="fas fa-align-left" style="transform: rotate(270deg);"></i>
+                        </button>
+                        <!--button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('justify')">
+                            <i class="fas fa-align-justify"></i>
+                        </button-->
                     </div>
                 </div>
             </div>
@@ -317,6 +348,7 @@
 
             <div id="id-table" class="card-body"></div>
         </div>
+        <br>
     </div>
 
     <br>
