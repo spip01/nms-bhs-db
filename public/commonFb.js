@@ -292,7 +292,7 @@ blackHoleSuns.prototype.getEntry = function (addr, displayfcn, galaxy, platform,
             if (displayfcn)
                 displayfcn(bhs.last[pnlTop])
 
-            return bhs.last[pnlTop]
+            return d
         } else
             return null
     }).catch(err => {
@@ -324,6 +324,26 @@ blackHoleSuns.prototype.getEntryByRegion = async function (reg, displayfcn, gala
                 displayfcn(e ? e : d, $("#ck-zoomreg").prop("checked"))
 
             return e ? e : d
+        }
+    }).catch(err => {
+        console.log(err)
+    })
+}
+
+blackHoleSuns.prototype.getEntryByRegionAddr =  function (addr, displayfcn) {
+    let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform)
+
+    ref = ref.where("addr", ">=", addr.slice(0,14)+"0000")
+    ref = ref.limit(1)
+
+    return ref.get().then(async snapshot => {
+        if (!snapshot.empty) {
+            let d = snapshot.docs[0].data()
+
+            if (displayfcn)
+                displayfcn(d)
+
+            return d
         }
     }).catch(err => {
         console.log(err)

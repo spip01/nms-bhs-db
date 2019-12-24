@@ -144,7 +144,7 @@ NMSCE.prototype.addGlyph = function (evt) {
         nmsce.changeAddr(loc)
 }
 
-NMSCE.prototype.changeAddr = function (evt) {
+NMSCE.prototype.changeAddr = async function (evt) {
     let addr = $(evt).val()
     if (addr !== "") {
         if (addr.length === 12) {
@@ -163,7 +163,9 @@ NMSCE.prototype.changeAddr = function (evt) {
 
         if (!fnmsce) {
             nmsce.lastsys = null
-            bhs.getEntry(addr, nmsce.displaySystem, null, null, true)
+            let entry = await bhs.getEntry(addr, nmsce.displaySystem, null, null, true)
+            if (!entry)
+                bhs.getEntryByRegionAddr(addr, nmsce.displayRegion)
         }
     }
 }
@@ -177,6 +179,11 @@ NMSCE.prototype.dispAddr = function (pnl, addr, glyph) {
     loc.find("#id-addr").val(addr)
     loc.find("#id-glyph").text(glyph)
     loc.find("#id-hex").text(glyph)
+}
+
+NMSCE.prototype.displayRegion = function (entry) {
+    let loc = $("#pnl-S1")
+    loc.find("#id-reg").val(entry.reg)
 }
 
 NMSCE.prototype.displaySystem = function (entry) {
@@ -984,7 +991,10 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                     rloc.data("max", f.max)
 
                 if (f.list) {
-                    bhs.buildMenu(rloc, f.name, f.list, nmsce.addTag, {
+                    let list = f.list.sort((a, b) =>
+                        a.name.toLowerCase() > b.name.toLowerCase() ? 1 :
+                        a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0)
+                    bhs.buildMenu(rloc, f.name, list, nmsce.addTag, {
                         nolabel: true
                     })
 
@@ -1751,7 +1761,7 @@ NMSCE.prototype.alignText = function (how) {
         left = 0,
         right = Number.MAX_SAFE_INTEGER,
         bottom = Number.MAX_SAFE_INTEGER,
-        sel=0,
+        sel = 0,
         width = 0
 
     for (let k of keys) {
@@ -1767,7 +1777,7 @@ NMSCE.prototype.alignText = function (how) {
         }
     }
 
-    let space = (right - left  - width) / (sel - 1)
+    let space = (right - left - width) / (sel - 1)
 
     for (let k of keys) {
         let text = nmsce.imageText[k]
@@ -1786,10 +1796,10 @@ NMSCE.prototype.alignText = function (how) {
                 case "right":
                     text.x = right - text.width
                     break
-                // case "justify":
-                //     text.x = left
-                //     left += text.width + space
-                // break
+                    // case "justify":
+                    //     text.x = left
+                    //     left += text.width + space
+                    // break
             }
         }
     }
