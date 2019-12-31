@@ -2035,7 +2035,7 @@ NMSCE.prototype.displayResults = function (e, path, inID) {
         galaxy<br>
         by<br>
         <img id="id-idname" src="images/blank.png" data-src="url" data-path="dbpath" class="pointer" onclick="nmsce.selectResult(this)"
-            onload="nmsce.imgLoaded(this, $('.cover-container').height()*1.3, $('.cover-container').height()-48)" />
+            onload="nmsce.imgLoaded(this, $('.cover-container').height()*1.3, $('.cover-container').height()-64)" />
     </div>`
 
     let idname = (e.type + "-" + e.id).nameToId()
@@ -2615,33 +2615,35 @@ const explorerBodiesMap = `
         <img id="map-transparent" src="images/explorer/bodies/blank.png" style="position:absolute" usemap="#explorer-map" />
 
         <map name="explorer-map" id="map-areas">
-            <area alt="h3" data-group=1 coords="0,1,0,125,112,129,104,60" shape="poly">
-            <area alt="h4" data-group=1 coords="10,2,120,64,223,65,214,5" shape="poly">
-            <area alt="h5" coords="264,4,243,67,268,101,329,101,342,64,326,4" shape="poly">
-            <area alt="h6" coords="114,67,122,114,155,113,177,67" shape="poly">
-            <area alt="h7" coords="184,71,157,115,169,124,196,125,219,71" shape="poly">
-            <area alt="h8" coords="224,69,203,115,232,137,257,122,259,95,238,68" shape="poly">
-            <area alt="h9" data-group=2 coords="272,105,272,122,336,151,336,102" shape="poly">
-            <area alt="h10" data-group=2 coords="0,128,0,165,86,167,84,130" shape="poly">
-            <area alt="h11" data-group=2 data-group=2 coords="88,130,87,162,162,163,162,129,121,131" shape="poly">
-            <area alt="h12" coords="169,130,169,171,215,177,228,143,207,127" shape="poly">
-            <area alt="h13" coords="232,142,226,170,243,188,266,198,286,189,298,178,329,175,330,157,300,137,267,123" shape="poly">
-            <area alt="h14" coords="1,171,1,281,54,281,52,171" shape="poly">
-            <area alt="h15" coords="57,174,56,215,113,215,166,207,166,174" shape="poly">
-            <area alt="h16" coords="199,187,182,213,194,247,218,262,248,255,268,245,279,222,280,202,258,202,221,180" shape="poly">
-            <area alt="h17" coords="283,196,268,375,306,377,306,191" shape="poly">
-            <area alt="h18" coords="314,185,310,373,342,378,346,170" shape="poly">
-            <area alt="h19" coords="60,235,62,289,110,289,104,258,103,222" shape="poly">
-            <area alt="h20" coords="122,221,109,245,111,271,126,284,147,293,175,285,189,255,179,225,154,212" shape="poly">
-            <area alt="h21" coords="14,287,3,356,91,356,87,301" shape="poly">
-            <area alt="h22" coords="92,295,95,345,184,341,186,295,123,295" shape="poly">
-            <area alt="h23" coords="189,277,188,302,203,321,191,342,160,348,157,375,254,372,267,326,216,270" shape="poly">
-            <area alt="h24" coords="4,361,0,405,92,408,91,361" shape="poly">
-            <area alt="h25" coords="95,352,95,415,132,414,133,353" shape="poly">
-            <area alt="h26" coords="4,419,2,444,171,447,166,419" shape="poly">
-            <area alt="h27" coords="138,383,135,407,168,416,208,442,256,444,250,402" shape="poly">
-            <area alt="h28" coords="255,385,260,442,299,443,295,385" shape="poly">
-            <area alt="h29" coords="308,385,307,444,338,437,338,385" shape="poly">
+            <area alt="h3" data-group=1 coords="4,5,9,101,69,130,111,112,112,88,64,34" shape="poly">
+            <area alt="h4" data-group=1 coords="45,9,67,28,134,59,210,63,222,17,160,6" shape="poly">
+            <area alt="h5" coords="281,2,256,55,283,91,323,91,344,58,330,6" shape="poly">
+            <area alt="h6" coords="119,69,118,108,144,109,168,70" shape="poly">
+            <area alt="h7" coords="186,68,160,111,175,125,192,125,212,82" shape="poly">
+            <area alt="h8" coords="224,66,212,108,230,120,252,121,260,76" shape="poly">
+            <area alt="h9" coords="276,98,275,114,340,146,339,98" shape="poly">
+            <area alt="h10" data-group=2 coords="4,132,86,161" shape="rect">
+            <area alt="h11" data-group=2 coords="91,129,162,160" shape="rect">
+            <area alt="h12" data-group=2 coords="174,134,214,163" shape="rect">
+            <area alt="h13" coords="249,123,225,143,228,178,258,198,290,186,298,172,329,173,330,149,305,142,283,126" shape="poly">
+            <area alt="h14" coords="5,172,55,282" shape="rect">
+            <area alt="h15" coords="68,168,195,201" shape="rect">
+            <area alt="h19" coords="62,225,60,274,107,266,96,219" shape="poly">
+            <area alt="h16" coords="121,206,104,229,112,263,146,279,167,266,173,252,192,259,194,219,174,219,155,204" shape="poly">
+            <area alt="h20" coords="244,240,38" shape="circle">
+            <area alt="h17" coords="283,196,287,217,282,338,280,370,309,372,304,211,303,197" shape="poly">
+            <area alt="h18" coords="331,180,320,255,309,282,310,321,320,332,319,376,334,376,339,303,342,177" shape="poly">
+            <area alt="h21" coords="28,290,15,350,85,351,86,322" shape="poly">
+            <area alt="h22" coords="98,283,194,328" shape="rect">
+            <area alt="h23" coords="222,280,200,291,246,351,176,350,176,376,266,379,267,359,278,342" shape="poly">
+            <area alt="h24" coords="8,360,88,406" shape="rect">
+            <area alt="h25" coords="93,339,121,399" shape="rect">
+            <area alt="h30" coords="126,338,169,381" shape="rect">
+            <area alt="h26" coords="11,422,173,442" shape="rect">
+            <area alt="h27" coords="142,385,135,396,206,434,250,432,248,412,212,405" shape="poly">
+            <area alt="h28" coords="262,385,302,442" shape="rect">
+            <area alt="h29" coords="326,383,309,426,308,443,336,440,344,385" shape="poly">
+            <area alt="h31" coords="230,6,224,32,238,55,250,54,259,37,251,6" shape="poly">
         </map>
     </div>`
 
@@ -2774,20 +2776,38 @@ const shuttleBodiesMap = `
         <img id="map-transparent" src="images/shuttle/bodies/blank.png" style="position:absolute" usemap="#shuttle-bodies-map" />
             
         <map name="shuttle-bodies-map" id="map-areas">
-            <area alt="h2" coords="8,12,81,49" shape="rect">
-            <area alt="h3" coords="99,9,178,56" shape="rect">
-            <area alt="h4" coords="191,8,188,63,325,85,346,67,349,17" shape="poly">
-            <area alt="h18" coords="5,55,69,95" shape="rect">
-            <area alt="h6" coords="78,54,80,104,97,97,133,93,136,69,102,62" shape="poly">
-            <area alt="h5" coords="24,100,22,144,55,146,78,121,59,100" shape="poly">
-            <area alt="h7" coords="97,109,161,88,183,129,171,172,112,156" shape="poly">
-            <area alt="h8" coords="191,76,194,153,336,147,345,98,298,84" shape="poly">
-            <area alt="h13" coords="43,151,28,161,40,187,73,199,122,186,108,156,91,147" shape="poly">
-            <area alt="h19" coords="3,197,3,242,30,246,59,224,41,195" shape="poly">
-            <area alt="h12" coords="72,201,71,229,190,242,197,224,174,198" shape="poly">
-            <area alt="h11" coords="200,164,200,220,242,231,340,216,341,162,263,161" shape="poly">
-            <area alt="h9" coords="48,242,11,293,62,296,91,293,164,281,154,245" shape="poly">
-            <area alt="h10" coords="245,240,203,265,207,288,343,285,339,234" shape="poly">
+            <area alt="h2" coords="8,9,60,40" shape="rect">
+            <area alt="h5" coords="65,-1,100,39" shape="rect">
+            <area alt="h3" coords="110,7,168,41" shape="rect">
+            <area alt="h4" coords="190,8,325,77" shape="rect">
+            <area alt="h18" coords="4,47,57,86" shape="rect">
+            <area alt="h20" coords="64,48,100,87" shape="rect">
+            <area alt="h6" coords="108,44,170,85" shape="rect">
+            <area alt="h19" coords="6,103,55,152" shape="rect">
+            <area alt="h13" coords="64,101,120,156" shape="rect">
+            <area alt="h12" coords="122,127,128,155,154,155,186,112,186,95,156,94" shape="poly">
+            <area alt="h8" coords="192,89,342,162" shape="rect">
+            <area alt="h21" coords="21,159,88,205" shape="rect">
+            <area alt="h7" coords="106,171,106,191,112,206,175,223,188,205,182,167,168,156" shape="poly">
+            <area alt="h9" coords="28,211,6,260,75,256,96,255,144,240,134,217" shape="poly">
+            <area alt="h10" coords="127,251,84,272,87,292,217,290,214,243" shape="poly">
+            <area alt="h11" coords="214,171,196,198,199,238,243,242,344,232,341,183" shape="poly">
+            <area alt="h2" coords="8,9,60,40" shape="rect">
+            <area alt="h5" coords="65,-1,100,39" shape="rect">
+            <area alt="h3" coords="110,7,168,41" shape="rect">
+            <area alt="h4" coords="190,8,325,77" shape="rect">
+            <area alt="h18" coords="4,47,57,86" shape="rect">
+            <area alt="h20" coords="64,48,100,87" shape="rect">
+            <area alt="h6" coords="108,44,170,85" shape="rect">
+            <area alt="h19" coords="6,103,55,152" shape="rect">
+            <area alt="h13" coords="64,101,120,156" shape="rect">
+            <area alt="h12" coords="122,127,128,155,154,155,186,112,186,95,156,94" shape="poly">
+            <area alt="h8" coords="192,89,342,162" shape="rect">
+            <area alt="h21" coords="21,159,88,205" shape="rect">
+            <area alt="h7" coords="106,171,106,191,112,206,175,223,188,205,182,167,168,156" shape="poly">
+            <area alt="h9" coords="28,211,6,260,75,256,96,255,144,240,134,217" shape="poly">
+            <area alt="h10" coords="127,251,84,272,87,292,217,290,214,243" shape="poly">
+            <area alt="h11" coords="214,171,196,198,199,238,243,242,344,232,341,183" shape="poly">
         </map>
     </div>`
 
@@ -2806,15 +2826,10 @@ const shuttleWingsMap = `
             <area alt="h4" coords="120,17,207,63" shape="rect">
             <area alt="h10" coords="212,3,212,92,254,66,274,29,269,-1" shape="poly">
             <area alt="h5" coords="280,5,343,61" shape="rect">
-            <area alt="h6" coords="6,77,61,143" shape="rect">
-            <area alt="h7" coords="70,81,120,141" shape="rect">
-            <area alt="h26" coords="126,74,191,135" shape="rect">
             <area alt="h9" coords="195,135,215,96,253,111,236,153" shape="poly">
             <area alt="h25" coords="266,57,253,95,288,105,302,71" shape="poly">
             <area alt="h14" coords="262,107,252,144,286,148,292,118" shape="poly">
             <area alt="h11" coords="299,92,292,136,329,137,335,111,346,76,329,66" shape="poly">
-            <area alt="h8" coords="11,156,81,184" shape="rect">
-            <area alt="h22" coords="96,154,166,188" shape="rect">
             <area alt="h12" coords="1,200,156,233" shape="rect">
             <area alt="h16" coords="2,242,162,290" shape="rect">
             <area alt="h19" coords="4,295,167,343" shape="rect">
@@ -2822,10 +2837,18 @@ const shuttleWingsMap = `
             <area alt="h13" coords="238,183,258,193,298,174,276,154" shape="poly">
             <area alt="h15" coords="308,191,317,196,344,192,337,139,324,137" shape="poly">
             <area alt="h24" coords="228,183,174,227,176,260,240,280,244,269,210,235,240,194" shape="poly">
-            <area alt="h23" coords="246,241,261,230,337,211,338,199,270,202,237,224" shape="poly">
-            <area alt="h18" coords="241,251,253,276,341,274,338,255,270,231" shape="poly">
             <area alt="h21" coords="174,281,174,345,221,344,307,330,300,291,237,287" shape="poly">
-                </map>
+            <area alt="h18" coords="248,266,279,245,341,257,338,273,254,278" shape="poly">
+            <area alt="h27" coords="238,246,246,263,279,238,271,229" shape="poly">
+            <area alt="h28" coords="315,290,346,336" shape="rect">
+            <area alt="h23" coords="235,235,276,205,335,198,335,207,262,228,246,239" shape="poly">
+            <area alt="h6" coords="7,73,57,134" shape="rect">
+            <area alt="h7" coords="62,72,117,130" shape="rect">
+            <area alt="h26" coords="125,65,195,116" shape="rect">
+            <area alt="h8" coords="12,174,81,195" shape="rect">
+            <area alt="h22" coords="104,168,163,193" shape="rect">
+            <area alt="h29" coords="125,123,114,140,122,157,152,163,181,155,161,123" shape="poly">
+        </map>
     </div>`
 
 const exoticBodiesMap = `
@@ -2865,13 +2888,16 @@ const freighterCapitalMap = `
         <map name="freighter-capital-map" id="map-areas">
             <area alt="h2" data-group=1 coords="12,-1,14,49,323,58,313,6" shape="poly">
             <area alt="h3" data-group=1 coords="95,57,96,97,330,127,324,63" shape="poly">
-            <area alt="h4" data-group=1 coords="61,68,2,108,9,145,184,151,190,117,89,100" shape="poly">
+            <area alt="h4" data-group=1 coords="60,89,11,128,10,142,89,146,184,146,186,125" shape="poly">
             <area alt="h5" data-group=1 coords="14,173,9,303,276,202,297,171,280,125,238,147" shape="poly">
             <area alt="h6" data-group=1 coords="154,255,160,362,333,244,317,182,286,202" shape="poly">
             <area alt="h9" data-group=1 coords="216,332,222,395,340,335,339,253" shape="poly">
             <area alt="h7" data-group=2 coords="36,303,35,335,86,328,88,297" shape="poly">
             <area alt="h8" data-group=2 coords="28,348,32,384,98,379,104,358,73,347" shape="poly">
             <area alt="h10" coords="108,301,98,334,108,351,141,358,151,332,138,309" shape="poly">
+            <area alt="h12" data-group=3 coords="9,81,28,87,38,82,30,64,18,62" shape="poly">
+            <area alt="h13" data-group=3 coords="39,59,47,90,65,82,65,61,49,53" shape="poly">
+            <area alt="h14" data-group=3 coords="76,55,71,85,105,85,94,58" shape="poly">
         </map>
     </div>`
 
