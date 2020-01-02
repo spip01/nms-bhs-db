@@ -250,7 +250,7 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     })
 
     let loc = $("#typePanels #hdr-Ship")
-    loc.find("#row-Class").hide()
+    // loc.find("#row-Class").hide()
     loc.find("#row-Latitude").hide()
     loc.find("#row-Longitude").hide()
 
@@ -1161,25 +1161,25 @@ NMSCE.prototype.cancelTag = function (evt) {
     row.find("[id|='btn']").first().text(row.prop("id").stripID())
 }
 
-function showClass() {
-    let loc = $("#typePanels #hdr-Ship")
-    if ($(this).find("input").prop("checked") || loc.find("#ck-Crashed").prop("checked"))
-        loc.find("#row-Class").show()
-    else
-        loc.find("#row-Class").hide()
-}
+// function showClass() {
+//     let loc = $("#typePanels #hdr-Ship")
+//     if ($(this).find("input").prop("checked") || loc.find("#ck-Crashed").prop("checked"))
+//         loc.find("#row-Class").show()
+//     else
+//         loc.find("#row-Class").hide()
+// }
 
 function showClassLatLong() {
     let loc = $("#typePanels #hdr-Ship")
     if ($(this).find("input").prop("checked")) {
-        loc.find("#row-Class").show()
+        // loc.find("#row-Class").show()
         loc.find("#row-Latitude").show()
         loc.find("#row-Longitude").show()
         loc.find("#row-Planet-Index").show()
         loc.find("#row-Planet-Name").show()
     } else {
-        if (!loc.find("#ck-First-Wave").prop("checked"))
-            loc.find("#row-Class").hide()
+        // if (!loc.find("#ck-First-Wave").prop("checked"))
+        //     loc.find("#row-Class").hide()
         loc.find("#row-Latitude").hide()
         loc.find("#row-Longitude").hide()
         loc.find("#row-Planet-Index").hide()
@@ -2808,7 +2808,8 @@ const shuttleBodiesMap = `
             <area alt="h9" coords="28,211,6,260,75,256,96,255,144,240,134,217" shape="poly">
             <area alt="h10" coords="127,251,84,272,87,292,217,290,214,243" shape="poly">
             <area alt="h11" coords="214,171,196,198,199,238,243,242,344,232,341,183" shape="poly">
-        </map>
+            <area alt="h23" coords="229,249,273,293" shape="rect">
+            <area alt="h22" coords="282,244,342,293" shape="rect">    </map>
     </div>`
 
 const shuttleWingsMap = `
@@ -2821,33 +2822,35 @@ const shuttleWingsMap = `
         <img id="map-transparent" src="images/shuttle/wings/blank.png" style="position:absolute" usemap="#shuttle-wings-map" />
             
         <map name="shuttle-wings-map" id="map-areas">
-            <area alt="h2" coords="5,1,55,69" shape="rect">
-            <area alt="h3" coords="61,1,112,71" shape="rect">
-            <area alt="h4" coords="120,17,207,63" shape="rect">
-            <area alt="h10" coords="212,3,212,92,254,66,274,29,269,-1" shape="poly">
-            <area alt="h5" coords="280,5,343,61" shape="rect">
-            <area alt="h9" coords="195,135,215,96,253,111,236,153" shape="poly">
-            <area alt="h25" coords="266,57,253,95,288,105,302,71" shape="poly">
-            <area alt="h14" coords="262,107,252,144,286,148,292,118" shape="poly">
-            <area alt="h11" coords="299,92,292,136,329,137,335,111,346,76,329,66" shape="poly">
-            <area alt="h12" coords="1,200,156,233" shape="rect">
-            <area alt="h16" coords="2,242,162,290" shape="rect">
-            <area alt="h19" coords="4,295,167,343" shape="rect">
-            <area alt="h17" coords="170,188,177,203,234,175,228,151,203,150" shape="poly">
-            <area alt="h13" coords="238,183,258,193,298,174,276,154" shape="poly">
-            <area alt="h15" coords="308,191,317,196,344,192,337,139,324,137" shape="poly">
-            <area alt="h24" coords="228,183,174,227,176,260,240,280,244,269,210,235,240,194" shape="poly">
-            <area alt="h21" coords="174,281,174,345,221,344,307,330,300,291,237,287" shape="poly">
-            <area alt="h18" coords="248,266,279,245,341,257,338,273,254,278" shape="poly">
-            <area alt="h27" coords="238,246,246,263,279,238,271,229" shape="poly">
-            <area alt="h28" coords="315,290,346,336" shape="rect">
-            <area alt="h23" coords="235,235,276,205,335,198,335,207,262,228,246,239" shape="poly">
-            <area alt="h6" coords="7,73,57,134" shape="rect">
-            <area alt="h7" coords="62,72,117,130" shape="rect">
-            <area alt="h26" coords="125,65,195,116" shape="rect">
-            <area alt="h8" coords="12,174,81,195" shape="rect">
-            <area alt="h22" coords="104,168,163,193" shape="rect">
-            <area alt="h29" coords="125,123,114,140,122,157,152,163,181,155,161,123" shape="poly">
+            <area alt="h2" coords="4,3,50,65" shape="rect">
+            <area alt="h3" coords="60,1,108,63" shape="rect">
+            <area alt="h4" coords="121,16,205,58" shape="rect">
+            <area alt="h10" coords="213,11,213,90,254,64,268,23,270,-1" shape="poly">
+            <area alt="h5" coords="282,8,339,60" shape="rect">
+            <area alt="h6" coords="5,73,55,131" shape="rect">
+            <area alt="h7" coords="62,75,115,130" shape="rect">
+            <area alt="h26" coords="128,64,194,117" shape="rect">
+            <area alt="h25" coords="251,97,270,107,282,100,290,77,268,62" shape="poly">
+            <area alt="h11" coords="296,133,325,131,328,117,341,81,332,65,302,97" shape="poly">
+            <area alt="h30" coords="22,138,102,168" shape="rect">
+            <area alt="h29" coords="114,144,120,158,154,163,175,154,161,124,126,123" shape="poly">
+            <area alt="h9" coords="190,133,228,147,238,142,253,108,215,100,201,123" shape="poly">
+            <area alt="h14" coords="254,145,280,144,292,119,270,114" shape="poly">
+            <area alt="h8" coords="11,173,83,197" shape="rect">
+            <area alt="h22" coords="102,170,166,195" shape="rect">
+            <area alt="h17" coords="168,195,178,202,212,176,230,177,230,156,205,147" shape="poly">
+            <area alt="h13" coords="241,184,258,194,298,175,290,158,265,161" shape="poly">
+            <area alt="h15" coords="306,193,317,197,342,189,338,136,321,135" shape="poly">
+            <area alt="h12" coords="4,206,4,229,116,231,152,224,146,199" shape="poly">
+            <area alt="h19" coords="15,248,2,271,15,277,62,263,105,261,161,270,152,233,68,235" shape="poly">
+            <area alt="h16" coords="21,286,1,298,9,328,160,312,140,297" shape="poly">
+            <area alt="h24" coords="231,184,238,190,196,238,243,271,245,282,232,280,179,257,174,228" shape="poly">
+            <area alt="h23" coords="240,229,244,241,266,227,335,207,335,197,268,209" shape="poly">
+            <area alt="h27" coords="237,249,249,263,278,238,274,228,266,230" shape="poly">
+            <area alt="h18" coords="248,267,252,277,340,273,340,259,278,243" shape="poly">
+            <area alt="h21" coords="144,276,177,274,190,289,249,287,267,295,271,321,202,323,179,339,150,341,143,325,164,316,166,299,148,289" shape="poly">
+            <area alt="h31" coords="280,293,312,336" shape="rect">
+            <area alt="h28" coords="320,295,342,329" shape="rect">
         </map>
     </div>`
 
@@ -2955,31 +2958,31 @@ const occurenceList = [{
 const shipList = [{
     name: "Fighter",
     slotList: slotList,
-    classList: classList,
+    // classList: classList,
     slotTtip: `
         T1: 15-19 slots<br>
         T2: 20-29 slots<br>
         T3: 30-38 slots`,
-    classTtip: `
-        C: 5-10% Damage | 0% Shield | 0% Hyperdrive<br>
-        B: 15-30% Damage | 5-10% Shield | 0% Hyperdrive<br>
-        A: 35-50% Damage | 15-20% Shield | 0% Hyperdrive<br>
-        S: 55-60% Damage | 15-25% Shield | 0% Hyperdrive`,
+    // classTtip: `
+    //     C: 5-10% Damage | 0% Shield | 0% Hyperdrive<br>
+    //     B: 15-30% Damage | 5-10% Shield | 0% Hyperdrive<br>
+    //     A: 35-50% Damage | 15-20% Shield | 0% Hyperdrive<br>
+    //     S: 55-60% Damage | 15-25% Shield | 0% Hyperdrive`,
     bodies: fighterBodiesMap,
     wings: fighterWingsMap,
 }, {
     name: "Hauler",
     slotList: slotList,
-    classList: classList,
+    // classList: classList,
     slotTtip: `
         T1: 25-31 slots<br>
         T2: 32-39 slots<br>
         T3: 40-48 slots`,
-    classTtip: `
-        C: 0% Damage | 12-20% Shield | 0-5% Hyperdrive<br>
-        B: 0-5% Damage | 25-35% Shield | 5-10% Hyperdrive<br>
-        A: 5-10% Damage | 40-50% Shield | 15-25% Hyperdrive<br>
-        S: 10-20% Damage | 55-60% Shield | 30-35% Hyperdrive`,
+    // classTtip: `
+    //     C: 0% Damage | 12-20% Shield | 0-5% Hyperdrive<br>
+    //     B: 0-5% Damage | 25-35% Shield | 5-10% Hyperdrive<br>
+    //     A: 5-10% Damage | 40-50% Shield | 15-25% Hyperdrive<br>
+    //     S: 10-20% Damage | 55-60% Shield | 30-35% Hyperdrive`,
     bodies: haulerBodiesMap,
     wings: haulerWingsMap,
 }, {
@@ -2989,31 +2992,31 @@ const shipList = [{
     }, {
         name: "T2"
     }],
-    classList: classList,
+    // classList: classList,
     slotTtip: `
         T1: 18-23 slots<br>
         T2: 19-28 slots`,
-    classTtip: `
-        C: 0% Damage | 0% Shield | 0% Hyperdrive<br>
-        B: 0-5% Damage | 0-5% Shield | 0-5% Hyperdrive<br>
-        A: 5-10% Damage | 5-10% Shield | 5-10% Hyperdrive<br>
-        S: 15-20% Damage | 15-20% Shield | 15-20% Hyperdrive`,
+    // classTtip: `
+    //     C: 0% Damage | 0% Shield | 0% Hyperdrive<br>
+    //     B: 0-5% Damage | 0-5% Shield | 0-5% Hyperdrive<br>
+    //     A: 5-10% Damage | 5-10% Shield | 5-10% Hyperdrive<br>
+    //     S: 15-20% Damage | 15-20% Shield | 15-20% Hyperdrive`,
     bodies: shuttleBodiesMap,
     wings: shuttleWingsMap,
 }, {
     name: "Explorer",
     bodies: explorerBodiesMap,
     slotList: slotList,
-    classList: classList,
+    // classList: classList,
     slotTtip: `
         T1: 15-19 slots<br>
         T2: 20-29 slots<br>
         T3: 30-38 slots`,
-    classTtip: `
-        C: 0% Damage | 0% Shield | 7-15% Hyperdrive<br>
-        B: 0% Damage | 0-8% Shield | 20-30% Hyperdrive<br>
-        A: 0% Damage | 10-15% Shield | 35-45% Hyperdrive<br>
-        S: 0% Damage | 20-25% Shield | 50-65% Hyperdrive`
+    // classTtip: `
+    //     C: 0% Damage | 0% Shield | 7-15% Hyperdrive<br>
+    //     B: 0% Damage | 0-8% Shield | 20-30% Hyperdrive<br>
+    //     A: 0% Damage | 10-15% Shield | 35-45% Hyperdrive<br>
+    //     S: 0% Damage | 20-25% Shield | 50-65% Hyperdrive`
 }, {
     name: "Exotic",
     bodies: exoticBodiesMap,
@@ -4154,14 +4157,14 @@ const objectList = [{
         required: true,
         search: true,
         sublist: [{
-            name: "Class",
-            type: "radio",
-            ttip: "classTtip",
-            sub: "classList",
-            startState: "hidden",
-            imgText: true,
-            search: true,
-        }, {
+        //     name: "Class",
+        //     type: "radio",
+        //     ttip: "classTtip",
+        //     sub: "classList",
+        //     startState: "hidden",
+        //     imgText: true,
+        //     search: true,
+        // }, {
             name: "Slots",
             type: "radio",
             ttip: "slotTtip",
@@ -4217,7 +4220,7 @@ const objectList = [{
         name: "First Wave",
         ttip: "This is only useful on space stations.",
         type: "checkbox",
-        onchange: showClass,
+        // onchange: showClass,
         imgText: true,
         search: true,
     }, {
