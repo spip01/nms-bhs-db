@@ -184,10 +184,15 @@ NMSCE.prototype.dispAddr = function (pnl, addr, glyph) {
 NMSCE.prototype.displayRegion = function (entry) {
     let loc = $("#pnl-S1")
     loc.find("#id-reg").val(entry.reg)
+    loc.find("#foundreg").show()
 }
 
 NMSCE.prototype.displaySystem = function (entry) {
     let loc = $("#pnl-S1")
+
+    loc.find("#foundsys").show()
+    if (entry.reg)
+        loc.find("#foundreg").show()
 
     nmsce.lastsys = entry
 
@@ -242,8 +247,12 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
 
     clr($("#typePanels"))
 
-    if (all)
+    if (all) {
+        $("#pnl-S1 #foundreg").hide()
+        $("#pnl-S1 #foundsys").hide()
+
         clr($("#pnl-S1"))
+    }
 
     $("[id='map-selected'] img").each(function () {
         $(this).hide()
@@ -471,6 +480,9 @@ NMSCE.prototype.displaySingle = async function (entry) {
 
     let tloc = $("#tab-" + entry.type.nameToId())
     tloc.click()
+
+    $("#pnl-S1 #foundreg").hide()
+    $("#pnl-S1 #foundsys").hide()
 
     bhs.getEntry(entry.addr, nmsce.displaySystem, null, null, true)
 
@@ -936,20 +948,22 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 appenditem(itm, tImg, f.name, id, f.ttip, f.required, inpLongHdr)
                 break
             case "checkbox":
-                if (fnmsce) {
-                    appenditem(itm, tRadio, f.name, id, f.ttip, null, inpLongHdr)
-                    let btn = itm.find("#row-" + id)
-                    btn.attr("data-type", "checkbox")
-                    appenditem(btn, tRadioItem, "True", id, null, null, `<div class="col-3">`)
-                    appenditem(btn, tRadioItem, "False", id, null, null, `<div class="col-3">`)
-                    if (f.onchange) {
-                        btn.find("#id-True").change(f.onchange)
-                        btn.find("#id-False").change(f.onchange)
-                    }
-                } else {
-                    appenditem(itm, tCkItem, f.name, id, f.ttip, f.required)
-                    if (f.onchange) {
-                        itm.find("#id-" + id).change(f.onchange)
+                if (!slist || slist[f.sub]) {
+                    if (fnmsce) {
+                        appenditem(itm, tRadio, f.name, id, f.ttip, null, inpLongHdr)
+                        let btn = itm.find("#row-" + id)
+                        btn.attr("data-type", "checkbox")
+                        appenditem(btn, tRadioItem, "True", id, null, null, `<div class="col-3">`)
+                        appenditem(btn, tRadioItem, "False", id, null, null, `<div class="col-3">`)
+                        if (f.onchange) {
+                            btn.find("#id-True").change(f.onchange)
+                            btn.find("#id-False").change(f.onchange)
+                        }
+                    } else {
+                        appenditem(itm, tCkItem, f.name, id, f.ttip, f.required)
+                        if (f.onchange) {
+                            itm.find("#id-" + id).change(f.onchange)
+                        }
                     }
                 }
                 break
@@ -1012,7 +1026,9 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                                     name: t
                                 })
 
-                            tags.sort((a, b) => a > b ? -1 : 1)
+                            tags = tags.sort((a, b) =>
+                                a.name.toLowerCase() > b.name.toLowerCase() ? 1 :
+                                a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0)
                         }
 
                         if (fcedata)
@@ -1169,7 +1185,7 @@ NMSCE.prototype.cancelTag = function (evt) {
 //         loc.find("#row-Class").hide()
 // }
 
-function showClassLatLong() {
+function showLatLong() {
     let loc = $("#typePanels #hdr-Ship")
     if ($(this).find("input").prop("checked")) {
         // loc.find("#row-Class").show()
@@ -2970,6 +2986,7 @@ const shipList = [{
     //     S: 55-60% Damage | 15-25% Shield | 0% Hyperdrive`,
     bodies: fighterBodiesMap,
     wings: fighterWingsMap,
+    asymmetric: true,
 }, {
     name: "Hauler",
     slotList: slotList,
@@ -3003,6 +3020,7 @@ const shipList = [{
     //     S: 15-20% Damage | 15-20% Shield | 15-20% Hyperdrive`,
     bodies: shuttleBodiesMap,
     wings: shuttleWingsMap,
+    asymmetric: true,
 }, {
     name: "Explorer",
     bodies: explorerBodiesMap,
@@ -3017,6 +3035,7 @@ const shipList = [{
     //     B: 0% Damage | 0-8% Shield | 20-30% Hyperdrive<br>
     //     A: 0% Damage | 10-15% Shield | 35-45% Hyperdrive<br>
     //     S: 0% Damage | 20-25% Shield | 50-65% Hyperdrive`
+    asymmetric: true,
 }, {
     name: "Exotic",
     bodies: exoticBodiesMap,
@@ -4157,14 +4176,19 @@ const objectList = [{
         required: true,
         search: true,
         sublist: [{
-        //     name: "Class",
-        //     type: "radio",
-        //     ttip: "classTtip",
-        //     sub: "classList",
-        //     startState: "hidden",
-        //     imgText: true,
-        //     search: true,
-        // }, {
+            //     name: "Class",
+            //     type: "radio",
+            //     ttip: "classTtip",
+            //     sub: "classList",
+            //     startState: "hidden",
+            //     imgText: true,
+            //     search: true,
+            // }, {
+            //     name: "Asymmetric",
+            //     type: "checkbox",
+            //     sub: "asymmetric",
+            //     search: true,
+            // }, {
             name: "Slots",
             type: "radio",
             ttip: "slotTtip",
@@ -4192,7 +4216,7 @@ const objectList = [{
     }, {
         name: "Crashed",
         type: "checkbox",
-        onchange: showClassLatLong,
+        onchange: showLatLong,
         imgText: true,
         search: true,
     }, {
