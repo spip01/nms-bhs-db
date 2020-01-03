@@ -2838,9 +2838,10 @@ const shuttleWingsMap = `
         <img id="map-transparent" src="images/shuttle/wings/blank.png" style="position:absolute" usemap="#shuttle-wings-map" />
             
         <map name="shuttle-wings-map" id="map-areas">
-            <area alt="h2" coords="4,3,50,65" shape="rect">
-            <area alt="h3" coords="60,1,108,63" shape="rect">
-            <area alt="h4" coords="121,16,205,58" shape="rect">
+            <area alt="h32" coords="5,10,51,64" shape="rect">
+            <area alt="h2" coords="54,13,87,65" shape="rect">
+            <area alt="h3" coords="94,15,125,61" shape="rect">
+            <area alt="h4" coords="130,22,207,57" shape="rect">    
             <area alt="h10" coords="213,11,213,90,254,64,268,23,270,-1" shape="poly">
             <area alt="h5" coords="282,8,339,60" shape="rect">
             <area alt="h6" coords="5,73,55,131" shape="rect">
