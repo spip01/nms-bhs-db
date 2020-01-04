@@ -27,7 +27,6 @@ $(document).ready(() => {
     nmsce.logo.src = "/images/nmsce-logo.png"
 
     bhs.buildUserPanel()
-
     nmsce.buildPanel()
     nmsce.buildTypePanels()
 
@@ -50,6 +49,27 @@ $(document).ready(() => {
         if (nmsce.last)
             nmsce.deleteEntry(nmsce.last)
     })
+
+
+    if (fnmsce) {
+        let passed = {}
+        let param = location.search.substring(1).split("&")
+
+        for (let p of param) {
+            if (p) {
+                let obj = p.split("=")
+                passed[unescape(obj[0])] = obj[1] ? unescape(obj[1]) : true
+            }
+        }
+
+        if (passed.i && passed.g && passed.t) {
+            let ref = bhs.fs.doc("nmsce/" + passed.g.idToName() + "/" + passed.t.idToName() + "/" + passed.i)
+            ref.get().then(doc => {
+                if (doc.exists)
+                    nmsce.displaySelected(doc.data())
+            })
+        }
+    }
 })
 
 function NMSCE() {
@@ -1331,7 +1351,11 @@ NMSCE.prototype.loadImgText = function (clear) {
                     appenditem(sub.name, sub.type, "#typePanels .active", "#row-" + fld.name.nameToId(), "#row-" + sub.name.nameToId())
     }
 
-    bhs.buildMenu($("#imgtable"), "Font", fontList, nmsce.setFont, {
+    let list = fontList.sort((a, b) =>
+        a.name.toLowerCase() > b.name.toLowerCase() ? 1 :
+        a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0)
+
+    bhs.buildMenu($("#imgtable"), "Font", list, nmsce.setFont, {
         labelsize: "col-5",
         menusize: "col",
     })
@@ -2137,23 +2161,11 @@ NMSCE.prototype.vote = async function (evt) {
 }
 
 NMSCE.prototype.selectResult = async function (evt) {
-    let row = `
-        <div id="id-idname" class="row border-bottom txt-inp-def h5">
-            <div class="col-lg-5 col-7">title</div>
-            <div id="val-idname" class="col-lg-9 col-7 font clr-def">value</div>
-        </div>`
-
-    let loc = $("#imageinfo")
-    loc.show()
-
     let data = $(evt).data()
     let ref = bhs.fs.doc(data.path)
     let doc = await ref.get()
 
     if (doc.exists) {
-        let e = doc.data()
-        nmsce.last = e
-
         let v = {}
         v.votes = {}
         v.votes.clickcount = firebase.firestore.FieldValue.increment(1)
@@ -2161,88 +2173,106 @@ NMSCE.prototype.selectResult = async function (evt) {
             merge: true
         })
 
-        if (bhs.user.uid !== "") {
-            let ref = bhs.fs.doc("nmsce/" + e.galaxy + "/" + e.type + "/" + e.id + "/votes/" + bhs.user.uid)
-            ref.get().then(doc => {
-                nmsce.showVotes(doc.data())
-            })
-        }
+        nmsce.displaySelected(doc.data())
+    }
+}
 
-        let idx = getIndex(objectList, "name", e.type)
-        let obj = objectList[idx]
+NMSCE.prototype.displaySelected = function (e) {
+    let row = `
+    <div id="id-idname" class="row border-bottom txt-inp-def h5">
+        <div class="col-lg-5 col-7">title</div>
+        <div id="val-idname" class="col-lg-9 col-7 font clr-def">value</div>
+    </div>`
 
-        let ref = bhs.fbstorage.ref().child(displayPath + e.Photo)
-        ref.getDownloadURL().then(url => {
-            $("#dispimage").width("auto")
-            $("#dispimage").height("auto")
-            $("#dispimage").prop("src", url)
+    let loc = $("#imageinfo")
+    loc.show()
+
+    nmsce.last = e
+
+    if (bhs.user.uid !== "") {
+        let ref = bhs.fs.doc("nmsce/" + e.galaxy + "/" + e.type + "/" + e.id + "/votes/" + bhs.user.uid)
+        ref.get().then(doc => {
+            nmsce.showVotes(e)
         })
+    }
 
-        loc = $("#imagedata")
-        loc.empty()
+    let link = "https://nmsce.com/nmsce.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
+    $("#permalink").attr("href", link)
 
-        for (let fld of obj.imgText) {
-            let h = /idname/g [Symbol.replace](row, fld.name.nameToId())
+    let idx = getIndex(objectList, "name", e.type)
+    let obj = objectList[idx]
+
+    let ref = bhs.fbstorage.ref().child(displayPath + e.Photo)
+    ref.getDownloadURL().then(url => {
+        $("#dispimage").width("auto")
+        $("#dispimage").height("auto")
+        $("#dispimage").prop("src", url)
+    })
+
+    loc = $("#imagedata")
+    loc.empty()
+
+    for (let fld of obj.imgText) {
+        let h = /idname/g [Symbol.replace](row, fld.name.nameToId())
+        h = /title/ [Symbol.replace](h, fld.name)
+        h = /value/ [Symbol.replace](h, fld.name === "Glyphs" ? addrToGlyph(e[fld.field], e["Planet-Index"]) : e[fld.field])
+        h = /font/ [Symbol.replace](h, fld.font ? fld.font : "")
+        loc.append(h)
+    }
+
+    for (let fld of obj.fields) {
+        let id = fld.name.nameToId()
+        if (fld.imgText && typeof e[id] !== "undefined" && e[id] !== -1 && e[id] !== "") {
+            let h = /idname/g [Symbol.replace](row, id)
             h = /title/ [Symbol.replace](h, fld.name)
-            h = /value/ [Symbol.replace](h, fld.name === "Glyphs" ? addrToGlyph(e[fld.field], e["Planet-Index"]) : e[fld.field])
-            h = /font/ [Symbol.replace](h, fld.font ? fld.font : "")
-            loc.append(h)
-        }
 
-        for (let fld of obj.fields) {
-            let id = fld.name.nameToId()
-            if (fld.imgText && typeof e[id] !== "undefined" && e[id] !== -1 && e[id] !== "") {
-                let h = /idname/g [Symbol.replace](row, id)
-                h = /title/ [Symbol.replace](h, fld.name)
+            if (fld.type === "tags") {
+                let t = ""
 
-                if (fld.type === "tags") {
-                    let t = ""
+                if (fld) {
+                    for (let c of fld)
+                        t += c + ", "
 
-                    if (fld) {
-                        for (let c of fld)
-                            t += c + ", "
-
-                        t = t.slice(0, t.length - 2)
-                    }
-
-                    h = /value/ [Symbol.replace](h, t)
-                } else
-                    h = /value/ [Symbol.replace](h, e[id])
-
-                h = /font/ [Symbol.replace](h, "")
-                loc.append(h)
-            }
-
-            if (typeof fld.sublist !== "undefined") {
-                for (let sub of fld.sublist) {
-                    let id = sub.name.nameToId()
-                    if (sub.imgText && typeof e[id] !== "undefined" && e[id] !== -1 && e[id] !== "") {
-                        let h = /idname/g [Symbol.replace](row, id)
-                        h = /title/ [Symbol.replace](h, sub.name)
-                        h = /value/ [Symbol.replace](h, e[id])
-                        h = /font/ [Symbol.replace](h, "")
-                        loc.append(h)
-                    }
+                    t = t.slice(0, t.length - 2)
                 }
-            }
-        }
 
-        if (e.redditlink) {
-            let h = /idname/g [Symbol.replace](row, "link")
-            h = /title/ [Symbol.replace](h, "")
-            h = /value/ [Symbol.replace](h, "<a href='" + e.redditlink + "'>Reddit Post Link</a>")
+                h = /value/ [Symbol.replace](h, t)
+            } else
+                h = /value/ [Symbol.replace](h, e[id])
+
             h = /font/ [Symbol.replace](h, "")
             loc.append(h)
         }
 
-        let d = e.created.toDate().toDateLocalTimeString()
+        if (typeof fld.sublist !== "undefined") {
+            for (let sub of fld.sublist) {
+                let id = sub.name.nameToId()
+                if (sub.imgText && typeof e[id] !== "undefined" && e[id] !== -1 && e[id] !== "") {
+                    let h = /idname/g [Symbol.replace](row, id)
+                    h = /title/ [Symbol.replace](h, sub.name)
+                    h = /value/ [Symbol.replace](h, e[id])
+                    h = /font/ [Symbol.replace](h, "")
+                    loc.append(h)
+                }
+            }
+        }
+    }
 
-        let h = /idname/g [Symbol.replace](row, "date")
-        h = /title/ [Symbol.replace](h, "Added")
-        h = /value/ [Symbol.replace](h, d)
+    if (e.redditlink) {
+        let h = /idname/g [Symbol.replace](row, "link")
+        h = /title/ [Symbol.replace](h, "")
+        h = /value/ [Symbol.replace](h, "<a href='" + e.redditlink + "'>Reddit Post Link</a>")
         h = /font/ [Symbol.replace](h, "")
         loc.append(h)
     }
+
+    let d = e.created.toDate().toDateLocalTimeString()
+
+    let h = /idname/g [Symbol.replace](row, "date")
+    h = /title/ [Symbol.replace](h, "Added")
+    h = /value/ [Symbol.replace](h, d)
+    h = /font/ [Symbol.replace](h, "")
+    loc.append(h)
 }
 
 NMSCE.prototype.showVotes = function (entry, path) {
@@ -2302,9 +2332,9 @@ NMSCE.prototype.displayList = function (entries, path) {
             <div id="sub-idname" class="container-flex h6 hidden">
                 <div id="list-idname" class="scrollbar row" style="overflow-y: scroll; height: 550px">`
     const row = `     
-                     <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black format" onclick="nmsce.selectList(this)">
+                     <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black format" >
                         <div id="id-Photo" class="row">
-                            <img id="img-pic" src="" onload="nmsce.imgLoaded(this, $(this).parent().width(), $(this).parent().width())">
+                            <img id="img-pic" class="pointer" rc="" onload="nmsce.imgLoaded(this, $(this).parent().width(), $(this).parent().width())" onclick="nmsce.selectList(this)">
                         </div>
                         <div class="row">`
     const itm = `           <div id="id-idname" class="col-md-7 col-14 border">title</div>`
@@ -2561,11 +2591,12 @@ NMSCE.prototype.showSub = function (id) {
 }
 
 NMSCE.prototype.selectList = function (evt) {
-    if ($(evt).prop("id") === "row-idname")
+    let row = $(evt).closest("[id|='row']")
+    if (row.prop("id") === "row-idname")
         return
 
-    let type = $(evt).closest("[id|='sub']").prop("id").stripID()
-    let id = $(evt).prop("id").stripID()
+    let type = row.closest("[id|='sub']").prop("id").stripID()
+    let id = row.prop("id").stripID()
     let i = getIndex(nmsce.entries[type], "id", id)
     let e = nmsce.entries[type][i]
 
@@ -3528,6 +3559,8 @@ const fontList = [{
     name: "Berkshire Swash",
 }, {
     name: 'Caveat Brush',
+}, {
+    name: 'Amatic SC',
 }, ]
 
 const biomeList = [{
