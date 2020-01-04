@@ -1009,7 +1009,8 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                         a.name.toLowerCase() > b.name.toLowerCase() ? 1 :
                         a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0)
                     bhs.buildMenu(rloc, f.name, list, nmsce.addTag, {
-                        nolabel: true
+                        nolabel: true,
+                        ttip: f.ttip
                     })
 
                     itm.find("#btn-" + id).text(f.name)
@@ -1038,7 +1039,8 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
 
                         // let pnl = doc.ref.id
                         bhs.buildMenu(rloc, f.name, tags, nmsce.addTag, {
-                            nolabel: true
+                            nolabel: true,
+                            ttip: f.ttip
                         })
 
                         rloc.find("#btn-" + id).text(f.name)
@@ -4744,6 +4746,7 @@ const objectList = [{
         name: "Tags",
         type: "tags",
         max: 4,
+        ttip: "If the base was created on XBox please tag with 'xbox'.",
         search: true,
     }, {
         name: "Photo",

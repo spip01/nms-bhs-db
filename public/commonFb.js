@@ -330,20 +330,22 @@ blackHoleSuns.prototype.getEntryByRegion = async function (reg, displayfcn, gala
     })
 }
 
-blackHoleSuns.prototype.getEntryByRegionAddr =  function (addr, displayfcn) {
+blackHoleSuns.prototype.getEntryByRegionAddr = function (addr, displayfcn) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform)
 
-    ref = ref.where("addr", ">=", addr.slice(0,14)+"0000")
+    ref = ref.where("addr", ">=", addr.slice(0, 15))
     ref = ref.limit(1)
 
     return ref.get().then(async snapshot => {
         if (!snapshot.empty) {
             let d = snapshot.docs[0].data()
 
-            if (displayfcn)
-                displayfcn(d)
+            if (d.addr.slice(0, 15) == addr.slice(0, 15)) {
+                if (displayfcn)
+                    displayfcn(d)
 
-            return d
+                return d
+            }
         }
     }).catch(err => {
         console.log(err)
