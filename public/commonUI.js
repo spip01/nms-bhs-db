@@ -45,48 +45,46 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
 
     $("#favorite").show()
 
-    if (document.domain == "localhost" || document.domain == "test-nms-bhs.firebaseapp.com") {
-        let ref = bhs.fs.doc("admin/" + bhs.user.uid)
-        ref.get().then(doc => {
-            if (doc.exists) {
-                let role = doc.data().roles
+    let ref = bhs.fs.doc("admin/" + bhs.user.uid)
+    ref.get().then(doc => {
+        if (doc.exists) {
+            let role = doc.data().roles
 
-                if (role.includes("nmsceEditor"))
-                    $("#edchoice").show()
+            if (role.includes("nmsceEditor"))
+                $("#edchoice").show()
 
-                if (role.includes("admin"))
-                    $("#bhspoi").show()
+            if (role.includes("admin"))
+                $("#bhspoi").show()
 
-                if (role.includes("editor") || role.includes("admin"))
-                    $("#poiorg").show()
+            if (role.includes("editor") || role.includes("admin"))
+                $("#poiorg").show()
 
-                if (role.includes("owner")) {
-                    $("#setError").show()
+            if (role.includes("owner")) {
+                $("#setError").show()
+                $("#genDARC").show()
+            }
+
+            if (role.includes("admin")) {
+                $("#id-export").show()
+                $("#btn-create").show()
+                $("#btn-export").show()
+
+                $("#admin").show()
+                $("#recalc").show()
+
+                if (document.domain == "localhost") {
+                    $("#updateDARC").show()
                     $("#genDARC").show()
-                }
-
-                if (role.includes("admin")) {
-                    $("#id-export").show()
-                    $("#btn-create").show()
-                    $("#btn-export").show()
-
-                    $("#admin").show()
-                    $("#recalc").show()
-
-                    if (document.domain == "localhost") {
-                        $("#updateDARC").show()
-                        $("#genDARC").show()
-                        $("#genPOI").show()
-                        $("#backupBHS").show()
-                        $("#testing").show()
-                    }
+                    $("#genPOI").show()
+                    $("#backupBHS").show()
+                    $("#testing").show()
                 }
             }
-        }).catch(err => {
-            bhs.status("ERROR: " + err.code)
-            console.log(err)
-        })
-    }
+        }
+    }).catch(err => {
+        bhs.status("ERROR: " + err.code)
+        console.log(err)
+    })
 
     $("#save").removeClass("disabled")
     $("#save").removeAttr("disabled")
