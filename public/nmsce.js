@@ -1025,12 +1025,10 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                     rloc.data("max", f.max)
 
                 if (f.list) {
-                    let list = f.list.sort((a, b) =>
-                        a.name.toLowerCase() > b.name.toLowerCase() ? 1 :
-                        a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0)
-                    bhs.buildMenu(rloc, f.name, list, nmsce.addTag, {
+                    bhs.buildMenu(rloc, f.name, f.list, nmsce.addTag, {
                         nolabel: true,
-                        ttip: f.ttip
+                        ttip: f.ttip,
+                        sort:true
                     })
 
                     itm.find("#btn-" + id).text(f.name)
@@ -1351,13 +1349,10 @@ NMSCE.prototype.loadImgText = function (clear) {
                     appenditem(sub.name, sub.type, "#typePanels .active", "#row-" + fld.name.nameToId(), "#row-" + sub.name.nameToId())
     }
 
-    let list = fontList.sort((a, b) =>
-        a.name.toLowerCase() > b.name.toLowerCase() ? 1 :
-        a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0)
-
-    bhs.buildMenu($("#imgtable"), "Font", list, nmsce.setFont, {
+    bhs.buildMenu($("#imgtable"), "Font", fontList, nmsce.setFont, {
         labelsize: "col-5",
         menusize: "col",
+        sort:true
     })
 }
 
@@ -4220,11 +4215,11 @@ const objectList = [{
             //     imgText: true,
             //     search: true,
             // }, {
-            //     name: "Asymmetric",
-            //     type: "checkbox",
-            //     sub: "asymmetric",
-            //     search: true,
-            // }, {
+            name: "Asymmetric",
+            type: "checkbox",
+            sub: "asymmetric",
+            search: true,
+        }, {
             name: "Slots",
             type: "radio",
             ttip: "slotTtip",

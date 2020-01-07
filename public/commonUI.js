@@ -1014,6 +1014,11 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
 
     let mlist = menu.find("#list")
 
+    if (options.sort)
+        list = list.sort((a, b) =>
+            a.name.toLowerCase() > b.name.toLowerCase() ? 1 :
+            a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0)
+
     for (let l of list) {
         let lid = l.name.nameToId()
         h = /idname/ [Symbol.replace](item, lid)
