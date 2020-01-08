@@ -291,9 +291,6 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     for (let loc of tags) {
         let id = $(loc).prop("id").stripID()
 
-        $(loc).find("#btn-" + id).removeAttr("disabled")
-        $(loc).find("#btn-" + id).removeClass("disabled")
-
         $(loc).find("#add-" + id).hide()
         $(loc).find("#btn-" + id).text(id.idToName())
         $(loc).find("#list-" + id).empty()
@@ -629,7 +626,7 @@ NMSCE.prototype.executeSearch = async function (fcn) {
     }
 
     let list = pnl.find("[id|='row']")
-    let colorlist = []
+    nmsce.lastsearch = []
 
     for (let rloc of list) {
         if (!$(rloc).is(":visible"))
@@ -647,12 +644,24 @@ NMSCE.prototype.executeSearch = async function (fcn) {
         switch (rdata.type) {
             case "number":
             case "float":
-                if (val && val != -1)
+                if (val && val != -1) {
                     ref = ref.where(id, rdata.search ? rdata.search : "==", val)
+                    nmsce.lastsearch.push({
+                        name: id,
+                        type: rdata.type,
+                        val: val
+                    })
+                }
                 break
             case "string":
-                if (val)
+                if (val) {
                     ref = ref.where(id, "==", val)
+                    nmsce.lastsearch.push({
+                        name: id,
+                        type: rdata.type,
+                        val: val
+                    })
+                }
                 break
             case "tags":
                 let tlocs = $(rloc).find("[id|='tag']")
@@ -664,26 +673,56 @@ NMSCE.prototype.executeSearch = async function (fcn) {
                         tlist.push(t)
                 }
 
-                if (tlist.length > 0)
-                    ref = ref.where(id, "array-contains-any", tlist)
+                if (tlist.length > 0) {
+                    let exists = "no"
+                    if (getIndex(nmsce.lastsearch, "type", "tags") === -1)
+                        ref = ref.where(id, "array-contains-any", tlist)
+                    else
+                        exists = "yes"
+
+                    nmsce.lastsearch.push({
+                        name: id,
+                        type: rdata.type,
+                        skipped: exists,
+                        list: tlist
+                    })
+                }
                 break
             case "menu":
                 val = $(rloc).find("#btn-" + id).text()
                 if (val) {
                     val = val.stripNumber()
-                    if (val !== "Nothing Selected")
+                    if (val !== "Nothing Selected") {
                         ref = ref.where(id, "==", val)
+                        nmsce.lastsearch.push({
+                            name: id,
+                            type: rdata.type,
+                            val: val
+                        })
+                    }
                 }
                 break
             case "checkbox":
                 let cloc = $(rloc).find("input:checked")
-                if (cloc.length > 0)
+                if (cloc.length > 0) {
                     ref = ref.where(id, "==", cloc.prop("id") === "id-True")
+                    nmsce.lastsearch.push({
+                        name: id,
+                        type: rdata.type,
+                        val: cloc.prop("id") === "id-True"
+                    })
+                }
                 break
             case "radio":
                 for (let rloc of loc)
-                    if ($(rloc).is(":visible") && $(rloc).is(":checked"))
+                    if ($(rloc).is(":visible") && $(rloc).is(":checked")) {
                         ref = ref.where(id, "==", $(rloc).prop("id").stripID())
+                        nmsce.lastsearch.push({
+                            name: id,
+                            type: rdata.type,
+                            val: $(rloc).prop("id").stripID()
+                        })
+                    }
                 break
         }
     }
@@ -692,14 +731,22 @@ NMSCE.prototype.executeSearch = async function (fcn) {
     for (let page of loc) {
         if ($(page).is(":visible")) {
             let id = $(page).closest("[id|='row']").prop("id").stripID()
-
+            let list = []
             let sel = $(page).children()
             for (let s of sel) {
                 if ($(s).is(":visible")) {
                     let alt = $(s).attr("alt")
                     ref = ref.where(id + "." + alt, "==", true)
+                    list.push(alt)
                 }
             }
+
+            if (list.length > 0)
+                nmsce.lastsearch.push({
+                    name: id,
+                    type: "map",
+                    list: list
+                })
         }
     }
 
@@ -710,6 +757,20 @@ NMSCE.prototype.executeSearch = async function (fcn) {
     $("#item-Search").click()
 
     ref.get().then(snapshot => {
+        if (nmsce.lastsearch.length > 0) {
+            let sref = bhs.fs.collection("nmsce-searches")
+            let search = {}
+            if (bhs.user.uid !== "") {
+                search.uid = bhs.user.uid
+                search._name = bhs.user._name
+            }
+
+            search.date = firebase.firestore.Timestamp.now()
+            search.search = nmsce.lastsearch
+            search.results = snapshot.size
+            sref.add(search)
+        }
+
         if (snapshot.size === 0) {
             bhs.status("No matching entries found.")
             return
@@ -719,19 +780,31 @@ NMSCE.prototype.executeSearch = async function (fcn) {
             bhs.status("Showing first 50 matches. Login to see more matches or refine selection to see better matches.")
 
         let size = 0
+        let tags = getIndex(nmsce.lastsearch, "skipped", "no")
+        let more = getIndex(nmsce.lastsearch, "skipped", "yes")
 
         for (let doc of snapshot.docs) {
             let e = doc.data()
             let found = true
 
-            if (colorlist.length > 1) { // no array-contains-all
-                for (let c of colorlist) {
-                    if (!e.Color.includes(c)) {
+            if (tags !== -1) {
+                let tl = nmsce.lastsearch[tags]
+                for (let t of tl.list)
+                    if (!e[tl.name].includes(t)) {
                         found = false
                         break
                     }
-                }
             }
+
+            if (more !== -1) {
+                let tl = nmsce.lastsearch[more]
+                for (let t of tl.list)
+                    if (!e[tl.name].includes(t)) {
+                        found = false
+                        break
+                    }
+            }
+
 
             if (found) {
                 size++
@@ -1123,19 +1196,6 @@ NMSCE.prototype.addTag = function (evt) {
 
         row.find("#list-" + id).append(h)
         row.find("#btn-" + id).text(id.idToName())
-
-        if (fnmsce) {
-            $(evt).closest("[id|='pnl']")
-
-            let tags = $("[data-type='tags']")
-            for (let loc of tags) {
-                $(loc).find("[id|='btn']").first().prop("disabled", true)
-                $(loc).find("[id|='btn']").first().addClass("disabled")
-            }
-
-            row.find("[id|='btn']").first().removeAttr("disabled")
-            row.find("[id|='btn']").first().removeClass("disabled")
-        }
     }
 }
 
@@ -1144,14 +1204,6 @@ NMSCE.prototype.deleteTag = function (evt) {
         let row = $(evt).closest("[id|='row']")
         let id = row.prop("id").stripID()
         let list = row.find("#list-" + id)
-
-        if (list.length === 1) {
-            let tags = $("[data-type='tags']")
-            for (let loc of tags) {
-                $(loc).find("[id|='btn']").first().removeAttr("disabled")
-                $(loc).find("[id|='btn']").first().removeClass("disabled")
-            }
-        }
     }
 
     $(evt).remove()
@@ -4726,13 +4778,11 @@ const objectList = [{
         name: "Resources",
         type: "tags",
         list: resourceList,
-        ttip: "You can only search using Resources or Tags not both at the same time.",
         max: 6,
         search: true,
     }, {
         name: "Tags",
         type: "tags",
-        ttip: "You can only search using Resources or Tags not both at the same time.",
         max: 4,
         search: true,
     }, {

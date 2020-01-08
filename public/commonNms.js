@@ -206,7 +206,7 @@ function getIndex(list, field, id) {
             return x.name.toLowerCase()
         else
             return typeof x[field] === "string" ? x[field].toLowerCase() : x[field]
-    }).indexOf(id.toLowerCase())
+    }).indexOf(typeof id === "string" ? id.toLowerCase() : id)
 }
 
 function calcDist(addr, addr2) {
@@ -353,7 +353,7 @@ const modeList = [{
 const economyList = [{
     name: "None",
     number: 0
-},{
+}, {
     name: "Declining",
     number: 1
 }, {
