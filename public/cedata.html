@@ -11,6 +11,18 @@
     <meta name="Classification" content="Game">
     <meta name="keywords" content="nmsce,nms,coordinate exchange,no mans sky,reddit">
 
+    <meta property="og:title" content="No Man's Sky Coordinate Exchange App" />
+    <meta property="og:description"
+        content="Enter your discoveries for freighters, frigates, multi-tools, fauna, planets or bases." />
+    <meta property="og:url" content="https://nmsce.com/" />
+    <meta property="og:secure_url" content="https://nmsce.com/" />
+    <meta property="og:type" content="website" />
+
+    <meta property="og:image:url" content="http://raw.githubusercontent.com/spip01/nms-bhs-db/master/public/images/nmsce-ss.jpg" />
+    <meta property="og:image:secure_url" content="https://nmsce.com/images/nmsce-ss.jpg" />
+    <meta property="og:image:type" content="image/jpg" />
+    <meta property="og:image:alt" content="Screenshot of NMSCE App" />
+
     <link rel="shortcut icon" href="images/nmsce.ico">
     <script src="env.js"></script>
 
@@ -85,7 +97,7 @@
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div id="loggedout" class="row text-danger h4">
-            Welcome to the
+            Welcome to the&nbsp;
             <span itemprop="description">No Man's Sky Coordinate Exchange data entry page.</span>
             <!--googleoff: all-->
             Please login.
@@ -110,7 +122,7 @@
                                             </i>
                                         </div>
                                         <input id="id-addr" class="rounded col-xl-5 col-lg-6 col-md-11 col-sm-5 col-11"
-                                            type="text" placeholder="0000:0000:0000:0000" maxength="19"
+                                            type="text" placeholder="0000:0000:0000:0000" maxength=19
                                             onchange="nmsce.changeAddr(this)">
                                         <div class="col">
                                             <label class="h6 txt-inp-def">
@@ -269,7 +281,6 @@
                     <div id="pnl-map" class="card card-body"></div>
                 </div>
             </div>
-
         </div>
 
         <div id="imgtable" class="card card-body hidden">

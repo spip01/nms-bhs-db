@@ -2917,11 +2917,12 @@ const exoticBodiesMap = `
             <area alt="h7" data-group=2 coords="63,242,130,212,128,301,70,294,51,289" shape="poly">
             <area alt="h8" data-group=3 coords="132,237,132,302,344,298" shape="poly">
             <area alt="h9" data-group=3 coords="221,259,343,283,335,213" shape="poly">
-            <area alt="h10" data-group=4 coords="14,314,13,366,88,388,74,299" shape="poly">
-            <area alt="h11" data-group=5 coords="104,310,108,385,160,390,155,311" shape="poly">
             <area alt="h12" data-group=5 coords="167,334,165,363,275,395,271,341" shape="poly">
             <area alt="h13" data-group=5 coords="203,309,346,307,339,388,305,389,279,339,212,322" shape="poly">
-        </map>
+            <area alt="h14" data-group=5 coords="107,330,109,386,169,393,163,325" shape="poly">
+            <area alt="h10" data-group=4 coords="5,280,5,317,55,330,66,328,72,316,45,295,64,259,62,243" shape="poly">
+            <area alt="h11" data-group=5 coords="89,318,61,335,60,379,85,396,105,395,99,321" shape="poly">
+       </map>
     </div>`
 
 const freighterCapitalMap = `

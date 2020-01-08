@@ -340,7 +340,7 @@ blackHoleSuns.prototype.getEntryByRegionAddr = function (addr, displayfcn) {
         if (!snapshot.empty) {
             let d = snapshot.docs[0].data()
 
-            if (d.addr.slice(0, 15) == addr.slice(0, 15)) {
+            if (d.addr.slice(0, 15) === addr.slice(0, 15)) {
                 if (displayfcn)
                     displayfcn(d)
 
