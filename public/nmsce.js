@@ -478,9 +478,9 @@ NMSCE.prototype.extractEntry = async function () {
             }
 
             entry.redditlink = $("#redditlink").val()
+            entry.imageText = bhs.user.imageText
 
             if (!$("#ck-updateScreenshot").is(":visible") || $("#ck-updateScreenshot").prop("checked")) {
-                entry.imageText = bhs.user.imageText
                 nmsce.updateEntry(entry)
                 nmsce.updateScreenshots(entry)
             } else
@@ -1028,7 +1028,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                     bhs.buildMenu(rloc, f.name, f.list, nmsce.addTag, {
                         nolabel: true,
                         ttip: f.ttip,
-                        sort:true
+                        sort: true
                     })
 
                     itm.find("#btn-" + id).text(f.name)
@@ -1331,6 +1331,9 @@ NMSCE.prototype.loadImgText = function (clear) {
             nmsce.initTxtItem(title.nameToId())
     }
 
+    if (nmsce.imageText.logo === "undefined")
+        nmsce.initTxtItem("logo")
+
     let active = $("#typePanels .active")
     let type = active.prop("id").stripID()
     let objIdx = getIndex(objectList, "name", type)
@@ -1352,28 +1355,39 @@ NMSCE.prototype.loadImgText = function (clear) {
     bhs.buildMenu($("#imgtable"), "Font", fontList, nmsce.setFont, {
         labelsize: "col-5",
         menusize: "col",
-        sort:true
+        sort: true
     })
 }
 
 NMSCE.prototype.initTxtItem = function (id) {
     if (typeof nmsce.imageText === "undefined")
         nmsce.imageText = {}
+
     if (typeof nmsce.imageText[id] === "undefined")
         nmsce.imageText[id] = {}
 
-    nmsce.imageText[id] = {
-        font: id === "Glyphs" ? "glyph" : "Arial",
-        fSize: 18,
-        color: "#ffffff",
-        x: 20,
-        y: 20,
-        ck: false,
-        sel: false,
-        width: 0,
-        height: 0,
-        text: ""
-    }
+    if (id === "logo")
+        nmsce.imageText[id] = {
+            x: 20,
+            y: 20,
+            fSize: 0,
+            sel: false,
+            width: 0,
+            height: 0,
+        }
+    else
+        nmsce.imageText[id] = {
+            font: id === "Glyphs" ? "glyph" : "Arial",
+            fSize: 18,
+            color: "#ffffff",
+            x: 20,
+            y: 20,
+            ck: false,
+            sel: false,
+            width: 0,
+            height: 0,
+            text: ""
+        }
 }
 
 NMSCE.prototype.ckImgText = function (evt, draw) {
@@ -1451,6 +1465,9 @@ NMSCE.prototype.restoreText = function (iTxt, draw) {
     if (typeof nmsce.imageText === "undefined")
         return
 
+    if (typeof nmsce.imageText.logo === "undefined")
+        nmsce.initTxtItem("logo")
+
     let loc = $("#img-text")
 
     let keys = Object.keys(nmsce.imageText)
@@ -1478,10 +1495,15 @@ NMSCE.prototype.extractImgText = function () {
     let keys = Object.keys(s)
     for (let k of keys) {
         let f = s[k]
-        delete f.width
-        delete f.height
+
+        if (k !== "logo") {
+            delete f.width
+            delete f.height
+        }
+
         if (k !== "text")
             delete f.text
+
         delete f.sel
     }
 
@@ -1636,16 +1658,23 @@ NMSCE.prototype.drawText = function (alt, altw) {
         let text = nmsce.imageText[id]
         let tloc = loc.find("#ck-" + id)
 
-        if (text.ck && tloc.is(":visible")) {
+        if (text.ck && tloc.is(":visible") || id === "logo") {
             if (text.x + text.width > txtcanvas.width)
                 text.x = txtcanvas.width - text.width
             else if (text.x < 0)
                 text.x = 0
 
-            if (text.y > txtcanvas.height)
-                text.y = txtcanvas.height
-            else if (text.y - text.height < 0)
-                text.y = text.height
+            if (id !== "logo") {
+                if (text.y > txtcanvas.height)
+                    text.y = txtcanvas.height
+                else if (text.y - text.height < 0)
+                    text.y = text.height
+            } else {
+                if (text.y + text.height > txtcanvas.height)
+                    text.y = txtcanvas.height - text.height
+                else if (text.y < 0)
+                    text.y = 0
+            }
 
             if (id === "Glyphs") {
                 text.font = "glyph"
@@ -1656,16 +1685,18 @@ NMSCE.prototype.drawText = function (alt, altw) {
                 ctx.fillRect(text.x - 1, text.y - text.height + 1, text.width + 2, text.height + 2)
             }
 
-            ctx.font = text.fSize + "px " + text.font
-            ctx.fillStyle = text.color
+            if (id !== "logo") {
+                ctx.font = text.fSize + "px " + text.font
+                ctx.fillStyle = text.color
 
-            if (typeof text.text !== "undefined" && text.text.includes("<br>")) {
-                let l = text.text.split("<br>")
+                if (typeof text.text !== "undefined" && text.text.includes("<br>")) {
+                    let l = text.text.split("<br>")
 
-                for (let i = 0; i < l.length; ++i)
-                    ctx.fillText(l[i], text.x, text.y + i * text.fSize * 1.15)
-            } else
-                ctx.fillText(text.text, text.x, text.y)
+                    for (let i = 0; i < l.length; ++i)
+                        ctx.fillText(l[i], text.x, text.y + i * text.fSize * 1.15)
+                } else
+                    ctx.fillText(text.text, text.x, text.y)
+            }
 
             if (text.sel && !altw) {
                 ctx.strokeStyle = "white"
@@ -1677,12 +1708,14 @@ NMSCE.prototype.drawText = function (alt, altw) {
         }
     }
 
-    let w = canvas.height * .09
+    let w = canvas.height * .12
+    nmsce.imageText.logo.width = w
+    nmsce.imageText.logo.height = w
 
     ctx = canvas.getContext("2d")
     ctx.drawImage(nmsce.screenshot, 0, 0, canvas.width, canvas.height)
     ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
-    ctx.drawImage(nmsce.logo, canvas.width - w - 5, canvas.height - w - 5, w, w)
+    ctx.drawImage(nmsce.logo, nmsce.imageText.logo.x, nmsce.imageText.logo.y, nmsce.imageText.logo.width, nmsce.imageText.logo.height)
 }
 
 NMSCE.prototype.redditShare = function (evt) {
@@ -1737,7 +1770,7 @@ NMSCE.prototype.handleMouseDown = function (e) {
     for (let k of keys) {
         let text = nmsce.imageText[k]
 
-        if (text.ck && nmsce.textHittest(startX, startY, text)) {
+        if ((k === "logo" || text.ck) && nmsce.textHittest(startX, startY, text)) {
             text.sel = ++lastsel
             nmsce.startX = startX
             nmsce.startY = startY
