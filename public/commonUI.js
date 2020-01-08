@@ -706,17 +706,12 @@ const totalsRows = [{
 }, {
     title: "Total/altplatform",
     id: "id-totalAHP",
-    where: "galaxy",
 }, {
     title: "Total/galaxy/platform",
     id: "id-totalBHGP",
-    where: "index",
 }]
 
 blackHoleSuns.prototype.buildTotals = function () {
-    if (!bhs.user.galaxy || !bhs.user.platform)
-        return
-
     let h = ""
 
     totalsCol.forEach(t => {
@@ -726,11 +721,15 @@ blackHoleSuns.prototype.buildTotals = function () {
     })
 
     $("#hdr-Player").html(h)
+    $("#itm-Player").empty()
+
+    let galaxy = bhs.user.galaxy ? bhs.user.galaxy : "Euclid"
+    let platform = bhs.user.platform ? bhs.user.platform : "PC-XBox"
 
     totalsRows.forEach(x => {
-        let t = /altplatform/ [Symbol.replace](x.title, bhs.user.platform != "PS4" ? "PS4" : "PC-XBox")
-        t = /platform/ [Symbol.replace](t, bhs.user.platform)
-        t = /galaxy/ [Symbol.replace](t, bhs.user.galaxy)
+        let t = /altplatform/ [Symbol.replace](x.title, platform != "PS4" ? "PS4" : "PC-XBox")
+        t = /platform/ [Symbol.replace](t, platform)
+        t = /galaxy/ [Symbol.replace](t, galaxy)
 
         let h = /idname/ [Symbol.replace](totalsItemsHdr, x.id)
 
@@ -746,12 +745,15 @@ blackHoleSuns.prototype.buildTotals = function () {
         $("#itm-Player").append(h)
     })
 
-    totalsRows.forEach(t => {
-        if (t.where == "index" && !findex)
-            $("#itm-Player #" + t.id).hide()
-        if (t.where == "galaxy" && !ftotals)
-            $("#itm-Player #" + t.id).hide()
-    })
+    if (ftotals || !bhs.user.uid) {
+        $("#hdr-Player #id-Player").hide()
+        $("#itm-Player #id-Player").hide()
+        $("#itm-Player #id-totalBHGP").hide()
+    }
+
+    if (!bhs.user.galaxy) {
+        $("#itm-Player #id-totalBHGP").hide()
+    }
 
     $("#ck-showall").change(function () {
         if ($(this).prop("checked")) {
@@ -765,9 +767,6 @@ blackHoleSuns.prototype.buildTotals = function () {
 }
 
 blackHoleSuns.prototype.displayTotals = function (e, refpath) {
-    if (!bhs.user.galaxy || !bhs.user.platform)
-        return
-
     bhs.updateTotalsListView(e, refpath)
 
     if (refpath === "bhs/Organizations")
@@ -786,12 +785,18 @@ blackHoleSuns.prototype.displayTotals = function (e, refpath) {
     let colid
 
     if (refpath === "bhs/Players") {
+        if (ftotals && !bhs.user.uid)
+            return
+
         e = e[bhs.user._name]
         if (typeof e === "undefined")
             return;
         colid = "id-Player"
     } else
         colid = "id-Total"
+
+    let platform = bhs.user.platform ? bhs.user.platform : "PC-XBox"
+    let galaxy = bhs.user.galaxy ? bhs.user.galaxy : "Euclid"
 
     for (let rid of totalsRows) {
         let loc = tot.find("#" + rid.id).find("#" + colid)
@@ -801,16 +806,16 @@ blackHoleSuns.prototype.displayTotals = function (e, refpath) {
                 loc.text(addPlatforms(e))
                 break
             case "id-totalBHP":
-                loc.text(e[bhs.user.platform])
+                loc.text(e[platform])
                 break
             case "id-totalAHP":
-                loc.text(e[bhs.user.platform === "PC-XBox" ? "PS4" : "PC-XBox"])
+                loc.text(e[platform === "PC-XBox" ? "PS4" : "PC-XBox"])
                 break
             case "id-totalBHG":
-                loc.text(addPlatforms(e.galaxies[bhs.user.galaxy]))
+                loc.text(addPlatforms(e.galaxies[galaxy]))
                 break
             case "id-totalBHGP":
-                loc.text(e.galaxies[bhs.user.galaxy][bhs.user.platform])
+                loc.text(e.galaxies[galaxy][platform])
                 break
         }
     }
