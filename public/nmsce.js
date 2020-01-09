@@ -35,7 +35,7 @@ $(document).ready(() => {
             nolabel: true
         })
         $("#resultshdr #btn-show").text("Latest")
-        nmsce.getLatest(nmsce.displayResults)
+        nmsce.getNew(nmsce.displayResults)
     }
 
     $("#save").click(async () => {
@@ -100,7 +100,14 @@ NMSCE.prototype.selDisplay = function (evt) {
     $(".cover-container").hide()
 
     let i = getIndex(showTypesList, "name", $(evt).text())
-    $("#showlast").css("visibility", showTypesList[i].id === "latest" ? "visible" : "hidden")
+    if (showTypesList[i].id === "latest") {
+        $("#showlast").show()
+        $("#showdate").show()
+    }
+    else{
+        $("#showlast").hide()
+        $("#showdate").hide()
+    }
 
     let loc = $("#" + showTypesList[i].id)
     loc.show()
@@ -288,6 +295,8 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     $("#editScreenshot").hide()
     $("#imageTextBlock").show()
     $("#updateScreenshot").hide()
+
+    $("#searchResults").hide()
 
     let tags = $("[data-type='tags']")
 
@@ -590,6 +599,7 @@ NMSCE.prototype.displaySingle = async function (entry) {
 
 NMSCE.prototype.executeSearch = async function (fcn) {
     let galaxy = $("#btn-Galaxy").text().stripNumber()
+    nmsce.lastsearch = []
 
     if (galaxy === "") {
         bhs.status("No Galaxy Selected.")
@@ -621,12 +631,18 @@ NMSCE.prototype.executeSearch = async function (fcn) {
         else if (fld.type === "menu")
             val = loc.find("#btn-" + fld.id.stripID()).text().stripNumber()
 
-        if (val !== "")
+        if (val !== "") {
             ref = ref.where(fld.field, "==", val)
+
+            nmsce.lastsearch.push({
+                name: fld.field,
+                type: fld.type,
+                val: val
+            })
+        }
     }
 
     let list = pnl.find("[id|='row']")
-    nmsce.lastsearch = []
 
     for (let rloc of list) {
         if (!$(rloc).is(":visible"))
@@ -758,16 +774,16 @@ NMSCE.prototype.executeSearch = async function (fcn) {
 
     ref.get().then(snapshot => {
         if (nmsce.lastsearch.length > 0) {
-            let sref = bhs.fs.collection("nmsce-searches")
             let search = {}
-            if (bhs.user.uid !== "") {
-                search.uid = bhs.user.uid
-                search._name = bhs.user._name
-            }
-
+            search.uid = bhs.user.uid
+            search._name = bhs.user._name
+            search.galaxy = galaxy
+            search.type = tab
             search.date = firebase.firestore.Timestamp.now()
             search.search = nmsce.lastsearch
             search.results = snapshot.size
+
+            let sref = bhs.fs.collection("nmsce-searches")
             sref.add(search)
         }
 
@@ -812,10 +828,19 @@ NMSCE.prototype.executeSearch = async function (fcn) {
         }
 
         bhs.status(size + " matching entries found.")
+        $("#searchResults").show()
         $("#numFound").text(size)
     }).catch(err => {
         bhs.status("Search error: " + err.message)
     })
+}
+
+NMSCE.prototype.searchResults = async function () {
+    let last = nmsce.lastsearch
+
+    let galaxy = $("#btn-Galaxy").text().stripNumber()
+    let tab = $("#typeTabs .active").prop("id").stripID()
+    let pnl = $("#typePanels #pnl-" + tab)
 }
 
 NMSCE.prototype.searchSystem = function () {
@@ -2117,7 +2142,24 @@ NMSCE.prototype.getEntries = async function (user, displayFcn, singleDispFcn) {
         displayFcn(nmsce.entries)
 }
 
-NMSCE.prototype.getLatest = async function (fcn, evt) {
+NMSCE.prototype.getNew = function (fcn) {
+    let date = null
+
+    if (typeof (Storage) !== "undefined")
+        date = window.localStorage.getItem('nmsceLastUpdate')
+
+    if (date) {
+        let dt = new Date(date)
+        $("#resultshdr #sinceDate").text(dt.toDateLocalTimeString())
+        $("#resultshdr #sinceDate").show()
+        let fd = firebase.firestore.Timestamp.fromDate(dt)
+        nmsce.getAfterDate(fcn, fd)
+        $("#displaysince").val(1)
+    } else
+        nmsce.getLatest(fcn)
+}
+
+NMSCE.prototype.getLatest = function (fcn) {
     let s = parseInt($("#displaysince").val())
     if (s < 1) {
         s = 1
@@ -2127,10 +2169,18 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
         $("#displaysince").val(s)
     }
 
-    let d = new Date()
-    d.setDate(d.getDate() - s)
-    d = firebase.firestore.Timestamp.fromDate(d)
+    let dt = new Date()
+    dt.setDate(dt.getDate() - s)
 
+    $("#resultshdr #sinceDate").text(dt.toDateLocalTimeString())
+    $("#resultshdr #sinceDate").show()
+
+    let fd = firebase.firestore.Timestamp.fromDate(dt)
+
+    nmsce.getAfterDate(fcn, fd)
+}
+
+NMSCE.prototype.getAfterDate = function (fcn, date) {
     $("#latest").empty()
     $("#item-Latest").click()
 
@@ -2141,7 +2191,7 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
                 let type = t.name
 
                 ref = doc.ref.collection(type)
-                ref = ref.where("created", ">=", d)
+                ref = ref.where("created", ">=", date)
 
                 ref.get().then(snapshot => {
                     let t = $("#numFound").text()
@@ -2154,8 +2204,12 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
                 })
 
                 ref = doc.ref.collection(type)
-                ref = ref.where("created", ">=", firebase.firestore.Timestamp.fromDate(new Date()))
+                let now = firebase.firestore.Timestamp.fromDate(new Date())
+                ref = ref.where("created", ">=", now)
                 bhs.subscribe("nmsce-latest-" + ref.path, ref, fcn)
+
+                if (typeof (Storage) !== "undefined")
+                    window.localStorage.setItem('nmsceLastUpdate', now.toDate().toString())
 
                 if ($("#favorites").children().length === 0) {
                     ref = doc.ref.collection(type)
