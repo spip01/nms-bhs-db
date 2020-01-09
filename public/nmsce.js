@@ -924,7 +924,7 @@ const tTags = `
             <button id="cancel-idname" type="text" class="col-3 btn btn-def btn-sm" onclick="nmsce.cancelTag(this)">Cancel</button>
         </div>
         <div class="col-10 border">
-            <div id="list-idname" class="row"></div>
+        <div id="list-idname" class="row"></div>
         </div>
     </div>`
 const tTag = `<div id="tag-idname" class="col border pointer" style="border-radius:8px; background-color:#d0d0d0" onclick="nmsce.deleteTag(this)">title</div>`
@@ -1201,11 +1201,19 @@ NMSCE.prototype.addTag = function (evt) {
     let data = row.data()
     let text = $(evt).text().stripMarginWS()
     let id = row.prop("id").stripID()
+    let tags = row.find("[id|='tag']")
 
-    if (data.max && row.find("#list-" + id).children().length >= data.max) {
+    if (data.max && tags.length >= data.max) {
         row.find("#btn-" + id).text(id.idToName())
         return
     }
+
+    if (tags.length > 0)
+        for (let t of tags)
+            if ($(t).text() === text) {
+                row.find("#btn-" + id).text(id.idToName())
+                return
+            }
 
     if (text === "Add new tag")
         row.find("#add-" + id).show()
@@ -1369,20 +1377,20 @@ let txtcanvas = document.createElement('canvas')
 NMSCE.prototype.loadImgText = function (clear) {
     const ckbox = `
         <label class="col-xl-p333 col-7">
-            <input id="ck-idname" type="checkbox" ftype loc row sub onchange="nmsce.ckImgText(this, true)">
+            <input id="ck-idname" type="checkbox" ftype loc row sub onchange="nmsce.getImageText(this, true)">
             &nbsp;title
         </label>`
 
     const textInp = `
         <label class="col-13 txt-inp-def pl-15">
             <input id="ck-text" type="checkbox" data-loc="#id-text"
-                onchange="nmsce.ckImgText(this, true)">
+                onchange="nmsce.getImageText(this, true)">
             Text&nbsp;&nbsp;
             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
                 data-placement="bottom"
                 title="Use Line break, <br>, to separate multiple lines.">
             </i>&nbsp;
-            <input id="id-text" class="rounded col-8" type="text" onchange="nmsce.ckImgText(this, true)">
+            <input id="id-text" class="rounded col-8" type="text" onchange="nmsce.getImageText(this, true)">
         </label>
         <br>`
 
@@ -1461,7 +1469,7 @@ NMSCE.prototype.initTxtItem = function (id) {
         }
 }
 
-NMSCE.prototype.ckImgText = function (evt, draw) {
+NMSCE.prototype.getImageText = function (evt, draw) {
     let id = $(evt).prop("id").stripID()
     let ck = $(evt).prop("checked")
 
@@ -1488,6 +1496,15 @@ NMSCE.prototype.ckImgText = function (evt, draw) {
         switch (data.type) {
             case "menu":
                 text = loc.text().stripNumber()
+                break
+            case "tags":
+                let tloc = loc.parent().find("[id|='tag']")
+                if (tloc.length > 0) {
+                    for (let l of tloc)
+                        text += $(l).text() + ", "
+
+                    text.slice(0, text.length - 2)
+                }
                 break
             case "number":
                 text = loc.val()
@@ -1552,7 +1569,7 @@ NMSCE.prototype.restoreText = function (iTxt, draw) {
 
         if (floc.length > 0) {
             floc.prop("checked", f.ck)
-            nmsce.ckImgText(floc)
+            nmsce.getImageText(floc)
             f.sel = false
         }
     }
@@ -2346,7 +2363,7 @@ NMSCE.prototype.displaySelected = function (e) {
 
     for (let fld of obj.fields) {
         let id = fld.name.nameToId()
-        if (fld.imgText && typeof e[id] !== "undefined" && e[id] !== -1 && e[id] !== "") {
+        if ((fld.imgText || fld.searchText) && typeof e[id] !== "undefined" && e[id] !== -1 && e[id] !== "") {
             let h = /idname/g [Symbol.replace](row, id)
             h = /title/ [Symbol.replace](h, fld.name)
 
@@ -4398,7 +4415,6 @@ const objectList = [{
     }, {
         name: "Planet Index",
         type: "number",
-        imgText: true,
         range: 15,
         startState: "hidden",
     }, {
@@ -4419,7 +4435,7 @@ const objectList = [{
     }, {
         name: "Seed",
         type: "string",
-        imgText: true,
+        searchText: true,
         ttip: "Found in save file. Can be used to reskin ship.",
     }, {
         name: "Photo",
@@ -4482,6 +4498,7 @@ const objectList = [{
     }, {
         name: "Seed",
         type: "string",
+        searchText: true,
         ttip: "Found in save file. Can be used to reskin ship.",
     }, {
         name: "Photo",
@@ -4560,7 +4577,7 @@ const objectList = [{
     }, {
         name: "Color",
         type: "tags",
-        imgText: true,
+        searchText: true,
         list: colorList,
         max: 2,
         ttip: "You can only search using Benefits, Negatives OR Color. Not a combination.",
@@ -4653,7 +4670,7 @@ const objectList = [{
     }, {
         name: "Color",
         type: "tags",
-        imgText: true,
+        searchText: true,
         max: 2,
         list: colorList,
         required: true,
@@ -4661,7 +4678,7 @@ const objectList = [{
     }, {
         name: "Seed",
         type: "string",
-        imgText: true,
+        searchText: true,
         ttip: "Found in save file. Can be used to reskin MT.",
     }, {
         name: "Photo",
@@ -4793,7 +4810,7 @@ const objectList = [{
         name: "Extreme Weather",
         type: "checkbox",
         ttip: "Any deadly weather pattern.",
-        imgText: true,
+        searchText: true,
         search: true,
     }, {
         name: "Sentinels",
@@ -4812,19 +4829,16 @@ const objectList = [{
         type: "menu",
         list: colorList,
         required: true,
-        imgText: true,
         search: true,
     }, {
         name: "Water Color",
         type: "menu",
         list: colorList,
-        imgText: true,
         search: true,
     }, {
         name: "Sky Color",
         type: "menu",
         list: colorList,
-        imgText: true,
         search: true,
     }, {
         name: "Resources",
