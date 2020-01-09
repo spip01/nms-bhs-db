@@ -285,6 +285,9 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
 
     $("#redditlink").val("")
     $("#posted").empty()
+    $("#editScreenshot").hide()
+    $("#imageTextBlock").show()
+    $("#updateScreenshot").hide()
 
     let tags = $("[data-type='tags']")
 
@@ -307,7 +310,6 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
         $("#save").text("Save")
-        $("#updateScreenshot").hide()
 
         $("#delete").addClass("disabled")
         $("#delete").prop("disabled", true)
@@ -575,8 +577,6 @@ NMSCE.prototype.displaySingle = async function (entry) {
     $("#redditlink").val(entry.redditlink ? entry.redditlink : "")
 
     $("#save").text("UPDATE")
-    $("#updateScreenshot").show()
-    $("#ck-updateScreenshot").prop("checked", false)
 
     $("#delete").removeClass("disabled")
     $("#delete").removeAttr("disabled")
@@ -772,7 +772,7 @@ NMSCE.prototype.executeSearch = async function (fcn) {
         }
 
         if (snapshot.size === 0) {
-            bhs.status("No matching entries found.")
+            bhs.status("No matching entries found.<br>Try specifying fewer things. Everything you specify has to match in order to find an item.")
             return
         }
 
@@ -817,6 +817,26 @@ NMSCE.prototype.executeSearch = async function (fcn) {
     }).catch(err => {
         bhs.status("Search error: " + err.message)
     })
+}
+
+NMSCE.prototype.searchSystem = function () {
+    if (!nmsce.last)
+        return
+
+    $("#results").empty()
+    $("#item-Search").click()
+    let found = 0
+
+    for (let t of objectList) {
+        let ref = bhs.fs.collection("nmsce/" + nmsce.last.galaxy + "/" + t.name)
+        ref = ref.where("addr", "==", nmsce.last.addr)
+        ref.get().then(snapshot => {
+            found += snapshot.size
+            for (let doc of snapshot.docs)
+                nmsce.displayResults(doc.data(), doc.ref.path, "#results")
+            $("#numFound").text(found)
+        })
+    }
 }
 
 NMSCE.prototype.save = function () {
@@ -1562,13 +1582,14 @@ NMSCE.prototype.extractImgText = function () {
     return s
 }
 
-NMSCE.prototype.loadScreenshot = async function (evt, fname) {
-    nmsce.loadImgText()
-    nmsce.restoreText(bhs.user.imageText)
+NMSCE.prototype.loadScreenshot = async function (evt, fname, edit) {
 
     if (evt) {
         let file = evt.files[0]
         if (file) {
+            nmsce.loadImgText()
+            nmsce.restoreText(bhs.user.imageText)
+
             let reader = new FileReader()
             reader.onload = function () {
                 nmsce.screenshot = new Image()
@@ -1582,10 +1603,23 @@ NMSCE.prototype.loadScreenshot = async function (evt, fname) {
             reader.readAsDataURL(file)
         }
     } else {
+        if (edit) {
+            $("#editScreenshot").hide()
+            $("#imageTextBlock").show()
+            $("#updateScreenshot").show()
+            $("#ck-updateScreenshot").prop("checked", false)
+            nmsce.loadImgText()
+            nmsce.restoreText(nmsce.last.imageText)
+        } else {
+            $("#editScreenshot").show()
+            $("#imageTextBlock").hide()
+            $("#updateScreenshot").hide()
+        }
+
         let img = new Image()
         img.crossOrigin = "anonymous"
 
-        let url = await bhs.fbstorage.ref().child(originalPath + fname).getDownloadURL()
+        let url = await bhs.fbstorage.ref().child((edit ? originalPath : displayPath) + fname).getDownloadURL()
         var xhr = new XMLHttpRequest()
         xhr.responseType = 'blob'
         xhr.onload = function (event) {
@@ -1618,6 +1652,11 @@ NMSCE.prototype.loadScreenshot = async function (evt, fname) {
     img.mouseout(e => {
         nmsce.handleMouseOut(e)
     })
+}
+
+NMSCE.prototype.editScreenshot = function () {
+    if (nmsce.last)
+        nmsce.loadScreenshot(null, nmsce.last.Photo, true)
 }
 
 var mfLoc
@@ -1701,73 +1740,80 @@ NMSCE.prototype.drawText = function (alt, altw) {
         canvas.height = nmsce.screenshot.height * canvas.width / nmsce.screenshot.width
     }
 
-    let ctx = txtcanvas.getContext("2d")
-    ctx.clearRect(0, 0, txtcanvas.width, txtcanvas.height)
+    if ($("#imageTextBlock").is(":visible")) {
+        let ctx = txtcanvas.getContext("2d")
+        ctx.clearRect(0, 0, txtcanvas.width, txtcanvas.height)
 
-    let loc = $("#img-text")
-    let keys = Object.keys(nmsce.imageText)
-    for (let id of keys) {
-        let text = nmsce.imageText[id]
-        let tloc = loc.find("#ck-" + id)
+        let loc = $("#img-text")
+        let keys = Object.keys(nmsce.imageText)
+        for (let id of keys) {
+            let text = nmsce.imageText[id]
+            let tloc = loc.find("#ck-" + id)
 
-        if (text.ck && tloc.is(":visible") || id === "logo") {
-            if (text.x + text.width > txtcanvas.width)
-                text.x = txtcanvas.width - text.width
-            else if (text.x < 0)
-                text.x = 0
+            if (text.ck && tloc.is(":visible") || id === "logo") {
+                if (text.x + text.width > txtcanvas.width)
+                    text.x = txtcanvas.width - text.width
+                else if (text.x < 0)
+                    text.x = 0
 
-            if (id !== "logo") {
-                if (text.y > txtcanvas.height)
-                    text.y = txtcanvas.height
-                else if (text.y - text.height < 0)
-                    text.y = text.height
-            } else {
-                if (text.y + text.height > txtcanvas.height)
-                    text.y = txtcanvas.height - text.height
-                else if (text.y < 0)
-                    text.y = 0
-            }
+                if (id !== "logo") {
+                    if (text.y > txtcanvas.height)
+                        text.y = txtcanvas.height
+                    else if (text.y - text.height < 0)
+                        text.y = text.height
+                } else {
+                    if (text.y + text.height > txtcanvas.height)
+                        text.y = txtcanvas.height - text.height
+                    else if (text.y < 0)
+                        text.y = 0
+                }
 
-            if (id === "Glyphs") {
-                text.font = "glyph"
+                if (id === "Glyphs") {
+                    text.font = "glyph"
 
-                ctx.fillStyle = text.color
-                ctx.fillRect(text.x - 2, text.y - text.height, text.width + 4, text.height + 4)
-                ctx.fillStyle = "#000000"
-                ctx.fillRect(text.x - 1, text.y - text.height + 1, text.width + 2, text.height + 2)
-            }
+                    ctx.fillStyle = text.color
+                    ctx.fillRect(text.x - 2, text.y - text.height, text.width + 4, text.height + 4)
+                    ctx.fillStyle = "#000000"
+                    ctx.fillRect(text.x - 1, text.y - text.height + 1, text.width + 2, text.height + 2)
+                }
 
-            if (id !== "logo") {
-                ctx.font = text.fSize + "px " + text.font
-                ctx.fillStyle = text.color
+                if (id !== "logo") {
+                    ctx.font = text.fSize + "px " + text.font
+                    ctx.fillStyle = text.color
 
-                if (typeof text.text !== "undefined" && text.text.includes("<br>")) {
-                    let l = text.text.split("<br>")
+                    if (typeof text.text !== "undefined" && text.text.includes("<br>")) {
+                        let l = text.text.split("<br>")
 
-                    for (let i = 0; i < l.length; ++i)
-                        ctx.fillText(l[i], text.x, text.y + i * text.fSize * 1.15)
-                } else
-                    ctx.fillText(text.text, text.x, text.y)
-            }
+                        for (let i = 0; i < l.length; ++i)
+                            ctx.fillText(l[i], text.x, text.y + i * text.fSize * 1.15)
+                    } else
+                        ctx.fillText(text.text, text.x, text.y)
+                }
 
-            if (text.sel && !altw) {
-                ctx.strokeStyle = "white"
-                ctx.setLineDash([2, 2]);
-                ctx.beginPath()
-                ctx.rect(text.x - 2, text.y - text.fSize + 2, text.width + 3, text.height + 3)
-                ctx.stroke();
+                if (text.sel && !altw) {
+                    ctx.strokeStyle = "white"
+                    ctx.setLineDash([2, 2]);
+                    ctx.beginPath()
+                    ctx.rect(text.x - 2, text.y - text.fSize + 2, text.width + 3, text.height + 3)
+                    ctx.stroke();
+                }
             }
         }
+
+        if (nmsce.imageText.logo.width === 0) {
+            let w = txtcanvas.width * .09
+            nmsce.imageText.logo.width = w
+            nmsce.imageText.logo.height = w
+        }
+
+        ctx.drawImage(nmsce.logo, nmsce.imageText.logo.x, nmsce.imageText.logo.y, nmsce.imageText.logo.width, nmsce.imageText.logo.height)
     }
 
-    let w = canvas.height * .12
-    nmsce.imageText.logo.width = w
-    nmsce.imageText.logo.height = w
-
-    ctx = canvas.getContext("2d")
+    let ctx = canvas.getContext("2d")
     ctx.drawImage(nmsce.screenshot, 0, 0, canvas.width, canvas.height)
-    ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
-    ctx.drawImage(nmsce.logo, nmsce.imageText.logo.x, nmsce.imageText.logo.y, nmsce.imageText.logo.width, nmsce.imageText.logo.height)
+
+    if ($("#imageTextBlock").is(":visible"))
+        ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
 }
 
 NMSCE.prototype.redditShare = function (evt) {
@@ -1937,7 +1983,6 @@ NMSCE.prototype.deleteEntry = function (entry) {
     ref.delete().then(() => {
         bhs.status(entry.id + " deleted.")
         $("#save").text("Save")
-        $("#updateScreenshot").hide()
 
         let ref = bhs.fbstorage.ref().child(originalPath + entry.Photo)
         ref.delete()
@@ -2058,9 +2103,9 @@ NMSCE.prototype.getEntries = async function (user, displayFcn, singleDispFcn) {
 
 NMSCE.prototype.getLatest = async function (fcn, evt) {
     let s = parseInt($("#displaysince").val())
-    if (s <= 0) {
-        $("#displaysince").val(0)
-        return
+    if (s < 1) {
+        s = 1
+        $("#displaysince").val(s)
     } else if (s > 30) {
         s = 30
         $("#displaysince").val(s)
@@ -2082,7 +2127,17 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
                 ref = doc.ref.collection(type)
                 ref = ref.where("created", ">=", d)
 
-                ref.get().then(snapshot => {
+                ref.get().then(async snapshot => {
+                    if (snapshot.size <= 10) {
+                        d = new Date()
+                        d.setDate(d.getDate() - s - 1)
+                        $("#displaysince").val(s + 1)
+                        d = firebase.firestore.Timestamp.fromDate(d)
+                        ref = doc.ref.collection(type)
+                        ref = ref.where("created", ">=", d)
+                        snapshot = await ref.get()
+                    }
+
                     let t = $("#numFound").text()
                     t = t !== "" ? parseInt(t) : 0
                     t += snapshot.size
@@ -2276,7 +2331,7 @@ NMSCE.prototype.displaySelected = function (e) {
         })
     }
 
-    let link = "https://nmsce.com/nmsce.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
+    let link = "https://nms-bhs.firebaseapp.com/nmsce.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
     $("#permalink").attr("href", link)
 
     let idx = getIndex(objectList, "name", e.type)

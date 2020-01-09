@@ -18,7 +18,8 @@
     <meta property="og:secure_url" content="https://nmsce.com/" />
     <meta property="og:type" content="website" />
 
-    <meta property="og:image:url" content="http://raw.githubusercontent.com/spip01/nms-bhs-db/master/public/images/nmsce-ss.jpg" />
+    <meta property="og:image:url"
+        content="http://raw.githubusercontent.com/spip01/nms-bhs-db/master/public/images/nmsce-ss.jpg" />
     <meta property="og:image:secure_url" content="https://nmsce.com/images/nmsce-ss.jpg" />
     <meta property="og:image:type" content="image/jpg" />
     <meta property="og:image:alt" content="Screenshot of NMSCE App" />
@@ -54,7 +55,8 @@
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
     </script>
 
-    <link href="https://fonts.googleapis.com/css?family=Berkshire+Swash|Caveat+Brush|Amatic+SC&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Berkshire+Swash|Caveat+Brush|Amatic+SC&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <script src="/__/firebase/7.5.0/firebase-app.js"></script>
@@ -312,52 +314,58 @@
 
                 <div class="col-lg-4 col-md-5 col-14">
                     <div clss="row">
-                        <div id="img-text" class="txt-inp-def h6 row"></div>
+                        <button id="editScreenshot" class="btn btn-sm btn-def h6 hidden"
+                            onclick="nmsce.editScreenshot(true)">Edit</button>&nbsp;
                     </div>
-                    <br>
-
-                    <div class="row border-top border-bottom">
+                    <span id="imageTextBlock">
+                        <div class="row">
+                            <div id="img-text" class="txt-inp-def h6 row"></div>
+                        </div>
                         <br>
-                        <div id="id-Font" class="col-14 h5"></div>
-                        <label class="col-sm-7 col-14 txt-inp-def">Size
-                            <input id="sel-size" class="col-8" onchange="nmsce.setSize(this)" type="number" value=18
-                                min=0>
-                        </label>
-                        <label class="col-sm-7 col-14 txt-inp-def">Color
-                            <input id="sel-color" class="col-7 bkg-def" style="border-color:black"
-                                onchange="nmsce.setColor(this)" type="color" value="#ffffff">&nbsp;
-                        </label>
-                        <span id="measurefont" style="visibility:hidden; float:left; white-space: nowrap;"></span>
-                    </div>
-                    <br>
 
-                    <div clss="row">
-                        <button class="btn btn-sm btn-def h6 col-5"
-                            onclick="nmsce.loadImgText(true)">Reset</button>&nbsp;
-                        <button class="btn btn-sm btn-def h6 col-5"
-                            onclick="nmsce.restoreText(null, true)">Reload</button>
-                    </div>
-                    <br>
-                    <div clss="row">
-                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                            data-placement="top" title="You can position text by clicking and dragging.">
-                        </i>&nbsp;
-                        <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('left')">
-                            <i class="fas fa-align-left"></i>
-                        </button>&nbsp;
-                        <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('right')">
-                            <i class="fas fa-align-right"></i>
-                        </button>&nbsp;
-                        <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('top')">
-                            <i class="fas fa-align-left" style="transform: rotate(90deg);"></i>
-                        </button>&nbsp;
-                        <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('bottom')">
-                            <i class="fas fa-align-left" style="transform: rotate(270deg);"></i>
-                        </button>
-                        <!--button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('justify')">
+                        <div class="row border-top border-bottom">
+                            <br>
+                            <div id="id-Font" class="col-14 h5"></div>
+                            <label class="col-sm-7 col-14 txt-inp-def">Size
+                                <input id="sel-size" class="col-8" onchange="nmsce.setSize(this)" type="number" value=18
+                                    min=0>
+                            </label>
+                            <label class="col-sm-7 col-14 txt-inp-def">Color
+                                <input id="sel-color" class="col-7 bkg-def" style="border-color:black"
+                                    onchange="nmsce.setColor(this)" type="color" value="#ffffff">&nbsp;
+                            </label>
+                            <span id="measurefont" style="visibility:hidden; float:left; white-space: nowrap;"></span>
+                        </div>
+                        <br>
+
+                        <div clss="row">
+                            <button class="btn btn-sm btn-def h6 col-5"
+                                onclick="nmsce.loadImgText(true)">Clear</button>&nbsp;
+                            <button class="btn btn-sm btn-def h6 col-5"
+                                onclick="nmsce.restoreText(null, true)">Reload</button>
+                        </div>
+                        <br>
+                        <div clss="row">
+                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                data-placement="top" title="You can position text by clicking and dragging.">
+                            </i>&nbsp;
+                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('left')">
+                                <i class="fas fa-align-left"></i>
+                            </button>&nbsp;
+                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('right')">
+                                <i class="fas fa-align-right"></i>
+                            </button>&nbsp;
+                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('top')">
+                                <i class="fas fa-align-left" style="transform: rotate(90deg);"></i>
+                            </button>&nbsp;
+                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('bottom')">
+                                <i class="fas fa-align-left" style="transform: rotate(270deg);"></i>
+                            </button>
+                            <!--button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('justify')">
                             <i class="fas fa-align-justify"></i>
                         </button-->
-                    </div>
+                        </div>
+                    </span>
                 </div>
             </div>
         </div>
