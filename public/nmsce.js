@@ -805,7 +805,6 @@ NMSCE.prototype.executeSearch = async function (fcn) {
                     }
             }
 
-
             if (found) {
                 size++
                 fcn(e, doc.ref.path, "#results")
@@ -2103,8 +2102,8 @@ NMSCE.prototype.getEntries = async function (user, displayFcn, singleDispFcn) {
 
 NMSCE.prototype.getLatest = async function (fcn, evt) {
     let s = parseInt($("#displaysince").val())
-    if (s < 1) {
-        s = 1
+    if (s < 2) {
+        s = 2
         $("#displaysince").val(s)
     } else if (s > 30) {
         s = 30
@@ -2364,8 +2363,8 @@ NMSCE.prototype.displaySelected = function (e) {
             if (fld.type === "tags") {
                 let t = ""
 
-                if (fld) {
-                    for (let c of fld)
+                if (e[id]) {
+                    for (let c of e[id])
                         t += c + ", "
 
                     t = t.slice(0, t.length - 2)
@@ -4422,6 +4421,7 @@ const objectList = [{
     }, {
         name: "Color",
         type: "tags",
+        imgText: true,
         list: colorList,
         max: 4,
         required: true,
@@ -4484,6 +4484,7 @@ const objectList = [{
     }, {
         name: "Color",
         type: "tags",
+        imgText: true,
         list: colorList,
         max: 2,
         required: true,
@@ -4555,18 +4556,21 @@ const objectList = [{
     }, {
         name: "Benefits",
         type: "tags",
+        imgText: true,
         list: frigateBenefits,
         ttip: "You can only search using Benefits, Negatives OR Color. Not a combination.",
         search: true,
     }, {
         name: "Negatives",
         type: "tags",
+        imgText: true,
         list: frigateNegatives,
         ttip: "You can only search using Benefits, Negatives OR Color. Not a combination.",
         search: true,
     }, {
         name: "Color",
         type: "tags",
+        imgText: true,
         list: colorList,
         max: 2,
         ttip: "You can only search using Benefits, Negatives OR Color. Not a combination.",
@@ -4659,6 +4663,7 @@ const objectList = [{
     }, {
         name: "Color",
         type: "tags",
+        imgText: true,
         max: 2,
         list: colorList,
         required: true,
@@ -4730,6 +4735,7 @@ const objectList = [{
         name: "Tags",
         type: "tags",
         max: 4,
+        imgText: true,
         search: true,
     }, {
         name: "Planet Name",
@@ -4797,6 +4803,7 @@ const objectList = [{
         name: "Extreme Weather",
         type: "checkbox",
         ttip: "Any deadly weather pattern.",
+        imgText: true,
         search: true,
     }, {
         name: "Sentinels",
@@ -4834,11 +4841,13 @@ const objectList = [{
         type: "tags",
         list: resourceList,
         max: 6,
+        imgText: true,
         search: true,
     }, {
         name: "Tags",
         type: "tags",
         max: 4,
+        imgText: true,
         search: true,
     }, {
         name: "Photo",
@@ -4912,6 +4921,7 @@ const objectList = [{
     }, {
         name: "Tags",
         type: "tags",
+        imgText: true,
         max: 4,
         ttip: "If the base was created on XBox please tag with 'xbox'.",
         search: true,
