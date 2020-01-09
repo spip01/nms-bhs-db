@@ -2102,8 +2102,8 @@ NMSCE.prototype.getEntries = async function (user, displayFcn, singleDispFcn) {
 
 NMSCE.prototype.getLatest = async function (fcn, evt) {
     let s = parseInt($("#displaysince").val())
-    if (s < 2) {
-        s = 2
+    if (s < 1) {
+        s = 1
         $("#displaysince").val(s)
     } else if (s > 30) {
         s = 30
@@ -2126,17 +2126,7 @@ NMSCE.prototype.getLatest = async function (fcn, evt) {
                 ref = doc.ref.collection(type)
                 ref = ref.where("created", ">=", d)
 
-                ref.get().then(async snapshot => {
-                    if (snapshot.size <= 10) {
-                        d = new Date()
-                        d.setDate(d.getDate() - s - 1)
-                        $("#displaysince").val(s + 1)
-                        d = firebase.firestore.Timestamp.fromDate(d)
-                        ref = doc.ref.collection(type)
-                        ref = ref.where("created", ">=", d)
-                        snapshot = await ref.get()
-                    }
-
+                ref.get().then(snapshot => {
                     let t = $("#numFound").text()
                     t = t !== "" ? parseInt(t) : 0
                     t += snapshot.size
