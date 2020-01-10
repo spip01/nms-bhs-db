@@ -1825,7 +1825,7 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
         //     yanchor: "bottom",
         //     yref: "paper"
         // }]
-    }
+ }
 
     if (opt.map3d) {
         layout.margin = {
