@@ -4529,6 +4529,11 @@ const objectList = [{
         field: "econ",
         name: "Economy",
         type: "menu",
+    }, {
+        id: "#id-Lifeform",
+        field: "life",
+        name: "Lifeform",
+        type: "menu",
     }],
     fields: [{
         name: "Name",
