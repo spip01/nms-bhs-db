@@ -137,7 +137,7 @@ blackHoleSuns.prototype.toggleTips = function () {
     })
 }
 
-blackHoleSuns.prototype.displayUser = async function (user, force) {
+blackHoleSuns.prototype.displayUser = function (user, force) {
     let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform)
 
     bhs.user = mergeObjects(bhs.user, user)
@@ -148,13 +148,7 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
     if (fpoi)
         return
 
-    if (fcedata || fnmsce) {
-        let changed = user.uid && (!nmsce.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform)
-
-        if (changed)
-            nmsce.displayUser()
-
-    } else if (!fdarc) {
+    if (!fdarc && !fnmsce && !fcedata) {
         bhs.getActiveContest(bhs.displayContest)
         bhs.buildTotals()
         bhs.getTotals(bhs.displayTotals, bhs.displayTotalsHtml)
@@ -213,10 +207,13 @@ blackHoleSuns.prototype.displayUser = async function (user, force) {
         $("[data-toggle='tooltip']").hide()
         $("#ttipmsg").css("text-decoration", "line-through")
     }
+
+    if (fcedata || fnmsce)
+        nmsce.displayUser()
 }
 
 // index.js has a local copy now
-blackHoleSuns.prototype.buildUserPanel = async function () {
+blackHoleSuns.prototype.buildUserPanel = function () {
     const panel = `
         <div id="pnl-user">
             <div class="row">
@@ -248,15 +245,17 @@ blackHoleSuns.prototype.buildUserPanel = async function () {
     $("#panels").prepend(panel)
     let loc = $("#pnl-user")
 
-    await bhs.getOrgList()
-    bhs.orgList.unshift({
-        name: "--blank--"
-    })
+    if (!fnmsce && !fcedata)
+        bhs.getOrgList().then(() => {
+            bhs.orgList.unshift({
+                name: "--blank--"
+            })
 
-    bhs.buildMenu(loc, "Civ/Org", bhs.orgList, bhs.saveUser, {
-        labelsize: "col-md-14 col-sm-14 col-5",
-        menusize: "col",
-    })
+            bhs.buildMenu($("#pnl-user"), "Civ/Org", bhs.orgList, bhs.saveUser, {
+                labelsize: "col-md-14 col-sm-14 col-5",
+                menusize: "col",
+            })
+        })
 
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, {
         required: !fnmsce,
@@ -947,16 +946,16 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
     let header = `        
         <div class="row">`
     let title = `
-            <div class="size h6 txt-inp-def">labelttip</div>`
+            <div class="size h6 txt-inp-def align-middle">labelttip</div>`
     let block = `
             <div id="menu-idname" class="size dropdown">
                 <button id="btn-idname" class="btn border btn-sm dropdown-toggle" style="rgbcolor" type="button" data-toggle="dropdown"></button>
             </div>
         </div>`
     const tText = `&nbsp;
-        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+        <i class="fa fa-question-circle-o text-danger h6 align-middle" data-toggle="tooltip" data-html="true"
             data-placement="bottom" title="ttip"></i>`
-    const rText = `<span class="h5 text-danger">&nbsp;*</span>ttip`
+    const rText = `&nbsp;<span class="h5 text-danger align-middle">*</span>ttip`
 
     let item = ``
     let hdr = ``
@@ -1050,7 +1049,7 @@ blackHoleSuns.prototype.bindMenuChange = function (loc, fcn) {
     })
 }
 
-blackHoleSuns.prototype.saveUser = async function () {
+blackHoleSuns.prototype.saveUser = function () {
     if (!fnmsce) {
         let user = bhs.extractUser()
 
@@ -1825,7 +1824,7 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
         //     yanchor: "bottom",
         //     yref: "paper"
         // }]
- }
+    }
 
     if (opt.map3d) {
         layout.margin = {

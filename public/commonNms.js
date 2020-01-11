@@ -32,6 +32,9 @@ function addGlyphButtons(loc, fcn) {
 
 function reformatAddress(addr) {
     let out = ""
+    if (!addr)
+        return out
+        
     addr = addr.toUpperCase()
 
     if (addr.match(/^[0-9A-F]{12}$/))

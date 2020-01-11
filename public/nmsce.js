@@ -114,9 +114,16 @@ NMSCE.prototype.selDisplay = function (evt) {
 }
 
 NMSCE.prototype.displayUser = function () {
-    if (bhs.user.galaxy !== "" && !fnmsce) {
+    if (bhs.user.uid !== "" && !fnmsce) {
         nmsce.restoreText(bhs.user.imageText)
         nmsce.getEntries(bhs.user, nmsce.displayList, nmsce.displayList)
+    } else if (fnmsce) {
+        if (typeof (Storage) !== "undefined" && !bhs.user.galaxy) {
+            let galaxy = window.localStorage.getItem('nmscegalaxy')
+
+            if (galaxy)
+                $("#btn-Galaxy").text(galaxy)
+        }
     }
 }
 
@@ -124,7 +131,6 @@ NMSCE.prototype.buildPanel = function () {
     let loc = $("#pnl-S1")
 
     bhs.buildMenu(loc, "Lifeform", lifeformList, null, {
-        required: !fnmsce,
         labelsize: "col-xl-7 col-lg-7 col-md-5 col-sm-3 col-5",
         menusize: "col",
     })
@@ -597,24 +603,125 @@ NMSCE.prototype.displaySingle = async function (entry) {
 }
 
 NMSCE.prototype.executeSearch = async function (fcn) {
-    let galaxy = $("#btn-Galaxy").text().stripNumber()
-    nmsce.lastsearch = []
+    let s = nmsce.lastsearch = nmsce.extractSearch()
 
-    if (galaxy === "") {
-        bhs.status("No Galaxy Selected.")
+    if (!s || s.search === [])
         return
-    }
 
     $("#numFound").text("searching...")
     $("body")[0].style.cursor = "wait"
 
+    let ref = bhs.fs.collection("nmsce/" + s.galaxy + "/" + s.type)
+    let firstarray = 0
+    let arraylist = []
+
+    for (let q of s.search) {
+        if (q.type === "tags") {
+            if (firstarray++ === 0) {
+                ref = ref.where(q.name, "array-contains-any", q.list)
+            } else
+                arraylist.push(q)
+        } else if (q.type === "map") {
+            for (let i of q.list)
+                ref = ref.where(q.name + "." + i, "==", true)
+        } else
+            ref = ref.where(q.name, q.query ? q.query : "==", q.val)
+    }
+
+    if (bhs.user.uid === "")
+        ref = ref.limit(50)
+
+    $("#results").empty()
+    $("#item-Search").click()
+
+    ref.get().then(snapshot => {
+        if (snapshot.size === 0) {
+            bhs.status("No matching entries found.<br>Try specifying fewer things. Everything you specify has to match in order to find an item.")
+            $("#numFound").text("0")
+            $("body")[0].style.cursor = "default"
+            return
+        }
+
+        if (bhs.user.uid === "" && snapshot.size === 50)
+            bhs.status("Showing first 50 matches. Login to see more matches or refine selection to see better matches.")
+
+        let nfound = 0
+
+        for (let doc of snapshot.docs) {
+            let e = doc.data()
+            let found = true
+
+            for (let l of arraylist) {
+                for (let t of l.list) {
+                    if (!e[l.name].includes(t)) {
+                        found = false
+                        break
+                    }
+                }
+
+                if (!found)
+                    break
+            }
+
+            if (found) {
+                nfound++
+                fcn(e, doc.ref.path, "#results")
+            }
+        }
+
+        s.results = nfound
+        nmsce.saveSearch(s, "nmsce-searches")
+
+        bhs.status(nfound + " matching entries found.")
+        $("#searchResults").show()
+        $("#numFound").text(nfound)
+        $("body")[0].style.cursor = "default"
+    }).catch(err => {
+        bhs.status("Search error: " + err.message)
+        $("body")[0].style.cursor = "default"
+    })
+}
+
+NMSCE.prototype.saveSearch = function (search, path) {
+    if (nmsce.lastsearch.search.length > 0) {
+
+        if (!bhs.user.uid) {
+            if (typeof (Storage) !== "undefined") {
+                window.localStorage.setItem('nmscegalaxy', $("#btn-Galaxy").text().stripNumber())
+
+                search.uid = window.localStorage.getItem('nmscetempuid')
+                if (!search.uid) {
+                    search.uid = uuidv4()
+                    window.localStorage.setItem('nmscetempuid', search.uid)
+                }
+            }
+        } else
+            search.uid = bhs.user.uid
+
+        search._name = bhs.user._name
+        search.date = firebase.firestore.Timestamp.now()
+
+        let sref = bhs.fs.collection(path)
+        sref.add(search)
+    }
+}
+
+NMSCE.prototype.extractSearch = function (fcn) {
+    let galaxy = $("#btn-Galaxy").text().stripNumber()
+    let s = {}
+    s.search = []
+    let search = s.search
+
+    if (galaxy === "") {
+        bhs.status("No Galaxy Selected.")
+        return null
+    }
+
     let tab = $("#typeTabs .active").prop("id").stripID()
     let pnl = $("#typePanels #pnl-" + tab)
 
-    if (fcedata)
-        nmsce.hideDisplayList(tab)
-
-    let ref = bhs.fs.collection("nmsce/" + galaxy + "/" + tab)
+    s.galaxy = galaxy
+    s.type = tab
 
     let obj = null
     let i = getIndex(objectList, "name", tab)
@@ -634,9 +741,7 @@ NMSCE.prototype.executeSearch = async function (fcn) {
             val = loc.find("#btn-" + fld.id.stripID()).text().stripNumber()
 
         if (val !== "") {
-            ref = ref.where(fld.field, "==", val)
-
-            nmsce.lastsearch.push({
+            search.push({
                 name: fld.field,
                 type: fld.type,
                 val: val
@@ -663,18 +768,17 @@ NMSCE.prototype.executeSearch = async function (fcn) {
             case "number":
             case "float":
                 if (val && val != -1) {
-                    ref = ref.where(id, rdata.search ? rdata.search : "==", val)
-                    nmsce.lastsearch.push({
+                    search.push({
                         name: id,
                         type: rdata.type,
+                        query: rdata.search,
                         val: val
                     })
                 }
                 break
             case "string":
                 if (val) {
-                    ref = ref.where(id, "==", val)
-                    nmsce.lastsearch.push({
+                    search.push({
                         name: id,
                         type: rdata.type,
                         val: val
@@ -692,16 +796,9 @@ NMSCE.prototype.executeSearch = async function (fcn) {
                 }
 
                 if (tlist.length > 0) {
-                    let exists = "no"
-                    if (getIndex(nmsce.lastsearch, "type", "tags") === -1)
-                        ref = ref.where(id, "array-contains-any", tlist)
-                    else
-                        exists = "yes"
-
-                    nmsce.lastsearch.push({
+                    search.push({
                         name: id,
                         type: rdata.type,
-                        skipped: exists,
                         list: tlist
                     })
                 }
@@ -711,8 +808,7 @@ NMSCE.prototype.executeSearch = async function (fcn) {
                 if (val) {
                     val = val.stripNumber()
                     if (val !== "Nothing Selected") {
-                        ref = ref.where(id, "==", val)
-                        nmsce.lastsearch.push({
+                        search.push({
                             name: id,
                             type: rdata.type,
                             val: val
@@ -723,8 +819,7 @@ NMSCE.prototype.executeSearch = async function (fcn) {
             case "checkbox":
                 let cloc = $(rloc).find("input:checked")
                 if (cloc.length > 0) {
-                    ref = ref.where(id, "==", cloc.prop("id") === "id-True")
-                    nmsce.lastsearch.push({
+                    search.push({
                         name: id,
                         type: rdata.type,
                         val: cloc.prop("id") === "id-True"
@@ -734,8 +829,7 @@ NMSCE.prototype.executeSearch = async function (fcn) {
             case "radio":
                 for (let rloc of loc)
                     if ($(rloc).is(":visible") && $(rloc).is(":checked")) {
-                        ref = ref.where(id, "==", $(rloc).prop("id").stripID())
-                        nmsce.lastsearch.push({
+                        search.push({
                             name: id,
                             type: rdata.type,
                             val: $(rloc).prop("id").stripID()
@@ -754,13 +848,12 @@ NMSCE.prototype.executeSearch = async function (fcn) {
             for (let s of sel) {
                 if ($(s).is(":visible")) {
                     let alt = $(s).attr("alt")
-                    ref = ref.where(id + "." + alt, "==", true)
                     list.push(alt)
                 }
             }
 
             if (list.length > 0)
-                nmsce.lastsearch.push({
+                search.push({
                     name: id,
                     type: "map",
                     list: list
@@ -768,87 +861,10 @@ NMSCE.prototype.executeSearch = async function (fcn) {
         }
     }
 
-    if (bhs.user.uid === "")
-        ref = ref.limit(50)
-
-    $("#results").empty()
-    $("#item-Search").click()
-
-    ref.get().then(snapshot => {
-        $("#numFound").text("0")
-
-        if (nmsce.lastsearch.length > 0) {
-            let search = {}
-            search.uid = bhs.user.uid
-            search._name = bhs.user._name
-            search.galaxy = galaxy
-            search.type = tab
-            search.date = firebase.firestore.Timestamp.now()
-            search.search = nmsce.lastsearch
-            search.results = snapshot.size
-
-            let sref = bhs.fs.collection("nmsce-searches")
-            sref.add(search)
-        }
-
-        if (snapshot.size === 0) {
-            bhs.status("No matching entries found.<br>Try specifying fewer things. Everything you specify has to match in order to find an item.")
-            $("#numFound").text("0")
-            $("body")[0].style.cursor = "default"
-            return
-        }
-
-        if (bhs.user.uid === "" && snapshot.size === 50)
-            bhs.status("Showing first 50 matches. Login to see more matches or refine selection to see better matches.")
-
-        let size = 0
-        let tags = getIndex(nmsce.lastsearch, "skipped", "no")
-        let more = getIndex(nmsce.lastsearch, "skipped", "yes")
-
-        for (let doc of snapshot.docs) {
-            let e = doc.data()
-            let found = true
-
-            if (tags !== -1) {
-                let tl = nmsce.lastsearch[tags]
-                for (let t of tl.list)
-                    if (!e[tl.name].includes(t)) {
-                        found = false
-                        break
-                    }
-            }
-
-            if (more !== -1) {
-                let tl = nmsce.lastsearch[more]
-                for (let t of tl.list)
-                    if (!e[tl.name].includes(t)) {
-                        found = false
-                        break
-                    }
-            }
-
-            if (found) {
-                size++
-                fcn(e, doc.ref.path, "#results")
-            }
-        }
-
-        bhs.status(size + " matching entries found.")
-        $("#searchResults").show()
-        $("#numFound").text(size)
-        $("body")[0].style.cursor = "default"
-    }).catch(err => {
-        bhs.status("Search error: " + err.message)
-    })
+    return s
 }
 
-NMSCE.prototype.searchResults = async function () {
-    let last = nmsce.lastsearch
-
-    let galaxy = $("#btn-Galaxy").text().stripNumber()
-    let tab = $("#typeTabs .active").prop("id").stripID()
-    let pnl = $("#typePanels #pnl-" + tab)
-}
+NMSCE.prototype.searchResults = async function () {}
 
 NMSCE.prototype.searchSystem = function () {
     if (!nmsce.last)
@@ -1155,7 +1171,8 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                     bhs.buildMenu(rloc, f.name, f.list, nmsce.addTag, {
                         nolabel: true,
                         ttip: f.ttip,
-                        sort: true
+                        sort: true,
+                        required: f.required
                     })
 
                     itm.find("#btn-" + id).text(f.name)
@@ -1557,7 +1574,7 @@ NMSCE.prototype.getImageText = function (evt, draw) {
                     for (let l of tloc)
                         text += $(l).text() + ", "
 
-                    text.slice(0, text.length - 2)
+                    text = text.slice(0, text.length - 2)
                 }
                 break
             case "number":
@@ -2264,24 +2281,43 @@ NMSCE.prototype.getEntry = async function (evt) {
     }
 }
 
-NMSCE.prototype.getEntries = async function (user, displayFcn, singleDispFcn) {
-    nmsce.entries = {}
+NMSCE.prototype.getEntries = function (user, displayFcn, singleDispFcn) {
+    let p = []
 
-    for (let t of objectList) {
-        let type = t.name
-        nmsce.entries[type] = []
+    if (user.galaxy) {
+        for (let t of objectList) {
+            let type = t.name
 
-        let ref = bhs.fs.collection("nmsce/" + user.galaxy + "/" + type)
-        ref = ref.where("uid", "==", user.uid)
-        ref = ref.orderBy("modded", "desc")
+            let ref = bhs.fs.collection("nmsce/" + user.galaxy + "/" + type)
+            ref = ref.where("uid", "==", user.uid)
+            ref = ref.orderBy("modded", "desc")
 
-        let snapshot = await ref.get()
-        for (let e of snapshot.docs)
-            nmsce.entries[type].push(e.data())
+            p.push(ref.get().then(snapshot => {
+                let entries = []
+
+                for (let e of snapshot.docs)
+                    entries.push(e.data())
+
+                return entries
+            }))
+        }
+
+        Promise.all(p).then(res => {
+            nmsce.entries = {}
+
+            for (let t of objectList)
+                nmsce.entries[t.name] = []
+            
+            for (let a of res){
+                if (a.length > 0) {
+                    let type = a[0].type
+                    nmsce.entries[type] = a
+                }
+            }
+
+            displayFcn(nmsce.entries)
+        })
     }
-
-    if (typeof displayFcn === "function")
-        displayFcn(nmsce.entries)
 }
 
 NMSCE.prototype.getNew = function (fcn) {
@@ -3790,6 +3826,8 @@ const resourceList = [{
 }, {
     name: "Cadmium"
 }, {
+    name: "Rusted Metal"
+}, {
     name: "Emeril"
 }, {
     name: "Indium"
@@ -4516,16 +4554,19 @@ const objectList = [{
         field: "_name",
         name: "Player",
         type: "text",
+        required: true,
     }, {
         id: "#id-Galaxy",
         field: "galaxy",
         name: "Galaxy",
         type: "menu",
+        required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Coords",
         type: "text",
+        required: true,
     }, {
         id: "#id-addrInput #id-addr",
         name: "Glyphs",
@@ -4541,6 +4582,12 @@ const objectList = [{
         id: "#id-Economy",
         field: "econ",
         name: "Economy",
+        type: "menu",
+        required: true,
+    }, {
+        id: "#id-Lifeform",
+        field: "life",
+        name: "Lifeform",
         type: "menu",
     }],
     fields: [{
@@ -4653,16 +4700,19 @@ const objectList = [{
         field: "_name",
         name: "Player",
         type: "text",
+        required: true,
     }, {
         id: "#id-Galaxy",
         field: "galaxy",
         name: "Galaxy",
         type: "menu",
+        required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Coords",
         type: "text",
+        required: true,
     }, {
         id: "#id-addrInput #id-addr",
         name: "Glyphs",
@@ -4674,6 +4724,7 @@ const objectList = [{
         field: "sys",
         name: "System",
         type: "text",
+        required: true,
     }, {
         id: "#id-Economy",
         field: "econ",
@@ -4731,16 +4782,19 @@ const objectList = [{
         field: "_name",
         name: "Player",
         type: "text",
+        required: true,
     }, {
         id: "#id-Galaxy",
         field: "galaxy",
         name: "Galaxy",
         type: "menu",
+        required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Coords",
         type: "text",
+        required: true,
     }, {
         id: "#id-addrInput #id-addr",
         name: "Glyphs",
@@ -4804,16 +4858,19 @@ const objectList = [{
         field: "_name",
         name: "Player",
         type: "text",
+        required: true,
     }, {
         id: "#id-Galaxy",
         field: "galaxy",
         name: "Galaxy",
         type: "menu",
+        required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Coords",
         type: "text",
+        required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
@@ -4876,6 +4933,7 @@ const objectList = [{
     }, {
         name: "Notes",
         type: "long string",
+        searchText: true,
     }, {
         name: "Color",
         type: "tags",
@@ -4901,16 +4959,19 @@ const objectList = [{
         field: "_name",
         name: "Player",
         type: "text",
+        required: true,
     }, {
         id: "#id-Galaxy",
         field: "galaxy",
         name: "Galaxy",
         type: "menu",
+        required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Coords",
         type: "text",
+        required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
@@ -4961,6 +5022,7 @@ const objectList = [{
         name: "Planet Index",
         type: "number",
         range: 15,
+        required: true,
         ttip: planetNumTip,
     }, {
         name: "Photo",
@@ -4974,16 +5036,19 @@ const objectList = [{
         field: "_name",
         name: "Player",
         type: "text",
+        required: true,
     }, {
         id: "#id-Galaxy",
         field: "galaxy",
         name: "Galaxy",
         type: "menu",
+        required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Coords",
         type: "text",
+        required: true,
     }, {
         id: "#id-addrInput #id-addr",
         name: "Glyphs",
@@ -4995,6 +5060,7 @@ const objectList = [{
         field: "sys",
         name: "System",
         type: "text",
+        required: true,
     }],
     fields: [{
         name: "Name",
@@ -5007,6 +5073,7 @@ const objectList = [{
         name: "Planet Index",
         range: 15,
         type: "number",
+        required: true,
         ttip: planetNumTip,
     }, {
         name: "Biome",
@@ -5074,21 +5141,25 @@ const objectList = [{
         field: "_name",
         name: "Player",
         type: "text",
+        required: true,
     }, {
         id: "#id-Galaxy",
         field: "galaxy",
         name: "Galaxy",
         type: "menu",
+        required: true,
     }, {
         id: "#id-Platform",
         field: "platform",
         name: "Platform",
         type: "menu",
+        required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Coords",
         type: "text",
+        required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
@@ -5100,6 +5171,7 @@ const objectList = [{
         field: "sys",
         name: "System",
         type: "text",
+        required: true,
     }, {
         id: "#id-Economy",
         field: "econ",
@@ -5122,6 +5194,7 @@ const objectList = [{
         name: "Planet Index",
         type: "number",
         range: 15,
+        required: true,
         ttip: planetNumTip,
     }, {
         name: "Game Mode",
