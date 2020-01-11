@@ -1476,7 +1476,7 @@ NMSCE.prototype.loadImgText = function (clear) {
             nmsce.initTxtItem(title.nameToId())
     }
 
-    if (nmsce.imageText.logo === "undefined")
+    if (!nmsce.imageText || nmsce.imageText.logo === "undefined")
         nmsce.initTxtItem("logo")
 
     if (nmsce.imageText.mylogo === "undefined")
@@ -2307,8 +2307,8 @@ NMSCE.prototype.getEntries = function (user, displayFcn, singleDispFcn) {
 
             for (let t of objectList)
                 nmsce.entries[t.name] = []
-            
-            for (let a of res){
+
+            for (let a of res) {
                 if (a.length > 0) {
                     let type = a[0].type
                     nmsce.entries[type] = a

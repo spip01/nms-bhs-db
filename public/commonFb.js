@@ -147,7 +147,7 @@ blackHoleSuns.prototype.onAuthStateChanged = async function (usr) {
         user.lasttime = firebase.firestore.Timestamp.now()
         bhs.updateUser(user)
 
-        // ref = bhs.fs.collection("users").where("_name", "==", "zeenewbian")
+        // let ref = bhs.fs.collection("users").where("_name", "==", "GaiusMarcus")
         // let snapshot = await ref.get()
         // if (!snapshot.empty) {
         //     user = snapshot.docs[0].data()
@@ -648,16 +648,18 @@ blackHoleSuns.prototype.getEntries = async function (displayFcn, singleDispFcn, 
 
         let bhref = ref.where("blackhole", "==", true)
 
-        if (findex && bhs.user.settings.start) {
-            complete = false
-            let start = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.start))
-            bhref = bhref.where("created", ">=", start)
-        }
+        if (findex && bhs.user.settings) {
+            if (bhs.user.settings.start) {
+                complete = false
+                let start = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.start))
+                bhref = bhref.where("created", ">=", start)
+            }
 
-        if (findex && bhs.user.settings.end) {
-            complete = false
-            let end = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.end))
-            bhref = bhref.where("created", "<=", end)
+            if (bhs.user.settings.end) {
+                complete = false
+                let end = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.end))
+                bhref = bhref.where("created", "<=", end)
+            }
         }
 
         await bhref.get().then(async snapshot => {
