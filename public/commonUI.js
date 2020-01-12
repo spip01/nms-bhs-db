@@ -946,16 +946,16 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
     let header = `        
         <div class="row">`
     let title = `
-            <div class="size h6 txt-inp-def align-middle">labelttip</div>`
+            <div class="size h6 txt-inp-def">labelttip</div>`
     let block = `
             <div id="menu-idname" class="size dropdown">
                 <button id="btn-idname" class="btn border btn-sm dropdown-toggle" style="rgbcolor" type="button" data-toggle="dropdown"></button>
             </div>
         </div>`
     const tText = `&nbsp;
-        <i class="fa fa-question-circle-o text-danger h6 align-middle" data-toggle="tooltip" data-html="true"
+        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
             data-placement="bottom" title="ttip"></i>`
-    const rText = `&nbsp;<span class="h5 text-danger align-middle">*</span>ttip`
+    const rText = ` <span class="h5 text-danger">*</span>ttip`
 
     let item = ``
     let hdr = ``

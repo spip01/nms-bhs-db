@@ -2661,7 +2661,7 @@ NMSCE.prototype.showVotes = function (entry, path) {
         if (tf) {
             loc.removeClass("fa-square")
             loc.addClass("fa-check-square")
-            loc.css("color", "green")
+            loc.css("color", "#00c000")
         } else {
             loc.removeClass("fa-check-square")
             loc.addClass("fa-square")
@@ -2670,7 +2670,7 @@ NMSCE.prototype.showVotes = function (entry, path) {
     }
 
     if (typeof entry !== "undefined") {
-        $("#favorite").css("color", entry.favorite ? "green" : "grey")
+        $("#favorite").css("color", entry.favorite ? "#00c000" : "grey")
         shvote($("#voted-edchoice"), entry.edchoice)
         shvote($("#voted-bhspoi"), entry.bhspoi)
         shvote($("#voted-visited"), entry.visited)
