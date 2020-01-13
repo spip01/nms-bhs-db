@@ -664,10 +664,10 @@ NMSCE.prototype.executeSearch = async function (fcn, search, dontsave) {
     for (let q of s.search) {
         switch (q.type) {
             case "tags":
+                arraylist.push(q)
+
                 if (firstarray++ === 0)
                     ref = ref.where(q.name, "array-contains-any", q.list)
-                else
-                    arraylist.push(q)
                 break
             case "map":
                 for (let i of q.list)
@@ -760,7 +760,7 @@ NMSCE.prototype.executeSearch = async function (fcn, search, dontsave) {
 NMSCE.prototype.saveSearch = function () {
     let search = nmsce.extractSearch()
     search.saved = true
-    
+
     if (!bhs.user.uid) {
         if (typeof (Storage) !== "undefined") {
             window.localStorage.setItem('nmsce-galaxy', $("#btn-Galaxy").text().stripNumber())
