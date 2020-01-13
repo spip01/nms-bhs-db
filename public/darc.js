@@ -20,11 +20,6 @@ $(document).ready(() => {
             })
             bhs.displayResults(bhs.route)
         }
-
-        let nmsce = window.localStorage.getItem('nmsceaddr')
-        if (nmsce)
-            $("#id-end").val(reformatAddress(nmsce))
-        window.localStorage.removeItem('nmsceaddr')
     }
 })
 
@@ -214,6 +209,11 @@ blackHoleSuns.prototype.updateDarcSettings = function () {
         $("#id-start").val(typeof bhs.user.darcSettings.start !== "undefined" ? bhs.user.darcSettings.start : "")
         $("#id-end").val(typeof bhs.user.darcSettings.end !== "undefined" ? bhs.user.darcSettings.end : "")
     }
+
+    let nmsce = window.localStorage.getItem('nmsce-addr')
+    if (nmsce)
+        $("#id-end").val(reformatAddress(nmsce))
+    window.localStorage.removeItem('nmsce-addr')
 }
 
 blackHoleSuns.prototype.showPOI = function (name) {

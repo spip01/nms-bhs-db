@@ -212,27 +212,36 @@
                         </div>
 
                         <br>
-                        <div id="entrybuttons" class="card card-body">
-                            <div class="row">
-                                <div class="col-lg-7 col-14">
-                                    <div class="row">
-                                        <button id="search" type="button" class="col-4 btn btn-sm btn-def"
-                                            onclick="nmsce.search()">Search</button>&nbsp;
-                                        <!--button id="searchResults" type="button" class="col-4 btn btn-sm btn-def hidden"
-                                            onclick="nmsce.searchResults()">Search in Results</!--button-->&nbsp;
-                                        <button id="clear" type="button" class="col-4 btn btn-sm btn-def"
-                                            onclick="nmsce.clearPanel(true)">Reset</button>&nbsp;
-                                    </div>
-                                    <br>
+                        <div id="entrybuttons" class="card">
+                            <div class="card-header txt-def h5">Search</div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <button id="search" type="button" class="col-3 btn btn-sm btn-def"
+                                        onclick="nmsce.search()">Search</button>&nbsp;
+                                    <!--button id="searchResults" type="button" class="col-3 btn btn-sm btn-def hidden"
+                                            onclick="nmsce.searchResults()">Search in Results</!--button-->
+                                    <button id="clear" type="button" class="col-3 btn btn-sm btn-def"
+                                        onclick="nmsce.clearPanel(true)">Reset</button>&nbsp;
+                                    <button id="searchlocal" type="button" class="col-3 btn btn-sm btn-def"
+                                        onclick="nmsce.searchLocal()">Saved Search</button>
+                                    <div id="id-Saved" class="col-5 hidden"></div>
                                 </div>
-                                <div id="status" class="border col text-danger scrollbar container-fluid"
-                                    style="overflow-y: scroll; height: 50px"></div>
-                            </div>
-                            <br>
-                            <div class="row">
-                                <div class="text-danger h6">
-                                    * Required Entry,&nbsp;
-                                    <i id="ttipmsg" class="fa fa-question-circle-o">&nbsp;Tool Tip</i><br>
+                                <div class="row">
+                                    <button id="savesearch" type="button" class="col-3 btn btn-sm btn-def"
+                                        onclick="nmsce.saveSearch()">Save</button>&nbsp;
+                                    <button id="deletesearch" type="button" class="col-3 btn btn-sm btn-def hidden"
+                                        onclick="nmsce.deleteSearch()">Delete</button>&nbsp;
+                                    <input id="searchname" class="col-5 hidden" type="text" placeholder="Search Name">
+                                </div>
+                                <br>
+                                <div class="row">
+                                    <div id="status" class="border col-10 text-danger scrollbar container-fluid"
+                                        style="overflow-y: scroll; height: 50px;"></div>
+                                    <div class="col-4 text-danger h6 border rounded"
+                                        style="border-color:red; height:50px;">
+                                        * Required Entry<br>
+                                        <i id="ttipmsg" class="fa fa-question-circle-o">&nbsp;Tool Tip</i><br>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -249,7 +258,8 @@
         <div class="card bkg-def border">
             <div class="card-header txt-def h3">
                 <div id="resultshdr" class="row">
-                    <div id="showdate" class="col-lg-5 col-7 h4">Entries since:&nbsp<span id="sinceDate"></span></div>
+                    <div id="showdate" class="col-lg-5 col-7 h4">Entries since:&nbsp<span id="sinceDate"></span>
+                    </div>
                     <label id="showlast" class="col-lg-5 col-7 h4">
                         Show last&nbsp;
                         <input id="displaysince" class="col-lg-3 col-7" type="text" value=3

@@ -33,6 +33,13 @@ blackHoleSuns.prototype.doLoggedout = function () {
     $("#genPOI").hide()
     $("#backupBHS").hide()
     $("#testing").hide()
+
+    if (fnmsce) {
+        $("#searchlocal").show()
+        $("#deletesearch").hide()
+        $("#searchname").hide()
+        $("#id-Saved").hide()
+    }
 }
 
 blackHoleSuns.prototype.doLoggedin = function (user) {
@@ -44,6 +51,13 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
     }
 
     $("#favorite").show()
+
+    if (fnmsce) {
+        $("#searchlocal").hide()
+        $("#deletesearch").show()
+        $("#searchname").show()
+        $("#id-Saved").show()
+    }
 
     let ref = bhs.fs.doc("admin/" + bhs.user.uid)
     ref.get().then(doc => {

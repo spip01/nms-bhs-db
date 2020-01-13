@@ -117,14 +117,17 @@ NMSCE.prototype.displayUser = function () {
     if (bhs.user.uid !== "" && !fnmsce) {
         nmsce.restoreText(bhs.user.imageText)
         nmsce.getEntries(bhs.user, nmsce.displayList, nmsce.displayList)
+
     } else if (fnmsce) {
         if (typeof (Storage) !== "undefined" && !bhs.user.galaxy) {
-            let galaxy = window.localStorage.getItem('nmscegalaxy')
+            let galaxy = window.localStorage.getItem('nmsce-galaxy')
 
             if (galaxy)
                 $("#btn-Galaxy").text(galaxy)
         }
     }
+
+    nmsce.getSearches()
 }
 
 NMSCE.prototype.buildPanel = function () {
@@ -252,10 +255,8 @@ NMSCE.prototype.showSearchPanel = function (evt) {
         loc = loc.find("#menu-Type")
         if (loc.length > 0) {
             let btn = loc.find("[id|='btn']")
-            if (btn.text().stripMarginWS() === "") {
-                let item = loc.find("[id|='item']").first()
-                item.click()
-            }
+            if (btn.text().stripMarginWS() === "")
+                loc.find("[id|='item']").first().click()
         }
     } else
         $("#searchPanel").hide()
@@ -602,11 +603,56 @@ NMSCE.prototype.displaySingle = async function (entry) {
         (typeof entry.reddit !== "boolean" ? "<span class='txt-inp-def h6'>" + entry.reddit.toDate() + "</span>" : "") : "")
 }
 
-NMSCE.prototype.executeSearch = async function (fcn) {
-    let s = nmsce.lastsearch = nmsce.extractSearch()
+NMSCE.prototype.displaySearch = function (search) {
+    nmsce.clearPanel(true, true)
 
-    if (!s || s.search === [])
+    $("#btn-Galaxy").text(search.galaxy)
+
+    let tloc = $("#pnl-" + search.type.nameToId())
+    tloc.click()
+
+    for (let itm of search.search) {
+        let loc = itm.id ? $("#panels " + itm.id) : tloc.find("#row-" + itm.name.nameToId())
+        switch (itm.type) {
+            case "number":
+            case "float":
+            case "string":
+                loc.find("#id-" + itm.name.nameToId()).val(itm.val)
+                break
+            case "menu":
+                if (itm.name === "Type")
+                    loc.find("#item-" + itm.val.nameToId()).click()
+                else
+                    loc.find("#btn-" + (itm.id ? itm.id.stripID() : itm.name.nameToId())).text(itm.val)
+                break
+            case "checkbox":
+            case "radio":
+                loc.find("#id-" + itm.val).prop("checked", true)
+                break
+            case "tags":
+                for (let i of itm.list)
+                    loc.find("#item-" + i.nameToId()).click()
+                break
+            case "map":
+                let map = $("#map-" + itm.page + " #map-selected")
+                for (let i of itm.list)
+                    map.find("[alt='" + i + "']").show()
+                break
+        }
+    }
+}
+
+NMSCE.prototype.executeSearch = async function (fcn, search, dontsave) {
+    $("#status").empty()
+
+    let s = nmsce.lastsearch = search
+    if (!s || s.search === []) {
+        bhs.status("No search selection.")
         return
+    }
+
+    if (fcedata && s.type)
+        nmsce.hideDisplayList(s.type)
 
     $("#numFound").text("searching...")
     $("body")[0].style.cursor = "wait"
@@ -616,23 +662,30 @@ NMSCE.prototype.executeSearch = async function (fcn) {
     let arraylist = []
 
     for (let q of s.search) {
-        if (q.type === "tags") {
-            if (firstarray++ === 0) {
-                ref = ref.where(q.name, "array-contains-any", q.list)
-            } else
-                arraylist.push(q)
-        } else if (q.type === "map") {
-            for (let i of q.list)
-                ref = ref.where(q.name + "." + i, "==", true)
-        } else
-            ref = ref.where(q.name, q.query ? q.query : "==", q.val)
+        switch (q.type) {
+            case "tags":
+                if (firstarray++ === 0)
+                    ref = ref.where(q.name, "array-contains-any", q.list)
+                else
+                    arraylist.push(q)
+                break
+            case "map":
+                for (let i of q.list)
+                    ref = ref.where(q.name + "." + i, "==", true)
+                break
+            case "checkbox":
+                ref = ref.where(q.name, q.query ? q.query : "==", q.val === "True")
+                break
+            default:
+                ref = ref.where(q.name, q.query ? q.query : "==", q.val)
+                break
+        }
     }
 
     if (bhs.user.uid === "")
         ref = ref.limit(50)
 
     $("#results").empty()
-    $("#item-Search").click()
 
     ref.get().then(snapshot => {
         if (snapshot.size === 0) {
@@ -670,7 +723,29 @@ NMSCE.prototype.executeSearch = async function (fcn) {
         }
 
         s.results = nfound
-        nmsce.saveSearch(s, "nmsce-searches")
+
+        if (nfound)
+            $("#item-Search").click()
+
+        if (!bhs.user.uid) {
+            if (typeof (Storage) !== "undefined") {
+                window.localStorage.setItem('nmsce-galaxy', $("#btn-Galaxy").text().stripNumber())
+
+                s.uid = window.localStorage.getItem('nmsce-tempuid')
+                if (!s.uid) {
+                    s.uid = uuidv4()
+                    window.localStorage.setItem('nmsce-tempuid', s.uid)
+                }
+            }
+        } else {
+            search.uid = bhs.user.uid
+            search._name = bhs.user._name
+        }
+
+        search.date = firebase.firestore.Timestamp.now()
+
+        let sref = bhs.fs.collection("nmsce-searches")
+        sref.add(s)
 
         bhs.status(nfound + " matching entries found.")
         $("#searchResults").show()
@@ -682,27 +757,134 @@ NMSCE.prototype.executeSearch = async function (fcn) {
     })
 }
 
-NMSCE.prototype.saveSearch = function (search, path) {
-    if (nmsce.lastsearch.search.length > 0) {
+NMSCE.prototype.saveSearch = function () {
+    let search = nmsce.extractSearch()
+    search.saved = true
+    
+    if (!bhs.user.uid) {
+        if (typeof (Storage) !== "undefined") {
+            window.localStorage.setItem('nmsce-galaxy', $("#btn-Galaxy").text().stripNumber())
 
-        if (!bhs.user.uid) {
-            if (typeof (Storage) !== "undefined") {
-                window.localStorage.setItem('nmscegalaxy', $("#btn-Galaxy").text().stripNumber())
-
-                search.uid = window.localStorage.getItem('nmscetempuid')
-                if (!search.uid) {
-                    search.uid = uuidv4()
-                    window.localStorage.setItem('nmscetempuid', search.uid)
-                }
+            search.uid = window.localStorage.getItem('nmsce-tempuid')
+            if (!search.uid) {
+                search.uid = uuidv4()
+                window.localStorage.setItem('nmsce-tempuid', search.uid)
             }
-        } else
+
+            window.localStorage.setItem('nmsce-search', JSON.stringify(search))
+        }
+    } else {
+        if (search.search.length > 0) {
             search.uid = bhs.user.uid
+            search._name = bhs.user._name
+            search.date = firebase.firestore.Timestamp.now()
 
-        search._name = bhs.user._name
-        search.date = firebase.firestore.Timestamp.now()
+            if (search.name) {
+                let ref = bhs.fs.doc("users/" + bhs.user.uid + "/nmsce-searches/" + search.name.nameToId())
+                ref.set(search, {
+                    merge: true
+                })
+            } else
+                bhs.status("No save name specified.")
+        }
+    }
 
-        let sref = bhs.fs.collection(path)
-        sref.add(search)
+    let i = getIndex(nmsce.searchlist, "name", search.name)
+
+    if (i !== -1)
+        nmsce.searchlist[i] = search
+    else {
+        nmsce.searchlist.push(search)
+
+        let loc = $("#menu-Saved")
+        if (loc.find("#list").length > 0) {
+            let item
+            if (loc.first("[id|='item]").is("li"))
+                item = `<li id="item-idname" class="dropdown-item" type="button" style="rgbcolor cursor: pointer">iname</li>`
+            else
+                item = `<button id="item-idname" class="dropdown-item border-bottom" type="button" style="rgbcolor cursor: pointer">iname</button>`
+
+            let h = /idname/ [Symbol.replace](item, search.name.nameToId())
+            h = /iname/ [Symbol.replace](h, search.name)
+
+            let lloc = loc.find("#list")
+            lloc.append(h)
+            loc = loc.find("#item-" + search.name.nameToId())
+            bhs.bindMenuChange(loc, nmsce.executeSaved)
+        } else
+            bhs.buildMenu($("#entrybuttons"), "Saved", nmsce.searchlist, nmsce.executeSaved)
+    }
+}
+
+NMSCE.prototype.deleteSearch = function () {
+    if (bhs.user.uid) {
+        let name = $("#searchname").val()
+
+        if (!name) {
+            bhs.status("No search name provided.")
+            return
+        }
+
+        let i = getIndex(nmsce.searchlist, "name", name)
+
+        if (i !== -1) {
+            let ref = bhs.fs.doc("users/" + bhs.user.uid + "/nmsce-searches/" + name.nameToId())
+            ref.delete().then(() => {
+                bhs.status(name + " search deleted.", true)
+
+                nmsce.searchlist.splice(i, 1)
+                let loc = $("#menu-Saved #item-" + name.nameToId())
+                loc.remove()
+
+            })
+        } else {
+            bhs.status("Named search not found.", true)
+        }
+    }
+}
+
+
+NMSCE.prototype.getSearches = function () {
+    if (!bhs.user.uid)
+        return
+
+    let ref = bhs.fs.collection("users/" + bhs.user.uid + "/nmsce-searches")
+    ref.get().then(snapshot => {
+        nmsce.searchlist = []
+        for (let doc of snapshot.docs) {
+            let s = doc.data()
+            nmsce.searchlist.push(s)
+        }
+
+        if (nmsce.searchlist.length > 0)
+            bhs.buildMenu($("#entrybuttons"), "Saved", nmsce.searchlist, nmsce.executeSaved, {
+                sort: true
+            })
+    })
+}
+
+NMSCE.prototype.executeSaved = function (evt) {
+    let name = $(evt).text().stripMarginWS()
+    let i = getIndex(nmsce.searchlist, "name", name)
+
+    if (i !== -1) {
+        nmsce.displaySearch(nmsce.searchlist[i])
+        nmsce.hideDisplayList()
+        nmsce.executeSearch(fcedata ? nmsce.displayInList : nmsce.displayResults, nmsce.searchlist[i], true)
+    }
+}
+
+
+NMSCE.prototype.searchLocal = function (evt) {
+    if (typeof (Storage) !== "undefined") {
+        let s = window.localStorage.getItem('nmsce-search')
+
+        if (s) {
+            s = JSON.parse(s)
+
+            nmsce.hideDisplayList()
+            nmsce.executeSearch(nmsce.displayResults, s, true)
+        }
     }
 }
 
@@ -723,6 +905,10 @@ NMSCE.prototype.extractSearch = function (fcn) {
     s.galaxy = galaxy
     s.type = tab
 
+    let name = $("#searchname").val()
+    if (name)
+        s.name = name
+
     let obj = null
     let i = getIndex(objectList, "name", tab)
     if (i > -1)
@@ -735,7 +921,7 @@ NMSCE.prototype.extractSearch = function (fcn) {
         let loc = $(fld.id)
 
         let val = ""
-        if (fld.type === "text")
+        if (fld.type === "string")
             val = loc.val()
         else if (fld.type === "menu")
             val = loc.find("#btn-" + fld.id.stripID()).text().stripNumber()
@@ -744,6 +930,7 @@ NMSCE.prototype.extractSearch = function (fcn) {
             search.push({
                 name: fld.field,
                 type: fld.type,
+                id: fld.id,
                 val: val
             })
         }
@@ -761,28 +948,26 @@ NMSCE.prototype.extractSearch = function (fcn) {
             continue
 
         let loc = $(rloc).find(":input")
-        let id = $(rloc).prop("id").stripID()
         let val = $(loc).val()
+
+        let itm = {}
+        itm.name = $(rloc).prop("id").stripID()
+        itm.type = rdata.type
+        if (rdata.search)
+            itm.query = rdata.search
 
         switch (rdata.type) {
             case "number":
             case "float":
                 if (val && val != -1) {
-                    search.push({
-                        name: id,
-                        type: rdata.type,
-                        query: rdata.search,
-                        val: val
-                    })
+                    itm.val = val
+                    search.push(itm)
                 }
                 break
             case "string":
                 if (val) {
-                    search.push({
-                        name: id,
-                        type: rdata.type,
-                        val: val
-                    })
+                    itm.val = val
+                    search.push(itm)
                 }
                 break
             case "tags":
@@ -796,44 +981,32 @@ NMSCE.prototype.extractSearch = function (fcn) {
                 }
 
                 if (tlist.length > 0) {
-                    search.push({
-                        name: id,
-                        type: rdata.type,
-                        list: tlist
-                    })
+                    itm.list = tlist
+                    search.push(itm)
                 }
                 break
             case "menu":
-                val = $(rloc).find("#btn-" + id).text()
+                val = $(rloc).find("#btn-" + itm.name).text()
                 if (val) {
                     val = val.stripNumber()
                     if (val !== "Nothing Selected") {
-                        search.push({
-                            name: id,
-                            type: rdata.type,
-                            val: val
-                        })
+                        itm.val = val
+                        search.push(itm)
                     }
                 }
                 break
             case "checkbox":
                 let cloc = $(rloc).find("input:checked")
                 if (cloc.length > 0) {
-                    search.push({
-                        name: id,
-                        type: rdata.type,
-                        val: cloc.prop("id") === "id-True"
-                    })
+                    itm.val = cloc.prop("id").stripID()
+                    search.push(itm)
                 }
                 break
             case "radio":
                 for (let rloc of loc)
                     if ($(rloc).is(":visible") && $(rloc).is(":checked")) {
-                        search.push({
-                            name: id,
-                            type: rdata.type,
-                            val: $(rloc).prop("id").stripID()
-                        })
+                        itm.val = $(rloc).prop("id").stripID()
+                        search.push(itm)
                     }
                 break
         }
@@ -842,7 +1015,6 @@ NMSCE.prototype.extractSearch = function (fcn) {
     let loc = $("[id='map-selected']")
     for (let page of loc) {
         if ($(page).is(":visible")) {
-            let id = $(page).closest("[id|='row']").prop("id").stripID()
             let list = []
             let sel = $(page).children()
             for (let s of sel) {
@@ -854,7 +1026,8 @@ NMSCE.prototype.extractSearch = function (fcn) {
 
             if (list.length > 0)
                 search.push({
-                    name: id,
+                    name: $(page).closest("[id|='row']").prop("id").stripID(),
+                    page: $(page).parent().prop("id").stripID(),
                     type: "map",
                     list: list
                 })
@@ -914,9 +1087,8 @@ NMSCE.prototype.save = function () {
 }
 
 NMSCE.prototype.search = function () {
-    $("#status").empty()
-
-    nmsce.executeSearch(fnmsce ? nmsce.displayResults : nmsce.displayInList)
+    let search = nmsce.extractSearch()
+    nmsce.executeSearch(fnmsce ? nmsce.displayResults : nmsce.displayInList, search, true)
 }
 
 blackHoleSuns.prototype.status = function (str, clear) {
@@ -2324,7 +2496,7 @@ NMSCE.prototype.getNew = function (fcn) {
     let date = null
 
     if (typeof (Storage) !== "undefined")
-        date = window.localStorage.getItem('nmsceLastUpdate')
+        date = window.localStorage.getItem('nmsce-LastUpdate')
 
     if (date) {
         let dt = new Date(date)
@@ -2391,7 +2563,7 @@ NMSCE.prototype.getAfterDate = function (fcn, date) {
                 bhs.subscribe("nmsce-latest-" + ref.path, ref, fcn)
 
                 if (typeof (Storage) !== "undefined")
-                    window.localStorage.setItem('nmsceLastUpdate', now.toDate().toString())
+                    window.localStorage.setItem('nmsce-LastUpdate', now.toDate().toString())
 
                 if ($("#favorites").children().length === 0) {
                     ref = doc.ref.collection(type)
@@ -3025,7 +3197,7 @@ NMSCE.prototype.newDARC = function (evt) {
     let addr = $(evt).text()
 
     if (typeof (Storage) !== "undefined")
-        window.localStorage.setItem('nmsceaddr', addr)
+        window.localStorage.setItem('nmsce-addr', addr)
 
     var win = window.open('darc.html', '_blank');
     if (win) {
@@ -4553,7 +4725,7 @@ const objectList = [{
         id: "#id-Player",
         field: "_name",
         name: "Player",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-Galaxy",
@@ -4565,7 +4737,7 @@ const objectList = [{
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Coords",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-addrInput #id-addr",
@@ -4577,7 +4749,7 @@ const objectList = [{
         id: "#id-sys",
         field: "sys",
         name: "System",
-        type: "text",
+        type: "string",
     }, {
         id: "#id-Economy",
         field: "econ",
@@ -4699,7 +4871,7 @@ const objectList = [{
         id: "#id-Player",
         field: "_name",
         name: "Player",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-Galaxy",
@@ -4711,7 +4883,7 @@ const objectList = [{
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Coords",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-addrInput #id-addr",
@@ -4723,7 +4895,7 @@ const objectList = [{
         id: "#id-sys",
         field: "sys",
         name: "System",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-Economy",
@@ -4781,7 +4953,7 @@ const objectList = [{
         id: "#id-Player",
         field: "_name",
         name: "Player",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-Galaxy",
@@ -4793,7 +4965,7 @@ const objectList = [{
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Coords",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-addrInput #id-addr",
@@ -4805,7 +4977,7 @@ const objectList = [{
         id: "#id-sys",
         field: "sys",
         name: "System",
-        type: "text",
+        type: "string",
     }, {
         id: "#id-Economy",
         field: "econ",
@@ -4857,7 +5029,7 @@ const objectList = [{
         id: "#id-Player",
         field: "_name",
         name: "Player",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-Galaxy",
@@ -4869,7 +5041,7 @@ const objectList = [{
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Coords",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-addrInput #id-addr",
@@ -4881,7 +5053,7 @@ const objectList = [{
         id: "#id-sys",
         field: "sys",
         name: "System",
-        type: "text",
+        type: "string",
     }],
     fields: [{
         name: "Name",
@@ -4958,7 +5130,7 @@ const objectList = [{
         id: "#id-Player",
         field: "_name",
         name: "Player",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-Galaxy",
@@ -4970,7 +5142,7 @@ const objectList = [{
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Coords",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-addrInput #id-addr",
@@ -4982,7 +5154,7 @@ const objectList = [{
         id: "#id-sys",
         field: "sys",
         name: "System",
-        type: "text",
+        type: "string",
     }],
     fields: [{
         name: "Name",
@@ -5035,7 +5207,7 @@ const objectList = [{
         id: "#id-Player",
         field: "_name",
         name: "Player",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-Galaxy",
@@ -5047,7 +5219,7 @@ const objectList = [{
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Coords",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-addrInput #id-addr",
@@ -5059,7 +5231,7 @@ const objectList = [{
         id: "#id-sys",
         field: "sys",
         name: "System",
-        type: "text",
+        type: "string",
         required: true,
     }],
     fields: [{
@@ -5140,7 +5312,7 @@ const objectList = [{
         id: "#id-Player",
         field: "_name",
         name: "Player",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-Galaxy",
@@ -5158,7 +5330,7 @@ const objectList = [{
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Coords",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-addrInput #id-addr",
@@ -5170,7 +5342,7 @@ const objectList = [{
         id: "#id-sys",
         field: "sys",
         name: "System",
-        type: "text",
+        type: "string",
         required: true,
     }, {
         id: "#id-Economy",
