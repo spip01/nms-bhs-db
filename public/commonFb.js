@@ -1019,6 +1019,11 @@ blackHoleSuns.prototype.validateEntry = function (entry, nobh) {
         ok = false
     }
 
+    if (!entry.addr.match(/([0-9A-F]{4}:){3}([0-9A-F]{4})/)) {
+        error += "Invalid address. "
+        ok = false
+   }
+
     if (ok && !entry.sys) {
         error += "Missing system name. "
         ok = false

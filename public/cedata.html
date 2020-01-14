@@ -274,22 +274,26 @@
                             <div class="card-header txt-def h5">Search</div>
                             <div class="card-body">
                                 <div class="row">
-                                    <button id="search" type="button" class="col-3 btn btn-sm btn-def"
+                                    <button id="search" type="button" class="col-4 btn btn-sm btn-def"
                                         onclick="nmsce.search()">Search</button>&nbsp;
-                                    <button id="showall" type="button" class="col-3 btn btn-sm btn-def"
+                                    <button id="showall" type="button" class="col-4 btn btn-sm btn-def"
                                         onclick="nmsce.showAll()">Show All</button>&nbsp;
                                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                         data-html="true" data-placement="bottom"
                                         title="Search is for players own entries.">
                                     </i>
-                                    <div id="id-Saved" class="col-6"></div>&nbsp;
+                                    <div id="id-Saved" class="col-5"></div>&nbsp;
                                 </div>
                                 <div class="row">
-                                    <button id="savesearch" type="button" class="col-3 btn btn-sm btn-def"
-                                        onclick="nmsce.saveSearch()">Save</button>&nbsp;
-                                    <button id="deletesearch" type="button" class="col-3 btn btn-sm btn-def"
-                                        onclick="nmsce.deleteSearch()">Delete</button>&nbsp;
-                                    <input id="searchname" class="col-5" type="text" placeholder="Search Name">
+                                    <button id="savesearch" type="button" class="col-4 btn btn-sm btn-def"
+                                        onclick="nmsce.saveSearch()">Save Search</button>&nbsp;
+                                    <button id="deletesearch" type="button" class="col-4 btn btn-sm btn-def"
+                                        onclick="nmsce.deleteSearch()">Delete Search</button>&nbsp;
+                                    <input id="searchname" class="col-5" type="text" placeholder="Search Name">&nbsp;
+                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                        data-html="true" data-placement="bottom"
+                                        title="Searches saved on this page will include the player name.">
+                                    </i>
                                 </div>
                             </div>
                         </div>

@@ -179,7 +179,7 @@ NMSCE.prototype.addGlyph = function (evt) {
         nmsce.changeAddr(loc)
 }
 
-NMSCE.prototype.changeAddr = async function (evt) {
+NMSCE.prototype.changeAddr = function (evt) {
     let addr = $(evt).val()
     if (addr !== "") {
         if (addr.length === 12) {
@@ -198,9 +198,11 @@ NMSCE.prototype.changeAddr = async function (evt) {
 
         if (!fnmsce) {
             nmsce.lastsys = null
-            let entry = await bhs.getEntry(addr, nmsce.displaySystem, null, null, true)
-            if (!entry)
-                bhs.getEntryByRegionAddr(addr, nmsce.displayRegion)
+
+            bhs.getEntry(addr, nmsce.displaySystem, null, null, true).then(entry => {
+                if (!entry)
+                    bhs.getEntryByRegionAddr(addr, nmsce.displayRegion)
+            })
         }
     }
 }
@@ -228,6 +230,8 @@ NMSCE.prototype.displaySystem = function (entry) {
     loc.find("#foundsys").show()
     if (entry.reg)
         loc.find("#foundreg").show()
+    else
+        loc.find("#foundreg").hide()
 
     nmsce.lastsys = entry
 
@@ -236,7 +240,7 @@ NMSCE.prototype.displaySystem = function (entry) {
     loc.find("#id-sys").val(entry.sys)
     loc.find("#id-reg").val(entry.reg)
 
-    loc.find("#id-by").html("<h6>" + entry._name ? entry._name : entry.player + "</h6>")
+    loc.find("#id-by").html("<h6>" + entry.sys ? entry._name : "" + "</h6>")
 
     loc.find("#btn-Lifeform").text(entry.life)
 
@@ -281,8 +285,14 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     clr($("#typePanels"))
 
     if (all) {
-        $("#pnl-S1 #foundreg").hide()
-        $("#pnl-S1 #foundsys").hide()
+        let loc = $("#pnl-S1")
+        loc.find("#foundreg").hide()
+        loc.find("#foundsys").hide()
+        loc.find("#id-by").empty()
+
+        loc.find("#id-glyphInput #id-addr").empty()
+        loc.find("#id-addrInput #id-glyph").empty()
+        loc.find("#id-addrInput #id-hex").empty()
 
         clr($("#pnl-S1"))
     }
@@ -780,6 +790,7 @@ NMSCE.prototype.saveSearch = function () {
         if (search.search.length > 0) {
             search.uid = bhs.user.uid
             search._name = bhs.user._name
+            search.page = window.location.pathname
             search.date = firebase.firestore.Timestamp.now()
 
             if (search.name) {
@@ -1903,7 +1914,18 @@ NMSCE.prototype.loadScreenshot = async function (evt, fname, edit) {
                 nmsce.screenshot.crossOrigin = "anonymous"
 
                 nmsce.screenshot.onload = function () {
+                    $("#editScreenshot").hide()
+                    $("#imageTextBlock").show()
+                    $("#updateScreenshot").show()
+                    $("#ck-updateScreenshot").prop("checked", true)
+
+                    nmsce.loadImgText()
+                    nmsce.restoreText(nmsce.last.imageText)
                     nmsce.drawText()
+
+                    $('html, body').animate({
+                        scrollTop: ($('#imgtable').offset().top)
+                    }, 500);
                 }
 
                 nmsce.screenshot.src = reader.result
@@ -1929,21 +1951,23 @@ NMSCE.prototype.loadScreenshot = async function (evt, fname, edit) {
         let img = new Image()
         img.crossOrigin = "anonymous"
 
-        let url = await bhs.fbstorage.ref().child((edit ? originalPath : displayPath) + fname).getDownloadURL()
-        var xhr = new XMLHttpRequest()
-        xhr.responseType = 'blob'
-        xhr.onload = function (event) {
-            var blob = xhr.response
-            nmsce.screenshot = new Image()
-            nmsce.screenshot.crossOrigin = "anonymous"
-            nmsce.screenshot.src = url
+        bhs.fbstorage.ref().child((edit ? originalPath : displayPath) + fname).getDownloadURL().then(url => {
+            var xhr = new XMLHttpRequest()
+            xhr.responseType = 'blob'
+            xhr.onload = function (event) {
+                var blob = xhr.response
+                nmsce.screenshot = new Image()
+                nmsce.screenshot.crossOrigin = "anonymous"
+                nmsce.screenshot.src = url
 
-            nmsce.screenshot.onload = function () {
-                nmsce.drawText()
+                nmsce.screenshot.onload = function () {
+                    nmsce.drawText()
+                }
             }
-        }
-        xhr.open('GET', url)
-        xhr.send()
+
+            xhr.open('GET', url)
+            xhr.send()
+        })
     }
 
     img = img.find("#id-canvas")
@@ -2521,7 +2545,10 @@ NMSCE.prototype.getNew = function (fcn) {
         $("#resultshdr #sinceDate").show()
         let fd = firebase.firestore.Timestamp.fromDate(dt)
         nmsce.getAfterDate(fcn, fd)
-        $("#displaysince").val(1)
+
+        let d = Math.floor((new Date() - dt) / (1000 * 60 * 60 * 24));
+
+        $("#displaysince").val(d)
     } else
         nmsce.getLatest(fcn)
 }
@@ -2556,7 +2583,6 @@ NMSCE.prototype.getAfterDate = function (fcn, date) {
     let ref = bhs.fs.collection("nmsce")
     ref.get().then(snapshot => {
         let p = []
-        $("#numFound").text("0")
 
         for (let doc of snapshot.docs)
             for (let t of objectList) {
@@ -2566,12 +2592,10 @@ NMSCE.prototype.getAfterDate = function (fcn, date) {
                 ref = ref.where("created", ">=", date)
 
                 p.push(ref.get().then(snapshot => {
-                    let t = parseInt($("#numFound").text())
-                    t += snapshot.size
-                    $("#numFound").text(t)
-
                     for (let doc of snapshot.docs)
                         fcn(doc.data(), doc.ref.path, "#latest")
+
+                    return snapshot.size
                 }))
 
                 ref = doc.ref.collection(type)
@@ -2635,8 +2659,14 @@ NMSCE.prototype.getAfterDate = function (fcn, date) {
                 }
             }
 
-        Promise.all(p).then(() => {
+        Promise.all(p).then(res => {
             $("body")[0].style.cursor = "default"
+            let t = 0
+
+            for (let i of res)
+                t += typeof i === "number" ? i : 0
+
+            $("#numFound").text(t)
         })
     })
 }
@@ -2730,21 +2760,22 @@ NMSCE.prototype.vote = async function (evt) {
     }
 }
 
-NMSCE.prototype.selectResult = async function (evt) {
+NMSCE.prototype.selectResult = function (evt) {
     let data = $(evt).data()
     let ref = bhs.fs.doc(data.path)
-    let doc = await ref.get()
 
-    if (doc.exists) {
-        let v = {}
-        v.votes = {}
-        v.votes.clickcount = firebase.firestore.FieldValue.increment(1)
-        doc.ref.set(v, {
-            merge: true
-        })
+    ref.get().then(doc => {
+        if (doc.exists) {
+            let v = {}
+            v.votes = {}
+            v.votes.clickcount = firebase.firestore.FieldValue.increment(1)
+            doc.ref.set(v, {
+                merge: true
+            })
 
-        nmsce.displaySelected(doc.data())
-    }
+            nmsce.displaySelected(doc.data())
+        }
+    })
 }
 
 NMSCE.prototype.displaySelected = function (e) {
@@ -2774,9 +2805,15 @@ NMSCE.prototype.displaySelected = function (e) {
 
     let ref = bhs.fbstorage.ref().child(displayPath + e.Photo)
     ref.getDownloadURL().then(url => {
-        $("#dispimage").width("auto")
-        $("#dispimage").height("auto")
         $("#dispimage").prop("src", url)
+
+        $("#dispimage").on("load", function () {
+            let nw = this.naturalWidth
+            let w = $("#imgcol").width()
+            let scale = nw / Math.min(nw, w)
+            $(this).width(Math.min(nw, w))
+            $(this).height(this.naturalHeight * scale)
+        })
     })
 
     loc = $("#imagedata")
