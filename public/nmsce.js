@@ -520,6 +520,9 @@ NMSCE.prototype.displaySingle = async function (entry) {
 
     bhs.getEntry(entry.addr, nmsce.displaySystem, null, null, true)
 
+    let link = "https://nms-bhs.firebaseapp.com/nmsce.html?i=" + entry.id + "&g=" + entry.galaxy.nameToId() + "&t=" + entry.type.nameToId()
+    $("#permalink").attr("href", link)
+
     let disp = function (flds, pnl) {
         for (let fld of flds) {
             let id = fld.name.nameToId()
@@ -786,33 +789,37 @@ NMSCE.prototype.saveSearch = function () {
                 })
             } else
                 bhs.status("No save name specified.")
-        }
-    }
 
-    let i = getIndex(nmsce.searchlist, "name", search.name)
-
-    if (i !== -1)
-        nmsce.searchlist[i] = search
-    else {
-        nmsce.searchlist.push(search)
-
-        let loc = $("#menu-Saved")
-        if (loc.find("#list").length > 0) {
-            let item
-            if (loc.first("[id|='item]").is("li"))
-                item = `<li id="item-idname" class="dropdown-item" type="button" style="rgbcolor cursor: pointer">iname</li>`
+            let i = -1
+            if (nmsce.searchlist)
+                i = getIndex(nmsce.searchlist, "name", search.name)
             else
-                item = `<button id="item-idname" class="dropdown-item border-bottom" type="button" style="rgbcolor cursor: pointer">iname</button>`
+                nmsce.searchlist = []
 
-            let h = /idname/ [Symbol.replace](item, search.name.nameToId())
-            h = /iname/ [Symbol.replace](h, search.name)
+            if (i !== -1)
+                nmsce.searchlist[i] = search
+            else {
+                nmsce.searchlist.push(search)
 
-            let lloc = loc.find("#list")
-            lloc.append(h)
-            loc = loc.find("#item-" + search.name.nameToId())
-            bhs.bindMenuChange(loc, nmsce.executeSaved)
-        } else
-            bhs.buildMenu($("#entrybuttons"), "Saved", nmsce.searchlist, nmsce.executeSaved)
+                let loc = $("#menu-Saved")
+                if (loc.find("#list").length > 0) {
+                    let item
+                    if (loc.first("[id|='item]").is("li"))
+                        item = `<li id="item-idname" class="dropdown-item" type="button" style="rgbcolor cursor: pointer">iname</li>`
+                    else
+                        item = `<button id="item-idname" class="dropdown-item border-bottom" type="button" style="rgbcolor cursor: pointer">iname</button>`
+
+                    let h = /idname/ [Symbol.replace](item, search.name.nameToId())
+                    h = /iname/ [Symbol.replace](h, search.name)
+
+                    let lloc = loc.find("#list")
+                    lloc.append(h)
+                    loc = loc.find("#item-" + search.name.nameToId())
+                    bhs.bindMenuChange(loc, nmsce.executeSaved)
+                } else
+                    bhs.buildMenu($("#entrybuttons"), "Saved", nmsce.searchlist, nmsce.executeSaved)
+            }
+        }
     }
 }
 
@@ -849,6 +856,8 @@ NMSCE.prototype.getSearches = function () {
         return
 
     let ref = bhs.fs.collection("users/" + bhs.user.uid + "/nmsce-searches")
+    ref = ref.where("uid", "==", bhs.user.uid)
+
     ref.get().then(snapshot => {
         nmsce.searchlist = []
         for (let doc of snapshot.docs) {
@@ -860,7 +869,7 @@ NMSCE.prototype.getSearches = function () {
             bhs.buildMenu($("#entrybuttons"), "Saved", nmsce.searchlist, nmsce.executeSaved, {
                 sort: true
             })
-    })
+    }).catch(err => console.log(err.message))
 }
 
 NMSCE.prototype.executeSaved = function (evt) {
@@ -1304,6 +1313,8 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 break
             case "string":
                 appenditem(itm, tString, f.name, id, f.ttip, f.required)
+                if (f.onchange)
+                    itm.find("#id-" + id).change(f.onchange)
                 break
             case "long string":
                 appenditem(itm, tLongString, f.name, id, f.ttip, f.required, inpLongHdr)
@@ -1962,6 +1973,9 @@ NMSCE.prototype.editScreenshot = function () {
 var mfLoc
 
 NMSCE.prototype.measureText = function (t) {
+    if (t.type === "img")
+        return t
+
     if (!mfLoc)
         mfLoc = $("#measurefont")
 
@@ -1981,7 +1995,7 @@ NMSCE.prototype.setColor = function (evt) {
     for (let id of keys) {
         let text = nmsce.imageText[id]
 
-        if (text.sel)
+        if (text.sel && text.type !== "img")
             text.color = color
     }
 
@@ -1995,7 +2009,7 @@ NMSCE.prototype.setSize = function (evt) {
     for (let id of keys) {
         let text = nmsce.imageText[id]
 
-        if (text.sel) {
+        if (text.sel && text.type !== "img") {
             text.fSize = size
             text = nmsce.measureText(text)
         }
@@ -2011,7 +2025,7 @@ NMSCE.prototype.setFont = function (evt) {
     for (let id of keys) {
         let text = nmsce.imageText[id]
 
-        if (text.sel) {
+        if (text.sel && text.type !== "img") {
             text.font = id === "Glyphs" ? "glyph" : font
             text = nmsce.measureText(text)
         }
@@ -2023,8 +2037,8 @@ NMSCE.prototype.setFont = function (evt) {
 NMSCE.prototype.drawText = function (alt, altw) {
     let canvas = alt ? alt : document.getElementById("id-canvas")
     let width = $("#id-img").width()
-    let sw = nmsce.screenshot.width
-    let sh = nmsce.screenshot.height
+    let sw = nmsce.screenshot.naturalWidth
+    let sh = nmsce.screenshot.naturalHeight
 
     if (sh > sw) { // vertical
         txtcanvas.height = Math.min(width, sh)
@@ -2037,11 +2051,11 @@ NMSCE.prototype.drawText = function (alt, altw) {
         txtcanvas.height = sh * txtcanvas.width / sw
 
         canvas.width = Math.min(altw ? altw : width, sw)
-        canvas.height = nmsce.screenshot.height * canvas.width / nmsce.screenshot.width
+        canvas.height = sh * canvas.width / sw
     }
 
     if (typeof nmsce.imageText.logo.width === "undefined" || nmsce.imageText.logo.width === 0) {
-        let w = txtcanvas.width * .09
+        let w = txtcanvas.width * .075
         nmsce.imageText.logo.width = w
         nmsce.imageText.logo.height = w
     }
@@ -2120,7 +2134,7 @@ NMSCE.prototype.drawText = function (alt, altw) {
 
 NMSCE.prototype.redditShare = function (evt) {
     let disp = document.createElement('canvas')
-    nmsce.drawText(disp, 900)
+    nmsce.drawText(disp, 1024)
     disp.toBlob(blob => {
         bhs.fbstorage.ref().child(redditPath + nmsce.last.Photo).put(blob).then(() => {
             bhs.fbstorage.ref().child(redditPath + nmsce.last.Photo).getDownloadURL().then(url => {
@@ -2129,7 +2143,7 @@ NMSCE.prototype.redditShare = function (evt) {
             })
         })
 
-    }, "image/jpeg", .7)
+    }, "image/jpeg", .8)
 
     let ref = bhs.fs.doc("nmsce/" + nmsce.last.galaxy + "/" + nmsce.last.type + "/" + nmsce.last.id)
     ref.set({
@@ -2390,8 +2404,8 @@ NMSCE.prototype.updateScreenshots = function (entry) {
 
     let orig = document.createElement('canvas')
     let ctx = orig.getContext("2d")
-    orig.width = 1024
-    orig.height = nmsce.screenshot.height * 1024 / nmsce.screenshot.width
+    orig.width = 2048
+    orig.height = nmsce.screenshot.height * 2048 / nmsce.screenshot.width
     ctx.drawImage(nmsce.screenshot, 0, 0, orig.width, orig.height)
     orig.toBlob(blob => {
         bhs.fbstorage.ref().child(originalPath + entry.Photo).put(blob).then(() => {
@@ -2437,12 +2451,15 @@ NMSCE.prototype.initVotes = function (entry) {
     }
 }
 
-NMSCE.prototype.getEntry = async function (evt) {
-    let id = $(evt).val().nameToId().toLowerCase()
+function getEntry() {
+    let addr = $("#pnl-S1 #id-addr").val()
+    let name = $(this).val()
     let type = $("#typePanels .active").prop("id").stripID()
     let gal = $("#btn-Galaxy").text().stripNumber()
 
-    if (gal && type && id) {
+    let id = (addr + " " + name.toLowerCase()).nameToId()
+
+    if (gal && type && addr && name) {
         let ref = bhs.fs.doc("nmsce/" + gal + "/" + type + "/" + id)
         ref.get().then(doc => {
             if (doc.exists) {
@@ -4768,6 +4785,7 @@ const objectList = [{
         search: true,
         required: true,
         imgText: true,
+        onchange: getEntry,
         ttip: "This is required because it is the only unique identifier available to prevent duplicate entries."
     }, {
         name: "Type",
@@ -4913,6 +4931,7 @@ const objectList = [{
         type: "string",
         search: true,
         required: true,
+        onchange: getEntry,
         ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
     }, {
         name: "Slots",
@@ -4989,6 +5008,7 @@ const objectList = [{
         type: "string",
         search: true,
         required: true,
+        onchange: getEntry,
         ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
     }, {
         name: "Type",
@@ -5061,6 +5081,7 @@ const objectList = [{
         search: true,
         required: true,
         imgText: true,
+        onchange: getEntry,
         ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
     }, {
         name: "Type",
@@ -5162,6 +5183,7 @@ const objectList = [{
         search: true,
         required: true,
         imgText: true,
+        onchange: getEntry,
         ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
     }, {
         name: "Genus",
@@ -5240,6 +5262,7 @@ const objectList = [{
         search: true,
         required: true,
         imgText: true,
+        onchange: getEntry,
         ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
     }, {
         name: "Planet Index",
@@ -5355,6 +5378,7 @@ const objectList = [{
         type: "string",
         required: true,
         imgText: true,
+        onchange: getEntry,
         search: true,
     }, {
         name: "Owner",
