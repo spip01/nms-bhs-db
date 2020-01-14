@@ -127,6 +127,8 @@ NMSCE.prototype.displayUser = function () {
         }
     }
 
+    $("#searchlocaltt").hide()
+    
     nmsce.getSearches()
 }
 
@@ -312,8 +314,6 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     $("#imageTextBlock").show()
     $("#updateScreenshot").hide()
 
-    $("#searchResults").hide()
-
     let tags = $("[data-type='tags']")
 
     for (let loc of tags) {
@@ -344,7 +344,7 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     }
 }
 
-NMSCE.prototype.extractEntry = async function () {
+NMSCE.prototype.extractEntry = function () {
     let entry = {}
     let ok = true
 
@@ -515,7 +515,7 @@ NMSCE.prototype.extractEntry = async function () {
     return ok
 }
 
-NMSCE.prototype.displaySingle = async function (entry) {
+NMSCE.prototype.displaySingle = function (entry) {
     nmsce.clearPanel(true, true)
 
     $('html, body').animate({
@@ -655,7 +655,7 @@ NMSCE.prototype.displaySearch = function (search) {
     }
 }
 
-NMSCE.prototype.executeSearch = async function (fcn, search, dontsave) {
+NMSCE.prototype.executeSearch = function (fcn, search) {
     $("#status").empty()
 
     let s = nmsce.lastsearch = search
@@ -699,6 +699,7 @@ NMSCE.prototype.executeSearch = async function (fcn, search, dontsave) {
         ref = ref.limit(50)
 
     $("#results").empty()
+    nmsce.searchResults = []
 
     ref.get().then(snapshot => {
         if (snapshot.size === 0) {
@@ -709,7 +710,7 @@ NMSCE.prototype.executeSearch = async function (fcn, search, dontsave) {
         }
 
         if (bhs.user.uid === "" && snapshot.size === 50)
-            bhs.status("Showing first 50 matches. Login to see more matches or refine selection to see better matches.")
+            bhs.status("Showing first 50 matches. Login to see more matches or modify search to see better matches.")
 
         let nfound = 0
 
@@ -731,6 +732,7 @@ NMSCE.prototype.executeSearch = async function (fcn, search, dontsave) {
 
             if (found) {
                 nfound++
+                nmsce.searchResults.push(e)
                 fcn(e, doc.ref.path, "#results")
             }
         }
@@ -768,6 +770,84 @@ NMSCE.prototype.executeSearch = async function (fcn, search, dontsave) {
         bhs.status("Search error: " + err.message)
         $("body")[0].style.cursor = "default"
     })
+}
+
+
+NMSCE.prototype.refineSearch = function (fcn, search) {
+    $("#status").empty()
+
+    let s = nmsce.lastsearch = nmsce.extractSearch()
+    if (!s || s.search === []) {
+        bhs.status("No search selection.")
+        return
+    }
+
+    if (typeof nmsce.searchResults === "undefined" || nmsce.searchResults.length === 0) {
+        bhs.status("No search reslts to refine.")
+        return
+    }
+
+    if (fcedata && s.type)
+        nmsce.hideDisplayList(s.type)
+
+    $("#numFound").text("searching...")
+    $("body")[0].style.cursor = "wait"
+    let nfound = 0
+    let res = $("#results")
+
+    for (let e of nmsce.searchResults) {
+        let ok = true
+
+        for (let q of s.search) {
+            switch (q.type) {
+                case "tags":
+                    for (let l of q.list)
+                        if (!e[q.name].includes(l))
+                            ok = false
+                    break
+                case "map":
+                    for (let l of q.list)
+                        if (!e[q.name][l])
+                            ok = false
+                    break
+                case "checkbox":
+                    ok = e[q.name] === (q.val === "True")
+                    break
+                default:
+                    ok = e[q.name] === q.val
+                    break
+            }
+
+            if (!ok)
+                break
+        }
+
+        let id = "#id-" + (e.type + "-" + e.id).nameToId()
+        if (ok) {
+            console.log()
+            res.find(id).parent().show()
+            nfound++
+        } else
+            res.find(id).parent().hide()
+    }
+
+    if (!bhs.user.uid) {
+        if (typeof (Storage) !== "undefined")
+            s.uid = window.localStorage.getItem('nmsce-tempuid')
+    } else {
+        s.uid = bhs.user.uid
+        s._name = bhs.user._name
+    }
+
+    s.date = firebase.firestore.Timestamp.now()
+    s.refine = true
+    let sref = bhs.fs.collection("nmsce-searches")
+    sref.add(s)
+
+    bhs.status(nfound + " matching entries found.")
+    $("#searchResults").show()
+    $("#numFound").text(nfound)
+    $("body")[0].style.cursor = "default"
 }
 
 NMSCE.prototype.saveSearch = function () {
@@ -1056,8 +1136,6 @@ NMSCE.prototype.extractSearch = function (fcn) {
 
     return s
 }
-
-NMSCE.prototype.searchResults = async function () {}
 
 NMSCE.prototype.searchSystem = function () {
     if (!nmsce.last)
@@ -1898,7 +1976,7 @@ NMSCE.prototype.loadMyLogo = function (evt) {
     reader.readAsDataURL(file)
 }
 
-NMSCE.prototype.loadScreenshot = async function (evt, fname, edit) {
+NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
     let img = $("#imgtable")
     img.show()
 

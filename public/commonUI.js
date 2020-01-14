@@ -36,6 +36,7 @@ blackHoleSuns.prototype.doLoggedout = function () {
 
     if (fnmsce) {
         $("#searchlocal").show()
+        $("#searchlocaltt").show()
         $("#deletesearch").hide()
         $("#searchname").hide()
         $("#id-Saved").hide()
@@ -54,6 +55,7 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
 
     if (fnmsce) {
         $("#searchlocal").hide()
+        $("#searchlocaltt").hide()
         $("#deletesearch").show()
         $("#searchname").show()
         $("#id-Saved").show()
