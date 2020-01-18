@@ -206,7 +206,7 @@ blackHoleSuns.prototype.displayUser = function (user, force) {
     } else
         pnl.find("#btn-Galaxy").text("")
 
-    if (fdarc && typeof bhs.user.uid !== "undefined" && bhs.user.uid)
+    if (fdarc)
         bhs.updateDarcSettings()
 
     if (typeof bhs.user.inputSettings !== "undefined" && typeof bhs.user.inputSettings.glyph !== "undefined" && bhs.user.inputSettings.glyph) {
@@ -1090,6 +1090,9 @@ blackHoleSuns.prototype.extractUser = function () {
     u.org = loc.find("#btn-Civ-Org").text().stripNumber()
     u.version = "beyond" // loc.find("#btn-Version").text().stripNumber()
 
+    if (u.org === "--blank--")
+        u.org = ""
+    
     return u
 }
 
@@ -1591,6 +1594,9 @@ blackHoleSuns.prototype.mapEntries = function (listentry) {
 
 blackHoleSuns.prototype.drawList = function (listEntry, connection) {
     let opt = bhs.extractMapOptions()
+    if (!listEntry)
+        return
+
     let k = Object.keys(listEntry)
 
     opt.connection = findex || connection ? opt.connection : false

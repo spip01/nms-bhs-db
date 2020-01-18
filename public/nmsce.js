@@ -256,7 +256,7 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
         loc.find("#id-addrInput #id-hex").empty()
 
         clr($("#pnl-S1"))
-        
+
         $("#pnl-map").children().hide()
 
         if (fnmsce)
@@ -760,7 +760,7 @@ NMSCE.prototype.searchEntriesList = function () {
     let loc = $("#list-" + s.type.nameToId())
 
     $("#id-table [id|='sub']").hide()
-    $("#id-table #sub-"+s.type.nameToId()).show()
+    $("#id-table #sub-" + s.type.nameToId()).show()
 
     nmsce.searchList(s, list, loc)
 }
@@ -814,7 +814,7 @@ NMSCE.prototype.searchList = function (s, list, loc) {
                     ok = e[q.name] === (q.val === "True")
                     break
                 default:
-                    ok = e[q.name] === q.val
+                    ok = q.query === ">=" ? e[q.name] >= q.val : e[q.name] === q.val
                     break
             }
 
@@ -870,48 +870,47 @@ NMSCE.prototype.saveSearch = function () {
             window.localStorage.setItem('nmsce-search', JSON.stringify(search))
         }
     } else {
-        if (search.search.length > 0) {
-            search.uid = bhs.user.uid
-            search._name = bhs.user._name
-            search.date = firebase.firestore.Timestamp.now()
+        search.uid = bhs.user.uid
+        search._name = bhs.user._name
+        search.email = bhs.user.email
+        search.date = firebase.firestore.Timestamp.now()
 
-            if (search.name) {
-                let ref = bhs.fs.doc("users/" + bhs.user.uid + "/nmsce-searches/" + search.name.nameToId())
-                ref.set(search, {
-                    merge: true
-                })
+        if (search.name) {
+            let ref = bhs.fs.doc("users/" + bhs.user.uid + "/nmsce-saved-searches/" + search.name.nameToId())
+            ref.set(search, {
+                merge: true
+            })
+        } else
+            bhs.status("No save name specified.")
+
+        let i = -1
+        if (nmsce.searchlist)
+            i = getIndex(nmsce.searchlist, "name", search.name)
+        else
+            nmsce.searchlist = []
+
+        if (i !== -1)
+            nmsce.searchlist[i] = search
+        else {
+            nmsce.searchlist.push(search)
+
+            let loc = $("#menu-Saved")
+            if (loc.find("#list").length > 0) {
+                let item
+                if (loc.first("[id|='item]").is("li"))
+                    item = `<li id="item-idname" class="dropdown-item" type="button" style="rgbcolor cursor: pointer">iname</li>`
+                else
+                    item = `<button id="item-idname" class="dropdown-item border-bottom" type="button" style="rgbcolor cursor: pointer">iname</button>`
+
+                let h = /idname/ [Symbol.replace](item, search.name.nameToId())
+                h = /iname/ [Symbol.replace](h, search.name)
+
+                let lloc = loc.find("#list")
+                lloc.append(h)
+                loc = loc.find("#item-" + search.name.nameToId())
+                bhs.bindMenuChange(loc, nmsce.executeSaved)
             } else
-                bhs.status("No save name specified.")
-
-            let i = -1
-            if (nmsce.searchlist)
-                i = getIndex(nmsce.searchlist, "name", search.name)
-            else
-                nmsce.searchlist = []
-
-            if (i !== -1)
-                nmsce.searchlist[i] = search
-            else {
-                nmsce.searchlist.push(search)
-
-                let loc = $("#menu-Saved")
-                if (loc.find("#list").length > 0) {
-                    let item
-                    if (loc.first("[id|='item]").is("li"))
-                        item = `<li id="item-idname" class="dropdown-item" type="button" style="rgbcolor cursor: pointer">iname</li>`
-                    else
-                        item = `<button id="item-idname" class="dropdown-item border-bottom" type="button" style="rgbcolor cursor: pointer">iname</button>`
-
-                    let h = /idname/ [Symbol.replace](item, search.name.nameToId())
-                    h = /iname/ [Symbol.replace](h, search.name)
-
-                    let lloc = loc.find("#list")
-                    lloc.append(h)
-                    loc = loc.find("#item-" + search.name.nameToId())
-                    bhs.bindMenuChange(loc, nmsce.executeSaved)
-                } else
-                    bhs.buildMenu($("#entrybuttons"), "Saved", nmsce.searchlist, nmsce.executeSaved)
-            }
+                bhs.buildMenu($("#entrybuttons"), "Saved", nmsce.searchlist, nmsce.executeSaved)
         }
     }
 }
@@ -928,7 +927,7 @@ NMSCE.prototype.deleteSearch = function () {
         let i = getIndex(nmsce.searchlist, "name", name)
 
         if (i !== -1) {
-            let ref = bhs.fs.doc("users/" + bhs.user.uid + "/nmsce-searches/" + name.nameToId())
+            let ref = bhs.fs.doc("users/" + bhs.user.uid + "/nmsce-saved-searches/" + name.nameToId())
             ref.delete().then(() => {
                 bhs.status(name + " search deleted.", true)
 
@@ -947,7 +946,7 @@ NMSCE.prototype.getSearches = function () {
     if (!bhs.user.uid)
         return
 
-    let ref = bhs.fs.collection("users/" + bhs.user.uid + "/saved-nmsce-searches")
+    let ref = bhs.fs.collection("users/" + bhs.user.uid + "/nmsce-saved-searches")
     ref = ref.where("uid", "==", bhs.user.uid)
 
     ref.get().then(snapshot => {
@@ -1387,12 +1386,12 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
         switch (f.type) {
             case "number":
                 l = /range/ [Symbol.replace](tNumber, f.range)
-                l = /stype/ [Symbol.replace](l, f.searchType ? f.searchType : "")
+                l = /stype/ [Symbol.replace](l, f.query ? f.query : "")
                 appenditem(itm, l, f.name, id, f.ttip, f.required)
                 break
             case "float":
                 l = /range/ [Symbol.replace](tFloat, f.range)
-                l = /stype/ [Symbol.replace](l, f.searchType ? f.searchType : "")
+                l = /stype/ [Symbol.replace](l, f.query ? f.query : "")
                 appenditem(itm, l, f.name, id, f.ttip, f.required)
                 break
             case "img":
@@ -2953,6 +2952,12 @@ NMSCE.prototype.displaySelected = function (e) {
     loc = $("#imagedata")
     loc.empty()
 
+    let h = /idname/g [Symbol.replace](row, "Type")
+    h = /title/ [Symbol.replace](h, "Type")
+    h = /font/ [Symbol.replace](h, "")
+    h = /value/ [Symbol.replace](h, e.type)
+    loc.append(h)
+
     for (let fld of obj.imgText) {
         let h = /idname/g [Symbol.replace](row, fld.name.nameToId())
         h = /title/ [Symbol.replace](h, fld.name)
@@ -3009,7 +3014,7 @@ NMSCE.prototype.displaySelected = function (e) {
 
     let d = e.created.toDate().toDateLocalTimeString()
 
-    let h = /idname/g [Symbol.replace](row, "date")
+    h = /idname/g [Symbol.replace](row, "date")
     h = /title/ [Symbol.replace](h, "Added")
     h = /value/ [Symbol.replace](h, d)
     h = /font/ [Symbol.replace](h, "")
@@ -5091,7 +5096,7 @@ const objectList = [{
     }, {
         name: "Slots",
         type: "number",
-        searchType: ">=",
+        query: ">=",
         search: true,
     }, {
         name: "Color",
@@ -5255,7 +5260,7 @@ const objectList = [{
         name: "Slots",
         type: "number",
         search: true,
-        searchType: ">="
+        query: ">="
     }, {
         name: "Space Station",
         type: "checkbox",
@@ -5356,7 +5361,7 @@ const objectList = [{
         range: 15.0,
         imgText: true,
         search: true,
-        searchType: ">="
+        query: ">="
     }, {
         name: "Tags",
         type: "tags",

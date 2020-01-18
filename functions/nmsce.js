@@ -1,80 +1,106 @@
 'use strict'
 
 const admin = require('firebase-admin')
-var serviceAccount = require("./nms-bhs-8025d3f3c02d.json")
+const serviceAccount = require("./nms-bhs-8025d3f3c02d.json")
+const email = require("./bhs-app.json")
+const nodemailer = require("nodemailer")
 require('events').EventEmitter.defaultMaxListeners = 0
-const spawn = require('child-process-promise').spawn
-const path = require('path')
-const os = require('os')
-const fs = require('fs')
+const bucket = admin.storage().bucket("staging.nms-bhs.appspot.com")
 
-// async function main() {
-//     admin.initializeApp({
-//         credential: admin.credential.cert(serviceAccount)
-//     })
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount)
+// })
 
-//     const bucket = admin.storage().bucket("nms-bhs.appspot.com")
-//     const [files] = await bucket.getFiles({
-//         prefix: "nmsce/disp/"
-//     })
+const thumbnailPath = "/nmsce/disp/thumb/"
 
-//     for (let file of files) {
-//         // if (file.name < "nmsce/disp/thumb/91d18622-fb6c-4b82-b62c-e075a83decd2.jpg") {
-//         //     console.log("skip", file.name)
-//         //     continue
-//         // }
+var searches = []
+var lastUpdate
+const transporter = nodemailer.createTransport(email)
 
-//         let f = bucket.file(file.name)
-//         console.log("start", file.name)
+exports.checkSearch = async function (e) {
+    let ref = admin.firestore().collectionGroup("nmsce-saved-searches")
+    if (lastUpdate)
+        ref = ref.where("date", ">", lastUpdate)
 
-//         const fileDir = path.dirname(file.name)
-//         const fileName = path.basename(file.name)
+    lastUpdate = admin.firestore.Timestamp.fromDate(new Date());
 
-//         const tempLocalFile = path.join(os.tmpdir(), fileName)
-//         const tempLocalThumbFile = path.join(os.tmpdir(), "t_" + fileName)
-//         await f.download({
-//             destination: tempLocalFile
-//         })
-//         await spawn('convert', [tempLocalFile, "-resize", "400", "-quality", "70%", tempLocalThumbFile], {
-//             capture: ['stdout', 'stderr']
-//         })
+    let snapshot = await ref.get()
+    for (let doc of snapshot.docs)
+        searches.push(doc.data())
 
-//         let dname = "nmsce/disp/thumb/" + fileName
-//         await bucket.upload(tempLocalThumbFile, {
-//             destination: dname
-//         })
+    let sent = []
 
-//         fs.unlinkSync(tempLocalFile)
-//         fs.unlinkSync(tempLocalThumbFile)
-//         console.log("finish", file.name)
-//     }
-// }
+    for (let s of searches) {
+        let ok = true
 
-// main()
+        if (sent.includes(s.uid))
+            ok = false
 
-exports.makeThumb = async function (fname) {
-    const bucket = admin.storage().bucket("nms-bhs.appspot.com")
-    let f = bucket.file("nmsce/disp/" + fname)
-    console.log("start", "nmsce/disp/" + fname)
+        if (!s.email || !s.notify) // || s.uid === e.uid)
+            ok = false
 
-    const tempLocalFile = path.join(os.tmpdir(), fname)
-    const tempLocalThumbFile = path.join(os.tmpdir(), "t_" + fname)
+        if (s.galaxy && e.galaxy !== s.galaxy)
+            ok = false
 
-    await f.download({
-        destination: tempLocalFile
-    })
+        if (s.type && e.type !== e.type)
+            ok = false
 
-    await spawn('convert', [tempLocalFile, "-resize", "350", "-quality", "50%", tempLocalThumbFile], {
-        capture: ['stdout', 'stderr']
-    })
+        // if (ok && s._name && e._name !== e._name)
+        //     ok = false
 
-    let dname = "nmsce/disp/thumb/" + fname
-    await bucket.upload(tempLocalThumbFile, {
-        destination: dname
-    })
+        if (ok)
+            for (let q of s.search) {
+                ok = e[q.name]
+                if (!ok)
+                    break
 
-    fs.unlinkSync(tempLocalFile)
-    fs.unlinkSync(tempLocalThumbFile)
+                switch (q.type) {
+                    case "tags":
+                        for (let l of q.list)
+                            if (!e[q.name].includes(l))
+                                ok = false
+                        break
+                    case "map":
+                        for (let l of q.list)
+                            if (!e[q.name][l])
+                                ok = false
+                        break
+                    case "checkbox":
+                        ok = e[q.name] === (q.val === "True")
+                        break
+                    default:
+                        ok = q.query === ">=" ? e[q.name] >= q.val : e[q.name] === q.val
+                        break
+                }
 
-    console.log("finish", dname)
+                if (!ok)
+                    break
+            }
+
+        if (ok) {
+            sent.push(s.uid)
+
+            let ref = admin.fbstorage.ref().child(thumbnailPath + e.Photo)
+            return ref.getDownloadURL().then(url => {
+                let link = "https://nmsce.com/preview.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
+
+                let mailOptions = {
+                    from: '<bhsapp.testing@gmail.com>',
+                    to: s.email,
+                    subject: 'NMSCE Saved Search Match: ' + s.name,
+                    html: '<a href="' + link + '">Type: ' + e.type + ' Name: ' + e.Name + '<br><img src="'+url+'"/></a>'
+                }
+
+                return transporter.sendMail(mailOptions, (err, info) => {
+                    if (err)
+                        console.log(err)
+                    console.log(info)
+                })
+            })
+        }
+    }
+}
+
+String.prototype.nameToId = function () {
+    return /[^a-z0-9_-]/ig [Symbol.replace](this, "-")
 }

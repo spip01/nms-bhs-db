@@ -4,6 +4,7 @@
 *.log
 bootstrap.css
 bootstrap.js
+bhs-app.json
 *.env
 env.js
 *.cache
@@ -59,3 +60,4 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+functions/email.js

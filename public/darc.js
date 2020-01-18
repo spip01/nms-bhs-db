@@ -41,25 +41,6 @@ blackHoleSuns.prototype.setGP = function () {
     if (g === "" || p === "")
         return
 
-    let ref = bhs.fs.doc("bhs/pageTotals")
-    const increment = firebase.firestore.FieldValue.increment(1)
-
-    let darc = {}
-    darc.routeGen = increment
-
-    let d = new Date()
-    let n = d.getFullYear() + "-" + (d.getMonth() + 1)
-    darc[n] = increment
-
-    if (bhs.user.uid === "")
-        darc.noLogin = increment
-
-    ref.set({
-        darc: darc
-    }, {
-        merge: true
-    })
-
     g = g.stripNumber()
 
     if (typeof bhs.orgList !== "undefined") {
@@ -119,9 +100,6 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
         labelsize: "col-md-6 col-sm-3 col-6",
         menusize: "col-8"
     })
-
-    if (bhs.user.galaxy !== "")
-        bhs.setGP()
 }
 
 blackHoleSuns.prototype.setAddress = function (evt) {
@@ -129,7 +107,10 @@ blackHoleSuns.prototype.setAddress = function (evt) {
     if (addr !== "") {
         addr = reformatAddress(addr)
         $(evt).val(addr)
-        bhs.saveDarcAddrSE()
+
+        let err = bhs.validateAddress(addr, true)
+        if (err !== "")
+            bhs.status(err)
     }
 }
 
@@ -149,8 +130,6 @@ blackHoleSuns.prototype.select = function (btn) {
         $("#btn-Points-Of-Interest").text("")
         bhs.showOrg(name)
     }
-
-    bhs.saveDarcAddrSE()
 }
 
 blackHoleSuns.prototype.switchSE = function () {
@@ -159,38 +138,23 @@ blackHoleSuns.prototype.switchSE = function () {
 
     $("#id-start").val(e)
     $("#id-end").val(s)
-
-    bhs.saveDarcAddrSE()
 }
 
 blackHoleSuns.prototype.saveDarcSettings = function (evt) {
-    if (bhs.user.uid !== "") {
-        let user = {}
-        user.darcSettings = {}
-        let id = $(evt).prop("id").stripID()
-        let type = $(evt).attr("type")
-        let val = type === "checkbox" ? $(evt).prop("checked") : $(evt).val()
-        user.darcSettings[id] = val
+    let user = {}
+    user.darcSettings = {}
+    user.darcSettings.galalxy = $("#btn-Galaxy").text()
+    user.darcSettings.range = $("#id-range").val()
+    user.darcSettings.useBases = $("#ck-useBases").prop("checked")
+    user.darcSettings.nearPath = $("#ck-nearPath").prop("checked")
+    user.darcSettings.maxJumps = $("#id-maxJumps").val()
+    user.darcSettings.start = $("#id-start").val()
+    user.darcSettings.end = $("#id-end").val()
 
-        if (typeof (Storage) !== "undefined" && !bhs.user.uid)
-            window.localStorage.setItem('darcsettings', JSON.stringify(user.darcSettings))
-        else
-            bhs.updateUser(user)
-    }
-}
-
-blackHoleSuns.prototype.saveDarcAddrSE = function () {
-    if (bhs.user.uid !== "") {
-        let user = {}
-        user.darcSettings = {}
-        user.darcSettings.start = $("#id-start").val()
-        user.darcSettings.end = $("#id-end").val()
-
-        if (typeof (Storage) !== "undefined" && !bhs.user.uid)
-            window.localStorage.setItem('darcsettings', JSON.stringify(user.darcSettings))
-        else
-            bhs.updateUser(user)
-    }
+    if (typeof (Storage) !== "undefined" && !bhs.user.uid)
+        window.localStorage.setItem('darcsettings', JSON.stringify(user.darcSettings))
+    else if (bhs.user.uid)
+        bhs.updateUser(user)
 }
 
 blackHoleSuns.prototype.updateDarcSettings = function () {
@@ -202,18 +166,23 @@ blackHoleSuns.prototype.updateDarcSettings = function () {
     }
 
     if (typeof bhs.user.darcSettings !== "undefined") {
+        $("#btn-Galaxy").text(typeof bhs.user.darcSettings.galalxy === "undefined" ? bhs.user.galaxy : bhs.user.darcSettings.galalxy)
         $("#id-range").val(typeof bhs.user.darcSettings.range !== "undefined" ? bhs.user.darcSettings.range : 2000)
-        $("#ck-useBases").prop("checked", bhs.user.darcSettings.useBases)
+        $("#ck-useBases").prop("checked", bhs.user.uid && bhs.user.darcSettings.useBases)
         $("#ck-nearPath").prop("checked", bhs.user.darcSettings.nearPath)
         $("#id-maxJumps").val(typeof bhs.user.darcSettings.maxJumps !== "undefined" ? bhs.user.darcSettings.maxJumps : 20)
         $("#id-start").val(typeof bhs.user.darcSettings.start !== "undefined" ? bhs.user.darcSettings.start : "")
-        $("#id-end").val(typeof bhs.user.darcSettings.end !== "undefined" ? bhs.user.darcSettings.end : "")
+        if ($("#id-end").val() === "")
+            $("#id-end").val(typeof bhs.user.darcSettings.end !== "undefined" ? bhs.user.darcSettings.end : "")
     }
 
-    let nmsce = window.localStorage.getItem('nmsce-addr')
-    if (nmsce)
-        $("#id-end").val(reformatAddress(nmsce))
-    window.localStorage.removeItem('nmsce-addr')
+    if (typeof (Storage) !== "undefined") {
+        let nmsce = window.localStorage.getItem('nmsce-addr')
+        if (nmsce)
+            $("#id-end").val(reformatAddress(nmsce))
+
+        window.localStorage.removeItem('nmsce-addr')
+    }
 }
 
 blackHoleSuns.prototype.showPOI = function (name) {
@@ -272,10 +241,46 @@ blackHoleSuns.prototype.calcroute = async function (proximity) {
     let loc = $("#resItems")
     loc.empty()
 
+    let start = $("#id-start").val()
+    let end = $("#id-end").val()
+
+    let err = bhs.validateAddress(start)
+    if (err !== "") {
+        bhs.status(err, true)
+        return
+    }
+
+    err = bhs.validateAddress(end, true)
+    if (err !== "") {
+        bhs.status(err)
+        return
+    }
+
+    bhs.saveDarcSettings()
+
+    let ref = bhs.fs.doc("bhs/pageTotals")
+    const increment = firebase.firestore.FieldValue.increment(1)
+
+    let darc = {}
+    darc.routeGen = increment
+
+    let d = new Date()
+    let n = d.getFullYear() + "-" + (d.getMonth() + 1)
+    darc[n] = increment
+
+    if (bhs.user.uid === "")
+        darc.noLogin = increment
+
+    ref.set({
+        darc: darc
+    }, {
+        merge: true
+    })
+
     var calcRoute = firebase.functions().httpsCallable('calcRoute')
-    await calcRoute({
-            start: $("#id-start").val(),
-            end: $("#id-end").val(),
+    calcRoute({
+            start: start,
+            end: end,
             range: $("#id-range").val(),
             maxJumps: $("#id-maxJumps").val(),
             galaxy: $("#btn-Galaxy").text().stripNumber(),
@@ -297,10 +302,6 @@ blackHoleSuns.prototype.calcroute = async function (proximity) {
             console.log(err)
             bhs.status("ERROR: " + (typeof err.code !== "undefined" ? err.code : JSON.stringify(err)))
         })
-
-    bhs.status("done " + (new Date().getTime() - now))
-
-    return
 }
 
 const restable = [{

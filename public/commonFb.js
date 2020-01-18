@@ -199,7 +199,6 @@ blackHoleSuns.prototype.updateUser = async function (user) {
     bhs.user = mergeObjects(bhs.user, user)
 
     if (bhs.user.uid) {
-        bhs.user = mergeObjects(bhs.user, user)
         let ref = bhs.getUsersColRef(bhs.user.uid)
         return await ref.set(bhs.user, {
             merge: true
@@ -1075,7 +1074,7 @@ blackHoleSuns.prototype.validateEntry = function (entry, nobh) {
 
 blackHoleSuns.prototype.validateAddress = function (addr, ck) {
     if (addr === "")
-        return "Empty address"
+        return "No address"
 
     let c = addressToXYZ(addr)
     let error = ""

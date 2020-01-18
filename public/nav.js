@@ -76,6 +76,12 @@ function dispAddr(evt) {
 
         gloc.find("#w-start #id-addr").text(saddr)
         gloc.find("#w-start #id-glyph").val(glyph)
+
+        let err = bhs.validateAddress(saddr)
+        if (err !== "") {
+            bhs.status(err)
+            return
+        }
     }
 
     if (eaddr !== "") {
@@ -88,6 +94,12 @@ function dispAddr(evt) {
 
         gloc.find("#w-end #id-addr").text(eaddr)
         gloc.find("#w-end #id-glyph").val(glyph)
+
+        let err = bhs.validateAddress(eaddr)
+        if (err !== "") {
+            bhs.status(err)
+            return
+        }
     }
 
     if (saddr !== "" && eaddr != "") {

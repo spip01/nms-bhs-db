@@ -107,7 +107,7 @@
                                 </div>
                             </div>
                             <label class="col-md-7 col-sm-7 col-14 h6 txt-inp-def">
-                                <input id="ck-useBases" type="checkbox" onchange="bhs.saveDarcSettings(this)">
+                                <input id="ck-useBases" type="checkbox">
                                 Use Player Bases&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom" title="With this enabled the DARC will use the players bases as starting points for the route generator. 
@@ -154,8 +154,7 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-6 col-9 h6 txt-inp-def">Average Jump Range&nbsp;</div>
-                            <input id="id-range" class="rounded col-sm-3 col-5" type="number" value="2000"
-                                onchange="bhs.saveDarcSettings(this)">
+                            <input id="id-range" class="rounded col-sm-3 col-5" type="number" value="2000"                                >
                         </div>
                         <br>
                         <div class="row border-top border-3">
@@ -165,7 +164,7 @@
                                         class="col-md-5 col-sm-5 col-6 btn-def btn btn-sm"
                                         onclick="bhs.calcroute()">Calculate Route</button>&nbsp
                                     <label class="col-7 h6 txt-inp-def">
-                                        <input id="ck-nearPath" type="checkbox" onchange="bhs.saveDarcSettings(this)">
+                                        <input id="ck-nearPath" type="checkbox">
                                         POI near route
                                     </label>
                                 </div>
@@ -174,8 +173,7 @@
                                         class="col-md-5 col-sm-5 col-6 btn-def btn btn-sm"
                                         onclick="bhs.calcroute(true)">POI Proximity</button>&nbsp
                                     <div class="col-md-4 col-sm-5 col-4 h6 txt-inp-def">Max Jumps&nbsp;</div>
-                                    <input id="id-maxJumps" class="rounded col-lg-3 col-md-4 col-sm-3 col-3" value="20"
-                                        onchange="bhs.saveDarcSettings(this)">
+                                    <input id="id-maxJumps" class="rounded col-lg-3 col-md-4 col-sm-3 col-3" value="20">
                                 </div>
                                 <br>
                             </div>

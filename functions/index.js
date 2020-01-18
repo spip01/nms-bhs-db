@@ -89,19 +89,12 @@ exports.getGPList = functions.https.onRequest((request, response) => {
     })
 })
 
-// exports.nmsceCreated = functions.firestore.document("nmsce/{galaxy}/{type}/{id}")
-//     .onCreate(async (doc, context) => {
-//         const ce = require('./nmsce.js')
-//         let e = doc.data()
-//         return await ce.makeThumb(e.Photo)
-//     })
-
-// exports.nmsceUpdated = functions.firestore.document("nmsce/{galaxy}/{type}/{id}")
-//     .onUpdate(async (change, context) => {
-//         const ce = require('./nmsce.js')
-//         let e = change.after.data()
-//         return await ce.makeThumb(e.Photo)
-//     })
+exports.nmsceCreated = functions.firestore.document("nmsce/{galaxy}/{type}/{id}")
+    .onCreate(async (doc, context) => {
+        const nmsce = require('./nmsce.js')
+        let e = doc.data()
+        return nmsce.checkSearch(e)
+    })
 
 exports.calcRoute = functions.https.onCall(async (data, context) => {
     const hops = require('./hops.js')

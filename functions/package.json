@@ -16,7 +16,8 @@
     "child-process-promise": "^2.2.1",
     "firebase-admin": "^8.0.0",
     "firebase-functions": "^3.1.0",
-    "nmsbhs-utils": "^1.1.9"
+    "nmsbhs-utils": "^1.1.9",
+    "nodemailer": "^6.4.2"
   },
   "devDependencies": {
     "eslint": "^5.12.0",
