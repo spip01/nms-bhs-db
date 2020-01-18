@@ -154,6 +154,9 @@ blackHoleSuns.prototype.toggleTips = function () {
 }
 
 blackHoleSuns.prototype.displayUser = function (user, force) {
+    if (fpreview)
+        return
+        
     let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform)
 
     bhs.user = mergeObjects(bhs.user, user)

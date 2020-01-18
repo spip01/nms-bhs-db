@@ -278,18 +278,14 @@
             </div>
 
             <div class="card-body" style="padding: 4px 4px;">
-                <div id="favorites" class="cover-container" style="display:none"></div>
-                <div id="clicks" class="cover-container" style="display:none"></div>
-                <div id="results" class="cover-container" style="display:none"></div>
-                <div id="editors" class="cover-container" style="display:none"></div>
-                <div id="visited" class="cover-container" style="display:none"></div>
-                <div id="latest" class="cover-container"></div>
+                <div id="resultLists" class="row"></div>
                 <br>
                 <div id="imageinfo" class="row bkg-white txt-center" style="display:none">
-                    <div id="imgcol" class="col-xl-10 col-lg-9 col-md-10 col-14">
-                        <img id="dispimage" onload="nmsce.setDispImgSize(this)" />
+                    <div id="imgcol" class="col-xl-9 col-lg-8 col-md-9 col-14">
+                        <img id="dispimage"
+                            onload="nmsce.imgLoaded(this, $(this).parent().width(), $(window).height(), true)" />
                     </div>
-                    <div class="col-xl-4 col-lg-5 col-md-4 col-14">
+                    <div class="col-xl-5 col-lg-6 col-md-5 col-14">
                         <div id="imagedata"></div>
                         <div class="row">
                             <button type="button" class="col-7 btn btn-sm btn-def" onclick="nmsce.searchSystem()">System
@@ -339,7 +335,7 @@
                             </div>
                         </div>
                         <br>
-                        <!--div class="row">
+                        <div class="row">
                             <a id="permalink" class="h5" href="">
                                 Permalink&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
@@ -347,7 +343,7 @@
                                     title="You can use this link to directly access this entry.">&nbsp;
                                 </i>
                             </a>
-                        </div-->
+                        </div>
                         <div class="row" onclick="nmsce.newDARC('#imagedata #val-Coords')" class="pointer text-center">
                             <div class="col text-center">
                                 <img src="images/bhs-logo.png" style="height:80px; width:80px;" />

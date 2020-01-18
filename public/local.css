@@ -190,12 +190,14 @@ body {
 .btn-def:not(:disabled):not(.disabled):active:focus,
 .show>.btn-def.dropdown-toggle:focus {
     box-shadow: 0 0 0 .2rem gold;
-    animation: pulse .1s 2;
+    color: gold;
 }
 
 .btn-def:not(:disabled):not(.disabled).hover,
 .btn-def:not(:disabled):not(.disabled):hover {
     box-shadow: 0 0 0 .2rem gold;
+    color: gold;
+    opacity:0.75;
 }
 
 .clr-dark-green {

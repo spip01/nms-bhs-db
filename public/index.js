@@ -159,7 +159,8 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                         <div class="col-sm-4 col-5 h6 txt-inp-def">Coords<span class="h5 text-danger">&nbsp;*</span>&nbsp;
                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                                 data-placement="bottom" title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
-                                A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
+                                A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field. When getting coordinates from
+                                a signal booster the first 4 characters are not part of the coordinates.">
                             </i>
                         </div>
                         <input id="id-addr" class="rounded col-sm-5 col-9 h6" placeholder="0000:0000:0000:0000" 
@@ -385,16 +386,6 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
 blackHoleSuns.prototype.setGlyphInput = function (evt) {
     if (typeof bhs.inputSettings === "undefined" || bhs.inputSettings.glyph !== $(evt).prop("checked")) {
-        // if (!$(evt).prop("checked")) {
-        //     $("[id='id-glyphInput']").hide()
-        //     $("[id='id-addrInput']").show()
-        //     $("[id='ck-glyphs']").prop("checked", false)
-        // } else {
-        //     $("[id='id-glyphInput']").show()
-        //     $("[id='id-addrInput']").hide()
-        //     $("[id='ck-glyphs']").prop("checked", true)
-        // }
-
         bhs.updateUser({
             inputSettings: {
                 glyph: $(evt).prop("checked")

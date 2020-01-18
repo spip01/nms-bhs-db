@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>No Man's Sky Coordinate Exchange (NMSCE)</title>
+    <meta name="description"
+        content="Search for ships, freighters, frigates, multi-tools, fauna, planets or bases found throughout the No Man's Sky universe.">
+    <meta name="subject" content="Coordinate exchange for the game No Man's Sky.">
+    <meta name="author" content="Stephen Piper">
+    <meta name="designer" content="Stephen Piper">
+    <meta name="copyright" content="Black Hole Suns">
+    <meta name="Classification" content="Game">
+    <meta name="keywords" content="nmsce,nms,coordinate exchange,no mans sky,reddit">
+
+    <meta property="og:title" content="No Man's Sky Coordinate Exchange App" />
+    <meta property="og:description"
+        content="Search for ships, freighters, frigates, multi-tools, fauna, planets or bases." />
+    <meta property="og:url" content="https://nmsce.com/" />
+    <meta property="og:secure_url" content="https://nmsce.com/" />
+    <meta property="og:type" content="website" />
+
+    <meta property="og:image:url"
+        content="http://raw.githubusercontent.com/spip01/nms-bhs-db/master/public/images/nmsce-ss.jpg" />
+    <meta property="og:image:secure_url" content="https://nmsce.com/images/nmsce-ss.jpg" />
+    <meta property="og:image:type" content="image/jpg" />
+    <meta property="og:image:alt" content="Screenshot of NMSCE App" />
+
+    <link rel="shortcut icon" href="images/nmsce.ico">
+    <script src="env.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66007591-5"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-66007591-5');
+    </script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+
+    <script src="https://kit.fontawesome.com/4c24999109.js" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
+    </script>
+
+    <script src="/__/firebase/7.6.2/firebase-app.js"></script>
+    <script src="/__/firebase/7.6.2/firebase-auth.js"></script>
+    <script src="/__/firebase/7.6.2/firebase-firestore.js"></script>
+    <script src="/__/firebase/7.6.2/firebase-storage.js"></script>
+    <script src="/__/firebase/7.6.2/firebase-functions.js"></script>
+    <script src="/__/firebase/init.js"></script>
+
+    <script src="commonFb.js"></script>
+    <script src="commonUI.js"></script>
+    <script src="commonNms.js"></script>
+    <script src="nmsce.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="local.css">
+    <link rel="stylesheet" type="text/css" href="nmsce.css">
+    <link rel="stylesheet" type="text/css" href="bootstrap-14.css">
+</head>
+
+<body>
+    <div id="cemenus"></div>
+
+    <div id="javascript">
+        <div class="row">
+            <div class="col-2">
+                <img itemprop="logo" src="images/nmsce-logo.png" alt="nmsce logo"
+                    style="top:10px; width:40px; height:40px">
+            </div>
+            <!--googleoff:all-->
+            <div class="text-danger h6 col-12">
+                <p>Unfortunately, this page cannot function without javasript. Please add this site to your "allowed"
+                    sites. For chrome it's located&nbsp;
+                    <a href="chrome://settings/content/javascript">here</a></p>
+                <p>This error message can also be caused by a page loading error.</p>
+            </div>
+            <!--googleon:all-->
+            <br>
+        </div>
+    </div>
+    <br>
+
+    <div id="jssite" class="container-fluid pad-bottom" style="display:none">
+        <div class="card card-body bkg-def border">
+            <div id="imageinfo" class="row bkg-white txt-center" style="display:none">
+                <div id="imgcol" class="col-xl-9 col-lg-8 col-md-9 col-14">
+                    <img id="dispimage"
+                        onload="nmsce.imgLoaded(this, $(this).parent().width(), $(window).height(), true)" />
+                </div>
+                <div class="col-xl-5 col-lg-6 col-md-5 col-14">
+                    <div id="imagedata"></div>
+                    <br>
+                    <div class="row" onclick="nmsce.newDARC('#imagedata #val-Coords')" class="pointer text-center">
+                        <div class="col text-center">
+                            <img src="images/bhs-logo.png" style="height:80px; width:80px;" />
+                            <span class="txt-inp-def h4">&nbsp;DaRC</span>&nbsp;
+                            <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom"
+                                title="Open window with Black Hole Sun's Distance and Route Calculator. Enters coordinate of selected item as the destination coord.">
+                            </i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+
+    <div class="clr-creme text-right h6">
+        <i class="fa fa-copyright"></i> 2019 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+</body>
+
+</html>

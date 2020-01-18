@@ -10,6 +10,7 @@ const ftotals = window.location.pathname == "/totals.html"
 const fsearch = window.location.pathname == "/search.html"
 const fcedata = window.location.pathname == "/cedata.html"
 const fnmsce = window.location.pathname == "/nmsce.html"
+const fpreview = window.location.pathname == "/preview.html"
 
 function addGlyphButtons(loc, fcn) {
     const gbtn = `
