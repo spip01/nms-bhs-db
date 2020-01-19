@@ -76,9 +76,10 @@ NMSCE.prototype.displayUser = function () {
         nmsce.restoreText(bhs.user.imageText)
         if (typeof nmsce.entries === "undefined")
             nmsce.getEntries()
-
     } else if (fnmsce) {
-        if (typeof (Storage) !== "undefined" && !bhs.user.galaxy) {
+        if (bhs.user.uid)
+            nmsce.getMyFavorites()
+        else if (typeof (Storage) !== "undefined" && !bhs.user.galaxy) {
             let galaxy = window.localStorage.getItem('nmsce-galaxy')
 
             if (galaxy)
@@ -2619,6 +2620,10 @@ const resultsTable = [{
     field: "votes.favorite",
     limit: 4,
 }, {
+    name: "My Favorites",
+    group: "votes",
+    field: "favorite",
+}, {
     name: "Search Results",
 }, {
     name: "Moderators Choice",
@@ -2654,6 +2659,35 @@ NMSCE.prototype.selDisplay = function (evt) {
     loc.show()
 
     $("#numFound").text(loc.children().length)
+}
+
+NMSCE.prototype.getMyFavorites = function () {
+    let ref = bhs.fs.collectionGroup("votes")
+    ref = ref.where("uid", "==", bhs.user.uid)
+    ref = ref.where("favorite", "==", true)
+    ref.get().then(snapshot => {
+        let p = []
+        for (let doc of snapshot.docs) {
+            //"nmsce/Euclid/Base/3d-maze/votesSV14SdNbzRbfW8NRbNQpTRJ7y612"
+            let path = doc.ref.path.replace(/((?:.*?\/){3}.*?)\/.*/, "$1")
+            let ref = bhs.fs.doc(path)
+            p.push(ref.get().then(doc => {
+                return doc
+            }))
+        }
+
+        Promise.all(p).then(res => {
+            let lists = nmsce.resultLists
+
+            for (let doc of res) {
+                let e = doc.data()
+                let tid = e.type.nameToId()
+                lists["My-Favorites"][tid + "-" + e.id] = e
+            }
+
+            nmsce.displayResultList("My-Favorites")
+        })
+    })
 }
 
 NMSCE.prototype.getNew = function () {
@@ -2733,32 +2767,34 @@ NMSCE.prototype.getAfterDate = function (date) {
     let p = []
 
     for (let r of resultsTable) {
-        for (let t of objectList) {
-            if (r.field) {
-                let ref = bhs.fs.collectionGroup(t.name.nameToId())
+        if (!r.group) {
+            for (let t of objectList) {
+                if (r.field) {
+                    let ref = bhs.fs.collectionGroup(t.name.nameToId())
 
-                if (r.date)
-                    ref = ref.where(r.field, ">=", date)
-                else
-                    ref = ref.orderBy(r.field, "desc")
+                    if (r.date)
+                        ref = ref.where(r.field, ">=", date)
+                    else
+                        ref = ref.orderBy(r.field, "desc")
 
-                if (r.limit)
-                    ref = ref.limit(r.limit)
+                    if (r.limit)
+                        ref = ref.limit(r.limit)
 
-                if (r.date)
-                    pdt.push(ref.get().then(snapshot => {
-                        return ({
-                            rt: r,
-                            snapshot: snapshot
-                        })
-                    }))
-                else
-                    p.push(ref.get().then(snapshot => {
-                        return {
-                            rt: r,
-                            snapshot: snapshot
-                        }
-                    }))
+                    if (r.date)
+                        pdt.push(ref.get().then(snapshot => {
+                            return ({
+                                rt: r,
+                                snapshot: snapshot
+                            })
+                        }))
+                    else
+                        p.push(ref.get().then(snapshot => {
+                            return {
+                                rt: r,
+                                snapshot: snapshot
+                            }
+                        }))
+                }
             }
         }
     }
@@ -2789,14 +2825,14 @@ NMSCE.prototype.getAfterDate = function (date) {
 
         nmsce.selDisplay("#item-" + rtl[0])
         $("body")[0].style.cursor = "default"
+    })
 
-        Promise.all(p).then(res => {
-            rts = addList(res)
-            let rtl = Object.keys(rts)
+    Promise.all(p).then(res => {
+        let rts = addList(res)
+        let rtl = Object.keys(rts)
 
-            for (let rid of rtl)
-                nmsce.displayResultList(rid)
-        })
+        for (let rid of rtl)
+            nmsce.displayResultList(rid)
     })
 
     if (typeof (Storage) !== "undefined") {
