@@ -25,8 +25,23 @@ exports.checkSearch = async function (e) {
     lastUpdate = admin.firestore.Timestamp.fromDate(new Date());
 
     let snapshot = await ref.get()
-    for (let doc of snapshot.docs)
-        searches.push(doc.data())
+    for (let doc of snapshot.docs) {
+        let s = doc.data()
+        let found = false
+        for (let i = 0; i < searches.length; ++i) {
+            let cur = searches[i]
+            if (cur.uid === s.uid && cur.name === s.name) {
+                cur = s
+                found = true
+                if (!s.email || !s.notify)
+                    searches.splice(i, 1)
+                break
+            }
+        }
+
+        if (!found && s.email && s.notify)
+            searches.push(s)
+    }
 
     let sent = []
 
@@ -36,17 +51,14 @@ exports.checkSearch = async function (e) {
         if (sent.includes(s.uid))
             ok = false
 
-        if (!s.email || !s.notify) // || s.uid === e.uid)
-            ok = false
-
-        if (s.galaxy && e.galaxy !== s.galaxy)
-            ok = false
-
-        if (s.type && e.type !== e.type)
-            ok = false
-
-        // if (ok && s._name && e._name !== e._name)
+        // if (s.uid === e.uid)
         //     ok = false
+
+        if (s.galaxy && s.galaxy !== s.galaxy)
+            ok = false
+
+        if (s.type && s.type !== e.type)
+            ok = false
 
         if (ok)
             for (let q of s.search) {
@@ -80,21 +92,25 @@ exports.checkSearch = async function (e) {
         if (ok) {
             sent.push(s.uid)
 
-            let ref = admin.fbstorage.ref().child(thumbnailPath + e.Photo)
-            return ref.getDownloadURL().then(url => {
+            let bucket = admin.storage().bucket("nms-bhs.appspot.com")
+            let file = bucket.file(thumbnailPath + e.Photo)
+
+            return file.getSignedUrl({
+                action: 'read',
+                expires: '03-09-2491'
+            }).then(url => {
                 let link = "https://nmsce.com/preview.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
 
                 let mailOptions = {
                     from: '<bhsapp.testing@gmail.com>',
                     to: s.email,
                     subject: 'NMSCE Saved Search Match: ' + s.name,
-                    html: '<a href="' + link + '">Type: ' + e.type + ' Name: ' + e.Name + '<br><img src="'+url+'"/></a>'
+                    html: '<a href="' + link + '">Type: ' + e.type + ' Name: ' + e.Name + '<br><img src="' + url + '"/></a>'
                 }
 
                 return transporter.sendMail(mailOptions, (err, info) => {
                     if (err)
                         console.log(err)
-                    console.log(info)
                 })
             })
         }

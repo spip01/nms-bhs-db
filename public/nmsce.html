@@ -216,28 +216,39 @@
                             <div class="card-header txt-def h5">Search</div>
                             <div class="card-body">
                                 <div class="row">
-                                    <span class="col-1">&nbsp;</span>
                                     <button id="search" type="button" class="col-3 btn btn-sm btn-def"
-                                        onclick="nmsce.search()">Search</button>&nbsp;
+                                        onclick="nmsce.search()">Search</button>&nbsp;&nbsp;
                                     <button id="searchResults" type="button" class="col-3 btn btn-sm btn-def"
-                                        onclick="nmsce.refineSearch()">Refine</button>&nbsp;
+                                        onclick="nmsce.refineSearch()">Refine</button>&nbsp;&nbsp;
                                     <button id="clear" type="button" class="col-3 btn btn-sm btn-def"
-                                        onclick="nmsce.clearPanel(true)">Reset</button>&nbsp;
+                                        onclick="nmsce.clearPanel(true)">Reset</button>&nbsp;&nbsp;
                                     <button id="searchlocal" type="button" class="col-3 btn btn-sm btn-def"
                                         onclick="nmsce.searchLocal()">Saved Search</button>
                                 </div>
+                                <div id="row-savesearch" class="row hidden">
+                                    <div id="id-Saved" class="col-5"></div>&nbsp;
+                                    <label class="col-5 h6 txt-inp-def">
+                                        Name&nbsp;
+                                        <input id="searchname" class="col-10" type="text" placeholder="Search Name">&nbsp;
+                                    </label>
+                                    <label class="col-3 h6 txt-inp-def">
+                                        <input id="ck-notify" type="checkbox">
+                                        Notify&nbsp;
+                                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                            data-html="true" data-placement="bottom"
+                                            title="Check box and save to receive an email for future matches of this search. To disable uncheck and re-save.">
+                                        </i>
+                                    </label>
+                                </div>
                                 <div class="row">
-                                    <div id="id-Saved" class="col-4 hidden"></div>&nbsp;
                                     <button id="savesearch" type="button" class="col-3 btn btn-sm btn-def"
                                         onclick="nmsce.saveSearch()">Save</button>&nbsp;
-                                    <button id="deletesearch" type="button" class="col-3 btn btn-sm btn-def hidden"
-                                        onclick="nmsce.deleteSearch()">Delete</button>&nbsp;
-                                    <input id="searchname" class="col-3 hidden" type="text"
-                                        placeholder="Search Name">&nbsp;
                                     <i id="searchlocaltt" class="fa fa-question-circle-o text-danger"
                                         data-toggle="tooltip" data-html="true" data-placement="bottom"
                                         title="You can save multiple searches by logging in.">
-                                    </i>
+                                    </i>&nbsp;
+                                    <button id="deletesearch" type="button" class="col-3 btn btn-sm btn-def"
+                                        onclick="nmsce.deleteSearch()">Delete</button>&nbsp;
                                 </div>
                                 <br>
                                 <div class="row">

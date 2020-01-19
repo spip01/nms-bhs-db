@@ -257,7 +257,7 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
 
         clr($("#pnl-S1"))
 
-        $("#pnl-map").children().hide()
+        // $("#pnl-map [id|='pnl']").hide()
 
         if (fnmsce)
             $("#pnl-user #id-Player").val("")
@@ -590,6 +590,8 @@ NMSCE.prototype.displaySearch = function (search) {
     nmsce.clearPanel(true, true)
 
     $("#btn-Galaxy").text(search.galaxy)
+    $("#ck-notify").prop("checked", search.notify)
+    $("#searchname").text(search.name)
 
     let tloc = $("#pnl-" + search.type.nameToId())
     tloc.click()
@@ -638,6 +640,7 @@ NMSCE.prototype.executeSearch = function (search) {
     $("body")[0].style.cursor = "wait"
 
     let ref = bhs.fs.collection("nmsce/" + s.galaxy + "/" + s.type)
+
     let firstarray = 0
     let arraylist = []
 
@@ -796,6 +799,7 @@ NMSCE.prototype.searchList = function (s, list, loc) {
 
         for (let q of s.search) {
             ok = e[q.name]
+
             if (!ok)
                 break
 
@@ -841,10 +845,8 @@ NMSCE.prototype.searchList = function (s, list, loc) {
     if (!bhs.user.uid) {
         if (typeof (Storage) !== "undefined")
             s.uid = window.localStorage.getItem('nmsce-tempuid')
-    } else {
+    } else
         s.uid = bhs.user.uid
-        s._name = bhs.user._name
-    }
 
     s.date = firebase.firestore.Timestamp.now()
     s.refine = true
@@ -868,18 +870,20 @@ NMSCE.prototype.saveSearch = function () {
             }
 
             window.localStorage.setItem('nmsce-search', JSON.stringify(search))
+            bhs.status("Search saved.", true)
         }
     } else {
         search.uid = bhs.user.uid
         search._name = bhs.user._name
         search.email = bhs.user.email
         search.date = firebase.firestore.Timestamp.now()
+        search.notify = $("#ck-notify").prop("checked")
 
         if (search.name) {
             let ref = bhs.fs.doc("users/" + bhs.user.uid + "/nmsce-saved-searches/" + search.name.nameToId())
             ref.set(search, {
                 merge: true
-            })
+            }).then(() => bhs.status(search.name + " saved.", true))
         } else
             bhs.status("No save name specified.")
 
@@ -1016,7 +1020,7 @@ NMSCE.prototype.extractSearch = function (fcn) {
         obj = objectList[i]
 
     for (let fld of obj.imgText) {
-        if (fld.name === "Galaxy")
+        if (fld.name === "Galaxy" || fcedata && fld.name === "Player")
             continue
 
         let loc = $(fld.id)
