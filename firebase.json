@@ -26,6 +26,19 @@
     //    "destination": "/nmsce.html",
     //    "type": 301
     // }]
+    , "headers": [ {
+      "source": "**/*.@(eot|otf|ttf|ttc|woff|font.css)",
+      "headers": [ {
+        "key": "Access-Control-Allow-Origin",
+        "value": "*"
+      } ]
+    }, {
+      "source": "**/images/(exotic|explorer|fighter|hauler|shuttle)/**/*.@(jpg|jpeg|gif|png)",
+      "headers": [ {
+        "key": "Cache-Control",
+        "value": "max-age=100000"
+      } ]
+    } ]
   }, {
     "target": "test",
     "public": "public",
