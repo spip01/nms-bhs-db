@@ -2253,19 +2253,40 @@ NMSCE.prototype.drawText = function (alt, altw) {
         ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
 }
 
-NMSCE.prototype.redditShare = function (evt) {
-    let disp = document.createElement('canvas')
-    nmsce.drawText(disp, 1024)
-    disp.toBlob(blob => {
-        let name = uuidv4()
-        bhs.fbstorage.ref().child(redditPath + name).put(blob).then(() => {
-            bhs.fbstorage.ref().child(redditPath + name).getDownloadURL().then(url => {
-                let u = "http://www.reddit.com/submit?url=" + encodeURI(url)
-                window.open(u)
-            })
-        })
+NMSCE.prototype.redditShare = function () {
+    if ($("#id-ssImage").is(":visible")) {
+        bhs.fbstorage.ref().child(displayPath + nmsce.last.Photo).getDownloadURL().then(url => {
+            var xhr = new XMLHttpRequest()
+            xhr.responseType = 'blob'
+            xhr.onload = function (event) {
+                var blob = xhr.response
 
-    }, "image/jpeg", .8)
+                let name = uuidv4()
+                bhs.fbstorage.ref().child(redditPath + name).put(blob).then(() => {
+                    bhs.fbstorage.ref().child(redditPath + name).getDownloadURL().then(url => {
+                        let u = "http://www.reddit.com/submit?url=" + encodeURI(url)
+                        window.open(u)
+                    })
+                })
+            }
+
+            xhr.open('GET', url)
+            xhr.send()
+        })
+    } else {
+        let disp = document.createElement('canvas')
+        nmsce.drawText(disp, 1024)
+        disp.toBlob(blob => {
+            let name = uuidv4()
+            bhs.fbstorage.ref().child(redditPath + name).put(blob).then(() => {
+                bhs.fbstorage.ref().child(redditPath + name).getDownloadURL().then(url => {
+                    let u = "http://www.reddit.com/submit?url=" + encodeURI(url)
+                    window.open(u)
+                })
+            })
+
+        }, "image/jpeg", .8)
+    }
 
     let ref = bhs.fs.doc("nmsce/" + nmsce.last.galaxy + "/" + nmsce.last.type + "/" + nmsce.last.id)
     ref.set({
