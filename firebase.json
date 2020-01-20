@@ -36,7 +36,7 @@
       "source": "**/images/(exotic|explorer|fighter|hauler|shuttle)/**/*.@(jpg|jpeg|gif|png)",
       "headers": [ {
         "key": "Cache-Control",
-        "value": "max-age=100000"
+        "value": "max-age=259200"
       } ]
     } ]
   }, {
