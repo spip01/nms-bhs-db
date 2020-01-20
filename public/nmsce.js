@@ -2003,6 +2003,8 @@ NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
 
                 nmsce.screenshot.onload = function () {
                     $("#editScreenshot").hide()
+                    $("#id-ssImage").hide()
+                    $("#id-canvas").show()
                     $("#imageTextBlock").show()
                     if (nmsce.last) {
                         $("#updateScreenshot").show()
@@ -2029,6 +2031,8 @@ NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
             $("#imageTextBlock").show()
             $("#updateScreenshot").show()
             $("#ck-updateScreenshot").prop("checked", false)
+            $("#id-ssImage").hide()
+            $("#id-canvas").show()
 
             nmsce.loadImgText()
             nmsce.restoreText(nmsce.last.imageText)
@@ -2036,27 +2040,32 @@ NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
             $("#editScreenshot").show()
             $("#imageTextBlock").hide()
             $("#updateScreenshot").hide()
+            $("#id-canvas").hide()
+            $("#id-ssImage").show()
         }
 
         let img = new Image()
         img.crossOrigin = "anonymous"
 
         bhs.fbstorage.ref().child((edit ? originalPath : displayPath) + fname).getDownloadURL().then(url => {
-            var xhr = new XMLHttpRequest()
-            xhr.responseType = 'blob'
-            xhr.onload = function (event) {
-                var blob = xhr.response
-                nmsce.screenshot = new Image()
-                nmsce.screenshot.crossOrigin = "anonymous"
-                nmsce.screenshot.src = url
+            if (edit) {
+                var xhr = new XMLHttpRequest()
+                xhr.responseType = 'blob'
+                xhr.onload = function (event) {
+                    var blob = xhr.response
+                    nmsce.screenshot = new Image()
+                    nmsce.screenshot.crossOrigin = "anonymous"
+                    nmsce.screenshot.src = url
 
-                nmsce.screenshot.onload = function () {
-                    nmsce.drawText()
+                    nmsce.screenshot.onload = function () {
+                        nmsce.drawText()
+                    }
                 }
-            }
 
-            xhr.open('GET', url)
-            xhr.send()
+                xhr.open('GET', url)
+                xhr.send()
+            } else
+                $("#id-ssImage").attr("src", url)
         })
     }
 
@@ -2248,8 +2257,9 @@ NMSCE.prototype.redditShare = function (evt) {
     let disp = document.createElement('canvas')
     nmsce.drawText(disp, 1024)
     disp.toBlob(blob => {
-        bhs.fbstorage.ref().child(redditPath + nmsce.last.Photo).put(blob).then(() => {
-            bhs.fbstorage.ref().child(redditPath + nmsce.last.Photo).getDownloadURL().then(url => {
+        let name = uuidv4()
+        bhs.fbstorage.ref().child(redditPath + name).put(blob).then(() => {
+            bhs.fbstorage.ref().child(redditPath + name).getDownloadURL().then(url => {
                 let u = "http://www.reddit.com/submit?url=" + encodeURI(url)
                 window.open(u)
             })
@@ -2539,7 +2549,7 @@ NMSCE.prototype.updateEntry = function (entry) {
         entry.id = entry.addr.nameToId() + "-" + entry.Name.nameToId().toLowerCase()
 
     if (typeof entry.Photo === "undefined")
-        entry.Photo = entry.type + "_" + entry.id + ".jpg"
+        entry.Photo = entry.type + "-" + entry.id + ".jpg"
 
     let ref = bhs.fs.collection("nmsce/" + entry.galaxy + "/" + entry.type)
     ref = ref.doc(entry.id)
