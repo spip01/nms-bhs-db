@@ -8,10 +8,23 @@ service cloud.firestore {
 
 		match /admin/{document=**} {
       allow read: if isLoggedIn(request)
+      allow write: if hasRole(database, request, ["owner"])
+    }
+
+		match /admin/state {
+      allow read: if true
     }
 
 		match /bhs/{document=**} {
       allow read: if true
+    }
+
+		match /bhs/pageTotals {
+      allow read, write: if true
+    }
+
+		match /nmsce-searches/{document} {
+      allow read, write: if true
     }
 
     match /contest/{document=**} {
@@ -20,9 +33,9 @@ service cloud.firestore {
     }
 
     match /stars5/{document=**} {
-      allow read: if isLoggedIn(request)
+      allow read: if true
       allow create: if isLoggedIn(request)
-      allow update: if isOwner(request, resource) || checkFields(request, resource) || isAdmin(database, request)
+      allow update: if isOwner(request, resource) || checkFieldsBHS(request, resource) || isAdmin(database, request)
       allow delete: if isOwner(request, resource) || isAdmin(database, request)
     }
 
@@ -41,16 +54,33 @@ service cloud.firestore {
     }
 
     match /users/{document=**} {
-      allow read: if isOwner(request, resource)
+      allow read: if isOwner(request, resource) || hasRole(database, request, ["admin"])
       allow create: if isLoggedIn(request)
-      allow update: if isOwner(request, resource)
+      allow update: if isOwner(request, resource) || hasRole(database, request, ["admin"])
     }
 
-    match /users/{uid}/stars5/{document=**} {
+    match /users/{uid}/{document=**} {
       allow delete: if isOwner(request, resource)
     }
 
     match /nmsce/{document=**} {
+      allow read: if true
+      allow create: if isLoggedIn(request)
+      allow update: if isOwner(request, resource) || checkFieldsCE(request,resource) 
+      				|| checkAdminFieldsCE(database, request, resource, ["nmsceEditor", "admin"]) || isAdmin(database, request)
+      allow delete: if isOwner(request, resource) || isAdmin(database, request)
+    }
+    
+    match /{path=**}/{type}/{document} {
+      allow read: if type in ["votes", "Ship","Freighter","Frigate","Fauna","Planet","Base","Multi-Tool"]
+    }
+
+    match /tags/{document=**} {
+          allow read: if true
+          allow write: if isLoggedIn(request)
+		}
+
+    match /nmsce/{col}/{what}/{type}/{doc=**} {
       allow read: if isLoggedIn(request)
       allow create: if isLoggedIn(request)
       allow update: if isOwner(request, resource) || isAdmin(database, request)
@@ -78,8 +108,25 @@ function isAdmin(db, req) {
 
 // request.resource - future
 // resource - existing
-function checkFields(req, res) {
+function checkFieldsBHS(req, res) {
   return req.resource.data.uid == res.data.uid &&
+    req.resource.data._name == res.data._name &&
     req.resource.data.sys == res.data.sys &&
-    req.resource.data.reg == res.data.reg
+    req.resource.data.addr == res.data.addr &&
+    ((req.resource.data.reg == res.data.reg || res.data.reg == "" && req.resource.data.reg != "") ||
+		(req.resource.data.econ == res.data.econ || res.data.econ == "" && req.resource.data.econ != ""))
+}
+
+function checkFieldsCE(req, res) {
+    return req.resource.data.uid == res.data.uid && req.resource.data._name == res.data._name &&
+      (req.resource.data.votes.clickcount != res.data.votes.clickcount ||
+      req.resource.data.votes.visited != res.data.votes.visited ||
+      req.resource.data.votes.favorite != res.data.votes.favorite)
+}
+
+function checkAdminFieldsCE(db, req, res, roles) {
+  return req.resource.data.uid == res.data.uid && req.resource.data._name == res.data._name &&
+    (req.resource.data.votes.edchoice != res.data.votes.edchoice || 
+    req.resource.data.votes.bhspoi != res.data.votes.bhspoi) &&
+    get(/databases/$(db)/documents/admin/$(req.auth.uid)).data.roles.hasAny(roles)
 }

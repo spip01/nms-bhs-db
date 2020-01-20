@@ -20,6 +20,12 @@
       "**/.*",
       "**/node_modules/**"
     ]
+    //,
+    // "redirects": [{
+    //    "source": "/",
+    //    "destination": "/nmsce.html",
+    //    "type": 301
+    // }]
   }, {
     "target": "test",
     "public": "public",
