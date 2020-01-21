@@ -394,7 +394,7 @@ NMSCE.prototype.extractEntry = function () {
                     entry[id] = []
 
                     for (let loc of tloc) {
-                        let t = $(loc).text()
+                        let t = $(loc).text().stripMarginWS()
                         if (t && !entry[id].includes(t))
                             entry[id].push(t)
                     }
@@ -762,9 +762,7 @@ NMSCE.prototype.searchEntriesList = function () {
     $("body")[0].style.cursor = "wait"
     let loc = $("#list-" + s.type.nameToId())
 
-    $("#id-table [id|='sub']").hide()
-    $("#id-table #sub-" + s.type.nameToId()).show()
-
+    nmsce.showSub(s.type.nameToId())
     nmsce.searchList(s, list, loc)
 }
 
@@ -1080,7 +1078,7 @@ NMSCE.prototype.extractSearch = function (fcn) {
                 let tlist = []
 
                 for (let loc of tlocs) {
-                    let t = $(loc).text()
+                    let t = $(loc).text().stripMarginWS()
                     if (t && !tlist.includes(t))
                         tlist.push(t)
                 }
@@ -1860,7 +1858,7 @@ NMSCE.prototype.getImageText = function (evt, draw) {
                 let tloc = loc.parent().find("[id|='tag']")
                 if (tloc.length > 0) {
                     for (let l of tloc)
-                        text += $(l).text() + ", "
+                        text += $(l).text().stripMarginWS() + ", "
 
                     text = text.slice(0, text.length - 2)
                 }
@@ -3165,9 +3163,11 @@ NMSCE.prototype.displayInList = function (list, tab) {
 
 NMSCE.prototype.displayList = function (entries) {
     const card = `
-        <div class="container-flex h5">
-            <div id="ttl-idname" class="pointer card-header bkg-def txt-def" onclick="nmsce.showSub('#sub-idname')">
+        <div class="container-flex">
+            <div id="ttl-idname" class="card-header bkg-def txt-def h4">
                 <div class="row">
+                    <i class="far fa-caret-square-up pointer hidden h3" onclick="nmsce.hideSubs()"></i>
+                    <i class="far fa-caret-square-down pointer h3" onclick="nmsce.showSub('#sub-idname')"></i>&nbsp;
                     <div id="id-idname" class="col-3">title</div>
                     <div class="col-3">Total: total</div>
                 </div>
@@ -3196,7 +3196,7 @@ NMSCE.prototype.displayList = function (entries) {
 }
 
 NMSCE.prototype.displayListEntry = function (entry, thumb) {
-    let loc = $("#id-table #list-" + entry.type.nameToId())
+    let loc = $("#id-table #sub-" + entry.type.nameToId())
     let id = entry.type.nameToId() + "-" + entry.id
     let eloc = loc.find("#row-" + id)
 
@@ -3205,12 +3205,11 @@ NMSCE.prototype.displayListEntry = function (entry, thumb) {
     else
         nmsce.updateDisplayListEntry(entry, eloc)
 
-    if (thumb) {
-        $("#id-table [id|='list']").hide()
-        loc.show()
+    nmsce.showSearchPanel(entry.type.nameToId())
 
+    if (thumb)
         loc.find("#row-" + id + " img").attr("src", thumb)
-    }
+
 }
 
 NMSCE.prototype.sortLoc = function (evt) {
@@ -3427,9 +3426,28 @@ NMSCE.prototype.showSub = function (id) {
     loc.find("[id|='sub']").hide()
     loc.find(id).show()
 
+    loc.find(".fa-caret-square-up").hide()
+    loc.find(".fa-caret-square-down").show()
+
+    let ptrid =id.stripID()
+    loc.find("#ttl-"+ptrid+" .fa-caret-square-up").show()
+    loc.find("#ttl-"+ptrid+" .fa-caret-square-down").hide()
+
     $('html, body').animate({
         scrollTop: loc.find(id).offset().top
     }, 500)
+}
+
+NMSCE.prototype.hideSubs = function () {
+    let loc = $("#id-table")
+    loc.find("[id|='sub']").hide()
+    loc.find(".fa-caret-square-up").hide()
+    loc.find(".fa-caret-square-down").show()
+}
+
+NMSCE.prototype.hideSub = function () {
+    let loc = $("#id-table")
+    loc.find("[id|='sub']").hide()
 }
 
 NMSCE.prototype.selectList = function (evt) {
@@ -5208,7 +5226,7 @@ const objectList = [{
         type: "tags",
         imgText: true,
         list: colorList,
-        max: 2,
+        max: 3,
         required: true,
         search: true,
     }, {

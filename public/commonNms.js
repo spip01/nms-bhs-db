@@ -178,7 +178,7 @@ String.prototype.stripID = function () {
 }
 
 String.prototype.stripMarginWS = function () {
-    return this.replace(/^\s*(.*)\s*$/g, "$1")
+    return this.replace(/^\s*(.*?)\s*$/g, "$1")
 }
 
 String.prototype.stripNumber = function () {

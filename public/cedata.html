@@ -111,13 +111,15 @@
                 <div class="col-md-8 col-14">
                     <div id="panels" class="card card-body" style="border-width:3px; border-color:black;">
                         <div id="pnl-S1" class="card pad-bottom">
-                            <div class="card-header txt-def h5">
+                            <div class="card-header txt-def h4">
                                 System Info&nbsp;
-                                <i class="far fa-caret-square-up pointer h3" onclick="$('#systemInput').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
-                                <i class="far fa-caret-square-down pointer hidden h3" onclick="$('#systemInput').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>
+                                <i class="far fa-caret-square-up pointer h3"
+                                    onclick="$('#systemInput').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
+                                <i class="far fa-caret-square-down pointer hidden h3"
+                                    onclick="$('#systemInput').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>
                             </div>
                             <div id="systemInput" class="card-body">
-                            <div id="id-addrInput">
+                                <div id="id-addrInput">
                                     <div class="row">
                                         <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">Coords<span
                                                 class="h5 text-danger">&nbsp;*</span>&nbsp;
@@ -278,8 +280,12 @@
                         </div>
 
                         <div class="card" style="padding:top 2px;">
-                            <div class="card-header txt-def h5">Search</div>
-                            <div class="card-body">
+                            <div class="card-header txt-def h4">
+                                <i class="far fa-caret-square-up pointer hidden h3" onclick="$(this).closest('.card').find('.card-body').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
+                                <i class="far fa-caret-square-down pointer h3" onclick="$(this).closest('.card').find('.card-body').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>&nbsp;
+                                Search
+                            </div>
+                            <div class="card-body hidden">
                                 <div class="row">
                                     <button id="search" type="button" class="col-4 btn btn-sm btn-def"
                                         onclick="nmsce.searchEntriesList()">Search</button>&nbsp;
@@ -330,7 +336,7 @@
                     <div id="id-img" class="row">
                         <canvas id="id-canvas" class="border hidden"></canvas>
                         <img id="id-ssImage" class="border"
-                            onload="nmsce.imgLoaded(this, $(this).parent().width(), $(this).parent().width()*1.3)"/>
+                            onload="nmsce.imgLoaded(this, $(this).parent().width(), $(this).parent().width()*1.3)" />
                     </div>
                     <br>
                     <div class="row">
