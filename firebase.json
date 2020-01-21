@@ -2,6 +2,9 @@
   "database": {
     "rules": "database.rules.json"
   },
+  "storage": {
+    "rules": "storage.rules"
+  },
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
@@ -19,26 +22,17 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ]
-    //,
-    // "redirects": [{
-    //    "source": "/",
-    //    "destination": "/nmsce.html",
-    //    "type": 301
-    // }]
-    , "headers": [ {
+    ],
+    "headers": [{
       "source": "**/*.@(eot|otf|ttf|ttc|woff|font.css)",
-      "headers": [ {
+      "headers": [{
         "key": "Access-Control-Allow-Origin",
         "value": "*"
-      } ]
-    }, {
-      "source": "**/images/(exotic|explorer|fighter|hauler|shuttle)/**/*.@(jpg|jpeg|gif|png)",
-      "headers": [ {
+      }, {
         "key": "Cache-Control",
-        "value": "max-age=259200"
-      } ]
-    } ]
+        "value": "max-age=1000000"
+      }]
+    }]
   }, {
     "target": "test",
     "public": "public",
@@ -46,9 +40,57 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ]
-  }],
-  "storage": {
-    "rules": "storage.rules"
-  }
+    ],
+    "headers": [{
+      "source": "**/*.@(eot|otf|ttf|ttc|woff|font.css)",
+      "headers": [{
+        "key": "Access-Control-Allow-Origin",
+        "value": "*"
+      }, {
+        "key": "Cache-Control",
+        "value": "max-age=1000000"
+      }]
+    }, {
+      "source": "**/*.*",
+      "headers": [{
+        "key": "Cache-Control",
+        "value": "max-age=600"
+      }]
+    }]
+  }, {
+    "target": "nmsce",
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "redirects": [{
+      "source": "/",
+      "destination": "/nmsce.html",
+      "type": 301
+    }],
+    "headers": [{
+      "source": "**/*.@(eot|otf|ttf|ttc|woff|font.css)",
+      "headers": [{
+        "key": "Access-Control-Allow-Origin",
+        "value": "*"
+      }, {
+        "key": "Cache-Control",
+        "value": "max-age=1000000"
+      }]
+    }, {
+      "source": "**/images/(exotic|explorer|fighter|hauler|shuttle)/**/*.@(jpg|jpeg|gif|png)",
+      "headers": [{
+        "key": "Cache-Control",
+        "value": "max-age=259200"
+      }]
+    }, {
+      "source": "https://firebasestorage.googleapis.com/v0/b/nms-bhs.appspot.com/**/*.@(jpg|jpeg|gif|png)",
+      "headers": [{
+        "key": "Cache-Control",
+        "value": "max-age=259200"
+      }]
+    }]
+  }]
 }

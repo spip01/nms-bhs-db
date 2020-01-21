@@ -7,6 +7,9 @@
         ],
         "test": [
           "test-nms-bhs"
+        ],
+        "nmsce": [
+          "nmsce-app"
         ]
       }
     },
@@ -17,12 +20,16 @@
         ],
         "bhs": [
           "nms-bhs"
+        ],
+        "nmsce": [
+          "nmsce-app"
         ]
       }
     }
   },
   "projects": {
     "bhs": "nms-bhs",
-    "test": "test-nms-bhs"
+    "test": "test-nms-bhs",
+    "nmsce": "nmsce.app"
   }
 }
