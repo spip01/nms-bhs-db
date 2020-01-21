@@ -106,17 +106,22 @@
         </div>
 
         <div class="card pad-bottom">
-            <label class="card-header txt-def h4">
-                <input type="checkbox" onchange="nmsce.showSearchPanel(this)">
-                &nbsp;Check to show search input panel.
-            </label>
+            <div class="card-header txt-def h4">
+                <i class="far fa-caret-square-up pointer hidden h3" onclick="$('#searchPanel').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
+                <i class="far fa-caret-square-down pointer h3" onclick="$('#searchPanel').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>
+                &nbsp;Toggle search input panel display.
+            </div>
             <div id="searchPanel" class="card-body bkg-white" style="display:none">
                 <div class="row">
-                    <div class="col-md-7 col-14">
-                        <div id="panels" class="card card-body" style="border-width:3px; border-color:black;">
+                    <div class="col-md-8 col-14">
+                        <div id="panels" class="card card-body" style="border-color:black;">
                             <div id="pnl-S1" class="card pad-bottom">
-                                <div class="card-header txt-def h5">System Info</div>
-                                <div class="card-body">
+                                <div class="card-header txt-def h5">
+                                    System Info&nbsp;
+                                    <i class="far fa-caret-square-up pointer hidden h3" onclick="$('#systemInput').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
+                                    <i class="far fa-caret-square-down pointer h3" onclick="$('#systemInput').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>
+                                </div>
+                                <div id="systemInput" class="card-body hidden">
                                     <div id="id-addrInput">
                                         <div class="row">
                                             <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">Coords&nbsp;
@@ -207,12 +212,12 @@
                         <nav>
                             <div class="nav nav-tabs" id="typeTabs" role="tablist">
                         </nav>
-                        <div class="card card-body">
+                        <div class="card card-body" style="border-top-left-radius:0px; border-color:black;">
                             <div class="tab-content" id="typePanels"></div>
                         </div>
-
                         <br>
-                        <div id="entrybuttons" class="card">
+
+                        <div id="entrybuttons" class="card rounded" style="border-color:black;">
                             <div class="card-header txt-def h5">Search</div>
                             <div class="card-body">
                                 <div class="row">
@@ -229,7 +234,8 @@
                                     <div id="id-Saved" class="col-5"></div>&nbsp;
                                     <label class="col-5 h6 txt-inp-def">
                                         Name&nbsp;
-                                        <input id="searchname" class="col-10" type="text" placeholder="Search Name">&nbsp;
+                                        <input id="searchname" class="col-10" type="text"
+                                            placeholder="Search Name">&nbsp;
                                     </label>
                                     <label class="col-3 h6 txt-inp-def">
                                         <input id="ck-notify" type="checkbox">
@@ -264,7 +270,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-7 col-14">
+                    <div class="col-md-6 col-14">
                         <div id="pnl-map" class="card card-body"></div>
                     </div>
                 </div>

@@ -108,12 +108,16 @@
 
         <div class="card card-body pad-bottom bkg-white">
             <div class="row">
-                <div class="col-md-7 col-14">
+                <div class="col-md-8 col-14">
                     <div id="panels" class="card card-body" style="border-width:3px; border-color:black;">
                         <div id="pnl-S1" class="card pad-bottom">
-                            <div class="card-header txt-def h5">System Info</div>
-                            <div class="card-body">
-                                <div id="id-addrInput">
+                            <div class="card-header txt-def h5">
+                                System Info&nbsp;
+                                <i class="far fa-caret-square-up pointer h3" onclick="$('#systemInput').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
+                                <i class="far fa-caret-square-down pointer hidden h3" onclick="$('#systemInput').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>
+                            </div>
+                            <div id="systemInput" class="card-body">
+                            <div id="id-addrInput">
                                     <div class="row">
                                         <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">Coords<span
                                                 class="h5 text-danger">&nbsp;*</span>&nbsp;
@@ -227,12 +231,12 @@
                     <nav>
                         <div class="nav nav-tabs" id="typeTabs" role="tablist">
                     </nav>
-                    <div class="card card-body">
+                    <div class="card card-body" style="border-top-left-radius:0px; border-color:black;">
                         <div class="tab-content" id="typePanels"></div>
                     </div>
                     <br>
 
-                    <div id="entrybuttons" class="card card-body">
+                    <div id="entrybuttons" class="card card-body rounded" style="border-color:black;">
                         <div class="row">
                             <div class="col-lg-5 col-14">
                                 <div class="row" style="padding-top:2px;">
@@ -314,7 +318,7 @@
                     <br>
                 </div>
 
-                <div class="col-md-7 col-14">
+                <div class="col-md-6 col-14">
                     <div id="pnl-map" class="card card-body"></div>
                 </div>
             </div>

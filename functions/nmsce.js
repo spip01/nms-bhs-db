@@ -71,17 +71,25 @@ exports.checkSearch = async function (e) {
                         for (let l of q.list)
                             if (!e[q.name].includes(l))
                                 ok = false
+                        if (ok)
+                            console.log("tags", JSON.stringify(q.list, JSON.stringify(e[q.name])))
                         break
                     case "map":
                         for (let l of q.list)
                             if (!e[q.name][l])
                                 ok = false
+                        if (ok)
+                            console.log("map", JSON.stringify(q.list, JSON.stringify(e[q.name])))
                         break
                     case "checkbox":
                         ok = e[q.name] === (q.val === "True")
+                        if (ok)
+                            console.log("ck", q.val, e[q.name])
                         break
                     default:
                         ok = q.query === ">=" ? e[q.name] >= q.val : e[q.name] === q.val
+                        if (ok)
+                            console.log("def " + q.type, q.query ? q.query : "", q.val, e[q.name])
                         break
                 }
 
@@ -90,6 +98,7 @@ exports.checkSearch = async function (e) {
             }
 
         if (ok) {
+            console.log("match", e.Name)
             sent.push(s.uid)
 
             let bucket = admin.storage().bucket("nms-bhs.appspot.com")

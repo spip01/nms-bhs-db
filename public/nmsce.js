@@ -30,8 +30,10 @@ $(document).ready(() => {
         nmsce.buildPanel()
         nmsce.buildTypePanels()
 
-        if (fnmsce)
+        if (fnmsce) {
             nmsce.getNew()
+            nmsce.getFeatured()
+        }
 
         $("#save").click(async () => {
             nmsce.save()
@@ -258,7 +260,7 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
 
         clr($("#pnl-S1"))
 
-        // $("#pnl-map [id|='pnl']").hide()
+        $("#pnl-map [id|='slist']").hide()
 
         if (fnmsce)
             $("#pnl-user #id-Player").val("")
@@ -468,15 +470,11 @@ NMSCE.prototype.extractEntry = function () {
 
         entry.redditlink = $("#redditlink").val()
         entry.imageText = bhs.user.imageText
-        let thumb = null
-
-        if (!$("#ck-updateScreenshot").is(":visible") || $("#ck-updateScreenshot").prop("checked")) {
-            nmsce.updateEntry(entry)
-            thumb = nmsce.updateScreenshots(entry)
-        } else
-            nmsce.updateEntry(entry)
-
         nmsce.entries[entry.type.nameToId()][entry.id] = entry
+
+        nmsce.updateEntry(entry)
+        let thumb = nmsce.updateScreenshots(entry)
+
         nmsce.displayListEntry(entry, thumb)
 
         bhs.status(entry.type + " " + entry.Name + " validated, saving...")
@@ -534,7 +532,8 @@ NMSCE.prototype.displaySingle = function (entry) {
                         disp(fld.sublist, pnl.find("#slist-" + entry[id].nameToId()))
                     break
                 case "radio":
-                    row.find("#id-" + entry[id].nameToId()).click()
+                    if (entry[id])
+                        row.find("#id-" + entry[id].nameToId()).click()
                     break
                 case "checkbox":
                     if (entry[id] !== row.find("input").prop("checked"))
@@ -1218,13 +1217,13 @@ blackHoleSuns.prototype.status = function (str, clear) {
     $("#status").append("<h6>" + str + "</h6>")
 }
 
-let nav = `<a class="nav-item nav-link txt-def h6 active" id="tab-idname" data-toggle="tab" href="#hdr-idname" role="tab" aria-controls="pnl-idname" aria-selected="true">title</a>`
+let nav = `<a class="nav-item nav-link txt-def h6 active" style="border-bottom-left-radius:0px; border-bottom-width:0px; border-color:black;" id="tab-idname" data-toggle="tab" href="#hdr-idname" role="tab" aria-controls="pnl-idname" aria-selected="true">title</a>`
 let header = `
-    <div id="hdr-idname" class="tab-pane show active" role="tabpanel" aria-labelledby="tab-idname">
+    <div id="hdr-idname" class="tab-pane active" role="tabpanel" aria-labelledby="tab-idname">
         <div id="pnl-idname" class="row"></div>
     </div>`
-let mapHeader = `<div id="pnl-idname" class="row border rounded" style="display:none"></div>`
-const tSubList = `<div id="slist-idname" class="row" style="display:none"></div>`
+let mapHeader = `<div id="pnl-idname" class="border rounded" style="display:none;"></div>`
+const tSubList = `<div id="slist-idname" class="row pl-15" style="display:none"></div>`
 
 const tReq = `&nbsp;<font style="color:red">*</font>`
 const tText = `&nbsp;
@@ -1234,7 +1233,6 @@ const tText = `&nbsp;
 
 const inpHdr = `<div class="col-lg-7 col-14">`
 const inpLongHdr = `<div class="col-14">`
-const inpShipHdr = `<div class="col-14">`
 const inpEnd = `</div>`
 
 const tString = `
@@ -1242,10 +1240,10 @@ const tString = `
         <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" class="rounded col-9">
     </div>`
-const tMap = `<div id="row-idname" data-type="map" data-req="ifreq"></div>`
+const tMap = `<div id="row-idname" data-type="map"></div>`
 const tLongString = `
-    <div id="row-idname" data-type="string" data-req="ifreq" class="row pl-15">
-        <div class="col-3 h6 txt-inp-def">titlettip&nbsp;</div>
+    <div id="row-idname" data-type="string" data-req="ifreq" class="row">
+        <div class="col-3 h6 pl-15 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" class="rounded col-9">
     </div>`
 const tNumber = `
@@ -1270,21 +1268,21 @@ const tTags = `
         <div id="list-idname" class="row"></div>
         </div>
     </div>`
-const tTag = `<div id="tag-idname" class="col border pointer" style="border-radius:8px; background-color:#d0d0d0" onclick="nmsce.deleteTag(this)">title</div>`
+const tTag = `<div id="tag-idname" class="border pointer h5" style="border-radius:8px; background-color:#d0d0d0" onclick="nmsce.deleteTag(this)">&nbsp;title&nbsp;<i class="far fa-times-circle" style="color:#ffffff;"></i>&nbsp;</div>&nbsp;`
 const tMenu = `
     <div id="row-idname" data-type="menu" data-req="ifreq">
         <div id="id-idname"></div>
     </div>`
 const tRadio = `
     <div id="row-idname" data-type="radio" data-req="ifreq" class="row">
-        <div class="radio col-5 h6 txt-inp-def" style="padding-left:45px" data-toggle="grp-idname"">titlettip:&nbsp;</div>
+        <div class="radio col-5 h6 txt-inp-def" data-toggle="grp-idname"">titlettip:&nbsp;</div>
     </div>`
 const tRadioItem = `
-    <label class="h6 txt-inp-def">titlettip&nbsp;
+    <label class="h6 col-3 txt-inp-def">title&nbsp;
         <input type="radio" class="radio" id="id-title" name="grp-idname">
     </label>`
 const tCkItem = `
-    <div id="row-idname" data-type="checkbox" data-req="false" style="padding-left:15px">
+    <div id="row-idname" data-type="checkbox" data-req="false" class="pl-15">
         <label id="id-idname" class="h6 txt-inp-def row">
             titlettip&nbsp
             <input id="ck-idname" type="checkbox">
@@ -1312,12 +1310,12 @@ NMSCE.prototype.buildTypePanels = function () {
 
         h = /idname/g [Symbol.replace](header, id)
         if (!first)
-            h = /show active/ [Symbol.replace](h, "")
+            h = /active/ [Symbol.replace](h, "")
         pnl.append(h)
 
         h = /idname/g [Symbol.replace](mapHeader, id)
         if (first)
-            h = /style.*"/g [Symbol.replace](h, id)
+            h = /display:none/g [Symbol.replace](h, "")
         $("#pnl-map").append(h)
 
         first = false
@@ -1403,22 +1401,24 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 appenditem(itm, tImg, f.name, id, f.ttip, f.required, inpLongHdr)
                 break
             case "checkbox":
-                if (!slist || slist[f.sub]) {
-                    if (fnmsce) {
-                        appenditem(itm, tRadio, f.name, id, f.ttip, null, inpLongHdr)
-                        let btn = itm.find("#row-" + id)
-                        btn.attr("data-type", "checkbox")
-                        appenditem(btn, tRadioItem, "True", id, null, null, `<div class="col-3">`)
-                        appenditem(btn, tRadioItem, "False", id, null, null, `<div class="col-3">`)
-                        if (f.onchange) {
-                            btn.find("#id-True").change(f.onchange)
-                            btn.find("#id-False").change(f.onchange)
-                        }
-                    } else {
-                        appenditem(itm, tCkItem, f.name, id, f.ttip, f.required)
-                        if (f.onchange) {
-                            itm.find("#id-" + id).change(f.onchange)
-                        }
+                if (fnmsce) {
+                    appenditem(itm, tRadio, f.name, id, f.ttip)
+
+                    let btn = itm.find("#row-" + id)
+                    btn.attr("data-type", "checkbox")
+
+                    let l = /title/g [Symbol.replace](tRadioItem, "True")
+                    l = /idname/g [Symbol.replace](l, id)
+                    btn.append(l)
+
+                    l = /title/g [Symbol.replace](tRadioItem, "False")
+                    l = /idname/g [Symbol.replace](l, id)
+                    btn.append(l)
+                } else {
+                    appenditem(itm, tCkItem, f.name, id, f.ttip, f.required)
+
+                    if (f.onchange) {
+                        itm.find("#id-" + id).change(f.onchange)
                     }
                 }
                 break
@@ -1445,11 +1445,11 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 if (f.sublist) {
                     for (let s of f.list) {
                         let iid = s.name.nameToId()
-                        l = /idname/ [Symbol.replace](tSubList, iid)
-                        appenditem(itm, l, s.name, iid, null, null, inpLongHdr)
+                        appenditem(itm, tSubList, s.name, iid, null, null, inpLongHdr)
 
                         let loc = $("#pnl-map #" + itm.prop("id"))
-                        appenditem(loc, l, s.name, iid, null, null, inpLongHdr)
+                        let l = /idname/ [Symbol.replace](tSubList, s.name.nameToId())
+                        loc.append(l)
 
                         nmsce.addPanel(f.sublist, "slist", iid, s, itmid)
                     }
@@ -1504,36 +1504,41 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 }
                 break
             case "radio":
-                if (slist[f.sub]) {
-                    appenditem(itm, tRadio, f.name, id, typeof slist[f.ttip] === "string" ? slist[f.ttip] : null, f.required, inpLongHdr)
-                    let btn = itm.find("#row-" + id)
+                let list = []
+                if (f.list) {
+                    appenditem(itm, tRadio, f.name, id, f.ttip, null, f.required)
+                    list = f.list
+                } else if (slist[f.sub]) {
+                    appenditem(itm, tRadio, f.name, id, typeof slist[f.ttip] === "string" ? slist[f.ttip] : null, f.required)
+                    list = slist[f.sub]
+                }
 
-                    for (let i of slist[f.sub])
-                        appenditem(btn, tRadioItem, i.name, id, null, null, `<div class="col-2">`)
+                let btn = itm.find("#row-" + id)
+
+                for (let i of list) {
+                    let l = /title/g [Symbol.replace](tRadioItem, i.name)
+                    l = /idname/g [Symbol.replace](l, id)
+                    btn.append(l)
+
+                    if (fcedata && i.default) {
+                        btn.find("#id-" + i.name).prop("checked", true)
+                    }
                 }
                 break
             case "map":
-                let iid = itmid.nameToId()
-                let mloc = $("#pnl-map")
-                let map = f.map
+                if (f.map || slist[f.sub]) {
+                    let iid = itmid.nameToId()
+                    let mloc = $("#pnl-map #" + (f.map ? "pnl-" : "slist-") + iid)
 
-                if (pid) {
-                    if (!slist[f.name])
-                        continue
+                    iid = f.name.nameToId()
+                    l = /idname/ [Symbol.replace](tMap, iid)
+                    mloc.append(l)
 
-                    mloc = mloc.find("#slist-" + iid)
-                    map = slist[f.name]
-                } else
-                    mloc = mloc.find("#pnl-" + iid)
+                    mloc = mloc.find("#row-" + iid)
+                    mloc.append(f.map ? f.map : slist[f.sub])
 
-                iid = f.name.nameToId()
-                l = /idname/ [Symbol.replace](tMap, iid)
-                appenditem(mloc, l, "", id, null, null, inpShipHdr)
-
-                mloc = mloc.find("#row-" + iid)
-                mloc.append(map)
-
-                nmsce.loadMap(mloc)
+                    nmsce.loadMap(mloc)
+                }
                 break
         }
 
@@ -1556,7 +1561,7 @@ NMSCE.prototype.addTag = function (evt) {
 
     if (tags.length > 0)
         for (let t of tags)
-            if ($(t).text() === text) {
+            if ($(t).prop("id").stripID() === text) {
                 row.find("#btn-" + id).text(id.idToName())
                 return
             }
@@ -2346,7 +2351,6 @@ NMSCE.prototype.handleMouseDown = function (e) {
             text.sel = true
             nmsce.startX = startX
             nmsce.startY = startY
-
             break
         }
     }
@@ -2528,6 +2532,9 @@ NMSCE.prototype.deleteEntry = function (entry) {
 }
 
 NMSCE.prototype.updateScreenshots = function (entry) {
+    if (!$("#id-canvas").is(":visible") || !$("#ck-updateScreenshot").prop("checked"))
+        return null
+
     let disp = document.createElement('canvas')
     nmsce.drawText(disp, 1024)
     disp.toBlob(blob => {
@@ -2718,6 +2725,22 @@ NMSCE.prototype.getMyFavorites = function () {
 
             nmsce.displayResultList("My-Favorites")
         })
+    })
+}
+
+NMSCE.prototype.getFeatured = function () {
+    let ref = bhs.fs.doc("admin/nmsce-featured")
+    ref.get().then(doc => {
+        if (doc.exists) {
+            let e = doc.data()
+            let ref = bhs.fs.doc("nmsce/" + e.galaxy + "/" + e.type + "/" + e.id)
+            ref.get().then(doc => {
+                if (doc.exists) {
+                    let e = doc.data()
+                    nmsce.displaySelected(e)
+                }
+            })
+        }
     })
 }
 
@@ -3182,8 +3205,12 @@ NMSCE.prototype.displayListEntry = function (entry, thumb) {
     else
         nmsce.updateDisplayListEntry(entry, eloc)
 
-    if (thumb)
+    if (thumb) {
+        $("#id-table [id|='list']").hide()
+        loc.show()
+
         loc.find("#row-" + id + " img").attr("src", thumb)
+    }
 }
 
 NMSCE.prototype.sortLoc = function (evt) {
@@ -5034,16 +5061,16 @@ const objectList = [{
         required: true,
         search: true,
         sublist: [{
-            name: "Asymmetric",
-            type: "checkbox",
-            sub: "asymmetric",
-            search: true,
-        }, {
             name: "Slots",
             type: "radio",
             ttip: "slotTtip",
             sub: "slotList",
             imgText: true,
+            search: true,
+        }, {
+            name: "Asymmetric",
+            type: "checkbox",
+            sub: "asymmetric",
             search: true,
         }, {
             name: "bodies",
@@ -5091,9 +5118,16 @@ const objectList = [{
         startState: "hidden",
     }, {
         name: "First Wave",
-        ttip: "This is only useful on space stations.",
-        type: "checkbox",
-        // onchange: showClass,
+        ttip: "This is only used on space stations. First wave for reloading a save and restarting the game are different.",
+        type: "radio",
+        list: [{
+            name: "No",
+            default: true,
+        }, {
+            name: "Reload"
+        }, {
+            name: "Restart"
+        }],
         imgText: true,
         search: true,
     }, {
