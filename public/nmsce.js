@@ -274,6 +274,8 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     loc.find("#row-Latitude").hide()
     loc.find("#row-Longitude").hide()
 
+    $("#id-ssImage").hide()
+    $("#id-ssImage").attr("src", "")
     $("#redditlink").val("")
     $("#posted").empty()
     $("#editScreenshot").hide()
@@ -470,12 +472,11 @@ NMSCE.prototype.extractEntry = function () {
 
         entry.redditlink = $("#redditlink").val()
         entry.imageText = bhs.user.imageText
-        nmsce.entries[entry.type.nameToId()][entry.id] = entry
 
         nmsce.updateEntry(entry)
-        let thumb = nmsce.updateScreenshots(entry)
-
-        nmsce.displayListEntry(entry, thumb)
+        nmsce.entries[entry.type.nameToId()][entry.id] = entry
+        nmsce.displayListEntry(entry)
+        nmsce.updateScreenshots(entry)
 
         bhs.status(entry.type + " " + entry.Name + " validated, saving...")
         $("#imgtable").hide()
@@ -762,7 +763,7 @@ NMSCE.prototype.searchEntriesList = function () {
     $("body")[0].style.cursor = "wait"
     let loc = $("#list-" + s.type.nameToId())
 
-    nmsce.showSub(s.type.nameToId())
+    nmsce.showSub("#sub-" + s.type.nameToId())
     nmsce.searchList(s, list, loc)
 }
 
@@ -2530,7 +2531,7 @@ NMSCE.prototype.deleteEntry = function (entry) {
 }
 
 NMSCE.prototype.updateScreenshots = function (entry) {
-    if (!$("#id-canvas").is(":visible") || !$("#ck-updateScreenshot").prop("checked"))
+    if (!$("#id-canvas").is(":visible") || $("#ck-updateScreenshot").is(":visible") && !$("#ck-updateScreenshot").prop("checked"))
         return null
 
     let disp = document.createElement('canvas')
@@ -2561,7 +2562,16 @@ NMSCE.prototype.updateScreenshots = function (entry) {
         })
     }, "image/jpeg", .9)
 
-    return thumb.toDataURL()
+    nmsce.showSub("#sub-" + entry.type.nameToId())
+    let loc = $("#id-table #sub-" + entry.type.nameToId())
+    loc = loc.find(" #row-" + entry.type.nameToId() + "-" + entry.id + " img")
+
+    let url = thumb.toDataURL()
+    loc.attr("src", url)
+
+    $('html, body').animate({
+        scrollTop: loc.offset().top
+    }, 500)
 }
 
 NMSCE.prototype.updateEntry = function (entry) {
@@ -2727,6 +2737,8 @@ NMSCE.prototype.getMyFavorites = function () {
 }
 
 NMSCE.prototype.getFeatured = function () {
+    return
+
     let ref = bhs.fs.doc("admin/nmsce-featured")
     ref.get().then(doc => {
         if (doc.exists) {
@@ -2854,6 +2866,8 @@ NMSCE.prototype.getAfterDate = function (date) {
     let addList = function (res) {
         let lists = nmsce.resultLists
         let rts = {}
+        let top = {}
+        top.count = 0
 
         for (let r of res) {
             let rid = r.rt.name.nameToId()
@@ -2863,8 +2877,18 @@ NMSCE.prototype.getAfterDate = function (date) {
                 let e = doc.data()
                 let tid = e.type.nameToId()
                 lists[rid][tid + "-" + e.id] = e
+
+                if (r.rt.field === "votes.favorite" || r.rt.field === "votes.edchoice") {
+                    if (e.votes.favorite +e.votes.edchoice > top.count) {
+                        top.count = e.votes.favorite +e.votes.edchoice
+                        top.entry = e
+                    }
+                }
             }
         }
+
+        if (top.count > 0)
+            nmsce.displaySelected(top.entry)
 
         return rts
     }
@@ -3195,7 +3219,7 @@ NMSCE.prototype.displayList = function (entries) {
     nmsce.displayThumbnails($('#id-table'))
 }
 
-NMSCE.prototype.displayListEntry = function (entry, thumb) {
+NMSCE.prototype.displayListEntry = function (entry) {
     let loc = $("#id-table #sub-" + entry.type.nameToId())
     let id = entry.type.nameToId() + "-" + entry.id
     let eloc = loc.find("#row-" + id)
@@ -3204,12 +3228,6 @@ NMSCE.prototype.displayListEntry = function (entry, thumb) {
         nmsce.addDisplayListEntry(entry, loc, true)
     else
         nmsce.updateDisplayListEntry(entry, eloc)
-
-    nmsce.showSearchPanel(entry.type.nameToId())
-
-    if (thumb)
-        loc.find("#row-" + id + " img").attr("src", thumb)
-
 }
 
 NMSCE.prototype.sortLoc = function (evt) {
@@ -3278,10 +3296,9 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
 
     const row = `     
         <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black" >
-            <div id="id-Photo" class="row">
-                <img id="img-idname" class="pointer" data-type="etype" data-id="eid" data-thumb="ethumb"
-                onload="nmsce.imgLoaded(this, $(this).parent().width(), $(this).parent().width()*1.3)" 
-                onclick="nmsce.selectList(this)">
+            <div id="id-Photo" class="row pointer" data-type="etype" data-id="eid" onclick="nmsce.selectList(this)" style="min-height:20px">
+                <img id="img-idname" data-thumb="ethumb"
+                onload="nmsce.imgLoaded(this, $(this).parent().width(), $(this).parent().width()*1.3)">
             </div>
             <div class="row">`
     const item = `<div id="id-idname" class="col-md-7 col-14 border pointer">title</div>`
@@ -3429,9 +3446,9 @@ NMSCE.prototype.showSub = function (id) {
     loc.find(".fa-caret-square-up").hide()
     loc.find(".fa-caret-square-down").show()
 
-    let ptrid =id.stripID()
-    loc.find("#ttl-"+ptrid+" .fa-caret-square-up").show()
-    loc.find("#ttl-"+ptrid+" .fa-caret-square-down").hide()
+    let ptrid = id.stripID()
+    loc.find("#ttl-" + ptrid + " .fa-caret-square-up").show()
+    loc.find("#ttl-" + ptrid + " .fa-caret-square-down").hide()
 
     $('html, body').animate({
         scrollTop: loc.find(id).offset().top
