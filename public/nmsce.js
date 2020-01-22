@@ -2879,8 +2879,8 @@ NMSCE.prototype.getAfterDate = function (date) {
                 lists[rid][tid + "-" + e.id] = e
 
                 if (r.rt.field === "votes.favorite" || r.rt.field === "votes.edchoice") {
-                    if (e.votes.favorite +e.votes.edchoice > top.count) {
-                        top.count = e.votes.favorite +e.votes.edchoice
+                    if (e.votes.favorite + e.votes.edchoice > top.count) {
+                        top.count = e.votes.favorite + e.votes.edchoice
                         top.entry = e
                     }
                 }
@@ -2888,7 +2888,7 @@ NMSCE.prototype.getAfterDate = function (date) {
         }
 
         if (top.count > 0)
-            nmsce.displaySelected(top.entry)
+            nmsce.displaySelected(top.entry, true)
 
         return rts
     }
@@ -3031,7 +3031,7 @@ NMSCE.prototype.selectResult = function (evt) {
     nmsce.displaySelected(e)
 }
 
-NMSCE.prototype.displaySelected = function (e) {
+NMSCE.prototype.displaySelected = function (e, noscroll) {
     let row = `
     <div id="id-idname" class="row border-bottom txt-inp-def h5">
         <div class="col-lg-4 col-7">title</div>
@@ -3060,9 +3060,10 @@ NMSCE.prototype.displaySelected = function (e) {
     ref.getDownloadURL().then(url => {
         $("#dispimage").prop("src", url)
 
-        $('html, body').animate({
-            scrollTop: $('#imageinfo').offset().top
-        }, 500)
+        if (!noscroll)
+            $('html, body').animate({
+                scrollTop: $('#imageinfo').offset().top
+            }, 500)
     })
 
     loc = $("#imagedata")
