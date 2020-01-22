@@ -107,8 +107,10 @@
 
         <div class="card pad-bottom">
             <div class="card-header txt-def h4">
-                <i class="far fa-caret-square-up pointer hidden h3" onclick="$('#searchPanel').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
-                <i class="far fa-caret-square-down pointer h3" onclick="$('#searchPanel').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>
+                <i class="far fa-caret-square-up pointer hidden h3"
+                    onclick="$('#searchPanel').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
+                <i class="far fa-caret-square-down pointer h3"
+                    onclick="$('#searchPanel').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>
                 &nbsp;Toggle search input panel display.
             </div>
             <div id="searchPanel" class="card-body bkg-white" style="display:none">
@@ -118,8 +120,10 @@
                             <div id="pnl-S1" class="card pad-bottom">
                                 <div class="card-header txt-def h5">
                                     System Info&nbsp;
-                                    <i class="far fa-caret-square-up pointer hidden h3" onclick="$('#systemInput').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
-                                    <i class="far fa-caret-square-down pointer h3" onclick="$('#systemInput').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>
+                                    <i class="far fa-caret-square-up pointer hidden h3"
+                                        onclick="$('#systemInput').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
+                                    <i class="far fa-caret-square-down pointer h3"
+                                        onclick="$('#systemInput').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>
                                 </div>
                                 <div id="systemInput" class="card-body hidden">
                                     <div id="id-addrInput">
@@ -297,6 +301,7 @@
             <div class="card-body" style="padding: 4px 4px;">
                 <div id="resultLists" class="row"></div>
                 <br>
+                <br>
                 <div id="imageinfo" class="row bkg-white txt-center" style="display:none">
                     <div id="imgcol" class="col-xl-9 col-lg-8 col-md-9 col-14">
                         <img id="dispimage"
@@ -353,13 +358,15 @@
                         </div>
                         <br>
                         <div class="row">
-                            <a id="permalink" class="h5" href="">
+                            <a id="permalink" class="col-7 h5" href="">
                                 Permalink&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom"
-                                    title="You can use this link to directly access this entry.">&nbsp;
+                                    title="You can use this link to directly access this entry.">
                                 </i>
                             </a>
+                            <button id="btn-ceedit" type="button" class="col-3 btn btn-sm btn-def hidden"
+                                onclick="nmsce.editSelected()">Edit</button>
                         </div>
                         <div class="row" onclick="nmsce.newDARC('#imagedata #val-Coords')" class="pointer text-center">
                             <div class="col text-center">

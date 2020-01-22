@@ -33,6 +33,7 @@ blackHoleSuns.prototype.doLoggedout = function () {
     $("#genPOI").hide()
     $("#backupBHS").hide()
     $("#testing").hide()
+    $("#btn-ceedit").hide()
 
     if (fnmsce) {
         $("#searchlocal").show()
@@ -65,9 +66,6 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
             if (role.includes("nmsceEditor"))
                 $("#edchoice").show()
 
-            if (role.includes("admin"))
-                $("#bhspoi").show()
-
             if (role.includes("editor") || role.includes("admin"))
                 $("#poiorg").show()
 
@@ -77,6 +75,7 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
             }
 
             if (role.includes("admin")) {
+                $("#bhspoi").show()
                 $("#id-export").show()
                 $("#btn-create").show()
                 $("#btn-export").show()
@@ -86,7 +85,6 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
 
                 if (document.domain == "localhost") {
                     $("#updateDARC").show()
-                    $("#genDARC").show()
                     $("#genPOI").show()
                     $("#backupBHS").show()
                     $("#testing").show()

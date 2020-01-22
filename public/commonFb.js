@@ -215,6 +215,25 @@ blackHoleSuns.prototype.updateUser = async function (user) {
         return false
 }
 
+blackHoleSuns.prototype.getRoles = async function () {
+    let ref = bhs.fs.doc("admin/" + bhs.user.uid)
+    let doc = await ref.get()
+    if (doc.exists)
+        return doc.data().roles
+    else
+        return null
+}
+
+blackHoleSuns.prototype.hasRole =  function (role) {
+    let roles =  bhs.getRoles()
+    return roles && roles.includes(role)
+}
+
+blackHoleSuns.prototype.isRole =  function (role) {
+    let roles =  bhs.getRoles()
+    return roles && roles.includes(role) &&bhs.user.role === role 
+}
+
 blackHoleSuns.prototype.changeName = function (loc, user) {
     if (user._name == bhs.user._name)
         return
@@ -1021,7 +1040,7 @@ blackHoleSuns.prototype.validateEntry = function (entry, nobh) {
     if (!entry.addr.match(/([0-9A-F]{4}:){3}([0-9A-F]{4})/)) {
         error += "Invalid address. "
         ok = false
-   }
+    }
 
     if (ok && !entry.sys) {
         error += "Missing system name. "

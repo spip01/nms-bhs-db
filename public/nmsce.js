@@ -47,25 +47,27 @@ $(document).ready(() => {
         })
     }
 
-    if (fnmsce || fpreview) {
-        //https://localhost:5000/preview.html?i=0547-0086-0E45-00A1-himodan-s-coup&g=Euclid&t=Ship
-        let passed = {}
-        let param = location.search.substring(1).split("&")
+    //https://localhost:5000/preview.html?i=0547-0086-0E45-00A1-himodan-s-coup&g=Euclid&t=Ship
+    let passed = {}
+    let param = location.search.substring(1).split("&")
 
-        for (let p of param) {
-            if (p) {
-                let obj = p.split("=")
-                passed[unescape(obj[0])] = obj[1] ? unescape(obj[1]) : true
-            }
+    for (let p of param) {
+        if (p) {
+            let obj = p.split("=")
+            passed[unescape(obj[0])] = obj[1] ? unescape(obj[1]) : true
         }
+    }
 
-        if (passed.i && passed.g && passed.t) {
-            let ref = bhs.fs.doc("nmsce/" + passed.g.idToName() + "/" + passed.t.idToName() + "/" + passed.i)
-            ref.get().then(doc => {
-                if (doc.exists)
+    if (passed.i && passed.g && passed.t) {
+        let ref = bhs.fs.doc("nmsce/" + passed.g.idToName() + "/" + passed.t.idToName() + "/" + passed.i)
+        ref.get().then(doc => {
+            if (doc.exists) {
+                if (fnmsce || fpreview)
                     nmsce.displaySelected(doc.data())
-            })
-        }
+                else if (fcedata)
+                    nmsce.displaySingle(doc.data())
+            }
+        })
     }
 })
 
@@ -199,6 +201,9 @@ NMSCE.prototype.displaySystem = function (entry) {
 
     nmsce.lastsys = entry
 
+    $("#btn-Galaxy").text(entry.galaxy)
+    $("#btn-Platform").text(entry.platform)
+
     loc.find("#id-addr").val(entry.addr)
     loc.find("#id-glyph").html(addrToGlyph(entry.addr))
     loc.find("#id-sys").val(entry.sys)
@@ -321,7 +326,7 @@ NMSCE.prototype.extractEntry = function () {
     if (nmsce.lastsys)
         entry = mergeObjects({}, nmsce.lastsys)
 
-    if (!nmsce.lastsys || entry.uid === bhs.user.uid) {
+    if (entry.uid === bhs.user.uid) {
         entry._name = bhs.user._name
         entry.org = bhs.user.org
         entry.uid = bhs.user.uid
@@ -332,25 +337,21 @@ NMSCE.prototype.extractEntry = function () {
     entry.version = "beyond"
     entry.page = "nmsce"
 
-    let addr = loc.find("#id-addr").val()
-    let sys = loc.find("#id-sys").val()
-    let reg = loc.find("#id-reg").val()
-    let life = loc.find("#btn-Lifeform").text().stripNumber()
-    let econ = loc.find("#btn-Economy").text().stripNumber()
+    entry.addr = loc.find("#id-addr").val()
+    entry.sys = loc.find("#id-sys").val()
+    entry.reg = loc.find("#id-reg").val()
+    entry.life = loc.find("#btn-Lifeform").text().stripNumber()
+    entry.econ = loc.find("#btn-Economy").text().stripNumber()
+    entry.xyzs = addressToXYZ(entry.addr)
+    ok = bhs.validateEntry(entry, true) === ""
 
-    if (!nmsce.lastsys || entry.addr !== addr || entry.sys !== sys ||
-        entry.reg !== reg || entry.life !== life || entry.econ !== econ) {
+    if (ok && (!nmsce.lastsys || entry.uid === bhs.user.uid /* || bhs.isRole("admin")) */ || entry.sys !== nmsce.lastsys.sys ||
+            entry.reg !== nmsce.lastsys.reg || entry.life !== nmsce.lastsys.life || entry.econ !== nmsce.lastsys.econ))
 
-        entry.addr = addr
-        entry.sys = sys
-        entry.reg = reg
-        entry.life = life
-        entry.econ = econ
-        entry.xyzs = addressToXYZ(entry.addr)
-
-        ok = bhs.validateEntry(entry, true) === ""
-        if (ok)
-            bhs.updateEntry(entry)
+        bhs.updateEntry(entry)
+    else {
+        bhs.status(bhs.user._name + " is not creator of " + entry.addr + " " + entry.sys)
+        ok = false
     }
 
     if (ok) {
@@ -358,15 +359,15 @@ NMSCE.prototype.extractEntry = function () {
         delete entry.x
 
         if (nmsce.last)
-            entry = mergeObjects(entry, nmsce.last)
+            if (nmsce.last.uid === bhs.user.uid) {
+                entry._name = bhs.user._name
+                entry.org = bhs.user.org
+                entry.uid = bhs.user.uid
+                entry.platform = bhs.user.platform
+                entry.galaxy = bhs.user.galaxy
+            }
 
-        if (!nmsce.last || entry.uid === bhs.user.uid) {
-            entry._name = bhs.user._name
-            entry.org = bhs.user.org
-            entry.uid = bhs.user.uid
-            entry.platform = bhs.user.platform
-            entry.galaxy = bhs.user.galaxy
-        }
+        entry = mergeObjects(entry, nmsce.last)
 
         let tab = $("#typeTabs .active").prop("id").stripID()
         let pnl = $("#typePanels #pnl-" + tab)
@@ -473,13 +474,18 @@ NMSCE.prototype.extractEntry = function () {
         entry.redditlink = $("#redditlink").val()
         entry.imageText = bhs.user.imageText
 
-        nmsce.updateEntry(entry)
-        nmsce.entries[entry.type.nameToId()][entry.id] = entry
-        nmsce.displayListEntry(entry)
-        nmsce.updateScreenshots(entry)
+        if (entry.uid === bhs.user.uid /* || bhs.isRole("admin")*/ ) {
+            nmsce.updateEntry(entry)
+            nmsce.entries[entry.type.nameToId()][entry.id] = entry
+            nmsce.displayListEntry(entry)
+            nmsce.updateScreenshots(entry)
 
-        bhs.status(entry.type + " " + entry.Name + " validated, saving...")
-        $("#imgtable").hide()
+            bhs.status(entry.type + " " + entry.Name + " validated, saving...")
+            $("#imgtable").hide()
+        } else {
+            bhs.status(bhs.user._name + " is not creator of " + entry.type + " " + entry.Name)
+            ok = false
+        }
     }
 
     return ok
@@ -487,6 +493,7 @@ NMSCE.prototype.extractEntry = function () {
 
 NMSCE.prototype.displaySingle = function (entry) {
     nmsce.clearPanel(true, true)
+    nmsce.last = entry
 
     $('html, body').animate({
         scrollTop: $('#typeTabs').offset().top
@@ -498,7 +505,7 @@ NMSCE.prototype.displaySingle = function (entry) {
     $("#pnl-S1 #foundreg").hide()
     $("#pnl-S1 #foundsys").hide()
 
-    bhs.getEntry(entry.addr, nmsce.displaySystem, null, null, true)
+    bhs.getEntry(entry.addr, nmsce.displaySystem, entry.galaxy, entry.platform, true)
 
     let link = "https://nmsce.com/preview.html?i=" + entry.id + "&g=" + entry.galaxy.nameToId() + "&t=" + entry.type.nameToId()
     $("#permalink").attr("href", link)
@@ -2257,6 +2264,15 @@ NMSCE.prototype.drawText = function (alt, altw) {
         ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
 }
 
+NMSCE.prototype.editSelected = function (evt) {
+    let e = nmsce.last
+
+    if (e && bhs.user.uid && (bhs.user.uid === e.uid /*|| bhs.hasRole("admin")*/ )) {
+        let link = "https://" + window.location.hostname + "/cedata.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
+        window.open(link, "_self")
+    }
+}
+
 NMSCE.prototype.redditShare = function () {
     if ($("#id-ssImage").is(":visible")) {
         bhs.fbstorage.ref().child(displayPath + nmsce.last.Photo).getDownloadURL().then(url => {
@@ -2620,10 +2636,8 @@ function getEntry() {
     if (gal && type && addr && name) {
         let ref = bhs.fs.doc("nmsce/" + gal + "/" + type + "/" + id)
         ref.get().then(doc => {
-            if (doc.exists) {
-                nmsce.last = doc.data()
+            if (doc.exists)
                 nmsce.displaySingle(doc.data())
-            }
         })
     }
 }
@@ -3018,6 +3032,7 @@ NMSCE.prototype.vote = async function (evt) {
 NMSCE.prototype.selectResult = function (evt) {
     let data = $(evt).data()
     let e = nmsce.resultLists[data.panel][data.type + "-" + data.id]
+    nmsce.last = e
 
     let v = {}
     v.votes = {}
@@ -3027,6 +3042,11 @@ NMSCE.prototype.selectResult = function (evt) {
     ref.set(v, {
         merge: true
     }).catch(err => console.log(err))
+
+    if (bhs.user.uid && (e.uid === bhs.user.uid /*|| bhs.user.role === "admin"*/ ))
+        $("#btn-ceedit").show()
+    else
+        $("#btn-ceedit").hide()
 
     nmsce.displaySelected(e)
 }
@@ -3472,7 +3492,6 @@ NMSCE.prototype.selectList = function (evt) {
     let data = $(evt).data()
     let e = nmsce.entries[data.type][data.id]
 
-    nmsce.last = e
     nmsce.displaySingle(e)
 }
 
@@ -3568,6 +3587,7 @@ const explorerBodiesMap = `
         </map>
     </div>`
 
+    //  srcset="images/fighter/bodies/bodies.svg"
 const fighterBodiesMap = `
     <div id="map-fighter-bodies">
         <!-- Image Map Generated by http://www.image-map.net/ -->
