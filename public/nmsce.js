@@ -104,11 +104,32 @@ NMSCE.prototype.buildPanel = function () {
         menusize: "col",
     })
 
-    bhs.buildMenu(loc, "Economy", economyList, null, {
-        required: !fnmsce,
-        labelsize: "col-xl-7 col-lg-7 col-md-5 col-sm-3 col-5",
-        menusize: "col",
-    })
+    let eloc = loc.find("#id-Economy")
+    let h = /ifreq/ [Symbol.replace](tRadio)
+    h = /idname/g [Symbol.replace](h, "Economy")
+    h = /ttip/g [Symbol.replace](h, "")
+    h = /title/g [Symbol.replace](h, "Economy")
+
+    eloc.append(h)
+    eloc = eloc.find("#list")
+    h = ""
+
+    for (let i of economyListTier) {
+        let l = /ifreq/ [Symbol.replace](tRadioItem, "")
+        l = /idname/g [Symbol.replace](l, "Economy")
+        l = /title/g [Symbol.replace](l, i.name)
+        l = /tname/ [Symbol.replace](l, i.name.nameToId())
+
+        if (i.ttip) {
+            l = /ttip/ [Symbol.replace](l, tText)
+            l = /ttext/ [Symbol.replace](l, i.ttip)
+        } else
+            l = /ttip/ [Symbol.replace](l, "")
+
+        h += l
+    }
+
+    eloc.append(h)
 
     let gloc = loc.find("#glyphbuttons")
     addGlyphButtons(gloc, nmsce.addGlyph)
@@ -166,6 +187,7 @@ NMSCE.prototype.changeAddr = function (evt) {
             nmsce.lastsys = null
 
             bhs.getEntry(addr, nmsce.displaySystem, null, null, true).then(entry => {
+                nmsce.lastsys = entry
                 if (!entry)
                     bhs.getEntryByRegionAddr(addr, nmsce.displayRegion)
             })
@@ -199,7 +221,7 @@ NMSCE.prototype.displaySystem = function (entry) {
     else
         loc.find("#foundreg").hide()
 
-    nmsce.lastsys = entry
+    nmsce.lastsys = !entry.Type ? null : entry
 
     $("#btn-Galaxy").text(entry.galaxy)
     $("#btn-Platform").text(entry.platform)
@@ -213,11 +235,16 @@ NMSCE.prototype.displaySystem = function (entry) {
 
     loc.find("#btn-Lifeform").text(entry.life)
 
-    if (entry.econ) {
-        let l = economyList[getIndex(economyList, "name", entry.econ)]
-        loc.find("#btn-Economy").text(l.number + " " + entry.econ)
-        loc.find("#btn-Economy").attr("style", "background-color: " + l.color + ";")
+    loc = loc.find("#id-Economy")
+    loc.find(".radio").prop("checked", false)
+    if ((!entry.Economy || typeof entry.Economy === "number") && entry.econ) {
+        let i = getIndex(economyList, "name", entry.econ)
+        if (i > 0) {
+            let econ = economyList[i].number
+            entry.Economy = "T" + econ
+        }
     }
+    loc.find("#rdo-" + entry.Economy).prop("checked", true)
 }
 
 NMSCE.prototype.showSearchPanel = function (evt) {
@@ -326,7 +353,7 @@ NMSCE.prototype.extractEntry = function () {
     if (nmsce.lastsys)
         entry = mergeObjects({}, nmsce.lastsys)
 
-    if (entry.uid === bhs.user.uid) {
+    if (!entry.uid || entry.uid === bhs.user.uid) {
         entry._name = bhs.user._name
         entry.org = bhs.user.org
         entry.uid = bhs.user.uid
@@ -341,16 +368,24 @@ NMSCE.prototype.extractEntry = function () {
     entry.sys = loc.find("#id-sys").val()
     entry.reg = loc.find("#id-reg").val()
     entry.life = loc.find("#btn-Lifeform").text().stripNumber()
-    entry.econ = loc.find("#btn-Economy").text().stripNumber()
+
+    let eloc = loc.find("#row-Economy :checked")
+    if (eloc.length > 0)
+        entry.Economy = eloc.prop("id").stripID()
+
     entry.xyzs = addressToXYZ(entry.addr)
-    ok = bhs.validateEntry(entry, true) === ""
+    let err = bhs.validateAddress(entry.addr)
+    if (err) {
+        bhs.status(err, true)
+        ok = false
+    }
 
     if (ok && (!nmsce.lastsys || entry.uid === bhs.user.uid /* || bhs.isRole("admin")) */ || entry.sys !== nmsce.lastsys.sys ||
-            entry.reg !== nmsce.lastsys.reg || entry.life !== nmsce.lastsys.life || entry.econ !== nmsce.lastsys.econ))
+            entry.reg !== nmsce.lastsys.reg || entry.life !== nmsce.lastsys.life || entry.Economy !== nmsce.lastsys.Economy))
 
         bhs.updateEntry(entry)
     else {
-        bhs.status(bhs.user._name + " is not creator of " + entry.addr + " " + entry.sys)
+        bhs.status(bhs.user._name + " is not creator of " + entry.addr + " " + entry.sys, true)
         ok = false
     }
 
@@ -375,13 +410,12 @@ NMSCE.prototype.extractEntry = function () {
 
         let list = pnl.find("[id|='row']")
         for (let rloc of list) {
-            if (!$(rloc).is(":visible"))
+            let loc = $(rloc)
+            if (!loc.is(":visible"))
                 continue
 
-            let id = $(rloc).prop("id").stripID()
-            let loc = $(rloc).find(":input")
-            let data = $(rloc).data()
-            let val = loc.val()
+            let id = loc.prop("id").stripID()
+            let data = loc.data()
 
             if (typeof data === "undefined")
                 continue
@@ -390,33 +424,30 @@ NMSCE.prototype.extractEntry = function () {
                 case "number":
                 case "float":
                 case "string":
-                    entry[id] = val
+                    entry[id] = loc.find("input").val()
                     break
                 case "tags":
-                    let tloc = $(rloc).find("[id|='tag']")
+                    let tloc = loc.find("[id|='tag']")
                     entry[id] = []
 
                     for (let loc of tloc) {
-                        let t = $(loc).text().stripMarginWS()
+                        let t = $(loc).prop("id").stripID().idToName()
                         if (t && !entry[id].includes(t))
                             entry[id].push(t)
                     }
                     break
                 case "menu":
-                    entry[id] = $(rloc).find("[id|='btn']").text()
+                    entry[id] = loc.find("[id|='btn']").text().stripMarginWS()
                     if (entry[id] === "Nothing Selected")
                         entry[id] = ""
                     break
                 case "checkbox":
-                    for (let ckloc of loc) {
-                        let cid = $(ckloc).prop("id").stripID()
-                        entry[cid] = $(ckloc).prop("checked")
-                    }
+                    entry[id] = loc.find("input").prop("checked")
                     break
                 case "radio":
-                    for (let rloc of loc)
-                        if ($(rloc).is(":visible") && $(rloc).is(":checked"))
-                            entry[id] = $(rloc).prop("id").stripID()
+                    loc = loc.find(":checked")
+                    if (loc.length > 0)
+                        entry[id] = loc.prop("id").stripID().nameToId()
                     break
                 case "img":
                     if (!fnmsce) {
@@ -434,6 +465,8 @@ NMSCE.prototype.extractEntry = function () {
                     switch (data.type) {
                         case "string":
                         case "menu":
+                        case "checkbox":
+                        case "radio":
                         case "img":
                             ok = entry[id] !== ""
                             break
@@ -505,7 +538,7 @@ NMSCE.prototype.displaySingle = function (entry) {
     $("#pnl-S1 #foundreg").hide()
     $("#pnl-S1 #foundsys").hide()
 
-    bhs.getEntry(entry.addr, nmsce.displaySystem, entry.galaxy, entry.platform, true)
+    nmsce.displaySystem(entry)
 
     let link = "https://nmsce.com/preview.html?i=" + entry.id + "&g=" + entry.galaxy.nameToId() + "&t=" + entry.type.nameToId()
     $("#permalink").attr("href", link)
@@ -526,12 +559,11 @@ NMSCE.prototype.displaySingle = function (entry) {
                     break
                 case "tags":
                     row.find("#list-" + id).empty()
-                    if (entry[id])
-                        for (let t of entry[id]) {
-                            let h = /idname/ [Symbol.replace](tTag, t.nameToId())
-                            h = /title/ [Symbol.replace](h, t)
-                            row.find("#list-" + id).append(h)
-                        }
+                    for (let t of entry[id]) {
+                        let h = /idname/ [Symbol.replace](tTag, t.nameToId())
+                        h = /title/ [Symbol.replace](h, t)
+                        row.find("#list-" + id).append(h)
+                    }
                     break
                 case "menu":
                     row.find("#item-" + entry[id].nameToId()).click()
@@ -541,7 +573,7 @@ NMSCE.prototype.displaySingle = function (entry) {
                     break
                 case "radio":
                     if (entry[id])
-                        row.find("#id-" + entry[id].nameToId()).click()
+                        row.find("#rdo-" + entry[id].nameToId()).click()
                     break
                 case "checkbox":
                     if (entry[id] !== row.find("input").prop("checked"))
@@ -590,8 +622,11 @@ NMSCE.prototype.displaySingle = function (entry) {
     $("#reddit").removeClass("disabled")
 
     $("#reddit").removeAttr("disabled")
-    $("#posted").html(entry.reddit ? "Posted&nbsp;" +
-        (typeof entry.reddit !== "boolean" ? "<span class='txt-inp-def h6'>" + entry.reddit.toDate() + "</span>" : "") : "")
+    $("#posted").html(entry.reddit ? "Posted&nbsp;"
+        /*+
+               (typeof entry.reddit !== "boolean" ? "<span class='txt-inp-def h6'>" + new Date(entry.reddit.seconds).toDateLocalTimeString() + "</span>" : "")*/
+        :
+        "")
 }
 
 NMSCE.prototype.displaySearch = function (search) {
@@ -619,8 +654,10 @@ NMSCE.prototype.displaySearch = function (search) {
                     loc.find("#btn-" + (itm.id ? itm.id.stripID() : itm.name.nameToId())).text(itm.val)
                 break
             case "checkbox":
+                loc.find("#ck-" + itm.val).prop("checked", true)
+                break
             case "radio":
-                loc.find("#id-" + itm.val).prop("checked", true)
+                loc.find("#rdo-" + itm.val).prop("checked", true)
                 break
             case "tags":
                 for (let i of itm.list)
@@ -890,8 +927,10 @@ NMSCE.prototype.saveSearch = function () {
             ref.set(search, {
                 merge: true
             }).then(() => bhs.status(search.name + " saved.", true))
-        } else
+        } else {
             bhs.status("No save name specified.")
+            return
+        }
 
         let i = -1
         if (nmsce.searchlist)
@@ -1032,10 +1071,21 @@ NMSCE.prototype.extractSearch = function (fcn) {
         let loc = $(fld.id)
 
         let val = ""
-        if (fld.type === "string")
-            val = loc.val()
-        else if (fld.type === "menu")
-            val = loc.find("#btn-" + fld.id.stripID()).text().stripNumber()
+
+        switch (fld.type) {
+            case "menu":
+                val = loc.find("#btn-" + fld.id.stripID()).text().stripNumber()
+                break
+            case "checkbox":
+            case "radio":
+                let rloc = loc.find(":checked")
+                if (rloc.length > 0)
+                    val = rloc.prop("id").stripID()
+                break
+            default:
+                val = loc.val()
+                break
+        }
 
         if (val !== "") {
             search.push({
@@ -1050,19 +1100,19 @@ NMSCE.prototype.extractSearch = function (fcn) {
     let list = pnl.find("[id|='row']")
 
     for (let rloc of list) {
-        if (!$(rloc).is(":visible"))
+        let loc = $(rloc)
+        if (!loc.is(":visible"))
             continue
 
-        let rdata = $(rloc).data()
+        let rdata = loc.data()
 
         if (typeof rdata === "undefined")
             continue
 
-        let loc = $(rloc).find(":input")
-        let val = $(loc).val()
+        let val
 
         let itm = {}
-        itm.name = $(rloc).prop("id").stripID()
+        itm.name = loc.prop("id").stripID()
         itm.type = rdata.type
         if (rdata.search)
             itm.query = rdata.search
@@ -1070,23 +1120,24 @@ NMSCE.prototype.extractSearch = function (fcn) {
         switch (rdata.type) {
             case "number":
             case "float":
+                val = loc.find("input").val()
                 if (val && val != -1) {
                     itm.val = val
                     search.push(itm)
                 }
                 break
             case "string":
+                val = loc.find("input").val()
                 if (val) {
                     itm.val = val
                     search.push(itm)
                 }
                 break
             case "tags":
-                let tlocs = $(rloc).find("[id|='tag']")
                 let tlist = []
 
-                for (let loc of tlocs) {
-                    let t = $(loc).text().stripMarginWS()
+                for (let tloc of loc.find("[id|='tag']")) {
+                    let t = $(tloc).prop("id").stripID().idToName()
                     if (t && !tlist.includes(t))
                         tlist.push(t)
                 }
@@ -1097,7 +1148,7 @@ NMSCE.prototype.extractSearch = function (fcn) {
                 }
                 break
             case "menu":
-                val = $(rloc).find("#btn-" + itm.name).text()
+                val = loc.find("#btn-" + itm.name).text().stripMarginWS()
                 if (val) {
                     val = val.stripNumber()
                     if (val !== "Nothing Selected") {
@@ -1107,18 +1158,18 @@ NMSCE.prototype.extractSearch = function (fcn) {
                 }
                 break
             case "checkbox":
-                let cloc = $(rloc).find("input:checked")
-                if (cloc.length > 0) {
-                    itm.val = cloc.prop("id").stripID()
+                loc = loc.find("input :checked")
+                if (loc.length > 0) {
+                    itm.val = loc.prop("id").stripID()
                     search.push(itm)
                 }
                 break
             case "radio":
-                for (let rloc of loc)
-                    if ($(rloc).is(":visible") && $(rloc).is(":checked")) {
-                        itm.val = $(rloc).prop("id").stripID()
-                        search.push(itm)
-                    }
+                loc = loc.find(":checked")
+                if (loc.length > 0) {
+                    itm.val = loc.prop("id").stripID()
+                    search.push(itm)
+                }
                 break
         }
     }
@@ -1281,11 +1332,14 @@ const tMenu = `
     </div>`
 const tRadio = `
     <div id="row-idname" data-type="radio" data-req="ifreq" class="row">
-        <div class="radio col-5 h6 txt-inp-def" data-toggle="grp-idname"">titlettip:&nbsp;</div>
+        <div class="radio col-3 h6 txt-inp-def">titlettip:&nbsp;</div>
+        <div class="col-11">
+            <div id="list" class="row"></div
+        </div>
     </div>`
 const tRadioItem = `
-    <label class="h6 col-3 txt-inp-def">title&nbsp;
-        <input type="radio" class="radio" id="id-title" name="grp-idname">
+    <label class="h6 col-p250 txt-inp-def">titlettip&nbsp;
+        <input type="radio" class="radio" id="rdo-tname" data-last=false onclick="nmsce.toggleRadio(this)">
     </label>`
 const tCkItem = `
     <div id="row-idname" data-type="checkbox" data-req="false" class="pl-15">
@@ -1381,7 +1435,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
         loc.append(h)
     }
 
-    let itm = $("#" + pnl + "-" + itmid)
+    let loc, itm = $("#" + pnl + "-" + itmid)
     for (let f of list) {
         if (fnmsce) {
             f.required = false
@@ -1410,21 +1464,26 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 if (fnmsce) {
                     appenditem(itm, tRadio, f.name, id, f.ttip)
 
-                    let btn = itm.find("#row-" + id)
-                    btn.attr("data-type", "checkbox")
+                    let ckloc = itm.find("#row-" + id)
+                    ckloc.attr("data-type", "checkbox")
+                    ckloc = ckloc.find("#list")
 
                     let l = /title/g [Symbol.replace](tRadioItem, "True")
-                    l = /idname/g [Symbol.replace](l, id)
-                    btn.append(l)
+                    l = /ttip/g [Symbol.replace](l, "")
+                    l = /idname/g [Symbol.replace](l, "True")
+                    l = /tname/g [Symbol.replace](l, "True")
+                    ckloc.append(l)
 
                     l = /title/g [Symbol.replace](tRadioItem, "False")
-                    l = /idname/g [Symbol.replace](l, id)
-                    btn.append(l)
+                    l = /ttip/g [Symbol.replace](l, "")
+                    l = /idname/g [Symbol.replace](l, "False")
+                    l = /tname/g [Symbol.replace](l, "False")
+                    ckloc.append(l)
                 } else {
                     appenditem(itm, tCkItem, f.name, id, f.ttip, f.required)
 
                     if (f.onchange) {
-                        itm.find("#id-" + id).change(f.onchange)
+                        itm.find("#rdo-" + id).change(f.onchange)
                     }
                 }
                 break
@@ -1463,12 +1522,12 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 break
             case "tags":
                 appenditem(itm, tTags, "", id, f.ttip, f.required, inpLongHdr)
-                let rloc = itm.find("#row-" + id)
+                loc = itm.find("#row-" + id)
                 if (f.max)
-                    rloc.data("max", f.max)
+                    loc.data("max", f.max)
 
                 if (f.list) {
-                    bhs.buildMenu(rloc, f.name, f.list, nmsce.addTag, {
+                    bhs.buildMenu(loc, f.name, f.list, nmsce.addTag, {
                         nolabel: true,
                         ttip: f.ttip,
                         sort: true,
@@ -1500,12 +1559,12 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                             })
 
                         // let pnl = doc.ref.id
-                        bhs.buildMenu(rloc, f.name, tags, nmsce.addTag, {
+                        bhs.buildMenu(loc, f.name, tags, nmsce.addTag, {
                             nolabel: true,
                             ttip: f.ttip
                         })
 
-                        rloc.find("#btn-" + id).text(f.name)
+                        loc.find("#btn-" + id).text(f.name)
                     })
                 }
                 break
@@ -1519,31 +1578,33 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                     list = slist[f.sub]
                 }
 
-                let btn = itm.find("#row-" + id)
+                loc = itm.find("#row-" + id + " #list")
 
                 for (let i of list) {
                     let l = /title/g [Symbol.replace](tRadioItem, i.name)
+                    l = /ttip/ [Symbol.replace](l, i.ttip ? "&nbsp;" + i.ttiip : "")
                     l = /idname/g [Symbol.replace](l, id)
-                    btn.append(l)
+                    l = /tname/g [Symbol.replace](l, i.name.nameToId())
+                    loc.append(l)
 
                     if (fcedata && i.default) {
-                        btn.find("#id-" + i.name).prop("checked", true)
+                        loc.find("#rdo-" + i.name).prop("checked", true)
                     }
                 }
                 break
             case "map":
                 if (f.map || slist[f.sub]) {
                     let iid = itmid.nameToId()
-                    let mloc = $("#pnl-map #" + (f.map ? "pnl-" : "slist-") + iid)
+                    let loc = $("#pnl-map #" + (f.map ? "pnl-" : "slist-") + iid)
 
                     iid = f.name.nameToId()
                     l = /idname/ [Symbol.replace](tMap, iid)
-                    mloc.append(l)
+                    loc.append(l)
 
-                    mloc = mloc.find("#row-" + iid)
-                    mloc.append(f.map ? f.map : slist[f.sub])
+                    loc = loc.find("#row-" + iid)
+                    loc.append(f.map ? f.map : slist[f.sub])
 
-                    nmsce.loadMap(mloc)
+                    nmsce.loadMap(loc)
                 }
                 break
         }
@@ -1631,6 +1692,22 @@ NMSCE.prototype.cancelTag = function (evt) {
     row.find("[id|='add']").hide()
     row.find("[id|='txt']").first().val("")
     row.find("[id|='btn']").first().text(row.prop("id").stripID())
+}
+
+NMSCE.prototype.toggleRadio = function (evt) {
+    let data = $(evt).data()
+
+    if (data.last) {
+        $(evt).prop("checked", false)
+        $(evt).data("last", false)
+    } else {
+        let loc = $(evt).closest("#list").find("input")
+        loc.prop("checked", false)
+        $(evt).prop("checked", true)
+        $(evt).data("last", true)
+    }
+
+    return false
 }
 
 function showLatLong() {
@@ -1740,6 +1817,7 @@ NMSCE.prototype.loadImgText = function (clear) {
             </label>
             <input id="id-text" class="rounded col-8" type="text" onchange="nmsce.getImageText(this, true)">
         </div>
+        <br>
         <div class="row">
             <label class="col-5 txt-inp-def pl-30">
                 <input id="ck-mylogo" type="checkbox" data-loc="#id-mylogo" data-type="img"
@@ -1855,28 +1933,26 @@ NMSCE.prototype.getImageText = function (evt, draw) {
             loc = loc.find(data.sub)
         }
 
-        if (data.row || data.type === "menu")
-            loc = loc.find("[id|='" + (data.type === "menu" ? "btn" : "id") + "']")
-
         switch (data.type) {
             case "menu":
+                loc = loc.find("[id|='btn']")
                 text = loc.text().stripNumber()
                 break
             case "tags":
-                let tloc = loc.parent().find("[id|='tag']")
-                if (tloc.length > 0) {
-                    for (let l of tloc)
-                        text += $(l).text().stripMarginWS() + ", "
+                loc = loc.find("[id|='tag']")
+                if (loc.length > 0) {
+                    for (let l of loc)
+                        text += $(l).prop("id").stripID().idToName() + ", "
 
                     text = text.slice(0, text.length - 2)
                 }
                 break
             case "number":
-                text = loc.val()
+                text = loc.find("input").val()
                 text = text === -1 ? "" : text.toString()
                 break
             case "float":
-                text = loc.val()
+                text = loc.find("input").val()
                 text = text === -1 ? "" : text.toString()
                 break
             case "glyph":
@@ -1885,13 +1961,21 @@ NMSCE.prototype.getImageText = function (evt, draw) {
                 let num = loc.length > 0 && loc.val() > 0 ? loc.val() : 0
                 text = addrToGlyph(text, num)
                 break
+            case "checkbox":
+                loc = loc.find("[id|='ck']")
+                if (loc.prop("checked"))
+                    text = loc.prop("id").stripID()
+                break
             case "radio":
-                for (let rloc of loc)
-                    if ($(rloc).is(":visible") && $(rloc).is(":checked"))
-                        text = $(rloc).prop("id").stripID()
+                loc = loc.find(":checked")
+                if (loc.length > 0)
+                    text = loc.prop("id").stripID() + " " + loc.closest("[id|='row']").prop("id").stripID()
                 break
             default:
-                text = loc.val()
+                if (loc.is("input"))
+                    text = loc.val()
+                else
+                    text = loc.find("input").val()
                 break
         }
 
@@ -2597,8 +2681,12 @@ NMSCE.prototype.updateEntry = function (entry) {
     if (typeof entry.created === "undefined")
         entry.created = firebase.firestore.Timestamp.now()
 
-    if (typeof entry.id === "undefined")
-        entry.id = entry.addr.nameToId() + "-" + entry.Name.nameToId().toLowerCase()
+    if (typeof entry.id === "undefined") {
+        if (!entry.Name)
+            entry.id = entry.addr.nameToId() + "-" + uuidv4()
+        else
+            entry.id = entry.addr.nameToId() + "-" + entry.Name.nameToId().toLowerCase()
+    }
 
     if (typeof entry.Photo === "undefined")
         entry.Photo = entry.type + "-" + entry.id + ".jpg"
@@ -3111,7 +3199,6 @@ NMSCE.prototype.displaySelected = function (e, noscroll) {
 
             if (fld.type === "tags") {
                 let t = ""
-
                 if (e[id]) {
                     for (let c of e[id])
                         t += c + ", "
@@ -3149,13 +3236,13 @@ NMSCE.prototype.displaySelected = function (e, noscroll) {
         loc.append(h)
     }
 
-    let d = e.created.toDate().toDateLocalTimeString()
+    // let d = new Date(e.created.seconds).toDateLocalTimeString()
 
-    h = /idname/g [Symbol.replace](row, "date")
-    h = /title/ [Symbol.replace](h, "Added")
-    h = /value/ [Symbol.replace](h, d)
-    h = /font/ [Symbol.replace](h, "")
-    loc.append(h)
+    // h = /idname/g [Symbol.replace](row, "date")
+    // h = /title/ [Symbol.replace](h, "Added")
+    // h = /value/ [Symbol.replace](h, d)
+    // h = /font/ [Symbol.replace](h, "")
+    // loc.append(h)
 }
 
 NMSCE.prototype.showVotes = function (entry) {
@@ -3587,7 +3674,7 @@ const explorerBodiesMap = `
         </map>
     </div>`
 
-    //  srcset="images/fighter/bodies/bodies.svg"
+//  srcset="images/fighter/bodies/bodies.svg"
 const fighterBodiesMap = `
     <div id="map-fighter-bodies">
         <!-- Image Map Generated by http://www.image-map.net/ -->
@@ -5090,25 +5177,18 @@ const objectList = [{
         name: "System",
         type: "string",
     }, {
+        field: "Economy",
         id: "#id-Economy",
-        field: "econ",
         name: "Economy",
-        type: "menu",
-        required: true,
-    }, {
-        id: "#id-Lifeform",
-        field: "life",
-        name: "Lifeform",
-        type: "menu",
+        type: "radio",
+        list: economyListTier
     }],
     fields: [{
         name: "Name",
         type: "string",
         search: true,
-        required: true,
         imgText: true,
         onchange: getEntry,
-        ttip: "This is required because it is the only unique identifier available to prevent duplicate entries."
     }, {
         name: "Type",
         type: "menu",
@@ -5177,9 +5257,6 @@ const objectList = [{
         ttip: "This is only used on space stations. First wave for reloading a save and restarting the game are different.",
         type: "radio",
         list: [{
-            name: "No",
-            default: true,
-        }, {
             name: "Reload"
         }, {
             name: "Restart"
@@ -5192,7 +5269,6 @@ const objectList = [{
         imgText: true,
         list: colorList,
         max: 4,
-        required: true,
         search: true,
     }, {
         name: "Seed",
@@ -5235,37 +5311,30 @@ const objectList = [{
         field: "sys",
         name: "System",
         type: "string",
-        required: true,
     }, {
+        field: "Economy",
         id: "#id-Economy",
-        field: "econ",
         name: "Economy",
-        type: "menu",
+        type: "radio",
+        list: economyListTier,
     }, {
         id: "#id-Lifeform",
         field: "life",
         name: "Lifeform",
         type: "menu",
+        list: lifeformList,
     }],
     fields: [{
         name: "Name",
         type: "string",
         search: true,
-        required: true,
         onchange: getEntry,
-        ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
-    }, {
-        name: "Slots",
-        type: "number",
-        query: ">=",
-        search: true,
     }, {
         name: "Color",
         type: "tags",
         imgText: true,
         list: colorList,
-        max: 3,
-        required: true,
+        max: 4,
         search: true,
     }, {
         name: "Seed",
@@ -5319,18 +5388,16 @@ const objectList = [{
         name: "System",
         type: "string",
     }, {
-        id: "#id-Economy",
-        field: "econ",
+        field: "Economy",
         name: "Economy",
-        type: "menu",
+        type: "radio",
+        list: economyListTier
     }],
     fields: [{
         name: "Name",
         type: "string",
         search: true,
-        required: true,
         onchange: getEntry,
-        ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
     }, {
         name: "Type",
         type: "menu",
@@ -5341,23 +5408,19 @@ const objectList = [{
         type: "tags",
         imgText: true,
         list: frigateBenefits,
-        ttip: "You can only search using Benefits, Negatives OR Color. Not a combination.",
         search: true,
     }, {
         name: "Negatives",
         type: "tags",
         imgText: true,
         list: frigateNegatives,
-        ttip: "You can only search using Benefits, Negatives OR Color. Not a combination.",
         search: true,
     }, {
         name: "Color",
         type: "tags",
         searchText: true,
         list: colorList,
-        max: 2,
-        ttip: "You can only search using Benefits, Negatives OR Color. Not a combination.",
-        required: true,
+        max: 4,
         search: true,
     }, {
         name: "Photo",
@@ -5378,6 +5441,13 @@ const objectList = [{
         name: "Galaxy",
         type: "menu",
         required: true,
+    }, {
+        id: "#id-Platform",
+        field: "platform",
+        name: "Platform",
+        type: "menu",
+        required: true,
+        list: platformListAll,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
@@ -5400,10 +5470,8 @@ const objectList = [{
         name: "Name",
         type: "string",
         search: true,
-        required: true,
         imgText: true,
         onchange: getEntry,
-        ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
     }, {
         name: "Type",
         type: "menu",
@@ -5452,9 +5520,8 @@ const objectList = [{
         name: "Color",
         type: "tags",
         searchText: true,
-        max: 2,
+        max: 4,
         list: colorList,
-        required: true,
         search: true,
     }, {
         name: "Seed",
@@ -5502,10 +5569,8 @@ const objectList = [{
         name: "Name",
         type: "string",
         search: true,
-        required: true,
         imgText: true,
         onchange: getEntry,
-        ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
     }, {
         name: "Genus",
         type: "menu",
@@ -5575,16 +5640,13 @@ const objectList = [{
         field: "sys",
         name: "System",
         type: "string",
-        required: true,
     }],
     fields: [{
         name: "Name",
         type: "string",
         search: true,
-        required: true,
         imgText: true,
         onchange: getEntry,
-        ttip: "Name is used to prevent duplicate entries.  It is the only unique identifier."
     }, {
         name: "Planet Index",
         range: 15,
@@ -5595,7 +5657,6 @@ const objectList = [{
         name: "Biome",
         type: "menu",
         list: biomeList,
-        required: true,
         imgText: true,
         search: true,
     }, {
@@ -5620,7 +5681,6 @@ const objectList = [{
         name: "Grass Color",
         type: "menu",
         list: colorList,
-        required: true,
         search: true,
     }, {
         name: "Water Color",
@@ -5670,6 +5730,7 @@ const objectList = [{
         name: "Platform",
         type: "menu",
         required: true,
+        list: platformListAll,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
@@ -5687,17 +5748,16 @@ const objectList = [{
         field: "sys",
         name: "System",
         type: "string",
-        required: true,
     }, {
+        field: "Economy",
         id: "#id-Economy",
-        field: "econ",
         name: "Economy",
-        type: "menu",
+        type: "radio",
+        list: economyListTier
     }],
     fields: [{
         name: "Name",
         type: "string",
-        required: true,
         imgText: true,
         onchange: getEntry,
         search: true,

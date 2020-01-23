@@ -35,7 +35,7 @@ function reformatAddress(addr) {
     let out = ""
     if (!addr)
         return out
-        
+
     addr = addr.toUpperCase()
 
     if (addr.match(/^[0-9A-F]{12}$/))
@@ -338,6 +338,14 @@ const platformList = [{
     match: /ps4/i
 }]
 
+const platformListAll = [{
+    name: "PC",
+}, {
+    name: "PS4",
+}, {
+    name: "XBox",
+}]
+
 const versionList = [{
     name: "next",
 }, {
@@ -354,6 +362,17 @@ const modeList = [{
     name: "Creative",
 }]
 
+const economyListTier = [{
+    name: "T1",
+    ttip: "*<br>Declining<br>Destitute<br>Failing<br>Fledgling<br>Low supply<br>Struggling<br>Unpromising<br>Unsuccessful",
+},{
+    name: "T2",
+    ttip: "**<br>Adequate<br>Balanced<br>Comfortable<br>Developing<br>Medium Supply<br>Promising<br>Satisfactory<br>Sustainable",
+}, {
+    name: "T3",
+    ttip: "***<br>Advanced<br>Affluent<br>Booming<br>Flourishing<br>High Supply<br>Opulent<br>Prosperous<br>Wealthy",
+}]
+
 const economyList = [{
     name: "None",
     number: 0
@@ -363,39 +382,30 @@ const economyList = [{
 }, {
     name: "Destitute",
     number: 1
-
 }, {
     name: "Failing",
     number: 1
-
 }, {
     name: "Fledgling",
     number: 1
-
 }, {
     name: "Low supply",
     number: 1
-
 }, {
     name: "Struggling",
     number: 1
-
 }, {
     name: "Unpromising",
     number: 1
-
 }, {
     name: "Unsuccessful",
     number: 1
-
 }, {
     name: "Adequate",
     number: 2
-
 }, {
     name: "Balanced",
     number: 2
-
 }, {
     name: "Comfortable",
     number: 2
@@ -403,51 +413,39 @@ const economyList = [{
 }, {
     name: "Developing",
     number: 2
-
 }, {
     name: "Medium Supply",
     number: 2
-
 }, {
     name: "Promising",
     number: 2
-
 }, {
     name: "Satisfactory",
     number: 2
-
 }, {
     name: "Sustainable",
     number: 2
-
 }, {
     name: "Advanced",
     number: 3
-
 }, {
     name: "Affluent",
     number: 3
-
 }, {
     name: "Booming",
     number: 3
-
 }, {
     name: "Flourishing",
     number: 3
-
 }, {
     name: "High Supply",
     number: 3
-
 }, {
     name: "Opulent",
     number: 3
-
 }, {
     name: "Prosperous",
     number: 3
-
 }, {
     name: "Wealthy",
     number: 3
