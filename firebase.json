@@ -69,29 +69,13 @@
       "source": "/",
       "destination": "/nmsce.html",
       "type": 301
+    }],
+    "headers": [{
+      "source": "**/*.@(eot|otf|ttf|ttc|woff|css|jpg|jpeg|gif|png)",
+      "headers": [{
+        "key": "Access-Control-Allow-Origin",
+        "value": "*"
+      }]
     }]
-    // ,
-    // "headers": [{
-    //   "source": "**/*.@(eot|otf|ttf|ttc|woff|font.css)",
-    //   "headers": [{
-    //     "key": "Access-Control-Allow-Origin",
-    //     "value": "*"
-    //   }, {
-    //     "key": "Cache-Control",
-    //     "value": "max-age=1000000"
-    //   }]
-    // }, {
-    //   "source": "**/images/(exotic|explorer|fighter|hauler|shuttle)/**/*.@(jpg|jpeg|gif|png)",
-    //   "headers": [{
-    //     "key": "Cache-Control",
-    //     "value": "max-age=259200"
-    //   }]
-    // }, {
-    //   "source": "https://firebasestorage.googleapis.com/v0/b/nms-bhs.appspot.com/**/*.@(jpg|jpeg|gif|png)",
-    //   "headers": [{
-    //     "key": "Cache-Control",
-    //     "value": "max-age=259200"
-    //   }]
-    // }]
   }]
 }

@@ -108,354 +108,389 @@
 
         <div class="card">
             <div class="card-header bkg-def clr-creme h4">
-                If you leave fields blank then any searches using that field will not find it. The required fields are a bare minimum for entry.
+                Use <i class="far fa-caret-square-down h3 txt-def"></i> to enter additional information.<br>
+                Remember that if you provide more information your entry will show up in more searches.
             </div>
             <div class="card-body pad-bottom bkg-white">
                 <div class="row">
-                <div class="col-md-8 col-14">
-                    <div id="panels" class="card card-body" style="border-width:3px; border-color:black;">
-                        <div id="pnl-S1" class="card pad-bottom">
-                            <div class="card-header txt-def h4">
-                                System Info&nbsp;
-                                <i class="far fa-caret-square-up pointer h3"
-                                    onclick="$('#systemInput').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
-                                <i class="far fa-caret-square-down pointer hidden h3"
-                                    onclick="$('#systemInput').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>
+                    <div class="col-md-8 col-14">
+                        <div id="panels" class="card card-body" style="border-width:3px; border-color:black;">
+                            <div id="pnl-user">
+                                <div id="row-playerInput" class="row">
+                                    <i class="col-1 far fa-caret-square-up pointer h3 txt-inp-def"
+                                        onclick="nmsce.playerToggle(this)"></i>
+                                    <div class="col-lg-7 col-md-7 col-sm-7 col-14">
+                                        <div class="row">
+                                            <div class="col-md-14 col-sm-14 col-6 h6 txt-inp-def">
+                                                Player Name&nbsp;
+                                                <span class="h5 text-danger">*</span>&nbsp;
+                                            </div>
+                                            <input id="id-Player" class="rounded col h5" type="text">
+                                        </div>
+                                    </div>
+
+                                    <div id="id-Galaxy" class="col-lg-7 col-md-7 col-sm-7 col-14"></div>
+                                    <div id="id-Platform" class="col-lg-7 col-md-7 col-sm-7 col-14"></div>
+                                </div>
+
+                                <div id="row-playerDisplay" class="row txt-inp-def h4" style="display:none">
+                                    <i class="col-1 far fa-caret-square-down pointer h2"
+                                        onclick="nmsce.playerToggle(this)"></i>
+                                    <div class="col-5">Player: <span id="id-Player" class="clr-def"></span></div>
+                                    <div class="col-4">Galaxy: <span id="id-Galaxy" class="clr-def"></span></div>
+                                    <div class="col-4">Platform: <span id="id-Platform" class="clr-def"></span></div>
+                                </div>
+
+                                <div id="pnl-S1" class="card card-body" style="padding-top:0px">
+                                    <div class="row txt-def h4 rounded">&nbsp;
+                                        <i class="far fa-caret-square-up pointer hidden h3"
+                                            onclick="nmsce.systemToggle(this)"></i>
+                                        <i class="far fa-caret-square-down pointer h3"
+                                            onclick="nmsce.systemToggle(this)"></i>
+                                        &nbsp;System Info
+                                    </div>
+                                    <div id="systemInput">
+                                        <div id="id-addrInput">
+                                            <div class="row">
+                                                <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">Coords<span
+                                                        class="h5 text-danger">&nbsp;*</span>&nbsp;
+                                                    <i class="fa fa-question-circle-o text-danger h6"
+                                                        data-toggle="tooltip" data-html="true" data-placement="bottom"
+                                                        title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
+                                                A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
+                                                    </i>
+                                                </div>
+                                                <input id="id-addr"
+                                                    class="rounded col-xl-5 col-lg-6 col-md-11 col-sm-5 col-11"
+                                                    type="text" placeholder="0000:0000:0000:0000" maxength=19
+                                                    onchange="nmsce.changeAddr(this)">
+                                                <div class="col">
+                                                    <label class="h6 txt-inp-def">
+                                                        <input id="ck-glyphs" type="checkbox"
+                                                            onchange="nmsce.setGlyphInput(this)">
+                                                        Input Glyphs&nbsp;
+                                                        <i class="fa fa-question-circle-o text-danger h6"
+                                                            data-toggle="tooltip" data-html="true"
+                                                            data-placement="bottom"
+                                                            title="Display glyph input buttons and show glyphs in input field.">
+                                                        </i>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-lg-3 col-md-5 col-sm-2 col-5 h6 txt-inp-def">Glyphs
+                                                </div>
+                                                <div id="id-glyph"
+                                                    class="col-lg-9 col-md-14 col-sm-7 col-14 h5 text-center txt-inp-def glyph">
+                                                </div>
+                                                <div id="id-hex" class="col text-center txt-inp-def"></div>
+                                            </div>
+                                        </div>
+
+                                        <div id="id-glyphInput" class="hidden">
+                                            <div class="row">
+                                                <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">
+                                                    Glyph&nbsp;<span class="text-danger">*</span>&nbsp;
+                                                    <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
+                                                        data-html="true" data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
+                                                digit hex, 0-9 a-f, value can be entered directly in the field.">
+                                                    </i>
+                                                </div>
+                                                <input id="id-glyph" type="text" maxength="19"
+                                                    class="rounded col-xl-5 col-lg-8 col-md-14 col-sm-7 col-14 h5 glyph"
+                                                    onchange="nmsce.changeAddr(this)">
+                                                <div class="col">
+                                                    <label class="h6 txt-inp-def">
+                                                        <input id="ck-glyphs" type="checkbox"
+                                                            onchange="nmsce.setGlyphInput(this)">
+                                                        Input Glyphs&nbsp;
+                                                        <i class="fa fa-question-circle-o text-danger"
+                                                            data-toggle="tooltip" data-html="true"
+                                                            data-placement="bottom" title="Hide glyph input buttons.">
+                                                        </i>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div id="glyphbuttons" class="row"></div>
+
+                                            <div class="row">
+                                                <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Coords&nbsp;</div>
+                                                <div id="id-addr" class="col txt-inp-def"></div>
+                                            </div>
+                                        </div>
+
+                                        <div id="row-System" class="row" style="display:none">
+                                            <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">System</div>
+                                            <input id="id-sys" class="rounded col-xl-4 col-md-7 col-sm-5 col-7">
+                                            <div id="foundsys" class="col-1 hidden">
+                                                <div class="row">
+                                                    <i class="fas fa-check text-success"></i>&nbsp;
+                                                    <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
+                                                        data-html="true" data-placement="bottom"
+                                                        title="System found in database.">
+                                                    </i>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div id="row-Region" class="row" style="display:none">
+                                            <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Region</div>
+                                            <input id="id-reg" class="rounded col-xl-4 col-md-7 col-sm-5 col-7">&nbsp
+                                            <div id="foundreg" class="col-1 hidden">
+                                                <div class="row">
+                                                    <i class="fas fa-check text-success"></i>&nbsp;
+                                                    <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
+                                                        data-html="true" data-placement="bottom"
+                                                        title="Region found in database.">
+                                                    </i>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div id="row-By" class="row" style="display:none">
+                                            <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Entered by&nbsp;</div>
+                                            <div id="id-by" class="col txt-inp-def"></div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div id="id-Lifeform" class="col-xl-6 col-lg-7 col-14"></div>
+                                            <div id="id-Economy" class="col-xl-6 col-lg-7 col-14"></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div id="systemInput" class="card-body">
-                                <div id="id-addrInput">
-                                    <div class="row">
-                                        <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">Coords<span
-                                                class="h5 text-danger">&nbsp;*</span>&nbsp;
+                            <br>
+
+                            <nav>
+                                <div class="nav nav-tabs" id="typeTabs" role="tablist">
+                            </nav>
+                            <div class="card card-body" style="border-top-left-radius:0px; border-color:black;">
+                                <div class="tab-content" id="typePanels"></div>
+                            </div>
+                            <br>
+
+                            <div id="entrybuttons" class="card card-body rounded" style="border-color:black;">
+                                <div class="row">
+                                    <div class="col-lg-5 col-14">
+                                        <div class="row" style="padding-top:2px;">
+                                            <button id="save" type="button"
+                                                class="col-6 btn btn-sm btn-def">Save</button>&nbsp;
+                                            <button id="delete" type="button" class="col-6 btn btn-sm btn-def disabled"
+                                                disabled>Delete</button>&nbsp;
+                                        </div>
+                                        <div id="updateScreenshot" class="row" style="padding-top:2px; display:none">
+                                            <input id="ck-updateScreenshot" type="checkbox">
+                                            <span class="txt-inp-def h6">Update Screenshot</span>&nbsp;
                                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                                 data-html="true" data-placement="bottom"
-                                                title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
-                                                A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
+                                                title="Select wether to overwrite currently saved screenshot with the updated one below.">
                                             </i>
                                         </div>
-                                        <input id="id-addr" class="rounded col-xl-5 col-lg-6 col-md-11 col-sm-5 col-11"
-                                            type="text" placeholder="0000:0000:0000:0000" maxength=19
-                                            onchange="nmsce.changeAddr(this)">
-                                        <div class="col">
-                                            <label class="h6 txt-inp-def">
-                                                <input id="ck-glyphs" type="checkbox"
-                                                    onchange="nmsce.setGlyphInput(this)">
-                                                Input Glyphs&nbsp;
+                                        <div class="row" style="padding-top:2px;">
+                                            <button id="cancel" type="button" class="col-6 btn btn-def  btn-sm"
+                                                onclick="nmsce.clearPanel()">Cancel</button>&nbsp;
+                                            <button id="clear" type="button" class="col-6 btn btn-sm btn-def"
+                                                onclick="nmsce.clearPanel(true)">Reset</button>&nbsp;
+                                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                                data-html="true" data-placement="bottom" title="Reset all inputs.">
+                                            </i>
+                                        </div>
+                                    </div>
+
+                                    <div class="col">
+                                        <div class="row">
+                                            <div id="status" class="border text-danger scrollbar container"
+                                                style="overflow-y: scroll; height: 70px"></div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="text-danger h6">
+                                                <span>*</span>&nbsp;Required Entry,&nbsp;
+                                                <i id="ttipmsg" class="fa fa-question-circle-o">&nbsp;Tool Tip</i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card" style="padding:top 2px;">
+                                    <div class="card-header txt-def h4">
+                                        <i class="far fa-caret-square-up pointer hidden h3"
+                                            onclick="$(this).closest('.card').find('.card-body').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
+                                        <i class="far fa-caret-square-down pointer h3"
+                                            onclick="$(this).closest('.card').find('.card-body').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>&nbsp;
+                                        Search
+                                    </div>
+                                    <div class="card-body hidden">
+                                        <div class="row">
+                                            <button id="search" type="button" class="col-4 btn btn-sm btn-def"
+                                                onclick="nmsce.searchEntriesList()">Search</button>&nbsp;
+                                            <button id="showall" type="button" class="col-4 btn btn-sm btn-def"
+                                                onclick="nmsce.showAll()">Show All</button>&nbsp;
+                                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                                data-html="true" data-placement="bottom"
+                                                title="Search is for players own entries.">
+                                            </i>
+                                        </div>
+                                        <div class="row">
+                                            <div id="id-Saved" class="col-5"></div>&nbsp;
+                                            <label class="col-5 h6 txt-inp-def">
+                                                Name&nbsp;
+                                                <input id="searchname" class="col-10" type="text"
+                                                    placeholder="Search Name">&nbsp;
+                                            </label>
+                                            <label class="col-3 h6 txt-inp-def">
+                                                <input id="ck-notify" type="checkbox">
+                                                Notify&nbsp;
                                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                                     data-html="true" data-placement="bottom"
-                                                    title="Display glyph input buttons and show glyphs in input field.">
+                                                    title="Check box and save to receive an email for future matches of this search. To disable uncheck and re-save.">
                                                 </i>
                                             </label>
                                         </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-lg-3 col-md-5 col-sm-2 col-5 h6 txt-inp-def">Glyphs</div>
-                                        <div id="id-glyph"
-                                            class="col-lg-9 col-md-14 col-sm-7 col-14 h5 text-center txt-inp-def glyph">
-                                        </div>
-                                        <div id="id-hex" class="col text-center txt-inp-def"></div>
-                                    </div>
-                                </div>
-
-                                <div id="id-glyphInput" class="hidden">
-                                    <div class="row">
-                                        <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">
-                                            Glyph&nbsp;<span class="text-danger">*</span>&nbsp;
-                                            <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
-                                                data-html="true" data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
-                                                digit hex, 0-9 a-f, value can be entered directly in the field.">
-                                            </i>
-                                        </div>
-                                        <input id="id-glyph" type="text" maxength="19"
-                                            class="rounded col-xl-5 col-lg-8 col-md-14 col-sm-7 col-14 h5 glyph"
-                                            onchange="nmsce.changeAddr(this)">
-                                        <div class="col">
-                                            <label class="h6 txt-inp-def">
-                                                <input id="ck-glyphs" type="checkbox"
-                                                    onchange="nmsce.setGlyphInput(this)">
-                                                Input Glyphs&nbsp;
-                                                <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
-                                                    data-html="true" data-placement="bottom"
-                                                    title="Hide glyph input buttons.">
-                                                </i>
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <div id="glyphbuttons" class="row"></div>
-
-                                    <div class="row">
-                                        <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Coords&nbsp;</div>
-                                        <div id="id-addr" class="col txt-inp-def"></div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">System</div>
-                                    <input id="id-sys" class="rounded col-xl-4 col-md-7 col-sm-5 col-7">
-                                    <div id="foundsys" class="col-1 hidden">
                                         <div class="row">
-                                            <i class="fas fa-check text-success"></i>&nbsp;
-                                            <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
-                                                data-html="true" data-placement="bottom"
-                                                title="System found in database.">
-                                            </i>
+                                            <button id="savesearch" type="button" class="col-4 btn btn-sm btn-def"
+                                                onclick="nmsce.saveSearch()">Save Search</button>&nbsp;&nbsp;
+                                            <button id="deletesearch" type="button" class="col-4 btn btn-sm btn-def"
+                                                onclick="nmsce.deleteSearch()">Delete Search</button>&nbsp;
                                         </div>
                                     </div>
                                 </div>
-
-                                <div class="row">
-                                    <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Region</div>
-                                    <input id="id-reg" class="rounded col-xl-4 col-md-7 col-sm-5 col-7">&nbsp
-                                    <div id="foundreg" class="col-1 hidden">
-                                        <div class="row">
-                                            <i class="fas fa-check text-success"></i>&nbsp;
-                                            <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
-                                                data-html="true" data-placement="bottom"
-                                                title="Region found in database.">
-                                            </i>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div id="id-byrow" class="row">
-                                    <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Entered by&nbsp;</div>
-                                    <div id="id-by" class="col txt-inp-def"></div>
-                                </div>
-
-                                <div class="row">
-                                    <div id="id-Lifeform" class="col-xl-6 col-lg-7 col-14"></div>
-                                    <div id="id-Economy" class="col-xl-6 col-lg-7 col-14"></div>
-                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <br>
-
-                    <nav>
-                        <div class="nav nav-tabs" id="typeTabs" role="tablist">
-                    </nav>
-                    <div class="card card-body" style="border-top-left-radius:0px; border-color:black;">
-                        <div class="tab-content" id="typePanels"></div>
-                    </div>
-                    <br>
-
-                    <div id="entrybuttons" class="card card-body rounded" style="border-color:black;">
-                        <div class="row">
-                            <div class="col-lg-5 col-14">
-                                <div class="row" style="padding-top:2px;">
-                                    <button id="save" type="button" class="col-6 btn btn-sm btn-def">Save</button>&nbsp;
-                                    <button id="delete" type="button" class="col-6 btn btn-sm btn-def disabled"
-                                        disabled>Delete</button>&nbsp;
-                                </div>
-                                <div id="updateScreenshot" class="row" style="padding-top:2px; display:none">
-                                    <input id="ck-updateScreenshot" type="checkbox">
-                                    <span class="txt-inp-def h6">Update Screenshot</span>&nbsp;
-                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
-                                        data-html="true" data-placement="bottom"
-                                        title="Select wether to overwrite currently saved screenshot with the updated one below.">
-                                    </i>
-                                </div>
-                                <div class="row" style="padding-top:2px;">
-                                    <button id="cancel" type="button" class="col-6 btn btn-def  btn-sm"
-                                        onclick="nmsce.clearPanel()">Cancel</button>&nbsp;
-                                    <button id="clear" type="button" class="col-6 btn btn-sm btn-def"
-                                        onclick="nmsce.clearPanel(true)">Reset</button>&nbsp;
-                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
-                                        data-html="true" data-placement="bottom" title="Reset all inputs.">
-                                    </i>
-                                </div>
-                            </div>
-
-                            <div class="col">
-                                <div class="row">
-                                    <div id="status" class="border text-danger scrollbar container"
-                                        style="overflow-y: scroll; height: 70px"></div>
-                                </div>
-                                <div class="row">
-                                    <div class="text-danger h6">
-                                        <span>*</span>&nbsp;Required Entry,&nbsp;
-                                        <i id="ttipmsg" class="fa fa-question-circle-o">&nbsp;Tool Tip</i>
-                                    </div>
-                                </div>
-                            </div>
+                            <br>
                         </div>
 
-                        <div class="card" style="padding:top 2px;">
-                            <div class="card-header txt-def h4">
-                                <i class="far fa-caret-square-up pointer hidden h3" onclick="$(this).closest('.card').find('.card-body').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
-                                <i class="far fa-caret-square-down pointer h3" onclick="$(this).closest('.card').find('.card-body').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>&nbsp;
-                                Search
+                        <div class="col-md-6 col-14">
+                            <div id="pnl-map" class="card card-body"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="imgtable" class="card card-body hidden">
+                    <div class="row">
+                        <div class="col-lg-10 col-md-9 col-14">
+                            <div id="id-img" class="row">
+                                <canvas id="id-canvas" class="border hidden"></canvas>
+                                <img id="id-ssImage" class="border"
+                                    onload="nmsce.imgLoaded(this, $(this).parent().width(), $(this).parent().width()*1.3)" />
                             </div>
-                            <div class="card-body hidden">
-                                <div class="row">
-                                    <button id="search" type="button" class="col-4 btn btn-sm btn-def"
-                                        onclick="nmsce.searchEntriesList()">Search</button>&nbsp;
-                                    <button id="showall" type="button" class="col-4 btn btn-sm btn-def"
-                                        onclick="nmsce.showAll()">Show All</button>&nbsp;
+                            <br>
+                            <div class="row">
+                                <div class="col-3">
+                                    <button id="reddit" onclick="nmsce.redditShare(this)" disabled class="disabled"><img
+                                            src="images/reddit.png" style="width:20px; height:20px"
+                                            alt="Share to reddit"></button>&nbsp;
                                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                         data-html="true" data-placement="bottom"
-                                        title="Search is for players own entries.">
+                                        title="You can only submit an entry after it has been saved. Opens a NEW tab with reddit post. Select community, title & flair. Then post.">
                                     </i>
                                 </div>
-                                <div class="row">
-                                    <div id="id-Saved" class="col-5"></div>&nbsp;
-                                    <label class="col-5 h6 txt-inp-def">
-                                        Name&nbsp;
-                                        <input id="searchname" class="col-10" type="text"
-                                            placeholder="Search Name">&nbsp;
-                                    </label>
-                                    <label class="col-3 h6 txt-inp-def">
-                                        <input id="ck-notify" type="checkbox">
-                                        Notify&nbsp;
+                                <div class="col-10">
+                                    <div id="posted" class="row text-danger h4"></div>
+                                    <label class="row txt-inp-def">Reddit Link&nbsp;
                                         <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                             data-html="true" data-placement="bottom"
-                                            title="Check box and save to receive an email for future matches of this search. To disable uncheck and re-save.">
+                                            title="If you've posted this to reddit you can copy the actual post link here.">&nbsp;
                                         </i>
+                                        <input id="redditlink" class="col-8" type="text">
                                     </label>
-                                </div>
-                                <div class="row">
-                                    <button id="savesearch" type="button" class="col-4 btn btn-sm btn-def"
-                                        onclick="nmsce.saveSearch()">Save Search</button>&nbsp;&nbsp;
-                                    <button id="deletesearch" type="button" class="col-4 btn btn-sm btn-def"
-                                        onclick="nmsce.deleteSearch()">Delete Search</button>&nbsp;
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <br>
-                </div>
+                        <br>
 
-                <div class="col-md-6 col-14">
-                    <div id="pnl-map" class="card card-body"></div>
-                </div>
-            </div>
-        </div>
+                        <div class="col-lg-4 col-md-5 col-14">
+                            <div clss="row">
+                                <button id="editScreenshot" class="btn btn-sm btn-def h6 hidden"
+                                    onclick="nmsce.editScreenshot(true)">Edit</button>&nbsp;
+                            </div>
+                            <span id="imageTextBlock">
+                                <div class="row">
+                                    <div id="img-text" class="txt-inp-def h6 row"></div>
+                                </div>
+                                <br>
 
-        <div id="imgtable" class="card card-body hidden">
-            <div class="row">
-                <div class="col-lg-10 col-md-9 col-14">
-                    <div id="id-img" class="row">
-                        <canvas id="id-canvas" class="border hidden"></canvas>
-                        <img id="id-ssImage" class="border"
-                            onload="nmsce.imgLoaded(this, $(this).parent().width(), $(this).parent().width()*1.3)" />
-                    </div>
-                    <br>
-                    <div class="row">
-                        <div class="col-3">
-                            <button id="reddit" onclick="nmsce.redditShare(this)" disabled class="disabled"><img
-                                    src="images/reddit.png" style="width:20px; height:20px"
-                                    alt="Share to reddit"></button>&nbsp;
-                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                                data-placement="bottom"
-                                title="You can only submit an entry after it has been saved. Opens a NEW tab with reddit post. Select community, title & flair. Then post.">
-                            </i>
-                        </div>
-                        <div class="col-10">
-                            <div id="posted" class="row text-danger h4"></div>
-                            <label class="row txt-inp-def">Reddit Link&nbsp;
-                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                                    data-placement="bottom"
-                                    title="If you've posted this to reddit you can copy the actual post link here.">&nbsp;
-                                </i>
-                                <input id="redditlink" class="col-8" type="text">
-                            </label>
+                                <div class="row border-top border-bottom">
+                                    <br>
+                                    <div id="id-Font" class="col-14 h5"></div>
+                                    <label class="col-sm-7 col-14 txt-inp-def">Size
+                                        <input id="sel-size" class="col-8" onchange="nmsce.setSize(this)" type="number"
+                                            value=18 min=0>
+                                    </label>
+                                    <label class="col-sm-7 col-14 txt-inp-def">Color
+                                        <input id="sel-color" class="col-7 bkg-def" style="border-color:black"
+                                            onchange="nmsce.setColor(this)" type="color" value="#ffffff">&nbsp;
+                                    </label>
+                                    <span id="measurefont"
+                                        style="visibility:hidden; float:left; white-space: nowrap;"></span>
+                                </div>
+                                <br>
+
+                                <div clss="row">
+                                    <button class="btn btn-sm btn-def h6 col-5"
+                                        onclick="nmsce.loadImgText(true)">Clear</button>&nbsp;
+                                    <button class="btn btn-sm btn-def h6 col-5"
+                                        onclick="nmsce.restoreText(null, true)">Reload</button>
+                                </div>
+                                <br>
+                                <div clss="row">
+                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                        data-html="true" data-placement="top"
+                                        title="You can position text by clicking and dragging.">
+                                    </i>&nbsp;
+                                    <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('left')">
+                                        <i class="fas fa-align-left"></i>
+                                    </button>&nbsp;
+                                    <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('right')">
+                                        <i class="fas fa-align-right"></i>
+                                    </button>&nbsp;
+                                    <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('top')">
+                                        <i class="fas fa-align-left" style="transform: rotate(90deg);"></i>
+                                    </button>&nbsp;
+                                    <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('bottom')">
+                                        <i class="fas fa-align-left" style="transform: rotate(270deg);"></i>
+                                    </button>
+                                    <!--button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('justify')">
+                            <i class="fas fa-align-justify"></i>
+                        </button-->
+                                </div>
+                            </span>
+                            <br>
+                            <div class="row">
+                                <a id="permalink" class="h5" href="">
+                                    Permalink&nbsp;
+                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                        data-html="true" data-placement="bottom"
+                                        title="You can use this link to directly access this entry.">&nbsp;
+                                    </i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <br>
 
-                <div class="col-lg-4 col-md-5 col-14">
-                    <div clss="row">
-                        <button id="editScreenshot" class="btn btn-sm btn-def h6 hidden"
-                            onclick="nmsce.editScreenshot(true)">Edit</button>&nbsp;
-                    </div>
-                    <span id="imageTextBlock">
+                <div class="card pad-bottom">
+                    <div class="card-header bkg-def txt-def">
                         <div class="row">
-                            <div id="img-text" class="txt-inp-def h6 row"></div>
+                            <div class="col-4 h3">Entry List&nbsp;
+                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom"
+                                    title="Click on a heading to open list. Click on an entry to select it.">
+                                </i>
+                            </div>
                         </div>
-                        <br>
-
-                        <div class="row border-top border-bottom">
-                            <br>
-                            <div id="id-Font" class="col-14 h5"></div>
-                            <label class="col-sm-7 col-14 txt-inp-def">Size
-                                <input id="sel-size" class="col-8" onchange="nmsce.setSize(this)" type="number" value=18
-                                    min=0>
-                            </label>
-                            <label class="col-sm-7 col-14 txt-inp-def">Color
-                                <input id="sel-color" class="col-7 bkg-def" style="border-color:black"
-                                    onchange="nmsce.setColor(this)" type="color" value="#ffffff">&nbsp;
-                            </label>
-                            <span id="measurefont" style="visibility:hidden; float:left; white-space: nowrap;"></span>
-                        </div>
-                        <br>
-
-                        <div clss="row">
-                            <button class="btn btn-sm btn-def h6 col-5"
-                                onclick="nmsce.loadImgText(true)">Clear</button>&nbsp;
-                            <button class="btn btn-sm btn-def h6 col-5"
-                                onclick="nmsce.restoreText(null, true)">Reload</button>
-                        </div>
-                        <br>
-                        <div clss="row">
-                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                                data-placement="top" title="You can position text by clicking and dragging.">
-                            </i>&nbsp;
-                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('left')">
-                                <i class="fas fa-align-left"></i>
-                            </button>&nbsp;
-                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('right')">
-                                <i class="fas fa-align-right"></i>
-                            </button>&nbsp;
-                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('top')">
-                                <i class="fas fa-align-left" style="transform: rotate(90deg);"></i>
-                            </button>&nbsp;
-                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('bottom')">
-                                <i class="fas fa-align-left" style="transform: rotate(270deg);"></i>
-                            </button>
-                            <!--button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('justify')">
-                            <i class="fas fa-align-justify"></i>
-                        </button-->
-                        </div>
-                    </span>
-                    <br>
-                    <div class="row">
-                        <a id="permalink" class="h5" href="">
-                            Permalink&nbsp;
-                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                                data-placement="bottom"
-                                title="You can use this link to directly access this entry.">&nbsp;
-                            </i>
-                        </a>
                     </div>
-                </div>
-            </div>
-        </div>
-        <br>
 
-        <div class="card pad-bottom">
-            <div class="card-header bkg-def txt-def">
-                <div class="row">
-                    <div class="col-4 h3">Entry List&nbsp;
-                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                            data-placement="bottom"
-                            title="Click on a heading to open list. Click on an entry to select it.">
-                        </i>
-                    </div>
+                    <div id="id-table" class="card-body"></div>
                 </div>
+                <br>
             </div>
 
-            <div id="id-table" class="card-body"></div>
-        </div>
-        <br>
-    </div>
-
-    <br>
-    <div class="clr-creme text-right h6">
-        <i class="fa fa-copyright"></i> 2019 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    </div>
+            <br>
+            <div class="clr-creme text-right h6">
+                <i class="fa fa-copyright"></i> 2019 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </div>
 </body>
 
 </html>

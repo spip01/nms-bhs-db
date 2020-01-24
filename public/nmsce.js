@@ -26,7 +26,7 @@ $(document).ready(() => {
         nmsce.logo.crossOrigin = "anonymous"
         nmsce.logo.src = "/images/nmsce-logo.png"
 
-        bhs.buildUserPanel()
+        nmsce.buildUserPanel()
         nmsce.buildPanel()
         nmsce.buildTypePanels()
 
@@ -73,27 +73,6 @@ $(document).ready(() => {
 
 function NMSCE() {
 
-}
-
-NMSCE.prototype.displayUser = function () {
-    if (bhs.user.uid && fcedata) {
-        nmsce.restoreText(bhs.user.imageText)
-        if (typeof nmsce.entries === "undefined")
-            nmsce.getEntries()
-    } else if (fnmsce) {
-        if (bhs.user.uid)
-            nmsce.getMyFavorites()
-        else if (typeof (Storage) !== "undefined" && !bhs.user.galaxy) {
-            let galaxy = window.localStorage.getItem('nmsce-galaxy')
-
-            if (galaxy)
-                $("#btn-Galaxy").text(galaxy)
-        }
-    }
-
-    $("#searchlocaltt").hide()
-
-    nmsce.getSearches()
 }
 
 NMSCE.prototype.buildPanel = function () {
@@ -260,6 +239,83 @@ NMSCE.prototype.showSearchPanel = function (evt) {
         }
     } else
         $("#searchPanel").hide()
+}
+
+NMSCE.prototype.systemToggle = function (evt) {
+    $(evt).hide()
+
+    if ($(evt).is('.fa-caret-square-down')) {
+        $(evt).parent().find('.fa-caret-square-up').show()
+        $("#row-By").show()
+        $("#row-Region").show()
+        $("#row-System").show()
+    } else {
+        $(evt).parent().find('.fa-caret-square-down').show()
+        $("#row-By").hide()
+        $("#row-Region").hide()
+        $("#row-System").hide()
+    }
+}
+
+NMSCE.prototype.buildUserPanel = function () {
+    let loc = $("#pnl-user")
+
+    bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, {
+        required: !fnmsce,
+        labelsize: "col-lg-7 col-md-14 col-sm-14 col-5",
+        menusize: "col",
+    })
+
+    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, {
+        tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
+        required: true,
+        labelsize: "col-lg-7 col-md-14 col-sm-14 col-5",
+        menusize: "col",
+    })
+}
+
+NMSCE.prototype.displayUser = function () {
+    if (bhs.user.uid && bhs.user.galaxy && bhs.user.platform) {
+        $("#row-playerInput").hide()
+        
+        let loc =  $("#row-playerDisplay")
+        loc.show()
+        loc.find("#id-Player").text(bhs.user._name)
+        loc.find("#id-Galaxy").text(bhs.user.galaxy)
+        loc.find("#id-Platform").text(bhs.user.platform)
+    } else {
+        $("#row-playerInput").show()
+        $("#row-playerDisplay").hide()
+    }
+
+    if (bhs.user.uid && fcedata) {
+        nmsce.restoreText(bhs.user.imageText)
+        if (typeof nmsce.entries === "undefined")
+            nmsce.getEntries()
+    } else if (fnmsce) {
+        if (bhs.user.uid)
+            nmsce.getMyFavorites()
+        else if (typeof (Storage) !== "undefined" && !bhs.user.galaxy) {
+            let galaxy = window.localStorage.getItem('nmsce-galaxy')
+
+            if (galaxy)
+                $("#btn-Galaxy").text(galaxy)
+        }
+    }
+
+    $("#searchlocaltt").hide()
+
+    nmsce.getSearches()
+}
+
+NMSCE.prototype.playerToggle = function (evt) {
+    if ($(evt).is('.fa-caret-square-down')) {
+        $("#row-playerInput").show()
+        $("#row-playerDisplay").hide()
+    } else {
+        $("#row-playerInput").hide()
+        $("#row-playerDisplay").show()
+    }
 }
 
 NMSCE.prototype.clearPanel = function (all, savelast) {

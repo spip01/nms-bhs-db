@@ -234,7 +234,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                         </i>
                     </div>
 
-                <div id="id-byrow" class="row">
+                <div id="row-by" class="row">
                     <div class="col-sm-4 col-7  h6 txt-inp-def">Entered by&nbsp;</div>
                     <div id="id-by" class="col-sm-5 col-7 clr-def"></div>
                 </div>
@@ -482,9 +482,9 @@ blackHoleSuns.prototype.displaySingle = function (entry, idx) {
     loc.find("#id-reg").val(entry.reg)
 
     if (idx == 0)
-        loc.find("#id-by").html("<h6>" + entry._name + "</h6>")
+        loc.find("#row-by").html("<h6>" + entry._name + "</h6>")
     else {
-        loc.find("#id-byrow").hide()
+        loc.find("#row-by").hide()
     }
 
     loc.find("#btn-Lifeform").text(entry.life)
