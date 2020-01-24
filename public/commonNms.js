@@ -1,6 +1,6 @@
 'use strict'
 
-// Copyright 2019 Black Hole Suns
+// Copyright 2019-2020 Black Hole Suns
 // Written by Stephen Piper
 
 const findex = window.location.pathname == "/index.html" || window.location.pathname == "/"

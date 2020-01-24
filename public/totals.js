@@ -1,6 +1,6 @@
 'use strict'
 
-// Copyright 2019 Black Hole Suns
+// Copyright 2019-2020 Black Hole Suns
 // Written by Stephen Piper
 
 $(document).ready(function () {
