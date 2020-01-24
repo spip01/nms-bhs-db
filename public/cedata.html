@@ -117,8 +117,12 @@
                         <div id="panels" class="card card-body" style="border-width:3px; border-color:black;">
                             <div id="pnl-user">
                                 <div id="row-playerInput" class="row">
-                                    <i class="col-1 far fa-caret-square-up pointer h3 txt-inp-def"
-                                        onclick="nmsce.playerToggle(this)"></i>
+                                    <div class="col-1">
+                                        <div class="row txt-def rounded">&nbsp;
+                                            <i class="far fa-caret-square-up pointer h3"
+                                                onclick="nmsce.playerToggle(this)"></i>&nbsp;
+                                        </div>
+                                    </div>
                                     <div class="col-lg-7 col-md-7 col-sm-7 col-14">
                                         <div class="row">
                                             <div class="col-md-14 col-sm-14 col-6 h6 txt-inp-def">
@@ -134,8 +138,12 @@
                                 </div>
 
                                 <div id="row-playerDisplay" class="row txt-inp-def h4" style="display:none">
-                                    <i class="col-1 far fa-caret-square-down pointer h2"
-                                        onclick="nmsce.playerToggle(this)"></i>
+                                    <div class="col-1">
+                                        <div class="row txt-def rounded">&nbsp;
+                                            <i class="far fa-caret-square-down pointer h3"
+                                                onclick="nmsce.playerToggle(this)"></i>&nbsp;
+                                        </div>
+                                    </div>
                                     <div class="col-5">Player: <span id="id-Player" class="clr-def"></span></div>
                                     <div class="col-4">Galaxy: <span id="id-Galaxy" class="clr-def"></span></div>
                                     <div class="col-4">Platform: <span id="id-Platform" class="clr-def"></span></div>
@@ -264,7 +272,15 @@
                             <br>
 
                             <nav>
-                                <div class="nav nav-tabs" id="typeTabs" role="tablist">
+                                <div class="nav nav-tabs row" id="typeTabs" role="tablist">
+                                    &nbsp;
+                                    <span class="txt-def bkg-def rounded h4">&nbsp;
+                                        <i class="far fa-caret-square-up pointer hidden h3"
+                                            onclick="$('[data-allowHide=true').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
+                                        <i class="far fa-caret-square-down pointer h3"
+                                            onclick="$('[data-allowHide=true').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>&nbsp;
+                                        &nbsp;</span>&nbsp;
+                                </div>
                             </nav>
                             <div class="card card-body" style="border-top-left-radius:0px; border-color:black;">
                                 <div class="tab-content" id="typePanels"></div>
@@ -313,15 +329,16 @@
                                     </div>
                                 </div>
 
-                                <div class="card" style="padding:top 2px;">
-                                    <div class="card-header txt-def h4">
+                                <div class="card card-body" style="padding-top:0px">
+                                    <div class="row txt-def bkg-def rounded h4">
+                                        &nbsp;
                                         <i class="far fa-caret-square-up pointer hidden h3"
-                                            onclick="$(this).closest('.card').find('.card-body').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
+                                            onclick="$('#searchPnl').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
                                         <i class="far fa-caret-square-down pointer h3"
-                                            onclick="$(this).closest('.card').find('.card-body').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>&nbsp;
-                                        Search
+                                            onclick="$('#searchPnl').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>
+                                        &nbsp;Player Entries Search
                                     </div>
-                                    <div class="card-body hidden">
+                                    <div id="searchPnl" class="row hidden">
                                         <div class="row">
                                             <button id="search" type="button" class="col-4 btn btn-sm btn-def"
                                                 onclick="nmsce.searchEntriesList()">Search</button>&nbsp;
@@ -359,138 +376,138 @@
                             </div>
                             <br>
                         </div>
+                    </div>
 
-                        <div class="col-md-6 col-14">
-                            <div id="pnl-map" class="card card-body"></div>
+                    <div class="col-md-6 col-14">
+                        <div id="pnl-map" class="card card-body"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="imgtable" class="card card-body hidden">
+            <div class="row">
+                <div class="col-lg-10 col-md-9 col-14">
+                    <div id="id-img" class="row">
+                        <canvas id="id-canvas" class="border hidden"></canvas>
+                        <img id="id-ssImage" class="border"
+                            onload="nmsce.imgLoaded(this, $(this).parent().width(), $(this).parent().width()*1.3)" />
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="col-3">
+                            <button id="reddit" onclick="nmsce.redditShare(this)" disabled class="disabled"><img
+                                    src="images/reddit.png" style="width:20px; height:20px"
+                                    alt="Share to reddit"></button>&nbsp;
+                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom"
+                                title="You can only submit an entry after it has been saved. Opens a NEW tab with reddit post. Select community, title & flair. Then post.">
+                            </i>
+                        </div>
+                        <div class="col-10">
+                            <div id="posted" class="row text-danger h4"></div>
+                            <label class="row txt-inp-def">Reddit Link&nbsp;
+                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom"
+                                    title="If you've posted this to reddit you can copy the actual post link here.">&nbsp;
+                                </i>
+                                <input id="redditlink" class="col-8" type="text">
+                            </label>
                         </div>
                     </div>
                 </div>
+                <br>
 
-                <div id="imgtable" class="card card-body hidden">
-                    <div class="row">
-                        <div class="col-lg-10 col-md-9 col-14">
-                            <div id="id-img" class="row">
-                                <canvas id="id-canvas" class="border hidden"></canvas>
-                                <img id="id-ssImage" class="border"
-                                    onload="nmsce.imgLoaded(this, $(this).parent().width(), $(this).parent().width()*1.3)" />
-                            </div>
-                            <br>
-                            <div class="row">
-                                <div class="col-3">
-                                    <button id="reddit" onclick="nmsce.redditShare(this)" disabled class="disabled"><img
-                                            src="images/reddit.png" style="width:20px; height:20px"
-                                            alt="Share to reddit"></button>&nbsp;
-                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
-                                        data-html="true" data-placement="bottom"
-                                        title="You can only submit an entry after it has been saved. Opens a NEW tab with reddit post. Select community, title & flair. Then post.">
-                                    </i>
-                                </div>
-                                <div class="col-10">
-                                    <div id="posted" class="row text-danger h4"></div>
-                                    <label class="row txt-inp-def">Reddit Link&nbsp;
-                                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
-                                            data-html="true" data-placement="bottom"
-                                            title="If you've posted this to reddit you can copy the actual post link here.">&nbsp;
-                                        </i>
-                                        <input id="redditlink" class="col-8" type="text">
-                                    </label>
-                                </div>
-                            </div>
+                <div class="col-lg-4 col-md-5 col-14">
+                    <div clss="row">
+                        <button id="editScreenshot" class="btn btn-sm btn-def h6 hidden"
+                            onclick="nmsce.editScreenshot(true)">Edit</button>&nbsp;
+                    </div>
+                    <span id="imageTextBlock">
+                        <div class="row">
+                            <div id="img-text" class="txt-inp-def h6 row"></div>
                         </div>
                         <br>
 
-                        <div class="col-lg-4 col-md-5 col-14">
-                            <div clss="row">
-                                <button id="editScreenshot" class="btn btn-sm btn-def h6 hidden"
-                                    onclick="nmsce.editScreenshot(true)">Edit</button>&nbsp;
-                            </div>
-                            <span id="imageTextBlock">
-                                <div class="row">
-                                    <div id="img-text" class="txt-inp-def h6 row"></div>
-                                </div>
-                                <br>
+                        <div class="row border-top border-bottom">
+                            <br>
+                            <div id="id-Font" class="col-14 h5"></div>
+                            <label class="col-sm-7 col-14 txt-inp-def">Size
+                                <input id="sel-size" class="col-8" onchange="nmsce.setSize(this)" type="number" value=18
+                                    min=0>
+                            </label>
+                            <label class="col-sm-7 col-14 txt-inp-def">Color
+                                <input id="sel-color" class="col-7 bkg-def" style="border-color:black"
+                                    onchange="nmsce.setColor(this)" type="color" value="#ffffff">&nbsp;
+                            </label>
+                            <span id="measurefont" style="visibility:hidden; float:left; white-space: nowrap;"></span>
+                        </div>
+                        <br>
 
-                                <div class="row border-top border-bottom">
-                                    <br>
-                                    <div id="id-Font" class="col-14 h5"></div>
-                                    <label class="col-sm-7 col-14 txt-inp-def">Size
-                                        <input id="sel-size" class="col-8" onchange="nmsce.setSize(this)" type="number"
-                                            value=18 min=0>
-                                    </label>
-                                    <label class="col-sm-7 col-14 txt-inp-def">Color
-                                        <input id="sel-color" class="col-7 bkg-def" style="border-color:black"
-                                            onchange="nmsce.setColor(this)" type="color" value="#ffffff">&nbsp;
-                                    </label>
-                                    <span id="measurefont"
-                                        style="visibility:hidden; float:left; white-space: nowrap;"></span>
-                                </div>
-                                <br>
-
-                                <div clss="row">
-                                    <button class="btn btn-sm btn-def h6 col-5"
-                                        onclick="nmsce.loadImgText(true)">Clear</button>&nbsp;
-                                    <button class="btn btn-sm btn-def h6 col-5"
-                                        onclick="nmsce.restoreText(null, true)">Reload</button>
-                                </div>
-                                <br>
-                                <div clss="row">
-                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
-                                        data-html="true" data-placement="top"
-                                        title="You can position text by clicking and dragging.">
-                                    </i>&nbsp;
-                                    <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('left')">
-                                        <i class="fas fa-align-left"></i>
-                                    </button>&nbsp;
-                                    <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('right')">
-                                        <i class="fas fa-align-right"></i>
-                                    </button>&nbsp;
-                                    <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('top')">
-                                        <i class="fas fa-align-left" style="transform: rotate(90deg);"></i>
-                                    </button>&nbsp;
-                                    <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('bottom')">
-                                        <i class="fas fa-align-left" style="transform: rotate(270deg);"></i>
-                                    </button>
-                                    <!--button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('justify')">
+                        <div clss="row">
+                            <button class="btn btn-sm btn-def h6 col-5"
+                                onclick="nmsce.loadImgText(true)">Clear</button>&nbsp;
+                            <button class="btn btn-sm btn-def h6 col-5"
+                                onclick="nmsce.restoreText(null, true)">Reload</button>
+                        </div>
+                        <br>
+                        <div clss="row">
+                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                data-placement="top" title="You can position text by clicking and dragging.">
+                            </i>&nbsp;
+                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('left')">
+                                <i class="fas fa-align-left"></i>
+                            </button>&nbsp;
+                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('right')">
+                                <i class="fas fa-align-right"></i>
+                            </button>&nbsp;
+                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('top')">
+                                <i class="fas fa-align-left" style="transform: rotate(90deg);"></i>
+                            </button>&nbsp;
+                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('bottom')">
+                                <i class="fas fa-align-left" style="transform: rotate(270deg);"></i>
+                            </button>
+                            <!--button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('justify')">
                             <i class="fas fa-align-justify"></i>
                         </button-->
-                                </div>
-                            </span>
-                            <br>
-                            <div class="row">
-                                <a id="permalink" class="h5" href="">
-                                    Permalink&nbsp;
-                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
-                                        data-html="true" data-placement="bottom"
-                                        title="You can use this link to directly access this entry.">&nbsp;
-                                    </i>
-                                </a>
-                            </div>
                         </div>
+                    </span>
+                    <br>
+                    <div class="row">
+                        <a id="permalink" class="h5" href="">
+                            Permalink&nbsp;
+                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom"
+                                title="You can use this link to directly access this entry.">&nbsp;
+                            </i>
+                        </a>
                     </div>
                 </div>
-                <br>
+            </div>
+        </div>
+        <br>
 
-                <div class="card pad-bottom">
-                    <div class="card-header bkg-def txt-def">
-                        <div class="row">
-                            <div class="col-4 h3">Entry List&nbsp;
-                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                                    data-placement="bottom"
-                                    title="Click on a heading to open list. Click on an entry to select it.">
-                                </i>
-                            </div>
-                        </div>
+        <div class="card pad-bottom">
+            <div class="card-header bkg-def txt-def">
+                <div class="row">
+                    <div class="col-4 h3">Entry List&nbsp;
+                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom"
+                            title="Click on a heading to open list. Click on an entry to select it.">
+                        </i>
                     </div>
-
-                    <div id="id-table" class="card-body"></div>
                 </div>
-                <br>
             </div>
 
-            <br>
-            <div class="clr-creme text-right h6">
-                <i class="fa fa-copyright"></i> 2019 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            </div>
+            <div id="id-table" class="card-body"></div>
+        </div>
+        <br>
+    </div>
+
+    <br>
+    <div class="clr-creme text-right h6">
+        <i class="fa fa-copyright"></i> 2019 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
 </body>
 
 </html>

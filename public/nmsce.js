@@ -277,8 +277,8 @@ NMSCE.prototype.buildUserPanel = function () {
 NMSCE.prototype.displayUser = function () {
     if (bhs.user.uid && bhs.user.galaxy && bhs.user.platform) {
         $("#row-playerInput").hide()
-        
-        let loc =  $("#row-playerDisplay")
+
+        let loc = $("#row-playerDisplay")
         loc.show()
         loc.find("#id-Player").text(bhs.user._name)
         loc.find("#id-Galaxy").text(bhs.user.galaxy)
@@ -1352,8 +1352,8 @@ const tText = `&nbsp;
         <i class="fa fa-question-circle-o text-danger h6"></i>
     </span>`
 
-const inpHdr = `<div class="col-lg-7 col-14">`
-const inpLongHdr = `<div class="col-14">`
+const inpHdr = `<div class="col-lg-7 col-14" data-allowhide="ihide">`
+const inpLongHdr = `<div class="col-14" data-allowhide="ihide">`
 const inpEnd = `</div>`
 
 const tString = `
@@ -1363,22 +1363,22 @@ const tString = `
     </div>`
 const tMap = `<div id="row-idname" data-type="map"></div>`
 const tLongString = `
-    <div id="row-idname" data-type="string" data-req="ifreq" class="row">
+    <div id="row-idname" data-type="string" data-allowhide="ihide" data-req="ifreq" class="row">
         <div class="col-3 h6 pl-15 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" class="rounded col-9">
     </div>`
 const tNumber = `
-    <div id="row-idname" data-type="number" data-req="ifreq" data-search="stype" class="row">
+    <div id="row-idname" data-type="number" data-allowhide="ihide" data-req="ifreq" data-search="stype" class="row">
         <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" type="number" class="rounded col-7" min=-1 max=range value=-1>
     </div>`
 const tFloat = `
-    <div id="row-idname" data-type="float" data-req="ifreq" data-search="stype" class="row">
+    <div id="row-idname" data-type="float" data-allowhide="ihide" data-req="ifreq" data-search="stype" class="row">
         <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" type="number" class="rounded col-7" step=0.1 min=-1 max=range value=-1>
     </div>`
 const tTags = `
-    <div id="row-idname" class="row" data-type="tags" data-req="ifreq">
+    <div id="row-idname" class="row" data-type="tags" data-allowhide="ihide" data-req="ifreq">
         <div id="id-idname" class="col-3"></div>&nbsp;ttip
         <div id="add-idname" class="col-10 row hidden">
             <input id="txt-idname" type="text" class="col-7"></input>
@@ -1391,11 +1391,11 @@ const tTags = `
     </div>`
 const tTag = `<div id="tag-idname" class="border pointer h5" style="border-radius:8px; background-color:#d0d0d0" onclick="nmsce.deleteTag(this)">&nbsp;title&nbsp;<i class="far fa-times-circle" style="color:#ffffff;"></i>&nbsp;</div>&nbsp;`
 const tMenu = `
-    <div id="row-idname" data-type="menu" data-req="ifreq">
+    <div id="row-idname" data-type="menu" data-allowhide="ihide" data-req="ifreq">
         <div id="id-idname"></div>
     </div>`
 const tRadio = `
-    <div id="row-idname" data-type="radio" data-req="ifreq" class="row">
+    <div id="row-idname" data-type="radio" data-allowhide="ihide" data-req="ifreq" class="row">
         <div class="radio col-3 h6 txt-inp-def">titlettip:&nbsp;</div>
         <div class="col-11">
             <div id="list" class="row"></div
@@ -1406,7 +1406,7 @@ const tRadioItem = `
         <input type="radio" class="radio" id="rdo-tname" data-last=false onclick="nmsce.toggleRadio(this)">
     </label>`
 const tCkItem = `
-    <div id="row-idname" data-type="checkbox" data-req="false" class="pl-15">
+    <div id="row-idname" data-type="checkbox" data-allowhide="ihide" data-req="false" class="pl-15">
         <label id="id-idname" class="h6 txt-inp-def row">
             titlettip&nbsp
             <input id="ck-idname" type="checkbox">
@@ -1482,9 +1482,11 @@ NMSCE.prototype.buildTypePanels = function () {
 }
 
 NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
-    let appenditem = (loc, add, title, id, ttip, req, long) => {
-        let h = long ? long : inpHdr
-        let l = /title/g [Symbol.replace](add, title + (req ? tReq : ""))
+    let appenditem = (loc, add, title, id, ttip, req, long, hide) => {
+        let l = /ihide/g [Symbol.replace](long ? long : inpHdr, hide ? true : false)
+        let h = l
+
+         l = /title/g [Symbol.replace](add, title + (req ? tReq : ""))
 
         if (ttip) {
             l = /ttip/ [Symbol.replace](l, tText)
@@ -1494,6 +1496,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
 
         l = /idname/g [Symbol.replace](l, id)
         l = /ifreq/ [Symbol.replace](l, req ? true : false)
+        l = /ihide/g [Symbol.replace](l, hide ? true : false)
 
         h += l + inpEnd
         loc.append(h)
@@ -1514,19 +1517,19 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
             case "number":
                 l = /range/ [Symbol.replace](tNumber, f.range)
                 l = /stype/ [Symbol.replace](l, f.query ? f.query : "")
-                appenditem(itm, l, f.name, id, f.ttip, f.required)
+                appenditem(itm, l, f.name, id, f.ttip, f.required,null, f.inputHide)
                 break
             case "float":
                 l = /range/ [Symbol.replace](tFloat, f.range)
                 l = /stype/ [Symbol.replace](l, f.query ? f.query : "")
-                appenditem(itm, l, f.name, id, f.ttip, f.required)
+                appenditem(itm, l, f.name, id, f.ttip, f.required,null,f.inputHide)
                 break
             case "img":
-                appenditem(itm, tImg, f.name, id, f.ttip, f.required, inpLongHdr)
+                appenditem(itm, tImg, f.name, id, f.ttip, f.required, inpLongHdr, f.inputHide)
                 break
             case "checkbox":
                 if (fnmsce) {
-                    appenditem(itm, tRadio, f.name, id, f.ttip)
+                    appenditem(itm, tRadio, f.name, id, f.ttip, null,null,f.inputHide)
 
                     let ckloc = itm.find("#row-" + id)
                     ckloc.attr("data-type", "checkbox")
@@ -1544,7 +1547,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                     l = /tname/g [Symbol.replace](l, "False")
                     ckloc.append(l)
                 } else {
-                    appenditem(itm, tCkItem, f.name, id, f.ttip, f.required)
+                    appenditem(itm, tCkItem, f.name, id, f.ttip, f.required,null, f.inputHide)
 
                     if (f.onchange) {
                         itm.find("#rdo-" + id).change(f.onchange)
@@ -1552,18 +1555,18 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 }
                 break
             case "string":
-                appenditem(itm, tString, f.name, id, f.ttip, f.required)
+                appenditem(itm, tString, f.name, id, f.ttip, f.required,null,f.inputHide)
                 if (f.onchange)
                     itm.find("#id-" + id).change(f.onchange)
                 break
             case "long string":
-                appenditem(itm, tLongString, f.name, id, f.ttip, f.required, inpLongHdr)
+                appenditem(itm, tLongString, f.name, id, f.ttip, f.required, inpLongHdr,f.inputHide)
                 break
             case "blank":
                 itm.append(inpHdr + inpEnd)
                 break
             case "menu":
-                appenditem(itm, tMenu, "", id)
+                appenditem(itm, tMenu, "", id,null,null,null,f.inputHide)
                 let lst = itm.find("#row-" + id)
 
                 if (f.ttip)
@@ -1574,7 +1577,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 if (f.sublist) {
                     for (let s of f.list) {
                         let iid = s.name.nameToId()
-                        appenditem(itm, tSubList, s.name, iid, null, null, inpLongHdr)
+                        appenditem(itm, tSubList, s.name, iid, null, null, inpLongHdr, f.inputHide)
 
                         let loc = $("#pnl-map #" + itm.prop("id"))
                         let l = /idname/ [Symbol.replace](tSubList, s.name.nameToId())
@@ -1585,7 +1588,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 }
                 break
             case "tags":
-                appenditem(itm, tTags, "", id, f.ttip, f.required, inpLongHdr)
+                appenditem(itm, tTags, "", id, f.ttip, f.required, inpLongHdr, f.inputHide)
                 loc = itm.find("#row-" + id)
                 if (f.max)
                     loc.data("max", f.max)
@@ -1635,10 +1638,10 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
             case "radio":
                 let list = []
                 if (f.list) {
-                    appenditem(itm, tRadio, f.name, id, f.ttip, null, f.required)
+                    appenditem(itm, tRadio, f.name, id, f.ttip, null, f.required,null,f.inputHide)
                     list = f.list
                 } else if (slist[f.sub]) {
-                    appenditem(itm, tRadio, f.name, id, typeof slist[f.ttip] === "string" ? slist[f.ttip] : null, f.required)
+                    appenditem(itm, tRadio, f.name, id, typeof slist[f.ttip] === "string" ? slist[f.ttip] : null, f.required,null,f.inputHide)
                     list = slist[f.sub]
                 }
 
@@ -1675,6 +1678,8 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
 
         if (f.startState === "hidden")
             itm.find("#row-" + id).hide()
+        
+        itm.find("[data-allowHide=true]").hide()
     }
 }
 
@@ -5254,6 +5259,7 @@ const objectList = [{
         search: true,
         imgText: true,
         onchange: getEntry,
+        inputHide: true,
     }, {
         name: "Type",
         type: "menu",
@@ -5273,6 +5279,7 @@ const objectList = [{
             type: "checkbox",
             sub: "asymmetric",
             search: true,
+            inputHide: true,
         }, {
             name: "bodies",
             type: "map",
@@ -5291,12 +5298,14 @@ const objectList = [{
         list: occurenceList,
         imgText: true,
         search: true,
+        inputHide: true,
     }, {
         name: "Crashed",
         type: "checkbox",
         onchange: showLatLong,
         imgText: true,
         search: true,
+        inputHide: true,
     }, {
         name: "Latitude",
         type: "string",
@@ -5328,6 +5337,7 @@ const objectList = [{
         }],
         imgText: true,
         search: true,
+        inputHide: true,
     }, {
         name: "Color",
         type: "tags",
@@ -5340,6 +5350,7 @@ const objectList = [{
         type: "string",
         searchText: true,
         ttip: "Found in save file. Can be used to reskin ship.",
+        inputHide: true,
     }, {
         name: "Photo",
         type: "img",
@@ -5394,6 +5405,7 @@ const objectList = [{
         type: "string",
         search: true,
         onchange: getEntry,
+        inputHide: true,
     }, {
         name: "Color",
         type: "tags",
@@ -5406,6 +5418,7 @@ const objectList = [{
         type: "string",
         searchText: true,
         ttip: "Found in save file. Can be used to reskin ship.",
+        inputHide: true,
     }, {
         name: "Photo",
         type: "img",
@@ -5452,17 +5465,13 @@ const objectList = [{
         field: "sys",
         name: "System",
         type: "string",
-    }, {
-        field: "Economy",
-        name: "Economy",
-        type: "radio",
-        list: economyListTier
     }],
     fields: [{
         name: "Name",
         type: "string",
         search: true,
         onchange: getEntry,
+        inputHide: true,
     }, {
         name: "Type",
         type: "menu",
@@ -5474,12 +5483,14 @@ const objectList = [{
         imgText: true,
         list: frigateBenefits,
         search: true,
+        inputHide: true,
     }, {
         name: "Negatives",
         type: "tags",
         imgText: true,
         list: frigateNegatives,
         search: true,
+        inputHide: true,
     }, {
         name: "Color",
         type: "tags",
@@ -5537,6 +5548,7 @@ const objectList = [{
         search: true,
         imgText: true,
         onchange: getEntry,
+        inputHide: true,
     }, {
         name: "Type",
         type: "menu",
@@ -5559,28 +5571,34 @@ const objectList = [{
         name: "Space Station",
         type: "checkbox",
         search: true,
+        inputHide: true,
     }, {
         name: "Planet Name",
         type: "string",
         imgText: true,
         search: true,
+        inputHide: true,
     }, {
         name: "Planet Index",
         type: "number",
         range: 15,
         ttip: planetNumTip,
+        inputHide: true,
     }, {
         name: "Latitude",
         imgText: true,
         type: "string",
+        inputHide: true,
     }, {
         name: "Longitude",
         imgText: true,
         type: "string",
+        inputHide: true,
     }, {
         name: "Notes",
         type: "long string",
         searchText: true,
+        inputHide: true,
     }, {
         name: "Color",
         type: "tags",
@@ -5593,6 +5611,7 @@ const objectList = [{
         type: "string",
         searchText: true,
         ttip: "Found in save file. Can be used to reskin MT.",
+        inputHide: true,
     }, {
         name: "Photo",
         type: "img",
@@ -5636,6 +5655,7 @@ const objectList = [{
         search: true,
         imgText: true,
         onchange: getEntry,
+        inputHide: true,
     }, {
         name: "Genus",
         type: "menu",
@@ -5646,6 +5666,7 @@ const objectList = [{
         type: "menu",
         list: faunaProductTamed,
         search: true,
+        inputHide: true,
     }, {
         name: "Height",
         type: "float",
@@ -5663,6 +5684,7 @@ const objectList = [{
         name: "Planet Name",
         imgText: true,
         type: "string",
+        inputHide: true,
     }, {
         name: "Planet Index",
         type: "number",
@@ -5712,6 +5734,7 @@ const objectList = [{
         search: true,
         imgText: true,
         onchange: getEntry,
+        inputHide: true,
     }, {
         name: "Planet Index",
         range: 15,
@@ -5730,6 +5753,7 @@ const objectList = [{
         ttip: "Any deadly weather pattern.",
         searchText: true,
         search: true,
+        inputHide: true,
     }, {
         name: "Sentinels",
         type: "menu",
@@ -5738,25 +5762,31 @@ const objectList = [{
             High - Patrols are present throughout the planet (orange icon)<br>
             Aggressive - Patrols are present throughout the planet and Sentinels will attack on sight (red icon)<br>`,
         search: true,
+        inputHide: true,
     }, {
         name: "Predators",
         type: "checkbox",
+        ttip: `Does planet have agressive predators?`,
         search: true,
+        inputHide: true,
     }, {
         name: "Grass Color",
         type: "menu",
         list: colorList,
         search: true,
+        inputHide: true,
     }, {
         name: "Water Color",
         type: "menu",
         list: colorList,
         search: true,
+        inputHide: true,
     }, {
         name: "Sky Color",
         type: "menu",
         list: colorList,
         search: true,
+        inputHide: true,
     }, {
         name: "Resources",
         type: "tags",
@@ -5826,6 +5856,7 @@ const objectList = [{
         imgText: true,
         onchange: getEntry,
         search: true,
+        inputHide: true,
     }, {
         name: "Owner",
         type: "string",
