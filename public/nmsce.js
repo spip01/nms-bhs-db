@@ -207,9 +207,11 @@ NMSCE.prototype.dispAddr = function (pnl, addr, glyph) {
 }
 
 NMSCE.prototype.displayRegion = function (entry) {
-    let loc = $("#pnl-S1")
-    loc.find("#id-reg").val(entry.reg)
-    loc.find("#foundreg").show()
+    if (entry.reg) {
+        let loc = $("#pnl-S1")
+        loc.find("#id-reg").val(entry.reg)
+        loc.find("#foundreg").show()
+    }
 }
 
 NMSCE.prototype.displaySystem = function (entry) {
@@ -220,8 +222,6 @@ NMSCE.prototype.displaySystem = function (entry) {
         loc.find("#foundreg").show()
     else
         loc.find("#foundreg").hide()
-
-    nmsce.lastsys = !entry.Type ? null : entry
 
     $("#btn-Galaxy").text(entry.galaxy)
     $("#btn-Platform").text(entry.platform)
@@ -266,9 +266,12 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     const clr = (pnl) => {
         pnl.find("input").each(function () {
             let type = $(this).prop("type")
-            if (type === "checkbox" || type === "radio")
+            if (type === "checkbox")
                 $(this).prop("checked", false)
-            else
+            else if (type === "radio") {
+                $(this).prop("checked", false)
+                $(this).data("last", false)
+            } else
                 $(this).val("")
         })
 
@@ -350,16 +353,16 @@ NMSCE.prototype.extractEntry = function () {
 
     let loc = $("#pnl-S1")
 
-    if (nmsce.lastsys)
-        entry = mergeObjects({}, nmsce.lastsys)
-
-    if (!entry.uid || entry.uid === bhs.user.uid) {
+    if (!nmsce.lastsys || nmsce.lastsys.uid === bhs.user.uid) {
         entry._name = bhs.user._name
         entry.org = bhs.user.org
         entry.uid = bhs.user.uid
         entry.platform = bhs.user.platform
         entry.galaxy = bhs.user.galaxy
     }
+
+    if (nmsce.lastsys)
+        entry.created = nmsce.lastsys.created
 
     entry.version = "beyond"
     entry.page = "nmsce"
@@ -380,7 +383,7 @@ NMSCE.prototype.extractEntry = function () {
         ok = false
     }
 
-    if (ok && (!nmsce.lastsys || entry.uid === bhs.user.uid /* || bhs.isRole("admin")) */ || entry.sys !== nmsce.lastsys.sys ||
+    if (ok && (!nmsce.lastsys || nmsce.lastsys.uid === bhs.user.uid /* || bhs.isRole("admin")) */ || entry.sys !== nmsce.lastsys.sys ||
             entry.reg !== nmsce.lastsys.reg || entry.life !== nmsce.lastsys.life || entry.Economy !== nmsce.lastsys.Economy))
 
         bhs.updateEntry(entry)
@@ -393,7 +396,11 @@ NMSCE.prototype.extractEntry = function () {
         delete entry.created
         delete entry.x
 
-        if (nmsce.last)
+        if (nmsce.last) {
+            entry.created = nmsce.last.created
+            entry.id = nmsce.last.id
+            entry.Photo = nmsce.last.Photo
+
             if (nmsce.last.uid === bhs.user.uid) {
                 entry._name = bhs.user._name
                 entry.org = bhs.user.org
@@ -401,8 +408,7 @@ NMSCE.prototype.extractEntry = function () {
                 entry.platform = bhs.user.platform
                 entry.galaxy = bhs.user.galaxy
             }
-
-        entry = mergeObjects(entry, nmsce.last)
+        }
 
         let tab = $("#typeTabs .active").prop("id").stripID()
         let pnl = $("#typePanels #pnl-" + tab)
@@ -507,7 +513,7 @@ NMSCE.prototype.extractEntry = function () {
         entry.redditlink = $("#redditlink").val()
         entry.imageText = bhs.user.imageText
 
-        if (entry.uid === bhs.user.uid /* || bhs.isRole("admin")*/ ) {
+        if (!nmsce.last || nmsce.last.uid === bhs.user.uid /* || bhs.isRole("admin")*/ ) {
             nmsce.updateEntry(entry)
             nmsce.entries[entry.type.nameToId()][entry.id] = entry
             nmsce.displayListEntry(entry)
@@ -572,8 +578,10 @@ NMSCE.prototype.displaySingle = function (entry) {
                         disp(fld.sublist, pnl.find("#slist-" + entry[id].nameToId()))
                     break
                 case "radio":
-                    if (entry[id])
-                        row.find("#rdo-" + entry[id].nameToId()).click()
+                    if (entry[id]) {
+                        row.find("input").prop("checked", false)
+                        row.find("#rdo-" + entry[id].nameToId()).prop("checked", true)
+                    }
                     break
                 case "checkbox":
                     if (entry[id] !== row.find("input").prop("checked"))
@@ -2981,8 +2989,9 @@ NMSCE.prototype.getAfterDate = function (date) {
                 lists[rid][tid + "-" + e.id] = e
 
                 if (r.rt.field === "votes.favorite" || r.rt.field === "votes.edchoice") {
-                    if (e.votes.favorite + e.votes.edchoice > top.count) {
-                        top.count = e.votes.favorite + e.votes.edchoice
+                    let total = e.votes.favorite * 5 + e.votes.edchoice * 10 + e.votes.visited * 20 + e.votes.clickcount / 4
+                    if (total > top.count) {
+                        top.count = total
                         top.entry = e
                     }
                 }

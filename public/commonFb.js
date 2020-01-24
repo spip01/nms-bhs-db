@@ -142,12 +142,14 @@ blackHoleSuns.prototype.onAuthStateChanged = async function (usr) {
         }
 
         user.email = usr.email
-        user.displayName = usr.displayName
+        if (usr.displayName)
+            user.displayName = usr.displayName
+
         user.role = "user"
         user.lasttime = firebase.firestore.Timestamp.now()
         bhs.updateUser(user)
 
-        // let ref = bhs.fs.collection("users").where("_name", "==", "GaiusMarcus")
+        // let ref = bhs.fs.collection("users").where("_name", "==", "KurganSPK")
         // let snapshot = await ref.get()
         // if (!snapshot.empty) {
         //     user = snapshot.docs[0].data()
@@ -402,9 +404,9 @@ blackHoleSuns.prototype.updateEntry = async function (entry) {
     }).catch(err => {
         if (err.code === "permission-denied") {
             ref.set(entry, {
-                mergeFields: ["life", "econ"]
+                mergeFields: ["life", "econ", "reg", "sys"]
             }).then(() => {
-                bhs.status(entry.addr + " (lifeform & economy) saved.")
+                bhs.status(entry.addr + " (lifeform, economy, system & region) saved.")
                 return true
             }).catch(err => {
                 bhs.status(entry.addr + " ERROR-: " + err.code)
