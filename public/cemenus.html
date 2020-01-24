@@ -7,51 +7,65 @@
 
 <div class="container-fluid">
     <div class="row">
-        <div id="menulogo" class="col-lg-2 col-3">
+        <div id="menulogo" class="col-2">
             <img id="menuimg" src="images/nmsce-logo.png" alt="nmsce logo" style="width:80px; height:80px">
         </div>
+        <br>
 
-        <div class="col-lg-3 col-5">
+        <div class="col-12 align-middle">
             <br>
-            <div class="dropdown">
-                <button type="button" class="btn-def text-center no-border dropdown-toggle" data-toggle="dropdown">
-                    <h4 id="pagename"></h4>
-                </button>
-                <div class="dropdown-menu bkg-def">
-                    <a class="no-border dropdown-item btn-def h4" href="nmsce.html">NMSCE Search</a>
-                    <a class="no-border dropdown-item btn-def h4" href="cedata.html">NMSCE Data Entry</a>
-                    <a class="no-border dropdown-item btn-def h4" href="darc.html">BHS DaRC</a>
-                    <a class="no-border dropdown-item btn-def h4" href="index.html">BHS Data Entry</a>
-                    <a class="no-border dropdown-item btn-def h4" href="nav.html">Star Nav</a>
-                    <a class="no-border dropdown-item btn-def h4" href="glyph.html">Glyph Converter</a>
+            <div class="row">
+                <div class="col-lg-2 col-md-5 col-7">
+                    <a id="searchpage" class="btn btn-def h4" href="nmsce.html">Search</a>
                 </div>
-            </div>
-        </div>
-
-        <div class="col">
-            <br>
-            <div id="full-usermenu">
-                <button id="login" type="button" class="btn-def no-border h4" onclick="bhs.logIn()">
-                    Login
-                </button>
-
-                <div id="usermenu" class="dropdown" style="display: none">
-                    <button type="button" class="row btn-def no-border dropdown-toggle" data-toggle="dropdown">
-                        <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
-                        <h4 id="username">User</h4>
-                    </button>
-
-                    <div class="dropdown-menu bkg-def text-center">
-                        <button id="logout" type="button" class="no-border dropdown-item btn-def h4"
-                            onclick="bhs.logOut()">Logout</button>
-                        <button id="tooltip" type="button" class="no-border dropdown-item btn-def h4"
-                            onclick="bhs.toggleTips()">
-                            Toggle Tooltip Display
+                <div class="col-lg-2 col-md-5 col-7">
+                    <a id="entrypage" class="btn btn-def h4" href="cedata.html">Save Finds</a>
+                </div>
+                <div class="col-lg-3 col-7">
+                    <div class="dropdown">
+                        <button type="button" class="btn-def text-center no-border dropdown-toggle h4"
+                            data-toggle="dropdown">
+                            Site Navigation
                         </button>
-                        <button id="admin" type="button" class="h5 no-border dropdown-item btn-def h4 hidden"
-                            onclick="bhs.setAdmin()">
-                            Admin Edit
-                        </button>
+                        <div class="dropdown-menu bkg-def">
+                            <a class="no-border dropdown-item btn-def h4" href="nmsce.html">NMSCE Search</a>
+                            <a class="no-border dropdown-item btn-def h4" href="cedata.html">NMSCE Data Entry</a>
+                            <a class="no-border dropdown-item btn-def h4" href="darc.html">BHS DaRC</a>
+                            <a class="no-border dropdown-item btn-def h4" href="index.html">BHS Data Entry</a>
+                            <a class="no-border dropdown-item btn-def h4" href="nav.html">Star Nav</a>
+                            <a class="no-border dropdown-item btn-def h4" href="glyph.html">Glyph Converter</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="row align-middle">
+                        <div id="full-usermenu">
+                            <button id="login" type="button" class="btn-def no-border h4" onclick="bhs.logIn()">
+                                Login
+                            </button>
+
+                            <div id="usermenu" class="dropdown" style="display: none">
+                                <button type="button" class="row btn-def no-border dropdown-toggle"
+                                    data-toggle="dropdown">
+                                    <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
+                                    <h4 id="username">User</h4>
+                                </button>
+
+                                <div class="dropdown-menu bkg-def text-center">
+                                    <button id="logout" type="button" class="no-border dropdown-item btn-def h4"
+                                        onclick="bhs.logOut()">Logout</button>
+                                    <button id="tooltip" type="button" class="no-border dropdown-item btn-def h4"
+                                        onclick="bhs.toggleTips()">
+                                        Toggle Tooltip Display
+                                    </button>
+                                    <button id="admin" type="button"
+                                        class="h5 no-border dropdown-item btn-def h4 hidden" onclick="bhs.setAdmin()">
+                                        Admin Edit
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -81,8 +95,9 @@
     <div class="card-body">
         <div class="row">
             <div class="col text-center">
-            <button id="lgoogle" class="h5 text-center col-3 btn btn-sm btn-def">login using Google</button>
-        </div></div>
+                <button id="lgoogle" class="h5 text-center col-3 btn btn-sm btn-def">login using Google</button>
+            </div>
+        </div>
         <div class="row ">
             <div class="col text-center">
                 <button id="lgithub" class="h5 text-center col-3 btn btn-sm btn-def">login using Github</button>

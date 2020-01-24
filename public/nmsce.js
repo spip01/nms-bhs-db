@@ -13,9 +13,10 @@ $(document).ready(() => {
     startUp()
 
     $("#cemenus").load("cemenus.html", () => {
-        let page = window.location.pathname.replace(/(.*)\//, "$1")
-        let loc = $("[href='" + page + "']")
-        $("#pagename").html(loc.text())
+        if (fnmsce)
+            $("#searchpage").css("border-color", "red")
+        else if (fcedata)
+            $("#entrypage").css("border-color", "red")
     })
 
     nmsce = new NMSCE()
@@ -1486,7 +1487,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
         let l = /ihide/g [Symbol.replace](long ? long : inpHdr, hide ? true : false)
         let h = l
 
-         l = /title/g [Symbol.replace](add, title + (req ? tReq : ""))
+        l = /title/g [Symbol.replace](add, title + (req ? tReq : ""))
 
         if (ttip) {
             l = /ttip/ [Symbol.replace](l, tText)
@@ -1517,19 +1518,19 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
             case "number":
                 l = /range/ [Symbol.replace](tNumber, f.range)
                 l = /stype/ [Symbol.replace](l, f.query ? f.query : "")
-                appenditem(itm, l, f.name, id, f.ttip, f.required,null, f.inputHide)
+                appenditem(itm, l, f.name, id, f.ttip, f.required, null, f.inputHide)
                 break
             case "float":
                 l = /range/ [Symbol.replace](tFloat, f.range)
                 l = /stype/ [Symbol.replace](l, f.query ? f.query : "")
-                appenditem(itm, l, f.name, id, f.ttip, f.required,null,f.inputHide)
+                appenditem(itm, l, f.name, id, f.ttip, f.required, null, f.inputHide)
                 break
             case "img":
                 appenditem(itm, tImg, f.name, id, f.ttip, f.required, inpLongHdr, f.inputHide)
                 break
             case "checkbox":
                 if (fnmsce) {
-                    appenditem(itm, tRadio, f.name, id, f.ttip, null,null,f.inputHide)
+                    appenditem(itm, tRadio, f.name, id, f.ttip, null, null, f.inputHide)
 
                     let ckloc = itm.find("#row-" + id)
                     ckloc.attr("data-type", "checkbox")
@@ -1547,7 +1548,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                     l = /tname/g [Symbol.replace](l, "False")
                     ckloc.append(l)
                 } else {
-                    appenditem(itm, tCkItem, f.name, id, f.ttip, f.required,null, f.inputHide)
+                    appenditem(itm, tCkItem, f.name, id, f.ttip, f.required, null, f.inputHide)
 
                     if (f.onchange) {
                         itm.find("#rdo-" + id).change(f.onchange)
@@ -1555,18 +1556,18 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 }
                 break
             case "string":
-                appenditem(itm, tString, f.name, id, f.ttip, f.required,null,f.inputHide)
+                appenditem(itm, tString, f.name, id, f.ttip, f.required, null, f.inputHide)
                 if (f.onchange)
                     itm.find("#id-" + id).change(f.onchange)
                 break
             case "long string":
-                appenditem(itm, tLongString, f.name, id, f.ttip, f.required, inpLongHdr,f.inputHide)
+                appenditem(itm, tLongString, f.name, id, f.ttip, f.required, inpLongHdr, f.inputHide)
                 break
             case "blank":
                 itm.append(inpHdr + inpEnd)
                 break
             case "menu":
-                appenditem(itm, tMenu, "", id,null,null,null,f.inputHide)
+                appenditem(itm, tMenu, "", id, null, null, null, f.inputHide)
                 let lst = itm.find("#row-" + id)
 
                 if (f.ttip)
@@ -1638,10 +1639,10 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
             case "radio":
                 let list = []
                 if (f.list) {
-                    appenditem(itm, tRadio, f.name, id, f.ttip, null, f.required,null,f.inputHide)
+                    appenditem(itm, tRadio, f.name, id, f.ttip, null, f.required, null, f.inputHide)
                     list = f.list
                 } else if (slist[f.sub]) {
-                    appenditem(itm, tRadio, f.name, id, typeof slist[f.ttip] === "string" ? slist[f.ttip] : null, f.required,null,f.inputHide)
+                    appenditem(itm, tRadio, f.name, id, typeof slist[f.ttip] === "string" ? slist[f.ttip] : null, f.required, null, f.inputHide)
                     list = slist[f.sub]
                 }
 
@@ -1678,7 +1679,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
 
         if (f.startState === "hidden")
             itm.find("#row-" + id).hide()
-        
+
         itm.find("[data-allowHide=true]").hide()
     }
 }
