@@ -436,20 +436,25 @@ NMSCE.prototype.extractEntry = function () {
 
     let loc = $("#pnl-S1")
 
-    if (!nmsce.lastsys || nmsce.lastsys.uid === bhs.user.uid) {
+    let last = nmsce.lastsys ? nmsce.lastsys : nmsce.last
+
+    if (last) {
+        entry._name = last._name
+        entry.uid = last.uid
+        entry.created = last.created
+        entry.Platform = last.Platform
+        entry.platform = last.Platform === "PS4" ? "PS4" : last.Platform === "PC" || last.Platform === "XBox" ? "PC-XBox" : ""
+        entry.galaxy = last.galaxy
+    } else {
         entry._name = bhs.user._name
         entry.uid = bhs.user.uid
+        entry.Platform = bhs.user.Platform
+        entry.platform = entry.Platform === "PS4" ? "PS4" : entry.Platform === "PC" || entry.Platform === "XBox" ? "PC-XBox" : ""
+        entry.galaxy = bhs.user.galaxy
     }
-
-    if (nmsce.lastsys)
-        entry.created = nmsce.lastsys.created
 
     entry.version = "beyond"
     entry.page = "nmsce"
-
-    entry.Platform = bhs.user.Platform
-    entry.platform = entry.Platform === "PS4" ? "PS4" : entry.Platform === "PC" || entry.Platform === "XBox" ? "PC-XBox" : ""
-    entry.galaxy = bhs.user.galaxy
 
     loc = $("#pnl-S1")
     entry.addr = loc.find("#id-addr").val()
@@ -472,28 +477,25 @@ NMSCE.prototype.extractEntry = function () {
         ok = false
     }
 
-    if (ok && (!nmsce.lastsys || nmsce.lastsys.uid === bhs.user.uid /* || bhs.isRole("admin")) */ || entry.sys !== nmsce.lastsys.sys ||
-            entry.reg !== nmsce.lastsys.reg || entry.life !== nmsce.lastsys.life || entry.Economy !== nmsce.lastsys.Economy))
-
-        bhs.updateEntry(entry)
-    else {
-        bhs.status(bhs.user._name + " is not creator of " + entry.addr + " " + entry.sys, true)
-        ok = false
+    if (ok) {
+        if (!last || last.uid === bhs.user.uid || bhs.isRole("admin")) {
+            if (entry.sys !== last.sys || entry.reg !== last.reg || entry.life !== last.life || entry.Economy !== last.Economy)
+                bhs.updateEntry(entry)
+        } else {
+            bhs.status(bhs.user._name + " is not creator of " + entry.addr + " " + entry.sys, true)
+            ok = false
+        }
     }
 
     if (ok) {
         delete entry.created
-        delete entry.x
 
         if (nmsce.last) {
             entry.created = nmsce.last.created
             entry.id = nmsce.last.id
             entry.Photo = nmsce.last.Photo
-
-            if (nmsce.last.uid !== bhs.user.uid) {
-                entry._name = nmsce.last._name
-                entry.uid = nmsce.last.uid
-            }
+            entry._name = nmsce.last._name
+            entry.uid = nmsce.last.uid
         }
 
         let tab = $("#typeTabs .active").prop("id").stripID()
@@ -599,16 +601,19 @@ NMSCE.prototype.extractEntry = function () {
         entry.redditlink = $("#redditlink").val()
         entry.imageText = bhs.user.imageText
 
-        if (!nmsce.last || nmsce.last.uid === bhs.user.uid /* || bhs.isRole("admin")*/ ) {
+        if (!nmsce.last || nmsce.last.uid === bhs.user.uid || bhs.isRole("admin")) {
             nmsce.updateEntry(entry)
 
-            if (typeof nmsce.entries === "undefined")
-                nmsce.entries = {}
-            if (typeof nmsce.entries[entry.type.nameToId()] === "undefined")
-                nmsce.entries[entry.type.nameToId()] = {}
+            if (!nmsce.last || nmsce.last.uid === bhs.user.uid) {
+                if (typeof nmsce.entries === "undefined")
+                    nmsce.entries = {}
+                if (typeof nmsce.entries[entry.type.nameToId()] === "undefined")
+                    nmsce.entries[entry.type.nameToId()] = {}
 
-            nmsce.entries[entry.type.nameToId()][entry.id] = entry
-            nmsce.displayListEntry(entry)
+                nmsce.entries[entry.type.nameToId()][entry.id] = entry
+                nmsce.displayListEntry(entry)
+            }
+
             nmsce.updateScreenshots(entry)
 
             bhs.status(entry.type + " " + entry.Name + " validated, saving...")
@@ -635,6 +640,16 @@ NMSCE.prototype.displaySingle = function (entry) {
 
     $("#pnl-S1 #foundreg").hide()
     $("#pnl-S1 #foundsys").hide()
+
+    if (!entry.Lifeform && entry.life)
+        entry.Lifeform = entry.life
+
+    if (!entry.Economy && entry.econ) {
+        let i = getIndex(economyList, "name", economy.econ)
+        if (i > 0 && economyList[i].number > 0)
+            entry.Economy = "T" + economyList[i].number
+    } else if (typeof entry.Economy === "number")
+        entry.Economy = "T" + entry.Economy
 
     nmsce.displaySystem(entry)
 
@@ -1345,10 +1360,12 @@ NMSCE.prototype.searchSystem = function () {
 
 NMSCE.prototype.save = function () {
     $("#status").empty()
+    let ok = bhs.user.uid
 
-    let user = nmsce.extractUser()
+    if (!nmsce.last || nmsce.last.uid === bhs.user.uid) {
+        let user = nmsce.extractUser()
+        ok = bhs.validateUser(user)
 
-    if (bhs.user.uid && bhs.validateUser(user)) {
         bhs.user = mergeObjects(bhs.user, user)
         bhs.user.imageText = nmsce.extractImgText()
 
@@ -1358,10 +1375,10 @@ NMSCE.prototype.save = function () {
         }).then().catch(err => {
             bhs.status("ERROR: " + err)
         })
-
-        if (nmsce.extractEntry())
-            nmsce.clearPanel()
     }
+
+    if (ok && nmsce.extractEntry())
+        nmsce.clearPanel()
 }
 
 NMSCE.prototype.extractUser = function () {
@@ -2476,7 +2493,7 @@ NMSCE.prototype.drawText = function (alt, altw) {
 NMSCE.prototype.editSelected = function (evt) {
     let e = nmsce.last
 
-    if (e && bhs.user.uid && (bhs.user.uid === e.uid /*|| bhs.hasRole("admin")*/ )) {
+    if (e && bhs.user.uid && (bhs.user.uid === e.uid || bhs.hasRole("admin"))) {
         let link = "https://" + window.location.hostname + "/cedata.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
         window.open(link, "_self")
     }
@@ -3257,7 +3274,7 @@ NMSCE.prototype.selectResult = function (evt) {
         merge: true
     }).catch(err => console.log(err))
 
-    if (bhs.user.uid && (e.uid === bhs.user.uid /*|| bhs.user.role === "admin"*/ ))
+    if (bhs.user.uid && (e.uid === bhs.user.uid || bhs.hasRole("admin")))
         $("#btn-ceedit").show()
     else
         $("#btn-ceedit").hide()

@@ -61,20 +61,20 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
     let ref = bhs.fs.doc("admin/" + bhs.user.uid)
     ref.get().then(doc => {
         if (doc.exists) {
-            let role = doc.data().roles
+            bhs.roles = doc.data().roles
 
-            if (role.includes("nmsceEditor"))
+            if (bhs.roles.includes("nmsceEditor"))
                 $("#edchoice").show()
 
-            if (role.includes("editor") || role.includes("admin"))
+            if (bhs.roles.includes("editor") || bhs.roles.includes("admin"))
                 $("#poiorg").show()
 
-            if (role.includes("owner")) {
+            if (bhs.roles.includes("owner")) {
                 $("#setError").show()
                 $("#genDARC").show()
             }
 
-            if (role.includes("admin")) {
+            if (bhs.roles.includes("admin")) {
                 $("#bhspoi").show()
                 $("#id-export").show()
                 $("#btn-create").show()
@@ -98,6 +98,17 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
 
     $("#save").removeClass("disabled")
     $("#save").removeAttr("disabled")
+}
+
+blackHoleSuns.prototype.hasRole = function (role) {
+    return bhs.roles && bhs.roles.includes(role)
+}
+
+blackHoleSuns.prototype.isRole = function (role) {
+    let ok = bhs.roles
+    ok = ok && bhs.roles.includes(role)
+    ok = ok && bhs.user.role === role
+    return bhs.roles && bhs.roles.includes(role) && bhs.user.role === role
 }
 
 blackHoleSuns.prototype.setError = function () {
