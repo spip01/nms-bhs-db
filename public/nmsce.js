@@ -13,10 +13,11 @@ $(document).ready(() => {
     startUp()
 
     $("#cemenus").load("cemenus.html", () => {
-        if (fnmsce)
-            $("#searchpage").css("border-color", "red")
-        else if (fcedata)
-            $("#entrypage").css("border-color", "red")
+        let loc = fnmsce ? $("#searchpage") : fcedata ? $("#entrypage") : []
+        if (loc.length > 0) {
+            loc.css("border-color", "red")
+            loc.css("border-width", "3px")
+        }
     })
 
     nmsce = new NMSCE()
@@ -27,8 +28,7 @@ $(document).ready(() => {
         nmsce.logo.crossOrigin = "anonymous"
         nmsce.logo.src = "/images/nmsce-logo.png"
 
-        nmsce.buildUserPanel()
-        nmsce.buildPanel()
+        nmsce.buildPanels()
         nmsce.buildTypePanels()
 
         if (fnmsce) {
@@ -76,43 +76,47 @@ function NMSCE() {
 
 }
 
-NMSCE.prototype.buildPanel = function () {
-    let loc = $("#pnl-S1")
+NMSCE.prototype.buildPanels = function () {
+    const addRadioList = function (loc, label, list, ttip) {
+        let h = /ifreq/ [Symbol.replace](tRadio, "")
+        h = /idname/g [Symbol.replace](h, label.nameToId())
+        h = /ttip/g [Symbol.replace](h, ttip ? ttip : "")
+        h = /title/g [Symbol.replace](h, label)
 
-    bhs.buildMenu(loc, "Lifeform", lifeformList, null, {
-        labelsize: "col-xl-7 col-lg-7 col-md-5 col-sm-3 col-5",
+        loc.append(h)
+        loc = loc.find("#list")
+        h = ""
+
+        for (let i of list) {
+            let l = /ifreq/ [Symbol.replace](tRadioItem, "")
+            l = /idname/g [Symbol.replace](l, label.nameToId())
+            l = /title/g [Symbol.replace](l, i.name)
+            l = /tname/ [Symbol.replace](l, i.name.nameToId())
+
+            if (i.ttip) {
+                l = /ttip/ [Symbol.replace](l, tText)
+                l = /ttext/ [Symbol.replace](l, i.ttip)
+            } else
+                l = /ttip/ [Symbol.replace](l, "")
+
+            h += l
+        }
+
+        loc.append(h)
+    }
+
+    addRadioList($("#id-Economy"), "Economy", economyListTier)
+    addRadioList($("#id-Lifeform"), "Lifeform", lifeformList)
+    addRadioList($("#id-Platform"), "Platform", platformListAll)
+
+    bhs.buildMenu($("#pnl-user"), "Galaxy", galaxyList, null, {
+        tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
+        required: true,
+        labelsize: "col-lg-7 col-md-14 col-sm-14 col-5",
         menusize: "col",
     })
 
-    let eloc = loc.find("#id-Economy")
-    let h = /ifreq/ [Symbol.replace](tRadio)
-    h = /idname/g [Symbol.replace](h, "Economy")
-    h = /ttip/g [Symbol.replace](h, "")
-    h = /title/g [Symbol.replace](h, "Economy")
-
-    eloc.append(h)
-    eloc = eloc.find("#list")
-    h = ""
-
-    for (let i of economyListTier) {
-        let l = /ifreq/ [Symbol.replace](tRadioItem, "")
-        l = /idname/g [Symbol.replace](l, "Economy")
-        l = /title/g [Symbol.replace](l, i.name)
-        l = /tname/ [Symbol.replace](l, i.name.nameToId())
-
-        if (i.ttip) {
-            l = /ttip/ [Symbol.replace](l, tText)
-            l = /ttext/ [Symbol.replace](l, i.ttip)
-        } else
-            l = /ttip/ [Symbol.replace](l, "")
-
-        h += l
-    }
-
-    eloc.append(h)
-
-    let gloc = loc.find("#glyphbuttons")
-    addGlyphButtons(gloc, nmsce.addGlyph)
+    addGlyphButtons($("#glyphbuttons"), nmsce.addGlyph)
 }
 
 NMSCE.prototype.setGlyphInput = function (evt) {
@@ -204,7 +208,6 @@ NMSCE.prototype.displaySystem = function (entry) {
         loc.find("#foundreg").hide()
 
     $("#btn-Galaxy").text(entry.galaxy)
-    $("#btn-Platform").text(entry.platform)
 
     loc.find("#id-addr").val(entry.addr)
     loc.find("#id-glyph").html(addrToGlyph(entry.addr))
@@ -213,18 +216,31 @@ NMSCE.prototype.displaySystem = function (entry) {
 
     loc.find("#id-by").html("<h6>" + entry.sys ? entry._name : "" + "</h6>")
 
-    loc.find("#btn-Lifeform").text(entry.life)
-
-    loc = loc.find("#id-Economy")
-    loc.find(".radio").prop("checked", false)
-    if ((!entry.Economy || typeof entry.Economy === "number") && entry.econ) {
+    if (!entry.Economy && entry.econ) {
         let i = getIndex(economyList, "name", entry.econ)
         if (i > 0) {
             let econ = economyList[i].number
             entry.Economy = "T" + econ
         }
     }
-    loc.find("#rdo-" + entry.Economy).prop("checked", true)
+
+    if (!entry.Platform && (entry.platform || bhs.user.Platform)) {
+        if (bhs.user.Platform)
+            entry.Platform = bhs.user.Platform
+        else if (entry.platform === "PC-XBox")
+            entry.Platform = "PC"
+        else
+            entry.Platform = "PS4"
+    }
+
+    const setRadio = function (loc, val) {
+        loc.find(".radio").prop("checked", false)
+        loc.find("#rdo-" + val).prop("checked", true)
+    }
+
+    setRadio($("#id-Economy"), entry.Economy)
+    setRadio($("#id-Lifeform"), entry.Lifeform)
+    setRadio($("#id-Platform"), entry.Platform)
 }
 
 NMSCE.prototype.showSearchPanel = function (evt) {
@@ -258,37 +274,7 @@ NMSCE.prototype.systemToggle = function (evt) {
     }
 }
 
-NMSCE.prototype.buildUserPanel = function () {
-    let loc = $("#pnl-user")
-
-    bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, {
-        required: !fnmsce,
-        labelsize: "col-lg-7 col-md-14 col-sm-14 col-5",
-        menusize: "col",
-    })
-
-    bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, {
-        tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
-        required: true,
-        labelsize: "col-lg-7 col-md-14 col-sm-14 col-5",
-        menusize: "col",
-    })
-}
-
 NMSCE.prototype.displayUser = function () {
-    if (bhs.user.uid && bhs.user.galaxy && bhs.user.platform) {
-        $("#row-playerInput").hide()
-
-        let loc = $("#row-playerDisplay")
-        loc.show()
-        loc.find("#id-Player").text(bhs.user._name)
-        loc.find("#id-Galaxy").text(bhs.user.galaxy)
-        loc.find("#id-Platform").text(bhs.user.platform)
-    } else {
-        $("#row-playerInput").show()
-        $("#row-playerDisplay").hide()
-    }
-
     if (bhs.user.uid && fcedata) {
         nmsce.restoreText(bhs.user.imageText)
         if (typeof nmsce.entries === "undefined")
@@ -296,12 +282,32 @@ NMSCE.prototype.displayUser = function () {
     } else if (fnmsce) {
         if (bhs.user.uid)
             nmsce.getMyFavorites()
-        else if (typeof (Storage) !== "undefined" && !bhs.user.galaxy) {
-            let galaxy = window.localStorage.getItem('nmsce-galaxy')
+        else if (typeof (Storage) !== "undefined" && !bhs.user.galaxy)
+            bhs.user.galaxy = window.localStorage.getItem('nmsce-galaxy')
+    }
 
-            if (galaxy)
-                $("#btn-Galaxy").text(galaxy)
-        }
+    if (fnmsce || !bhs.user._name || !bhs.user.galaxy || !bhs.user.Platform) {
+        $("#row-playerDisplay").hide()
+        let loc = $("#row-playerInput")
+        loc.show()
+
+        if (fcedata)
+            loc.find("#id-Player").text(bhs.user._name)
+
+        loc.find("#btn-Galaxy").text(bhs.user.galaxy)
+
+        loc = loc.find("#id-Platform")
+        loc.find("input").prop("checked", false)
+        if (bhs.user.Platform)
+            loc.find("#rdo-" + bhs.user.Platform).prop("checked", true)
+    } else {
+        $("#row-playerInput").hide()
+        let loc = $("#row-playerDisplay")
+        loc.show()
+
+        loc.find("#id-Player").text(bhs.user._name)
+        loc.find("#id-Galaxy").text(bhs.user.galaxy)
+        loc.find("#id-Platform").text(bhs.user.Platform)
     }
 
     $("#searchlocaltt").hide()
@@ -311,11 +317,31 @@ NMSCE.prototype.displayUser = function () {
 
 NMSCE.prototype.playerToggle = function (evt) {
     if ($(evt).is('.fa-caret-square-down')) {
+        let loc = $("#row-playerDisplay")
+        loc.hide()
+
+        loc.find("#id-Player").val(bhs.user._name)
+        loc.find("#btn-galaxy").text().stripNumber(bhs.user.galaxy)
+        loc.find("#id-Platform input").prop("checked", false)
+        if (bhs.user.Platform)
+            loc.find("#id-Platform #rdo-" + bhs.user.Platform).prop("checked", false)
+
         $("#row-playerInput").show()
-        $("#row-playerDisplay").hide()
     } else {
-        $("#row-playerInput").hide()
-        $("#row-playerDisplay").show()
+        let loc = $("#row-playerInput")
+        loc.hide()
+        bhs.user._name = loc.find("#id-Player").val()
+        bhs.user.galaxy = loc.find("#btn-Galaxy").text().stripNumber()
+        bhs.user.Platform = ""
+        loc = loc.find("#id-Platform :checked")
+        if (loc.length > 0)
+            bhs.user.Platform = loc.prop("id").stripID()
+
+        loc = $("#row-playerDisplay")
+        loc.show()
+        loc.find("#id-Player").text(bhs.user._name)
+        loc.find("#id-Galaxy").text(bhs.user.galaxy)
+        loc.find("#id-Platform").text(bhs.user.Platform)
     }
 }
 
@@ -412,10 +438,7 @@ NMSCE.prototype.extractEntry = function () {
 
     if (!nmsce.lastsys || nmsce.lastsys.uid === bhs.user.uid) {
         entry._name = bhs.user._name
-        entry.org = bhs.user.org
         entry.uid = bhs.user.uid
-        entry.platform = bhs.user.platform
-        entry.galaxy = bhs.user.galaxy
     }
 
     if (nmsce.lastsys)
@@ -424,14 +447,23 @@ NMSCE.prototype.extractEntry = function () {
     entry.version = "beyond"
     entry.page = "nmsce"
 
+    entry.Platform = bhs.user.Platform
+    entry.platform = entry.Platform === "PS4" ? "PS4" : entry.Platform === "PC" || entry.Platform === "XBox" ? "PC-XBox" : ""
+    entry.galaxy = bhs.user.galaxy
+
+    loc = $("#pnl-S1")
     entry.addr = loc.find("#id-addr").val()
     entry.sys = loc.find("#id-sys").val()
     entry.reg = loc.find("#id-reg").val()
-    entry.life = loc.find("#btn-Lifeform").text().stripNumber()
 
-    let eloc = loc.find("#row-Economy :checked")
-    if (eloc.length > 0)
-        entry.Economy = eloc.prop("id").stripID()
+    loc = loc.find("#row-Lifeform :checked")
+    if (loc.length > 0)
+        entry.Lifeform = loc.prop("id").stripID()
+    entry.life = entry.Lifeform
+
+    loc = $("#pnl-S1").find("#row-Economy :checked")
+    if (loc.length > 0)
+        entry.Economy = loc.prop("id").stripID()
 
     entry.xyzs = addressToXYZ(entry.addr)
     let err = bhs.validateAddress(entry.addr)
@@ -458,12 +490,9 @@ NMSCE.prototype.extractEntry = function () {
             entry.id = nmsce.last.id
             entry.Photo = nmsce.last.Photo
 
-            if (nmsce.last.uid === bhs.user.uid) {
-                entry._name = bhs.user._name
-                entry.org = bhs.user.org
-                entry.uid = bhs.user.uid
-                entry.platform = bhs.user.platform
-                entry.galaxy = bhs.user.galaxy
+            if (nmsce.last.uid !== bhs.user.uid) {
+                entry._name = nmsce.last._name
+                entry.uid = nmsce.last.uid
             }
         }
 
@@ -572,6 +601,12 @@ NMSCE.prototype.extractEntry = function () {
 
         if (!nmsce.last || nmsce.last.uid === bhs.user.uid /* || bhs.isRole("admin")*/ ) {
             nmsce.updateEntry(entry)
+
+            if (typeof nmsce.entries === "undefined")
+                nmsce.entries = {}
+            if (typeof nmsce.entries[entry.type.nameToId()] === "undefined")
+                nmsce.entries[entry.type.nameToId()] = {}
+
             nmsce.entries[entry.type.nameToId()][entry.id] = entry
             nmsce.displayListEntry(entry)
             nmsce.updateScreenshots(entry)
@@ -1311,20 +1346,39 @@ NMSCE.prototype.searchSystem = function () {
 NMSCE.prototype.save = function () {
     $("#status").empty()
 
-    let user = bhs.extractUser()
+    let user = nmsce.extractUser()
 
     if (bhs.user.uid && bhs.validateUser(user)) {
         bhs.user = mergeObjects(bhs.user, user)
         bhs.user.imageText = nmsce.extractImgText()
 
         let ref = bhs.getUsersColRef(bhs.user.uid)
-        ref.set(bhs.user).then().catch(err => {
+        ref.set(bhs.user, {
+            merge: true
+        }).then().catch(err => {
             bhs.status("ERROR: " + err)
         })
 
         if (nmsce.extractEntry())
             nmsce.clearPanel()
     }
+}
+
+NMSCE.prototype.extractUser = function () {
+    let loc = $("#pnl-user")
+    let u = {}
+
+    u.version = "beyond"
+    u._name = loc.find("#id-Player").val()
+    u.galaxy = loc.find("#btn-Galaxy").text().stripNumber()
+
+    loc = loc.find("#id-Platform :checked")
+    if (loc.length > 0)
+        u.Platform = loc.prop("id").stripID()
+
+    u.platform = u.Platform === "PS4" ? "PS4" : u.Platform === "PC" || u.Platform === "XBox" ? "PC-XBox" : ""
+
+    return u
 }
 
 NMSCE.prototype.search = function () {
@@ -1403,8 +1457,9 @@ const tRadio = `
         </div>
     </div>`
 const tRadioItem = `
-    <label class="h6 col-p250 txt-inp-def">titlettip&nbsp;
+    <label class="h6 col-p250 txt-inp-def">
         <input type="radio" class="radio" id="rdo-tname" data-last=false onclick="nmsce.toggleRadio(this)">
+            &nbsp;titlettip
     </label>`
 const tCkItem = `
     <div id="row-idname" data-type="checkbox" data-allowhide="ihide" data-req="false" class="pl-15">
@@ -1639,7 +1694,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
             case "radio":
                 let list = []
                 if (f.list) {
-                    appenditem(itm, tRadio, f.name, id, f.ttip, null, f.required, null, f.inputHide)
+                    appenditem(itm, tRadio, f.name, id, f.ttip, f.required, null, f.inputHide)
                     list = f.list
                 } else if (slist[f.sub]) {
                     appenditem(itm, tRadio, f.name, id, typeof slist[f.ttip] === "string" ? slist[f.ttip] : null, f.required, null, f.inputHide)
@@ -5252,7 +5307,6 @@ const objectList = [{
         id: "#id-Economy",
         name: "Economy",
         type: "radio",
-        list: economyListTier
     }],
     fields: [{
         name: "Name",
@@ -5520,11 +5574,10 @@ const objectList = [{
         required: true,
     }, {
         id: "#id-Platform",
-        field: "platform",
+        field: "Platform",
         name: "Platform",
-        type: "menu",
+        type: "radio",
         required: true,
-        list: platformListAll,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
@@ -5822,11 +5875,10 @@ const objectList = [{
         required: true,
     }, {
         id: "#id-Platform",
-        field: "platform",
+        field: "Platform",
         name: "Platform",
-        type: "menu",
+        type: "radio",
         required: true,
-        list: platformListAll,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
@@ -5849,7 +5901,6 @@ const objectList = [{
         id: "#id-Economy",
         name: "Economy",
         type: "radio",
-        list: economyListTier
     }],
     fields: [{
         name: "Name",

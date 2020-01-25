@@ -136,7 +136,10 @@ blackHoleSuns.prototype.onAuthStateChanged = async function (usr) {
         let ref = bhs.getUsersColRef(usr.uid)
         try {
             let doc = await ref.get()
-            user = doc.data()
+            if (doc.exists)
+                user = doc.data()
+            else
+                user.firsttime = firebase.firestore.Timestamp.now()
         } catch {
             user.firsttime = firebase.firestore.Timestamp.now()
         }
@@ -226,14 +229,14 @@ blackHoleSuns.prototype.getRoles = async function () {
         return null
 }
 
-blackHoleSuns.prototype.hasRole =  function (role) {
-    let roles =  bhs.getRoles()
+blackHoleSuns.prototype.hasRole = function (role) {
+    let roles = bhs.getRoles()
     return roles && roles.includes(role)
 }
 
-blackHoleSuns.prototype.isRole =  function (role) {
-    let roles =  bhs.getRoles()
-    return roles && roles.includes(role) &&bhs.user.role === role 
+blackHoleSuns.prototype.isRole = function (role) {
+    let roles = bhs.getRoles()
+    return roles && roles.includes(role) && bhs.user.role === role
 }
 
 blackHoleSuns.prototype.changeName = function (loc, user) {

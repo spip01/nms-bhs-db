@@ -117,6 +117,23 @@
                 <div class="row">
                     <div class="col-md-8 col-14">
                         <div id="panels" class="card card-body" style="border-color:black;">
+                            <div id="pnl-user">
+                                <div class="row">
+                                    <div class="col-lg-7 col-md-7 col-sm-7 col-14">
+                                        <div class="row">
+                                            <div class="col-md-14 col-sm-14 col-6 h6 txt-inp-def">
+                                                Player Name&nbsp;
+                                                <span class="h5 text-danger">*</span>&nbsp;
+                                            </div>
+                                            <input id="id-Player" class="rounded col h5" type="text">
+                                        </div>
+                                    </div>
+
+                                    <div id="id-Galaxy" class="col-lg-7 col-md-7 col-sm-7 col-14"></div>
+                                    <div id="id-Platform" class="col-lg-7 col-md-7 col-sm-7 col-14"></div>
+                                </div>
+                            </div>
+
                             <div id="pnl-S1" class="card pad-bottom">
                                 <div class="card-header txt-def h5">
                                     System Info&nbsp;
@@ -214,7 +231,15 @@
                         <br>
 
                         <nav>
-                            <div class="nav nav-tabs" id="typeTabs" role="tablist">
+                            <div class="nav nav-tabs row" id="typeTabs" role="tablist">
+                                &nbsp;
+                                <span class="txt-def bkg-def rounded h4">&nbsp;
+                                    <i class="far fa-caret-square-up pointer hidden h3"
+                                        onclick="$('[data-allowHide=true').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
+                                    <i class="far fa-caret-square-down pointer h3"
+                                        onclick="$('[data-allowHide=true').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>&nbsp;
+                                    &nbsp;</span>&nbsp;
+                            </div>
                         </nav>
                         <div class="card card-body" style="border-top-left-radius:0px; border-color:black;">
                             <div class="tab-content" id="typePanels"></div>

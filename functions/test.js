@@ -12,41 +12,30 @@ async function main() {
     let ref = admin.firestore().collection("nmsce")
     ref.listDocuments().then(async refs => {
         for (let ref of refs) { // galaxy
-            ref.listCollections().then(async refs => {
-                for (let ref of refs) { // type
-                    // ref = ref.collection("Ship")
-                    let snapshot = await ref.get()
-                    //console.log(ref.path, snapshot.size)
+            // ref.listCollections().then(async refs => {
+            // for (let ref of refs) { // type
+            ref = ref.collection("Multi-Tool")
+            let snapshot = await ref.get()
+            //console.log(ref.path, snapshot.size)
 
-                    for (let doc of snapshot.docs) {
-                        let e = doc.data()
-                        if (e.Economy) {
-                            if (e.Economy === "TT1")
-                                e.Economy = "T1"
-                                else if (e.Economy === "TT2")
-                                e.Economy = "T2"
-                                else if (e.Economy === "TT3")
-                                e.Economy = "T3"
+            for (let doc of snapshot.docs) {
+                let platform = ""
+                let e = doc.data()
+                if (e.platform === "PS4")
+                    platform = "PS4"
+                else if (e.tags && e.tags.includes("xbox"))
+                    platform = "XBox"
+                else platform = "PC"
 
-                            doc.ref.set(e).then(() => {
-                                console.log(e.Name, e.Economy)
-                            }).catch(err => console.log(err))
-                        } else if (e.econ) {
-                            let i = getIndex(economyList, "name", e.econ)
-                            if (i > 0) {
-                                let econ = economyList[i]
-                                if (econ.number > 0) {
-                                    e.Economy = "T" + e.Economy
-
-                                    doc.ref.set(e).then(() => {
-                                        console.log(e.Name, e.Economy)
-                                    }).catch(err => console.log(err))
-                                }
-                            }
-                        }
-                    }
-                }
-            })
+                console.log(platform, e.platform)
+                doc.ref.set({
+                    Platform: platform
+                }, {
+                    merge: true
+                })
+            }
+            //     }
+            // })
         }
     })
 }
