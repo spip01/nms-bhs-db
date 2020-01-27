@@ -152,10 +152,10 @@
 
                             <div id="pnl-S1" class="card card-body" style="padding-top:0px">
                                 <div class="row txt-def h4 rounded">&nbsp;
-                                    <i class="far fa-caret-square-up pointer hidden h3"
-                                        onclick="nmsce.systemToggle(this)"></i>
-                                    <i class="far fa-caret-square-down pointer h3"
-                                        onclick="nmsce.systemToggle(this)"></i>
+                                    <i class="far fa-caret-square-up pointer h3" data-allowhide=true
+                                        onclick="nmsce.expandPanels(false)"></i>
+                                    <i class="far fa-caret-square-down pointer h3 hidden" data-hide=true
+                                        onclick="nmsce.expandPanels(true)"></i>
                                     &nbsp;System Info
                                 </div>
                                 <div id="systemInput">
@@ -232,7 +232,7 @@
                                         </div>
                                     </div>
 
-                                    <div id="row-System" class="row" style="display:none">
+                                    <div id="row-System" class="row" data-allowhide=true>
                                         <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">System</div>
                                         <input id="id-sys" class="rounded col-xl-4 col-md-7 col-sm-5 col-7">
                                         <div id="foundsys" class="col-1 hidden">
@@ -246,7 +246,7 @@
                                         </div>
                                     </div>
 
-                                    <div id="row-Region" class="row" style="display:none">
+                                    <div id="row-Region" class="row" data-allowhide=true>
                                         <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Region</div>
                                         <input id="id-reg" class="rounded col-xl-4 col-md-7 col-sm-5 col-7">&nbsp
                                         <div id="foundreg" class="col-1 hidden">
@@ -260,7 +260,7 @@
                                         </div>
                                     </div>
 
-                                    <div id="row-By" class="row" style="display:none">
+                                    <div id="row-By" class="row" data-allowhide=true>
                                         <div class="col-md-5 col-sm-3 col-5 h6 txt-inp-def">Entered by&nbsp;</div>
                                         <div id="id-by" class="col txt-inp-def"></div>
                                     </div>
@@ -276,11 +276,11 @@
                             <nav>
                                 <div class="nav nav-tabs row" id="typeTabs" role="tablist">
                                     &nbsp;
-                                    <span class="txt-def bkg-def rounded h4">&nbsp;
-                                        <i class="far fa-caret-square-up pointer hidden h3"
-                                            onclick="$('[data-allowHide=true').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
-                                        <i class="far fa-caret-square-down pointer h3"
-                                            onclick="$('[data-allowHide=true').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>&nbsp;
+                                    <span class="txt-def bkg-def rounded h3">&nbsp;
+                                        <i class="far fa-caret-square-up pointer h3" data-allowhide=true
+                                            onclick="nmsce.expandPanels(false)"></i>
+                                        <i class="far fa-caret-square-down pointer h3 hidden" data-hide=true
+                                            onclick="nmsce.expandPanels(true)"></i>&nbsp;
                                         &nbsp;</span>&nbsp;
                                 </div>
                             </nav>

@@ -258,19 +258,13 @@ NMSCE.prototype.showSearchPanel = function (evt) {
         $("#searchPanel").hide()
 }
 
-NMSCE.prototype.systemToggle = function (evt) {
-    $(evt).hide()
-
-    if ($(evt).is('.fa-caret-square-down')) {
-        $(evt).parent().find('.fa-caret-square-up').show()
-        $("#row-By").show()
-        $("#row-Region").show()
-        $("#row-System").show()
+NMSCE.prototype.expandPanels = function (show) {
+    if (show) {
+        $('[data-hide=true').hide()
+        $('[data-allowhide=true').show()
     } else {
-        $(evt).parent().find('.fa-caret-square-down').show()
-        $("#row-By").hide()
-        $("#row-Region").hide()
-        $("#row-System").hide()
+        $('[data-hide=true').show()
+        $('[data-allowhide=true').hide()
     }
 }
 
@@ -279,6 +273,8 @@ NMSCE.prototype.displayUser = function () {
         nmsce.restoreText(bhs.user.imageText)
         if (typeof nmsce.entries === "undefined")
             nmsce.getEntries()
+        if (bhs.user.nmscesettings)
+            nmsce.expandPanels(bhs.user.nmscesettings.expandPanels)
     } else if (fnmsce) {
         if (bhs.user.uid)
             nmsce.getMyFavorites()
@@ -820,9 +816,6 @@ NMSCE.prototype.executeSearch = function (search) {
                 for (let i of q.list)
                     ref = ref.where(q.name + "." + i, "==", true)
                 break
-            case "checkbox":
-                ref = ref.where(q.name, q.query ? q.query : "==", q.val === "True")
-                break
             default:
                 ref = ref.where(q.name, q.query ? q.query : "==", q.val)
                 break
@@ -977,7 +970,7 @@ NMSCE.prototype.searchList = function (s, list, loc) {
                             ok = false
                     break
                 case "checkbox":
-                    ok = e[q.name] === (q.val === "True")
+                    ok = e[q.name] === q.val
                     break
                 default:
                     ok = q.query === ">=" ? e[q.name] >= q.val : e[q.name] === q.val
@@ -1195,11 +1188,10 @@ NMSCE.prototype.extractSearch = function (fcn) {
             case "menu":
                 val = loc.find("#btn-" + fld.id.stripID()).text().stripNumber()
                 break
-            case "checkbox":
             case "radio":
-                let rloc = loc.find(":checked")
-                if (rloc.length > 0)
-                    val = rloc.prop("id").stripID()
+                loc = loc.find(":checked")
+                if (loc.length > 0)
+                    val = loc.prop("id").stripID()
                 break
             default:
                 val = loc.val()
@@ -1277,10 +1269,18 @@ NMSCE.prototype.extractSearch = function (fcn) {
                 }
                 break
             case "checkbox":
-                loc = loc.find("input :checked")
-                if (loc.length > 0) {
-                    itm.val = loc.prop("id").stripID()
-                    search.push(itm)
+                if (fcedata) {
+                    val = loc.find("input").prop("checked")
+                    if (val) {
+                        itm.val = val
+                        search.push(itm)
+                    }
+                } else {
+                    loc = loc.find(":checked")
+                    if (loc.length > 0) {
+                        itm.val = loc.prop("id").stripID() === "True"
+                        search.push(itm)
+                    }
                 }
                 break
             case "radio":
@@ -1398,6 +1398,11 @@ NMSCE.prototype.extractUser = function () {
         u.Platform = loc.prop("id").stripID()
 
     u.platform = u.Platform === "PS4" ? "PS4" : u.Platform === "PC" || u.Platform === "XBox" ? "PC-XBox" : ""
+
+    if (fcedata) {
+        u.nmscesettings = {}
+        u.nmscesettings.expandPanels = $("nav .fa-caret-square-up").is(":visible")
+    }
 
     return u
 }
@@ -1754,8 +1759,6 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
 
         if (f.startState === "hidden")
             itm.find("#row-" + id).hide()
-
-        itm.find("[data-allowHide=true]").hide()
     }
 }
 
@@ -2474,7 +2477,7 @@ NMSCE.prototype.drawText = function (alt, altw) {
                 if (text.type !== "img") {
                     if (text.y + text.height - text.lineheight > txtcanvas.height)
                         text.y = txtcanvas.height - text.height + text.lineheight
-                    else if (text.y - text.lineheight  < 0)
+                    else if (text.y - text.lineheight < 0)
                         text.y = text.lineheight
                 } else {
                     if (text.y + text.height > txtcanvas.height)
@@ -2967,13 +2970,13 @@ function getEntry() {
     let type = $("#typePanels .active").prop("id").stripID()
     let gal = $("#btn-Galaxy").text().stripNumber()
 
-    let id = (addr + " " + name.toLowerCase()).nameToId()
-
     if (gal && type && addr && name) {
-        let ref = bhs.fs.doc("nmsce/" + gal + "/" + type + "/" + id)
-        ref.get().then(doc => {
-            if (doc.exists)
-                nmsce.displaySingle(doc.data())
+        let ref = bhs.fs.collection("nmsce/" + gal + "/" + type)
+        ref = ref.where("Name", "==", name)
+        ref = ref.where("addr", "==", addr)
+        ref.get().then(snapshot => {
+            if (!snapshot.empty)
+                nmsce.displaySingle(snapshot.docs[0].data())
         })
     }
 }
