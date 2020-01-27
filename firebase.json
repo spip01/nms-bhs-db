@@ -15,6 +15,7 @@
     ],
     "source": "functions"
   },
+
   "hosting": [{
     "target": "bhs",
     "public": "public",
@@ -33,6 +34,7 @@
         "value": "max-age=1000000"
       }]
     }]
+
   }, {
     "target": "test",
     "public": "public",
@@ -57,6 +59,7 @@
         "value": "max-age=600"
       }]
     }]
+
   }, {
     "target": "nmsce",
     "public": "public",
@@ -75,6 +78,9 @@
       "headers": [{
         "key": "Access-Control-Allow-Origin",
         "value": "*"
+      }, {
+        "key": "Cache-Control",
+        "value": "max-age=43200"
       }]
     }]
   }]

@@ -159,6 +159,9 @@
                                     &nbsp;System Info
                                 </div>
                                 <div id="systemInput">
+                                    <div id="row-glyphCanvas" class="row hidden">
+                                        <canvas id="id-glyphCanvas" class="border"></canvas>
+                                    </div>
                                     <div id="id-addrInput">
                                         <div class="row">
                                             <div class="col-lg-4 col-md-7 col-sm-3 col-7 h6 txt-inp-def">Coords<span
@@ -422,55 +425,51 @@
                         <button id="editScreenshot" class="btn btn-sm btn-def h6 hidden"
                             onclick="nmsce.editScreenshot(true)">Edit</button>&nbsp;
                     </div>
-                    <span id="imageTextBlock">
-                        <div class="row">
-                            <div id="img-text" class="txt-inp-def h6 row"></div>
-                        </div>
+                    <div id="imageTextBlock" class="card">
+                        <div id="img-text" class="txt-inp-def h6 card-body"></div>
                         <br>
-
-                        <div class="row border-top border-bottom">
+                        <div class="card card-body">
+                            <div class="row" style="padding-bottom:0px;">
+                                <div id="id-Font" class="col-14 h5"></div>
+                                <label class="col-sm-7 col-14 txt-inp-def">Size
+                                    <input id="sel-size" class="col-8" onchange="nmsce.setSize(this)" type="number"
+                                        value=18 min=0>
+                                </label>
+                                <label class="col-sm-7 col-14 txt-inp-def">Color
+                                    <input id="sel-color" class="col-7 bkg-def" style="border-color:black"
+                                        onchange="nmsce.setColor(this)" type="color" value="#ffffff">&nbsp;
+                                </label>
+                            </div>
                             <br>
-                            <div id="id-Font" class="col-14 h5"></div>
-                            <label class="col-sm-7 col-14 txt-inp-def">Size
-                                <input id="sel-size" class="col-8" onchange="nmsce.setSize(this)" type="number" value=18
-                                    min=0>
-                            </label>
-                            <label class="col-sm-7 col-14 txt-inp-def">Color
-                                <input id="sel-color" class="col-7 bkg-def" style="border-color:black"
-                                    onchange="nmsce.setColor(this)" type="color" value="#ffffff">&nbsp;
-                            </label>
-                            <span id="measurefont" style="visibility:hidden; float:left; white-space: nowrap;"></span>
-                        </div>
-                        <br>
-
-                        <div clss="row">
-                            <button class="btn btn-sm btn-def h6 col-5"
-                                onclick="nmsce.loadImgText(true)">Clear</button>&nbsp;
-                            <button class="btn btn-sm btn-def h6 col-5"
-                                onclick="nmsce.restoreText(null, true)">Reload</button>
-                        </div>
-                        <br>
-                        <div clss="row">
-                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                                data-placement="top" title="You can position text by clicking and dragging.">
-                            </i>&nbsp;
-                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('left')">
-                                <i class="fas fa-align-left"></i>
-                            </button>&nbsp;
-                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('right')">
-                                <i class="fas fa-align-right"></i>
-                            </button>&nbsp;
-                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('top')">
-                                <i class="fas fa-align-left" style="transform: rotate(90deg);"></i>
-                            </button>&nbsp;
-                            <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('bottom')">
-                                <i class="fas fa-align-left" style="transform: rotate(270deg);"></i>
-                            </button>
-                            <!--button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('justify')">
+                            <div clss="row" style="padding-top:0px;">
+                                <button class="btn btn-sm btn-def h6 col-5"
+                                    onclick="nmsce.loadImgText(true)">Reset</button>&nbsp;
+                                <button class="btn btn-sm btn-def h6 col-5"
+                                    onclick="nmsce.restoreText(null, true)">Redraw</button>
+                            </div>
+                            <br>
+                            <div clss="row">
+                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                    data-placement="top" title="You can position text by clicking and dragging.">
+                                </i>&nbsp;
+                                <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('left')">
+                                    <i class="fas fa-align-left"></i>
+                                </button>&nbsp;
+                                <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('right')">
+                                    <i class="fas fa-align-right"></i>
+                                </button>&nbsp;
+                                <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('top')">
+                                    <i class="fas fa-align-left" style="transform: rotate(90deg);"></i>
+                                </button>&nbsp;
+                                <button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('bottom')">
+                                    <i class="fas fa-align-left" style="transform: rotate(270deg);"></i>
+                                </button>
+                                <!--button class="btn btn-sm h6 col-2 btn-def" onclick="nmsce.alignText('justify')">
                             <i class="fas fa-align-justify"></i>
                         </button-->
+                            </div>
                         </div>
-                    </span>
+                    </div>
                     <br>
                     <div class="row">
                         <a id="permalink" class="h5" href="">
@@ -481,6 +480,8 @@
                             </i>
                         </a>
                     </div>
+                    <span id="measurefont" class="row"
+                        style="visibility:hidden; float:left; white-space:nowrap;"></span>
                 </div>
             </div>
         </div>

@@ -60,7 +60,7 @@ $(document).ready(() => {
     }
 
     if (passed.i && passed.g && passed.t) {
-        let ref = bhs.fs.doc("nmsce/" + passed.g.idToName() + "/" + passed.t.idToName() + "/" + passed.i)
+        let ref = bhs.fs.doc("nmsce/" + passed.g.nameToId() + "/" + passed.t + "/" + passed.i)
         ref.get().then(doc => {
             if (doc.exists) {
                 if (fnmsce || fpreview)
@@ -391,6 +391,9 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     let loc = $("#typePanels #hdr-Ship")
     loc.find("#row-Latitude").hide()
     loc.find("#row-Longitude").hide()
+    loc.find("#row-Planet-Index").hide()
+    loc.find("#row-Planet-Name").hide()
+    loc.find("#row-Class").hide()
 
     $("#id-ssImage").hide()
     $("#id-ssImage").attr("src", "")
@@ -462,9 +465,10 @@ NMSCE.prototype.extractEntry = function () {
     entry.reg = loc.find("#id-reg").val()
 
     loc = loc.find("#row-Lifeform :checked")
-    if (loc.length > 0)
+    if (loc.length > 0) {
         entry.Lifeform = loc.prop("id").stripID()
-    entry.life = entry.Lifeform
+        entry.life = entry.Lifeform
+    }
 
     loc = $("#pnl-S1").find("#row-Economy :checked")
     if (loc.length > 0)
@@ -479,7 +483,7 @@ NMSCE.prototype.extractEntry = function () {
 
     if (ok) {
         if (!last || last.uid === bhs.user.uid || bhs.isRole("admin")) {
-            if (entry.sys !== last.sys || entry.reg !== last.reg || entry.life !== last.life || entry.Economy !== last.Economy)
+            if (!last || entry.sys !== last.sys || entry.reg !== last.reg || entry.life !== last.life || entry.Economy !== last.Economy)
                 bhs.updateEntry(entry)
         } else {
             bhs.status(bhs.user._name + " is not creator of " + entry.addr + " " + entry.sys, true)
@@ -1622,9 +1626,8 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 } else {
                     appenditem(itm, tCkItem, f.name, id, f.ttip, f.required, null, f.inputHide)
 
-                    if (f.onchange) {
-                        itm.find("#rdo-" + id).change(f.onchange)
-                    }
+                    if (f.onchange)
+                        itm.find("#ck-" + id).change(f.onchange)
                 }
                 break
             case "string":
@@ -1854,16 +1857,18 @@ NMSCE.prototype.toggleRadio = function (evt) {
 
 function showLatLong() {
     let loc = $("#typePanels #hdr-Ship")
-    if ($(this).find("input").prop("checked")) {
+    if ($(this).prop("checked")) {
         loc.find("#row-Latitude").show()
         loc.find("#row-Longitude").show()
         loc.find("#row-Planet-Index").show()
         loc.find("#row-Planet-Name").show()
+        loc.find("#row-Class").show()
     } else {
         loc.find("#row-Latitude").hide()
         loc.find("#row-Longitude").hide()
         loc.find("#row-Planet-Index").hide()
         loc.find("#row-Planet-Name").hide()
+        loc.find("#row-Class").hide()
     }
 }
 
@@ -1948,16 +1953,21 @@ NMSCE.prototype.loadImgText = function (clear) {
 
     const textInp = `
         <div class="row">
-            <label class="col-6 txt-inp-def pl-30">
-                <input id="ck-text" type="checkbox" data-loc="#id-text"
-                    onchange="nmsce.getImageText(this, true)">
-                Text&nbsp;
+            <button type="button" class="col-4 btn btn-def btn-sm" onclick="nmsce.selectGlyphs()">
+                Select Glyphs
+            </button>&nbsp;
+            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
+                data-placement="bottom"
+                title="Select glyphs on image and display under coordinate input. Location is saved for future use.">
+            </i>&nbsp;
+            <label class="col txt-inp-def">
+                <input id="ck-saveglyphloc" type="checkbox" onchange="nmsce.toggleGlyphs(this)">
+                Apply Saved Location&nbsp;
                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
                     data-placement="bottom"
-                    title="Use Line break, <br>, to separate multiple lines.">
+                    title="Use saved glyph location when opening new images.">
                 </i>&nbsp;
             </label>
-            <input id="id-text" class="rounded col-8" type="text" onchange="nmsce.getImageText(this, true)">
         </div>
         <br>
         <div class="row">
@@ -1971,6 +1981,19 @@ NMSCE.prototype.loadImgText = function (clear) {
             </label>
             <input id="id-mylogo" type="file" class="col-9 form-control form-control-sm" 
                 accept="image/*" name="files[]" onchange="nmsce.loadMyLogo(this)">&nbsp
+        </div>
+        <br>
+        <div class="row">
+            <label class="col-5 txt-inp-def pl-30">
+                <input id="ck-text" type="checkbox" data-loc="#id-text"
+                    onchange="nmsce.getImageText(this, true)">
+                Text&nbsp;
+                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
+                    data-placement="bottom"
+                    title="Use Line break, <br>, to separate multiple lines.">
+                </i>&nbsp;
+            </label>
+            <input id="id-text" class="rounded col-9" type="text" onchange="nmsce.getImageText(this, true)">
         </div>
         <br>`
 
@@ -1995,6 +2018,9 @@ NMSCE.prototype.loadImgText = function (clear) {
 
     if (nmsce.imageText.mylogo === "undefined")
         nmsce.initTxtItem("mylogo")
+
+    if (nmsce.imageText.selGlyph === "undefined")
+        nmsce.initTxtItem("selGlyph")
 
     let active = $("#typePanels .active")
     let type = active.prop("id").stripID()
@@ -2028,7 +2054,7 @@ NMSCE.prototype.initTxtItem = function (id) {
     if (typeof nmsce.imageText[id] === "undefined")
         nmsce.imageText[id] = {}
 
-    if (id === "logo" || id === "mylogo") {
+    if (id === "logo" || id === "mylogo" || id === "selGlyph") {
         nmsce.imageText[id] = {
             x: 20,
             y: 20,
@@ -2042,7 +2068,7 @@ NMSCE.prototype.initTxtItem = function (id) {
     } else
         nmsce.imageText[id] = {
             font: id === "Glyphs" ? "glyph" : "Arial",
-            fSize: 18,
+            fSize: 24,
             color: "#ffffff",
             x: 20,
             y: 20,
@@ -2123,6 +2149,9 @@ NMSCE.prototype.getImageText = function (evt, draw) {
 
         nmsce.imageText[id].text = text
         nmsce.imageText[id].ck = true
+        for (let k of Object.keys(nmsce.imageText))
+            nmsce.imageText[k].sel = false
+        nmsce.imageText[id].sel = true
         nmsce.imageText[id].sel = true
         if (data.type !== "img" && text)
             nmsce.imageText[id] = nmsce.measureText(nmsce.imageText[id])
@@ -2141,6 +2170,11 @@ NMSCE.prototype.restoreText = function (iTxt, draw) {
 
     if (typeof nmsce.imageText === "undefined")
         return
+
+    if (typeof nmsce.imageText.selGlyph === "undefined")
+        nmsce.initTxtItem("selGlyph")
+    else if (nmsce.imageText.selGlyph.ck)
+        nmsce.dispGlyph()
 
     if (typeof nmsce.imageText.logo === "undefined")
         nmsce.initTxtItem("logo")
@@ -2345,6 +2379,9 @@ NMSCE.prototype.measureText = function (t) {
     t.width = mfLoc.width()
     t.height = mfLoc.height()
 
+    mfLoc.text(t.text)
+    t.lineheight = mfLoc.height()
+
     return t
 }
 
@@ -2435,10 +2472,10 @@ NMSCE.prototype.drawText = function (alt, altw) {
                     text.x = 0
 
                 if (text.type !== "img") {
-                    if (text.y > txtcanvas.height)
-                        text.y = txtcanvas.height
-                    else if (text.y - text.height < 0)
-                        text.y = text.height
+                    if (text.y + text.height - text.lineheight > txtcanvas.height)
+                        text.y = txtcanvas.height - text.height + text.lineheight
+                    else if (text.y - text.lineheight  < 0)
+                        text.y = text.lineheight
                 } else {
                     if (text.y + text.height > txtcanvas.height)
                         text.y = txtcanvas.height - text.height
@@ -2540,7 +2577,64 @@ NMSCE.prototype.redditShare = function () {
     }, {
         merge: true
     }).then(() => $("#posted").text("Posted"))
+}
 
+NMSCE.prototype.selectGlyphs = function () {
+    nmsce.imageText.selGlyph.sel = true
+    nmsce.imageText.selGlyph.width = 0
+    nmsce.imageText.selGlyph.height = 0
+    nmsce.imageText.selGlyph.ck = true
+    $("#ck-saveglyphloc").prop("checked", true)
+
+    delete nmsce.startX
+    delete nmsce.startY
+}
+
+NMSCE.prototype.toggleGlyphs = function (evt) {
+    nmsce.imageText.selGlyph.ck = $(evt).prop("checked")
+    nmsce.dispGlyph()
+}
+
+NMSCE.prototype.dispGlyph = function () {
+    let row = $("#row-glyphCanvas")
+
+    if (!nmsce.imageText.selGlyph.ck || !nmsce.screenshot) {
+        row.hide()
+        return
+    }
+
+    let text = nmsce.imageText.selGlyph
+    text.sel = false
+
+    row.show()
+
+    let ss = document.createElement('canvas')
+    let ctx = ss.getContext("2d")
+    ss.width = nmsce.screenshot.naturalWidth
+    ss.height = nmsce.screenshot.naturalHeight
+    ctx.drawImage(nmsce.screenshot, 0, 0)
+
+    let canvas = document.getElementById("id-canvas")
+
+    let scale = nmsce.screenshot.naturalWidth / canvas.width
+
+    let imgData = ctx.getImageData(text.x * scale, text.y * scale, text.width * scale, text.height * scale)
+
+    // var pixels = imgData.data;
+    // for (var i = 0, n = pixels.length; i < n; i += 4) {
+    //     //var grayscale = pixels[i] * .3 + pixels[i + 1] * .59 + pixels[i + 2] * .11
+    //     let grayscale = pixels[i] * .3 + pixels[i + 1] * .59 + pixels[i + 2] * .11 > 235 ?0xff:0x00
+    //     pixels[i] = grayscale; // red
+    //     pixels[i + 1] = grayscale; // green
+    //     pixels[i + 2] = grayscale; // blue
+    // }
+
+    canvas = document.getElementById("id-glyphCanvas")
+    ctx = canvas.getContext("2d")
+    canvas.height = text.height * scale
+    canvas.width = text.width * scale
+
+    ctx.putImageData(imgData, 0, 0)
 }
 
 NMSCE.prototype.textHittest = function (x, y, text) {
@@ -2568,7 +2662,15 @@ NMSCE.prototype.handleMouseDown = function (e) {
     for (let k of keys) {
         let text = nmsce.imageText[k]
 
-        if ((k === "logo" || text.ck) && nmsce.textHittest(startX, startY, text)) {
+        if (k === "selGlyph" && text.sel) {
+            text.x = startX
+            text.y = startY
+            text.resize = "f"
+            nmsce.startX = startX
+            nmsce.startY = startY
+            hit = k
+            break
+        } else if ((k === "logo" || text.ck) && nmsce.textHittest(startX, startY, text)) {
             if (k === "mylogo" && text.sel) {
                 if (startX - text.x < 8)
                     text.resize = "l"
@@ -2609,8 +2711,12 @@ NMSCE.prototype.handleMouseDown = function (e) {
 
 NMSCE.prototype.handleMouseUp = function (e) {
     e.preventDefault()
+
     delete nmsce.startX
-    delete nmsce.starty
+    delete nmsce.startY
+
+    if (nmsce.imageText.selGlyph.sel)
+        nmsce.dispGlyph()
 }
 
 NMSCE.prototype.handleMouseOut = function (e) {
@@ -2666,6 +2772,10 @@ NMSCE.prototype.handleMouseMove = function (e) {
                         break
                     case "b":
                         text.width *= (text.height + dy) / text.height
+                        text.height += dy
+                        break
+                    case "f":
+                        text.width += dx
                         text.height += dy
                         break
                 }
@@ -2823,12 +2933,8 @@ NMSCE.prototype.updateEntry = function (entry) {
     if (typeof entry.created === "undefined")
         entry.created = firebase.firestore.Timestamp.now()
 
-    if (typeof entry.id === "undefined") {
-        if (!entry.Name)
-            entry.id = entry.addr.nameToId() + "-" + uuidv4()
-        else
-            entry.id = entry.addr.nameToId() + "-" + entry.Name.nameToId().toLowerCase()
-    }
+    if (typeof entry.id === "undefined")
+        entry.id = uuidv4()
 
     if (typeof entry.Photo === "undefined")
         entry.Photo = entry.type + "-" + entry.id + ".jpg"
@@ -2908,7 +3014,7 @@ const resultsTable = [{
 }, {
     name: "Top Favorites",
     field: "votes.favorite",
-    limit: 4,
+    limit: 3,
 }, {
     name: "My Favorites",
     group: "votes",
@@ -5378,6 +5484,12 @@ const objectList = [{
         imgText: true,
         search: true,
         inputHide: true,
+    }, {
+        name: "Class",
+        type: "radio",
+        startState: "hidden",
+        list: classList,
+        imgText: true,
     }, {
         name: "Latitude",
         type: "string",
