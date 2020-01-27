@@ -109,12 +109,29 @@ NMSCE.prototype.buildPanels = function () {
     addRadioList($("#id-Lifeform"), "Lifeform", lifeformList)
     addRadioList($("#id-Platform"), "Platform", platformListAll)
 
-    bhs.buildMenu($("#pnl-user"), "Galaxy", galaxyList, null, {
-        tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
-        required: true,
-        labelsize: "col-lg-7 col-md-14 col-sm-14 col-5",
-        menusize: "col",
-    })
+    if (fnmsce) {
+        let ref = bhs.fs.collection("nmsce")
+        ref.get().then(snapshot => {
+            let galaxyList = []
+            for (let doc of snapshot.docs) {
+                galaxyList.push({
+                    name: doc.ref.id
+                })
+            }
+
+            bhs.buildMenu($("#pnl-user"), "Galaxy", galaxyList, null, {
+                required: true,
+                labelsize: "col-lg-7 col-md-14 col-sm-14 col-5",
+                menusize: "col",
+            })
+        })
+    } else
+        bhs.buildMenu($("#pnl-user"), "Galaxy", galaxyList, null, {
+            tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
+            required: true,
+            labelsize: "col-lg-7 col-md-14 col-sm-14 col-5",
+            menusize: "col",
+        })
 
     addGlyphButtons($("#glyphbuttons"), nmsce.addGlyph)
 }
