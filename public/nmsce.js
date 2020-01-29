@@ -179,10 +179,9 @@ NMSCE.prototype.changeAddr = function (evt) {
         }
 
         addr = reformatAddress(addr)
-        let glyph = addrToGlyph(addr)
         let pnl = $(evt).closest("[id|='pnl'")
 
-        nmsce.dispAddr(pnl, addr, glyph)
+        nmsce.dispAddr(pnl, addr)
 
         if (!fnmsce) {
             nmsce.lastsys = null
@@ -196,10 +195,12 @@ NMSCE.prototype.changeAddr = function (evt) {
     }
 }
 
-NMSCE.prototype.dispAddr = function (pnl, addr, glyph) {
+NMSCE.prototype.dispAddr = function (pnl, addr) {
+    let glyph = addrToGlyph(addr)
     let loc = pnl.find("#id-glyphInput")
     loc.find("#id-addr").text(addr)
     loc.find("#id-glyph").val(glyph)
+    loc.find("#id-hex").text(glyph)
 
     loc = pnl.find("#id-addrInput")
     loc.find("#id-addr").val(addr)
@@ -226,8 +227,8 @@ NMSCE.prototype.displaySystem = function (entry) {
 
     $("#btn-Galaxy").text(entry.galaxy)
 
-    loc.find("#id-addr").val(entry.addr)
-    loc.find("#id-glyph").html(addrToGlyph(entry.addr))
+    nmsce.dispAddr(loc, entry.addr)
+
     loc.find("#id-sys").val(entry.sys)
     loc.find("#id-reg").val(entry.reg)
 
@@ -277,11 +278,11 @@ NMSCE.prototype.showSearchPanel = function (evt) {
 
 NMSCE.prototype.expandPanels = function (show) {
     if (show) {
-        $('[data-hide=true').hide()
-        $('[data-allowhide=true').show()
+        $('[data-hide=true]').hide()
+        $('[data-allowhide=true]').show()
     } else {
-        $('[data-hide=true').show()
-        $('[data-allowhide=true').hide()
+        $('[data-hide=true]').show()
+        $('[data-allowhide=true]').hide()
     }
 }
 
@@ -299,28 +300,28 @@ NMSCE.prototype.displayUser = function () {
             bhs.user.galaxy = window.localStorage.getItem('nmsce-galaxy')
     }
 
+    let loc = $("#row-playerInput")
+    if (fcedata)
+        loc.find("#id-Player").text(bhs.user._name)
+
+    loc.find("#btn-Galaxy").text(bhs.user.galaxy)
+
+    loc = loc.find("#id-Platform")
+    loc.find("input").prop("checked", false)
+    if (bhs.user.Platform)
+        loc.find("#rdo-" + bhs.user.Platform).prop("checked", true)
+
+    loc = $("#row-playerDisplay")
+    loc.find("#id-Player").text(bhs.user._name)
+    loc.find("#id-Galaxy").text(bhs.user.galaxy)
+    loc.find("#id-Platform").text(bhs.user.Platform)
+
     if (fnmsce || !bhs.user._name || !bhs.user.galaxy || !bhs.user.Platform) {
         $("#row-playerDisplay").hide()
-        let loc = $("#row-playerInput")
-        loc.show()
-
-        if (fcedata)
-            loc.find("#id-Player").text(bhs.user._name)
-
-        loc.find("#btn-Galaxy").text(bhs.user.galaxy)
-
-        loc = loc.find("#id-Platform")
-        loc.find("input").prop("checked", false)
-        if (bhs.user.Platform)
-            loc.find("#rdo-" + bhs.user.Platform).prop("checked", true)
+        $("#row-playerInput").show()
     } else {
         $("#row-playerInput").hide()
-        let loc = $("#row-playerDisplay")
-        loc.show()
-
-        loc.find("#id-Player").text(bhs.user._name)
-        loc.find("#id-Galaxy").text(bhs.user.galaxy)
-        loc.find("#id-Platform").text(bhs.user.Platform)
+        $("#row-playerDisplay").show()
     }
 
     $("#searchlocaltt").hide()
@@ -361,6 +362,9 @@ NMSCE.prototype.playerToggle = function (evt) {
 NMSCE.prototype.clearPanel = function (all, savelast) {
     const clr = (pnl) => {
         pnl.find("input").each(function () {
+            if ($(this).prop("id")==="ck-glyphs")
+                return
+
             let type = $(this).prop("type")
             if (type === "checkbox")
                 $(this).prop("checked", false)
@@ -386,6 +390,7 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
         loc.find("#id-by").empty()
 
         loc.find("#id-glyphInput #id-addr").empty()
+        loc.find("#id-glyphInput #id-hex").empty()
         loc.find("#id-addrInput #id-glyph").empty()
         loc.find("#id-addrInput #id-hex").empty()
 
@@ -662,7 +667,7 @@ NMSCE.prototype.displaySingle = function (entry) {
         entry.Lifeform = entry.life
 
     if (!entry.Economy && entry.econ) {
-        let i = getIndex(economyList, "name", economy.econ)
+        let i = getIndex(economyList, "name", entry.econ)
         if (i > 0 && economyList[i].number > 0)
             entry.Economy = "T" + economyList[i].number
     } else if (typeof entry.Economy === "number")
@@ -1496,7 +1501,7 @@ const tRadio = `
     <div id="row-idname" data-type="radio" data-allowhide="ihide" data-req="ifreq" class="row">
         <div class="radio col-3 h6 txt-inp-def">titlettip:&nbsp;</div>
         <div class="col-11">
-            <div id="list" class="row"></div
+            <div id="list" class="row"></div>
         </div>
     </div>`
 const tRadioItem = `
