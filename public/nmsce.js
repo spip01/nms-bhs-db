@@ -6050,11 +6050,6 @@ const objectList = [{
         field: "sys",
         name: "System",
         type: "string",
-    }, {
-        field: "Economy",
-        id: "#id-Economy",
-        name: "Economy",
-        type: "radio",
     }],
     fields: [{
         name: "Name",
@@ -6070,12 +6065,27 @@ const objectList = [{
         imgText: true,
         search: true,
     }, {
+        name: "Planet Name",
+        type: "string",
+        imgText: true,
+        inputHide: true,
+    }, {
         name: "Planet Index",
         type: "number",
         range: 15,
-        required: true,
         ttip: planetNumTip,
+        inputHide: true,
     }, {
+        name: "Latitude",
+        imgText: true,
+        type: "string",
+        inputHide: true,
+    }, {
+        name: "Longitude",
+        imgText: true,
+        type: "string",
+        inputHide: true,
+    },  {
         name: "Game Mode",
         type: "menu",
         list: modeList,
@@ -6087,7 +6097,7 @@ const objectList = [{
         name: "Tags",
         type: "tags",
         imgText: true,
-        max: 4,
+        max: 6,
         ttip: "If the base was created on XBox please tag with 'xbox'.",
         search: true,
     }, {
