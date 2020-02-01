@@ -302,6 +302,15 @@ body {
     padding-left: 30px !important;
 } 
 
+.parts-map {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+}
+
 @-webkit-keyframes pulse {
     from {
         background-color: #008000;

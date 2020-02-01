@@ -362,7 +362,7 @@ NMSCE.prototype.playerToggle = function (evt) {
 NMSCE.prototype.clearPanel = function (all, savelast) {
     const clr = (pnl) => {
         pnl.find("input").each(function () {
-            if ($(this).prop("id")==="ck-glyphs")
+            if ($(this).prop("id") === "ck-glyphs")
                 return
 
             let type = $(this).prop("type")
@@ -396,17 +396,15 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
 
         clr($("#pnl-S1"))
 
-        $("#pnl-map [id|='slist']").hide()
-
         if (fnmsce)
             $("#pnl-user #id-Player").val("")
     }
 
-    $("[id='map-selected'] img").each(function () {
-        $(this).hide()
-    })
+    let loc = $("#pnl-map [id|='map']")
+    loc.data("selected", false)
+    loc.find("*").css("stroke", "#808080")
 
-    let loc = $("#typePanels #hdr-Ship")
+    loc = $("#typePanels #hdr-Ship")
     loc.find("#row-Latitude").hide()
     loc.find("#row-Longitude").hide()
     loc.find("#row-Planet-Index").hide()
@@ -604,17 +602,22 @@ NMSCE.prototype.extractEntry = function () {
     }
 
     if (ok) {
-        loc = $("[id='map-selected']")
-        for (let page of loc) {
-            if ($(page).is(":visible")) {
-                let id = $(page).closest("[id|='row']").prop("id").stripID()
+        let loc = $("#pnl-map [id|='row']")
+        for (let row of loc) {
+            if ($(row).is(":visible")) {
+                let id = $(row).prop("id").stripID()
                 entry[id] = {}
+                entry[id + "-name"] = {}
 
-                let sel = $(page).children()
-                for (let s of sel) {
-                    if ($(s).is(":visible")) {
-                        let alt = $(s).attr("alt")
-                        entry[id][alt] = true
+                let items = $(row).find("g[id|='map']")
+                for (let i of items) {
+                    let data = $(i).data()
+
+                    if (data && data.selected) {
+                        let iid = $(i).prop("id").stripID()
+                        let title = $(i).find("title").text()
+                        entry[id][iid] = true
+                        entry[id + "-name"][iid] = title
                     }
                 }
             }
@@ -678,7 +681,8 @@ NMSCE.prototype.displaySingle = function (entry) {
     let link = "https://nmsce.com/preview.html?i=" + entry.id + "&g=" + entry.galaxy.nameToId() + "&t=" + entry.type.nameToId()
     $("#permalink").attr("href", link)
 
-    let disp = function (flds, pnl) {
+    let disp = function (flds, pnltype, pnl) {
+        pnl = pnl ? pnl : $("#typePanels " + pnltype)
         for (let fld of flds) {
             let id = fld.name.nameToId()
             let row = pnl.find("#row-" + id)
@@ -704,7 +708,7 @@ NMSCE.prototype.displaySingle = function (entry) {
                     row.find("#item-" + entry[id].nameToId()).click()
 
                     if (fld.sublist)
-                        disp(fld.sublist, pnl.find("#slist-" + entry[id].nameToId()))
+                        disp(fld.sublist, pnltype, pnl.find("#slist-" + entry[id].nameToId()))
                     break
                 case "radio":
                     if (entry[id]) {
@@ -716,33 +720,20 @@ NMSCE.prototype.displaySingle = function (entry) {
                     if (entry[id] !== row.find("input").prop("checked"))
                         row.find("input").click()
                     break
+                case "map":
+                    let map = $("#pnl-map " + pnltype + " #row-" + id)
+                    let list = Object.keys(entry[id])
+                    for (let i of list)
+                        mapSelect(map.find("#map-" + i), true)
+                    break
             }
         }
     }
 
-    let pnl = $("#typePanels #pnl-" + entry.type)
     let idx = getIndex(objectList, "name", entry.type)
     let obj = objectList[idx]
 
-    disp(obj.fields, pnl)
-
-    let loc = $("[id='map-selected']")
-    loc.find("img").hide()
-
-    for (let page of loc) {
-        if ($(page).is(":visible")) {
-            let id = $(page).closest("[id|='row']").prop("id").stripID()
-            if (typeof entry[id] !== "undefined") {
-                let sel = $(page).children()
-
-                for (let s of sel) {
-                    let alt = $(s).attr("alt")
-                    if (entry[id][alt])
-                        $(s).show()
-                }
-            }
-        }
-    }
+    disp(obj.fields, "#pnl-" + entry.type)
 
     if (entry.imageText)
         bhs.user.imageText = entry.imageText
@@ -801,9 +792,13 @@ NMSCE.prototype.displaySearch = function (search) {
                     loc.find("#item-" + i.nameToId()).click()
                 break
             case "map":
-                let map = $("#map-" + itm.page + " #map-selected")
-                for (let i of itm.list)
-                    map.find("[alt='" + i + "']").show()
+                let map = $("#pnl-map #pnl-" + itm.page)
+                if (itm.Type)
+                    map = map.find("#slist-" + itm.Type)
+                map = map.find("#row-" + itm.name)
+
+                for (let i of list)
+                    mapSelect(map.find("#map-" + i), true)
                 break
         }
     }
@@ -1315,25 +1310,28 @@ NMSCE.prototype.extractSearch = function (fcn) {
         }
     }
 
-    let loc = $("[id='map-selected']")
-    for (let page of loc) {
-        if ($(page).is(":visible")) {
+    let loc = $("#pnl-map [id|='row']")
+    for (let row of loc) {
+        if ($(row).is(":visible")) {
             let list = []
-            let sel = $(page).children()
-            for (let s of sel) {
-                if ($(s).is(":visible")) {
-                    let alt = $(s).attr("alt")
-                    list.push(alt)
-                }
-            }
 
-            if (list.length > 0)
+            let items = $(row).find("g[id|='map']")
+            for (let i of items) {
+                let data = $(i).data()
+                if (data && data.selected)
+                    list.push($(i).prop("id").stripID())
+            }
+            let t = $(row).closest("[id|='slist']")
+            if (list.length > 0) {
+                let type = $(row).closest("[id|='slist']")
                 search.push({
-                    name: $(page).closest("[id|='row']").prop("id").stripID(),
-                    page: $(page).parent().prop("id").stripID(),
+                    name: $(row).prop("id").stripID(),
+                    Type: type.length > 0 ? type.prop("id").stripID() : null,
+                    page: $(row).closest("[id|='pnl']").prop("id").stripID(),
                     type: "map",
                     list: list
                 })
+            }
         }
     }
 
@@ -1763,7 +1761,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 }
                 break
             case "map":
-                if (f.map || slist[f.sub]) {
+                if (f.map || slist && slist[f.sub]) {
                     let iid = itmid.nameToId()
                     let loc = $("#pnl-map #" + (f.map ? "pnl-" : "slist-") + iid)
 
@@ -1771,10 +1769,7 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                     l = /idname/ [Symbol.replace](tMap, iid)
                     loc.append(l)
 
-                    loc = loc.find("#row-" + iid)
-                    loc.append(f.map ? f.map : slist[f.sub])
-
-                    nmsce.loadMap(loc)
+                    nmsce.loadMap(loc.find("#row-" + iid), f.map ? f.map : slist[f.sub])
                 }
                 break
         }
@@ -1897,35 +1892,58 @@ function showLatLong() {
     }
 }
 
-const imgline = `<img alt="id" src="path/fname.png" class="hidden" style="position:absolute" />`
+NMSCE.prototype.loadMap = function (loc, fname) {
+    loc.load(fname, () => {
+        loc.find("svg").attr("preserveAspectRatio", "xMidYMid meet")
 
-NMSCE.prototype.loadMap = function (ploc) {
-    let loc = ploc.find("#map-image")
-    let path = loc.prop("src").replace(/(.*)\/.*/, "$1")
+        let bdr = loc.find("[id|='bdr']")
+        bdr.css("stroke-opacity", "0")
+        let map = loc.find("[id|='map']")
+        map.find("*").css("stroke", "#404040")
 
-    let aloc = ploc.find("#map-areas")
-    let hloc = ploc.find("#map-hover")
-    let sloc = ploc.find("#map-selected")
+        bdr.click(function () {
+            mapSelect(this)
+        })
 
-    if (hloc.children().length === 0) {
-        for (let loc of aloc.children()) {
-            $(loc).click(function () {
-                nmsce.mapSelect(this)
-            })
+        bdr.mouseenter(function () {
+            mouseEnter(this)
+        })
 
-            let alt = $(loc).attr("alt")
-            let data = $(loc).data()
-            let l = /id/ [Symbol.replace](imgline, alt)
-            l = /path/ [Symbol.replace](l, path)
-            l = /fname/ [Symbol.replace](l, alt)
-            if (data.group)
-                l = /style/ [Symbol.replace](l, "data-group=" + data.group + " style")
-            hloc.append(l)
+        bdr.mouseleave(function () {
+            mouseLeave(this)
+        })
+    })
+}
 
-            l = l.replace(/h(\d+).png/g, "s$1.png")
-            sloc.append(l)
-        }
+function mapSelect(evt, set) {
+    let id = $(evt).prop("id").stripID()
+    let loc = $(evt).closest("[id|='row']").find("#map-" + id)
+    let data = loc.data()
+
+    if (set || typeof set === "undefined" && (!data || !data.selected)) {
+        loc.data("selected", true)
+        loc.find("*").css("stroke", "#0000ff")
+    } else {
+        loc.data("selected", false)
+        loc.find("*").css("stroke", "#404040")
     }
+}
+
+function mouseEnter(evt) {
+    let id = $(evt).prop("id").stripID()
+    let loc = $(evt).closest("[id|='row']").find("#map-" + id)
+    loc.find("*").css("stroke", "#b00000")
+}
+
+function mouseLeave(evt) {
+    let id = $(evt).prop("id").stripID()
+    let loc = $(evt).closest("[id|='row']").find("#map-" + id)
+    let data = loc.data()
+
+    if (!data || !data.selected)
+        loc.find("*").css("stroke", "#404040")
+    else
+        loc.find("*").css("stroke", "#0000ff")
 }
 
 NMSCE.prototype.mapSelect = function (evt) {
@@ -3906,331 +3924,6 @@ NMSCE.prototype.newDARC = function (evt) {
 //     loc.html(h + end)
 // }
 
-const explorerBodiesMap = `
-    <div id="map-explorer">
-        <!-- Image Map Generated by http://www.image-map.net/ -->
-        <img id="map-image" src="images/explorer/bodies/bodies.png" />
-
-        <div id="map-selected"></div>
-        <div id="map-hover"></div>
-        <img id="map-transparent" src="images/explorer/bodies/blank.png" style="position:absolute" usemap="#explorer-map" />
-
-        <map name="explorer-map" id="map-areas">
-            <area alt="h3" data-group=1 coords="4,5,9,101,69,130,111,112,112,88,64,34" shape="poly">
-            <area alt="h4" data-group=1 coords="45,9,67,28,134,59,210,63,222,17,160,6" shape="poly">
-            <area alt="h5" coords="281,2,256,55,283,91,323,91,344,58,330,6" shape="poly">
-            <area alt="h6" coords="119,69,118,108,144,109,168,70" shape="poly">
-            <area alt="h7" coords="186,68,160,111,175,125,192,125,212,82" shape="poly">
-            <area alt="h8" coords="224,66,212,108,230,120,252,121,260,76" shape="poly">
-            <area alt="h9" coords="276,98,275,114,340,146,339,98" shape="poly">
-            <area alt="h10" data-group=2 coords="4,132,86,161" shape="rect">
-            <area alt="h11" data-group=2 coords="91,129,162,160" shape="rect">
-            <area alt="h12" data-group=2 coords="174,134,214,163" shape="rect">
-            <area alt="h13" coords="249,123,225,143,228,178,258,198,290,186,298,172,329,173,330,149,305,142,283,126" shape="poly">
-            <area alt="h14" coords="5,172,55,282" shape="rect">
-            <area alt="h15" coords="68,168,195,201" shape="rect">
-            <area alt="h19" coords="62,225,60,274,107,266,96,219" shape="poly">
-            <area alt="h16" coords="121,206,104,229,112,263,146,279,167,266,173,252,192,259,194,219,174,219,155,204" shape="poly">
-            <area alt="h20" coords="244,240,38" shape="circle">
-            <area alt="h17" coords="283,196,287,217,282,338,280,370,309,372,304,211,303,197" shape="poly">
-            <area alt="h18" coords="331,180,320,255,309,282,310,321,320,332,319,376,334,376,339,303,342,177" shape="poly">
-            <area alt="h21" coords="28,290,15,350,85,351,86,322" shape="poly">
-            <area alt="h22" coords="98,283,194,328" shape="rect">
-            <area alt="h23" coords="222,280,200,291,246,351,176,350,176,376,266,379,267,359,278,342" shape="poly">
-            <area alt="h24" coords="8,360,88,406" shape="rect">
-            <area alt="h25" coords="93,339,121,399" shape="rect">
-            <area alt="h30" coords="126,338,169,381" shape="rect">
-            <area alt="h26" coords="11,422,173,442" shape="rect">
-            <area alt="h27" coords="142,385,135,396,206,434,250,432,248,412,212,405" shape="poly">
-            <area alt="h28" coords="262,385,302,442" shape="rect">
-            <area alt="h29" coords="326,383,309,426,308,443,336,440,344,385" shape="poly">
-            <area alt="h31" coords="230,6,224,32,238,55,250,54,259,37,251,6" shape="poly">
-        </map>
-    </div>`
-
-//  srcset="images/fighter/bodies/bodies.svg"
-const fighterBodiesMap = `
-    <div id="map-fighter-bodies">
-        <!-- Image Map Generated by http://www.image-map.net/ -->
-        <img id="map-image" src="images/fighter/bodies/bodies.png" />
-
-        <div id="map-selected"></div>
-        <div id="map-hover"></div>
-        <img id="map-transparent" src="images/fighter/bodies/blank.png" style="position:absolute" usemap="#fighter-bodies-map" />
-
-        <map name="fighter-bodies-map" id="map-areas">
-            <area alt="h2" data-group=1 coords="85,4,107,62,140,68,158,47,137,17" shape="poly">
-            <area alt="h3" data-group=1 coords="3,34,25,81,114,101,115,76,63,44" shape="poly">
-            <area alt="h5" data-group=1 coords="6,89,10,143,124,176,131,153,32,89" shape="poly">
-            <area alt="h7" data-group=1 coords="0,153,4,212,151,255,153,226,37,160" shape="poly">
-            <area alt="h9" data-group=1 coords="13,226,7,243,39,291,219,335,221,314,53,235" shape="poly">
-            <area alt="h10" data-group=1 coords="6,295,4,363,236,397,255,379,47,300" shape="poly">
-            <area alt="h4" data-group=1 coords="189,4,163,19,197,77,304,98,339,65" shape="poly">
-            <area alt="h8" data-group=1 coords="176,69,156,81,173,131,290,174,326,155,300,117,213,89" shape="poly">
-            <area alt="h6" data-group=1 coords="177,141,155,155,172,209,221,221,314,218,316,186" shape="poly">
-            <area alt="h11" data-group=2 coords="219,235,205,248,207,293,234,305,263,289,267,247" shape="poly">
-            <area alt="h12" data-group=2 coords="289,234,269,306,340,308,328,238" shape="poly">
-            <area alt="h13" data-group=2 coords="278,318,276,378,336,379,340,322" shape="poly">
-        </map>
-    </div>`
-
-const fighterWingsMap = `
-    <div id="map-fighter-wings">
-        <!-- Image Map Generated by http://www.image-map.net/ -->
-        <img id="map-image" src="images/fighter/wings/wings.png" />
-
-        <div id="map-selected"></div>
-        <div id="map-hover"></div>
-        <img id="map-transparent" src="images/fighter/wings/blank.png" style="position:absolute" usemap="#fighter-wings-map" />
-
-        <map name="fighter-wings-map" id="map-areas">
-            <area alt="h2" coords="6,10,0,199,37,197,45,185,50,6" shape="poly">
-            <area alt="h11" coords="57,-1,56,25,97,31,157,23,151,9" shape="poly">
-            <area alt="h29" coords="124,29,124,49,184,64,200,58,192,25,168,24" shape="poly">
-            <area alt="h27" coords="200,7,211,49,235,48,238,5" shape="poly">
-            <area alt="h25" coords="241,6,240,45,274,47,275,6" shape="poly">
-            <area alt="h26" coords="281,13,280,45,306,47,317,26,309,7" shape="poly">
-            <area alt="h8" coords="104,51,83,66,83,85,101,102,126,106,187,89,188,72,132,55" shape="poly">
-            <area alt="h9" coords="216,55,225,87,307,83,320,101,334,102,333,80,349,10,329,12,308,53" shape="poly">
-            <area alt="h7" coords="63,80,80,79,95,136,95,165,82,186,63,189,48,164,48,138" shape="poly">
-            <area alt="h12" coords="106,168,127,172,141,161,163,110,147,103" shape="poly">
-            <area alt="h10" coords="200,89,181,100,182,114,203,124,298,113,293,92" shape="poly">
-            <area alt="h6" coords="203,135,197,183,294,156,300,139,291,122" shape="poly">
-            <area alt="h28" coords="304,119,321,109,347,191,336,215,307,164" shape="poly">
-            <area alt="h13" coords="46,197,4,216,4,242,40,262,105,261,106,197" shape="poly">
-            <area alt="h14" coords="114,190,127,201,189,165,189,149" shape="poly">
-            <area alt="h15" coords="124,205,124,217,210,223,210,209" shape="poly">
-            <area alt="h16" coords="127,222,116,231,124,249,213,246,209,232,154,231" shape="poly">
-            <area alt="h19" coords="216,237,217,248,244,250,261,235,294,246,306,241,270,196,277,171,267,167,232,220" shape="poly">
-            <area alt="h18" coords="285,176,281,187,320,243,317,249,299,252,299,264,316,295,348,262,348,241" shape="poly">
-            <area alt="h20" coords="6,275,7,362,25,387,84,387,104,368,104,275" shape="poly">
-            <area alt="h21" coords="153,260,113,293,115,363,163,393,210,377,226,358,227,295,203,259" shape="poly">
-            <area alt="h17" coords="246,267,228,337,271,354,293,346,294,327,348,317,348,303,281,296" shape="poly">
-            <area alt="h4" coords="297,350,271,357,270,373,334,383,347,366" shape="poly">
-        </map>
-    </div>`
-
-const haulerBodiesMap = `
-    <div id="map-hauler-bodies">
-        <!-- Image Map Generated by http://www.image-map.net/ -->
-        <img id="map-image" src="images/hauler/bodies/bodies.png" />
-
-        <div id="map-selected"></div>
-        <div id="map-hover"></div>
-        <img id="map-transparent" src="images/hauler/bodies/blank.png" style="position:absolute" usemap="#hauler-bodies-map" />
-            
-        <map name="hauler-bodies-map" id="map-areas">
-            <area alt="h7" coords="43,7,45,63,138,63,118,30,126,3" shape="poly">
-            <area alt="h9" coords="140,0,131,26,147,64,230,65,216,31,230,3" shape="poly">
-            <area alt="h3" coords="246,3,226,28,248,65,281,72,296,87,322,77,325,25,298,2" shape="poly">
-            <area alt="h2" coords="14,66,11,112,148,109,134,66" shape="poly">
-            <area alt="h17" coords="10,120,9,173,65,172,62,150,74,119" shape="poly">
-            <area alt="h5" coords="98,115,72,132,71,160,117,172,159,170,156,120" shape="poly">
-            <area alt="h19" coords="166,116,166,162,202,177,222,178,246,128,202,112" shape="poly">
-            <area alt="h6" coords="270,116,251,130,248,163,264,175,323,177,346,146,340,119" shape="poly">
-            <area alt="h4" coords="1,195,31,264,54,265,144,206,144,176,67,180" shape="poly">
-            <area alt="h18" coords="134,218,168,264,190,265,256,255,260,198" shape="poly">
-            <area alt="h8" coords="273,198,272,263,282,267,339,232,332,200" shape="poly">
-            <area alt="h13" coords="4,268,119,378" shape="rect">
-            <area alt="h14" coords="122,268,193,378" shape="rect">
-            <area alt="h15" coords="201,267,271,376" shape="rect">
-            <area alt="h16" coords="275,276,276,375,346,378,343,264,294,266" shape="poly">
-        </map>
-    </div>`
-
-const haulerWingsMap = `
-    <div id="map-hauler-wings">
-        <!-- Image Map Generated by http://www.image-map.net/ -->
-        <img id="map-image" src="images/hauler/wings/wings.png" />
-
-        <div id="map-selected"></div>
-        <div id="map-hover"></div>
-        <img id="map-transparent" src="images/hauler/wings/blank.png" style="position:absolute" usemap="#hauler-wings-map" />
-            
-        <map name="hauler-wings-map" id="map-areas">
-            <area alt="h2" coords="3,4,2,128,77,104,79,12" shape="poly">
-            <area alt="h3" coords="90,3,92,119,126,109,152,76,158,42,135,7" shape="poly">
-            <area alt="h4" coords="236,19,221,41,277,53,267,95,348,94,347,0" shape="poly">
-            <area alt="h5" coords="131,138,145,137,259,78,250,59,218,53,207,31,168,57" shape="poly">
-            <area alt="h6" coords="4,137,3,237,76,197,98,157,101,125" shape="poly">
-            <area alt="h17" coords="120,148,111,163,127,177,158,172,205,147,199,119,156,144" shape="poly">
-            <area alt="h7" coords="97,181,73,251,211,245,220,227,214,212,150,186" shape="poly">
-            <area alt="h10" coords="22,237,4,264,23,309,64,311,54,272,61,234" shape="poly">
-            <area alt="h11" coords="93,270,92,301,193,300,188,259" shape="poly">
-            <area alt="h12" coords="8,315,8,385,73,389,80,317" shape="poly">
-            <area alt="h13" coords="90,317,85,388,151,389,159,364,161,319" shape="poly">
-            <area alt="h14" coords="170,313,168,389,220,391,228,313" shape="poly">
-            <area alt="h15" coords="237,314,236,391,276,399,293,375,272,303" shape="poly">
-            <area alt="h16" coords="313,280,297,369,314,396,343,397,348,279" shape="poly">
-            <area alt="h8" coords="210,126,236,208,235,244,216,282,230,281,261,236,260,204,233,128" shape="poly">
-            <area alt="h9" coords="239,125,251,139,277,148,283,256,257,269,240,278,264,286,291,269,307,242,306,169,293,143,269,123" shape="poly">
-            <area alt="h18" coords="293,115,292,131,333,157,327,255,311,266,300,266,292,281,309,289,344,271,348,147,320,117" shape="poly">
-        </map>
-    </div>`
-
-const shuttleBodiesMap = `
-    <div id="map-shuttle-bodies">
-        <!-- Image Map Generated by http://www.image-map.net/ -->
-        <img id="map-image" src="images/shuttle/bodies/bodies.png" />
-
-        <div id="map-selected"></div>
-        <div id="map-hover"></div>
-        <img id="map-transparent" src="images/shuttle/bodies/blank.png" style="position:absolute" usemap="#shuttle-bodies-map" />
-            
-        <map name="shuttle-bodies-map" id="map-areas">
-            <area alt="h2" coords="8,9,60,40" shape="rect">
-            <area alt="h5" coords="65,-1,100,39" shape="rect">
-            <area alt="h3" coords="110,7,168,41" shape="rect">
-            <area alt="h4" coords="190,8,325,77" shape="rect">
-            <area alt="h18" coords="4,47,57,86" shape="rect">
-            <area alt="h20" coords="64,48,100,87" shape="rect">
-            <area alt="h6" coords="108,44,170,85" shape="rect">
-            <area alt="h19" coords="6,103,55,152" shape="rect">
-            <area alt="h13" coords="64,101,120,156" shape="rect">
-            <area alt="h12" coords="122,127,128,155,154,155,186,112,186,95,156,94" shape="poly">
-            <area alt="h8" coords="192,89,342,162" shape="rect">
-            <area alt="h21" coords="21,159,88,205" shape="rect">
-            <area alt="h7" coords="106,171,106,191,112,206,175,223,188,205,182,167,168,156" shape="poly">
-            <area alt="h9" coords="28,211,6,260,75,256,96,255,144,240,134,217" shape="poly">
-            <area alt="h10" coords="127,251,84,272,87,292,217,290,214,243" shape="poly">
-            <area alt="h11" coords="214,171,196,198,199,238,243,242,344,232,341,183" shape="poly">
-            <area alt="h2" coords="8,9,60,40" shape="rect">
-            <area alt="h5" coords="65,-1,100,39" shape="rect">
-            <area alt="h3" coords="110,7,168,41" shape="rect">
-            <area alt="h4" coords="190,8,325,77" shape="rect">
-            <area alt="h18" coords="4,47,57,86" shape="rect">
-            <area alt="h20" coords="64,48,100,87" shape="rect">
-            <area alt="h6" coords="108,44,170,85" shape="rect">
-            <area alt="h19" coords="6,103,55,152" shape="rect">
-            <area alt="h13" coords="64,101,120,156" shape="rect">
-            <area alt="h12" coords="122,127,128,155,154,155,186,112,186,95,156,94" shape="poly">
-            <area alt="h8" coords="192,89,342,162" shape="rect">
-            <area alt="h21" coords="21,159,88,205" shape="rect">
-            <area alt="h7" coords="106,171,106,191,112,206,175,223,188,205,182,167,168,156" shape="poly">
-            <area alt="h9" coords="28,211,6,260,75,256,96,255,144,240,134,217" shape="poly">
-            <area alt="h10" coords="127,251,84,272,87,292,217,290,214,243" shape="poly">
-            <area alt="h11" coords="214,171,196,198,199,238,243,242,344,232,341,183" shape="poly">
-            <area alt="h23" coords="229,249,273,293" shape="rect">
-            <area alt="h22" coords="282,244,342,293" shape="rect">    </map>
-    </div>`
-
-const shuttleWingsMap = `
-    <div id="map-shuttle-wings">
-        <!-- Image Map Generated by http://www.image-map.net/ -->
-        <img id="map-image" src="images/shuttle/wings/wings.png" />
-
-        <div id="map-selected"></div>
-        <div id="map-hover"></div>
-        <img id="map-transparent" src="images/shuttle/wings/blank.png" style="position:absolute" usemap="#shuttle-wings-map" />
-            
-        <map name="shuttle-wings-map" id="map-areas">
-            <area alt="h32" coords="5,10,51,64" shape="rect">
-            <area alt="h2" coords="54,13,87,65" shape="rect">
-            <area alt="h3" coords="94,15,125,61" shape="rect">
-            <area alt="h4" coords="130,22,207,57" shape="rect">    
-            <area alt="h10" coords="213,11,213,90,254,64,268,23,270,-1" shape="poly">
-            <area alt="h5" coords="282,8,339,60" shape="rect">
-            <area alt="h6" coords="5,73,55,131" shape="rect">
-            <area alt="h7" coords="62,75,115,130" shape="rect">
-            <area alt="h26" coords="128,64,194,117" shape="rect">
-            <area alt="h25" coords="251,97,270,107,282,100,290,77,268,62" shape="poly">
-            <area alt="h11" coords="296,133,325,131,328,117,341,81,332,65,302,97" shape="poly">
-            <area alt="h30" coords="22,138,102,168" shape="rect">
-            <area alt="h29" coords="114,144,120,158,154,163,175,154,161,124,126,123" shape="poly">
-            <area alt="h9" coords="190,133,228,147,238,142,253,108,215,100,201,123" shape="poly">
-            <area alt="h14" coords="254,145,280,144,292,119,270,114" shape="poly">
-            <area alt="h8" coords="11,173,83,197" shape="rect">
-            <area alt="h22" coords="102,170,166,195" shape="rect">
-            <area alt="h17" coords="168,195,178,202,212,176,230,177,230,156,205,147" shape="poly">
-            <area alt="h13" coords="241,184,258,194,298,175,290,158,265,161" shape="poly">
-            <area alt="h15" coords="306,193,317,197,342,189,338,136,321,135" shape="poly">
-            <area alt="h12" coords="4,206,4,229,116,231,152,224,146,199" shape="poly">
-            <area alt="h19" coords="15,248,2,271,15,277,62,263,105,261,161,270,152,233,68,235" shape="poly">
-            <area alt="h16" coords="21,286,1,298,9,328,160,312,140,297" shape="poly">
-            <area alt="h24" coords="231,184,238,190,196,238,243,271,245,282,232,280,179,257,174,228" shape="poly">
-            <area alt="h23" coords="240,229,244,241,266,227,335,207,335,197,268,209" shape="poly">
-            <area alt="h27" coords="237,249,249,263,278,238,274,228,266,230" shape="poly">
-            <area alt="h18" coords="248,267,252,277,340,273,340,259,278,243" shape="poly">
-            <area alt="h21" coords="144,276,177,274,190,289,249,287,267,295,271,321,202,323,179,339,150,341,143,325,164,316,166,299,148,289" shape="poly">
-            <area alt="h31" coords="280,293,312,336" shape="rect">
-            <area alt="h28" coords="320,295,342,329" shape="rect">
-        </map>
-    </div>`
-
-const exoticBodiesMap = `
-    <div id="map-exotic-bodies">
-        <!-- Image Map Generated by http://www.image-map.net/ -->
-        <img id="map-image" src="images/exotic/bodies/bodies.png" />
-
-        <div id="map-selected"></div>
-        <div id="map-hover"></div>
-        <img id="map-transparent" src="images/exotic/bodies/blank.png" style="position:absolute" usemap="#exotic-bodies-map" />
-            
-        <map name="exotic-bodies-map" id="map-areas">
-            <area alt="h2" data-group=1 coords="6,3,6,76,129,79,233,66,225,12,93,-1" shape="poly">
-            <area alt="h3" data-group=2 coords="270,230,345,198,340,19,263,2,286,96" shape="poly">
-            <area alt="h4" data-group=1 coords="25,81,32,161,81,179,157,180,139,82" shape="poly">
-            <area alt="h5" data-group=4 coords="148,79,175,235,251,236,281,97,224,77" shape="poly">
-            <area alt="h6" data-group=4 coords="11,169,6,239,47,241,116,213,113,195,51,175" shape="poly">
-            <area alt="h7" data-group=2 coords="63,242,130,212,128,301,70,294,51,289" shape="poly">
-            <area alt="h8" data-group=3 coords="132,237,132,302,344,298" shape="poly">
-            <area alt="h9" data-group=3 coords="221,259,343,283,335,213" shape="poly">
-            <area alt="h12" data-group=5 coords="167,334,165,363,275,395,271,341" shape="poly">
-            <area alt="h13" data-group=5 coords="203,309,346,307,339,388,305,389,279,339,212,322" shape="poly">
-            <area alt="h14" data-group=5 coords="107,330,109,386,169,393,163,325" shape="poly">
-            <area alt="h10" data-group=4 coords="5,280,5,317,55,330,66,328,72,316,45,295,64,259,62,243" shape="poly">
-            <area alt="h11" data-group=5 coords="89,318,61,335,60,379,85,396,105,395,99,321" shape="poly">
-       </map>
-    </div>`
-
-const freighterCapitalMap = `
-    <div id="map-freighter-capital">
-        <!-- Image Map Generated by http://www.image-map.net/ -->
-        <img id="map-image" src="images/freighter/capital/capital.png" />
-
-        <div id="map-selected"></div>
-        <div id="map-hover"></div>
-        <img id="map-transparent" src="images/freighter/capital/blank.png" style="position:absolute" usemap="#freighter-capital-map" />
-            
-        <map name="freighter-capital-map" id="map-areas">
-            <area alt="h2" data-group=1 coords="12,-1,14,49,323,58,313,6" shape="poly">
-            <area alt="h3" data-group=1 coords="95,57,96,97,330,127,324,63" shape="poly">
-            <area alt="h4" data-group=1 coords="60,89,11,128,10,142,89,146,184,146,186,125" shape="poly">
-            <area alt="h5" data-group=1 coords="14,173,9,303,276,202,297,171,280,125,238,147" shape="poly">
-            <area alt="h6" data-group=1 coords="154,255,160,362,333,244,317,182,286,202" shape="poly">
-            <area alt="h9" data-group=1 coords="216,332,222,395,340,335,339,253" shape="poly">
-            <area alt="h7" data-group=2 coords="36,303,35,335,86,328,88,297" shape="poly">
-            <area alt="h8" data-group=2 coords="28,348,32,384,98,379,104,358,73,347" shape="poly">
-            <area alt="h10" coords="108,301,98,334,108,351,141,358,151,332,138,309" shape="poly">
-            <area alt="h12" data-group=3 coords="9,81,28,87,38,82,30,64,18,62" shape="poly">
-            <area alt="h13" data-group=3 coords="39,59,47,90,65,82,65,61,49,53" shape="poly">
-            <area alt="h14" data-group=3 coords="76,55,71,85,105,85,94,58" shape="poly">
-        </map>
-    </div>`
-
-const freighterCommonMap = `
-    <div id="map-freighter-common">
-        <!-- Image Map Generated by http://www.image-map.net/ -->
-        <img id="map-image" src="images/freighter/common/common.png" />
-
-        <div id="map-selected"></div>
-        <div id="map-hover"></div>
-        <img id="map-transparent" src="images/freighter/common/blank.png" style="position:absolute" usemap="#freighter-common-map" />
-            
-        <map name="freighter-common-map" id="map-areas">
-            <!--area alt="h2" data-group=1 coords="94,6,102,45,194,53,338,46,340,-1" shape="poly"-->
-            <area alt="h3" data-group=1 coords="4,19,9,86,171,86,190,62,98,48" shape="poly">
-            <area alt="h4" data-group=1 coords="13,94,8,162,160,166,158,110,115,92" shape="poly">
-            <area alt="h5" data-group=1 coords="160,93,197,133,332,127,316,56,217,67" shape="poly">
-            <area alt="h6" data-group=1 coords="18,164,10,218,138,227,166,204,153,168" shape="poly">
-            <area alt="h7" data-group=1 coords="174,136,172,196,345,201,342,136" shape="poly">
-            <area alt="h8" data-group=1 coords="10,222,7,333,175,279,152,233" shape="poly">
-            <area alt="h9" data-group=1 coords="184,205,194,279,331,253,333,208" shape="poly">
-            <area alt="h10" data-group=1 coords="14,340,10,395,171,379,195,356,172,286" shape="poly">
-            <area alt="h11" data-group=1 coords="188,288,204,365,342,329,342,284,286,277" shape="poly">
-        </map>
-    </div>`
-
 const classList = [{
     name: "S",
 }, {
@@ -4262,34 +3955,22 @@ const occurenceList = [{
 const shipList = [{
     name: "Fighter",
     slotList: slotList,
-    // classList: classList,
     slotTtip: `
         T1: 15-19 slots<br>
         T2: 20-29 slots<br>
         T3: 30-38 slots`,
-    // classTtip: `
-    //     C: 5-10% Damage | 0% Shield | 0% Hyperdrive<br>
-    //     B: 15-30% Damage | 5-10% Shield | 0% Hyperdrive<br>
-    //     A: 35-50% Damage | 15-20% Shield | 0% Hyperdrive<br>
-    //     S: 55-60% Damage | 15-25% Shield | 0% Hyperdrive`,
-    bodies: fighterBodiesMap,
-    wings: fighterWingsMap,
+    bodies: "/images/fighter-bodies.svg",
+    wings: "/images/fighter-wings.svg",
     asymmetric: true,
 }, {
     name: "Hauler",
     slotList: slotList,
-    // classList: classList,
     slotTtip: `
         T1: 25-31 slots<br>
         T2: 32-39 slots<br>
         T3: 40-48 slots`,
-    // classTtip: `
-    //     C: 0% Damage | 12-20% Shield | 0-5% Hyperdrive<br>
-    //     B: 0-5% Damage | 25-35% Shield | 5-10% Hyperdrive<br>
-    //     A: 5-10% Damage | 40-50% Shield | 15-25% Hyperdrive<br>
-    //     S: 10-20% Damage | 55-60% Shield | 30-35% Hyperdrive`,
-    bodies: haulerBodiesMap,
-    wings: haulerWingsMap,
+    bodies: "/images/hauler-bodies.svg",
+    wings: "/images/hauler-wings.svg",
 }, {
     name: "Shuttle",
     slotList: [{
@@ -4297,36 +3978,23 @@ const shipList = [{
     }, {
         name: "T2"
     }],
-    // classList: classList,
     slotTtip: `
         T1: 18-23 slots<br>
-        T2: 19-28 slots`,
-    // classTtip: `
-    //     C: 0% Damage | 0% Shield | 0% Hyperdrive<br>
-    //     B: 0-5% Damage | 0-5% Shield | 0-5% Hyperdrive<br>
-    //     A: 5-10% Damage | 5-10% Shield | 5-10% Hyperdrive<br>
-    //     S: 15-20% Damage | 15-20% Shield | 15-20% Hyperdrive`,
-    bodies: shuttleBodiesMap,
-    wings: shuttleWingsMap,
+        T2: 24-28 slots`,
+    bodies: "/images/shuttle-bodies.svg",
+    wings:"/images/shuttle-wings.svg",
     asymmetric: true,
 }, {
     name: "Explorer",
-    bodies: explorerBodiesMap,
-    slotList: slotList,
-    // classList: classList,
+    bodies: "/images/explorer.svg",
     slotTtip: `
         T1: 15-19 slots<br>
         T2: 20-29 slots<br>
         T3: 30-38 slots`,
-    // classTtip: `
-    //     C: 0% Damage | 0% Shield | 7-15% Hyperdrive<br>
-    //     B: 0% Damage | 0-8% Shield | 20-30% Hyperdrive<br>
-    //     A: 0% Damage | 10-15% Shield | 35-45% Hyperdrive<br>
-    //     S: 0% Damage | 20-25% Shield | 50-65% Hyperdrive`
     asymmetric: true,
 }, {
     name: "Exotic",
-    bodies: exoticBodiesMap,
+    bodies: "/images/exotic.svg",
 }]
 
 const mtList = [{
@@ -5635,12 +5303,12 @@ const objectList = [{
     }, {
         name: "capital",
         type: "map",
-        map: freighterCapitalMap,
+        map: "/images/freighter-capital.svg",
         search: true,
     }, {
         name: "common",
         type: "map",
-        map: freighterCommonMap,
+        map:  "/images/freighter-system.svg",
         search: true,
     }, ]
 }, {
@@ -6085,7 +5753,7 @@ const objectList = [{
         imgText: true,
         type: "string",
         inputHide: true,
-    },  {
+    }, {
         name: "Game Mode",
         type: "menu",
         list: modeList,
