@@ -116,15 +116,6 @@ body {
     padding-left: 0px !important;
 }
 
-#tip {
-    background-color: white;
-    border: 1px solid blue;
-    position: absolute;
-    left: -800px;
-    top: 100px;
-    font: 16px Arial;
-}
-
 .border-3 {
     border-width: 3px !important;
 }
@@ -302,10 +293,6 @@ body {
     padding-left: 40px;
     text-indent: -40px;
 }
-
- .no-padding {
-    padding: 0px 0px !important;
-} 
 
 .pl-15 {
     padding-left: 15px !important;
