@@ -6,7 +6,7 @@
 var nmsce
 const displayPath = "/nmsce/disp/"
 const originalPath = "/nmsce/orig/"
-const thumbnailPath = "/nmsce/disp/thumb/"
+const thumbPath = "/nmsce/disp/thumb/"
 const redditPath = "/nmsce/reddit/"
 
 $(document).ready(() => {
@@ -1462,7 +1462,7 @@ const tString = `
         <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" class="rounded col-9">
     </div>`
-const tMap = `<div id="row-idname" data-type="map"></div>`
+const tMap = `<div id="row-idname" class="col-lg-7 col-14" data-src="fname" data-type="map"></div>`
 const tLongString = `
     <div id="row-idname" data-type="string" data-allowhide="ihide" data-req="ifreq" class="row">
         <div class="col-3 h6 pl-15 txt-inp-def">titlettip&nbsp;</div>
@@ -1603,6 +1603,8 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
         h += l + inpEnd
         loc.append(h)
     }
+
+    let mapobserver = nmsce.createObserver($("#pnl-map"), nmsce.loadMap)
 
     let loc, itm = $("#" + pnl + "-" + itmid)
     for (let f of list) {
@@ -1767,9 +1769,10 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
 
                     iid = f.name.nameToId()
                     l = /idname/ [Symbol.replace](tMap, iid)
+                    l = /fname/ [Symbol.replace](l, f.map ? f.map : slist[f.sub])
                     loc.append(l)
 
-                    nmsce.loadMap(loc.find("#row-" + iid), f.map ? f.map : slist[f.sub])
+                    mapobserver.observe(loc.find("#row-" + iid)[0])
                 }
                 break
         }
@@ -1892,14 +1895,26 @@ function showLatLong() {
     }
 }
 
-NMSCE.prototype.loadMap = function (loc, fname) {
-    loc.load(fname, () => {
-        loc.find("svg").attr("preserveAspectRatio", "xMidYMid meet")
+NMSCE.prototype.loadMap = function (loc) {
+    let data = loc.data()
 
+    loc.load(data.src, () => {
         let bdr = loc.find("[id|='bdr']")
         bdr.css("stroke-opacity", "0")
         let map = loc.find("[id|='map']")
         map.find("*").css("stroke", "#404040")
+
+        let svg = loc.find("svg")
+        let svgw = parseInt(svg.attr("width"))
+        let svgh = parseInt(svg.attr("height"))
+
+        let h = $("#panels").height()
+        let w = loc.width()
+        let size = nmsce.calcImgSize(svgw, svgh, w, h, true)
+
+        svg.attr("preserveAspectRatio", "xMidYMid meet")
+        svg.attr("width", size.width)
+        svg.attr("height", size.height)
 
         bdr.click(function () {
             mapSelect(this)
@@ -1944,27 +1959,6 @@ function mouseLeave(evt) {
         loc.find("*").css("stroke", "#404040")
     else
         loc.find("*").css("stroke", "#0000ff")
-}
-
-NMSCE.prototype.mapSelect = function (evt) {
-    let id = $(evt).attr("alt")
-    let ploc = $(evt).closest("[id|='pnl']")
-    let loc = $(evt).closest("[id|='row']")
-    let hloc = loc.find("#map-hover [alt='" + id + "']")
-    let sloc = loc.find("#map-selected [alt='" + id + "']")
-
-    if (sloc.is(":visible")) {
-        sloc.hide()
-        hloc.show()
-    } else {
-        let data = $(evt).data()
-        if (data.group) {
-            ploc.find("#map-hover [data-group='" + data.group + "']").hide()
-            ploc.find("#map-selected [data-group='" + data.group + "']").hide()
-        }
-
-        sloc.show()
-    }
 }
 
 NMSCE.prototype.selectSublist = function (btn) {
@@ -2216,8 +2210,8 @@ NMSCE.prototype.restoreText = function (iTxt, draw) {
 
     if (typeof nmsce.imageText.selGlyph === "undefined")
         nmsce.initTxtItem("selGlyph")
-    else if (nmsce.imageText.selGlyph.ck)
-        nmsce.dispGlyph()
+    // else if (nmsce.imageText.selGlyph.ck)
+    //     nmsce.dispGlyph()
 
     if (typeof nmsce.imageText.logo === "undefined")
         nmsce.initTxtItem("logo")
@@ -2658,9 +2652,7 @@ NMSCE.prototype.dispGlyph = function () {
     ctx.drawImage(nmsce.screenshot, 0, 0)
 
     let canvas = document.getElementById("id-canvas")
-
     let scale = nmsce.screenshot.naturalWidth / canvas.width
-
     let imgData = ctx.getImageData(text.x * scale, text.y * scale, text.width * scale, text.height * scale)
 
     // var pixels = imgData.data;
@@ -2672,12 +2664,20 @@ NMSCE.prototype.dispGlyph = function () {
     //     pixels[i + 2] = grayscale; // blue
     // }
 
-    canvas = document.getElementById("id-glyphCanvas")
-    ctx = canvas.getContext("2d")
-    canvas.height = text.height * scale
-    canvas.width = text.width * scale
+    let glyph = document.createElement('canvas')
+    glyph.width = text.width * scale
+    glyph.height = text.height * scale
 
+    ctx = glyph.getContext("2d")
     ctx.putImageData(imgData, 0, 0)
+
+    canvas = document.getElementById("id-glyphCanvas")
+    let out = nmsce.calcImgSize(text.width * scale, text.height * scale, row.width(), row.height(), true)
+    canvas.width = out.width
+    canvas.height = out.height
+
+    ctx = canvas.getContext("2d")
+    ctx.drawImage(glyph, 0, 0, canvas.width, canvas.height)
 }
 
 NMSCE.prototype.textHittest = function (x, y, text) {
@@ -2917,7 +2917,7 @@ NMSCE.prototype.deleteEntry = function (entry) {
         ref = bhs.fbstorage.ref().child(displayPath + entry.Photo)
         ref.delete()
 
-        ref = bhs.fbstorage.ref().child(thumbnailPath + entry.Photo)
+        ref = bhs.fbstorage.ref().child(thumbPath + entry.Photo)
         ref.delete()
     }).catch(err => {
         bhs.status("ERROR: " + err.code)
@@ -2941,8 +2941,8 @@ NMSCE.prototype.updateScreenshots = function (entry) {
     nmsce.drawText(thumb, 400)
     thumb.toBlob(blob => {
         nmsce.saved = blob
-        bhs.fbstorage.ref().child(thumbnailPath + entry.Photo).put(blob).then(() => {
-            // bhs.status("Saved " + thumbnailPath + entry.Photo)
+        bhs.fbstorage.ref().child(thumbPath + entry.Photo).put(blob).then(() => {
+            // bhs.status("Saved " + thumbPath + entry.Photo)
         })
     }, "image/jpeg", .7)
 
@@ -3311,13 +3311,16 @@ NMSCE.prototype.getAfterDate = function (date) {
     }
 }
 
-NMSCE.prototype.createObserver = function (loc) {
+NMSCE.prototype.createObserver = function (loc, fcn) {
     if (window.IntersectionObserver) {
         var io = new IntersectionObserver(
             evts => {
                 for (let evt of evts) {
                     if (evt.intersectionRatio > 0) {
-                        evt.target.src = evt.target.dataset.src
+                        if (fcn)
+                            fcn($(evt.target))
+                        else
+                            evt.target.src = evt.target.dataset.src
                         io.unobserve(evt.target)
                     }
                 }
@@ -3345,7 +3348,7 @@ NMSCE.prototype.displayResultList = function (id) {
         l = /eid/ [Symbol.replace](l, e.id)
         l = /galaxy/ [Symbol.replace](l, e.galaxy)
         l = /epanel/ [Symbol.replace](l, id)
-        l = /ethumb/ [Symbol.replace](l, thumbnailPath + e.Photo)
+        l = /ethumb/ [Symbol.replace](l, thumbPath + e.Photo)
         l = /by/ [Symbol.replace](l, e._name)
 
         h += l
@@ -3716,7 +3719,7 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
         h = /etype/ [Symbol.replace](row, e.type.nameToId())
         h = /idname/ [Symbol.replace](h, e.type.nameToId() + "-" + e.id)
         h = /eid/ [Symbol.replace](h, e.id)
-        h = /ethumb/ [Symbol.replace](h, thumbnailPath + e.Photo)
+        h = /ethumb/ [Symbol.replace](h, thumbPath + e.Photo)
     }
 
     let i = getIndex(objectList, "name", fstring ? e : e.type)
@@ -3812,29 +3815,40 @@ NMSCE.prototype.imgLoaded = function (evt, width, height, expand) {
 }
 
 NMSCE.prototype.calcImgSize = function (width, height, maxw, maxh, expand) {
+    let wscale = 1
+    let hscale = 1
+
     if (expand) {
         if (width > height && width < maxw) {
-            height *= maxw / width
+            hscale = maxw / width
+            height *= hscale
             width = maxw
         } else if (height < maxh) {
-            width *= maxh / height
+            wscale = maxh / height
+            width *= wscale
             height = maxh
         }
     }
 
     if (width > maxw) {
-        height *= maxw / width
+        hscale = maxw / width
+        wscale = 1
+        height *= hscale
         width = maxw
     }
 
     if (height > maxh) {
-        width *= maxh / height
+        wscale = maxh / height
+        hscale = 1
+        width *= wscale
         height = maxh
     }
 
     return ({
         height: height,
-        width: width
+        width: width,
+        hscale: hscale,
+        wscale: wscale
     })
 }
 
@@ -3982,7 +3996,7 @@ const shipList = [{
         T1: 18-23 slots<br>
         T2: 24-28 slots`,
     bodies: "/images/shuttle-bodies.svg",
-    wings:"/images/shuttle-wings.svg",
+    wings: "/images/shuttle-wings.svg",
     asymmetric: true,
 }, {
     name: "Explorer",
@@ -5285,7 +5299,7 @@ const objectList = [{
     }, {
         name: "common",
         type: "map",
-        map:  "/images/freighter-system.svg",
+        map: "/images/freighter-system.svg",
         search: true,
     }, ]
 }, {
