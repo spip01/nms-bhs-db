@@ -721,7 +721,8 @@ NMSCE.prototype.displaySingle = function (entry) {
                         row.find("input").click()
                     break
                 case "map":
-                    let map = $("#pnl-map " + pnltype + " #row-" + id)
+                    let map = $("#pnl-map " + pnltype + " [id|='slist']:visible #row-" + id)
+
                     let list = Object.keys(entry[id])
                     for (let i of list)
                         mapSelect(map.find("#map-" + i), true)
@@ -1462,7 +1463,7 @@ const tString = `
         <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" class="rounded col-9">
     </div>`
-const tMap = `<div id="row-idname" class="col-lg-7 col-14" data-src="fname" data-type="map"></div>`
+const tMap = `<div id="row-idname" class="col-lg-7 col-14 border" data-type="map"></div>`
 const tLongString = `
     <div id="row-idname" data-type="string" data-allowhide="ihide" data-req="ifreq" class="row">
         <div class="col-3 h6 pl-15 txt-inp-def">titlettip&nbsp;</div>
@@ -1571,15 +1572,7 @@ NMSCE.prototype.buildTypePanels = function () {
         mloc = mloc.find("#pnl-" + id)
         mloc.show()
 
-        let mlist = mloc.find("#map-image")
-        for (let mloc of mlist) {
-            let pos = $(mloc).position()
-
-            $(mloc).parent().find("img").css({
-                top: pos.top + "px",
-                left: pos.left + "px",
-            })
-        }
+        nmsce.setMapSize(mloc)
     })
 }
 
@@ -1603,8 +1596,6 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
         h += l + inpEnd
         loc.append(h)
     }
-
-    let mapobserver = nmsce.createObserver($("#pnl-map"), nmsce.loadMap)
 
     let loc, itm = $("#" + pnl + "-" + itmid)
     for (let f of list) {
@@ -1765,14 +1756,13 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
             case "map":
                 if (f.map || slist && slist[f.sub]) {
                     let iid = itmid.nameToId()
-                    let loc = $("#pnl-map #" + (f.map ? "pnl-" : "slist-") + iid)
+                    let loc = $("#pnl-map #pnl-" + (pid ? pid + " #slist-" + slist.name.nameToId() : iid))
 
                     iid = f.name.nameToId()
                     l = /idname/ [Symbol.replace](tMap, iid)
-                    l = /fname/ [Symbol.replace](l, f.map ? f.map : slist[f.sub])
                     loc.append(l)
 
-                    mapobserver.observe(loc.find("#row-" + iid)[0])
+                    nmsce.loadMap(loc.find("#row-" + iid), f.map ? f.map : slist[f.sub])
                 }
                 break
         }
@@ -1895,26 +1885,29 @@ function showLatLong() {
     }
 }
 
-NMSCE.prototype.loadMap = function (loc) {
-    let data = loc.data()
-
-    loc.load(data.src, () => {
-        let bdr = loc.find("[id|='bdr']")
-        bdr.css("stroke-opacity", "0")
-        let map = loc.find("[id|='map']")
-        map.find("*").css("stroke", "#404040")
-
-        let svg = loc.find("svg")
+NMSCE.prototype.setMapSize = function (loc) {
+    let maps = loc.find("[id|='row']:visible")
+    for (let l of maps) {
+        let svg = $(l).find("svg")
         let svgw = parseInt(svg.attr("width"))
         let svgh = parseInt(svg.attr("height"))
 
         let h = $("#panels").height()
-        let w = loc.width()
+        let w = $(l).width()
         let size = nmsce.calcImgSize(svgw, svgh, w, h, true)
 
         svg.attr("preserveAspectRatio", "xMidYMid meet")
         svg.attr("width", size.width)
         svg.attr("height", size.height)
+    }
+}
+
+NMSCE.prototype.loadMap = function (loc, fname) {
+    loc.load(fname, () => {
+        let bdr = loc.find("[id|='bdr']")
+        bdr.css("stroke-opacity", "0")
+        let map = loc.find("[id|='map']")
+        map.find("*").css("stroke", "#404040")
 
         bdr.click(function () {
             mapSelect(this)
@@ -1967,16 +1960,10 @@ NMSCE.prototype.selectSublist = function (btn) {
     let id = btn.text().stripMarginWS().nameToId()
     $("[id='slist-" + id + "']").show()
 
-    let mloc = $("#pnl-map")
-    let mlist = mloc.find("[id='map-image']")
-    for (let mloc of mlist) {
-        let pos = $(mloc).position()
+    let type = btn.closest("[id|='pnl']").prop("id").stripID()
+    let mloc = $("#pnl-map #pnl-" + type + " #slist-" + id)
 
-        $(mloc).parent().find("img").css({
-            top: pos.top + "px",
-            left: pos.left + "px",
-        })
-    }
+    nmsce.setMapSize(mloc)
 }
 
 let txtcanvas = document.createElement('canvas')
