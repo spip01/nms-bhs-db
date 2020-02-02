@@ -3987,6 +3987,7 @@ const shipList = [{
 }, {
     name: "Explorer",
     bodies: "/images/explorer.svg",
+    slotList: slotList,
     slotTtip: `
         T1: 15-19 slots<br>
         T2: 20-29 slots<br>
@@ -4228,30 +4229,6 @@ const sentinelList = [{
 }, {
     name: "Aggressive"
 }]
-
-const baseList = [{
-    name: "Nothing Selected"
-}, {
-    name: "Civ Capital"
-}, {
-    name: "Civ Hub"
-}, {
-    name: "Farm"
-}, {
-    name: "Garden"
-}, {
-    name: "Large"
-}, {
-    name: "Low Orbit"
-}, {
-    name: "Maze"
-}, {
-    name: "Point of Interest"
-}, {
-    name: "Race Track"
-}, {
-    name: "Under Water"
-}, ]
 
 const faunaList = [{
     name: "Nothing Selected"

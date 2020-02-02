@@ -575,81 +575,82 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
     let loc = pnl.find("#" + panels[idx].id)
 
     let entry = {}
-    let ok = true
     let lastentry = bhs.last[idx] ? bhs.last[idx] : null
     let addr = loc.find("#id-addr").val()
 
     let err = bhs.validateAddress(addr)
-    if (err !== "") {
-        bhs.status("Error: " + err)
-        return false
-    }
-
-    if (lastentry) {
-        entry = mergeObjects(entry, lastentry)
-
-        if (lastentry.addr != addr) {
-            ok = bhs.deleteEntry(lastentry)
-            bhs.status("change address " + lastentry.addr)
-
-            if (lastentry.basename) {
-                ok = bhs.deleteBase(lastentry.addr)
-                bhs.status("change base address" + lastentry.addr)
-            }
-        }
-    }
-
-    if (!lastentry || lastentry.uid == bhs.user.uid) {
-        entry._name = bhs.user._name
-        entry.org = bhs.user.org
-        entry.uid = bhs.user.uid
-        entry.platform = bhs.user.platform
-        entry.galaxy = bhs.user.galaxy
-    }
-
-    entry.version = "beyond"
-    entry.page = "bhs"
-
-    entry.addr = addr
-    entry.sys = loc.find("#id-sys").val()
-    entry.reg = loc.find("#id-reg").val()
-    entry.life = loc.find("#btn-Lifeform").text().stripNumber()
-    entry.econ = loc.find("#btn-Economy").text().stripNumber()
-
-    entry.dist = calcDist(entry.addr)
-    entry.xyzs = addressToXYZ(entry.addr)
-
-    let hasbase = loc.find("#ck-hasbase").prop("checked")
-    let single = loc.find("#ck-single").prop("checked")
-    let deadzone = loc.find("#ck-isdz").prop("checked")
-
-    if (idx == pnlTop) {
-        entry.deadzone = deadzone
-
-        if (!deadzone && !single) {
-            entry.blackhole = true
-
-            let xloc = pnl.find("#" + panels[pnlBottom].id)
-
-            entry.connection = xloc.find("#id-addr").val()
-            entry.x = {}
-            entry.x.addr = entry.connection
-            entry.x.dist = calcDist(entry.x.addr)
-            entry.x.xyzs = addressToXYZ(entry.connection)
-            entry.x.sys = xloc.find("#id-sys").val()
-            entry.x.reg = xloc.find("#id-reg").val()
-            entry.x.life = xloc.find("#btn-Lifeform").text().stripNumber()
-            entry.x.econ = xloc.find("#btn-Economy").text().stripNumber()
-
-            entry.towardsCtr = entry.dist - calcDist(entry.connection)
-        }
-    }
-
-    ok = bhs.validateEntry(entry, single) === ""
+    let ok = err === ""
 
     if (ok) {
-        if (!single)
-            ok = bhs.validateDist(entry) === ""
+        if (lastentry) {
+            entry = mergeObjects(entry, lastentry)
+
+            if (lastentry.addr != addr) {
+                ok = bhs.deleteEntry(lastentry)
+                bhs.status("change address " + lastentry.addr)
+
+                if (lastentry.basename) {
+                    ok = bhs.deleteBase(lastentry.addr)
+                    bhs.status("change base address" + lastentry.addr)
+                }
+            }
+        }
+
+        if (!lastentry || lastentry.uid == bhs.user.uid) {
+            entry._name = bhs.user._name
+            entry.org = bhs.user.org
+            entry.uid = bhs.user.uid
+            entry.platform = bhs.user.platform
+            entry.galaxy = bhs.user.galaxy
+        }
+
+        entry.version = "beyond"
+        entry.page = "bhs"
+
+        entry.addr = addr
+        entry.sys = loc.find("#id-sys").val()
+        entry.reg = loc.find("#id-reg").val()
+        entry.life = loc.find("#btn-Lifeform").text().stripNumber()
+        entry.econ = loc.find("#btn-Economy").text().stripNumber()
+
+        entry.dist = calcDist(entry.addr)
+        entry.xyzs = addressToXYZ(entry.addr)
+
+        let hasbase = loc.find("#ck-hasbase").prop("checked")
+        let single = loc.find("#ck-single").prop("checked")
+        let deadzone = loc.find("#ck-isdz").prop("checked")
+
+        if (idx == pnlTop) {
+            entry.deadzone = deadzone
+
+            if (!deadzone && !single) {
+                entry.blackhole = true
+
+                let xloc = pnl.find("#" + panels[pnlBottom].id)
+
+                entry.connection = xloc.find("#id-addr").val()
+                entry.x = {}
+                entry.x.addr = entry.connection
+                entry.x.dist = calcDist(entry.x.addr)
+                entry.x.xyzs = addressToXYZ(entry.connection)
+                entry.x.sys = xloc.find("#id-sys").val()
+                entry.x.reg = xloc.find("#id-reg").val()
+                entry.x.life = xloc.find("#btn-Lifeform").text().stripNumber()
+                entry.x.econ = xloc.find("#btn-Economy").text().stripNumber()
+
+                entry.towardsCtr = entry.dist - calcDist(entry.connection)
+            }
+        }
+
+        err = bhs.validateEntry(entry, single)
+        ok = err === ""
+    }
+
+    if (ok) {
+        if (!single) {
+            err = bhs.validateDist(entry)
+            ok = err === ""
+        }
 
         if (entry.blackhole && ok)
             ok = bhs.extractEntry(pnlBottom)
@@ -673,6 +674,9 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
             ok = bhs.updateEntry(entry)
         }
     }
+
+    if (err)
+        bhs.status("Error: " + err)
 
     return ok
 }
