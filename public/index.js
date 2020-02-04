@@ -581,6 +581,10 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
     let err = bhs.validateAddress(addr)
     let ok = err === ""
 
+    let hasbase = loc.find("#ck-hasbase").prop("checked")
+    let single = loc.find("#ck-single").prop("checked")
+    let deadzone = loc.find("#ck-isdz").prop("checked")
+
     if (ok) {
         if (lastentry) {
             entry = mergeObjects(entry, lastentry)
@@ -615,10 +619,6 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
 
         entry.dist = calcDist(entry.addr)
         entry.xyzs = addressToXYZ(entry.addr)
-
-        let hasbase = loc.find("#ck-hasbase").prop("checked")
-        let single = loc.find("#ck-single").prop("checked")
-        let deadzone = loc.find("#ck-isdz").prop("checked")
 
         if (idx == pnlTop) {
             entry.deadzone = deadzone
