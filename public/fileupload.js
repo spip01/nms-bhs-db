@@ -33,7 +33,7 @@ blackHoleSuns.prototype.buildFilePanel = function () {
             <br>
 
             <div class="row">
-                <label class="col-7 h6 txt-inp-def">
+                <label class="col-7 txt-inp-def">
                     <input id="ck-verbose" type="checkbox">
                     Verbose
                 </label>

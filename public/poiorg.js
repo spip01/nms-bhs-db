@@ -74,7 +74,7 @@ blackHoleSuns.prototype.buildTable = function (pnl, list) {
 }
 
 const panel = `
-<div class="card-header bkg-def txt-def h5">title</div>
+<div class="card-header txt-def h5">title</div>
 <div class="card-body">
     <div class="row">
         <div class="col-md-4 col-14">
@@ -87,20 +87,20 @@ const panel = `
                 <div class="row">
                     <div class="col-7">
                         <div class="row">
-                            <div class="col-4 txt-inp-def h6">Name</div>
+                            <div class="col-4 txt-inp-def">Name</div>
                             <input id="inp-name" class="rounded col-9" type="text">
                         </div>
                         <div class="row">
-                            <div class="col-4 txt-inp-def h6">Owner</div>
+                            <div class="col-4 txt-inp-def">Owner</div>
                             <input id="inp-owner" class="rounded col-9" type="text">
                         </div>
                         <div id="id-link" class="row">
-                            <div class="col-4 txt-inp-def h6">Link</div>
+                            <div class="col-4 txt-inp-def">Link</div>
                             <input id="inp-link" class="rounded col-9" type="text">
                         </div>
                         <br>
                         <div class="row">
-                            <label class="col-4 h6 txt-inp-def">
+                            <label class="col-4 txt-inp-def">
                                 <input id="ck-hide" type="checkbox">
                                 Hide
                             </label>
@@ -112,9 +112,9 @@ const panel = `
                     <br>
                     <div class="col-7 border-left">
                         <div class="row">
-                            <div class="col-3 txt-inp-def h6">Coord</div>
+                            <div class="col-3 txt-inp-def">Coord</div>
                             <input id="inp-addr" class="rounded col-5" type="text" placeholder="0000:0000:0000:0000">
-                            <div class="col-3 txt-inp-def h6">Planet</div>
+                            <div class="col-3 txt-inp-def">Planet</div>
                             <input id="inp-planet" class="rounded col-3" type="number" value=0 min=0 max=15>
                         </div>
                         <br>
@@ -123,11 +123,11 @@ const panel = `
                         </div>
                         <div id="platform-ckbox" class="row">
                             <div class="col-2"></div>
-                            <label class="col-4 h6 txt-inp-def">
+                            <label class="col-4 txt-inp-def">
                                 <input id="ck-pc-xbox" type="checkbox">
                                 PC-XBox
                             </label>
-                            <label class="col-4 h6 txt-inp-def">
+                            <label class="col-4 txt-inp-def">
                                 <input id="ck-ps4" type="checkbox">
                                 PS4
                             </label>
@@ -143,7 +143,7 @@ const panel = `
                 <br>
 
                 <div class="row">
-                    <div class="col-3 txt-inp-def h6">pictitle</div>
+                    <div class="col-3 txt-inp-def">pictitle</div>
                     <input id="img-file" type="file" class="col-8 form-control form-control-sm"
                         accept="image/png, image/jpeg">&nbsp
                 </div>

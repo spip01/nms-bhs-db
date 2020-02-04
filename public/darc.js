@@ -429,7 +429,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                                 l = /title/ [Symbol.replace](l, "Start")
                                 break
                             case "teleport":
-                                l = /title/ [Symbol.replace](l, "<div class='row'>Teleport to&nbsp;&nbsp;<div class='h6 txt-inp-def'>" + r.name + "</div></div>")
+                                l = /title/ [Symbol.replace](l, "<div class='row'>Teleport to&nbsp;&nbsp;<div class=' txt-inp-def'>" + r.name + "</div></div>")
                                 r = r.exit
                                 break
                             case "end":

@@ -99,11 +99,11 @@
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
         <div class="card card-body bkg-def border">
             <div id="imageinfo" class="row bkg-white txt-center" style="display:none">
-                <div id="imgcol" class="col-xl-9 col-lg-8 col-md-9 col-14">
+                <div id="imgcol" class="col-md-9 col-14">
                     <img id="dispimage"
-                        onload="nmsce.imgLoaded(this, $(this).parent().width(), $(window).height(), true)" />
+                        onload="nmsce.imageLoaded(this, $(this).parent().width(), $(window).height(), true)" />
                 </div>
-                <div class="col-xl-5 col-lg-6 col-md-5 col-14">
+                <div class="col">
                     <div id="imagedata"></div>
                     <br>
                     <div class="row" onclick="nmsce.newDARC('#imagedata #val-Coords')" class="pointer text-center">

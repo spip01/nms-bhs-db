@@ -5,43 +5,43 @@
         alt="NMSCE Is Temporarily Down">
 </div>
 
-<div class="container-fluid">
+<div class="container">
     <div class="row">
-        <div id="menulogo" class="col-2">
-            <img id="menuimg" src="images/nmsce-logo.png" alt="nmsce logo" style="width:80px; height:80px">
+        <div id="menulogo" class="col-sm-2 col-3">
+            <img id="menuimg" src="images/nmsce-logo.png" alt="nmsce logo" style="width:80px; height:80px" onload="nmsce.imageLoaded(this,$(this).parent().width(),$(this).parent().width(),true)">
         </div>
         <br>
 
-        <div class="col-12 align-middle">
+        <div class="col-sm-12 col-11">
             <br>
             <div class="row">
-                <div class="col-lg-2 col-md-5 col-7">
-                    <a id="searchpage" class="btn btn-def h4" href="nmsce.html">Search</a>
+                <div class="col-lg-2 col-md-2 col-5">
+                    <a id="searchpage" class="btn btn-sm btn-def" href="nmsce.html">Search</a>
                 </div>
-                <div class="col-lg-2 col-md-5 col-7">
-                    <a id="entrypage" class="btn btn-def h4" href="cedata.html">Post Discoveries</a>
+                <div class="col-lg-3 col-md-4 col-9">
+                    <a id="entrypage" class="btn btn-sm btn-def" href="cedata.html">Post Discoveries</a>
                 </div>
-                <div class="col-lg-3 col-7">
+                <div class="col-lg-3 col-md-4 col-7">
                     <div class="dropdown">
-                        <button type="button" class="btn-def text-center no-border dropdown-toggle h4"
+                        <button type="button" class="btn-def h5 text-center no-border dropdown-toggle"
                             data-toggle="dropdown">
                             Site Navigation
                         </button>
-                        <div class="dropdown-menu bkg-def">
-                            <a class="no-border dropdown-item btn-def h4" href="nmsce.html">NMSCE Search</a>
-                            <a class="no-border dropdown-item btn-def h4" href="cedata.html">NMSCE Data Entry</a>
-                            <a class="no-border dropdown-item btn-def h4" href="darc.html">BHS DaRC</a>
-                            <a class="no-border dropdown-item btn-def h4" href="index.html">BHS Data Entry</a>
-                            <a class="no-border dropdown-item btn-def h4" href="nav.html">Star Nav</a>
-                            <a class="no-border dropdown-item btn-def h4" href="glyph.html">Glyph Converter</a>
+                        <div class="dropdown-menu bkg-def h5">
+                            <a class="no-border dropdown-item btn-def h5" href="nmsce.html">NMSCE Search</a>
+                            <a class="no-border dropdown-item btn-def h5" href="cedata.html">NMSCE Data Entry</a>
+                            <a class="no-border dropdown-item btn-def h5" href="darc.html">BHS DaRC</a>
+                            <a class="no-border dropdown-item btn-def h5" href="index.html">BHS Data Entry</a>
+                            <a class="no-border dropdown-item btn-def h5" href="nav.html">Star Nav</a>
+                            <a class="no-border dropdown-item btn-def h5" href="glyph.html">Glyph Converter</a>
                         </div>
                     </div>
                 </div>
 
                 <div class="col">
-                    <div class="row align-middle">
+                    <div class="row">
                         <div id="full-usermenu">
-                            <button id="login" type="button" class="btn-def no-border h4" onclick="bhs.logIn()">
+                            <button id="login" type="button" class="btn-def no-border h5" onclick="bhs.logIn()">
                                 Login
                             </button>
 
@@ -49,18 +49,18 @@
                                 <button type="button" class="row btn-def no-border dropdown-toggle"
                                     data-toggle="dropdown">
                                     <img id="userpic" style="width:32px; height:32px; border-radius: 50%;">&nbsp;
-                                    <h4 id="username">User</h4>
+                                    <h6 id="username">User</h6>
                                 </button>
 
                                 <div class="dropdown-menu bkg-def text-center">
-                                    <button id="logout" type="button" class="no-border dropdown-item btn-def h4"
+                                    <button id="logout" type="button" class="no-border dropdown-item btn-def h5"
                                         onclick="bhs.logOut()">Logout</button>
-                                    <button id="tooltip" type="button" class="no-border dropdown-item btn-def h4"
+                                    <button id="tooltip" type="button" class="no-border dropdown-item btn-def h5"
                                         onclick="bhs.toggleTips()">
                                         Toggle Tooltip Display
                                     </button>
                                     <button id="admin" type="button"
-                                        class="h5 no-border dropdown-item btn-def h4 hidden" onclick="bhs.setAdmin()">
+                                        class="h5 no-border dropdown-item btn-def h5 hidden" onclick="bhs.setAdmin()">
                                         Admin Edit
                                     </button>
                                 </div>
@@ -74,9 +74,9 @@
 </div>
 
 <div class="row border-top">
-    <a href="https://www.reddit.com/r/NMSCoordinateExchange/" class="col-4 text-center clr-creme h5">NMSCE
+    <a class="col-4 text-center clr-creme h5" href="https://www.reddit.com/r/NMSCoordinateExchange/">NMSCE
         Reddit</a>
-    <a class="col-4 text-center clr-creme h5" href="https://discord.gg/CHSHe3m">Discord NMSCE App channel&nbsp;
+    <a class="col-4 text-center clr-creme h5" href="https://discord.gg/CHSHe3m">NMSCE App Discord&nbsp;
         <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true" data-placement="bottom"
             title="Invite for NMSCE App channel. Discuss the app, report bugs and offer your suggesions.">
         </i>
@@ -95,32 +95,32 @@
     <div class="card-body">
         <div class="row">
             <div class="col text-center">
-                <button id="lgoogle" class="h5 text-center col-3 btn btn-sm btn-def">login using Google</button>
+                <button id="lgoogle" class="h5 col-3 btn btn-sm btn-def">login using Google</button>
             </div>
         </div>
         <div class="row ">
             <div class="col text-center">
-                <button id="lgithub" class="h5 text-center col-3 btn btn-sm btn-def">login using Github</button>
+                <button id="lgithub" class="h5 col-3 btn btn-sm btn-def">login using Github</button>
             </div>
         </div>
         <!--div class="row">
             <div class="col-5">&nbsp;</div>
-            <div id="ltwitch" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Twitch</div>
+            <div id="ltwitch" class=" text-center col-5 btn-sm bkg-light-gray">login using Twitch</div>
         </div>
         <div class="row">
             <div class="col-5">&nbsp;</div>
-            <div id="ldiscord" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Discord</div>
+            <div id="ldiscord" class=" text-center col-5 btn-sm bkg-light-gray">login using Discord</div>
         </div>
         <div class="row">
             <div class="col-5">&nbsp;</div>
-            <div id="lreddit" class="h6 text-center col-5 btn-sm bkg-light-gray">login using Reddit</div>
+            <div id="lreddit" class=" text-center col-5 btn-sm bkg-light-gray">login using Reddit</div>
         </div-->
     </div>
 
     <div class="card-footer">
         <div class="row">
             <div class="col text-center">
-                <button id="lcancel" class="h5 text-center col-2 btn btn-sm btn-def">Cancel</button>
+                <button id="lcancel" class="h5 col-2 btn btn-sm btn-def">Cancel</button>
             </div>
         </div>
     </div>

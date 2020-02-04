@@ -7,7 +7,6 @@
 */
 
 @media only screen and (max-width: 767px) {
-
     .h1,
     h1 {
         font-size: 1.62rem
@@ -37,10 +36,13 @@
     h6 {
         font-size: 0.61rem
     }
+
+    .txt-inp-def {
+        font-size: 0.75rem;
+    }
 }
 
 @media only screen and (min-width: 768px) {
-
     .h1,
     h1 {
         font-size: 2rem
@@ -70,6 +72,10 @@
     h6 {
         font-size: 0.75rem
     }
+
+    .txt-inp-def {
+        font-size: 0.65rem;
+    }
 }
 
 @font-face {
@@ -88,7 +94,6 @@
 }
 
 body {
-    font-size: .75rem !important;
     font-family: "Arial";
     background-color: black;
 }
@@ -98,9 +103,9 @@ body {
 }
 
 .row,
-[class|='col-'] {
-    padding-left: 1px !important;
-    padding-right: 1px !important;
+[class^=col] {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
 }
 
 .nopadding {
@@ -188,7 +193,7 @@ body {
 .btn-def:not(:disabled):not(.disabled):hover {
     box-shadow: 0 0 0 .2rem gold;
     color: gold;
-    opacity:0.75;
+    opacity: 0.75;
 }
 
 .clr-dark-green {
@@ -286,7 +291,7 @@ body {
 }
 
 .pointer {
-    cursor: pointer !important; 
+    cursor: pointer !important;
 }
 
 .hanging-indent {
@@ -294,13 +299,21 @@ body {
     text-indent: -40px;
 }
 
+.pl-5 {
+    padding-left: 5px !important;
+}
+
+.pl-10 {
+    padding-left: 10px !important;
+}
+
 .pl-15 {
     padding-left: 15px !important;
-} 
+}
 
 .pl-30 {
     padding-left: 30px !important;
-} 
+}
 
 .parts-map {
     display: block;

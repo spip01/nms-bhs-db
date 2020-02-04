@@ -161,7 +161,7 @@ blackHoleSuns.prototype.toggleTips = function () {
 blackHoleSuns.prototype.displayUser = function (user, force) {
     if (fpreview)
         return
-        
+
     let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform)
 
     bhs.user = mergeObjects(bhs.user, user)
@@ -243,7 +243,7 @@ blackHoleSuns.prototype.buildUserPanel = function () {
             <div class="row">
                 <div class="col-lg-7 col-md-7 col-sm-7 col-14">
                     <div class="row">
-                        <div class="col-md-14 col-sm-14 col-6 h6 txt-inp-def">Player Name<span id="namereq" class="h5 text-danger">&nbsp;*</span></div>
+                        <div class="col-md-14 col-sm-14 col-6 txt-inp-def">Player Name<span id="namereq" class="h5 text-danger">&nbsp;*</span></div>
                         <input id="id-Player" class="rounded col h5" type="text">
                     </div>
                 </div>
@@ -269,7 +269,7 @@ blackHoleSuns.prototype.buildUserPanel = function () {
     $("#panels").prepend(panel)
     let loc = $("#pnl-user")
 
-    if (!fnmsce && !fcedata)
+    if (!fnmsce && !fcedata && !fpreview)
         bhs.getOrgList().then(() => {
             bhs.orgList.unshift({
                 name: "--blank--"
@@ -442,13 +442,13 @@ blackHoleSuns.prototype.buildEntryList = function (entry) {
 
         <div id="utSettings" class="card card-body" style="display:none">
             <div class="row">
-                <label class="col-lg-7 col-md-14 col-sm-7 col-14 h6 txt-inp-def">Start Date&nbsp;
+                <label class="col-lg-7 col-md-14 col-sm-7 col-14 txt-inp-def">Start Date&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Date entry was created. Delete date to ignore.">
                     </i>&nbsp;
                     <input id="id-start" type="date" class="rounded col-8">
                 </label>
-                <label class="col-lg-7 col-md-14 col-sm-7 col-14 h6 txt-inp-def">End Date&nbsp;
+                <label class="col-lg-7 col-md-14 col-sm-7 col-14 txt-inp-def">End Date&nbsp;
                     <input id="id-end" type="date" class="rounded col-8">
                 </label>
             </div>
@@ -458,7 +458,7 @@ blackHoleSuns.prototype.buildEntryList = function (entry) {
             <div class="row">
                 <button id="btn-saveListSettings" type="button" class="btn-def btn btn-sm">Save</button>&nbsp
 
-                <label id="id-export" class="col-sm-8 col-14 text-right h6 txt-inp-def border-left" style="display:none">File Name&nbsp
+                <label id="id-export" class="col-sm-8 col-14 text-right txt-inp-def border-left" style="display:none">File Name&nbsp
                     <input id="inp-exportfile" type="text" class="rounded col-10">
                 </label>
                 
@@ -468,12 +468,12 @@ blackHoleSuns.prototype.buildEntryList = function (entry) {
         </div>
         
         <div id="id-table" class="container-fluid border-top border-def">
-            <div id="userHeader" class="row border-bottom bkg-def txt-def"></div>
+            <div id="userHeader" class="row border-bottom txt-def"></div>
             <div id="userItems" class="scrollbar container-fluid" style="overflow-y: scroll; height: 388px"></div>
         </div>`
 
     const ckbox = `            
-        <label class="col-sm-4 col-7 h6 txt-inp-def">
+        <label class="col-sm-4 col-7 txt-inp-def">
             <input id="ck-idname" type="checkbox" checked>
             title
         </label>`
@@ -740,7 +740,7 @@ blackHoleSuns.prototype.buildTotals = function () {
     totalsCol.forEach(t => {
         let l = /idname/ [Symbol.replace](totalsItems, t.id)
         l = /title/ [Symbol.replace](l, t.title)
-        h += /format/ [Symbol.replace](l, t.format + " bkg-def txt-def")
+        h += /format/ [Symbol.replace](l, t.format + " txt-def")
     })
 
     $("#hdr-Player").html(h)
@@ -970,7 +970,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
     let header = `        
         <div class="row">`
     let title = `
-            <div class="size h6 txt-inp-def">labelttip</div>`
+            <div class="size txt-inp-def">labelttip</div>`
     let block = `
             <div id="menu-idname" class="size dropdown">
                 <button id="btn-idname" class="btn border btn-sm dropdown-toggle" style="rgbcolor" type="button" data-toggle="dropdown"></button>
@@ -979,7 +979,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
     const tText = `&nbsp;
         <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
             data-placement="bottom" title="ttip"></i>`
-    const rText = ` <span class="h5 text-danger">*</span>ttip`
+    const rText = `&nbsp;<span class="h5 text-danger">*</span>ttip`
 
     let item = ``
     let hdr = ``
@@ -1097,7 +1097,7 @@ blackHoleSuns.prototype.extractUser = function () {
 
     if (u.org === "--blank--")
         u.org = ""
-    
+
     return u
 }
 

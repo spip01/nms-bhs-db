@@ -3,18 +3,18 @@
 // Copyright 2019-2020 Black Hole Suns
 // Written by Stephen Piper
 
-const findex = window.location.pathname == "/index.html" || window.location.pathname == "/"
-const fpoi = window.location.pathname == "/poiorg.html"
-const fdarc = window.location.pathname == "/darc.html"
-const ftotals = window.location.pathname == "/totals.html"
-const fsearch = window.location.pathname == "/search.html"
-const fcedata = window.location.pathname == "/cedata.html"
-const fnmsce = window.location.pathname == "/nmsce.html"
-const fpreview = window.location.pathname == "/preview.html"
+const findex = window.location.pathname.includes("index.html") || window.location.pathname == "/"
+const fpoi = window.location.pathname.includes("poiorg.html")
+const fdarc = window.location.pathname.includes("darc.html")
+const ftotals = window.location.pathname.includes("totals.html")
+const fsearch = window.location.pathname.includes("search.html")
+const fcedata = window.location.pathname.includes("cedata.html")
+const fnmsce = window.location.pathname.includes("nmsce.html")
+const fpreview = window.location.pathname.includes("preview.html")
 
 function addGlyphButtons(loc, fcn) {
     const gbtn = `
-        <button type="button" class="btn-def btn btn-sm col-sm-p125 col-3 h6">
+        <button type="button" class="btn-def btn btn-sm col-sm-p125 col-p250">
             <span class="h5 glyph">title</span>
             -title
         </button>`

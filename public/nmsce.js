@@ -119,17 +119,17 @@ NMSCE.prototype.buildPanels = function () {
                 })
             }
 
-            bhs.buildMenu($("#pnl-user"), "Galaxy", galaxyList, null, {
+            bhs.buildMenu($("#panels"), "Galaxy", galaxyList, null, {
                 required: true,
-                labelsize: "col-lg-7 col-md-14 col-sm-14 col-5",
+                labelsize: "col-md-6 col-4",
                 menusize: "col",
             })
         })
     } else
-        bhs.buildMenu($("#pnl-user"), "Galaxy", galaxyList, null, {
+        bhs.buildMenu($("#panels"), "Galaxy", galaxyList, null, {
             tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
             required: true,
-            labelsize: "col-lg-7 col-md-14 col-sm-14 col-5",
+            labelsize: "col-md-6 col-4",
             menusize: "col",
         })
 
@@ -179,7 +179,7 @@ NMSCE.prototype.changeAddr = function (evt) {
         }
 
         addr = reformatAddress(addr)
-        let pnl = $(evt).closest("[id|='pnl'")
+        let pnl = $("#panels")
 
         nmsce.dispAddr(pnl, addr)
 
@@ -210,14 +210,14 @@ NMSCE.prototype.dispAddr = function (pnl, addr) {
 
 NMSCE.prototype.displayRegion = function (entry) {
     if (entry.reg) {
-        let loc = $("#pnl-S1")
+        let loc = $("#panels")
         loc.find("#id-reg").val(entry.reg)
         loc.find("#foundreg").show()
     }
 }
 
 NMSCE.prototype.displaySystem = function (entry) {
-    let loc = $("#pnl-S1")
+    let loc = $("#panels")
 
     loc.find("#foundsys").show()
     if (entry.reg)
@@ -291,18 +291,21 @@ NMSCE.prototype.displayUser = function () {
         nmsce.restoreText(bhs.user.imageText)
         if (typeof nmsce.entries === "undefined")
             nmsce.getEntries()
-        if (bhs.user.nmscesettings)
-            nmsce.expandPanels(bhs.user.nmscesettings.expandPanels)
+
+        nmsce.expandPanels(bhs.user.nmscesettings && bhs.user.nmscesettings.expandPanels || (!bhs.user.galaxy || fcedata && (!bhs.user._name || !bhs.user.Platform)))
     } else if (fnmsce) {
         if (bhs.user.uid)
             nmsce.getMyFavorites()
         else if (typeof (Storage) !== "undefined" && !bhs.user.galaxy)
             bhs.user.galaxy = window.localStorage.getItem('nmsce-galaxy')
+
+        if (!bhs.user.galaxy)
+            bhs.user.galaxy = "Euclid"
     }
 
     let loc = $("#row-playerInput")
     if (fcedata)
-        loc.find("#id-Player").text(bhs.user._name)
+        loc.find("#id-Player").val(bhs.user._name)
 
     loc.find("#btn-Galaxy").text(bhs.user.galaxy)
 
@@ -316,53 +319,16 @@ NMSCE.prototype.displayUser = function () {
     loc.find("#id-Galaxy").text(bhs.user.galaxy)
     loc.find("#id-Platform").text(bhs.user.Platform)
 
-    if (fnmsce || !bhs.user._name || !bhs.user.galaxy || !bhs.user.Platform) {
-        $("#row-playerDisplay").hide()
-        $("#row-playerInput").show()
-    } else {
-        $("#row-playerInput").hide()
-        $("#row-playerDisplay").show()
-    }
-
     $("#searchlocaltt").hide()
 
     nmsce.getSearches()
 }
 
-NMSCE.prototype.playerToggle = function (evt) {
-    if ($(evt).is('.fa-caret-square-down')) {
-        let loc = $("#row-playerDisplay")
-        loc.hide()
-
-        loc.find("#id-Player").val(bhs.user._name)
-        loc.find("#btn-galaxy").text().stripNumber(bhs.user.galaxy)
-        loc.find("#id-Platform input").prop("checked", false)
-        if (bhs.user.Platform)
-            loc.find("#id-Platform #rdo-" + bhs.user.Platform).prop("checked", false)
-
-        $("#row-playerInput").show()
-    } else {
-        let loc = $("#row-playerInput")
-        loc.hide()
-        bhs.user._name = loc.find("#id-Player").val()
-        bhs.user.galaxy = loc.find("#btn-Galaxy").text().stripNumber()
-        bhs.user.Platform = ""
-        loc = loc.find("#id-Platform :checked")
-        if (loc.length > 0)
-            bhs.user.Platform = loc.prop("id").stripID()
-
-        loc = $("#row-playerDisplay")
-        loc.show()
-        loc.find("#id-Player").text(bhs.user._name)
-        loc.find("#id-Galaxy").text(bhs.user.galaxy)
-        loc.find("#id-Platform").text(bhs.user.Platform)
-    }
-}
-
 NMSCE.prototype.clearPanel = function (all, savelast) {
     const clr = (pnl) => {
         pnl.find("input").each(function () {
-            if ($(this).prop("id") === "ck-glyphs")
+            let id = $(this).prop("id").stripID()
+            if (id === "glyphs" || id === "PC" || id === "XBox" || id === "PS4" || fcedata && id === "Player")
                 return
 
             let type = $(this).prop("type")
@@ -376,7 +342,8 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
         })
 
         pnl.find("[id|='menu']").each(function () {
-            if (!fcedata || all || $(this).prop("id").stripID() !== "Type")
+            let id = $(this).prop("id").stripID()
+            if ((!fcedata || all || id !== "Type") && id != "Galaxy")
                 $(this).find("[id|='btn']").text("")
         })
     }
@@ -384,7 +351,7 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     clr($("#typePanels"))
 
     if (all) {
-        let loc = $("#pnl-S1")
+        let loc = $("#panels")
         loc.find("#foundreg").hide()
         loc.find("#foundsys").hide()
         loc.find("#id-by").empty()
@@ -394,10 +361,10 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
         loc.find("#id-addrInput #id-glyph").empty()
         loc.find("#id-addrInput #id-hex").empty()
 
-        clr($("#pnl-S1"))
+        clr($("#panels"))
 
         if (fnmsce)
-            $("#pnl-user #id-Player").val("")
+            $("#id-Player").val("")
     }
 
     let loc = $("#pnl-map [id|='map']")
@@ -453,7 +420,7 @@ NMSCE.prototype.extractEntry = function () {
     let entry = {}
     let ok = true
 
-    let loc = $("#pnl-S1")
+    let loc = $("#panels")
 
     let last = nmsce.lastsys ? nmsce.lastsys : nmsce.last
 
@@ -475,7 +442,7 @@ NMSCE.prototype.extractEntry = function () {
     entry.version = "beyond"
     entry.page = "nmsce"
 
-    loc = $("#pnl-S1")
+    loc = $("#panels")
     entry.addr = loc.find("#id-addr").val()
     entry.sys = loc.find("#id-sys").val()
     entry.reg = loc.find("#id-reg").val()
@@ -486,7 +453,7 @@ NMSCE.prototype.extractEntry = function () {
         entry.life = entry.Lifeform
     }
 
-    loc = $("#pnl-S1").find("#row-Economy :checked")
+    loc = $("#panels").find("#row-Economy :checked")
     if (loc.length > 0)
         entry.Economy = loc.prop("id").stripID()
 
@@ -663,8 +630,8 @@ NMSCE.prototype.displaySingle = function (entry) {
     let tloc = $("#tab-" + entry.type.nameToId())
     tloc.click()
 
-    $("#pnl-S1 #foundreg").hide()
-    $("#pnl-S1 #foundsys").hide()
+    $("#panels #foundreg").hide()
+    $("#panels #foundsys").hide()
 
     if (!entry.Lifeform && entry.life)
         entry.Lifeform = entry.life
@@ -751,11 +718,8 @@ NMSCE.prototype.displaySingle = function (entry) {
     $("#reddit").removeClass("disabled")
 
     $("#reddit").removeAttr("disabled")
-    $("#posted").html(entry.reddit ? "Posted&nbsp;"
-        /*+
-               (typeof entry.reddit !== "boolean" ? "<span class='txt-inp-def h6'>" + new Date(entry.reddit.seconds).toDateLocalTimeString() + "</span>" : "")*/
-        :
-        "")
+    let date = e.reddit ? typeof e.reddit === "boolean" ? "Posted" : typeof e.reddit.toDate != "undefined" ? e.reddit.toDate().toDateLocalTimeString() : "" : ""
+    $("#posted").html(date)
 }
 
 NMSCE.prototype.displaySearch = function (search) {
@@ -893,7 +857,6 @@ NMSCE.prototype.executeSearch = function (search) {
         bhs.status(nfound + " matching entries found.")
 
         $("body")[0].style.cursor = "default"
-
 
         if (!bhs.user.uid) {
             if (typeof (Storage) !== "undefined") {
@@ -1089,7 +1052,11 @@ NMSCE.prototype.saveSearch = function () {
                 loc = loc.find("#item-" + search.name.nameToId())
                 bhs.bindMenuChange(loc, nmsce.executeSaved)
             } else
-                bhs.buildMenu($("#entrybuttons"), "Saved", nmsce.searchlist, nmsce.executeSaved)
+                bhs.buildMenu($("#entrybuttons"), "Saved", nmsce.searchlist, nmsce.executeSaved, {
+                    sort: true,
+                    labelsize: "col-2",
+                    menusize: "col"
+                })
         }
     }
 }
@@ -1174,7 +1141,7 @@ NMSCE.prototype.extractSearch = function (fcn) {
     s.search = []
     let search = s.search
 
-    if (galaxy === "") {
+    if (!galaxy) {
         bhs.status("No Galaxy Selected.")
         return null
     }
@@ -1407,7 +1374,7 @@ NMSCE.prototype.save = function () {
 }
 
 NMSCE.prototype.extractUser = function () {
-    let loc = $("#pnl-user")
+    let loc = $("#panels")
     let u = {}
 
     u.version = "beyond"
@@ -1422,7 +1389,7 @@ NMSCE.prototype.extractUser = function () {
 
     if (fcedata) {
         u.nmscesettings = {}
-        u.nmscesettings.expandPanels = $("nav .fa-caret-square-up").is(":visible")
+        u.nmscesettings.expandPanels = $("#hidden").is(":visible")
     }
 
     return u
@@ -1440,13 +1407,17 @@ blackHoleSuns.prototype.status = function (str, clear) {
     $("#status").append("<h6>" + str + "</h6>")
 }
 
-let nav = `<a class="nav-item nav-link txt-def h6 active" style="border-bottom-left-radius:0px; border-bottom-width:0px; border-color:black;" id="tab-idname" data-toggle="tab" href="#hdr-idname" role="tab" aria-controls="pnl-idname" aria-selected="true">title</a>`
+let nav = `<a class="nav-item nav-link txt-def h6 rounded-top active" 
+    style="border-color:black;" 
+    id="tab-idname" data-toggle="tab" href="#hdr-idname" role="tab" aria-controls="pnl-idname" aria-selected="true">
+    title
+</a>`
 let header = `
     <div id="hdr-idname" class="tab-pane active" role="tabpanel" aria-labelledby="tab-idname">
         <div id="pnl-idname" class="row"></div>
     </div>`
 let mapHeader = `<div id="pnl-idname" class="border rounded" style="display:none;"></div>`
-const tSubList = `<div id="slist-idname" class="row pl-15" style="display:none"></div>`
+const tSubList = `<div id="slist-idname" class="row pl-10" style="display:none"></div>`
 
 const tReq = `&nbsp;<font style="color:red">*</font>`
 const tText = `&nbsp;
@@ -1460,35 +1431,35 @@ const inpEnd = `</div>`
 
 const tString = `
     <div id="row-idname" data-type="string" data-req="ifreq" class="row">
-        <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
+        <div class="col-4 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" class="rounded col-9">
     </div>`
-const tMap = `<div id="row-idname" class="col-lg-7 col-14 border" data-type="map"></div>`
+const tMap = `<div id="row-idname" class="col-14" data-type="map"></div>`
 const tLongString = `
     <div id="row-idname" data-type="string" data-allowhide="ihide" data-req="ifreq" class="row">
-        <div class="col-3 h6 pl-15 txt-inp-def">titlettip&nbsp;</div>
+        <div class="col-4  pl-15 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" class="rounded col-9">
     </div>`
 const tNumber = `
     <div id="row-idname" data-type="number" data-allowhide="ihide" data-req="ifreq" data-search="stype" class="row">
-        <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
-        <input id="id-idname" type="number" class="rounded col-7" min=-1 max=range value=-1>
+        <div class="col-4 txt-inp-def">titlettip&nbsp;</div>
+        <input id="id-idname" type="number" class="rounded col-5" min=-1 max=range value=-1>
     </div>`
 const tFloat = `
     <div id="row-idname" data-type="float" data-allowhide="ihide" data-req="ifreq" data-search="stype" class="row">
-        <div class="col-5 h6 txt-inp-def">titlettip&nbsp;</div>
-        <input id="id-idname" type="number" class="rounded col-7" step=0.1 min=-1 max=range value=-1>
+        <div class="col-4 txt-inp-def">titlettip&nbsp;</div>
+        <input id="id-idname" type="number" class="rounded col-5" step=0.1 min=-1 max=range value=-1>
     </div>`
 const tTags = `
     <div id="row-idname" class="row" data-type="tags" data-allowhide="ihide" data-req="ifreq">
-        <div id="id-idname" class="col-3"></div>&nbsp;ttip
+        <div id="id-idname" class="col-4"></div>
         <div id="add-idname" class="col-10 row hidden">
             <input id="txt-idname" type="text" class="col-7"></input>
             <button id="add-idname" type="text" class="col-2 btn btn-def btn-sm" onclick="nmsce.newTag(this)">Add</button>
             <button id="cancel-idname" type="text" class="col-3 btn btn-def btn-sm" onclick="nmsce.cancelTag(this)">Cancel</button>
         </div>
         <div class="col-10 border">
-        <div id="list-idname" class="row"></div>
+            <div id="list-idname" class="row"></div>
         </div>
     </div>`
 const tTag = `<div id="tag-idname" class="border pointer h5" style="border-radius:8px; background-color:#d0d0d0" onclick="nmsce.deleteTag(this)">&nbsp;title&nbsp;<i class="far fa-times-circle" style="color:#ffffff;"></i>&nbsp;</div>&nbsp;`
@@ -1498,26 +1469,26 @@ const tMenu = `
     </div>`
 const tRadio = `
     <div id="row-idname" data-type="radio" data-allowhide="ihide" data-req="ifreq" class="row">
-        <div class="radio col-3 h6 txt-inp-def">titlettip:&nbsp;</div>
-        <div class="col-11">
+        <div class="radio col-4 txt-inp-def">titlettip&nbsp;</div>
+        <div class="col-10">
             <div id="list" class="row"></div>
         </div>
     </div>`
 const tRadioItem = `
-    <label class="h6 col-p250 txt-inp-def">
-        <input type="radio" class="radio" id="rdo-tname" data-last=false onclick="nmsce.toggleRadio(this)">
+    <label class="col txt-inp-def">
+        <input type="radio" class="radio row" id="rdo-tname" data-last=false onclick="nmsce.toggleRadio(this)">
             &nbsp;titlettip
     </label>`
 const tCkItem = `
-    <div id="row-idname" data-type="checkbox" data-allowhide="ihide" data-req="false" class="pl-15">
-        <label id="id-idname" class="h6 txt-inp-def row">
+    <div id="row-idname" data-type="checkbox" data-allowhide="ihide" data-req="false">
+        <label id="id-idname" class=" txt-inp-def row pl-10">
             titlettip&nbsp
             <input id="ck-idname" type="checkbox">
         </label>
     </div>`
 const tImg = `
     <div id="row-idname" data-req="ifreq" data-type="img" class="row">
-        <div class="col-3 txt-inp-def h6 pl-30">titlettip&nbsp;</div>
+        <div class="col-4 txt-inp-def">titlettip&nbsp;</div>
         <input id="id-idname" type="file" class="col-10 form-control form-control-sm" 
             accept="image/*" name="files[]"  data-type="img" onchange="nmsce.loadScreenshot(this)">&nbsp
     </div>`
@@ -1665,6 +1636,9 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
 
                 if (f.ttip)
                     f.tip = slist ? slist[f.ttip] : f.ttip
+
+                f.labelsize = "col-5"
+                f.menusize = "col"
 
                 bhs.buildMenu(lst, f.name, f.sub ? slist[f.sub] : f.list, f.sublist ? nmsce.selectSublist : null, f)
 
@@ -1894,7 +1868,7 @@ NMSCE.prototype.setMapSize = function (loc) {
 
         let h = $("#panels").height()
         let w = $(l).width()
-        let size = nmsce.calcImgSize(svgw, svgh, w, h, true)
+        let size = nmsce.calcImgSize(svgw, svgh, w, h / 2, true)
 
         svg.attr("preserveAspectRatio", "xMidYMid meet")
         svg.attr("width", size.width)
@@ -2659,9 +2633,9 @@ NMSCE.prototype.dispGlyph = function () {
     ctx.putImageData(imgData, 0, 0)
 
     canvas = document.getElementById("id-glyphCanvas")
-    let out = nmsce.calcImgSize(text.width * scale, text.height * scale, row.width(), row.height(), true)
-    canvas.width = out.width
-    canvas.height = out.height
+    let size = nmsce.calcImgSize(text.width * scale, text.height * scale, row.width(), row.height(), true)
+    canvas.width = size.width
+    canvas.height = size.height
 
     ctx = canvas.getContext("2d")
     ctx.drawImage(glyph, 0, 0, canvas.width, canvas.height)
@@ -2992,7 +2966,7 @@ NMSCE.prototype.initVotes = function (entry) {
 }
 
 function getEntry() {
-    let addr = $("#pnl-S1 #id-addr").val()
+    let addr = $("#panels #id-addr").val()
     let name = $(this).val()
     let type = $("#typePanels .active").prop("id").stripID()
     let gal = $("#btn-Galaxy").text().stripNumber()
@@ -3201,7 +3175,7 @@ const resultsItem = `
         by<br>
         <img id="img-idname" data-panel="epanel" data-thumb="ethumb" data-type="etype" data-id="eid" class="pointer" 
         onclick="nmsce.selectResult(this)" 
-        onload="nmsce.imgLoaded(this, $('.cover-container').height()*1.3, $('.cover-container').height()-64)" />
+        onload="nmsce.imageLoaded(this, $(this).parent().width(), $(this).parent().height()-64, true)" />
     </div>`
 
 NMSCE.prototype.getAfterDate = function (date) {
@@ -3424,8 +3398,8 @@ NMSCE.prototype.selectResult = function (evt) {
 NMSCE.prototype.displaySelected = function (e, noscroll) {
     let row = `
     <div id="id-idname" class="row border-bottom txt-inp-def h5">
-        <div class="col-lg-4 col-7">title</div>
-        <div id="val-idname" class="col-lg-10 col-7 font clr-def">value</div>
+        <div class="col-5">title</div>
+        <div id="val-idname" class="col font clr-def">value</div>
     </div>`
 
     let loc = $("#imageinfo")
@@ -3578,12 +3552,12 @@ NMSCE.prototype.displayInList = function (list, tab) {
 NMSCE.prototype.displayList = function (entries) {
     const card = `
         <div class="container-flex">
-            <div id="ttl-idname" class="card-header bkg-def txt-def h4">
+            <div id="ttl-idname" class="card-header txt-def h5">
                 <div class="row">
-                    <i class="far fa-caret-square-up pointer hidden h3" onclick="nmsce.hideSubs()"></i>
-                    <i class="far fa-caret-square-down pointer h3" onclick="nmsce.showSub('#sub-idname')"></i>&nbsp;
-                    <div id="id-idname" class="col-3">title</div>
-                    <div class="col-3">Total: total</div>
+                    <i class="far fa-caret-square-up pointer hidden h4" onclick="nmsce.hideSubs()"></i>
+                    <i class="far fa-caret-square-down pointer h4" onclick="nmsce.showSub('#sub-idname')"></i>&nbsp;
+                    <div id="id-idname" class="col-6">title</div>
+                    <div class="col">Total: total</div>
                 </div>
             </div>
             <div id="sub-idname" class="container-flex h6 hidden">
@@ -3629,49 +3603,59 @@ NMSCE.prototype.sortLoc = function (evt) {
     row.remove()
 
     let list = loc.children()
-
-    if (["Favorite", "Editors-Choice", "Visited", "Slots"].includes(name)) {
-        list.sort((a, b) => {
-            let av = $(a).find("#" + id).text().stripMarginWS()
-            let bv = $(b).find("#" + id).text().stripMarginWS()
-            let x = parseInt(av)
-            let y = parseInt(bv)
-            return y - x
-        })
-    } else if (name === "Height") {
-        list.sort((a, b) => {
-            let av = $(a).find("#" + id).text().stripMarginWS()
-            let bv = $(b).find("#" + id).text().stripMarginWS()
-            let x = parseFloat(av)
-            let y = parseFloat(bv)
-            return y - x
-        })
-    } else if (name === "Class") {
-        list.sort((a, b) => {
-            let av = $(a).find("#" + id).text().stripMarginWS()
-            let bv = $(b).find("#" + id).text().stripMarginWS()
-            let x = "SABC".indexOf(av)
-            let y = "SABC".indexOf(bv)
-            return x - y
-        })
-    } else if (name === "Modified") {
-        list.sort((a, b) => {
-            let av = new Date($(a).find("#" + id).text().stripMarginWS())
-            let bv = new Date($(b).find("#" + id).text().stripMarginWS())
-            return bv - av
-        })
-    } else if (name === "Seed") {
-        list.sort((a, b) => {
-            let av = $(a).find("#" + id).text().stripMarginWS().toLowerCase()
-            let bv = $(b).find("#" + id).text().stripMarginWS().toLowerCase()
-            return av > bv ? -1 : av < bv ? 1 : 0
-        })
-    } else {
-        list.sort((a, b) => {
-            let av = $(a).find("#" + id).text().stripMarginWS().toLowerCase()
-            let bv = $(b).find("#" + id).text().stripMarginWS().toLowerCase()
-            return av > bv ? 1 : av < bv ? -1 : 0
-        })
+    switch (name) {
+        case "Favorite":
+        case "Editors-Choice":
+        case "Visited":
+        case "Slots":
+            list.sort((a, b) => {
+                let av = $(a).find("#" + id).text().stripMarginWS()
+                let bv = $(b).find("#" + id).text().stripMarginWS()
+                let x = parseInt(av)
+                let y = parseInt(bv)
+                return y - x
+            })
+            break
+        case "Height":
+            list.sort((a, b) => {
+                let av = $(a).find("#" + id).text().stripMarginWS()
+                let bv = $(b).find("#" + id).text().stripMarginWS()
+                let x = parseFloat(av)
+                let y = parseFloat(bv)
+                return y - x
+            })
+            break
+        case "Class":
+            list.sort((a, b) => {
+                let av = $(a).find("#" + id).text().stripMarginWS()
+                let bv = $(b).find("#" + id).text().stripMarginWS()
+                let x = "SABC".indexOf(av)
+                let y = "SABC".indexOf(bv)
+                return x - y
+            })
+            break
+        case "Modified":
+            list.sort((a, b) => {
+                let av = new Date($(a).find("#" + id).text().stripMarginWS())
+                let bv = new Date($(b).find("#" + id).text().stripMarginWS())
+                return bv - av
+            })
+            break
+        case "Seed":
+        case "Posted":
+            list.sort((a, b) => {
+                let av = $(a).find("#" + id).text().stripMarginWS().toLowerCase()
+                let bv = $(b).find("#" + id).text().stripMarginWS().toLowerCase()
+                return av > bv ? -1 : av < bv ? 1 : 0
+            })
+            break
+        default:
+            list.sort((a, b) => {
+                let av = $(a).find("#" + id).text().stripMarginWS().toLowerCase()
+                let bv = $(b).find("#" + id).text().stripMarginWS().toLowerCase()
+                return av > bv ? 1 : av < bv ? -1 : 0
+            })
+            break
     }
 
     loc.empty()
@@ -3681,14 +3665,14 @@ NMSCE.prototype.sortLoc = function (evt) {
 
 NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
     const key = `
-        <div id="row-key" class="col-md-p250 col-sm-p333 col-7 border border-black txt-def bkg-def" >
+        <div id="row-key" class="col-md-p250 col-sm-p333 col-7 border border-black txt-def" >
             <div class="row">`
 
     const row = `     
         <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black" >
             <div id="id-Photo" class="row pointer" data-type="etype" data-id="eid" onclick="nmsce.selectList(this)" style="min-height:20px">
                 <img id="img-idname" data-thumb="ethumb"
-                onload="nmsce.imgLoaded(this, $(this).parent().width(), $(this).parent().width()*1.3)">
+                onload="nmsce.imageLoaded(this, $(this).parent().width(), $(this).parent().height(), true)">
             </div>
             <div class="row">`
     const item = `<div id="id-idname" class="col-md-7 col-14 border pointer">title</div>`
@@ -3742,6 +3726,8 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
         h += /title/ [Symbol.replace](l, "Visited")
         l = /idname/g [Symbol.replace](itm, "Modified")
         h += /title/ [Symbol.replace](l, "Modified")
+        l = /idname/g [Symbol.replace](itm, "Posted")
+        h += /title/ [Symbol.replace](l, "Posted")
     } else {
         let l = /idname/g [Symbol.replace](itm, "Favorite")
         l = /pointer/ [Symbol.replace](l, "")
@@ -3755,6 +3741,9 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
         l = /idname/g [Symbol.replace](itm, "Modified")
         l = /pointer/ [Symbol.replace](l, "")
         h += /title/ [Symbol.replace](l, e.modded.toDate().toDateLocalTimeString())
+        l = /idname/g [Symbol.replace](itm, "Posted")
+        l = /pointer/ [Symbol.replace](l, "")
+        h += /title/ [Symbol.replace](l, e.reddit ? typeof e.reddit === "boolean" ? "Posted" : typeof e.reddit.toDate != "undefined" ? e.reddit.toDate().toDateLocalTimeString() : "" : "")
     }
 
     h += end
@@ -3791,14 +3780,14 @@ NMSCE.prototype.updateDisplayListEntry = function (e, loc) {
     }
 }
 
-NMSCE.prototype.imgLoaded = function (evt, width, height, expand) {
+NMSCE.prototype.imageLoaded = function (evt, width, height, expand) {
     let h = evt.naturalHeight
     let w = evt.naturalWidth
 
-    let out = nmsce.calcImgSize(w, h, width, height, expand)
+    let size = nmsce.calcImgSize(w, h, width, height, expand)
 
-    $(evt).height(out.height)
-    $(evt).width(out.width)
+    $(evt).height(size.height)
+    $(evt).width(size.width)
 }
 
 NMSCE.prototype.calcImgSize = function (width, height, maxw, maxh, expand) {
@@ -5194,18 +5183,18 @@ const objectList = [{
         search: true,
         inputHide: true,
     }, {
+        name: "Seed",
+        type: "string",
+        searchText: true,
+        ttip: "Found in save file. Can be used to reskin ship.",
+        inputHide: true,
+    }, {
         name: "Color",
         type: "tags",
         imgText: true,
         list: colorList,
         max: 4,
         search: true,
-    }, {
-        name: "Seed",
-        type: "string",
-        searchText: true,
-        ttip: "Found in save file. Can be used to reskin ship.",
-        inputHide: true,
     }, {
         name: "Photo",
         type: "img",
@@ -5262,18 +5251,18 @@ const objectList = [{
         onchange: getEntry,
         inputHide: true,
     }, {
+        name: "Seed",
+        type: "string",
+        searchText: true,
+        ttip: "Found in save file. Can be used to reskin ship.",
+        inputHide: true,
+    }, {
         name: "Color",
         type: "tags",
         imgText: true,
         list: colorList,
         max: 4,
         search: true,
-    }, {
-        name: "Seed",
-        type: "string",
-        searchText: true,
-        ttip: "Found in save file. Can be used to reskin ship.",
-        inputHide: true,
     }, {
         name: "Photo",
         type: "img",
@@ -5454,18 +5443,18 @@ const objectList = [{
         searchText: true,
         inputHide: true,
     }, {
+        name: "Seed",
+        type: "string",
+        searchText: true,
+        ttip: "Found in save file. Can be used to reskin MT.",
+        inputHide: true,
+    }, {
         name: "Color",
         type: "tags",
         searchText: true,
         max: 4,
         list: colorList,
         search: true,
-    }, {
-        name: "Seed",
-        type: "string",
-        searchText: true,
-        ttip: "Found in save file. Can be used to reskin MT.",
-        inputHide: true,
     }, {
         name: "Photo",
         type: "img",
