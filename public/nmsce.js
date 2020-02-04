@@ -718,7 +718,12 @@ NMSCE.prototype.displaySingle = function (entry) {
     $("#reddit").removeClass("disabled")
 
     $("#reddit").removeAttr("disabled")
-    let date = e.reddit ? typeof e.reddit === "boolean" ? "Posted" : typeof e.reddit.toDate != "undefined" ? e.reddit.toDate().toDateLocalTimeString() : "" : ""
+
+    let r = entry.reddit
+    let date = r ? "Posted " : ""
+    if (r && typeof r.toDate !== "undefined")
+        date += r.toDate().toDateLocalTimeString()
+
     $("#posted").html(date)
 }
 
@@ -3743,7 +3748,13 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
         h += /title/ [Symbol.replace](l, e.modded.toDate().toDateLocalTimeString())
         l = /idname/g [Symbol.replace](itm, "Posted")
         l = /pointer/ [Symbol.replace](l, "")
-        h += /title/ [Symbol.replace](l, e.reddit ? typeof e.reddit === "boolean" ? "Posted" : typeof e.reddit.toDate != "undefined" ? e.reddit.toDate().toDateLocalTimeString() : "" : "")
+
+        let r = e.reddit
+        let date = r ? "Posted " : ""
+        if (r && typeof r.toDate !== "undefined")
+            date += r.toDate().toDateLocalTimeString()
+
+        h += /title/ [Symbol.replace](l, date)
     }
 
     h += end
