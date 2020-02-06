@@ -307,65 +307,62 @@ blackHoleSuns.prototype.calcroute = async function (proximity) {
 const restable = [{
     title: "Description",
     name: "desc",
-    format: "col-lg-2 col-md-3 col-7"
+    format: "col-lg-3 col-md-4 col-14"
 }, {
     title: "Distance",
     name: "dist",
     field: "dist",
-    format: "col-lg-2 col-md-3 col-7"
+    format: "col-lg-3 col-md-4 col-14"
 }, {
     title: "Coordinates",
     name: "addr",
     field: "addr",
-    format: "col-lg-3 col-md-3 col-sm-8 col-14 text-center monospace"
+    format: "col-lg-8 col-md-4 col-14 monospace"
 }, {
     title: "Glyph",
     name: "glyph",
     field: "addr",
-    format: "col-lg-3 col-md-4 col-sm-6 col-14 txt-inp-def h5 text-center glyph"
+    format: "col-lg-9 col-md-14 col-14 clr-blue txt-glyph-disp"
 }, {
     title: "System",
     name: "sys",
     field: "system",
-    format: "col-lg-2 col-md-8 col-sm-6 col-7 txt-inp-def text-center"
+    format: "col-lg-2 col-md-4 col-14 txt-label-def"
 }, {
     title: "Region",
     name: "reg",
     field: "region",
-    format: "col-lg-2 col-md-3 col-6 text-center"
+    format: "col-lg-2 col-md-4 col-14"
 }, {
     name: "newrow",
 }, {
     title: "&nbsp;&nbsp;&nbsp;--&nbsp;Exit",
     name: "blank",
-    format: "col-lg-4 col-md-6 col-7"
+    format: "col-lg-6 col-md-8 col-14"
 }, {
     name: "x-addr",
     id: "addr",
     field: "addr",
-    format: "col-lg-3 col-md-3 col-sm-8 col-14 text-center monospace"
-}, {
-    name: "blank",
-    format: "col-lg-3 col-md-4 col-sm-1 col-1"
+    format: "col-lg-3 col-md-4 col-14 monospace"
 }, {
     name: "x-sys",
     id: "sys",
     field: "system",
-    format: "col-lg-2 col-md-8 col-sm-6 col-5 text-center"
+    format: "col-lg-2 col-md-4 col-14"
 }, {
     name: "x-reg",
     id: "reg",
     field: "region",
-    format: "col-lg-2 col-md-3 col-sm-6 col-7 text-center"
+    format: "col-lg-2 col-md-4 col-14"
 }, ]
 
 blackHoleSuns.prototype.displayResults = function (routes) {
     const hdr = $("#resHeader")
 
     const block = `
-        <div id="id-rindex" class="row def-bkg txt-def border-top-gold" onclick="selectRoute(this)"></div>
-        <div id="block-rindex" class="container-flex hidden">`
-    const row = `<div id="id-addr" class="row" onclick="mapRow(this)">`
+        <div id="id-rindex" class="row pl-30 txt-def border-top-gold" onclick="selectRoute(this)"></div>
+        <div id="block-rindex" style="display:none;">`
+    const row = `<div id="id-addr" class="row pl-15 txt-input-def" onclick="mapRow(this)">`
     const itm = `<div id="itm-field" class="format">title</div>`
     const enddiv = `</div>`
     let h = ""
@@ -376,8 +373,8 @@ blackHoleSuns.prototype.displayResults = function (routes) {
         else {
             let l = /field/ [Symbol.replace](itm, f.name)
             l = /format/ [Symbol.replace](l, f.format)
-            l = /txt-inp-def/ [Symbol.replace](l, "")
-            l = /h4/ [Symbol.replace](l, "")
+            // l = /txt-input-def/ [Symbol.replace](l, "")
+            // l = /h4/ [Symbol.replace](l, "")
             l = /title/ [Symbol.replace](l, f.title)
             h += l
         }
@@ -403,8 +400,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
             let finished = false
 
             let l = /addr/ [Symbol.replace](row, r.what === "teleport" ? r.exit.addr : r.addr)
-            l = /row/ [Symbol.replace](l, i === 0 ? "row border-top-gold" : "row")
-            h += /row/ [Symbol.replace](l, b ? "row bkg-vlight-gray" : "row")
+            h += /row/ [Symbol.replace](l, b ? "row bkg-vlight-gray" : "row bkg-white")
             b = !b
             let warp
 
@@ -429,7 +425,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                                 l = /title/ [Symbol.replace](l, "Start")
                                 break
                             case "teleport":
-                                l = /title/ [Symbol.replace](l, "<div class='row'>Teleport to&nbsp;&nbsp;<div class=' txt-inp-def'>" + r.name + "</div></div>")
+                                l = /title/ [Symbol.replace](l, "<div class='row'>Teleport to&nbsp;&nbsp;<div class=' txt-label-def'>" + r.name + "</div></div>")
                                 r = r.exit
                                 break
                             case "end":
@@ -472,10 +468,10 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                         break
 
                     case "x-sys":
-                        l = /txt-inp-def/ [Symbol.replace](l, "")
+                        l = /txt-label-def/ [Symbol.replace](l, "")
                     case "sys":
                         if (!warp)
-                            l = /txt-inp-def/ [Symbol.replace](l, "")
+                            l = /txt-label-def/ [Symbol.replace](l, "")
                         l = /title/ [Symbol.replace](l, typeof r[f.field] !== "undefined" && r[f.field] ? r[f.field] : typeof r.name !== "undefined" && r.name ? r.name : "")
                         break
 
@@ -496,7 +492,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                             r = r.exit
                             h += enddiv
                             l = /addr/ [Symbol.replace](row, r.addr)
-                            l = /row/ [Symbol.replace](l, !b ? "row bkg-vlight-gray border-top border-white" : "row border-top")
+                            l = /row/ [Symbol.replace](l, !b ? "row bkg-vlight-gray border-top border-white" : "row bkg-white border-top")
                         } else
                             l = ""
                         break
@@ -518,7 +514,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
             <div class="col-md-4 col-14">
                 <div class="row h5">title</div>
             </div>
-            <div class="col-md-10 col-14 clr-creme">
+            <div class="col clr-creme">
                 <div id="res-row" class="row"></div>
             </div>`
 
@@ -543,9 +539,10 @@ blackHoleSuns.prototype.displayResults = function (routes) {
             h += /title/ [Symbol.replace](resrow, "A " + per + "% savings.")
             if (rte.bh > 0)
                 h += /title/ [Symbol.replace](resrow, "Cornell Index of " + rte.bh + " black holes.")
-        } else
-            h += /title/ [Symbol.replace](resrow, calc + " warp jumps, distance " + dist + " light years.")
-
+        } else {
+            let l = /col-md-7/ [Symbol.replace](resrow, "col-md-9")
+            h += /title/ [Symbol.replace](l, calc + " warp jumps, distance " + dist + " light years.")
+        }
         if ($("#ck-nearPath").prop("checked") && poi > 0)
             h += /title/ [Symbol.replace](resrow, poi + " additional POI along route.")
 

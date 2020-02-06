@@ -15,8 +15,8 @@ const fpreview = window.location.pathname.includes("preview.html")
 function addGlyphButtons(loc, fcn) {
     const gbtn = `
         <button type="button" class="btn-def btn btn-sm col-sm-p125 col-p250">
-            <span class="h5 glyph">title</span>
-            -title
+            <span class="txt-glyph-disp">title</span>
+            &nbsp;title
         </button>`
 
     let h = ""
@@ -153,6 +153,25 @@ function addObjects(o, n) {
     }
 
     return o
+}
+
+function validateAddress(addr, ck) {
+    if (addr === "")
+        return "No address"
+
+    let c = addressToXYZ(addr)
+    let error = ""
+
+    if (c.x > 0xfff) error = "x " + c.x.toString(16) + " > fff"
+    else if (c.y > 0xff) error = "y " + c.y.toString(16) + " > ff"
+    else if (c.z > 0xfff) error = "z " + c.z.toString(16) + " > fff"
+    else if (c.s > 0x2ff) error = "system " + c.s.toString(16) + " > 2ff"
+    else if (ck === "bh" && c.s != 0x79) error = ck + " system " + c.y.toString(16) + ' != 79'
+    else if (ck === "exit" && c.y < 0x7B) error = ck + " y " + c.y.toString(16) + ' < 7b'
+    else if (ck === "exit" && c.y > 0x83) error = ck + " y " + c.y.toString(16) + ' > 83'
+    else if (ck === "exit" && c.s > 0x78) error = ck + " system " + c.s.toString(16) + ' > 78'
+
+    return error === "" ? "" : addr + " " + error
 }
 
 String.prototype.idToName = function () {
@@ -365,7 +384,7 @@ const modeList = [{
 const economyListTier = [{
     name: "T1",
     ttip: "*<br>Declining<br>Destitute<br>Failing<br>Fledgling<br>Low supply<br>Struggling<br>Unpromising<br>Unsuccessful",
-},{
+}, {
     name: "T2",
     ttip: "**<br>Adequate<br>Balanced<br>Comfortable<br>Developing<br>Medium Supply<br>Promising<br>Satisfactory<br>Sustainable",
 }, {

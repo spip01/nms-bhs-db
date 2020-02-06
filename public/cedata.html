@@ -119,17 +119,17 @@
                 <div class="row">
                     <div id="panels" class="col-md-9 col-14" style="border-width:3px; border-color:black;">
                         <div id="row-playerInput" class="row" data-allowhide=true>
-                            <div class="col-sm-4 col-6 txt-inp-def">
+                            <div class="col-sm-4 col-6 txt-label-def">
                                 Player Name&nbsp;
                                 <span class="h5 text-danger">*</span>&nbsp;
                             </div>
-                            <input id="id-Player" class="rounded col-md-6 col-8 h5" type="text">
+                            <input id="id-Player" class="rounded col-md-6 col-8 txt-input-def" type="text">
 
-                            <div id="id-Galaxy" class="col-md-6 col-14 pl-10"></div>
-                            <div id="id-Platform" class="col-md-8 col-14 nopadding"></div>
+                            <div id="id-Galaxy" class="col-lg-6 col-14 pl-10"></div>
+                            <div id="id-Platform" class="col-lg-8 col-14 nopadding"></div>
                         </div>
 
-                        <div id="row-playerDisplay" class="row txt-inp-def h4" data-hide=true style="display:none">
+                        <div id="row-playerDisplay" class="row txt-label-def h4" data-hide=true style="display:none">
                             <div class="col-lg-4 col-md-5 col-14">Player: <span id="id-Player" class="clr-def"></span>
                             </div>
                             <div class="col-lg-4 col-md-4 col-7">Galaxy: <span id="id-Galaxy" class="clr-def"></span>
@@ -143,7 +143,7 @@
                         </div>
                         <div id="id-addrInput">
                             <div class="row">
-                                <div class="col-md-3 col-sm-3 col-5 txt-inp-def">Coords
+                                <div class="col-md-3 col-sm-3 col-5 txt-label-def">Coords
                                     <span class="h5 text-danger">&nbsp;*</span>&nbsp;
                                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                         data-html="true" data-placement="bottom"
@@ -152,10 +152,10 @@
                                                 The first 4 characters displayed on the signal booster are not part of the coordinates.">
                                     </i>
                                 </div>
-                                <input id="id-addr" class="rounded col-lg-5 col-md-7 col-sm-4 col-9 h5" type="text"
+                                <input id="id-addr" class="rounded col-lg-5 col-md-7 col-sm-4 col-9 txt-input-def" type="text"
                                     placeholder="0000:0000:0000:0000" maxength=19 onchange="nmsce.changeAddr(this)">
                                 <div class="col">
-                                    <label class=" txt-inp-def">
+                                    <label class=" txt-label-def">
                                         <input id="ck-glyphs" type="checkbox" onchange="nmsce.setGlyphInput(this)">
                                         Input Glyphs&nbsp;
                                         <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
@@ -167,17 +167,17 @@
                             </div>
 
                             <div class="row">
-                                <div class="col-md-2 col-3 txt-inp-def">Glyphs</div>
+                                <div class="col-md-2 col-3 txt-label-def">Glyphs</div>
                                 <div id="id-glyph"
-                                    class="col-lg-4 col-md-5 col-sm-6 col-9 text-center txt-inp-def h3 glyph">
+                                    class="col-lg-4 col-md-5 col-sm-6 col-9 text-center txt-glyph-disp">
                                 </div>
-                                <div id="id-hex" class="col-md-4 col text-center txt-inp-def"></div>
+                                <div id="id-hex" class="col-md-4 col text-center txt-label-def"></div>
                             </div>
                         </div>
 
                         <div id="id-glyphInput" class="hidden">
                             <div class="row">
-                                <div class="col-md-2 col-sm-3 col-4 txt-inp-def">
+                                <div class="col-md-2 col-sm-3 col-4 txt-label-def">
                                     Glyph&nbsp;
                                     <span class="text-danger">*</span>&nbsp;
                                     <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
@@ -189,7 +189,7 @@
                                     class="rounded col-lg-7 col-md-9 col-sm-8 col-10 h4 glyph"
                                     placeholder="000000000000" onchange="nmsce.changeAddr(this)">
                                 <div class="col">
-                                    <label class=" txt-inp-def">
+                                    <label class=" txt-label-def">
                                         <input id="ck-glyphs" type="checkbox" onchange="nmsce.setGlyphInput(this)">
                                         Input Glyphs&nbsp;
                                         <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
@@ -202,16 +202,16 @@
                             <div id="glyphbuttons" class="row"></div>
 
                             <div class="row">
-                                <div class="col-md-2 col-3 txt-inp-def">Coords&nbsp;</div>
-                                <div id="id-addr" class="col-lg-4 col-md-5 col-sm-6 col-9 text-center txt-inp-def">
+                                <div class="col-md-2 col-3 txt-label-def">Coords&nbsp;</div>
+                                <div id="id-addr" class="col-lg-4 col-md-5 col-sm-6 col-9 text-center txt-label-def">
                                 </div>
-                                <div id="id-hex" class="col-md-4 col text-center txt-inp-def"></div>
+                                <div id="id-hex" class="col-md-4 col text-center txt-label-def"></div>
                             </div>
                         </div>
 
                         <div id="row-System" class="row" data-allowhide=true>
-                            <div class="col-md-2 col-sm-3 col-4 txt-inp-def">System</div>
-                            <input id="id-sys" class="rounded col-lg-5 col-md-7 col-sm-5 col-7 h5">
+                            <div class="col-md-2 col-sm-3 col-4 txt-label-def">System</div>
+                            <input id="id-sys" class="rounded col-lg-5 col-md-7 col-sm-5 col-7 txt-input-def">
                             <div id="foundsys" class="col hidden">
                                 <div class="row">
                                     <i class="fas fa-check text-success"></i>&nbsp;
@@ -223,8 +223,8 @@
                         </div>
 
                         <div id="row-Region" class="row" data-allowhide=true>
-                            <div class="col-md-2 col-sm-3 col-4 txt-inp-def">Region</div>
-                            <input id="id-reg" class="rounded col-lg-5 col-md-7 col-sm-5 col-7 h5">&nbsp
+                            <div class="col-md-2 col-sm-3 col-4 txt-label-def">Region</div>
+                            <input id="id-reg" class="rounded col-lg-5 col-md-7 col-sm-5 col-7 txt-input-def">&nbsp
                             <div id="foundreg" class="col hidden">
                                 <div class="row">
                                     <i class="fas fa-check text-success"></i>&nbsp;
@@ -236,8 +236,8 @@
                         </div>
 
                         <div id="row-By" class="row" data-allowhide=true>
-                            <div class="col-md-5 col-sm-3 col-5 txt-inp-def">Entered by&nbsp;</div>
-                            <div id="id-by" class="col txt-inp-def"></div>
+                            <div class="col-md-5 col-sm-3 col-5 txt-label-def">Entered by&nbsp;</div>
+                            <div id="id-by" class="col txt-label-def"></div>
                         </div>
 
                         <div class="row">
@@ -260,7 +260,7 @@
                                     </div>
                                     <div id="updateScreenshot" class="row" style="padding-top:2px; display:none">
                                         <input id="ck-updateScreenshot" type="checkbox">
-                                        <span class=" txt-inp-def">Update Screenshot</span>&nbsp;
+                                        <span class=" txt-label-def">Update Screenshot</span>&nbsp;
                                         <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                             data-html="true" data-placement="bottom"
                                             title="Select wether to overwrite currently saved screenshot with the updated one below.">
@@ -276,7 +276,7 @@
 
                                 <div class="col">
                                     <div class="row">
-                                        <div id="status" class="border text-danger scrollbar container"
+                                        <div id="status" class="border text-danger scrollbar container h5"
                                             style="overflow-y: scroll; height: 70px"></div>
                                     </div>
                                     <div class="row">
@@ -309,12 +309,12 @@
                                 </div>
                                 <div class="row">
                                     <div id="id-Saved" class="col-lg-4 col-md-6 col-14"></div>
-                                    <label class="col-lg-7 col-md-8 col-14 txt-inp-def">
+                                    <label class="col-lg-7 col-md-8 col-14 txt-label-def">
                                         Name&nbsp;
                                         <input id="searchname" class="col-10" type="text"
                                             placeholder="Search Name">&nbsp;
                                     </label>
-                                    <label class="col-lg-3 col-md-7 col-14 txt-inp-def">
+                                    <label class="col-lg-3 col-md-7 col-14 txt-label-def">
                                         <input id="ck-notify" type="checkbox">
                                         Notify&nbsp;
                                         <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
@@ -334,7 +334,7 @@
                         <br>
                     </div>
 
-                    <div id="pnl-map" class="col-md-5 col-14"></div>
+                    <div id="pnl-map" class="col-md-5 col-14 pl-15"></div>
                 </div>
             </div>
         </div>
@@ -360,7 +360,7 @@
                         </div>
                         <div class="col-10">
                             <div id="posted" class="row text-danger h4"></div>
-                            <label class="row txt-inp-def">Reddit Link&nbsp;
+                            <label class="row txt-label-def">Reddit Link&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom"
                                     title="If you've posted this to reddit you can copy the actual post link here.">&nbsp;
@@ -378,16 +378,16 @@
                             onclick="nmsce.editScreenshot(true)">Edit</button>&nbsp;
                     </div>
                     <div id="imageTextBlock" class="card">
-                        <div id="img-text" class=" txt-inp-def card-body"></div>
+                        <div id="img-text" class=" txt-label-def card-body"></div>
                         <br>
                         <div class="card card-body">
                             <div class="row" style="padding-bottom:0px;">
-                                <div id="id-Font" class="col-14 h5"></div>
-                                <label class="col-sm-7 col-14 txt-inp-def">Size
+                                <div id="id-Font" class="col-14"></div>
+                                <label class="col-sm-7 col-14 txt-label-def">Size
                                     <input id="sel-size" class="col-8" onchange="nmsce.setSize(this)" type="number"
                                         value=18 min=0>
                                 </label>
-                                <label class="col-sm-7 col-14 txt-inp-def">Color
+                                <label class="col-sm-7 col-14 txt-label-def">Color
                                     <input id="sel-color" class="col-7 bkg-def" style="border-color:black"
                                         onchange="nmsce.setColor(this)" type="color" value="#ffffff">&nbsp;
                                 </label>

@@ -102,11 +102,11 @@
                         <div class="row">
                             <div class="col-md-7 col-sm-7 col-14">
                                 <div class="row">
-                                    <div class="col-13 txt-inp-def">Player Name</div>
-                                    <input id="id-Player" class="rounded col-13 h5" type="text">
+                                    <div class="col-13 txt-label-def">Player Name</div>
+                                    <input id="id-Player" class="rounded col-13 txt-input-def" type="text">
                                 </div>
                             </div>
-                            <label class="col-md-7 col-sm-7 col-14 txt-inp-def">
+                            <label class="col-md-7 col-sm-7 col-14 txt-label-def">
                                 <input id="ck-useBases" type="checkbox">
                                 Use Player Bases&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
@@ -118,15 +118,15 @@
 
                         <div class="container-fluid">
                             <div class="row">
-                                <div id="id-Galaxy" class="col-lg-6 col-md-14 col-sm-6 col-14"></div>
-                                <div id="id-Platform" class="col-lg-6 col-md-14 col-sm-6 col-14"></div>
+                                <div id="id-Galaxy" class="col-lg-7 col-md-14 col-sm-6 col-14"></div>
+                                <div id="id-Platform" class="col-lg-7 col-md-14 col-sm-6 col-14"></div>
                             </div>
                         </div>
                     </div>
                     <br>
                     <div id="pnl-query" class="container-fluid border-top border-3">
                         <div class="row">
-                            <div class="col-sm-3 col-4 txt-inp-def">
+                            <div class="col-sm-3 col-4 txt-label-def">
                                 Start&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom"
@@ -134,12 +134,12 @@
                                     A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
                                 </i>
                             </div>
-                            <input id="id-start" class="rounded col-lg-5 col-md-7 col-sm-5 col-8"
+                            <input id="id-start" class="rounded col-lg-7 col-md-7 col-sm-5 col-8"
                                 placeholder="0000:0000:0000:0000" onchange="bhs.setAddress(this)">
                         </div>
                         <div class="row">
-                            <div class="col-sm-3 col-4 txt-inp-def">End&nbsp;</div>
-                            <input id="id-end" class="rounded col-lg-5 col-md-7 col-sm-5 col-8"
+                            <div class="col-sm-3 col-4 txt-label-def">End&nbsp;</div>
+                            <input id="id-end" class="rounded col-lg-7 col-md-7 col-sm-5 col-8"
                                 placeholder="0000:0000:0000:0000" onchange="bhs.setAddress(this)">&nbsp;
                             <button id="btn-switch" type="button" class="btn-def btn btn-sm" onclick="bhs.switchSE()"><i
                                     class="fa fa-exchange-alt txt-def"></i></button>
@@ -147,78 +147,75 @@
                         <div class="row">
                             <div class="card card-body no-border">
                                 <div class="row">
-                                    <div id="id-POI" class="col-lg-6 col-md-14 col-sm-7 col-14"></div>
-                                    <div id="id-Civ-Org" class="col-lg-6 col-md-14 col-sm-7 col-14"></div>
+                                    <div id="id-POI" class="col-lg-7 col-md-14 col-sm-7 col-14"></div>
+                                    <div id="id-Civ-Org" class="col-lg-7 col-md-14 col-sm-7 col-14"></div>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-sm-6 col-9 txt-inp-def">Average Jump Range&nbsp;</div>
-                            <input id="id-range" class="rounded col-sm-3 col-5" type="number" value="2000"                                >
+                            <div class="col-sm-6 col-9 txt-label-def">Average Jump Range&nbsp;</div>
+                            <input id="id-range" class="rounded col-sm-3 col-5" type="number" value="2000">
                         </div>
                         <br>
-                        <div class="row border-top border-3">
-                            <div class="col-lg-9 col-md-14 col-sm-9 col-14">
-                                <div class="row">
-                                    <button id="btn-searchRegion" type="button"
-                                        class="col-md-5 col-sm-5 col-6 btn-def btn btn-sm"
-                                        onclick="bhs.calcroute()">Calculate Route</button>&nbsp
-                                    <label class="col-7 txt-inp-def">
-                                        <input id="ck-nearPath" type="checkbox">
-                                        POI near route
-                                    </label>
-                                </div>
-                                <div class="row">
-                                    <button id="btn-proximity" type="button"
-                                        class="col-md-5 col-sm-5 col-6 btn-def btn btn-sm"
-                                        onclick="bhs.calcroute(true)">POI Proximity</button>&nbsp
-                                    <div class="col-md-4 col-sm-5 col-4 txt-inp-def">Max Jumps&nbsp;</div>
-                                    <input id="id-maxJumps" class="rounded col-lg-3 col-md-4 col-sm-3 col-3" value="20">
-                                </div>
-                                <br>
+                        <div class="border-top border-3">
+                            <div class="row">
+                                <button id="btn-searchRegion" type="button"
+                                    class="col-6 btn-def btn btn-sm"
+                                    onclick="bhs.calcroute()">Calculate Route</button>&nbsp
+                                <label class="col-7 txt-label-def">
+                                    <input id="ck-nearPath" type="checkbox">
+                                    POI near route
+                                </label>
                             </div>
-                            <div id="status"
-                                class="border col-lg-5 col-md-14 col-sm-5 col-14 text-danger scrollbar container-fluid"
+                            <div class="row">
+                                <button id="btn-proximity" type="button"
+                                    class="col-6 btn-def btn btn-sm" onclick="bhs.calcroute(true)">POI
+                                    Proximity</button>&nbsp
+                                <div class="col-4 txt-label-def">Max Jumps&nbsp;</div>
+                                <input id="id-maxJumps" class="rounded col-3" value="20">
+                            </div>
+                            <br>
+                            <div id="status" class="border row text-danger scrollbar container-fluid"
                                 style="overflow-y: scroll; height: 40px"></div>
+                        </div>
+                        <br>
+
+                        <div class="text-danger h6">
+                            <span class="h5">*</span>&nbsp;Required Entry,&nbsp;
+                            <i id="ttipmsg" class="fa fa-question-circle-o">&nbsp;Tool Tip</i>
                         </div>
                     </div>
                     <br>
-
-                    <div class="text-danger h6">
-                        <span class="h5">*</span>&nbsp;Required Entry,&nbsp;
-                        <i id="ttipmsg" class="fa fa-question-circle-o">&nbsp;Tool Tip</i>
-                    </div>
                 </div>
-                <br>
-            </div>
 
-            <div class="col-md-7 col-14">
-                <div id="pnl-map" class="card card-body border txt-def">
-                    <div class="card-header h4 txt-def border-bottom">
-                        3D Map&nbsp;
-                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                            data-placement="bottom" title="When zoomed in, direction step selected, the grey line is towards the galactic center. To approximate 
+                <div class="col-md-7 col-14">
+                    <div id="pnl-map" class="card card-body border txt-def">
+                        <div class="card-header h4 txt-def border-bottom">
+                            3D Map&nbsp;
+                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom" title="When zoomed in, direction step selected, the grey line is towards the galactic center. To approximate 
                             the galactic map view align the green starting position with the galactic center.">
-                        </i>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div id="mapcol" class="col-md-11 col-sm-11 col-14">
-                                <div id="plymap" class="hidden"></div>
-                                <div id="image" class="hidden"></div>
-                            </div>
-                            <br>
+                            </i>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div id="mapcol" class="col-md-11 col-sm-11 col-14">
+                                    <div id="plymap" class="hidden"></div>
+                                    <div id="image" class="hidden"></div>
+                                </div>
+                                <br>
 
-                            <div class="col-md-3 col-sm-3 col-14">
-                                <div class="row">
-                                    <a id="maplogo" class="col-sm-14 col-10">
-                                        <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo"
-                                            width="20" height="20">
-                                    </a>
-                                    <div class="col-4">
-                                        <br>
-                                        <button id="btn-switch" type="button" class="btn-def btn btn-sm "
-                                            onclick="redraw()">Redraw</button>
+                                <div class="col-md-3 col-sm-3 col-14">
+                                    <div class="row">
+                                        <a id="maplogo" class="col-sm-14 col-10">
+                                            <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo"
+                                                width="20" height="20">
+                                        </a>
+                                        <div class="col-4">
+                                            <br>
+                                            <button id="btn-switch" type="button" class="btn-def btn btn-sm "
+                                                onclick="redraw()">Redraw</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -226,23 +223,22 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <br>
+            <br>
 
-        <div class="card">
-            <div id="pnl-results" class="card pad-bottom">
-                <div id="res-hdr" class="card-header txt-def">
-                    <div class="row h4">
-                        Results&nbsp;
-                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                            data-placement="bottom" title="Click on entry to expand directions and draw map. Click on
+            <div class="container-fluid border rounded">
+                <div id="pnl-results" class="">
+                    <div id="res-hdr" class="row txt-def pl-15">
+                        <div class="h4">
+                            Results&nbsp;
+                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom" title="Click on entry to expand directions and draw map. Click on
                             direction step to zoom map.">
-                        </i>
+                            </i>
+                        </div>
                     </div>
-                </div>
-                <div id="res-table" class="card-body">
                     <div id="resHeader" class="row border-bottom txt-def">Results:</div>
-                    <div id="resItems" class="scrollbar container-fluid" style="overflow-y: scroll; height: 388px">
+                    <div id="resItems" class="scrollbar pl-0 pr-0"
+                        style="overflow-y:scroll; overflow-x:scroll; width:100%; height:388px">
                     </div>
                     <br>
                     <a class="btn btn-sm btn-def" href=" https://discordapp.com/invite/TEeK8tp/">Report
@@ -253,12 +249,11 @@
                 </div>
             </div>
         </div>
-    </div>
-    <br>
+        <br>
 
-    <div class="clr-creme text-right h6">
-        <i class="fa fa-copyright"></i> 2019-2020 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    </div>
+        <div class="clr-creme text-right h6">
+            <i class="fa fa-copyright"></i> 2019-2020 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </div>
 </body>
 
 </html>

@@ -253,8 +253,11 @@ NMSCE.prototype.displaySystem = function (entry) {
 
     const setRadio = function (loc, val) {
         loc.find(".radio").prop("checked", false)
-        loc.find("#rdo-" + val).prop("checked", true)
+        loc.find("#rdo-" + val.nameToId()).prop("checked", true)
     }
+
+    if (typeof entry.Economy === "number")
+        entry.Economy = "T" + entry.Economy
 
     setRadio($("#id-Economy"), entry.Economy)
     setRadio($("#id-Lifeform"), entry.Lifeform)
@@ -648,8 +651,11 @@ NMSCE.prototype.displaySingle = function (entry) {
     let link = "https://nmsce.com/preview.html?i=" + entry.id + "&g=" + entry.galaxy.nameToId() + "&t=" + entry.type.nameToId()
     $("#permalink").attr("href", link)
 
-    let disp = function (flds, pnltype, pnl) {
-        pnl = pnl ? pnl : $("#typePanels " + pnltype)
+    let disp = function (flds, pnltype, slist) {
+        let pnl = $("#typePanels " + pnltype)
+        if (slist)
+            pnl = pnl.find(slist)
+
         for (let fld of flds) {
             let id = fld.name.nameToId()
             let row = pnl.find("#row-" + id)
@@ -659,7 +665,11 @@ NMSCE.prototype.displaySingle = function (entry) {
 
             switch (fld.type) {
                 case "number":
+                    row.find("input").val(parseInt(entry[id]))
+                    break
                 case "float":
+                    row.find("input").val(parseFloat(entry[id]))
+                    break
                 case "string":
                     row.find("input").val(entry[id])
                     break
@@ -675,7 +685,7 @@ NMSCE.prototype.displaySingle = function (entry) {
                     row.find("#item-" + entry[id].nameToId()).click()
 
                     if (fld.sublist)
-                        disp(fld.sublist, pnltype, pnl.find("#slist-" + entry[id].nameToId()))
+                        disp(fld.sublist, pnltype, "#slist-" + entry[id].nameToId())
                     break
                 case "radio":
                     if (entry[id]) {
@@ -688,11 +698,19 @@ NMSCE.prototype.displaySingle = function (entry) {
                         row.find("input").click()
                     break
                 case "map":
-                    let map = $("#pnl-map " + pnltype + " [id|='slist']:visible #row-" + id)
+                    let map = $("#pnl-map " + pnltype)
+                    if (slist)
+                        map = map.find(slist)
+                    map = map.find("#row-" + id.nameToId())
 
                     let list = Object.keys(entry[id])
-                    for (let i of list)
-                        mapSelect(map.find("#map-" + i), true)
+                    for (let i of list) {
+                        let loc = map.find("#map-" + i)
+                        if (loc.length > 0)
+                            mapSelect(loc, true)
+                        else
+                            console.log(pnltype, slist ? slist.stripID() : "", id, i)
+                    }
                     break
             }
         }
@@ -1363,20 +1381,28 @@ NMSCE.prototype.save = function () {
         let user = nmsce.extractUser()
         ok = bhs.validateUser(user)
 
-        bhs.user = mergeObjects(bhs.user, user)
-        bhs.user.imageText = nmsce.extractImgText()
+        // if (ok && bhs.user._name !== user._name)
+        //     ok = nmsce.changeName(bhs.user.uid, user._name)
 
-        let ref = bhs.getUsersColRef(bhs.user.uid)
-        ref.set(bhs.user, {
-            merge: true
-        }).then().catch(err => {
-            bhs.status("ERROR: " + err)
-        })
+        if (ok) {
+            bhs.user = mergeObjects(bhs.user, user)
+            bhs.user.imageText = nmsce.extractImgText()
+
+            let ref = bhs.getUsersColRef(bhs.user.uid)
+            ref.set(bhs.user, {
+                merge: true
+            }).then().catch(err => {
+                bhs.status("ERROR: " + err)
+            })
+        }
     }
 
     if (ok && nmsce.extractEntry())
         nmsce.clearPanel()
 }
+
+NMSCE.prototype.changeName = function (uid, newname) {}
+
 
 NMSCE.prototype.extractUser = function () {
     let loc = $("#panels")
@@ -1436,65 +1462,65 @@ const inpEnd = `</div>`
 
 const tString = `
     <div id="row-idname" data-type="string" data-req="ifreq" class="row">
-        <div class="col-4 txt-inp-def">titlettip&nbsp;</div>
-        <input id="id-idname" class="rounded col-9">
+        <div class="col-lg-6 col-4 txt-label-def">titlettip&nbsp;</div>
+        <input id="id-idname" class="rounded col-lg-7 col-9">
     </div>`
 const tMap = `<div id="row-idname" class="col-14" data-type="map"></div>`
 const tLongString = `
     <div id="row-idname" data-type="string" data-allowhide="ihide" data-req="ifreq" class="row">
-        <div class="col-4  pl-15 txt-inp-def">titlettip&nbsp;</div>
-        <input id="id-idname" class="rounded col-9">
+        <div class="col-lg-6 col-4 pl-15 txt-label-def">titlettip&nbsp;</div>
+        <input id="id-idname" class="rounded col">
     </div>`
 const tNumber = `
     <div id="row-idname" data-type="number" data-allowhide="ihide" data-req="ifreq" data-search="stype" class="row">
-        <div class="col-4 txt-inp-def">titlettip&nbsp;</div>
-        <input id="id-idname" type="number" class="rounded col-5" min=-1 max=range value=-1>
+        <div class="col-lg-6 col-4 txt-label-def">titlettip&nbsp;</div>
+        <input id="id-idname" type="number" class="rounded col-lg-7 col-9" min=-1 max=range value=-1>
     </div>`
 const tFloat = `
     <div id="row-idname" data-type="float" data-allowhide="ihide" data-req="ifreq" data-search="stype" class="row">
-        <div class="col-4 txt-inp-def">titlettip&nbsp;</div>
-        <input id="id-idname" type="number" class="rounded col-5" step=0.1 min=-1 max=range value=-1>
+        <div class="col-lg-6 col-4 txt-label-def">titlettip&nbsp;</div>
+        <input id="id-idname" type="number" class="rounded col-lg-7 col-9" step=0.1 min=-1 max=range value=-1>
     </div>`
 const tTags = `
     <div id="row-idname" class="row" data-type="tags" data-allowhide="ihide" data-req="ifreq">
-        <div id="id-idname" class="col-4"></div>
-        <div id="add-idname" class="col-10 row hidden">
+        <div id="id-idname" class="col-lg-2 col-4"></div>
+        <div id="add-idname" class="col row hidden">
             <input id="txt-idname" type="text" class="col-7"></input>
             <button id="add-idname" type="text" class="col-2 btn btn-def btn-sm" onclick="nmsce.newTag(this)">Add</button>
             <button id="cancel-idname" type="text" class="col-3 btn btn-def btn-sm" onclick="nmsce.cancelTag(this)">Cancel</button>
         </div>
-        <div class="col-10 border">
+        <div class="col border">
             <div id="list-idname" class="row"></div>
         </div>
     </div>`
-const tTag = `<div id="tag-idname" class="border pointer h5" style="border-radius:8px; background-color:#d0d0d0" onclick="nmsce.deleteTag(this)">&nbsp;title&nbsp;<i class="far fa-times-circle" style="color:#ffffff;"></i>&nbsp;</div>&nbsp;`
+const tTag = `<div id="tag-idname" class="border pointer txt-input-def" style="border-radius:8px; background-color:#d0d0d0" onclick="nmsce.deleteTag(this)">&nbsp;title&nbsp;<i class="far fa-times-circle" style="color:#ffffff;"></i>&nbsp;</div>&nbsp;`
 const tMenu = `
     <div id="row-idname" data-type="menu" data-allowhide="ihide" data-req="ifreq">
         <div id="id-idname"></div>
     </div>`
 const tRadio = `
-    <div id="row-idname" data-type="radio" data-allowhide="ihide" data-req="ifreq" class="row">
-        <div class="radio col-4 txt-inp-def">titlettip&nbsp;</div>
-        <div class="col-10">
+    <div id="row-idname" data-type="radio" data-allowhide="ihide" data-req="ifreq" class="row pl-0">
+        <div class="radio col-lg-6 col-4 txt-label-def">titlettip</div>
+        <div class="col">
             <div id="list" class="row"></div>
         </div>
     </div>`
 const tRadioItem = `
-    <label class="col txt-inp-def">
+    <label class="col txt-label-def">
         <input type="radio" class="radio row" id="rdo-tname" data-last=false onclick="nmsce.toggleRadio(this)">
-            &nbsp;titlettip
+        &nbsp;titlettip
     </label>`
 const tCkItem = `
     <div id="row-idname" data-type="checkbox" data-allowhide="ihide" data-req="false">
-        <label id="id-idname" class=" txt-inp-def row pl-10">
+        <label id="id-idname" class=" txt-label-def row pl-10">
             titlettip&nbsp
             <input id="ck-idname" type="checkbox">
         </label>
     </div>`
 const tImg = `
     <div id="row-idname" data-req="ifreq" data-type="img" class="row">
-        <div class="col-4 txt-inp-def">titlettip&nbsp;</div>
-        <input id="id-idname" type="file" class="col-10 form-control form-control-sm" 
+        <div class="col-lg-2 col-4 txt-label-def">titlettip&nbsp;</div>
+        <input id="id-idname" type="file" class="col form-control form-control-sm" 
             accept="image/*" name="files[]"  data-type="img" onchange="nmsce.loadScreenshot(this)">&nbsp
     </div>`
 
@@ -1963,7 +1989,7 @@ NMSCE.prototype.loadImgText = function (clear) {
                 data-placement="bottom"
                 title="Select glyphs on image and display under coordinate input. Location is saved for future use.">
             </i>&nbsp;
-            <label class="col txt-inp-def">
+            <label class="col txt-label-def">
                 <input id="ck-saveglyphloc" type="checkbox" onchange="nmsce.toggleGlyphs(this)">
                 Apply Saved Location&nbsp;
                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
@@ -1974,7 +2000,7 @@ NMSCE.prototype.loadImgText = function (clear) {
         </div>
         <br>
         <div class="row">
-            <label class="col-5 txt-inp-def pl-30">
+            <label class="col-5 txt-label-def pl-30">
                 <input id="ck-mylogo" type="checkbox" data-loc="#id-mylogo" data-type="img"
                         onchange="nmsce.getImageText(this, true)">
                         Load Overlay&nbsp;
@@ -1987,7 +2013,7 @@ NMSCE.prototype.loadImgText = function (clear) {
         </div>
         <br>
         <div class="row">
-            <label class="col-5 txt-inp-def pl-30">
+            <label class="col-5 txt-label-def pl-30">
                 <input id="ck-text" type="checkbox" data-loc="#id-text"
                     onchange="nmsce.getImageText(this, true)">
                 Text&nbsp;
@@ -2218,7 +2244,8 @@ NMSCE.prototype.extractImgText = function () {
         if (f.type !== "img") {
             delete f.width
             delete f.height
-        }
+        } else
+            f.ck = false
 
         if (k !== "text")
             delete f.text
@@ -2345,6 +2372,15 @@ NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
 
     img = img.find("#id-canvas")
 
+    img.on("touchstart", e => {
+        nmsce.handleMouseDown(e)
+    })
+    img.on("touchmove", e => {
+        nmsce.handleMouseMove(e)
+    })
+    img.on("touchend", e => {
+        nmsce.handleMouseUp(e)
+    })
     img.mouseout(e => {
         nmsce.handleMouseOut(e)
     })
@@ -2607,7 +2643,19 @@ NMSCE.prototype.dispGlyph = function () {
     }
 
     let text = nmsce.imageText.selGlyph
-    text.sel = false
+    if (text.sel) {
+        text.sel = false
+
+        if (text.width < 0) {
+            if (text.x + text.width > 0)
+                text.x += text.width
+            text.width = Math.abs(text.width)
+        }
+        if (text.height < 0) {
+            text.y += text.height
+            text.height = Math.abs(text.height)
+        }
+    }
 
     row.show()
 
@@ -2655,13 +2703,8 @@ var lastsel = 0
 NMSCE.prototype.handleMouseDown = function (e) {
     e.preventDefault()
 
-    let canvas = $(e.currentTarget).get(0)
-    let canvasOffset = canvas.getBoundingClientRect()
-
-    let offsetX = canvasOffset.left
-    let offsetY = canvasOffset.top
-    let startX = parseInt(e.clientX - offsetX)
-    let startY = parseInt(e.clientY - offsetY)
+    let startX = e.touches ? e.touches[0].clientX - e.touches[0].radiusX * 2 : e.offsetX
+    let startY = e.touches ? e.touches[0].clientY - e.touches[0].radiusY * 2 : e.offsetY
 
     let keys = Object.keys(nmsce.imageText)
     let hit = ""
@@ -2681,13 +2724,13 @@ NMSCE.prototype.handleMouseDown = function (e) {
             break
         } else if ((k === "logo" || text.ck) && nmsce.textHittest(startX, startY, text)) {
             if (k === "mylogo" && text.sel) {
-                if (startX - text.x < 8)
+                if (startX - text.x < 16)
                     text.resize = "l"
-                else if (text.x + text.width - startX < 8)
+                else if (text.x + text.width - startX < 16)
                     text.resize = "r"
-                else if (startY - text.y < 8)
+                else if (startY - text.y < 16)
                     text.resize = "t"
-                else if (text.y + text.height - startY < 8)
+                else if (text.y + text.height - startY < 16)
                     text.resize = "b"
                 else text.resize = ""
             } else if (text.type !== "img") {
@@ -2736,12 +2779,8 @@ NMSCE.prototype.handleMouseOut = function (e) {
 NMSCE.prototype.handleMouseMove = function (e) {
     e.preventDefault()
 
-    let cid = $(e.currentTarget).get(0)
-    let canvasOffset = cid.getBoundingClientRect()
-    let offsetX = canvasOffset.left
-    let offsetY = canvasOffset.top
-    let mouseX = parseInt(e.clientX - offsetX)
-    let mouseY = parseInt(e.clientY - offsetY)
+    let mouseX = e.touches ? e.touches[0].clientX - e.touches[0].radiusX * 2 : e.offsetX
+    let mouseY = e.touches ? e.touches[0].clientY - e.touches[0].radiusY * 2 : e.offsetY
 
     let dx = 0
     let dy = 0
@@ -3175,7 +3214,7 @@ NMSCE.prototype.getLatest = function () {
 
 const resultsCover = `<div id="id-idname" class="cover-container hidden"></div>`
 const resultsItem = `
-    <div id="row-idname" class="cover-item bkg-white txt-inp-def h5 align-top">
+    <div id="row-idname" class="cover-item bkg-white txt-label-def align-top">
         galaxy<br>
         by<br>
         <img id="img-idname" data-panel="epanel" data-thumb="ethumb" data-type="etype" data-id="eid" class="pointer" 
@@ -3238,7 +3277,7 @@ NMSCE.prototype.getAfterDate = function (date) {
                 lists[rid][tid + "-" + e.id] = e
 
                 if (r.rt.field === "votes.favorite" || r.rt.field === "votes.edchoice") {
-                    let total = e.votes.favorite * 5 + e.votes.edchoice * 10 + e.votes.visited * 20 + e.votes.clickcount / 4
+                    let total = e.votes.favorite * 10 + e.votes.edchoice * 15 + e.votes.visited * 20 + e.votes.clickcount / 8
                     if (total > top.count) {
                         top.count = total
                         top.entry = e
@@ -3402,7 +3441,7 @@ NMSCE.prototype.selectResult = function (evt) {
 
 NMSCE.prototype.displaySelected = function (e, noscroll) {
     let row = `
-    <div id="id-idname" class="row border-bottom txt-inp-def h5">
+    <div id="id-idname" class="row border-bottom txt-label-def">
         <div class="col-5">title</div>
         <div id="val-idname" class="col font clr-def">value</div>
     </div>`
@@ -3675,11 +3714,11 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
 
     const row = `     
         <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black" >
-            <div id="id-Photo" class="row pointer" data-type="etype" data-id="eid" onclick="nmsce.selectList(this)" style="min-height:20px">
+            <div id="id-Photo" class="row pointer pl-10 pr-10" data-type="etype" data-id="eid" onclick="nmsce.selectList(this)" style="min-height:20px">
                 <img id="img-idname" data-thumb="ethumb"
                 onload="nmsce.imageLoaded(this, $(this).parent().width(), $(this).parent().height(), true)">
             </div>
-            <div class="row">`
+            <div class="row pl-10">`
     const item = `<div id="id-idname" class="col-md-7 col-14 border pointer">title</div>`
     const sortItem = `<div id="id-idname" class="col-md-7 col-14 border pointer" onclick="nmsce.sortLoc(this)">title</div>`
     const end = `</div></div>`
@@ -3926,16 +3965,16 @@ NMSCE.prototype.newDARC = function (evt) {
 // }
 
 const classList = [{
-    name: "S",
-}, {
-    name: "A",
+    name: "C",
 }, {
     name: "B",
 }, {
-    name: "C",
+    name: "A",
+}, {
+    name: "S",
 }]
 
-const slotList = [{
+const tierList = [{
     name: "T1",
 }, {
     name: "T2",
@@ -3955,7 +3994,7 @@ const occurenceList = [{
 
 const shipList = [{
     name: "Fighter",
-    slotList: slotList,
+    slotList: tierList,
     slotTtip: `
         T1: 15-19 slots<br>
         T2: 20-29 slots<br>
@@ -3965,7 +4004,7 @@ const shipList = [{
     asymmetric: true,
 }, {
     name: "Hauler",
-    slotList: slotList,
+    slotList: tierList,
     slotTtip: `
         T1: 25-31 slots<br>
         T2: 32-39 slots<br>
@@ -3988,7 +4027,7 @@ const shipList = [{
 }, {
     name: "Explorer",
     bodies: "/images/explorer.svg",
-    slotList: slotList,
+    slotList: tierList,
     slotTtip: `
         T1: 15-19 slots<br>
         T2: 20-29 slots<br>
@@ -5156,19 +5195,13 @@ const objectList = [{
         search: true,
         inputHide: true,
     }, {
-        name: "Class",
-        type: "radio",
-        startState: "hidden",
-        list: classList,
-        imgText: true,
-    }, {
         name: "Latitude",
-        type: "string",
+        type: "float",
         startState: "hidden",
         imgText: true,
     }, {
         name: "Longitude",
-        type: "string",
+        type: "float",
         imgText: true,
         startState: "hidden",
     }, {
@@ -5181,6 +5214,12 @@ const objectList = [{
         type: "number",
         range: 15,
         startState: "hidden",
+    }, {
+        name: "Class",
+        type: "radio",
+        startState: "hidden",
+        list: classList,
+        imgText: true,
     }, {
         name: "First Wave",
         ttip: "This is only used on space stations. First wave for reloading a save and restarting the game are different.",
@@ -5441,12 +5480,12 @@ const objectList = [{
     }, {
         name: "Latitude",
         imgText: true,
-        type: "string",
+        type: "float",
         inputHide: true,
     }, {
         name: "Longitude",
         imgText: true,
-        type: "string",
+        type: "float",
         inputHide: true,
     }, {
         name: "Notes",
@@ -5724,12 +5763,12 @@ const objectList = [{
     }, {
         name: "Latitude",
         imgText: true,
-        type: "string",
+        type: "float",
         inputHide: true,
     }, {
         name: "Longitude",
         imgText: true,
-        type: "string",
+        type: "float",
         inputHide: true,
     }, {
         name: "Game Mode",

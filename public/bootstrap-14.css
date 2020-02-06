@@ -82,6 +82,12 @@
   max-width: 7.1%;
 }
 
+.col-0 {
+  -ms-flex: 0 0 0%;
+  flex: 0 0 0%;
+  max-width: 0%;
+}
+
 .col-p125 {
   -ms-flex: 0 0 12.4%;
   flex: 0 0 12.4%;

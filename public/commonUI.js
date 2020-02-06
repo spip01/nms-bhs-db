@@ -243,8 +243,8 @@ blackHoleSuns.prototype.buildUserPanel = function () {
             <div class="row">
                 <div class="col-lg-7 col-md-7 col-sm-7 col-14">
                     <div class="row">
-                        <div class="col-md-14 col-sm-14 col-6 txt-inp-def">Player Name<span id="namereq" class="h5 text-danger">&nbsp;*</span></div>
-                        <input id="id-Player" class="rounded col h5" type="text">
+                        <div class="col-md-14 col-sm-14 col-6 txt-label-def">Player Name<span id="namereq" class="h5 text-danger">&nbsp;*</span></div>
+                        <input id="id-Player" class="rounded col txt-input-def" type="text">
                     </div>
                 </div>
 
@@ -254,7 +254,7 @@ blackHoleSuns.prototype.buildUserPanel = function () {
             </div>
 
             <div class="row text-right">
-                <label id="fileupload" class="h5 text-right align-bottom hidden">
+                <label id="fileupload" class="txt-input-def text-right align-bottom hidden">
                     <input id="ck-fileupload" type="checkbox">
                     &nbsp;File Upload&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
@@ -442,13 +442,13 @@ blackHoleSuns.prototype.buildEntryList = function (entry) {
 
         <div id="utSettings" class="card card-body" style="display:none">
             <div class="row">
-                <label class="col-lg-7 col-md-14 col-sm-7 col-14 txt-inp-def">Start Date&nbsp;
+                <label class="col-lg-7 col-md-14 col-sm-7 col-14 txt-label-def">Start Date&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Date entry was created. Delete date to ignore.">
                     </i>&nbsp;
                     <input id="id-start" type="date" class="rounded col-8">
                 </label>
-                <label class="col-lg-7 col-md-14 col-sm-7 col-14 txt-inp-def">End Date&nbsp;
+                <label class="col-lg-7 col-md-14 col-sm-7 col-14 txt-label-def">End Date&nbsp;
                     <input id="id-end" type="date" class="rounded col-8">
                 </label>
             </div>
@@ -458,7 +458,7 @@ blackHoleSuns.prototype.buildEntryList = function (entry) {
             <div class="row">
                 <button id="btn-saveListSettings" type="button" class="btn-def btn btn-sm">Save</button>&nbsp
 
-                <label id="id-export" class="col-sm-8 col-14 text-right txt-inp-def border-left" style="display:none">File Name&nbsp
+                <label id="id-export" class="col-sm-8 col-14 text-right txt-label-def border-left" style="display:none">File Name&nbsp
                     <input id="inp-exportfile" type="text" class="rounded col-10">
                 </label>
                 
@@ -473,7 +473,7 @@ blackHoleSuns.prototype.buildEntryList = function (entry) {
         </div>`
 
     const ckbox = `            
-        <label class="col-sm-4 col-7 txt-inp-def">
+        <label class="col-sm-4 col-7 txt-label-def">
             <input id="ck-idname" type="checkbox" checked>
             title
         </label>`
@@ -970,7 +970,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
     let header = `        
         <div class="row">`
     let title = `
-            <div class="size txt-inp-def">labelttip</div>`
+            <div class="size txt-label-def">titlettip</div>`
     let block = `
             <div id="menu-idname" class="size dropdown">
                 <button id="btn-idname" class="btn border btn-sm dropdown-toggle" style="rgbcolor" type="button" data-toggle="dropdown"></button>
@@ -1014,7 +1014,7 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
     }
 
     if (!options.nolabel || options.required || options.tip) {
-        let l = /label/ [Symbol.replace](title, options.nolabel ? "&nbsp;" : label)
+        let l = /title/ [Symbol.replace](title, options.nolabel ? "&nbsp;" : label)
 
         if (options.required)
             l = /ttip/ [Symbol.replace](l, rText)

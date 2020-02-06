@@ -37,8 +37,16 @@
         font-size: 0.61rem
     }
 
-    .txt-inp-def {
+    .txt-label-def {
         font-size: 0.75rem;
+    }
+
+    .txt-input-def {
+        font-size: .81rem
+    }
+
+    .txt-glyph-disp {
+        font-size: 1.21rem
     }
 }
 
@@ -73,8 +81,16 @@
         font-size: 0.75rem
     }
 
-    .txt-inp-def {
-        font-size: 0.65rem;
+    .txt-label-def {
+        font-size: 1rem
+    }
+
+    .txt-input-def {
+        font-size: 1rem
+    }
+
+    .txt-glyph-disp {
+        font-size: 1.5rem
     }
 }
 
@@ -84,6 +100,11 @@
 }
 
 .glyph {
+    font-family: "glyph" !important;
+    font-weight: bold;
+}
+
+.txt-glyph-disp {
     font-family: "glyph" !important;
     font-weight: bold;
 }
@@ -165,7 +186,7 @@ body {
     background-color: black;
 }
 
-.txt-inp-def {
+.txt-label-def {
     color: blue;
 }
 
@@ -257,8 +278,7 @@ body {
 }
 
 .clr-blue {
-    color: #5dace0;
-    border-color: #5dace0;
+    color: blue;
 }
 
 .card-title {
@@ -297,6 +317,18 @@ body {
 .hanging-indent {
     padding-left: 40px;
     text-indent: -40px;
+}
+
+.pr-5 {
+    padding-right: 5px !important;
+}
+
+.pr-10 {
+    padding-right: 10px !important;
+}
+
+.pl-0 {
+    padding-left: 0px !important;
 }
 
 .pl-5 {

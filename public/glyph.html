@@ -83,7 +83,7 @@
                 <div class="row">
                     <div class="col-lg-5 col-md-6 col-sm-7 col-13">
                         <div class="row">
-                            <div class="col-sm-5 col-5 txt-inp-def" data-toggle="tooltip" data-html="true"
+                            <div class="col-sm-5 col-5 txt-label-def" data-toggle="tooltip" data-html="true"
                                 data-placement="bottom"
                                 title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators.">
                                 Coords&nbsp;
@@ -96,7 +96,7 @@
 
                     <div class="col-lg-5 col-md-7 col-sm-6 col-13">
                         <div class="row">
-                            <div class="col-sm-4 col-5 txt-inp-def" data-toggle="tooltip" data-html="true"
+                            <div class="col-sm-4 col-5 txt-label-def" data-toggle="tooltip" data-html="true"
                                 data-placement="bottom" title="Planet number 0-15.<br>Defaults to 0.">
                                 Planet&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6"></i>
@@ -108,19 +108,10 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-lg-5 col-md-6 col-sm-7 col-13">
-                        <div class="row">
-                            <div class="col-lg-4 col-md-4 col-sm-3 col-5 txt-inp-def">Glyph</div>
-                            <div id="id-glyph" class="col-lg-10 col-md-10 col-sm-11 col-9 h4 txt-inp-def glyph"></div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-5 col-md-7 col-sm-7 col-13">
-                        <div class="row">
-                            <div class="col-lg-4 col-md-4 col-sm-3 col-5 txt-inp-def">Hex</div>
-                            <div id="id-hex" class="col-9 h4 txt-inp-def"></div>
-                        </div>
-                    </div>
+                    <div class="col-sm-2 col-14 txt-label-def">Glyph</div>
+                    <div id="id-glyph" class="col-lg-5 col-sm-7 col-14 clr-blue txt-glyph-disp"></div>
+                    <div class="col-sm-2 col-5 txt-label-def">Hex</div>
+                    <div id="id-hex" class="col txt-label-def"></div>
                 </div>
             </div>
         </div>
@@ -130,28 +121,30 @@
             <div class="card-header txt-def h4">Glyph to Coordinates</div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-2 col-3 txt-inp-def" data-toggle="tooltip" data-html="true"
+                    <div class="col-md-2 col-4 txt-label-def" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Type hex digits into field or use buttons.">
                         Glyph&nbsp;
                         <i class="fa fa-question-circle-o text-danger h6"></i>
                     </div>
-                    <input id="id-glyph" class="col-lg-4 col-md-5 col-sm-6 col-11 rounded h5 glyph" maxength="19"
-                        onchange="dispGlyph(this)">
+                    <input id="id-glyph" class="col-lg-4 col-md-5 col-sm-6 col-14 rounded txt-glyph-disp" maxength="19"
+                        onchange="dispGlyph(this)" placeholder="000000000000">
                 </div>
 
-                <div id="glyphbuttons" class="row"> </div>
+                <div class="row">
+                    <div id="glyphbuttons" class="col-lg-8 col-md-10 col-14 row"> </div>
+                </div>
 
                 <div class="row">
                     <div class="col-md-5 col-sm-7 col-13">
                         <div class="row">
-                            <div class="col-sm-3 col-4 txt-inp-def">Coords</div>
-                            <div id="id-addr" class="col-10 h5 txt-inp-def"></div>
+                            <div class="col-4 txt-label-def">Coords</div>
+                            <div id="id-addr" class="col-10 txt-label-def"></div>
                         </div>
                     </div>
                     <div class="col-md-5 col-sm-7 col-13">
                         <div class="row">
-                            <div class="col-4 txt-inp-def">Planet</div>
-                            <div id="id-planet" class="col-1 h5 txt-inp-def"></div>
+                            <div class="col-4 txt-label-def">Planet</div>
+                            <div id="id-planet" class="col-1 txt-label-def"></div>
                         </div>
                     </div>
                 </div>
