@@ -59,7 +59,13 @@ $(document).ready(() => {
         }
     }
 
-    if (passed.i && passed.g && passed.t) {
+    if (passed.sq && passed.g) {
+        nmsce.last = {}
+        nmsce.last.addr=reformatAddress(passed.sq)
+        nmsce.last.galaxy=passed.g.idToName()
+        nmsce.searchSystem()
+    }
+    else if (passed.i && passed.g && passed.t) {
         let ref = bhs.fs.doc("nmsce/" + passed.g.nameToId() + "/" + passed.t + "/" + passed.i)
         ref.get().then(doc => {
             if (doc.exists) {
@@ -1327,6 +1333,10 @@ NMSCE.prototype.extractSearch = function (fcn) {
     }
 
     return s
+}
+
+NMSCE.prototype.openSearch = function () {
+    window.open("nmsce.html?sq="+nmsce.last.addr.nameToId()+"&g="+nmsce.last.galaxy.nameToId(), '_self')
 }
 
 NMSCE.prototype.searchSystem = function () {
