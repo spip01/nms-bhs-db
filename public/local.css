@@ -190,6 +190,11 @@ body {
     color: blue;
 }
 
+.txt-glyph-disp ,
+.txt-input-def {
+    border-radius:4px;
+}
+
 .btn-def {
     background-color: black;
     border-color: gold;

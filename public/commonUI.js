@@ -372,12 +372,12 @@ var userTable = [{
     title: "Coordinates",
     id: "id-addr",
     field: "addr",
-    format: "col-lg-5 col-md-10 col-sm-4 col-10 monospace"
+    format: "col-lg-5 col-md-10 col-sm-4 col-11 monospace"
 }, {
     title: "LY",
     id: "id-toctr",
     field: "towardsCtr",
-    format: "col-lg-2 col-md-4 col-sm-2 col-4 text-right",
+    format: "col-lg-2 col-md-4 col-sm-2 col-3 text-right",
 }, {
     title: "System",
     id: "id-sys",
@@ -703,16 +703,16 @@ const totalsItemsEnd = `</div>`
 const totalsCol = [{
     title: "",
     id: "id-what",
-    format: "col-lg-7 col-md-6 col-sm-3 col-6",
+    format: "col-lg-7 col-md-7 col-sm-3 col-6",
 }, {
     title: "Player",
     id: "id-Player",
-    format: "col-lg-3 col-md-4 col-sm-2 col-4 text-right",
+    format: "col-lg-3 col-md-3 col-sm-2 col-4 text-right",
     where: "index",
 }, {
     title: "All",
     id: "id-Total",
-    format: "col-lg-3 col-md-4 col-sm-2 col-4 text-right",
+    format: "col-lg-3 col-md-3 col-sm-2 col-4 text-right",
 }, ]
 
 const rowTotal = 0

@@ -1985,32 +1985,31 @@ let txtcanvas = document.createElement('canvas')
 
 NMSCE.prototype.loadImgText = function (clear) {
     const ckbox = `
-        <label class="col-xl-p333 col-7">
+        <label class="col-lg-6 col-md-14 col-sm-4 col-6">
             <input id="ck-idname" type="checkbox" ftype loc row sub onchange="nmsce.getImageText(this, true)">
             &nbsp;title
         </label>`
 
     const textInp = `
         <div class="row">
-            <button type="button" class="col-4 btn btn-def btn-sm" onclick="nmsce.selectGlyphs()">
+            <button type="button" class="col-lg-5 col-md-12 col-5 btn btn-def btn-sm" onclick="nmsce.selectGlyphs()">
                 Select Glyphs
             </button>&nbsp;
             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
                 data-placement="bottom"
-                title="Select glyphs on image and display under coordinate input. Location is saved for future use.">
+                title="Drag box around glyph on image. Location is saved for future use.">
             </i>&nbsp;
-            <label class="col txt-label-def">
+            <label class="col-lg-8 col txt-label-def">
                 <input id="ck-saveglyphloc" type="checkbox" onchange="nmsce.toggleGlyphs(this)">
                 Apply Saved Location&nbsp;
                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
                     data-placement="bottom"
-                    title="Use saved glyph location when opening new images.">
+                    title="Use saved glyph location.">
                 </i>&nbsp;
             </label>
         </div>
-        <br>
         <div class="row">
-            <label class="col-5 txt-label-def pl-30">
+            <label class="col-lg-6 col-md-13 col-5 txt-label-def pl-30">
                 <input id="ck-mylogo" type="checkbox" data-loc="#id-mylogo" data-type="img"
                         onchange="nmsce.getImageText(this, true)">
                         Load Overlay&nbsp;
@@ -2018,12 +2017,11 @@ NMSCE.prototype.loadImgText = function (clear) {
                     data-placement="bottom"
                     title="Load a 2nd image as an overlay. You can resize and move the 2nd image."></i>&nbsp;
             </label>
-            <input id="id-mylogo" type="file" class="col-9 form-control form-control-sm" 
+            <input id="id-mylogo" type="file" class="col-lg-8 col-md-13 col form-control form-control-sm" 
                 accept="image/*" name="files[]" onchange="nmsce.loadMyLogo(this)">&nbsp
         </div>
-        <br>
         <div class="row">
-            <label class="col-5 txt-label-def pl-30">
+            <label class="col-lg-6 col-md-13 col-5 txt-label-def pl-30">
                 <input id="ck-text" type="checkbox" data-loc="#id-text"
                     onchange="nmsce.getImageText(this, true)">
                 Text&nbsp;
@@ -2032,9 +2030,8 @@ NMSCE.prototype.loadImgText = function (clear) {
                     title="Use Line break, <br>, to separate multiple lines.">
                 </i>&nbsp;
             </label>
-            <input id="id-text" class="rounded col-9" type="text" onchange="nmsce.getImageText(this, true)">
-        </div>
-        <br>`
+            <input id="id-text" class="rounded col-lg-8 col" type="text" onchange="nmsce.getImageText(this, true)">
+        </div>`
 
     $("#img-text").html(textInp)
 
@@ -3222,14 +3219,14 @@ NMSCE.prototype.getLatest = function () {
     nmsce.getAfterDate(fd)
 }
 
-const resultsCover = `<div id="id-idname" class="cover-container hidden"></div>`
+const resultsCover = `<div id="id-idname" class="cover-container" style="display:none"></div>`
 const resultsItem = `
     <div id="row-idname" class="cover-item bkg-white txt-label-def align-top">
         galaxy<br>
         by<br>
         <img id="img-idname" data-panel="epanel" data-thumb="ethumb" data-type="etype" data-id="eid" class="pointer" 
         onclick="nmsce.selectResult(this)" 
-        onload="nmsce.imageLoaded(this, $(this).parent().width(), $(this).parent().height()-64, true)" />
+        onload="nmsce.imageLoaded(this, $(this).parent().width(), $(this).closest('.cover-container').height())" />
     </div>`
 
 NMSCE.prototype.getAfterDate = function (date) {

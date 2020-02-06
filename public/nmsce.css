@@ -23,18 +23,23 @@ body {
     border-top-left-radius: 4px;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 548px) {
     .cover-container {
-        height: 300px;
+        height: 460px;
+        width: 100%;
         white-space: wrap;
         overflow-x: auto;
         overflow-y: auto;
+    }
+
+    .cover-item {
+        height:50%;
     }
 }
 
 @media (min-width: 768px) {
     .cover-container {
-        height: 204px;
+        height: 190px;
         white-space: nowrap;
         overflow-x: auto;
         overflow-y: auto;
@@ -42,12 +47,13 @@ body {
     
     .cover-item {
         display: inline-block;
+        width:23%;
     }
 }
 
 @media (min-width: 992px) {
     .cover-container {
-        height: 216px;
+        height: 200px;
         white-space: nowrap;
         overflow-x: auto;
         overflow-y: auto;
@@ -55,12 +61,13 @@ body {
     
     .cover-item {
         display: inline-block;
+        width:23%;
     }
 }
 
 @media (min-width: 1200px) {
     .cover-container {
-        height: 226px;
+        height: 220px;
         white-space: nowrap;
         overflow-x: auto;
         overflow-y: auto;
@@ -68,12 +75,13 @@ body {
     
     .cover-item {
         display: inline-block;
+        width:18%;
     }
 }
 
 @media (min-width: 1920px) {
     .cover-container {
-        height: 360px;
+        height: 280px;
         white-space: nowrap;
         overflow-x: auto;
         overflow-y: auto;
@@ -81,5 +89,6 @@ body {
     
     .cover-item {
         display: inline-block;
+        width:15%;
     }
 }

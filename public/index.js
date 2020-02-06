@@ -190,7 +190,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
 
                 <div id="id-glyphInput" class="hidden">
                     <div class="row">
-                        <div class="col-lg-3 col-md-5 col-sm-3 col-5 txt-label-def">
+                        <div class="col-lg-3 col-14 txt-label-def">
                             Glyph<span class="h5 text-danger">&nbsp;*</span>&nbsp;
                             <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
                                 data-html="true" data-placement="bottom"
@@ -198,7 +198,7 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                                 digit hex, 0-9 a-f, value can be entered directly in the field.">
                             </i>
                         </div>
-                        <input id="id-glyph" class="rounded col-lg-7 col-md-9 col-sm-7 col-9 txt-glyph-disp" maxength="19"
+                        <input id="id-glyph" class="col-lg-7 col-14 txt-glyph-disp" maxength="19"
                             onchange="bhs.changeGlyph(this)">
                         <div class="col-lg-4 col-md-9 col-sm-4 col-9">
                             <label class=" txt-label-def">
@@ -215,38 +215,33 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                     <div id="glyphbuttons" class="row"></div>
 
                     <div class="row">
-                        <div class="col-sm-4 col-7 h6 clr-def">Coords&nbsp;</div>
-                        <div id="id-addr" class="col-sm-5 col-7 clr-def"></div>
+                        <div class="col-sm-4 col-4 h6 txt-label-def">Coords&nbsp;</div>
+                        <div id="id-addr" class="col txt-input-def"></div>
                     </div>  
                 </div>
 
                 <div class="row">
-                    <div class="col-sm-4 col-7  txt-label-def">System Name<span class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
-                    <input id="id-sys" class="rounded col-sm-5 col-7">
+                    <div class="col-lg-4 col-md-7 col-sm-4 col-7 txt-label-def">System Name<span class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
+                    <input id="id-sys" class="col-lg-5 col-md-7 col-sm-5 col-7 txt-input-def">
                 </div>
 
                 <div class="row">
-                    <div class="col-sm-4 col-7 txt-label-def">Region Name<span class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
-                        <input id="id-reg" class="rounded col-sm-5 col-7">&nbsp
+                    <div class="col-lg-4 col-md-7 col-sm-4 col-7 txt-label-def">Region Name<span class="h5 text-danger">&nbsp;*</span>&nbsp;</div>
+                        <input id="id-reg" class="col-lg-5 col-md-7 col-sm-5 col-7 txt-input-def">&nbsp
                         <button id="btn-searchRegion" type="button" class="btn-def btn btn-sm" onclick="bhs.searchRegion(this)">Search</button>&nbsp;
                         <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                            data-placement="bottom" title="Search for a region and display it on the 3D map.">
+                            data-placement="bottom" title="Search for entered region or system.">
                         </i>
                     </div>
 
                 <div id="row-by" class="row">
-                    <div class="col-sm-4 col-7  txt-label-def">Entered by&nbsp;</div>
-                    <div id="id-by" class="col-sm-5 col-7 clr-def"></div>
+                    <div class="col-sm-4 col-7 txt-label-def">Entered by&nbsp;</div>
+                    <div id="id-by" class="col txt-input-def"></div>
                 </div>
 
                 <div class="row">
-                    <div class="col-1">&nbsp;</div>
-                    <div id="id-Lifeform" class="col-11"></div>
-                </div>
-
-                <div class="row border-bottom">
-                    <div class="col-1">&nbsp;</div>
-                    <div id="id-Economy" class="col-11"></div>
+                    <div id="id-Lifeform" class="col-lg-7 col-14"></div>
+                    <div id="id-Economy" class="col-lg-7 col-14"></div>
                 </div>
 
                 <!--div id="row-valid" class="row border-bottom">
@@ -336,9 +331,9 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                 </div>
 
                 <div id="id-isbase" class="row" style="display:none">
-                    <div class="col-sm-3 col-4 txt-label-def">Name</div>
+                    <div class="col-md-4 col-sm-3 col-4 txt-label-def">Name</div>
                     <input id="id-basename" class="rounded col-7">
-                    <div id="id-Owned" class="col-sm-4 col-9"></div>
+                    <div id="id-Owned" class="col-md-9 col-sm-4 col-9"></div>
                     <button id="btn-delbase" type="button" class="btn-def btn btn-sm disabled" disabled onclick="bhs.delBase(this)">Delete Base</button>&nbsp
                 </div>
             </div>
@@ -445,9 +440,13 @@ blackHoleSuns.prototype.dispAddr = function (pnl, addr, glyph, draw) {
 
 blackHoleSuns.prototype.searchRegion = async function (evt) {
     let loc = $(evt).closest("[id|='inp']")
+    let sys = loc.find("#id-sys").val()
     let reg = loc.find("#id-reg").val()
-    let e = await bhs.getEntryByRegion(reg)
-    bhs.zoomEntry(e, loc.prop("id") === "inp-S1")
+    if (reg) {
+        let e = await bhs.getEntryByRegion(reg, bhs.displayListEntry)
+        bhs.zoomEntry(e, loc.prop("id") === "inp-S1")
+    } else if (sys)
+        bhs.getEntryBySystem(sys, bhs.displayListEntry)
 }
 
 blackHoleSuns.prototype.delBase = function (evt) {

@@ -334,6 +334,36 @@ blackHoleSuns.prototype.getEntryByRegion = async function (reg, displayfcn, gala
     })
 }
 
+blackHoleSuns.prototype.getEntryBySystem = async function (sys, displayfcn, galaxy, platform) {
+    galaxy = galaxy ? galaxy : bhs.user.galaxy
+    platform = platform ? platform : bhs.user.platform
+    let ref = bhs.getStarsColRef(galaxy, platform)
+
+    ref = ref.where("sys", "==", sys)
+    return await ref.get().then(async snapshot => {
+        if (!snapshot.empty) {
+            let d
+            let e = null
+
+            for (let doc of snapshot.docs) {
+                d = doc.data()
+                if (d.blackhole)
+                    break
+            }
+
+            if (!d.blackhole)
+                e = await bhs.getEntryByConnection(d.addr, galaxy, platform)
+
+            if (typeof displayfcn === "function")
+                displayfcn(e ? e : d)
+
+            return e ? e : d
+        }
+    }).catch(err => {
+        console.log(err)
+    })
+}
+
 blackHoleSuns.prototype.getEntryByRegionAddr = function (addr, displayfcn) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform)
 

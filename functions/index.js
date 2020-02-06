@@ -628,7 +628,7 @@ function updateTotal(add, ref, reset) {
 exports.getTotals = functions.https.onCall((data, context) => {
     const totScrollPnl = `  <div id="scroll-idname" class="card card-body nopadding">`
     const totHdr = `              <div id="hdr-idname" class="row border-bottom txt-def">`
-    const totItm = `              <div id="itm-idname" class="scrollbar container-fluid nopadding" style="overflow-y: scroll; height:124px">`
+    const totItm = `              <div id="itm-idname" class="scrollbar container-fluid pl-10" style="overflow-y: scroll; height:124px">`
     const totItms = `                  <div id="idname" class="format pointer" onclick="bhs.sortTotals(this)">titlettip&nbsp;<i id="up" class="fas fa-sort-up hidden"></i></div>`
 
     const userHdr = `               <div id="u-idname" class="row">`
@@ -640,21 +640,21 @@ exports.getTotals = functions.https.onCall((data, context) => {
 
     const totalsColumns = [{
         id: "id-Name",
-        format: "col-lg-5 col-md-14 col-sm-5 col-14",
+        format: "col-lg-5 col-14",
     }, {
         title: "Total",
         id: "id-Total",
-        format: "col-lg-3 col-md-4 col-sm-3 col-4 text-right",
+        format: "col-lg-3 col-4 text-right",
     }, {
         title: "PC-XBox",
         ttip: "Click on item in column to display on map. Uses selected galaxy. This can take a long time.",
         id: "id-PC-XBox",
-        format: "col-lg-3 col-md-4 col-sm-3 col-4 text-right",
+        format: "col-lg-3 col-4 text-right",
     }, {
         title: "PS4",
         ttip: "Click on item in column to display on map. Uses selected galaxy. This can take a long time.",
         id: "id-PS4",
-        format: "col-lg-3 col-md-4 col-sm-3 col-4 text-right",
+        format: "col-lg-3 col-4 text-right",
     }]
 
     let html = /idname/ [Symbol.replace](totScrollPnl, data.view)
