@@ -20,8 +20,8 @@
     <meta property="og:type" content="website" />
 
     <meta property="og:image:url"
-        content="http://raw.githubusercontent.com/spip01/nms-bhs-db/master/public/images/nmsce-ss.jpg" />
-    <meta property="og:image:secure_url" content="https://nmsce.com/images/nmsce-ss.jpg" />
+        content="http://raw.githubusercontent.com/spip01/nms-bhs-db/master/public/images/nmsce-ss.png" />
+    <meta property="og:image:secure_url" content="https://nmsce.com/images/nmsce-ss.png" />
     <meta property="og:image:type" content="image/jpg" />
     <meta property="og:image:alt" content="Screenshot of NMSCE App" />
 
@@ -105,11 +105,9 @@
         </div>
 
         <div class="card">
-            <div class="card-header txt-def h4">
-                <i class="far fa-caret-square-up pointer hidden h3"
-                    onclick="$('#searchPanel').hide();$(this).hide();$(this).parent().find('.fa-caret-square-down').show()"></i>
-                <i class="far fa-caret-square-down pointer h3"
-                    onclick="$('#searchPanel').show();$(this).hide();$(this).parent().find('.fa-caret-square-up').show()"></i>
+            <div class="card-header txt-def h4 pointer" onclick="nmsce.toggleSearch(this)">
+                <i class="far fa-caret-square-up hidden h3"></i>
+                <i class="far fa-caret-square-down h3"></i>
                 &nbsp;Toggle search input panel display.
             </div>
             <div id="searchPanel" class="card-body bkg-white" style="display:none">
@@ -136,8 +134,9 @@
                                                     The first 4 characters displayed on the signal booster are not part of the coordinates.">
                                     </i>
                                 </div>
-                                <input id="id-addr" class="rounded col-lg-5 col-md-7 col-sm-4 col-9 txt-input-def" type="text"
-                                    placeholder="0000:0000:0000:0000" maxength=19 onchange="nmsce.changeAddr(this)">
+                                <input id="id-addr" class="rounded col-lg-5 col-md-7 col-sm-4 col-9 txt-input-def"
+                                    type="text" placeholder="0000:0000:0000:0000" maxength=19
+                                    onchange="nmsce.changeAddr(this)">
                                 <div class="col">
                                     <label class=" txt-label-def">
                                         <input id="ck-glyphs" type="checkbox" onchange="nmsce.setGlyphInput(this)">
@@ -152,8 +151,7 @@
 
                             <div class="row">
                                 <div class="col-md-2 col-3 txt-label-def">Glyphs</div>
-                                <div id="id-glyph"
-                                    class="col-lg-4 col-md-5 col-sm-6 col-9 text-center txt-glyph-disp">
+                                <div id="id-glyph" class="col-lg-4 col-md-5 col-sm-6 col-9 text-center txt-glyph-disp">
                                 </div>
                                 <div id="id-hex" class="col-md-4 col text-center txt-label-def"></div>
                             </div>
@@ -211,7 +209,7 @@
                         <nav class="nav nav-tabs row" id="typeTabs" role="tablist"></nav>
                         <div id="typePanels" class="tab-content border-top" style="border-color:black;"></div>
                         <br>
-                        
+
                         <div id="entrybuttons" class="card rounded" style="border-color:black;">
                             <div class="card-header txt-def h5">Search</div>
                             <div class="card-body">
@@ -229,8 +227,7 @@
                                     <div id="id-Saved" class="col-md-4 col-6"></div>&nbsp;
                                     <label class="col-md-7 col-14 txt-label-def">
                                         Name&nbsp;
-                                        <input id="searchname" class="col-10" type="text"
-                                            placeholder="Search Name">
+                                        <input id="searchname" class="col-10" type="text" placeholder="Search Name">
                                     </label>
                                     <label class="col txt-label-def">
                                         <input id="ck-notify" type="checkbox">
@@ -292,11 +289,11 @@
                 <br>
                 <br>
                 <div id="imageinfo" class="row bkg-white txt-center" style="display:none">
-                    <div id="imgcol" class="col-xl-9 col-lg-8 col-md-9 col-14">
+                    <div id="imgcol" class="col-lg-8 col-md-9 col-14">
                         <img id="dispimage"
                             onload="nmsce.imageLoaded(this, $(this).parent().width(), $(window).height(), true)" />
                     </div>
-                    <div class="col-xl-5 col-lg-6 col-md-5 col-14">
+                    <div class="col-lg-6 col-md-5 col-14 pl-15">
                         <div id="imagedata"></div>
                         <div class="row">
                             <button type="button" class="col-7 btn btn-sm btn-def" onclick="nmsce.searchSystem()">System
@@ -347,7 +344,7 @@
                         </div>
                         <br>
                         <div class="row">
-                            <a id="permalink" class="col-7 h5" href="">
+                            <a id="permalink" class="col-7 h5 pl-30" href="">
                                 Permalink&nbsp;
                                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom"

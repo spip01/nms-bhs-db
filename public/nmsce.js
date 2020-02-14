@@ -9,7 +9,9 @@ const originalPath = "/nmsce/orig/"
 const thumbPath = "/nmsce/disp/thumb/"
 const redditPath = "/nmsce/reddit/"
 
-$(document).ready(() => {
+const tm_url = "https://teachablemachine.withgoogle.com/models/w6CSJkkY/";
+
+$(document).ready(async () => {
     startUp()
 
     $("#cemenus").load("cemenus.html", () => {
@@ -24,9 +26,16 @@ $(document).ready(() => {
     nmsce.last = null
 
     if (!fpreview) {
-        nmsce.logo = new Image()
-        nmsce.logo.crossOrigin = "anonymous"
-        nmsce.logo.src = "/images/nmsce-logo.png"
+        if (fcedata) {
+            nmsce.buildImageText()
+
+            let img = new Image()
+            img.crossOrigin = "anonymous"
+            img.onload = nmsce.onLoadLogo
+            img.src = "/images/nmsce-logo.png"
+
+            nmsce.model = tmImage.load("/model.json", "/metadata.json")
+        }
 
         nmsce.buildPanels()
         nmsce.buildTypePanels()
@@ -59,13 +68,16 @@ $(document).ready(() => {
         }
     }
 
-    if (passed.sq && passed.g) {
+    if (passed.state && passed.code)
+        nmsce.redditLoggedIn(passed.state, passed.code)
+
+    else if (passed.sq && passed.g) {
         nmsce.last = {}
-        nmsce.last.addr=reformatAddress(passed.sq)
-        nmsce.last.galaxy=passed.g.idToName()
+        nmsce.last.addr = reformatAddress(passed.sq)
+        nmsce.last.galaxy = passed.g.idToName()
         nmsce.searchSystem()
-    }
-    else if (passed.i && passed.g && passed.t) {
+
+    } else if (passed.i && passed.g && passed.t) {
         let ref = bhs.fs.doc("nmsce/" + passed.g.nameToId() + "/" + passed.t + "/" + passed.i)
         ref.get().then(doc => {
             if (doc.exists) {
@@ -140,6 +152,39 @@ NMSCE.prototype.buildPanels = function () {
         })
 
     addGlyphButtons($("#glyphbuttons"), nmsce.addGlyph)
+
+    let img = $("#id-canvas")
+
+    img.on("touchstart", e => {
+        event.offsetX = event.targetTouches[0].pageX - img.offset().left
+        event.offsetY = event.targetTouches[0].pageY - img.offset().top
+
+        nmsce.handleMouseDown(e)
+    })
+    img.on("touchmove", e => {
+        event.offsetX = event.targetTouches[0].pageX - img.offset().left
+        event.offsetY = event.targetTouches[0].pageY - img.offset().top
+
+        nmsce.handleMouseMove(e)
+    })
+    img.on("touchend", e => {
+        nmsce.handleMouseUp(e)
+    })
+    img.mouseout(e => {
+        nmsce.handleMouseOut(e)
+    })
+    img.mousedown(e => {
+        nmsce.handleMouseDown(e)
+    })
+    img.mousemove(e => {
+        nmsce.handleMouseMove(e)
+    })
+    img.mouseup(e => {
+        nmsce.handleMouseUp(e)
+    })
+    img.mouseout(e => {
+        nmsce.handleMouseOut(e)
+    })
 }
 
 NMSCE.prototype.setGlyphInput = function (evt) {
@@ -164,17 +209,17 @@ NMSCE.prototype.setGlyphInput = function (evt) {
     }
 }
 
-NMSCE.prototype.addGlyph = function (evt) {
-    let loc = $(evt).closest("#id-glyphInput").find("#id-glyph")
-    let a = loc.val() + $(evt).text().trim().slice(0, 1)
+NMSCE.prototype.addGlyph = function (evt, val) {
+    let loc = $("#id-glyphInput").find("#id-glyph")
+    let a = loc.val() + (val ? val : $(evt).text().trim().slice(0, 1))
     loc.val(a)
 
     if (a.length === 12)
         nmsce.changeAddr(loc)
 }
 
-NMSCE.prototype.changeAddr = function (evt) {
-    let addr = $(evt).val()
+NMSCE.prototype.changeAddr = function (evt, a) {
+    let addr = a ? a : $(evt).val()
     if (addr !== "") {
         if (addr.length === 12) {
             let p = addr.slice(0, 1)
@@ -259,7 +304,8 @@ NMSCE.prototype.displaySystem = function (entry) {
 
     const setRadio = function (loc, val) {
         loc.find(".radio").prop("checked", false)
-        loc.find("#rdo-" + val.nameToId()).prop("checked", true)
+        if (val)
+            loc.find("#rdo-" + val.nameToId()).prop("checked", true)
     }
 
     if (typeof entry.Economy === "number")
@@ -297,7 +343,8 @@ NMSCE.prototype.expandPanels = function (show) {
 
 NMSCE.prototype.displayUser = function () {
     if (bhs.user.uid && fcedata) {
-        nmsce.restoreText(bhs.user.imageText)
+        nmsce.restoreImageText(bhs.user.imageText)
+
         if (typeof nmsce.entries === "undefined")
             nmsce.getEntries()
 
@@ -409,8 +456,6 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
         nmsce.last = null
 
     if (!fnmsce) {
-        nmsce.restoreText(bhs.user.imageText)
-
         let canvas = document.getElementById("id-canvas")
         let ctx = canvas.getContext("2d")
         ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -728,7 +773,7 @@ NMSCE.prototype.displaySingle = function (entry) {
     disp(obj.fields, "#pnl-" + entry.type)
 
     if (entry.imageText)
-        bhs.user.imageText = entry.imageText
+        nmsce.imageText = mergeObjects(nmsce.imageText, entry.imageText)
 
     nmsce.loadScreenshot(null, entry.Photo)
 
@@ -929,7 +974,7 @@ NMSCE.prototype.searchEntriesList = function () {
     $("body")[0].style.cursor = "wait"
     let loc = $("#list-" + s.type.nameToId())
 
-    nmsce.showSub("#sub-" + s.type.nameToId())
+    nmsce.toggleSub(s.type.nameToId(), true)
     nmsce.searchList(s, list, loc)
 }
 
@@ -1336,7 +1381,7 @@ NMSCE.prototype.extractSearch = function (fcn) {
 }
 
 NMSCE.prototype.openSearch = function () {
-    window.open("nmsce.html?sq="+nmsce.last.addr.nameToId()+"&g="+nmsce.last.galaxy.nameToId(), '_self')
+    window.open("nmsce.html?sq=" + nmsce.last.addr.nameToId() + "&g=" + nmsce.last.galaxy.nameToId(), '_self')
 }
 
 NMSCE.prototype.searchSystem = function () {
@@ -1396,7 +1441,7 @@ NMSCE.prototype.save = function () {
 
         if (ok) {
             bhs.user = mergeObjects(bhs.user, user)
-            bhs.user.imageText = nmsce.extractImgText()
+            bhs.user.imageText = nmsce.extractImageText()
 
             let ref = bhs.getUsersColRef(bhs.user.uid)
             ref.set(bhs.user, {
@@ -1445,7 +1490,7 @@ blackHoleSuns.prototype.status = function (str, clear) {
     if (clear)
         $("#status").empty()
 
-    $("#status").append("<h6>" + str + "</h6>")
+    $("#status").append(str + "</br>")
 }
 
 let nav = `<a class="nav-item nav-link txt-def h6 rounded-top active" 
@@ -1909,7 +1954,7 @@ NMSCE.prototype.setMapSize = function (loc) {
 
         let h = $("#panels").height()
         let w = $(l).width()
-        let size = nmsce.calcImgSize(svgw, svgh, w, h / 2, true)
+        let size = nmsce.calcImageSize(svgw, svgh, w, h / 2, true)
 
         svg.attr("preserveAspectRatio", "xMidYMid meet")
         svg.attr("width", size.width)
@@ -1983,7 +2028,7 @@ NMSCE.prototype.selectSublist = function (btn) {
 
 let txtcanvas = document.createElement('canvas')
 
-NMSCE.prototype.loadImgText = function (clear) {
+NMSCE.prototype.buildImageText = function () {
     const ckbox = `
         <label class="col-lg-6 col-md-14 col-sm-4 col-6">
             <input id="ck-idname" type="checkbox" ftype loc row sub onchange="nmsce.getImageText(this, true)">
@@ -1992,37 +2037,37 @@ NMSCE.prototype.loadImgText = function (clear) {
 
     const textInp = `
         <div class="row">
-            <button type="button" class="col-lg-5 col-md-12 col-5 btn btn-def btn-sm" onclick="nmsce.selectGlyphs()">
-                Select Glyphs
-            </button>&nbsp;
-            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
-                data-placement="bottom"
-                title="Drag box around glyph on image. Location is saved for future use.">
-            </i>&nbsp;
-            <label class="col-lg-8 col txt-label-def">
-                <input id="ck-saveglyphloc" type="checkbox" onchange="nmsce.toggleGlyphs(this)">
-                Apply Saved Location&nbsp;
+            <label class="col-lg-8 col-7 txt-label-def pl-15">
+                <input id="ck-selGlyphs" type="checkbox" data-type="selGlyphs" onchange="nmsce.getImageText(this, true)">
+                Select Glyphs&nbsp;
                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
                     data-placement="bottom"
-                    title="Use saved glyph location.">
+                    title="Drag glyph box to glyphs and resize to select glyphs.">
                 </i>&nbsp;
             </label>
-        </div>
+             <button type="button" class="col-lg-5 col-md-12 col-5 btn btn-def btn-sm" onclick="nmsce.extractGlyphs()">
+                Apply
+            </button>&nbsp;
+            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                data-placement="bottom"
+                title="<span class='h5 text-danger'>Always</span> double-check glyph output. For best results take a high contrast clear background for glyph processing. Take a snapshot just to capture glyphs then proceed as normal.">
+            </i>
+       </div>
         <div class="row">
-            <label class="col-lg-6 col-md-13 col-5 txt-label-def pl-30">
-                <input id="ck-mylogo" type="checkbox" data-loc="#id-mylogo" data-type="img"
+            <label class="col-lg-6 col-md-13 col-5 txt-label-def pl-15">
+                <input id="ck-myLogo" type="checkbox" data-loc="#id-myLogo" data-type="img"
                         onchange="nmsce.getImageText(this, true)">
                         Load Overlay&nbsp;
                     <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
                     data-placement="bottom"
                     title="Load a 2nd image as an overlay. You can resize and move the 2nd image."></i>&nbsp;
             </label>
-            <input id="id-mylogo" type="file" class="col-lg-8 col-md-13 col form-control form-control-sm" 
+            <input id="id-myLogo" type="file" class="col-lg-8 col-md-13 col form-control form-control-sm" 
                 accept="image/*" name="files[]" onchange="nmsce.loadMyLogo(this)">&nbsp
         </div>
         <div class="row">
-            <label class="col-lg-6 col-md-13 col-5 txt-label-def pl-30">
-                <input id="ck-text" type="checkbox" data-loc="#id-text"
+            <label class="col-lg-6 col-md-13 col-5 txt-label-def pl-15">
+                <input id="ck-Text" type="checkbox" data-loc="#id-Text"
                     onchange="nmsce.getImageText(this, true)">
                 Text&nbsp;
                 <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
@@ -2030,7 +2075,7 @@ NMSCE.prototype.loadImgText = function (clear) {
                     title="Use Line break, <br>, to separate multiple lines.">
                 </i>&nbsp;
             </label>
-            <input id="id-text" class="rounded col-lg-8 col" type="text" onchange="nmsce.getImageText(this, true)">
+            <input id="id-Text" class="rounded col-lg-8 col" type="text" onchange="nmsce.getImageText(this, true)">
         </div>`
 
     $("#img-text").html(textInp)
@@ -2042,38 +2087,35 @@ NMSCE.prototype.loadImgText = function (clear) {
         h = /loc/ [Symbol.replace](h, "data-loc='" + loc + "'")
         h = /sub/ [Symbol.replace](h, sub ? "data-sub='" + sub + "'" : "")
         h = /row/ [Symbol.replace](h, row ? "data-row='" + row + "'" : "")
-
         $("#img-text").append(h)
-
-        if (clear || typeof nmsce.imageText === "undefined" || typeof nmsce.imageText[title.nameToId()] === "undefined")
-            nmsce.initTxtItem(title.nameToId())
     }
 
-    if (!nmsce.imageText || nmsce.imageText.logo === "undefined")
-        nmsce.initTxtItem("logo")
+    nmsce.imageText = {}
+    nmsce.initImageText("logo")
+    nmsce.initImageText("Text")
+    nmsce.initImageText("myLogo")
+    nmsce.initImageText("selGlyphs")
 
-    if (nmsce.imageText.mylogo === "undefined")
-        nmsce.initTxtItem("mylogo")
+    for (let obj of objectList) {
+        for (let txt of obj.imgText)
+            if (typeof nmsce.imageText[txt.name.nameToId()] === "undefined") {
+                nmsce.initImageText(txt.name.nameToId())
+                appenditem(txt.name, txt.type, txt.id)
+            }
 
-    if (nmsce.imageText.selGlyph === "undefined")
-        nmsce.initTxtItem("selGlyph")
+        for (let fld of obj.fields) {
+            if (fld.imgText && typeof nmsce.imageText[fld.name.nameToId()] === "undefined") {
+                nmsce.initImageText(fld.name.nameToId())
+                appenditem(fld.name, fld.type, "#typePanels .active", "#row-" + fld.name.nameToId())
+            }
 
-    let active = $("#typePanels .active")
-    let type = active.prop("id").stripID()
-    let objIdx = getIndex(objectList, "name", type)
-    let obj = objectList[objIdx]
-
-    for (let txt of obj.imgText)
-        appenditem(txt.name, txt.type, txt.id)
-
-    for (let fld of obj.fields) {
-        if (fld.imgText)
-            appenditem(fld.name, fld.type, "#typePanels .active", "#row-" + fld.name.nameToId())
-
-        if (typeof fld.sublist !== "undefined")
-            for (let sub of fld.sublist)
-                if (sub.imgText)
-                    appenditem(sub.name, sub.type, "#typePanels .active", "#row-" + fld.name.nameToId(), "#row-" + sub.name.nameToId())
+            if (typeof fld.sublist !== "undefined")
+                for (let sub of fld.sublist)
+                    if (sub.imgText && typeof nmsce.imageText[sub.name.nameToId()] === "undefined") {
+                        nmsce.initImageText(sub.name.nameToId())
+                        appenditem(sub.name, sub.type, "#typePanels .active", "#row-" + fld.name.nameToId(), "#row-" + sub.name.nameToId())
+                    }
+        }
     }
 
     bhs.buildMenu($("#imgtable"), "Font", fontList, nmsce.setFont, {
@@ -2083,45 +2125,58 @@ NMSCE.prototype.loadImgText = function (clear) {
     })
 }
 
-NMSCE.prototype.initTxtItem = function (id) {
+NMSCE.prototype.initImageText = function (id) {
     if (typeof nmsce.imageText === "undefined")
         nmsce.imageText = {}
 
     if (typeof nmsce.imageText[id] === "undefined")
         nmsce.imageText[id] = {}
 
-    if (id === "logo" || id === "mylogo" || id === "selGlyph") {
-        nmsce.imageText[id] = {
-            x: 20,
-            y: 20,
-            fSize: 0,
-            sel: false,
-            width: 0,
-            height: 0,
-            type: "img",
-            id: id
-        }
-    } else
-        nmsce.imageText[id] = {
-            font: id === "Glyphs" ? "glyph" : "Arial",
-            fSize: 24,
-            color: "#ffffff",
-            x: 20,
-            y: 20,
-            ck: false,
-            sel: false,
-            width: 0,
-            height: 0,
-            text: ""
-        }
+    switch (id) {
+        case "logo":
+            nmsce.imageText[id] = {
+                ck: true,
+                type: "img",
+            }
+            break
+        case "myLogo":
+            nmsce.imageText[id] = {
+                ck: false,
+                type: "img",
+            }
+            break
+        case "selGlyphs":
+            nmsce.imageText[id] = {
+                ck: id === "logo",
+                type: "img",
+                ascent: 0,
+                decent: 20,
+                left: 0,
+                right: 240,
+            }
+            break
+        default:
+            nmsce.imageText[id] = {
+                font: id === "Glyphs" ? "glyph" : "Arial",
+                fSize: 24,
+                color: "#ffffff",
+                ck: false,
+                text: "",
+                type: "text"
+            }
+    }
+
+    nmsce.imageText[id].sel = false
+    nmsce.imageText[id].id = id
+    nmsce.imageText[id].x = 20
+    nmsce.imageText[id].y = 20
+
+    return nmsce.imageText[id]
 }
 
 NMSCE.prototype.getImageText = function (evt, draw) {
     let id = $(evt).prop("id").stripID()
     let ck = $(evt).prop("checked")
-
-    if (typeof nmsce.imageText[id] === "undefined")
-        nmsce.initTxtItem(id)
 
     if (ck) {
         let text = ""
@@ -2138,6 +2193,8 @@ NMSCE.prototype.getImageText = function (evt, draw) {
         }
 
         switch (data.type) {
+            case "selGlyphs":
+                break
             case "menu":
                 loc = loc.find("[id|='btn']")
                 text = loc.text().stripNumber()
@@ -2183,14 +2240,16 @@ NMSCE.prototype.getImageText = function (evt, draw) {
                 break
         }
 
-        nmsce.imageText[id].text = text
-        nmsce.imageText[id].ck = true
         for (let k of Object.keys(nmsce.imageText))
             nmsce.imageText[k].sel = false
+
+        nmsce.imageText[id].ck = true
         nmsce.imageText[id].sel = true
-        nmsce.imageText[id].sel = true
-        if (data.type !== "img" && text)
+
+        if (text) {
+            nmsce.imageText[id].text = text
             nmsce.imageText[id] = nmsce.measureText(nmsce.imageText[id])
+        }
     } else {
         nmsce.imageText[id].ck = false
         nmsce.imageText[id].sel = false
@@ -2200,63 +2259,58 @@ NMSCE.prototype.getImageText = function (evt, draw) {
         nmsce.drawText()
 }
 
-NMSCE.prototype.restoreText = function (iTxt, draw) {
-    if (iTxt)
-        nmsce.imageText = iTxt
-
-    if (typeof nmsce.imageText === "undefined")
-        return
-
-    if (typeof nmsce.imageText.selGlyph === "undefined")
-        nmsce.initTxtItem("selGlyph")
-    // else if (nmsce.imageText.selGlyph.ck)
-    //     nmsce.dispGlyph()
-
-    if (typeof nmsce.imageText.logo === "undefined")
-        nmsce.initTxtItem("logo")
-
-    nmsce.imageText.logo.type = "img" // restore saved data might not be set
-
-    if (typeof nmsce.imageText.mylogo === "undefined")
-        nmsce.initTxtItem("mylogo")
-
+NMSCE.prototype.restoreImageText = function (txt, draw) {
     let loc = $("#img-text")
+
+    if (txt)
+        nmsce.imageText = mergeObjects(nmsce.imageText, txt)
+
+    nmsce.imageText.selGlyphs.ck = false
+    nmsce.imageText.myLogo.ck = false
+    nmsce.imageText.logo.ck = false
 
     let keys = Object.keys(nmsce.imageText)
     for (let id of keys) {
         let f = nmsce.imageText[id]
 
-        if (id === "text" && f.text)
-            loc.find("#id-text").val(f.text)
+        if (id === "Text" && f.text)
+            loc.find("#id-Text").val(f.text)
 
         let floc = loc.find("#ck-" + id)
 
         if (floc.length > 0) {
             floc.prop("checked", f.ck)
             nmsce.getImageText(floc)
-            f.sel = false
         }
+
+        f.sel = false
     }
 
     if (draw)
         nmsce.drawText()
 }
 
-NMSCE.prototype.extractImgText = function () {
+NMSCE.prototype.extractImageText = function () {
     let s = mergeObjects({}, nmsce.imageText)
+
     let keys = Object.keys(s)
     for (let k of keys) {
         let f = s[k]
 
-        if (f.type !== "img") {
-            delete f.width
-            delete f.height
-        } else
-            f.ck = false
+        if (f.type === "text") {
+            delete f.ascent
+            delete f.decent
+            delete f.left
+            delete f.right
+        }
 
-        if (k !== "text")
+        if (k !== "Text")
             delete f.text
 
+        delete f.width
+        delete f.height
+        delete f.lineAscent
+        delete f.lineDecent
         delete f.img
         delete f.resize
         delete f.sel
@@ -2265,29 +2319,29 @@ NMSCE.prototype.extractImgText = function () {
     return s
 }
 
+NMSCE.prototype.onLoadLogo = function (evt) {
+    let text = evt.currentTarget.src.includes("nmsce-logo.png") ? nmsce.imageText.logo : nmsce.imageText.myLogo
+    let img = text.img = evt.currentTarget
+
+    let scale = text.right ? Math.min(text.right / img.naturalWidth, text.decent / img.naturalHeight) : .1
+    text.decent = img.naturalHeight * scale
+    text.right = img.naturalWidth * scale
+    text.ascent = 0
+    text.left = 0
+
+    $("#ck-" + text.id).prop("checked", true)
+    if (text.id !== "logo")
+        nmsce.drawText()
+}
+
 NMSCE.prototype.loadMyLogo = function (evt) {
     let file = evt.files[0]
     let reader = new FileReader()
 
     reader.onload = function () {
-        let txt = nmsce.imageText.mylogo
-        let img = txt.img = new Image()
+        let img = new Image()
         img.crossOrigin = "anonymous"
-
-        img.onload = function () {
-            if (typeof txt.width === "undefined" || txt.width === 0) {
-                txt.height = txtcanvas.height * .1
-                txt.width = img.naturalWidth * txt.height / img.naturalHeight
-            } else {
-                let scale = Math.min(txt.width / img.naturalWidth, txt.height / img.naturalHeight)
-                txt.height = img.naturalHeight * scale
-                txt.width = img.naturalWidth * scale
-            }
-
-            $("#ck-" + txt.id).prop("checked", true)
-            nmsce.drawText()
-        }
-
+        img.onload = nmsce.onLoadLogo
         img.src = reader.result
     }
 
@@ -2295,37 +2349,45 @@ NMSCE.prototype.loadMyLogo = function (evt) {
 }
 
 NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
+    $("body")[0].style.cursor = "wait"
+
     let img = $("#imgtable")
     img.show()
+
+    if (evt || edit) {
+        $("#editScreenshot").hide()
+        $("#id-ssImage").hide()
+        $("#id-canvas").show()
+        $("#imageTextBlock").show()
+
+        if (nmsce.last) {
+            $("#updateScreenshot").show()
+            $("#ck-updateScreenshot").prop("checked", true)
+        }
+    } else {
+        $("#editScreenshot").show()
+        $("#imageTextBlock").hide()
+        $("#id-canvas").hide()
+        $("#id-ssImage").show()
+        $("#updateScreenshot").hide()
+    }
 
     if (evt) {
         let file = evt.files[0]
         if (file) {
-            nmsce.loadImgText()
-            nmsce.restoreText(bhs.user.imageText)
-
             let reader = new FileReader()
             reader.onload = function () {
                 nmsce.screenshot = new Image()
                 nmsce.screenshot.crossOrigin = "anonymous"
 
                 nmsce.screenshot.onload = function () {
-                    $("#editScreenshot").hide()
-                    $("#id-ssImage").hide()
-                    $("#id-canvas").show()
-                    $("#imageTextBlock").show()
-                    if (nmsce.last) {
-                        $("#updateScreenshot").show()
-                        $("#ck-updateScreenshot").prop("checked", true)
-                    }
-
-                    nmsce.loadImgText()
-                    nmsce.restoreText(nmsce.last ? nmsce.last.imageText : nmsce.imageText)
-                    nmsce.drawText()
+                    nmsce.restoreImageText(null, true)
 
                     $('html, body').animate({
                         scrollTop: $('#imgtable').offset().top
                     }, 500)
+
+                    $("body")[0].style.cursor = "default"
                 }
 
                 nmsce.screenshot.src = reader.result
@@ -2334,24 +2396,6 @@ NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
             reader.readAsDataURL(file)
         }
     } else {
-        if (edit) {
-            $("#editScreenshot").hide()
-            $("#imageTextBlock").show()
-            $("#updateScreenshot").show()
-            $("#ck-updateScreenshot").prop("checked", false)
-            $("#id-ssImage").hide()
-            $("#id-canvas").show()
-
-            nmsce.loadImgText()
-            nmsce.restoreText(nmsce.last.imageText)
-        } else {
-            $("#editScreenshot").show()
-            $("#imageTextBlock").hide()
-            $("#updateScreenshot").hide()
-            $("#id-canvas").hide()
-            $("#id-ssImage").show()
-        }
-
         let img = new Image()
         img.crossOrigin = "anonymous"
 
@@ -2360,13 +2404,14 @@ NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
                 var xhr = new XMLHttpRequest()
                 xhr.responseType = 'blob'
                 xhr.onload = function (event) {
-                    var blob = xhr.response
                     nmsce.screenshot = new Image()
                     nmsce.screenshot.crossOrigin = "anonymous"
                     nmsce.screenshot.src = url
 
                     nmsce.screenshot.onload = function () {
-                        nmsce.drawText()
+                        nmsce.restoreImageText(null, true)
+
+                        $("body")[0].style.cursor = "default"
                     }
                 }
 
@@ -2376,33 +2421,6 @@ NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
                 $("#id-ssImage").attr("src", url)
         })
     }
-
-    img = img.find("#id-canvas")
-
-    img.on("touchstart", e => {
-        nmsce.handleMouseDown(e)
-    })
-    img.on("touchmove", e => {
-        nmsce.handleMouseMove(e)
-    })
-    img.on("touchend", e => {
-        nmsce.handleMouseUp(e)
-    })
-    img.mouseout(e => {
-        nmsce.handleMouseOut(e)
-    })
-    img.mousedown(e => {
-        nmsce.handleMouseDown(e)
-    })
-    img.mousemove(e => {
-        nmsce.handleMouseMove(e)
-    })
-    img.mouseup(e => {
-        nmsce.handleMouseUp(e)
-    })
-    img.mouseout(e => {
-        nmsce.handleMouseOut(e)
-    })
 }
 
 NMSCE.prototype.editScreenshot = function () {
@@ -2410,23 +2428,43 @@ NMSCE.prototype.editScreenshot = function () {
         nmsce.loadScreenshot(null, nmsce.last.Photo, true)
 }
 
-var mfLoc
-
 NMSCE.prototype.measureText = function (t) {
     if (t.type === "img")
         return t
 
-    if (!mfLoc)
-        mfLoc = $("#measurefont")
+    let canvas = document.createElement("canvas")
+    let ctx = canvas.getContext("2d")
 
-    mfLoc.css("font", t.fSize + "px " + t.font)
-    mfLoc.html(t.text)
+    ctx.font = t.fSize + "px " + t.font
 
-    t.width = mfLoc.width()
-    t.height = mfLoc.height()
+    if (t.text.includes("<br>")) {
+        let lines = t.text.split("<br>")
+        t.left = Number.MAX_SAFE_INTEGER
+        t.right = 0
+        t.lineAscent = []
+        t.lineDecent = []
 
-    mfLoc.text(t.text)
-    t.lineheight = mfLoc.height()
+        for (let i = 0; i < lines.length; ++i) {
+            let l = lines[i]
+            let m = ctx.measureText(l)
+            t.left = Math.min(t.left, m.actualBoundingBoxLeft)
+            t.right = Math.max(t.right, m.actualBoundingBoxRight)
+            t.lineAscent[i] = m.actualBoundingBoxAscent
+            t.lineDecent[i] = m.actualBoundingBoxDescent
+
+            if (i === 0) {
+                t.ascent = m.actualBoundingBoxAscent
+                t.decent = m.actualBoundingBoxDescent
+            } else
+                t.decent += m.actualBoundingBoxAscent + m.actualBoundingBoxDescent + t.fSize / 8
+        }
+    } else {
+        let m = ctx.measureText(t.text)
+        t.left = m.actualBoundingBoxLeft
+        t.right = m.actualBoundingBoxRight
+        t.decent = m.actualBoundingBoxDescent
+        t.ascent = m.actualBoundingBoxAscent
+    }
 
     return t
 }
@@ -2478,8 +2516,14 @@ NMSCE.prototype.setFont = function (evt) {
 }
 
 NMSCE.prototype.drawText = function (alt, altw) {
+    let img = $("#imgtable")
+    if (!img.is(":visible"))
+        return
+
+    img = img.find("#id-img")
+
     let canvas = alt ? alt : document.getElementById("id-canvas")
-    let width = $("#id-img").width()
+    let width = img.width()
     let sw = nmsce.screenshot.naturalWidth
     let sh = nmsce.screenshot.naturalHeight
 
@@ -2497,9 +2541,7 @@ NMSCE.prototype.drawText = function (alt, altw) {
         canvas.height = sh * canvas.width / sw
     }
 
-    let lh = txtcanvas.height * .1
-    nmsce.imageText.logo.width = lh
-    nmsce.imageText.logo.height = lh
+    nmsce.imageText.logo.right = nmsce.imageText.logo.decent = Math.min(txtcanvas.width, txtcanvas.height) * .1
 
     if ($("#imageTextBlock").is(":visible")) {
         let ctx = txtcanvas.getContext("2d")
@@ -2511,66 +2553,77 @@ NMSCE.prototype.drawText = function (alt, altw) {
             let text = nmsce.imageText[id]
             let tloc = loc.find("#ck-" + id)
 
-            if (text.ck && tloc.is(":visible") || text.type === "img") {
-                if (text.x + text.width > txtcanvas.width)
-                    text.x = txtcanvas.width - text.width
-                else if (text.x < 0)
-                    text.x = 0
+            if (text.ck && tloc.is(":visible") || text.id === "logo") {
+                if (text.y + text.decent > txtcanvas.height)
+                    text.y = txtcanvas.height - text.decent
+                else if (text.y - text.ascent < 0)
+                    text.y = text.ascent
 
-                if (text.type !== "img") {
-                    if (text.y + text.height - text.lineheight > txtcanvas.height)
-                        text.y = txtcanvas.height - text.height + text.lineheight
-                    else if (text.y - text.lineheight < 0)
-                        text.y = text.lineheight
-                } else {
-                    if (text.y + text.height > txtcanvas.height)
-                        text.y = txtcanvas.height - text.height
-                    else if (text.y < 0)
-                        text.y = 0
-                }
+                if (text.x + text.right > txtcanvas.width)
+                    text.x = txtcanvas.width - text.right
+                else if (text.x + text.left < 0)
+                    text.x = -text.left
 
                 if (id === "Glyphs") {
                     text.font = "glyph"
 
                     ctx.fillStyle = text.color
-                    ctx.fillRect(text.x - 2, text.y - text.height, text.width + 4, text.height + 4)
+                    ctx.fillRect(text.x + text.left - 5, text.y - text.ascent - 5, text.right - text.left + 9, text.ascent + text.decent + 8)
                     ctx.fillStyle = "#000000"
-                    ctx.fillRect(text.x - 1, text.y - text.height + 1, text.width + 2, text.height + 2)
+                    ctx.fillRect(text.x + text.left - 3, text.y - text.ascent - 3, text.right - text.left + 5, text.ascent + text.decent + 4)
                 }
 
-                if (text.type !== "img") {
+                if (id === "selGlyphs") {
+                    ctx.strokeStyle = "white"
+                    ctx.beginPath()
+                    ctx.rect(text.x, text.y, text.right, text.decent)
+                    ctx.stroke()
+
+                    let div = text.right / 12
+                    for (let i = 1; i < 12; ++i) {
+                        let x = text.x + div * i
+
+                        ctx.beginPath()
+                        ctx.moveTo(x, text.y)
+                        ctx.lineTo(x, text.y + text.decent)
+                        ctx.stroke()
+                    }
+                }
+
+                if (text.type === "text") {
                     ctx.font = text.fSize + "px " + text.font
                     ctx.fillStyle = text.color
 
-                    if (typeof text.text !== "undefined" && text.text.includes("<br>")) {
+                    if (text.text && text.text.includes("<br>")) {
                         let l = text.text.split("<br>")
+                        let y = text.y - text.lineAscent[0]
 
-                        for (let i = 0; i < l.length; ++i)
-                            ctx.fillText(l[i], text.x, text.y + i * text.fSize * 1.15)
+                        for (let i = 0; i < l.length; ++i) {
+                            y += text.lineAscent[i]
+                            ctx.fillText(l[i], text.x, y)
+                            y += text.lineDecent[i] + text.fSize / 8
+                        }
                     } else
                         ctx.fillText(text.text, text.x, text.y)
-                }
-                if (text.ck && tloc.is(":visible") && id === "mylogo" && text.img)
-                    ctx.drawImage(text.img, text.x, text.y, text.width, text.height)
+                } else if (text.id === "myLogo")
+                    ctx.drawImage(text.img, text.x + text.left, text.y, text.right - text.left, text.ascent + text.decent)
 
                 if (text.sel && !altw) {
                     ctx.strokeStyle = "white"
-                    ctx.setLineDash([2, 2])
+                    ctx.setLineDash([3, 2])
                     ctx.beginPath()
-                    ctx.rect(text.x - 1, text.y - text.fSize + 1, text.width + 1, text.height + 1)
+                    ctx.rect(text.x + text.left, text.y - text.ascent, text.right - text.left, text.ascent + text.decent)
                     ctx.stroke()
                 }
             }
         }
 
-        ctx.drawImage(nmsce.logo, nmsce.imageText.logo.x, nmsce.imageText.logo.y, nmsce.imageText.logo.width, nmsce.imageText.logo.height)
-    }
+        ctx.drawImage(nmsce.imageText.logo.img, nmsce.imageText.logo.x, nmsce.imageText.logo.y, nmsce.imageText.logo.right, nmsce.imageText.logo.decent)
 
-    let ctx = canvas.getContext("2d")
-    ctx.drawImage(nmsce.screenshot, 0, 0, canvas.width, canvas.height)
-
-    if ($("#imageTextBlock").is(":visible"))
+        ctx = canvas.getContext("2d")
+        ctx.drawImage(nmsce.screenshot, 0, 0, canvas.width, canvas.height)
         ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
+    }
 }
 
 NMSCE.prototype.editSelected = function (evt) {
@@ -2582,7 +2635,270 @@ NMSCE.prototype.editSelected = function (evt) {
     }
 }
 
-NMSCE.prototype.redditShare = function () {
+const reddit = {
+    client_id: "8oDpVp9JDDN7ng",
+    redirect_url: "http://localhost:5000/cedata.html",
+    scope: "identity,submit,mysubreddits,flair",
+    auth_url: "https://www.reddit.com/api/v1/authorize",
+    token_url: "https://ssl.reddit.com/api/v1/access_token",
+    api_oauth_url: "https://oauth.reddit.com",
+    subscriber_endpt: "/subreddits/mine/subscriber",
+    user_endpt: "/api/v1/me",
+    getflair_endpt: "api/link_flair_v2",
+    submitLink_endpt: "/api/submit"
+}
+
+NMSCE.prototype.redditLogin = function (state) {
+    let url = reddit.auth_url +
+        "?client_id=" + reddit.client_id +
+        "&response_type=code&state=" + state +
+        "&redirect_uri=" + reddit.redirect_url +
+        "&duration=permanent&scope=" + reddit.scope
+
+    window.open(url, "_self")
+}
+
+NMSCE.prototype.redditLoggedIn = function (state, code) {
+    let accessToken = window.localStorage.getItem('nmsce-reddit-access-token')
+    if (accessToken)
+        nmsce.redditCreate(state)
+
+    else
+        $.ajax({
+            type: "POST",
+            url: reddit.token_url,
+            data: {
+                code: code,
+                client_id: reddit.client_id,
+                client_secret: "",
+                redirect_uri: reddit.redirect_url,
+                grant_type: 'authorization_code',
+                state: 'abcdefghi1234'
+            },
+            username: reddit.client_id,
+            password: "",
+            crossDomain: true,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'Basic ' + btoa(reddit.client_id + ":"));
+            },
+            success(res) {
+                if (res.access_token) {
+                    window.localStorage.setItem('nmsce-reddit-access-token', res.access_token)
+                    window.localStorage.setItem('nmsce-reddit-expires', new Date().getTime() + res.expires_in * 1000)
+                    window.localStorage.setItem('nmsce-reddit-refresh-token', res.refresh_token)
+
+                    if (state.includes("post_"))
+                        nmsce.redditCreate(state, res.access_token)
+                }
+            },
+            error(err) {
+                console.log(err)
+            },
+        })
+}
+
+NMSCE.prototype.getRedditToken = function (state) {
+    let accessToken = window.localStorage.getItem('nmsce-reddit-access-token')
+    let expires = window.localStorage.getItem('nmsce-reddit-expires')
+    let refreshToken = window.localStorage.getItem('nmsce-reddit-refresh-token')
+    let deviceid = window.localStorage.getItem('nmsce-reddit-device-id')
+
+    if (!deviceid) {
+        deviceid = uuidv4()
+        window.localStorage.setItem('nmsce-reddit-device-id', deviceid)
+    }
+
+    if (!accessToken || !expires || !refreshToken)
+        nmsce.redditLogin(state) // no return
+
+    else if (new Date().getTime() > expires) {
+        $.ajax({
+            type: "POST",
+            url: reddit.token_url,
+            data: {
+                refresh_token: refreshToken,
+                client_id: reddit.client_id,
+                client_secret: "",
+                redirect_uri: reddit.redirect_url,
+                grant_type: 'refresh_token',
+                device_id: deviceid
+            },
+            username: reddit.client_id,
+            password: "",
+            crossDomain: true,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'Basic ' + btoa(reddit.client_id + ":"));
+            },
+            success(res) {
+                if (res.access_token) {
+                    window.localStorage.setItem('nmsce-reddit-access-token', res.access_token)
+                    window.localStorage.setItem('nmsce-reddit-expires', new Date().getTime() + (res.expires_in - 300) * 1000)
+
+                    if (state.includes("post_"))
+                        nmsce.redditCreate(state, res.access_token)
+                    else if (state.includes("getFlair_"))
+                        nmsce.redditGetSubscribed(state, res.access_token)
+                    else if (state.includes("getSubscribed"))
+                        nmsce.setSubReddit(res.access_token)
+                }
+            },
+            error(err) {
+                console.log(err)
+            },
+        })
+    } else
+        return accessToken
+}
+
+NMSCE.prototype.redditCreate = function (state, accessToken) {
+    if (!accessToken) {
+        if (nmsce.last) {
+            let e = nmsce.last
+            state = "post_" + e.galaxy.nameToId() + "_" + e.type + "_" + e.id
+        }
+
+        accessToken = nmsce.getRedditToken(state)
+    }
+
+    if (accessToken) {
+        nmsce.getRedditUser(accessToken)
+        nmsce.redditGetSubscribed(accessToken)
+
+        if (state) {
+            let path = state.split("_")
+            let ref = bhs.fs.doc("nmsce/" + path[1].idToName() + "/" + path[2] + "/" + path[3])
+            ref.get().then(doc => {
+                if (doc.exists)
+                    nmsce.displaySelected(doc.data(), true)
+            })
+        }
+    }
+
+    $("#redditPost").show()
+}
+
+NMSCE.prototype.getRedditUser = function (accessToken) {
+    if (!accessToken)
+        accessToken = nmsce.getRedditToken("getUser")
+
+    if (accessToken) {
+        let url = reddit.api_oauth_url + reddit.user_endpt
+
+        $.ajax({
+            type: "GET",
+            url: url,
+            headers: {
+                Authorization: "Bearer " + accessToken,
+            },
+            crossDomain: true,
+            success(res) {
+                window.localStorage.setItem('nmsce-reddit-name', res.name)
+            },
+            error(err) {
+                console.log(err)
+            },
+        })
+    }
+}
+
+NMSCE.prototype.redditGetSubscribed = function (accessToken) {
+    if (!accessToken)
+        accessToken = nmsce.getRedditToken("getSubscribed")
+
+    if (accessToken) {
+        let url = reddit.api_oauth_url + reddit.subscriber_endpt
+        $.ajax({
+            type: "GET",
+            url: url,
+            headers: {
+                Authorization: "Bearer " + accessToken,
+            },
+            crossDomain: true,
+            success(res) {
+                nmsce.subReddits = []
+                for (let s of res.data.children)
+                    nmsce.subReddits.push({
+                        name: s.data.title,
+                        url: s.data.url,
+                        link: s.data.name
+                    })
+
+                bhs.buildMenu($("#redditPost"), "SubReddit", nmsce.subReddits, nmsce.setSubReddit)
+            },
+            error(err) {
+                console.log(err)
+            },
+        })
+    }
+}
+
+NMSCE.prototype.setSubReddit = function (evt, accessToken) {
+    let name = typeof evt === "string" ? name = evt.split("_")[1] : $(evt).text().stripMarginWS()
+    let i = getIndex(nmsce.subReddits, "name", name)
+
+    if (!accessToken)
+        accessToken = nmsce.getRedditToken("getFlair_" + nmsce.subReddits[i].name)
+
+    if (accessToken) {
+        let url = reddit.api_oauth_url + nmsce.subReddits[i].url + reddit.getflair_endpt
+
+        $.ajax({
+            type: "get",
+            url: url,
+            dataType: 'json',
+            headers: {
+                Authorization: "Bearer " + accessToken,
+            },
+            crossDomain: true,
+            success(res) {
+                nmsce.subRedditFlair = []
+                for (let s of res)
+                    nmsce.subRedditFlair.push({
+                        name: s.text,
+                        text_color: s.text_color,
+                        color: s.background_color,
+                        id: s.id,
+                    })
+
+                bhs.buildMenu($("#redditPost"), "Flair", nmsce.subRedditFlair)
+            },
+            error(err) {
+                console.log(err)
+            },
+        })
+    }
+}
+
+NMSCE.prototype.redditPost = function () {
+    let loc = $("#redditPost")
+    let sr = loc.find("#btn-SubReddit").text().stripMarginWS()
+    let flair = loc.find("#btn-Flair").text().stripMarginWS()
+    let title = loc.find("#id-Title").val()
+
+    if (!sr) {
+        bhs.status("Please select SubReddit", true)
+        return
+    }
+
+    if (!flair) {
+        bhs.status("Please select Flair", true)
+        return
+    }
+
+    if (!title) {
+        bhs.status("Please select Title", true)
+        return
+    }
+
+    window.localStorage.setItem('nmsce-reddit-sr', sr)
+    window.localStorage.setItem('nmsce-reddit-flair', flair)
+    window.localStorage.setItem('nmsce-reddit-title', title)
+
+    let e = nmsce.last
+    let link = "https://nmsce.com/preview.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
+    window.localStorage.setItem('nmsce-reddit-plink', link)
+
+
     if ($("#id-ssImage").is(":visible")) {
         bhs.fbstorage.ref().child(displayPath + nmsce.last.Photo).getDownloadURL().then(url => {
             var xhr = new XMLHttpRequest()
@@ -2593,8 +2909,8 @@ NMSCE.prototype.redditShare = function () {
                 let name = uuidv4()
                 bhs.fbstorage.ref().child(redditPath + name).put(blob).then(() => {
                     bhs.fbstorage.ref().child(redditPath + name).getDownloadURL().then(url => {
-                        let u = "http://www.reddit.com/submit?url=" + encodeURI(url)
-                        window.open(u)
+                        window.localStorage.setItem('nmsce-reddit-link', url)
+                        nmsce.redditSubmit()
                     })
                 })
             }
@@ -2609,100 +2925,202 @@ NMSCE.prototype.redditShare = function () {
             let name = uuidv4()
             bhs.fbstorage.ref().child(redditPath + name).put(blob).then(() => {
                 bhs.fbstorage.ref().child(redditPath + name).getDownloadURL().then(url => {
-                    let u = "http://www.reddit.com/submit?url=" + encodeURI(url)
-                    window.open(u)
+                    window.localStorage.getItem('nmsce-reddit-link', url)
+                    nmsce.redditSubmit()
                 })
             })
 
-        }, "image/jpeg", .8)
+        }, "image/jpeg", .9)
     }
-
-    let ref = bhs.fs.doc("nmsce/" + nmsce.last.galaxy + "/" + nmsce.last.type + "/" + nmsce.last.id)
-    ref.set({
-        reddit: firebase.firestore.Timestamp.now()
-    }, {
-        merge: true
-    }).then(() => $("#posted").text("Posted"))
 }
 
-NMSCE.prototype.selectGlyphs = function () {
-    nmsce.imageText.selGlyph.sel = true
-    nmsce.imageText.selGlyph.width = 0
-    nmsce.imageText.selGlyph.height = 0
-    nmsce.imageText.selGlyph.ck = true
-    $("#ck-saveglyphloc").prop("checked", true)
+NMSCE.prototype.redditSubmit = function (accessToken) {
+    if (!accessToken)
+        accessToken = nmsce.getRedditToken("submit")
 
-    delete nmsce.startX
-    delete nmsce.startY
+    if (accessToken) {
+        let sr = window.localStorage.getItem('nmsce-reddit-sr')
+        let i = getIndex(nmsce.subReddits, "name", sr)
+        sr = nmsce.subReddits[i].url
+
+        let flair = window.localStorage.getItem('nmsce-reddit-flair')
+        i = getIndex(nmsce.subRedditFlair, "name", flair)
+        let flairId = nmsce.subRedditFlair[i].id
+
+        let plink = window.localStorage.getItem('nmsce-reddit-plink')
+        let title = window.localStorage.getItem('nmsce-reddit-title')// + " <a href="+plink+">NMSCE app link</a>"
+        let link = window.localStorage.getItem('nmsce-reddit-link')
+
+        let url = reddit.api_oauth_url + reddit.submitLink_endpt
+
+        $.ajax({
+            type: "post",
+            url: url,
+            dataType: 'json',
+            headers: {
+                Authorization: "Bearer " + accessToken,
+            },
+            data: {
+                sr: sr,
+                kind: "link",
+                title: title,
+                url: link,
+                flair_id: flairId,
+                flair_text: flair
+            },
+            crossDomain: true,
+            async success(res) {
+                for (let r of res.jquery) {
+                    let what = r[2]
+                    let link = what === "call" ? r[3][0] : ""
+                    if (link && link.includes("https://www.reddit.com/")) {
+                        let e = plink.split("&")
+                        for (let i of e) {
+                            let p = i.split("=")
+                            if (p[0]==="g")
+                                var galaxy = p[1].idToName()
+                            else if (p[0]==="t")
+                                var type = p[1]
+                            else if (p[0].includes("?i"))
+                                var id = p[1]
+                        }
+
+                        let ref = bhs.fs.doc("nmsce/" + galaxy + "/" + type + "/" + id)
+                        ref.set({
+                            redditlink:link,
+                            reddit: firebase.firestore.Timestamp.now()
+                        }, {
+                            merge: true
+                        }).then(() => {
+                            $("#posted").text("Posted")
+                            $("#redditlink").val(link)
+                        })
+                    }
+                }
+            },
+            error(err) {
+                console.log(err)
+            },
+        })
+    }
 }
 
-NMSCE.prototype.toggleGlyphs = function (evt) {
-    nmsce.imageText.selGlyph.ck = $(evt).prop("checked")
-    nmsce.dispGlyph()
-}
+NMSCE.prototype.extractGlyphs = function (mid) {
+    $("body")[0].style.cursor = "wait"
 
-NMSCE.prototype.dispGlyph = function () {
     let row = $("#row-glyphCanvas")
-
-    if (!nmsce.imageText.selGlyph.ck || !nmsce.screenshot) {
-        row.hide()
-        return
-    }
-
-    let text = nmsce.imageText.selGlyph
-    if (text.sel) {
-        text.sel = false
-
-        if (text.width < 0) {
-            if (text.x + text.width > 0)
-                text.x += text.width
-            text.width = Math.abs(text.width)
-        }
-        if (text.height < 0) {
-            text.y += text.height
-            text.height = Math.abs(text.height)
-        }
-    }
-
     row.show()
 
+    let text = nmsce.imageText.selGlyphs
+    text.sel = false
+    text.resize = ""
+
     let ss = document.createElement('canvas')
-    let ctx = ss.getContext("2d")
+    let ssctx = ss.getContext("2d")
     ss.width = nmsce.screenshot.naturalWidth
     ss.height = nmsce.screenshot.naturalHeight
-    ctx.drawImage(nmsce.screenshot, 0, 0)
+    ssctx.drawImage(nmsce.screenshot, 0, 0)
 
     let canvas = document.getElementById("id-canvas")
     let scale = nmsce.screenshot.naturalWidth / canvas.width
-    let imgData = ctx.getImageData(text.x * scale, text.y * scale, text.width * scale, text.height * scale)
+    let imgData = ssctx.getImageData(text.x * scale, text.y * scale, text.right * scale, text.decent * scale)
+    console.log(text.x * scale, text.y * scale, text.right * scale, text.decent * scale)
 
-    // var pixels = imgData.data;
-    // for (var i = 0, n = pixels.length; i < n; i += 4) {
-    //     //var grayscale = pixels[i] * .3 + pixels[i + 1] * .59 + pixels[i + 2] * .11
-    //     let grayscale = pixels[i] * .3 + pixels[i + 1] * .59 + pixels[i + 2] * .11 > 235 ?0xff:0x00
-    //     pixels[i] = grayscale; // red
-    //     pixels[i + 1] = grayscale; // green
-    //     pixels[i + 2] = grayscale; // blue
-    // }
+    mid = mid ? mid * 3 : 87 * 3
+    let mult = 765 / (765 - mid) / 3
 
-    let glyph = document.createElement('canvas')
-    glyph.width = text.width * scale
-    glyph.height = text.height * scale
+    let gscalc = (p) => {
+        for (let i = 0; i < p.length; i += 4) {
+            let gs = p[i] + p[i + 1] + p[i + 2]
+            gs = gs < mid ? 0 : (gs - mid) * mult
+            p[i] = gs // red
+            p[i + 1] = gs // green
+            p[i + 2] = gs // blue
+        }
+    }
 
-    ctx = glyph.getContext("2d")
-    ctx.putImageData(imgData, 0, 0)
+    gscalc(imgData.data)
 
-    canvas = document.getElementById("id-glyphCanvas")
-    let size = nmsce.calcImgSize(text.width * scale, text.height * scale, row.width(), row.height(), true)
-    canvas.width = size.width
-    canvas.height = size.height
+    let gcanvas = document.getElementById("id-glyphCanvas")
+    let gctx = gcanvas.getContext("2d")
+    let size = nmsce.calcImageSize(text.right * scale, text.decent * scale, row.width(), row.height(), true)
+    gcanvas.width = Math.min(size.width, text.right * scale)
+    gcanvas.height = Math.min(size.height, text.decent * scale)
+    gctx.putImageData(imgData, 0, 0)
 
-    ctx = canvas.getContext("2d")
-    ctx.drawImage(glyph, 0, 0, canvas.width, canvas.height)
+    let p = []
+    let div = text.right * scale / 12
+    let x = text.x * scale
+
+    let scanglyph = document.createElement('canvas')
+    let scanctx = scanglyph.getContext("2d")
+    scanglyph.width = div
+    scanglyph.height = div
+
+    for (let i = 0; i < 12; ++i) {
+        let imgData = ssctx.getImageData(x, text.y * scale, div, text.decent * scale)
+        gscalc(imgData.data)
+
+        scanctx.putImageData(imgData, 0, 0)
+        x += div
+
+        p.push(nmsce.model.predict(scanglyph).then(predict => {
+            let max = 0.0
+            let sel = -1
+            let idx = 0
+            for (let p of predict) {
+                if (p.probability > max) {
+                    max = p.probability
+                    idx = i
+                    sel = p
+                }
+            }
+
+            return {
+                idx: idx,
+                class: sel.className,
+                prob: sel.probability.toFixed(4),
+            }
+        }))
+    }
+
+    Promise.all(p).then(res => {
+        res.sort((a, b) => a.idx - b.idx)
+        let g = ""
+        let str = ""
+        for (let i = 0; i < res.length; ++i) {
+            g += res[i].class
+            str += "<span class='glyph'>" + res[i].class + "</span>-" + res[i].prob + " "
+            if (i === 5)
+                str += "<br>"
+        }
+        bhs.status(str, true)
+        nmsce.changeAddr(null, g)
+
+        $('html, body').animate({
+            scrollTop: $("#id-glyphCanvas").offset().top
+        }, 500)
+
+        $("body")[0].style.cursor = "default"
+    })
 }
 
-NMSCE.prototype.textHittest = function (x, y, text) {
-    return (x >= text.x && x <= text.x + text.width && y >= text.y - text.fSize && y <= text.y - text.fSize + text.height)
+NMSCE.prototype.hitTest = function (x, y, text) {
+    return x >= text.x + text.left &&
+        x <= text.x + text.right - text.left &&
+        y >= text.y - text.ascent &&
+        y <= text.y + text.decent ? text : ""
+}
+
+NMSCE.prototype.hitTestCorner = function (x, y, text) {
+    let inbox = y >= text.y - text.ascent && y <= text.y + text.decent
+    if (inbox) {
+        let out = x >= text.x + text.left - 4 && x <= text.x + text.left + 4 ? "l" : ""
+        out += x >= text.x + text.right - text.left - 4 && x <= text.x + text.right - text.left + 4 ? "r" : ""
+
+        return (text.resize = out) ? text : null
+    } else
+        return null
 }
 
 var lastsel = 0
@@ -2710,56 +3128,44 @@ var lastsel = 0
 NMSCE.prototype.handleMouseDown = function (e) {
     e.preventDefault()
 
-    let startX = e.touches ? e.touches[0].clientX - e.touches[0].radiusX * 2 : e.offsetX
-    let startY = e.touches ? e.touches[0].clientY - e.touches[0].radiusY * 2 : e.offsetY
+    let startX = e.offsetX
+    let startY = e.offsetY
 
-    let keys = Object.keys(nmsce.imageText)
-    let hit = ""
+    let hit = null
     let nochange = false
 
-    let loc = $("#imgtable")
+    let keys = Object.keys(nmsce.imageText)
     for (let k of keys) {
         let text = nmsce.imageText[k]
+        if (text.id !== "logo" && (!$("#ck-" + text.id).is(":visible") || !text.ck))
+            continue
 
-        if (k === "selGlyph" && text.sel) {
-            text.x = startX
-            text.y = startY
-            text.resize = "f"
-            nmsce.startX = startX
-            nmsce.startY = startY
-            hit = k
-            break
-        } else if ((k === "logo" || text.ck) && nmsce.textHittest(startX, startY, text)) {
-            if (k === "mylogo" && text.sel) {
-                if (startX - text.x < 16)
-                    text.resize = "l"
-                else if (text.x + text.width - startX < 16)
-                    text.resize = "r"
-                else if (startY - text.y < 16)
-                    text.resize = "t"
-                else if (text.y + text.height - startY < 16)
-                    text.resize = "b"
-                else text.resize = ""
-            } else if (text.type !== "img") {
-                loc.find("#btn-Font").text(text.font)
-                loc.find("#sel-size").val(text.fSize)
-                loc.find("#sel-color").val(text.color)
-            }
+        if (text.id === "logo" || !(hit = nmsce.hitTestCorner(startX, startY, text)))
+            hit = nmsce.hitTest(startX, startY, text)
 
-            if (text.sel)
-                nochange = true
+        if (hit && text.type === "text") {
+            let loc = $("#imgtable")
+            loc.find("#btn-Font").text(text.font)
+            loc.find("#sel-size").val(text.fSize)
+            loc.find("#sel-color").val(text.color)
+        }
 
-            hit = k
+        if (hit) {
+            nochange = text.sel
             text.sel = true
-            nmsce.startX = startX
-            nmsce.startY = startY
             break
         }
     }
 
+    if (hit) {
+        nmsce.startX = startX
+        nmsce.startY = startY
+    }
+
     if (!e.shiftKey && !nochange) {
+        let keys = Object.keys(nmsce.imageText)
         for (let i of keys)
-            if (i !== hit) {
+            if (!hit || i !== hit.id) {
                 let text = nmsce.imageText[i]
                 text.sel = false
             }
@@ -2768,27 +3174,11 @@ NMSCE.prototype.handleMouseDown = function (e) {
     nmsce.drawText()
 }
 
-NMSCE.prototype.handleMouseUp = function (e) {
-    e.preventDefault()
-
-    delete nmsce.startX
-    delete nmsce.startY
-
-    if (nmsce.imageText.selGlyph.sel)
-        nmsce.dispGlyph()
-}
-
-NMSCE.prototype.handleMouseOut = function (e) {
-    e.preventDefault()
-    $("body")[0].style.cursor = "default"
-}
-
 NMSCE.prototype.handleMouseMove = function (e) {
     e.preventDefault()
 
-    let mouseX = e.touches ? e.touches[0].clientX - e.touches[0].radiusX * 2 : e.offsetX
-    let mouseY = e.touches ? e.touches[0].clientY - e.touches[0].radiusY * 2 : e.offsetY
-
+    let mouseX = e.offsetX
+    let mouseY = e.offsetY
     let dx = 0
     let dy = 0
 
@@ -2800,68 +3190,121 @@ NMSCE.prototype.handleMouseMove = function (e) {
     }
 
     let ncursor = "crosshair"
-    let cursor = $("#id-canvas")[0].cursor
-    if (!cursor)
-        cursor = "default"
+
+    let old = {}
+    let resize = ""
 
     let keys = Object.keys(nmsce.imageText)
     for (let k of keys) {
         let text = nmsce.imageText[k]
-
-        if (text.sel && typeof nmsce.startX !== "undefined") {
-            if (text.resize) {
-                switch (text.resize) {
-                    case "t":
-                        text.y += dy
-                        text.width *= (text.height - dy) / text.height
-                        text.height -= dy
-                        break
-                    case "l":
-                        text.x += dx
-                        text.height *= (text.width - dx) / text.width
-                        text.width -= dx
-                        break
-                    case "r":
-                        text.height *= (text.width + dx) / text.width
-                        text.width += dx
-                        break
-                    case "b":
-                        text.width *= (text.height + dy) / text.height
-                        text.height += dy
-                        break
-                    case "f":
-                        text.width += dx
-                        text.height += dy
-                        break
-                }
-            } else {
-                text.x += dx
-                text.y += dy
-            }
-        } else {
-            if ((k === "logo" || text.ck) && nmsce.textHittest(mouseX, mouseY, text)) {
-                ncursor = "move"
-                if (k === "mylogo" && text.sel) {
-                    if (mouseX - text.x < 8)
-                        ncursor = "ne-resize"
-                    else if (text.x + text.width - mouseX < 8)
-                        ncursor = "se-resize"
-                    else if (mouseY - text.y < 8)
-                        ncursor = "ne-resize"
-                    else if (text.y + text.height - mouseY < 8)
-                        ncursor = "se-resize"
-                }
-                break
-            } else
-                ncursor = "crosshair"
+        if (text.resize) {
+            resize = text.resize
+            break
         }
     }
 
-    if (ncursor !== cursor)
-        $("#id-canvas")[0].style.cursor = ncursor
+    for (let k of keys) {
+        let text = nmsce.imageText[k]
+
+        if (text.sel && typeof nmsce.startX !== "undefined") {
+            if (resize) {
+                old.ascent = text.ascent
+                old.decent = text.decent
+                old.left = text.left
+                old.right = text.right
+                ncursor = "col-resize"
+            }
+
+            if (text.id === "logo") {
+                text.x += dx
+                text.y += dy
+            } else
+                switch (resize) {
+                    case "tl":
+                    case "l":
+                        if (text.type === "text") {
+                            text.fSize -= text.font === "glyph" ? dx / 10 : dx / 3
+                            nmsce.measureText(text)
+                            text.x += old.right - text.right
+                        } else {
+                            text.decent *= (text.right - dx) / text.right
+                            text.right -= dx
+                            text.y += old.decent - text.decent
+                            text.x += old.right - text.right
+                        }
+                        break
+                    case "tr":
+                    case "r":
+                        if (text.type === "text") {
+                            text.fSize += text.font === "glyph" ? dx / 10 : dx / 3
+                            nmsce.measureText(text)
+                        } else {
+                            text.decent *= (text.right + dx) / text.right
+                            text.right += dx
+                            text.y += old.decent - text.decent
+                        }
+                        break
+                    case "bl":
+                        if (text.type === "text") {
+                            text.fSize -= dx
+                            nmsce.measureText(text)
+                            text.y -= old.ascent - text.ascent
+                            text.x += old.right - text.right
+                        } else {
+                            text.decent *= (text.right - dx) / text.right
+                            text.right -= dx
+                            text.x += old.right - text.right
+                        }
+                        break
+                    case "br":
+                        if (text.type === "text") {
+                            text.fSize += dx
+                            nmsce.measureText(text)
+                            text.y -= old.ascent - text.ascent
+                        } else {
+                            text.right *= (text.decent + dx) / text.decent
+                            text.decent += dx
+                        }
+                        break
+                    default:
+                        text.x += dx
+                        text.y += dy
+                        break
+                }
+        }
+
+        if (ncursor === "crosshair") {
+            if (text.id !== "logo" && nmsce.hitTestCorner(mouseX, mouseY, text))
+                ncursor = "ew-resize"
+            else if (nmsce.hitTest(mouseX, mouseY, text))
+                ncursor = "move"
+        }
+    }
+
+    $("#id-canvas")[0].style.cursor = ncursor
 
     if (typeof nmsce.startX !== "undefined")
         nmsce.drawText()
+}
+
+NMSCE.prototype.handleMouseUp = function (e) {
+    e.preventDefault()
+
+    delete nmsce.startX
+    delete nmsce.startY
+
+    let keys = Object.keys(nmsce.imageText)
+    for (let k of keys)
+        delete nmsce.imageText[k].resize
+
+    $("#id-canvas")[0].style.cursor = "crosshair"
+}
+
+NMSCE.prototype.handleMouseOut = function (e) {
+    e.preventDefault()
+    nmsce.handleMouseUp(e)
+
+    $("body")[0].style.cursor = "default"
 }
 
 NMSCE.prototype.alignText = function (how) {
@@ -2869,24 +3312,18 @@ NMSCE.prototype.alignText = function (how) {
     let top = 0,
         left = 0,
         right = Number.MAX_SAFE_INTEGER,
-        bottom = Number.MAX_SAFE_INTEGER,
-        sel = 0,
-        width = 0
+        bottom = Number.MAX_SAFE_INTEGER
 
     for (let k of keys) {
         let text = nmsce.imageText[k]
 
         if (text.sel) {
-            top = Math.max(top, text.y)
-            bottom = Math.min(bottom, text.y + text.height)
-            left = Math.max(left, text.x)
-            right = Math.min(right, text.x + text.width)
-            width += text.width
-            sel++
+            top = Math.max(top, text.y - text.ascent)
+            bottom = Math.min(bottom, text.y + text.decent)
+            left = Math.max(left, text.x + text.left)
+            right = Math.min(right, text.x + text.right)
         }
     }
-
-    let space = (right - left - width) / (sel - 1)
 
     for (let k of keys) {
         let text = nmsce.imageText[k]
@@ -2894,21 +3331,17 @@ NMSCE.prototype.alignText = function (how) {
         if (text.sel) {
             switch (how) {
                 case "top":
-                    text.y = top
+                    text.y = top + text.ascent
                     break
                 case "bottom":
-                    text.y = bottom - text.height
+                    text.y = bottom - text.decent
                     break
                 case "left":
-                    text.x = left
+                    text.x = left + text.left
                     break
                 case "right":
-                    text.x = right - text.width
+                    text.x = right - text.right
                     break
-                    // case "justify":
-                    //     text.x = left
-                    //     left += text.width + space
-                    // break
             }
         }
     }
@@ -2956,7 +3389,7 @@ NMSCE.prototype.updateScreenshots = function (entry) {
         bhs.fbstorage.ref().child(thumbPath + entry.Photo).put(blob).then(() => {
             // bhs.status("Saved " + thumbPath + entry.Photo)
         })
-    }, "image/jpeg", .7)
+    }, "image/jpeg", .8)
 
     let orig = document.createElement('canvas')
     let ctx = orig.getContext("2d")
@@ -2969,16 +3402,18 @@ NMSCE.prototype.updateScreenshots = function (entry) {
         })
     }, "image/jpeg", .9)
 
-    nmsce.showSub("#sub-" + entry.type.nameToId())
     let loc = $("#id-table #sub-" + entry.type.nameToId())
+    nmsce.toggleSub(entry.type.nameToId(), true)
+
     loc = loc.find(" #row-" + entry.type.nameToId() + "-" + entry.id + " img")
+    if (loc.length > 0) {
+        let url = thumb.toDataURL()
+        loc.attr("src", url)
 
-    let url = thumb.toDataURL()
-    loc.attr("src", url)
-
-    $('html, body').animate({
-        scrollTop: loc.offset().top
-    }, 500)
+        $('html, body').animate({
+            scrollTop: loc.offset().top
+        }, 500)
+    }
 }
 
 NMSCE.prototype.updateEntry = function (entry) {
@@ -3368,6 +3803,7 @@ NMSCE.prototype.displayResultList = function (id) {
 
     let loc = $("#resultLists #id-" + id)
     loc.html(h)
+
     nmsce.displayThumbnails(loc)
 }
 
@@ -3453,7 +3889,7 @@ NMSCE.prototype.displaySelected = function (e, noscroll) {
         <div id="val-idname" class="col font clr-def">value</div>
     </div>`
 
-    let loc = $("#imageinfo")
+    let loc = $("#imgtable")
     loc.show()
 
     nmsce.last = e
@@ -3477,7 +3913,7 @@ NMSCE.prototype.displaySelected = function (e, noscroll) {
 
         if (!noscroll)
             $('html, body').animate({
-                scrollTop: $('#imageinfo').offset().top
+                scrollTop: $('#imgtable').offset().top
             }, 500)
     })
 
@@ -3603,12 +4039,16 @@ NMSCE.prototype.displayInList = function (list, tab) {
 NMSCE.prototype.displayList = function (entries) {
     const card = `
         <div class="container-flex">
-            <div id="ttl-idname" class="card-header txt-def h5">
-                <div class="row">
-                    <i class="far fa-caret-square-up pointer hidden h4" onclick="nmsce.hideSubs()"></i>
-                    <i class="far fa-caret-square-down pointer h4" onclick="nmsce.showSub('#sub-idname')"></i>&nbsp;
-                    <div id="id-idname" class="col-6">title</div>
-                    <div class="col">Total: total</div>
+            <div id="ttl-idname" class="card-header border-bottom txt-def h5">
+                <div class="row pointer" onclick="nmsce.toggleSub('idname')">
+                    <i class="far fa-caret-square-up hidden h4""></i>
+                    <i class="far fa-caret-square-down h4"></i>&nbsp;
+                    <div id="id-idname" class="col-6">title&nbsp;
+                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="top" title="Click on the field labels to sort items on that field.">
+                        </i>
+                    </div>
+                    <div class="col">Total: <span id="tot-idname">total</span></div>
                 </div>
             </div>
             <div id="sub-idname" class="container-flex h6 hidden">
@@ -3841,13 +4281,13 @@ NMSCE.prototype.imageLoaded = function (evt, width, height, expand) {
     let h = evt.naturalHeight
     let w = evt.naturalWidth
 
-    let size = nmsce.calcImgSize(w, h, width, height, expand)
+    let size = nmsce.calcImageSize(w, h, width, height, expand)
 
     $(evt).height(size.height)
     $(evt).width(size.width)
 }
 
-NMSCE.prototype.calcImgSize = function (width, height, maxw, maxh, expand) {
+NMSCE.prototype.calcImageSize = function (width, height, maxw, maxh, expand) {
     let wscale = 1
     let hscale = 1
 
@@ -3885,33 +4325,37 @@ NMSCE.prototype.calcImgSize = function (width, height, maxw, maxh, expand) {
     })
 }
 
-NMSCE.prototype.showSub = function (id) {
+NMSCE.prototype.toggleSub = function (id, show) {
     let loc = $("#id-table")
     loc.find("[id|='sub']").hide()
-    loc.find(id).show()
 
-    loc.find(".fa-caret-square-up").hide()
-    loc.find(".fa-caret-square-down").show()
+    let tloc = loc.find("#ttl-" + id)
 
-    let ptrid = id.stripID()
-    loc.find("#ttl-" + ptrid + " .fa-caret-square-up").show()
-    loc.find("#ttl-" + ptrid + " .fa-caret-square-down").hide()
+    if (show || tloc.find(".fa-caret-square-down").is(":visible")) {
+        loc.find("#sub-" + id).show()
 
-    $('html, body').animate({
-        scrollTop: loc.find(id).offset().top
-    }, 500)
+        tloc.find(".fa-caret-square-up").show()
+        tloc.find(".fa-caret-square-down").hide()
+
+        $('html, body').animate({
+            scrollTop: tloc.offset().top
+        }, 500)
+    } else {
+        tloc.find(".fa-caret-square-up").hide()
+        tloc.find(".fa-caret-square-down").show()
+    }
 }
 
-NMSCE.prototype.hideSubs = function () {
-    let loc = $("#id-table")
-    loc.find("[id|='sub']").hide()
-    loc.find(".fa-caret-square-up").hide()
-    loc.find(".fa-caret-square-down").show()
-}
-
-NMSCE.prototype.hideSub = function () {
-    let loc = $("#id-table")
-    loc.find("[id|='sub']").hide()
+NMSCE.prototype.toggleSearch = function (evt) {
+    if ($(evt).find(".fa-caret-square-down").is(":visible")) {
+        $("#searchPanel").show()
+        $(evt).find(".fa-caret-square-up").show()
+        $(evt).find(".fa-caret-square-down").hide()
+    } else {
+        $("#searchPanel").hide()
+        $(evt).find(".fa-caret-square-up").hide()
+        $(evt).find(".fa-caret-square-down").show()
+    }
 }
 
 NMSCE.prototype.selectList = function (evt) {
@@ -4509,6 +4953,8 @@ const fontList = [{
     name: 'Caveat Brush',
 }, {
     name: 'Amatic SC',
+}, {
+    name: 'Notable',
 }, ]
 
 const biomeList = [{
@@ -5138,11 +5584,6 @@ const objectList = [{
         font: "glyph",
         type: "glyph",
     }, {
-        id: "#id-sys",
-        field: "sys",
-        name: "System",
-        type: "string",
-    }, {
         field: "Economy",
         id: "#id-Economy",
         name: "Economy",
@@ -5191,7 +5632,6 @@ const objectList = [{
         ttip: "Arrival frequency.",
         type: "menu",
         list: occurenceList,
-        imgText: true,
         search: true,
         inputHide: true,
     }, {
@@ -5229,7 +5669,7 @@ const objectList = [{
         imgText: true,
     }, {
         name: "First Wave",
-        ttip: "This is only used on space stations. First wave for reloading a save and restarting the game are different.",
+        ttip: "This is <span class='h5' style='font-weight:bold'>ONLY</span> used on space stations. First wave for reloading a save and restarting the game are different.",
         type: "radio",
         list: [{
             name: "Reload"
@@ -5252,6 +5692,13 @@ const objectList = [{
         list: colorList,
         max: 4,
         search: true,
+    }, {
+        name: "Tags",
+        type: "tags",
+        max: 4,
+        imgText: true,
+        search: true,
+        inputHide: true,
     }, {
         name: "Photo",
         type: "img",
@@ -5284,11 +5731,6 @@ const objectList = [{
         font: "glyph",
         type: "glyph",
     }, {
-        id: "#id-sys",
-        field: "sys",
-        name: "System",
-        type: "string",
-    }, {
         field: "Economy",
         id: "#id-Economy",
         name: "Economy",
@@ -5298,13 +5740,14 @@ const objectList = [{
         id: "#id-Lifeform",
         field: "life",
         name: "Lifeform",
-        type: "menu",
+        type: "radio",
         list: lifeformList,
     }],
     fields: [{
         name: "Name",
         type: "string",
         search: true,
+        imgText: true,
         onchange: getEntry,
         inputHide: true,
     }, {
@@ -5320,6 +5763,13 @@ const objectList = [{
         list: colorList,
         max: 4,
         search: true,
+    }, {
+        name: "Tags",
+        type: "tags",
+        max: 4,
+        imgText: true,
+        search: true,
+        inputHide: true,
     }, {
         name: "Photo",
         type: "img",
@@ -5361,34 +5811,29 @@ const objectList = [{
         field: "addr",
         font: "glyph",
         type: "glyph",
-    }, {
-        id: "#id-sys",
-        field: "sys",
-        name: "System",
-        type: "string",
-    }],
+    }, ],
     fields: [{
         name: "Name",
         type: "string",
         search: true,
+        imgText: true,
         onchange: getEntry,
         inputHide: true,
     }, {
         name: "Type",
         type: "menu",
         list: frigateList,
+        imgText: true,
         search: true,
     }, {
         name: "Benefits",
         type: "tags",
-        imgText: true,
         list: frigateBenefits,
         search: true,
         inputHide: true,
     }, {
         name: "Negatives",
         type: "tags",
-        imgText: true,
         list: frigateNegatives,
         search: true,
         inputHide: true,
@@ -5399,6 +5844,13 @@ const objectList = [{
         list: colorList,
         max: 4,
         search: true,
+    }, {
+        name: "Tags",
+        type: "tags",
+        max: 4,
+        imgText: true,
+        search: true,
+        inputHide: true,
     }, {
         name: "Photo",
         type: "img",
@@ -5436,12 +5888,7 @@ const objectList = [{
         name: "Glyphs",
         font: "glyph",
         type: "glyph",
-    }, {
-        id: "#id-sys",
-        field: "sys",
-        name: "System",
-        type: "string",
-    }],
+    }, ],
     fields: [{
         name: "Name",
         type: "string",
@@ -5457,7 +5904,7 @@ const objectList = [{
         search: true,
     }, {
         name: "Class",
-        type: "menu",
+        type: "radio",
         list: classList,
         // ttipFld: "classTtip",
         imgText: true,
@@ -5498,6 +5945,7 @@ const objectList = [{
         name: "Notes",
         type: "long string",
         searchText: true,
+        imgText: true,
         inputHide: true,
     }, {
         name: "Seed",
@@ -5512,6 +5960,13 @@ const objectList = [{
         max: 4,
         list: colorList,
         search: true,
+    }, {
+        name: "Tags",
+        type: "tags",
+        max: 4,
+        imgText: true,
+        search: true,
+        inputHide: true,
     }, {
         name: "Photo",
         type: "img",
@@ -5543,12 +5998,7 @@ const objectList = [{
         name: "Glyphs",
         font: "glyph",
         type: "glyph",
-    }, {
-        id: "#id-sys",
-        field: "sys",
-        name: "System",
-        type: "string",
-    }],
+    }, ],
     fields: [{
         name: "Name",
         type: "string",
@@ -5561,6 +6011,7 @@ const objectList = [{
         type: "menu",
         list: faunaList,
         search: true,
+        inputHide: true,
     }, {
         name: "Tamed Product",
         type: "menu",
@@ -5580,6 +6031,7 @@ const objectList = [{
         max: 4,
         imgText: true,
         search: true,
+        inputHide: true,
     }, {
         name: "Planet Name",
         imgText: true,
@@ -5622,12 +6074,7 @@ const objectList = [{
         field: "addr",
         font: "glyph",
         type: "glyph",
-    }, {
-        id: "#id-sys",
-        field: "sys",
-        name: "System",
-        type: "string",
-    }],
+    }, ],
     fields: [{
         name: "Name",
         type: "string",
@@ -5700,6 +6147,7 @@ const objectList = [{
         max: 4,
         imgText: true,
         search: true,
+        inputHide: true,
     }, {
         name: "Photo",
         type: "img",
@@ -5737,12 +6185,7 @@ const objectList = [{
         name: "Glyphs",
         font: "glyph",
         type: "glyph",
-    }, {
-        id: "#id-sys",
-        field: "sys",
-        name: "System",
-        type: "string",
-    }],
+    }, ],
     fields: [{
         name: "Name",
         type: "string",
@@ -5766,7 +6209,6 @@ const objectList = [{
         type: "number",
         range: 15,
         ttip: planetNumTip,
-        inputHide: true,
     }, {
         name: "Latitude",
         imgText: true,
@@ -5790,7 +6232,6 @@ const objectList = [{
         type: "tags",
         imgText: true,
         max: 6,
-        ttip: "If the base was created on XBox please tag with 'xbox'.",
         search: true,
     }, {
         name: "Photo",
