@@ -33,7 +33,7 @@ $(document).ready(async () => {
             img.onload = nmsce.onLoadLogo
             img.src = "/images/nmsce-logo.png"
 
-            nmsce.model = tmImage.load("/model.json", "/metadata.json")
+            nmsce.model = await tmImage.load("/model.json", "/metadata.json")
         }
 
         nmsce.buildPanels()
@@ -464,8 +464,9 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
         $("#delete").addClass("disabled")
         $("#delete").prop("disabled", true)
 
-        $("#reddit").addClass("disabled")
-        $("#reddit").prop("disabled", true)
+        $("#openReddit").addClass("disabled")
+        $("#openReddit").prop("disabled", true)
+        $("#redditPost").hide()
     }
 }
 
@@ -782,10 +783,6 @@ NMSCE.prototype.displaySingle = function (entry) {
 
     $("#delete").removeClass("disabled")
     $("#delete").removeAttr("disabled")
-
-    $("#reddit").removeClass("disabled")
-
-    $("#reddit").removeAttr("disabled")
 
     let r = entry.reddit
     let date = r ? "Posted " : ""
@@ -2353,6 +2350,10 @@ NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
     let img = $("#imgtable")
     img.show()
 
+    $("#openReddit").addClass("disabled")
+    $("#openReddit").prop("disabled", true)
+    $("#redditPost").hide()
+
     if (evt || edit) {
         $("#editScreenshot").hide()
         $("#id-ssImage").hide()
@@ -2416,9 +2417,12 @@ NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
 
                 xhr.open('GET', url)
                 xhr.send()
-            } else
+            } else {
                 $("#id-ssImage").attr("src", url)
-        })
+
+                $("#openReddit").removeClass("disabled")
+                $("#openReddit").removeAttr("disabled")
+          }  })
     }
 }
 
@@ -2977,8 +2981,8 @@ NMSCE.prototype.redditSubmit = function (accessToken) {
                             })
                         }
                     }
-                    else
-                        console.log("failed")
+                else
+                    console.log("failed")
             },
             error(err) {
                 console.log(err)
@@ -3007,26 +3011,26 @@ NMSCE.prototype.extractGlyphs = function (mid) {
     let scale = nmsce.screenshot.naturalWidth / canvas.width
     let imgData = ssctx.getImageData(text.x * scale, text.y * scale, text.right * scale, text.decent * scale)
 
-    mid = mid ? mid * 3 : 87 * 3
-    let mult = 765 / (765 - mid) / 3
+    // mid = mid ? mid * 3 : 87 * 3
+    // let mult = 765 / (765 - mid) / 3
 
-    let gscalc = (p) => {
-        for (let i = 0; i < p.length; i += 4) {
-            let gs = p[i] + p[i + 1] + p[i + 2]
-            gs = gs < mid ? 0 : (gs - mid) * mult
-            p[i] = gs // red
-            p[i + 1] = gs // green
-            p[i + 2] = gs // blue
-        }
-    }
+    // let gscalc = (p) => {
+    //     for (let i = 0; i < p.length; i += 4) {
+    //         let gs = p[i] + p[i + 1] + p[i + 2]
+    //         gs = gs < mid ? 0 : (gs - mid) * mult
+    //         p[i] = gs // red
+    //         p[i + 1] = gs // green
+    //         p[i + 2] = gs // blue
+    //     }
+    // }
 
-    gscalc(imgData.data)
+    // gscalc(imgData.data)
 
     let gcanvas = document.getElementById("id-glyphCanvas")
     let gctx = gcanvas.getContext("2d")
     let size = nmsce.calcImageSize(text.right * scale, text.decent * scale, row.width(), row.height(), true)
     gcanvas.width = parseInt(Math.min(size.width, text.right * scale))
-    gcanvas.height = ParseInt(Math.min(size.height, text.decent * scale))
+    gcanvas.height = parseInt(Math.min(size.height, text.decent * scale))
     gctx.putImageData(imgData, 0, 0)
 
     let p = []
@@ -3040,7 +3044,7 @@ NMSCE.prototype.extractGlyphs = function (mid) {
 
     for (let i = 0; i < 12; ++i) {
         let imgData = ssctx.getImageData(x, text.y * scale, div, text.decent * scale)
-        gscalc(imgData.data)
+        // gscalc(imgData.data)
 
         scanctx.putImageData(imgData, 0, 0)
         x += div
@@ -4020,8 +4024,8 @@ NMSCE.prototype.displayInList = function (list, tab) {
 NMSCE.prototype.displayList = function (entries) {
     const card = `
         <div class="container-flex">
-            <div id="ttl-idname" class="card-header border-bottom txt-def h5">
-                <div class="row pointer" onclick="nmsce.toggleSub('idname')">
+            <div id="ttl-idname" class="card-header border-bottom txt-def h5 pointer" onclick="nmsce.toggleSub('idname')">
+                <div class="row">
                     <i class="far fa-caret-square-up hidden h4""></i>
                     <i class="far fa-caret-square-down h4"></i>&nbsp;
                     <div id="id-idname" class="col-6">title&nbsp;
@@ -4313,13 +4317,14 @@ NMSCE.prototype.toggleSub = function (id, show) {
     let tloc = loc.find("#ttl-" + id)
 
     if (show || tloc.find(".fa-caret-square-down").is(":visible")) {
-        loc.find("#sub-" + id).show()
+        loc = loc.find("#sub-" + id)
+        loc.show()
 
         tloc.find(".fa-caret-square-up").show()
         tloc.find(".fa-caret-square-down").hide()
 
         $('html, body').animate({
-            scrollTop: tloc.offset().top
+            scrollTop: loc.offset().top
         }, 500)
     } else {
         tloc.find(".fa-caret-square-up").hide()
