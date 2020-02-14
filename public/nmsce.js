@@ -7,7 +7,6 @@ var nmsce
 const displayPath = "/nmsce/disp/"
 const originalPath = "/nmsce/orig/"
 const thumbPath = "/nmsce/disp/thumb/"
-const redditPath = "/nmsce/reddit/"
 
 const tm_url = "https://teachablemachine.withgoogle.com/models/w6CSJkkY/";
 
@@ -2529,19 +2528,19 @@ NMSCE.prototype.drawText = function (alt, altw) {
 
     if (sh > sw) { // vertical
         txtcanvas.height = Math.min(width, sh)
-        txtcanvas.width = sw * txtcanvas.height / sh
+        txtcanvas.width = parseInt(sw * txtcanvas.height / sh)
 
         canvas.height = Math.min(altw ? altw : width, sw)
-        canvas.width = sw * canvas.height / sh
+        canvas.width = parseInt(sw * canvas.height / sh)
     } else {
         txtcanvas.width = Math.min(width, sw)
-        txtcanvas.height = sh * txtcanvas.width / sw
+        txtcanvas.height = parseInt(sh * txtcanvas.width / sw)
 
         canvas.width = Math.min(altw ? altw : width, sw)
-        canvas.height = sh * canvas.width / sw
+        canvas.height = parseInt(sh * canvas.width / sw)
     }
 
-    nmsce.imageText.logo.right = nmsce.imageText.logo.decent = Math.min(txtcanvas.width, txtcanvas.height) * .1
+    nmsce.imageText.logo.right = nmsce.imageText.logo.decent = parseInt(Math.min(txtcanvas.width, txtcanvas.height) * .1)
 
     if ($("#imageTextBlock").is(":visible")) {
         let ctx = txtcanvas.getContext("2d")
@@ -2823,7 +2822,9 @@ NMSCE.prototype.redditGetSubscribed = function (accessToken) {
                         link: s.data.name
                     })
 
-                bhs.buildMenu($("#redditPost"), "SubReddit", nmsce.subReddits, nmsce.setSubReddit)
+                bhs.buildMenu($("#redditPost"), "SubReddit", nmsce.subReddits, nmsce.setSubReddit, {
+                    required: true
+                })
             },
             error(err) {
                 console.log(err)
@@ -2860,7 +2861,9 @@ NMSCE.prototype.setSubReddit = function (evt, accessToken) {
                         id: s.id,
                     })
 
-                bhs.buildMenu($("#redditPost"), "Flair", nmsce.subRedditFlair)
+                bhs.buildMenu($("#redditPost"), "Flair", nmsce.subRedditFlair, null, {
+                    required: true
+                })
             },
             error(err) {
                 console.log(err)
@@ -2898,40 +2901,10 @@ NMSCE.prototype.redditPost = function () {
     let link = "https://nmsce.com/preview.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
     window.localStorage.setItem('nmsce-reddit-plink', link)
 
-
-    if ($("#id-ssImage").is(":visible")) {
-        bhs.fbstorage.ref().child(displayPath + nmsce.last.Photo).getDownloadURL().then(url => {
-            var xhr = new XMLHttpRequest()
-            xhr.responseType = 'blob'
-            xhr.onload = function (event) {
-                var blob = xhr.response
-
-                let name = uuidv4()
-                bhs.fbstorage.ref().child(redditPath + name).put(blob).then(() => {
-                    bhs.fbstorage.ref().child(redditPath + name).getDownloadURL().then(url => {
-                        window.localStorage.setItem('nmsce-reddit-link', url)
-                        nmsce.redditSubmit()
-                    })
-                })
-            }
-
-            xhr.open('GET', url)
-            xhr.send()
-        })
-    } else {
-        let disp = document.createElement('canvas')
-        nmsce.drawText(disp, 1024)
-        disp.toBlob(blob => {
-            let name = uuidv4()
-            bhs.fbstorage.ref().child(redditPath + name).put(blob).then(() => {
-                bhs.fbstorage.ref().child(redditPath + name).getDownloadURL().then(url => {
-                    window.localStorage.getItem('nmsce-reddit-link', url)
-                    nmsce.redditSubmit()
-                })
-            })
-
-        }, "image/jpeg", .9)
-    }
+    bhs.fbstorage.ref().child(displayPath + nmsce.last.Photo).getDownloadURL().then(url => {
+        window.localStorage.setItem('nmsce-reddit-link', url)
+        nmsce.redditSubmit()
+    })
 }
 
 NMSCE.prototype.redditSubmit = function (accessToken) {
@@ -2948,7 +2921,7 @@ NMSCE.prototype.redditSubmit = function (accessToken) {
         let flairId = nmsce.subRedditFlair[i].id
 
         let plink = window.localStorage.getItem('nmsce-reddit-plink')
-        let title = window.localStorage.getItem('nmsce-reddit-title')// + " <a href="+plink+">NMSCE app link</a>"
+        let title = window.localStorage.getItem('nmsce-reddit-title') // + " <a href="+plink+">NMSCE app link</a>"
         let link = window.localStorage.getItem('nmsce-reddit-link')
 
         let url = reddit.api_oauth_url + reddit.submitLink_endpt
@@ -2965,38 +2938,47 @@ NMSCE.prototype.redditSubmit = function (accessToken) {
                 kind: "link",
                 title: title,
                 url: link,
+                resubmit: true,
                 flair_id: flairId,
                 flair_text: flair
             },
             crossDomain: true,
             async success(res) {
-                for (let r of res.jquery) {
-                    let what = r[2]
-                    let link = what === "call" ? r[3][0] : ""
-                    if (link && link.includes("https://www.reddit.com/")) {
-                        let e = plink.split("&")
-                        for (let i of e) {
-                            let p = i.split("=")
-                            if (p[0]==="g")
-                                var galaxy = p[1].idToName()
-                            else if (p[0]==="t")
-                                var type = p[1]
-                            else if (p[0].includes("?i"))
-                                var id = p[1]
-                        }
+                if (res.success)
+                    for (let r of res.jquery) {
+                        let what = r[2]
+                        let link = what === "call" ? r[3][0] : ""
+                        if (link && link.includes("https://www.reddit.com/")) {
+                            let e = plink.split("&")
+                            for (let i of e) {
+                                let p = i.split("=")
+                                if (p[0] === "g")
+                                    var galaxy = p[1].idToName()
+                                else if (p[0] === "t")
+                                    var type = p[1]
+                                else if (p[0].includes("?i"))
+                                    var id = p[1]
+                            }
 
-                        let ref = bhs.fs.doc("nmsce/" + galaxy + "/" + type + "/" + id)
-                        ref.set({
-                            redditlink:link,
-                            reddit: firebase.firestore.Timestamp.now()
-                        }, {
-                            merge: true
-                        }).then(() => {
-                            $("#posted").text("Posted")
-                            $("#redditlink").val(link)
-                        })
+                            let ref = bhs.fs.doc("nmsce/" + galaxy + "/" + type + "/" + id)
+                            ref.get().then(doc => {
+                                let e = doc.data()
+                                let out = {}
+                                out.redditlink = link
+                                if (!e.reddit)
+                                    out.reddit = firebase.firestore.Timestamp.now()
+
+                                ref.set(out, {
+                                    merge: true
+                                }).then(() => {
+                                    $("#posted").text("Posted")
+                                    $("#redditlink").val(link)
+                                })
+                            })
+                        }
                     }
-                }
+                    else
+                        console.log("failed")
             },
             error(err) {
                 console.log(err)
@@ -3024,7 +3006,6 @@ NMSCE.prototype.extractGlyphs = function (mid) {
     let canvas = document.getElementById("id-canvas")
     let scale = nmsce.screenshot.naturalWidth / canvas.width
     let imgData = ssctx.getImageData(text.x * scale, text.y * scale, text.right * scale, text.decent * scale)
-    console.log(text.x * scale, text.y * scale, text.right * scale, text.decent * scale)
 
     mid = mid ? mid * 3 : 87 * 3
     let mult = 765 / (765 - mid) / 3
@@ -3044,12 +3025,12 @@ NMSCE.prototype.extractGlyphs = function (mid) {
     let gcanvas = document.getElementById("id-glyphCanvas")
     let gctx = gcanvas.getContext("2d")
     let size = nmsce.calcImageSize(text.right * scale, text.decent * scale, row.width(), row.height(), true)
-    gcanvas.width = Math.min(size.width, text.right * scale)
-    gcanvas.height = Math.min(size.height, text.decent * scale)
+    gcanvas.width = parseInt(Math.min(size.width, text.right * scale))
+    gcanvas.height = ParseInt(Math.min(size.height, text.decent * scale))
     gctx.putImageData(imgData, 0, 0)
 
     let p = []
-    let div = text.right * scale / 12
+    let div = parseInt(text.right * scale / 12)
     let x = text.x * scale
 
     let scanglyph = document.createElement('canvas')
@@ -3393,8 +3374,8 @@ NMSCE.prototype.updateScreenshots = function (entry) {
 
     let orig = document.createElement('canvas')
     let ctx = orig.getContext("2d")
-    orig.width = 2048
-    orig.height = nmsce.screenshot.height * 2048 / nmsce.screenshot.width
+    orig.width = Math.min(2048, nmsce.screenshot.width)
+    orig.height = parseInt(nmsce.screenshot.height * orig.width / nmsce.screenshot.width)
     ctx.drawImage(nmsce.screenshot, 0, 0, orig.width, orig.height)
     orig.toBlob(blob => {
         bhs.fbstorage.ref().child(originalPath + entry.Photo).put(blob).then(() => {
@@ -4318,8 +4299,8 @@ NMSCE.prototype.calcImageSize = function (width, height, maxw, maxh, expand) {
     }
 
     return ({
-        height: height,
-        width: width,
+        height: parseInt(height),
+        width: parseInt(width),
         hscale: hscale,
         wscale: wscale
     })
