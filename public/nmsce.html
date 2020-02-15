@@ -108,7 +108,11 @@
             <div class="card-header txt-def h4 pointer" onclick="nmsce.toggleSearch(this)">
                 <i class="far fa-caret-square-up hidden h3"></i>
                 <i class="far fa-caret-square-down h3"></i>
-                &nbsp;Toggle search input panel display.
+                &nbsp;Toggle search input panel display. &nbsp;
+                <i class="h5 fa fa-question-circle-o text-danger" data-toggle="tooltip" data-html="true"
+                    data-placement="bottom"
+                    title="On the search panel you can specify a specific player, coordinates or other system information.<br>For ships when you select a 'Type' from the menu it will display a selection of parts for searching. Just click on a part to select it.<br>Any information specified must match exactly for an item to be returned with a search.">
+                </i>
             </div>
             <div id="searchPanel" class="card-body bkg-white" style="display:none">
                 <div class="row">
@@ -161,9 +165,11 @@
                             <div class="row">
                                 <div class="col-md-2 col-sm-3 col-4 txt-label-def">
                                     Glyph&nbsp;
-                                    <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
-                                        data-html="true" data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
-                                                digit hex, 0-9 a-f, value can be entered directly in the field.">
+                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                        data-html="true" data-placement="bottom"
+                                        title="Search at a specific address.<br>Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
+                                                    A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.
+                                                    The first 4 characters displayed on the signal booster are not part of the coordinates.">
                                     </i>
                                 </div>
                                 <input id="id-glyph" type="text" maxength="19"
@@ -283,92 +289,90 @@
                     <div id="id-show" class="col-lg-2 col-7 clr-def h4"></div>
                 </div>
             </div>
+        </div>
 
-            <div class="card-body">
-                <div id="resultLists" class="container-flex bkg-def"></div>
-                <br>
-                <br>
-                <div id="imgtable" class="row bkg-white txt-center" style="display:none">
-                    <div id="imgcol" class="col-lg-8 col-md-9 col-14">
-                        <img id="dispimage"
-                            onload="nmsce.imageLoaded(this, $(this).parent().width(), $(window).height(), true)" />
+        <div class="card-body">
+            <div id="resultLists" class="container-flex bkg-def"></div>
+            <br>
+            <br>
+            <div id="imgtable" class="row bkg-white txt-center" style="display:none">
+                <div id="imgcol" class="col-lg-8 col-md-9 col-14">
+                    <img id="dispimage"
+                        onload="nmsce.imageLoaded(this, $(this).parent().width(), $(window).height(), true)" />
+                </div>
+                <div class="col-lg-6 col-md-5 col-14 pl-15">
+                    <div id="imagedata"></div>
+                    <div class="row">
+                        <button type="button" class="col-7 btn btn-sm btn-def" onclick="nmsce.searchSystem()">System
+                            Search</button>&nbsp;
+                        <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Search for any other items in this system.">
+                        </i>
                     </div>
-                    <div class="col-lg-6 col-md-5 col-14 pl-15">
-                        <div id="imagedata"></div>
-                        <div class="row">
-                            <button type="button" class="col-7 btn btn-sm btn-def" onclick="nmsce.searchSystem()">System
-                                Search</button>&nbsp;
+                    <br>
+                    <div class="row border-top border-bottom">
+                        <div class="col-7 row txt-label-def h5 pl-15">Favorite:&nbsp;
+                            <i id="favorite" class="col-7 fas fa-thumbs-up pointer h2" style="color:grey"
+                                onclick="nmsce.vote(this)"></i>
+                        </div>
+                        <div id="visited" class="col-7 pointer txt-label-def h5 pl-15" onclick="nmsce.vote(this)">
+                            <span class="row">
+                                <i id="voted-visited" class="fas fa-square h3" style="color:grey"></i>
+                                &nbsp;Visited&nbsp;
+                                <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom" title="If you retrieved an item or visited a location.">
+                                </i>
+                            </span>
+                        </div>
+                        <div id="report" class="col-7 pointer text-danger h5" onclick="nmsce.vote(this)">
+                            <span class="row">
+                                <i id="voted-report" class="fas fa-square h3" style="color:grey"></i>
+                                &nbsp;Report&nbsp;
+                                <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom" title="Something about this entry is offensive.">
+                                </i>
+                            </span>
+                        </div>
+                        <div id="edchoice" class="col-7 txt-label-def h5 pointer hidden" onclick="nmsce.vote(this)">
+                            <span class="row">
+                                <i id="voted-edchoice" class="fas fa-square h3" style="color:grey"></i>
+                                &nbsp;Editors Choice
+                            </span>
+                        </div>
+                        <div id="bhspoi" class="col-7 txt-label-def h5 align-bottom pointer hidden"
+                            onclick="nmsce.vote(this)">
+                            <span class="row">
+                                <i id="voted-bhspoi" class="fas fa-square h3" style="color:grey"></i>
+                                &nbsp;BHS Poi
+                            </span>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <a id="permalink" class="col-7 h5 pl-30" href="">
+                            Permalink&nbsp;
+                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom" title="You can use this link to directly access this entry.">
+                            </i>
+                        </a>
+                        <button id="btn-ceedit" type="button" class="col-3 btn btn-sm btn-def hidden"
+                            onclick="nmsce.editSelected()">Edit</button>
+                    </div>
+                    <div class="row" onclick="nmsce.newDARC('#imagedata #val-Coords')" class="pointer text-center">
+                        <div class="col text-center">
+                            <img src="images/bhs-logo.png" style="height:80px; width:80px;" />
+                            <span class="txt-label-def h4">&nbsp;DaRC</span>&nbsp;
                             <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip" data-html="true"
-                                data-placement="bottom" title="Search for any other items in this system.">
+                                data-placement="bottom"
+                                title="Open window with Black Hole Sun's Distance and Route Calculator. Enters coordinate of selected item as the destination coord.">
                             </i>
                         </div>
-                        <br>
-                        <div class="row border-top border-bottom">
-                            <div class="col-7 row txt-label-def h5 pl-15">Favorite:&nbsp;
-                                <i id="favorite" class="col-7 fas fa-thumbs-up pointer h2" style="color:grey"
-                                    onclick="nmsce.vote(this)"></i>
-                            </div>
-                            <div id="visited" class="col-7 pointer txt-label-def h5 pl-15" onclick="nmsce.vote(this)">
-                                <span class="row">
-                                    <i id="voted-visited" class="fas fa-square h3" style="color:grey"></i>
-                                    &nbsp;Visited&nbsp;
-                                    <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
-                                        data-html="true" data-placement="bottom"
-                                        title="If you retrieved an item or visited a location.">
-                                    </i>
-                                </span>
-                            </div>
-                            <div id="report" class="col-7 pointer text-danger h5" onclick="nmsce.vote(this)">
-                                <span class="row">
-                                    <i id="voted-report" class="fas fa-square h3" style="color:grey"></i>
-                                    &nbsp;Report&nbsp;
-                                    <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
-                                        data-html="true" data-placement="bottom"
-                                        title="Something about this entry is offensive.">
-                                    </i>
-                                </span>
-                            </div>
-                            <div id="edchoice" class="col-7 txt-label-def h5 pointer hidden" onclick="nmsce.vote(this)">
-                                <span class="row">
-                                    <i id="voted-edchoice" class="fas fa-square h3" style="color:grey"></i>
-                                    &nbsp;Editors Choice
-                                </span>
-                            </div>
-                            <div id="bhspoi" class="col-7 txt-label-def h5 align-bottom pointer hidden"
-                                onclick="nmsce.vote(this)">
-                                <span class="row">
-                                    <i id="voted-bhspoi" class="fas fa-square h3" style="color:grey"></i>
-                                    &nbsp;BHS Poi
-                                </span>
-                            </div>
-                        </div>
-                        <br>
-                        <div class="row">
-                            <a id="permalink" class="col-7 h5 pl-30" href="">
-                                Permalink&nbsp;
-                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-                                    data-placement="bottom"
-                                    title="You can use this link to directly access this entry.">
-                                </i>
-                            </a>
-                            <button id="btn-ceedit" type="button" class="col-3 btn btn-sm btn-def hidden"
-                                onclick="nmsce.editSelected()">Edit</button>
-                        </div>
-                        <div class="row" onclick="nmsce.newDARC('#imagedata #val-Coords')" class="pointer text-center">
-                            <div class="col text-center">
-                                <img src="images/bhs-logo.png" style="height:80px; width:80px;" />
-                                <span class="txt-label-def h4">&nbsp;DaRC</span>&nbsp;
-                                <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip" data-html="true"
-                                    data-placement="bottom"
-                                    title="Open window with Black Hole Sun's Distance and Route Calculator. Enters coordinate of selected item as the destination coord.">
-                                </i>
-                            </div>
-                        </div>
-                        <br>
                     </div>
+                    <br>
                 </div>
             </div>
         </div>
+    </div>
     </div>
     <br>
 

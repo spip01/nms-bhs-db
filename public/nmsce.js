@@ -3610,7 +3610,8 @@ NMSCE.prototype.getNew = function () {
         date = window.localStorage.getItem('nmsce-LastUpdate')
 
     bhs.buildMenu($("#resultshdr"), "show", resultsTable, nmsce.selDisplay, {
-        nolabel: true
+        nolabel: true,
+        tip:"Click on an image to see an expanded image and detailed information."
     })
 
     $("#resultshdr #btn-show").text("Latest")
@@ -5673,7 +5674,7 @@ const objectList = [{
         imgText: true,
     }, {
         name: "First Wave",
-        ttip: "This is <span class='h5' style='font-weight:bold'>ONLY</span> used on space stations. First wave for reloading a save and restarting the game are different.",
+        ttip: "This is <span class='h5' style='font-weight:bold'>ONLY</span> valid on space stations. First wave for reloading a save and restarting the game are different.",
         type: "radio",
         list: [{
             name: "Reload"
