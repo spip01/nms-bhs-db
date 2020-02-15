@@ -657,10 +657,10 @@ NMSCE.prototype.extractEntry = function () {
                     nmsce.entries[entry.type.nameToId()] = {}
 
                 nmsce.entries[entry.type.nameToId()][entry.id] = entry
-                nmsce.displayListEntry(entry)
+                nmsce.displayListEntry(entry, true)
             }
 
-            nmsce.updateScreenshots(entry)
+            nmsce.updateScreenshot(entry)
 
             bhs.status(entry.type + " " + entry.Name + " validated, saving...")
             $("#imgtable").hide()
@@ -2226,7 +2226,7 @@ NMSCE.prototype.getImageText = function (evt, draw) {
             case "radio":
                 loc = loc.find(":checked")
                 if (loc.length > 0)
-                    text = loc.prop("id").stripID() + " " + loc.closest("[id|='row']").prop("id").stripID()
+                    text = loc.closest("[id|='row']").prop("id").stripID() + " " + loc.prop("id").stripID()
                 break
             default:
                 if (loc.is("input"))
@@ -2422,7 +2422,8 @@ NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
 
                 $("#openReddit").removeClass("disabled")
                 $("#openReddit").removeAttr("disabled")
-          }  })
+            }
+        })
     }
 }
 
@@ -3355,7 +3356,7 @@ NMSCE.prototype.deleteEntry = function (entry) {
     })
 }
 
-NMSCE.prototype.updateScreenshots = function (entry) {
+NMSCE.prototype.updateScreenshot = function (entry) {
     if (!$("#id-canvas").is(":visible") || $("#ck-updateScreenshot").is(":visible") && !$("#ck-updateScreenshot").prop("checked"))
         return null
 
@@ -3390,14 +3391,10 @@ NMSCE.prototype.updateScreenshots = function (entry) {
     let loc = $("#id-table #sub-" + entry.type.nameToId())
     nmsce.toggleSub(entry.type.nameToId(), true)
 
-    loc = loc.find(" #row-" + entry.type.nameToId() + "-" + entry.id + " img")
+    loc = loc.find("#row-" + entry.type.nameToId() + "-" + entry.id + " img")
     if (loc.length > 0) {
         let url = thumb.toDataURL()
         loc.attr("src", url)
-
-        $('html, body').animate({
-            scrollTop: loc.offset().top
-        }, 500)
     }
 }
 
@@ -4059,15 +4056,22 @@ NMSCE.prototype.displayList = function (entries) {
     nmsce.displayThumbnails($('#id-table'))
 }
 
-NMSCE.prototype.displayListEntry = function (entry) {
+NMSCE.prototype.displayListEntry = function (entry, scroll) {
     let loc = $("#id-table #sub-" + entry.type.nameToId())
     let id = entry.type.nameToId() + "-" + entry.id
     let eloc = loc.find("#row-" + id)
 
     if (eloc.length === 0)
         nmsce.addDisplayListEntry(entry, loc, true)
-    else
+    else {
         nmsce.updateDisplayListEntry(entry, eloc)
+        loc = eloc
+    }
+
+    if (scroll)
+        $('html, body').animate({
+            scrollTop: loc.offset().top
+        }, 500)
 }
 
 NMSCE.prototype.sortLoc = function (evt) {
