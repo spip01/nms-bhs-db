@@ -350,6 +350,10 @@ body {
     padding-left: 15px !important;
 }
 
+.pr-15 {
+    padding-right: 15px !important;
+}
+
 .pl-30 {
     padding-left: 30px !important;
 }

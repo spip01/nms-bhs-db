@@ -15,6 +15,48 @@ body {
     background-color: #060f3f;
 }
 
+.cover-container {
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+@media (max-width: 548px) {
+    .cover-container {
+        height: 400px;
+    }
+
+    .cover-item {
+        height: 45%;
+    }
+}
+
+@media (min-width: 768px) {
+    .cover-container {
+        height: 190px;
+    }
+
+    .cover-item {
+        height: 95%;
+    }
+}
+
+@media (min-width: 992px) {
+    .cover-container {
+        height: 40vh;
+    }
+
+    .cover-item {
+        height: 75%;
+    }
+}
+
+@media (min-width: 1920px) {
+    .cover-item {
+        height: 70%;
+    }
+}
+
+/* 
 .cover-item {
     position: relative;
     margin: 4px 4px;
@@ -91,4 +133,4 @@ body {
         display: inline-block;
         width:15%;
     }
-}
+} */

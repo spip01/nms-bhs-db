@@ -235,6 +235,8 @@ NMSCE.prototype.changeAddr = function (evt, a) {
 
         if (!fnmsce) {
             nmsce.lastsys = null
+            $("#foundreg").hide()
+            $("#foundsys").hide()
 
             bhs.getEntry(addr, nmsce.displaySystem, null, null, true).then(entry => {
                 nmsce.lastsys = entry
@@ -269,7 +271,11 @@ NMSCE.prototype.displayRegion = function (entry) {
 NMSCE.prototype.displaySystem = function (entry) {
     let loc = $("#panels")
 
-    loc.find("#foundsys").show()
+    if (entry.sys)
+        loc.find("#foundsys").show()
+    else
+        loc.find("#foundsys").hide()
+
     if (entry.reg)
         loc.find("#foundreg").show()
     else
@@ -3636,14 +3642,14 @@ NMSCE.prototype.getLatest = function () {
     nmsce.getAfterDate(fd)
 }
 
-const resultsCover = `<div id="id-idname" class="cover-container" style="display:none"></div>`
+const resultsCover = `<div id="id-idname" class="row cover-container bkg-def" style="display:none"></div>`
 const resultsItem = `
-    <div id="row-idname" class="cover-item bkg-white txt-label-def align-top">
+    <div id="row-idname" class="col-xl-p200 col-lg-p250 col-md-p333 col-sm-7 col-14 cover-item bkg-white txt-label-def border rounded">
         galaxy<br>
         by<br>
         <img id="img-idname" data-panel="epanel" data-thumb="ethumb" data-type="etype" data-id="eid" class="pointer" 
-        onclick="nmsce.selectResult(this)" 
-        onload="nmsce.imageLoaded(this, $(this).parent().width(), $(this).closest('.cover-container').height())" />
+        onclick="nmsce.selectResult(this)" style="height:90%"
+        onload="nmsce.imageLoaded(this, $(this).parent().width(), $(this).height()*.8)" />
     </div>`
 
 NMSCE.prototype.getAfterDate = function (date) {
@@ -4061,9 +4067,10 @@ NMSCE.prototype.displayListEntry = function (entry, scroll) {
     let id = entry.type.nameToId() + "-" + entry.id
     let eloc = loc.find("#row-" + id)
 
-    if (eloc.length === 0)
+    if (eloc.length === 0) {
         nmsce.addDisplayListEntry(entry, loc, true)
-    else {
+        loc = $("#id-table #ttl-" + entry.type.nameToId())
+    } else {
         nmsce.updateDisplayListEntry(entry, eloc)
         loc = eloc
     }
