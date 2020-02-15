@@ -234,14 +234,22 @@ NMSCE.prototype.changeAddr = function (evt, a) {
         nmsce.dispAddr(pnl, addr)
 
         if (!fnmsce) {
-            nmsce.lastsys = null
             $("#foundreg").hide()
             $("#foundsys").hide()
 
             bhs.getEntry(addr, nmsce.displaySystem, null, null, true).then(entry => {
-                nmsce.lastsys = entry
-                if (!entry)
+                if (!entry) {
+                    if (nmsce.lastsys && nmsce.lastsys.sys === $("#id-sys").val()) {
+                        $("#id-sys").val("")
+                        $("#id-reg").val("")
+                        $("#id-Economy [type='radio']").prop("checked", false)
+                        $("#id-Lifeform [type|='radio']").prop("checked", false)
+                    }
+
                     bhs.getEntryByRegionAddr(addr, nmsce.displayRegion)
+                }
+
+                nmsce.lastsys = entry
             })
         }
     }
@@ -2647,7 +2655,7 @@ NMSCE.prototype.editSelected = function (evt) {
 
 const reddit = {
     client_id: "8oDpVp9JDDN7ng",
-    redirect_url: "http://localhost:5000/cedata.html",
+    redirect_url: "http://nmsce.com/cedata.html",
     scope: "identity,submit,mysubreddits,flair",
     auth_url: "https://www.reddit.com/api/v1/authorize",
     token_url: "https://ssl.reddit.com/api/v1/access_token",
