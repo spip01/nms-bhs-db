@@ -3885,8 +3885,7 @@ NMSCE.prototype.displaySelected = function (e, noscroll) {
         <div id="val-idname" class="col font clr-def">value</div>
     </div>`
 
-    let loc = $("#imgtable")
-    loc.show()
+    $("#imgtable").show()
 
     nmsce.last = e
 
@@ -3913,7 +3912,7 @@ NMSCE.prototype.displaySelected = function (e, noscroll) {
             }, 500)
     })
 
-    loc = $("#imagedata")
+    let loc = $("#imagedata")
     loc.empty()
 
     let h = /idname/g [Symbol.replace](row, "Type")
