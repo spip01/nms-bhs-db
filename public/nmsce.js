@@ -2710,7 +2710,7 @@ NMSCE.prototype.redditLoggedIn = function (state, code) {
                 }
             },
             error(err) {
-                console.log(err)
+                nmsce.postStatus(err.message)
             },
         })
 }
@@ -2761,7 +2761,7 @@ NMSCE.prototype.getRedditToken = function (state) {
                 }
             },
             error(err) {
-                console.log(err)
+                nmsce.postStatus(err.message)
             },
         })
     } else
@@ -2813,7 +2813,7 @@ NMSCE.prototype.getRedditUser = function (accessToken) {
                 window.localStorage.setItem('nmsce-reddit-name', res.name)
             },
             error(err) {
-                console.log(err)
+                nmsce.postStatus(err.message)
             },
         })
     }
@@ -2846,7 +2846,7 @@ NMSCE.prototype.redditGetSubscribed = function (accessToken) {
                 })
             },
             error(err) {
-                console.log(err)
+                nmsce.postStatus(err.message)
             },
         })
     }
@@ -2885,7 +2885,7 @@ NMSCE.prototype.setSubReddit = function (evt, accessToken) {
                 })
             },
             error(err) {
-                console.log(err)
+                nmsce.postStatus(err.message)
             },
         })
     }
@@ -2898,17 +2898,17 @@ NMSCE.prototype.redditPost = function () {
     let title = loc.find("#id-Title").val()
 
     if (!sr) {
-        bhs.status("Please select SubReddit", true)
+        nmsce.postStatus("Please select SubReddit")
         return
     }
 
     if (!flair) {
-        bhs.status("Please select Flair", true)
+        nmsce.postStatus("Please select Flair")
         return
     }
 
     if (!title) {
-        bhs.status("Please select Title", true)
+        nmsce.postStatus("Please select Title")
         return
     }
 
@@ -2990,20 +2990,24 @@ NMSCE.prototype.redditSubmit = function (accessToken) {
                                 ref.set(out, {
                                     merge: true
                                 }).then(() => {
-                                    $("#posted").text("Posted")
+                                    nmsce.postStatus("Posted")
                                     $("#redditlink").val(link)
                                 })
                             })
                         }
                     }
                 else
-                    console.log("failed")
+                    nmsce.postStatus("failed")
             },
             error(err) {
-                console.log(err)
+                nmsce.postStatus(err.message)
             },
         })
     }
+}
+
+NMSCE.prototype.postStatus = function (str) {
+    $("#posted").html("<h5>" + str + "</h5>")
 }
 
 NMSCE.prototype.extractGlyphs = function (mid) {
@@ -3090,11 +3094,11 @@ NMSCE.prototype.extractGlyphs = function (mid) {
         let str = ""
         for (let i = 0; i < res.length; ++i) {
             g += res[i].class
-            str += "<span class='glyph'>" + res[i].class + "</span>-" + res[i].prob + " "
-            if (i === 5)
-                str += "<br>"
+            // str += "<span class='glyph'>" + res[i].class + "</span>-" + res[i].prob + " "
+            // if (i === 5)
+            //     str += "<br>"
         }
-        bhs.status(str, true)
+        // bhs.status(str, true)
         nmsce.changeAddr(null, g)
 
         $('html, body').animate({
