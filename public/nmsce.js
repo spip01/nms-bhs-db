@@ -3611,7 +3611,7 @@ NMSCE.prototype.getNew = function () {
 
     bhs.buildMenu($("#resultshdr"), "show", resultsTable, nmsce.selDisplay, {
         nolabel: true,
-        tip:"Click on an image to see an expanded image and detailed information."
+        tip: "Click on an image to see an expanded image and detailed information."
     })
 
     $("#resultshdr #btn-show").text("Latest")
@@ -3747,6 +3747,9 @@ NMSCE.prototype.getAfterDate = function (date) {
 
         for (let rid of rtl)
             nmsce.displayResultList(rid)
+
+        let list = Object.keys(nmsce.resultLists.Latest)
+        nmsce.selDisplay("#item-" + (list.length ? "Latest" : "Top-Favorites"))
     })
 
     if (typeof (Storage) !== "undefined") {
