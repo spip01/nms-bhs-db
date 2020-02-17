@@ -2285,7 +2285,9 @@ NMSCE.prototype.restoreImageText = function (txt, draw) {
 
         if (id === "Text" && f.text)
             loc.find("#id-Text").val(f.text)
-
+        else
+            f.text = ""
+            
         let floc = loc.find("#ck-" + id)
 
         if (floc.length > 0) {
