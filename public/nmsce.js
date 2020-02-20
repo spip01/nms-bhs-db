@@ -33,7 +33,7 @@ $(document).ready(async () => {
             img.onload = nmsce.onLoadLogo
             img.src = "/images/nmsce-logo.png"
 
-            nmsce.model = await tmImage.load("/model.json", "/metadata.json")
+            nmsce.model = await tmImage.load("/bin/model.json", "/bin/metadata.json")
         }
 
         nmsce.buildPanels()
@@ -430,6 +430,9 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
         loc.find("#id-addrInput #id-glyph").empty()
         loc.find("#id-addrInput #id-hex").empty()
 
+        $("#pnl-map [id|='slist']").hide()
+        $("#pnl-map [id|='pnl']").hide()
+
         clr($("#panels"))
 
         if (fnmsce)
@@ -437,8 +440,15 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     }
 
     let loc = $("#pnl-map [id|='map']")
-    loc.data("selected", false)
-    loc.find("*").css("stroke", "#808080")
+    loc.find("*").css("stroke", mapColors.enabled)
+
+    for (let p of Object.keys(nmsce)) {
+        let map = nmsce[p]
+        if (map && map.type === "map")
+            for (let p of Object.keys(map))
+                if (p !== "type")
+                    map[p].state = "enabled"
+    }
 
     loc = $("#typePanels #hdr-Ship")
     loc.find("#row-Latitude").hide()
@@ -451,8 +461,8 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     $("#id-ssImage").attr("src", "")
     $("#redditlink").val("")
     $("#posted").empty()
-    $("#editScreenshot").hide()
-    $("#imageTextBlock").show()
+    $("#imgtable").hide()
+    $("#imageTextBlock").hide()
     $("#updateScreenshot").hide()
 
     let tags = $("[data-type='tags']")
@@ -637,24 +647,12 @@ NMSCE.prototype.extractEntry = function () {
     }
 
     if (ok) {
-        let loc = $("#pnl-map [id|='row']")
-        for (let row of loc) {
-            if ($(row).is(":visible")) {
-                let id = $(row).prop("id").stripID()
-                entry[id] = {}
-                entry[id + "-name"] = {}
-
-                let items = $(row).find("g[id|='map']")
-                for (let i of items) {
-                    let data = $(i).data()
-
-                    if (data && data.selected) {
-                        let iid = $(i).prop("id").stripID()
-                        let title = $(i).find("title").text()
-                        entry[id][iid] = true
-                        entry[id + "-name"][iid] = title
-                    }
-                }
+        let parts = nmsce[(entry.Type ? entry.Type : entry.type).toLowerCase()]
+        if (parts) {
+            entry.parts = {}
+            for (let p of Object.keys(parts)) {
+                if (parts[p].state === "selected")
+                    entry.parts[p] = true
             }
         }
 
@@ -687,13 +685,14 @@ NMSCE.prototype.extractEntry = function () {
     return ok
 }
 
-NMSCE.prototype.displaySingle = function (entry) {
+NMSCE.prototype.displaySingle = function (entry, noscroll) {
     nmsce.clearPanel(true, true)
     nmsce.last = entry
 
-    $('html, body').animate({
-        scrollTop: $('#typeTabs').offset().top
-    }, 500)
+    if (!noscroll)
+        $('html, body').animate({
+            scrollTop: $('#typeTabs').offset().top
+        }, 500)
 
     let tloc = $("#tab-" + entry.type.nameToId())
     tloc.click()
@@ -762,21 +761,6 @@ NMSCE.prototype.displaySingle = function (entry) {
                     if (entry[id] !== row.find("input").prop("checked"))
                         row.find("input").click()
                     break
-                case "map":
-                    let map = $("#pnl-map " + pnltype)
-                    if (slist)
-                        map = map.find(slist)
-                    map = map.find("#row-" + id.nameToId())
-
-                    let list = Object.keys(entry[id])
-                    for (let i of list) {
-                        let loc = map.find("#map-" + i)
-                        if (loc.length > 0)
-                            mapSelect(loc, true)
-                        else
-                            console.log(pnltype, slist ? slist.stripID() : "", id, i)
-                    }
-                    break
             }
         }
     }
@@ -785,6 +769,19 @@ NMSCE.prototype.displaySingle = function (entry) {
     let obj = objectList[idx]
 
     disp(obj.fields, "#pnl-" + entry.type)
+
+    if (entry.parts) {
+        let map = $("#pnl-map #pnl-" + entry.type)
+        if (entry.Type)
+            map = map.find("#slist-" + entry.Type)
+
+        let list = Object.keys(entry.parts)
+        for (let i of list) {
+            let loc = map.find("#map-" + i)
+            if (loc.length > 0)
+                selectMap(loc, true)
+        }
+    }
 
     if (entry.imageText)
         nmsce.imageText = mergeObjects(nmsce.imageText, entry.imageText)
@@ -847,7 +844,7 @@ NMSCE.prototype.displaySearch = function (search) {
                 map = map.find("#row-" + itm.name)
 
                 for (let i of list)
-                    mapSelect(map.find("#map-" + i), true)
+                    selectMap(map.find("#map-" + i), true)
                 break
         }
     }
@@ -1362,28 +1359,21 @@ NMSCE.prototype.extractSearch = function (fcn) {
         }
     }
 
-    let loc = $("#pnl-map [id|='row']")
-    for (let row of loc) {
-        if ($(row).is(":visible")) {
-            let list = []
+    list = []
+    i = getIndex(search, "name", "Type")
+    let parts = nmsce[(i >= 0 ? search[i].val : s.type).toLowerCase()]
+    if (parts) {
+        for (let p of Object.keys(parts)) {
+            if (parts[p].state === "selected")
+                list.push(p)
+        }
 
-            let items = $(row).find("g[id|='map']")
-            for (let i of items) {
-                let data = $(i).data()
-                if (data && data.selected)
-                    list.push($(i).prop("id").stripID())
-            }
-            let t = $(row).closest("[id|='slist']")
-            if (list.length > 0) {
-                let type = $(row).closest("[id|='slist']")
-                search.push({
-                    name: $(row).prop("id").stripID(),
-                    Type: type.length > 0 ? type.prop("id").stripID() : null,
-                    page: $(row).closest("[id|='pnl']").prop("id").stripID(),
-                    type: "map",
-                    list: list
-                })
-            }
+        if (list.length > 0) {
+            search.push({
+                name: "parts",
+                type: "map",
+                list: list
+            })
         }
     }
 
@@ -1565,19 +1555,19 @@ const tMenu = `
     </div>`
 const tRadio = `
     <div id="row-idname" data-type="radio" data-allowhide="ihide" data-req="ifreq" class="row pl-0">
-        <div class="radio col-lg-6 col-4 txt-label-def">titlettip</div>
+        <div class="radio col-lg-5 col-4 txt-label-def">titlettip</div>
         <div class="col">
             <div id="list" class="row"></div>
-        </div>
+        </div>&nbsp;
     </div>`
 const tRadioItem = `
     <label class="col txt-label-def">
-        <input type="radio" class="radio row" id="rdo-tname" data-last=false onclick="nmsce.toggleRadio(this)">
+        <input type="radio" class="radio h6" id="rdo-tname" data-last=false onclick="nmsce.toggleRadio(this)">
         &nbsp;titlettip
     </label>`
 const tCkItem = `
     <div id="row-idname" data-type="checkbox" data-allowhide="ihide" data-req="false">
-        <label id="id-idname" class=" txt-label-def row pl-10">
+        <label id="id-idname" class=" txt-label-def">
             titlettip&nbsp
             <input id="ck-idname" type="checkbox">
         </label>
@@ -1690,29 +1680,31 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 appenditem(itm, tImg, f.name, id, f.ttip, f.required, inpLongHdr, f.inputHide)
                 break
             case "checkbox":
-                if (fnmsce) {
-                    appenditem(itm, tRadio, f.name, id, f.ttip, null, null, f.inputHide)
+                if (!f.sub || slist[f.sub]) {
+                    if (fnmsce) {
+                        appenditem(itm, tRadio, f.name, id, f.ttip, null, null, f.inputHide)
 
-                    let ckloc = itm.find("#row-" + id)
-                    ckloc.attr("data-type", "checkbox")
-                    ckloc = ckloc.find("#list")
+                        let ckloc = itm.find("#row-" + id)
+                        ckloc.attr("data-type", "checkbox")
+                        ckloc = ckloc.find("#list")
 
-                    let l = /title/g [Symbol.replace](tRadioItem, "True")
-                    l = /ttip/g [Symbol.replace](l, "")
-                    l = /idname/g [Symbol.replace](l, "True")
-                    l = /tname/g [Symbol.replace](l, "True")
-                    ckloc.append(l)
+                        let l = /title/g [Symbol.replace](tRadioItem, "True")
+                        l = /ttip/g [Symbol.replace](l, "")
+                        l = /idname/g [Symbol.replace](l, "True")
+                        l = /tname/g [Symbol.replace](l, "True")
+                        ckloc.append(l)
 
-                    l = /title/g [Symbol.replace](tRadioItem, "False")
-                    l = /ttip/g [Symbol.replace](l, "")
-                    l = /idname/g [Symbol.replace](l, "False")
-                    l = /tname/g [Symbol.replace](l, "False")
-                    ckloc.append(l)
-                } else {
-                    appenditem(itm, tCkItem, f.name, id, f.ttip, f.required, null, f.inputHide)
+                        l = /title/g [Symbol.replace](tRadioItem, "False")
+                        l = /ttip/g [Symbol.replace](l, "")
+                        l = /idname/g [Symbol.replace](l, "False")
+                        l = /tname/g [Symbol.replace](l, "False")
+                        ckloc.append(l)
+                    } else {
+                        appenditem(itm, tCkItem, f.name, id, f.ttip, f.required, null, f.inputHide)
 
-                    if (f.onchange)
-                        itm.find("#ck-" + id).change(f.onchange)
+                        if (f.onchange)
+                            itm.find("#ck-" + id).change(f.onchange)
+                    }
                 }
                 break
             case "string":
@@ -1974,13 +1966,33 @@ NMSCE.prototype.setMapSize = function (loc) {
 
 NMSCE.prototype.loadMap = function (loc, fname) {
     loc.load(fname, () => {
+        loc.find("#layer1").hide()
+
         let bdr = loc.find("[id|='bdr']")
         bdr.css("stroke-opacity", "0")
+
         let map = loc.find("[id|='map']")
-        map.find("*").css("stroke", "#404040")
+        map.find("*").css("stroke", mapColors.enabled)
+
+        let name = fname.replace(/\/.*\/(.*?)[-.].*/, "$1")
+        if (typeof nmsce[name] === "undefined")
+            nmsce[name] = {}
+
+        for (let l of map) {
+            let id = $(l).prop("id").stripID()
+            let d = $(l).find("desc").text()
+            nmsce[name][id] = {}
+            nmsce[name].type = "map"
+
+            if (d !== "")
+                nmsce[name][id] = JSON.parse(d)
+
+            nmsce[name][id].loc = $(l)
+            nmsce[name][id].state = "enabled"
+        }
 
         bdr.click(function () {
-            mapSelect(this)
+            selectMap(this)
         })
 
         bdr.mouseenter(function () {
@@ -1993,35 +2005,129 @@ NMSCE.prototype.loadMap = function (loc, fname) {
     })
 }
 
-function mapSelect(evt, set) {
-    let id = $(evt).prop("id").stripID()
-    let loc = $(evt).closest("[id|='row']").find("#map-" + id)
-    let data = loc.data()
+const mapColors = {
+    hover: "#ffc000",
+    selected: "#0000ff",
+    disabled: "#c0c0c0",
+    enabled: "#00a000",
+    error: "#ff0000",
+}
 
-    if (set || typeof set === "undefined" && (!data || !data.selected)) {
-        loc.data("selected", true)
-        loc.find("*").css("stroke", "#0000ff")
-    } else {
-        loc.data("selected", false)
-        loc.find("*").css("stroke", "#404040")
+function selectMap(evt, set) {
+    let evtid = $(evt).prop("id").stripID()
+    let pnl = $(evt).closest("[id|='slist']")
+
+    if (pnl.length === 0)
+        pnl = $(evt).closest("[id|='row']")
+
+    let pnlid = pnl.prop("id").stripID().toLowerCase()
+    let parts = nmsce[pnlid]
+
+    let part = parts[evtid]
+    let selected = part.state = set || part.state !== "selected" ? "selected" : "enabled"
+
+    for (let p of Object.keys(parts))
+        if (p !== "type")
+            parts[p].state = parts[p].state === "selected" ? "selected" : "enabled"
+
+    let slots = "T1"
+
+    const processPart = function (id) {
+        let part = parts[id]
+        for (let k of Object.keys(part)) {
+            switch (k) {
+                case "slots":
+                    if (slots < part[k])
+                        slots = part[k]
+                    break
+
+                case "requires":
+                    for (let p of part[k])
+                        parts[p].state = "selected"
+                    break
+
+                case "group":
+                    for (let p of Object.keys(parts)) {
+                        if (p !== "type" && id != p && parts[p].group) {
+                            let intersection = []
+                            if (part.okGroup)
+                                intersection = part.okGroup.filter(x => parts[p].group.includes(x))
+
+                            if (intersection.length === 0) {
+                                intersection = part[k].filter(x => parts[p].group.includes(x))
+                                if (intersection.length > 0)
+                                    parts[p].state = set && (parts[p].state === "selected" || parts[p].state === "error") ? "error" : "disabled"
+                            }
+                        }
+                    }
+                    break
+
+                case "only":
+                    for (let p of Object.keys(parts))
+                        if (p !== "type" && id !== p) {
+                            let intersection = []
+                            if (part.okGroup && parts[p].group)
+                                intersection = part.okGroup.filter(x => parts[p].group.includes(x))
+
+                            if (intersection.length === 0 && !part[k].includes(p))
+                                parts[p].state = set && (parts[p].state === "selected" || parts[p].state === "error") ? "error" : "disabled"
+                        }
+                    break
+
+                case "excludes":
+                    for (let p of part[k])
+                        parts[p].state = set && (parts[p].state === "selected" || parts[p].state === "error") ? "error" : "disabled"
+                    break
+            }
+        }
     }
+
+    if (selected === "selected")
+        processPart(evtid)
+
+    for (let p of Object.keys(parts)) {
+        if (p !== "type" && parts[p].state === "selected")
+            processPart(p)
+    }
+
+    let sloc = $("#typePanels [id|='row-Slots']")
+    sloc.find("input").prop("checked", false)
+
+    let rloc = sloc.find("[id|='rdo-" + slots + "']")
+    rloc.prop("checked", true)
+
+    part.state = selected === "selected" ? "selected" : part.state
+
+    colorMapParts(pnlid)
+}
+
+function colorMapParts(pnlid) {
+    for (let p of Object.keys(nmsce[pnlid]))
+        if (p !== "type")
+            colorMapPart(nmsce[pnlid][p])
+}
+
+function colorMapPart(part) {
+    part.loc.find("*").css("stroke", mapColors[part.state])
 }
 
 function mouseEnter(evt) {
     let id = $(evt).prop("id").stripID()
     let loc = $(evt).closest("[id|='row']").find("#map-" + id)
-    loc.find("*").css("stroke", "#b00000")
+    loc.find("*").css("stroke", mapColors.hover)
 }
 
 function mouseLeave(evt) {
     let id = $(evt).prop("id").stripID()
-    let loc = $(evt).closest("[id|='row']").find("#map-" + id)
-    let data = loc.data()
+    let pnl = $(evt).closest("[id|='slist']")
+    let pnlid
 
-    if (!data || !data.selected)
-        loc.find("*").css("stroke", "#404040")
+    if (pnl.length > 0)
+        pnlid = pnl.prop("id").stripID().toLowerCase()
     else
-        loc.find("*").css("stroke", "#0000ff")
+        pnlid = $(evt).closest("[id|='row']").prop("id").stripID().toLowerCase()
+
+    colorMapPart(nmsce[pnlid][id])
 }
 
 NMSCE.prototype.selectSublist = function (btn) {
@@ -2031,7 +2137,11 @@ NMSCE.prototype.selectSublist = function (btn) {
     $("[id='slist-" + id + "']").show()
 
     let type = btn.closest("[id|='pnl']").prop("id").stripID()
-    let mloc = $("#pnl-map #pnl-" + type + " #slist-" + id)
+    let mloc = $("#pnl-map #pnl-" + type)
+    mloc.show()
+
+    mloc = mloc.find("#slist-" + id)
+    mloc.show()
 
     nmsce.setMapSize(mloc)
 }
@@ -2287,7 +2397,7 @@ NMSCE.prototype.restoreImageText = function (txt, draw) {
             loc.find("#id-Text").val(f.text)
         else
             f.text = ""
-            
+
         let floc = loc.find("#ck-" + id)
 
         if (floc.length > 0) {
@@ -2693,7 +2803,7 @@ NMSCE.prototype.redditLoggedIn = function (state, code) {
                 client_secret: "",
                 redirect_uri: reddit.redirect_url,
                 grant_type: 'authorization_code',
-                state: 'abcdefghi1234'
+                state: state
             },
             username: reddit.client_id,
             password: "",
@@ -2786,11 +2896,15 @@ NMSCE.prototype.redditCreate = function (state, accessToken) {
 
         if (state) {
             let path = state.split("_")
-            let ref = bhs.fs.doc("nmsce/" + path[1].idToName() + "/" + path[2] + "/" + path[3])
-            ref.get().then(doc => {
-                if (doc.exists)
-                    nmsce.displaySelected(doc.data(), true)
-            })
+
+            if (!nmsce.last || nmsce.last.galaxy !== path[1].idToName() || nmsce.last.type !== path[2] || nmsce.last.id !== path[3]) {
+                let ref = bhs.fs.doc("nmsce/" + path[1].idToName() + "/" + path[2] + "/" + path[3])
+                ref.get().then(doc => {
+                    if (doc.exists)
+                        nmsce.displaySingle(doc.data(), true)
+                    $("#redditPost").show()
+                })
+            }
         }
     }
 
@@ -3772,8 +3886,19 @@ NMSCE.prototype.createObserver = function (loc, fcn) {
                     if (evt.intersectionRatio > 0) {
                         if (fcn)
                             fcn($(evt.target))
-                        else
+                        else {
                             evt.target.src = evt.target.dataset.src
+                            evt.target.onerror = () => {
+                                evt.target.src = ""
+                                console.log("wait timeout")
+
+                                setTimeout(function () {
+                                    return true
+                                }, 5000)
+
+                                evt.target.src = evt.target.dataset.src
+                            }
+                        }
                         io.unobserve(evt.target)
                     }
                 }
@@ -4092,7 +4217,7 @@ NMSCE.prototype.displayListEntry = function (entry, scroll) {
         loc = eloc
     }
 
-    if (scroll)
+    if (scroll && loc.length > 0)
         $('html, body').animate({
             scrollTop: loc.offset().top
         }, 500)
@@ -4351,9 +4476,10 @@ NMSCE.prototype.toggleSub = function (id, show) {
         tloc.find(".fa-caret-square-up").show()
         tloc.find(".fa-caret-square-down").hide()
 
-        $('html, body').animate({
-            scrollTop: loc.offset().top
-        }, 500)
+        if (loc.length > 0)
+            $('html, body').animate({
+                scrollTop: loc.offset().top
+            }, 500)
     } else {
         tloc.find(".fa-caret-square-up").hide()
         tloc.find(".fa-caret-square-down").show()
@@ -5716,6 +5842,7 @@ const objectList = [{
     }, {
         name: "Photo",
         type: "img",
+        ttip: "Use this to upload a screenshot for glyph translation and/or the image for this entry.",
         required: true,
     }]
 }, {

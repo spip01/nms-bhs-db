@@ -98,7 +98,7 @@
 
 @font-face {
     font-family: 'glyph';
-    src: url('NMS-Glyphs-Mono.ttf') format('truetype');
+    src: url('/bin/NMS-Glyphs-Mono.ttf') format('truetype');
 }
 
 .glyph {

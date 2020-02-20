@@ -14,26 +14,53 @@ async function main() {
         for (let ref of refs) { // galaxy
             // ref.listCollections().then(async refs => {
             // for (let ref of refs) { // type
-            ref = ref.collection("Multi-Tool")
+
+            /* ref = ref.collection("Ship") // Freighter
             let snapshot = await ref.get()
-            //console.log(ref.path, snapshot.size)
 
             for (let doc of snapshot.docs) {
-                let platform = ""
                 let e = doc.data()
-                if (e.platform === "PS4")
-                    platform = "PS4"
-                else if (e.tags && e.tags.includes("xbox"))
-                    platform = "XBox"
-                else platform = "PC"
+                let parts = {}
+                console.log(e.id, e.bodies ? JSON.stringify(e.bodies) : "", e.wings ? JSON.stringify(e.wings) : "")
 
-                console.log(platform, e.platform)
+                switch (e.Type) {
+                    case "Fighter":
+                    case "Hauler":
+                    case "Shuttle":
+                        parts = e.wings ? e.wings : {}
+                        if (e.bodies)
+                            for (let p of Object.keys(e.bodies))
+                                parts["h" + (parseInt(p.slice(1)) + 100)] = true
+                        break
+                    case "Explorer":
+                    case "Exotic":
+                        parts = e.bodies
+                }
+
+                console.log(e.id, JSON.stringify(parts))
+                doc.ref.set({parts:parts},{merge:true})
+            }*/
+
+            ref = ref.collection("Freighter")
+            let snapshot = await ref.get()
+
+            for (let doc of snapshot.docs) {
+                let e = doc.data()
+                console.log(e.id, e.common ? JSON.stringify(e.common) : "", e.capital ? JSON.stringify(e.capital) : "")
+
+                let parts = e.common ? e.common : {}
+                if (e.capital)
+                    for (let p of Object.keys(e.capital))
+                        parts["h" + (parseInt(p.slice(1)) + 100)] = true
+
+                console.log(e.id, JSON.stringify(parts))
                 doc.ref.set({
-                    Platform: platform
+                    parts: parts
                 }, {
                     merge: true
                 })
             }
+
             //     }
             // })
         }
@@ -41,93 +68,3 @@ async function main() {
 }
 
 main()
-
-function getIndex(list, field, id) {
-    if (!id)
-        return -1
-
-    return list.map(x => {
-        if (field === "name" && typeof x.match !== "undefined" && id.match(x.match))
-            return x.name.toLowerCase()
-        else
-            return typeof x[field] === "string" ? x[field].toLowerCase() : x[field]
-    }).indexOf(typeof id === "string" ? id.toLowerCase() : id)
-}
-
-const economyList = [{
-    name: "None",
-    number: 0
-}, {
-    name: "Declining",
-    number: 1
-}, {
-    name: "Destitute",
-    number: 1
-}, {
-    name: "Failing",
-    number: 1
-}, {
-    name: "Fledgling",
-    number: 1
-}, {
-    name: "Low supply",
-    number: 1
-}, {
-    name: "Struggling",
-    number: 1
-}, {
-    name: "Unpromising",
-    number: 1
-}, {
-    name: "Unsuccessful",
-    number: 1
-}, {
-    name: "Adequate",
-    number: 2
-}, {
-    name: "Balanced",
-    number: 2
-}, {
-    name: "Comfortable",
-    number: 2
-
-}, {
-    name: "Developing",
-    number: 2
-}, {
-    name: "Medium Supply",
-    number: 2
-}, {
-    name: "Promising",
-    number: 2
-}, {
-    name: "Satisfactory",
-    number: 2
-}, {
-    name: "Sustainable",
-    number: 2
-}, {
-    name: "Advanced",
-    number: 3
-}, {
-    name: "Affluent",
-    number: 3
-}, {
-    name: "Booming",
-    number: 3
-}, {
-    name: "Flourishing",
-    number: 3
-}, {
-    name: "High Supply",
-    number: 3
-}, {
-    name: "Opulent",
-    number: 3
-}, {
-    name: "Prosperous",
-    number: 3
-}, {
-    name: "Wealthy",
-    number: 3
-}]
