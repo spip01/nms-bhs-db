@@ -1769,8 +1769,7 @@
        style="display:inline;fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
        inkscape:label="#g1043">
       <desc
-         id="desc4983">{&quot;group&quot;:[1],
-&quot;slots&quot;:&quot;T3&quot;}</desc>
+         id="desc4983">{&quot;group&quot;:[1]}</desc>
       <g
          id="g1517"
          transform="translate(-313.22096,-59.5641)"
@@ -2801,8 +2800,7 @@
        transform="matrix(0.94732073,0,0,0.94732073,-1.8494172,-177.03281)"
        inkscape:label="#g3968">
       <desc
-         id="desc4985">{&quot;group&quot;:[2],
-&quot;slots&quot;:&quot;T2&quot;}</desc>
+         id="desc4985">{&quot;group&quot;:[2]}</desc>
       <path
          sodipodi:nodetypes="cccccccccccccccccccccccccc"
          inkscape:connector-curvature="0"
@@ -3011,8 +3009,7 @@
        style="display:inline;fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
        inkscape:label="#g2398">
       <desc
-         id="desc4987">{&quot;group&quot;:[2],
-&quot;slots&quot;:&quot;T2&quot;}</desc>
+         id="desc4987">{&quot;group&quot;:[2]}</desc>
       <path
          inkscape:connector-curvature="0"
          style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.40000001;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -3165,8 +3162,7 @@
        style="display:inline;fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
        inkscape:label="#g2460">
       <desc
-         id="desc4989">{&quot;group&quot;:[2],
-&quot;slots&quot;:&quot;T2&quot;}</desc>
+         id="desc4989">{&quot;group&quot;:[2]}</desc>
       <path
          transform="matrix(0.01657829,0,0,0.01657829,31.078975,270.97383)"
          sodipodi:nodetypes="aacccccccccccccccccccccccccccccccaaa"
@@ -3350,8 +3346,7 @@
        style="display:inline;fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
        inkscape:label="#g2492">
       <desc
-         id="desc4991">{&quot;group&quot;:[2],
-&quot;slots&quot;:&quot;T2&quot;}</desc>
+         id="desc4991">{&quot;group&quot;:[2]}</desc>
       <path
          transform="matrix(0.01564088,-0.00190076,0.00190076,0.01564088,48.442277,272.02882)"
          sodipodi:nodetypes="ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"

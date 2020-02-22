@@ -433,6 +433,9 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
         $("#pnl-map [id|='slist']").hide()
         $("#pnl-map [id|='pnl']").hide()
 
+        let tloc = $("#tab-Ship")
+        tloc.click()
+
         clr($("#panels"))
 
         if (fnmsce)
@@ -779,7 +782,7 @@ NMSCE.prototype.displaySingle = function (entry, noscroll) {
         for (let i of list) {
             let loc = map.find("#map-" + i)
             if (loc.length > 0)
-                selectMap(loc, true)
+                nmsce.selectMap(loc, true)
         }
     }
 
@@ -844,7 +847,7 @@ NMSCE.prototype.displaySearch = function (search) {
                 map = map.find("#row-" + itm.name)
 
                 for (let i of list)
-                    selectMap(map.find("#map-" + i), true)
+                    nmsce.selectMap(map.find("#map-" + i), true)
                 break
         }
     }
@@ -1610,17 +1613,6 @@ NMSCE.prototype.buildTypePanels = function () {
     if (fnmsce)
         $("[id|='search']").show()
 
-    $("area").mouseenter(function () {
-        let id = $(this).attr("alt")
-        let loc = $(this).closest("[id|='row']").find("#map-hover [alt='" + id + "']")
-        loc.show()
-        return false
-    }).mouseleave(function () {
-        let loc = $(this).closest("[id|='row']").find("#map-hover")
-        loc.find("img").hide()
-        return false
-    })
-
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (evt) {
         let id = $(evt.currentTarget).prop("id").stripID()
 
@@ -1956,7 +1948,7 @@ NMSCE.prototype.setMapSize = function (loc) {
 
         let h = $("#panels").height()
         let w = $(l).width()
-        let size = nmsce.calcImageSize(svgw, svgh, w, h / 2, true)
+        let size = nmsce.calcImageSize(svgw, svgh, w, h / maps.length, true)
 
         svg.attr("preserveAspectRatio", "xMidYMid meet")
         svg.attr("width", size.width)
@@ -1992,15 +1984,15 @@ NMSCE.prototype.loadMap = function (loc, fname) {
         }
 
         bdr.click(function () {
-            selectMap(this)
+            nmsce.selectMap(this)
         })
 
         bdr.mouseenter(function () {
-            mouseEnter(this)
+            nmsce.mapEnter(this)
         })
 
         bdr.mouseleave(function () {
-            mouseLeave(this)
+            nmsce.mapLeave(this)
         })
     })
 }
@@ -2013,88 +2005,137 @@ const mapColors = {
     error: "#ff0000",
 }
 
-function selectMap(evt, set) {
+function svgBtnOver(evt) {}
+
+function svgBtnOut(evt) {}
+
+function svgBtnClick(evt) {}
+
+NMSCE.prototype.selectMap = function (evt, set) {
     let evtid = $(evt).prop("id").stripID()
     let pnl = $(evt).closest("[id|='slist']")
 
     if (pnl.length === 0)
-        pnl = $(evt).closest("[id|='row']")
+        pnl = $(evt).closest("[id|='pnl']")
 
     let pnlid = pnl.prop("id").stripID().toLowerCase()
     let parts = nmsce[pnlid]
 
     let part = parts[evtid]
+    let partsList = Object.keys(parts)
     let selected = part.state = set || part.state !== "selected" ? "selected" : "enabled"
 
-    for (let p of Object.keys(parts))
+    for (let p of partsList)
         if (p !== "type")
             parts[p].state = parts[p].state === "selected" ? "selected" : "enabled"
 
     let slots = "T1"
-
-    const processPart = function (id) {
+    let slotsfound = false
+    
+    const selectPaired = function (id) {
         let part = parts[id]
-        for (let k of Object.keys(part)) {
-            switch (k) {
-                case "slots":
-                    if (slots < part[k])
-                        slots = part[k]
-                    break
+        if (id !== "type" && part.state === "selected" && part.pair) {
+            let found = false
+            if (part.altGroup)
+                for (let p of partsList)
+                    if (p !== "type" && p !== id) {
+                        let check = parts[p]
+                        if (check.state === "selected" && check.group) {
+                            let intersection = part.altGroup.filter(x => check.group.includes(x))
 
-                case "requires":
-                    for (let p of part[k])
-                        parts[p].state = "selected"
-                    break
-
-                case "group":
-                    for (let p of Object.keys(parts)) {
-                        if (p !== "type" && id != p && parts[p].group) {
-                            let intersection = []
-                            if (part.okGroup)
-                                intersection = part.okGroup.filter(x => parts[p].group.includes(x))
-
-                            if (intersection.length === 0) {
-                                intersection = part[k].filter(x => parts[p].group.includes(x))
-                                if (intersection.length > 0)
-                                    parts[p].state = set && (parts[p].state === "selected" || parts[p].state === "error") ? "error" : "disabled"
+                            if (intersection.length > 0) {
+                                found = true
+                                break
                             }
                         }
                     }
-                    break
 
-                case "only":
-                    for (let p of Object.keys(parts))
-                        if (p !== "type" && id !== p) {
-                            let intersection = []
-                            if (part.okGroup && parts[p].group)
-                                intersection = part.okGroup.filter(x => parts[p].group.includes(x))
+            if (!found)
+                parts[part.pair].state = "selected"
+        }
+    }
 
-                            if (intersection.length === 0 && !part[k].includes(p))
-                                parts[p].state = set && (parts[p].state === "selected" || parts[p].state === "error") ? "error" : "disabled"
+    const selectRequired = function (id) {
+        let part = parts[id]
+        if (id !== "type" && part.state === "selected" && part.requires)
+            for (let p of part.requires) {
+                parts[p].state = "selected"
+            }
+    }
+
+    let disableParts = function (id) {
+        if (id !== "type") {
+            let part = parts[id]
+            if (part.state === "selected") {
+                if (part.group) {
+                    for (let p of partsList)
+                        if (p !== "type" && p !== id) {
+                            let check = parts[p]
+
+                            if (check.group) {
+                                let intersection = []
+                                if (part.okGroup)
+                                    intersection = part.okGroup.filter(x => check.group.includes(x))
+
+                                if (intersection.length === 0) {
+                                    intersection = part.group.filter(x => check.group.includes(x))
+
+                                    if (intersection.length > 0)
+                                        check.state = set && (check.state === "selected" || check.state === "error") ? "error" : "disabled"
+                                }
+                            }
                         }
-                    break
+                }
 
-                case "excludes":
-                    for (let p of part[k])
+                if (part.only) {
+                    for (let p of partsList)
+                        if (p !== id && p !== "type") {
+                            let check = parts[p]
+
+                            if (id !== p) {
+                                let intersection = []
+                                if (part.okGroup && check.group)
+                                    intersection = part.okGroup.filter(x => check.group.includes(x))
+
+                                if (intersection.length === 0 && !part[k].includes(p))
+                                    check.state = set && (check.state === "selected" || check.state === "error") ? "error" : "disabled"
+                            }
+                        }
+                }
+
+                if (part.excludes) {
+                    for (let p of part.excludes)
                         parts[p].state = set && (parts[p].state === "selected" || parts[p].state === "error") ? "error" : "disabled"
-                    break
+                }
             }
         }
     }
 
-    if (selected === "selected")
-        processPart(evtid)
+    selectPaired(evtid)
+    selectRequired(evtid)
+    disableParts(evtid)
 
-    for (let p of Object.keys(parts)) {
-        if (p !== "type" && parts[p].state === "selected")
-            processPart(p)
+    for (let id of partsList)
+        selectRequired(id)
+
+    for (let id of partsList)
+        disableParts(id)
+
+    for (let p of partsList)
+        if (p !== "type" && parts[p].state === "selected" && parts[p].slots) {
+            slotsfound = true
+
+            if (parts[p].slots > slots)
+                slots = parts[p].slots
+        }
+
+    if (slotsfound) {
+        let sloc = $("#typePanels [id|='row-Slots']")
+        sloc.find("input").prop("checked", false)
+
+        let rloc = sloc.find("[id|='rdo-" + slots + "']")
+        rloc.prop("checked", true)
     }
-
-    let sloc = $("#typePanels [id|='row-Slots']")
-    sloc.find("input").prop("checked", false)
-
-    let rloc = sloc.find("[id|='rdo-" + slots + "']")
-    rloc.prop("checked", true)
 
     part.state = selected === "selected" ? "selected" : part.state
 
@@ -2111,13 +2152,13 @@ function colorMapPart(part) {
     part.loc.find("*").css("stroke", mapColors[part.state])
 }
 
-function mouseEnter(evt) {
+NMSCE.prototype.mapEnter = function (evt) {
     let id = $(evt).prop("id").stripID()
     let loc = $(evt).closest("[id|='row']").find("#map-" + id)
     loc.find("*").css("stroke", mapColors.hover)
 }
 
-function mouseLeave(evt) {
+NMSCE.prototype.mapLeave = function (evt) {
     let id = $(evt).prop("id").stripID()
     let pnl = $(evt).closest("[id|='slist']")
     let pnlid
@@ -2125,7 +2166,7 @@ function mouseLeave(evt) {
     if (pnl.length > 0)
         pnlid = pnl.prop("id").stripID().toLowerCase()
     else
-        pnlid = $(evt).closest("[id|='row']").prop("id").stripID().toLowerCase()
+        pnlid = $(evt).closest("[id|='pnl']").prop("id").stripID().toLowerCase()
 
     colorMapPart(nmsce[pnlid][id])
 }
@@ -4592,7 +4633,6 @@ const shipList = [{
         T3: 30-38 slots`,
     bodies: "/images/fighter-bodies.svg",
     wings: "/images/fighter-wings.svg",
-    asymmetric: true,
 }, {
     name: "Hauler",
     slotList: tierList,
@@ -4617,13 +4657,12 @@ const shipList = [{
     asymmetric: true,
 }, {
     name: "Explorer",
-    bodies: "/images/explorer.svg",
+    bodies: "/images/explorer-bodies.svg",
     slotList: tierList,
     slotTtip: `
         T1: 15-19 slots<br>
         T2: 20-29 slots<br>
         T3: 30-38 slots`,
-    asymmetric: true,
 }, {
     name: "Exotic",
     bodies: "/images/exotic.svg",
