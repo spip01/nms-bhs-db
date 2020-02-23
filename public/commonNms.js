@@ -264,6 +264,10 @@ function calcAngle(saddr, eaddr, xp, yp) {
     return Number.isNaN(angle) ? 0 : angle
 }
 
+Array.prototype.intersects = function (array) {
+    return this.filter(x => array.includes(x))
+}
+
 Date.prototype.toDateLocalTimeString = function () {
     const ten = function (i) {
         return i < 10 ? '0' + i : i

@@ -2026,40 +2026,54 @@ NMSCE.prototype.selectMap = function (evt, set) {
     let selected = part.state = set || part.state !== "selected" ? "selected" : "enabled"
 
     for (let p of partsList)
-        if (p !== "type")
+        if (p !== "type") {
+            parts[p].proc = false
             parts[p].state = parts[p].state === "selected" ? "selected" : "enabled"
+        }
 
-    let slots = "T1"
-    let slotsfound = false
-    
+    const setState = function (id, state) {
+        let part = parts[id]
+
+        if (!part.proc) {
+            part.proc = true
+            part.state = state
+
+            selectRequired(id)
+            selectPaired(id)
+            disableParts(id)
+        }
+    }
+
     const selectPaired = function (id) {
         let part = parts[id]
         if (id !== "type" && part.state === "selected" && part.pair) {
             let found = false
             if (part.altGroup)
-                for (let p of partsList)
-                    if (p !== "type" && p !== id) {
-                        let check = parts[p]
-                        if (check.state === "selected" && check.group) {
-                            let intersection = part.altGroup.filter(x => check.group.includes(x))
+                for (let p of partsList) {
+                    let check = parts[p]
+                    if (check.state === "selected" /* && check.pair && parts[check.pair].state !== "selected"*/ ) {
+                        let intersects = part.altGroup.intersects(check.group)
 
-                            if (intersection.length > 0) {
-                                found = true
-                                break
-                            }
+                        if (intersects.length > 0) {
+                            found = true
+                            break
                         }
                     }
+                }
 
             if (!found)
-                parts[part.pair].state = "selected"
+                setState(part.pair, "selected")
         }
     }
 
     const selectRequired = function (id) {
         let part = parts[id]
-        if (id !== "type" && part.state === "selected" && part.requires)
+        if (part.requires)
             for (let p of part.requires) {
-                parts[p].state = "selected"
+                if (part.state === "selected")
+                    setState(p, part.state)
+                else if (parts[p].requires && parts[p].requires.includes(id))
+                    setState(p, part.state)
             }
     }
 
@@ -2073,59 +2087,36 @@ NMSCE.prototype.selectMap = function (evt, set) {
                             let check = parts[p]
 
                             if (check.group) {
-                                let intersection = []
+                                let intersects = []
                                 if (part.okGroup)
-                                    intersection = part.okGroup.filter(x => check.group.includes(x))
+                                    intersects = part.okGroup.intersects(check.group)
 
-                                if (intersection.length === 0) {
-                                    intersection = part.group.filter(x => check.group.includes(x))
+                                if (intersects.length === 0) {
+                                    intersects = part.group.intersects(check.group)
 
-                                    if (intersection.length > 0)
-                                        check.state = set && (check.state === "selected" || check.state === "error") ? "error" : "disabled"
+                                    if (intersects.length > 0)
+                                        setState(p, set && (check.state === "selected" || check.state === "error") ? "error" : "disabled")
                                 }
                             }
                         }
-                }
-
-                if (part.only) {
-                    for (let p of partsList)
-                        if (p !== id && p !== "type") {
-                            let check = parts[p]
-
-                            if (id !== p) {
-                                let intersection = []
-                                if (part.okGroup && check.group)
-                                    intersection = part.okGroup.filter(x => check.group.includes(x))
-
-                                if (intersection.length === 0 && !part[k].includes(p))
-                                    check.state = set && (check.state === "selected" || check.state === "error") ? "error" : "disabled"
-                            }
-                        }
-                }
-
-                if (part.excludes) {
-                    for (let p of part.excludes)
-                        parts[p].state = set && (parts[p].state === "selected" || parts[p].state === "error") ? "error" : "disabled"
                 }
             }
         }
     }
 
-    selectPaired(evtid)
-    selectRequired(evtid)
-    disableParts(evtid)
-
-    for (let id of partsList)
-        selectRequired(id)
-
-    for (let id of partsList)
-        disableParts(id)
+    setState(evtid, selected)
 
     for (let p of partsList)
-        if (p !== "type" && parts[p].state === "selected" && parts[p].slots) {
+        disableParts(p)
+
+    let slots = "T1"
+    let slotsfound = false
+
+    for (let p of partsList)
+        if (p !== "type" && parts[p].slots) {
             slotsfound = true
 
-            if (parts[p].slots > slots)
+            if (parts[p].state === "selected" && parts[p].slots > slots)
                 slots = parts[p].slots
         }
 
@@ -3920,11 +3911,11 @@ NMSCE.prototype.getAfterDate = function (date) {
 }
 
 NMSCE.prototype.createObserver = function (loc, fcn) {
-    if (window.IntersectionObserver) {
-        var io = new IntersectionObserver(
+    if (window.intersectsObserver) {
+        var io = new intersectsObserver(
             evts => {
                 for (let evt of evts) {
-                    if (evt.intersectionRatio > 0) {
+                    if (evt.intersectsRatio > 0) {
                         if (fcn)
                             fcn($(evt.target))
                         else {
@@ -3981,6 +3972,8 @@ NMSCE.prototype.displayResultList = function (id) {
 
 NMSCE.prototype.displayThumbnails = function (loc) {
     let io = nmsce.createObserver(loc)
+    if (!io)
+        console.log("no observer")
 
     let imgs = loc.find("[id|='img']")
     for (let l of imgs) {
@@ -3988,8 +3981,11 @@ NMSCE.prototype.displayThumbnails = function (loc) {
 
         let ref = bhs.fbstorage.ref().child(data.thumb)
         ref.getDownloadURL().then(url => {
-            $(l).attr("data-src", url)
-            io.observe(l)
+            if (io) {
+                $(l).attr("data-src", url)
+                io.observe(l)
+            } else
+                $(l).attr("src", url)
         }).catch(err => console.log(err))
     }
 }
