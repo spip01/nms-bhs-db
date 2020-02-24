@@ -25,7 +25,7 @@
       "**/node_modules/**"
     ],
     "headers": [{
-      "source": "**/*.@(eot|otf|ttf|ttc|woff|font.css)",
+      "source": "**/*.@(eot|otf|ttf|ttc|woff|css)",
       "headers": [{
         "key": "Access-Control-Allow-Origin",
         "value": "*"
@@ -44,7 +44,7 @@
       "**/node_modules/**"
     ],
     "headers": [{
-      "source": "**/*.@(eot|otf|ttf|ttc|woff|font.css)",
+      "source": "**/*.@(eot|otf|ttf|ttc|woff|jpg|png)",
       "headers": [{
         "key": "Access-Control-Allow-Origin",
         "value": "*"
@@ -80,7 +80,7 @@
         "value": "*"
       }, {
         "key": "Cache-Control",
-        "value": "max-age=43200"
+        "value": "max-age=100000"
       }]
     }]
   }]

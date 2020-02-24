@@ -8,7 +8,7 @@ const displayPath = "/nmsce/disp/"
 const originalPath = "/nmsce/orig/"
 const thumbPath = "/nmsce/disp/thumb/"
 
-const tm_url = "https://teachablemachine.withgoogle.com/models/w6CSJkkY/";
+const tm_url = "https://teachablemachine.withgoogle.com/models/w6CSJkkY/"
 
 $(document).ready(async () => {
     startUp()
@@ -794,7 +794,6 @@ NMSCE.prototype.displaySingle = function (entry, noscroll) {
     $("#redditlink").val(entry.redditlink ? entry.redditlink : "")
 
     $("#save").text("UPDATE")
-
     $("#delete").removeClass("disabled")
     $("#delete").removeAttr("disabled")
 
@@ -1011,7 +1010,7 @@ NMSCE.prototype.refineSearch = function () {
 }
 
 NMSCE.prototype.searchList = function (s, list, loc) {
-    let nfound = 0;
+    let nfound = 0
 
     for (let l of Object.keys(list)) {
         let e = list[l]
@@ -2005,18 +2004,44 @@ const mapColors = {
     error: "#ff0000",
 }
 
-function svgBtnOver(evt) {}
+function setCursor(cursor) {
+    $("body")[0].style.cursor = cursor
+}
 
-function svgBtnOut(evt) {}
+function setAsym(evt) {
+    if ($(evt).prop("checked"))
+        $("#asym-checkmark").show()
+    else
+        $("#asym-checkmark").hide()
+}
 
-function svgBtnClick(evt) {}
+function toggleAsym(evt) {
+    let type = $(evt).closest("[id|='slist']").prop("id")
+    let pnl = $(evt).closest("[id|='pnl']").prop("id")
+    let asym = $("#typePanels #" + pnl + " #" + type + " #ck-Asymmetric")
+
+    if (asym.prop("checked")) {
+        asym.prop("checked", false)
+        $("#asym-checkmark").hide()
+    } else {
+        asym.prop("checked", true)
+        $("#asym-checkmark").show()
+    }
+}
 
 NMSCE.prototype.selectMap = function (evt, set) {
     let evtid = $(evt).prop("id").stripID()
-    let pnl = $(evt).closest("[id|='slist']")
+    let type = $(evt).closest("[id|='slist']")
+    let pnl = $(evt).closest("[id|='pnl']")
+    let asym = $("#typePanels #" + pnl.prop("id"))
 
-    if (pnl.length === 0)
-        pnl = $(evt).closest("[id|='pnl']")
+    if (type.length !== 0) {
+        asym = asym.find("#" + type.prop("id"))
+        pnl = type
+    }
+
+    asym = asym.find("#ck-Asymmetric")
+    asym = asym.length > 0 ? asym.prop("checked") : false
 
     let pnlid = pnl.prop("id").stripID().toLowerCase()
     let parts = nmsce[pnlid]
@@ -2039,30 +2064,11 @@ NMSCE.prototype.selectMap = function (evt, set) {
             part.state = state
 
             selectRequired(id)
-            selectPaired(id)
+
+            if (!asym && !set && part.pair)
+                setState(part.pair, part.state)
+
             disableParts(id)
-        }
-    }
-
-    const selectPaired = function (id) {
-        let part = parts[id]
-        if (id !== "type" && part.state === "selected" && part.pair) {
-            let found = false
-            if (part.altGroup)
-                for (let p of partsList) {
-                    let check = parts[p]
-                    if (check.state === "selected" /* && check.pair && parts[check.pair].state !== "selected"*/ ) {
-                        let intersects = part.altGroup.intersects(check.group)
-
-                        if (intersects.length > 0) {
-                            found = true
-                            break
-                        }
-                    }
-                }
-
-            if (!found)
-                setState(part.pair, "selected")
         }
     }
 
@@ -2094,7 +2100,7 @@ NMSCE.prototype.selectMap = function (evt, set) {
                                 if (intersects.length === 0) {
                                     intersects = part.group.intersects(check.group)
 
-                                    if (intersects.length > 0)
+                                    if (intersects.length > 0 && !(part.requires && part.requires.includes(p)))
                                         setState(p, set && (check.state === "selected" || check.state === "error") ? "error" : "disabled")
                                 }
                             }
@@ -2109,22 +2115,24 @@ NMSCE.prototype.selectMap = function (evt, set) {
     for (let p of partsList)
         disableParts(p)
 
-    let slots = "T1"
+    let min = ""
     let slotsfound = false
 
     for (let p of partsList)
         if (p !== "type" && parts[p].slots) {
             slotsfound = true
 
-            if (parts[p].state === "selected" && parts[p].slots > slots)
-                slots = parts[p].slots
+            if (parts[p].state === "selected") {
+                if (!min || parts[p].slots < min)
+                    min = parts[p].slots
+            }
         }
 
     if (slotsfound) {
         let sloc = $("#typePanels [id|='row-Slots']")
         sloc.find("input").prop("checked", false)
 
-        let rloc = sloc.find("[id|='rdo-" + slots + "']")
+        let rloc = sloc.find("[id|='rdo-" + (min ? min : "T1") + "']")
         rloc.prop("checked", true)
     }
 
@@ -2841,7 +2849,7 @@ NMSCE.prototype.redditLoggedIn = function (state, code) {
             password: "",
             crossDomain: true,
             beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Basic ' + btoa(reddit.client_id + ":"));
+                xhr.setRequestHeader('Authorization', 'Basic ' + btoa(reddit.client_id + ":"))
             },
             success(res) {
                 if (res.access_token) {
@@ -2889,7 +2897,7 @@ NMSCE.prototype.getRedditToken = function (state) {
             password: "",
             crossDomain: true,
             beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Basic ' + btoa(reddit.client_id + ":"));
+                xhr.setRequestHeader('Authorization', 'Basic ' + btoa(reddit.client_id + ":"))
             },
             success(res) {
                 if (res.access_token) {
@@ -3910,27 +3918,13 @@ NMSCE.prototype.getAfterDate = function (date) {
     }
 }
 
-NMSCE.prototype.createObserver = function (loc, fcn) {
-    if (window.intersectsObserver) {
-        var io = new intersectsObserver(
+NMSCE.prototype.createObserver = function (loc) {
+    if (window.IntersectionObserver) {
+        var io = new IntersectionObserver(
             evts => {
                 for (let evt of evts) {
-                    if (evt.intersectsRatio > 0) {
-                        if (fcn)
-                            fcn($(evt.target))
-                        else {
-                            evt.target.src = evt.target.dataset.src
-                            evt.target.onerror = () => {
-                                evt.target.src = ""
-                                console.log("wait timeout")
-
-                                setTimeout(function () {
-                                    return true
-                                }, 5000)
-
-                                evt.target.src = evt.target.dataset.src
-                            }
-                        }
+                    if (evt.intersectionRatio > 0) {
+                        evt.target.src = evt.target.dataset.src
                         io.unobserve(evt.target)
                     }
                 }
@@ -3972,8 +3966,6 @@ NMSCE.prototype.displayResultList = function (id) {
 
 NMSCE.prototype.displayThumbnails = function (loc) {
     let io = nmsce.createObserver(loc)
-    if (!io)
-        console.log("no observer")
 
     let imgs = loc.find("[id|='img']")
     for (let l of imgs) {
@@ -4629,6 +4621,7 @@ const shipList = [{
         T3: 30-38 slots`,
     bodies: "/images/fighter-bodies.svg",
     wings: "/images/fighter-wings.svg",
+    asymmetric: true,
 }, {
     name: "Hauler",
     slotList: tierList,
@@ -4636,8 +4629,7 @@ const shipList = [{
         T1: 25-31 slots<br>
         T2: 32-39 slots<br>
         T3: 40-48 slots`,
-    bodies: "/images/hauler-bodies.svg",
-    wings: "/images/hauler-wings.svg",
+    bodies: "/images/hauler.svg",
 }, {
     name: "Shuttle",
     slotList: [{
@@ -4653,8 +4645,9 @@ const shipList = [{
     asymmetric: true,
 }, {
     name: "Explorer",
-    bodies: "/images/explorer-bodies.svg",
+    bodies: "/images/explorer.svg",
     slotList: tierList,
+    asymmetric: true,
     slotTtip: `
         T1: 15-19 slots<br>
         T2: 20-29 slots<br>
@@ -5789,6 +5782,7 @@ const objectList = [{
             name: "Asymmetric",
             type: "checkbox",
             sub: "asymmetric",
+            onchange: setAsym,
             search: true,
             inputHide: true,
         }, {

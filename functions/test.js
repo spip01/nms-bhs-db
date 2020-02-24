@@ -15,65 +15,35 @@ async function main() {
             // ref.listCollections().then(async refs => {
             // for (let ref of refs) { // type
 
-            let sref = ref.collection("Ship") // Freighter
-            let snapshot = await sref.get()
+            ref = ref.collection("Ship")
+            ref = ref.where("Type", "==", "Explorer")
+            ref = ref.where("Asymmetric", "==", false)
+            let snapshot = await ref.get()
+            console.log(snapshot.size)
 
             for (let doc of snapshot.docs) {
                 let e = doc.data()
-                if (typeof e.parts === "undefined") {
-                    let parts = {}
-                    console.log(e.id, e.bodies ? JSON.stringify(e.bodies) : "", e.wings ? JSON.stringify(e.wings) : "")
+                let parts = {}
 
-                    switch (e.Type) {
-                        case "Fighter":
-                        case "Hauler":
-                        case "Shuttle":
-                            parts = e.wings ? e.wings : {}
-                            if (e.bodies)
-                                for (let p of Object.keys(e.bodies))
-                                    parts["h" + (parseInt(p.slice(1)) + 100)] = true
-                            break
-                        case "Explorer":
-                        case "Exotic":
-                            parts = e.bodies
+                if (e.parts) {
+                    parts = e.parts
+                    const pairs = [16, 20, 13, 5, 14, 15, 18, 17, 21, 24, 19, 30, 22, 25, 28, 23, 29, 31, 27, 26]
+                    let list = Object.keys(e.parts)
+
+                    for (let i of list) {
+                        let left = parseInt(i.slice(1))
+                        if (pairs.includes(left))
+                            parts["h" + (100 + left)] = true
                     }
-
-                    console.log(e.id, JSON.stringify(parts))
-                    doc.ref.set({
-                        parts: parts
-                    }, {
-                        merge: true
-                    })
-                } else if (Object.keys(e.parts).length ===0) {
-                    let url = "https://test-nms-bhs.firebaseapp.com/cedata.html?i="+e.id+"&g=Euclid&t=Ship"
-                        console.log(e._name, url)
                 }
+
+                console.log(e.id, JSON.stringify(parts))
+                doc.ref.set({
+                    parts: parts
+                }, {
+                    merge: true
+                })
             }
-
-            let fref = ref.collection("Freighter")
-            snapshot = await fref.get()
-
-            for (let doc of snapshot.docs) {
-                let e = doc.data()
-                if (typeof e.parts === "undefined") {
-                    console.log(e.id, e.common ? JSON.stringify(e.common) : "", e.capital ? JSON.stringify(e.capital) : "")
-
-                    let parts = e.common ? e.common : {}
-                    if (e.capital)
-                        for (let p of Object.keys(e.capital))
-                            parts["h" + (parseInt(p.slice(1)) + 100)] = true
-
-                    console.log(e.id, JSON.stringify(parts))
-                    doc.ref.set({
-                        parts: parts
-                    }, {
-                        merge: true
-                    })
-                }
-            }
-
-            //     }
-            // })
         }
     })
 }
