@@ -541,7 +541,7 @@ NMSCE.prototype.extractEntry = function () {
     entry.xyzs = addressToXYZ(entry.addr)
     let err = bhs.validateAddress(entry.addr)
     if (err) {
-        bhs.status(err, true)
+        bhs.status(err)
         ok = false
     }
 
@@ -550,7 +550,7 @@ NMSCE.prototype.extractEntry = function () {
             if (!last || entry.sys !== last.sys || entry.reg !== last.reg || entry.life !== last.life || entry.Economy !== last.Economy)
                 bhs.updateEntry(entry)
         } else {
-            bhs.status(bhs.user._name + " is not creator of " + entry.addr + " " + entry.sys, true)
+            bhs.status(bhs.user._name + " is not creator of " + entry.addr + " " + entry.sys)
             ok = false
         }
     }
@@ -642,7 +642,7 @@ NMSCE.prototype.extractEntry = function () {
                     }
 
                 if (!ok) {
-                    bhs.status(id + " required. Entry not saved.", 0)
+                    bhs.status(id + " required. Entry not saved.")
                     break
                 }
             }
@@ -1102,7 +1102,7 @@ NMSCE.prototype.saveSearch = function () {
             let ref = bhs.fs.doc("users/" + bhs.user.uid + "/nmsce-saved-searches/" + search.name.nameToId())
             ref.set(search, {
                 merge: true
-            }).then(() => bhs.status(search.name + " saved.", true))
+            }).then(() => bhs.status(search.name + " saved."))
         } else {
             bhs.status("No save name specified.")
             return
@@ -1158,7 +1158,7 @@ NMSCE.prototype.deleteSearch = function () {
         if (i !== -1) {
             let ref = bhs.fs.doc("users/" + bhs.user.uid + "/nmsce-saved-searches/" + name.nameToId())
             ref.delete().then(() => {
-                bhs.status(name + " search deleted.", true)
+                bhs.status(name + " search deleted.")
 
                 nmsce.searchlist.splice(i, 1)
                 let loc = $("#menu-Saved #item-" + name.nameToId())
@@ -1166,7 +1166,7 @@ NMSCE.prototype.deleteSearch = function () {
 
             })
         } else {
-            bhs.status("Named search not found.", true)
+            bhs.status("Named search not found.")
         }
     }
 }
@@ -1489,8 +1489,8 @@ NMSCE.prototype.search = function () {
 }
 
 blackHoleSuns.prototype.status = function (str, clear) {
-    if (clear)
-        $("#status").empty()
+    // if (clear)
+    //     $("#status").empty()
 
     $("#status").append(str + "</br>")
 }
@@ -2116,23 +2116,28 @@ NMSCE.prototype.selectMap = function (evt, set) {
         disableParts(p)
 
     let min = ""
+    let force = ""
     let slotsfound = false
 
-    for (let p of partsList)
-        if (p !== "type" && parts[p].slots) {
+    for (let p of partsList) {
+        let part = parts[p]
+        if (p !== "type" && (part.slots || part.slotsForce)) {
             slotsfound = true
 
-            if (parts[p].state === "selected") {
-                if (!min || parts[p].slots < min)
-                    min = parts[p].slots
+            if (part.state === "selected") {
+                if (part.slotsForce)
+                    force = part.slotsForce
+                else if (!min || part.slots < min)
+                    min = part.slots
             }
         }
+    }
 
     if (slotsfound) {
         let sloc = $("#typePanels [id|='row-Slots']")
         sloc.find("input").prop("checked", false)
 
-        let rloc = sloc.find("[id|='rdo-" + (min ? min : "T1") + "']")
+        let rloc = sloc.find("[id|='rdo-" + (force !== "" ? force : min !== "" ? min : "T1") + "']")
         rloc.prop("checked", true)
     }
 
