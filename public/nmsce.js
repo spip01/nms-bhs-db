@@ -232,6 +232,7 @@ NMSCE.prototype.changeAddr = function (evt, a) {
         let pnl = $("#panels")
 
         nmsce.dispAddr(pnl, addr)
+        nmsce.restoreImageText(null, true)
 
         if (!fnmsce) {
             $("#foundreg").hide()
@@ -444,6 +445,7 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
 
     let loc = $("#pnl-map [id|='map']")
     loc.find("*").css("stroke", mapColors.enabled)
+    $("[id='asym-checkmark']").hide()
 
     for (let p of Object.keys(nmsce)) {
         let map = nmsce[p]
@@ -694,7 +696,7 @@ NMSCE.prototype.displaySingle = function (entry, noscroll) {
 
     if (!noscroll)
         $('html, body').animate({
-            scrollTop: $('#typeTabs').offset().top
+            scrollTop: $('#panels').offset().top
         }, 500)
 
     let tloc = $("#tab-" + entry.type.nameToId())
@@ -1801,8 +1803,13 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                     l = /tname/g [Symbol.replace](l, i.name.nameToId())
                     loc.append(l)
 
-                    if (fcedata && i.default) {
-                        loc.find("#rdo-" + i.name).prop("checked", true)
+                    let rdo = loc.find("#rdo-" + i.name)
+                    if (fcedata) {
+                        if (i.default)
+                            rdo.prop("checked", true)
+
+                        if (f.onchange)
+                            rdo.change(f.onchange)
                     }
                 }
                 break
@@ -1964,6 +1971,7 @@ NMSCE.prototype.loadMap = function (loc, fname) {
 
         let map = loc.find("[id|='map']")
         map.find("*").css("stroke", mapColors.enabled)
+        $("[id='asym-checkmark']").hide()
 
         let name = fname.replace(/\/.*\/(.*?)[-.].*/, "$1")
         if (typeof nmsce[name] === "undefined")
@@ -2004,15 +2012,22 @@ const mapColors = {
     error: "#ff0000",
 }
 
+function updateSlots() {
+    nmsce.restoreImageText(null, true)
+}
+
 function setCursor(cursor) {
     $("body")[0].style.cursor = cursor
 }
 
 function setAsym(evt) {
-    if ($(evt).prop("checked"))
-        $("#asym-checkmark").show()
-    else
-        $("#asym-checkmark").hide()
+    if (evt.target.checked) {
+        $("[id='ck-Asymmetric']").prop("checked", true)
+        $("[id='asym-checkmark']").show()
+    } else {
+        $("[id='ck-Asymmetric']").prop("checked", false)
+        $("[id='asym-checkmark']").hide()
+    }
 }
 
 function toggleAsym(evt) {
@@ -2021,11 +2036,11 @@ function toggleAsym(evt) {
     let asym = $("#typePanels #" + pnl + " #" + type + " #ck-Asymmetric")
 
     if (asym.prop("checked")) {
-        asym.prop("checked", false)
-        $("#asym-checkmark").hide()
+        $("[id='ck-Asymmetric']").prop("checked", false)
+        $("[id='asym-checkmark']").hide()
     } else {
-        asym.prop("checked", true)
-        $("#asym-checkmark").show()
+        $("[id='ck-Asymmetric']").prop("checked", true)
+        $("[id='asym-checkmark']").show()
     }
 }
 
@@ -2116,7 +2131,6 @@ NMSCE.prototype.selectMap = function (evt, set) {
         disableParts(p)
 
     let min = ""
-    let force = ""
     let slotsfound = false
 
     for (let p of partsList) {
@@ -2125,20 +2139,19 @@ NMSCE.prototype.selectMap = function (evt, set) {
             slotsfound = true
 
             if (part.state === "selected") {
-                if (part.slotsForce)
-                    force = part.slotsForce
-                else if (!min || part.slots < min)
+                if (!min || part.slots < min)
                     min = part.slots
             }
         }
     }
 
-    if (slotsfound) {
+    if (slotsfound && fcedata) {
         let sloc = $("#typePanels [id|='row-Slots']")
         sloc.find("input").prop("checked", false)
 
-        let rloc = sloc.find("[id|='rdo-" + (force !== "" ? force : min !== "" ? min : "T1") + "']")
+        let rloc = sloc.find("[id|='rdo-" + (min !== "" ? min : "T1") + "']")
         rloc.prop("checked", true)
+        nmsce.restoreImageText(null, true)
     }
 
     part.state = selected === "selected" ? "selected" : part.state
@@ -2394,8 +2407,10 @@ NMSCE.prototype.getImageText = function (evt, draw) {
                 break
             case "radio":
                 loc = loc.find(":checked")
-                if (loc.length > 0)
-                    text = loc.closest("[id|='row']").prop("id").stripID() + " " + loc.prop("id").stripID()
+                if (loc.length > 0) {
+                    let id = loc.closest("[id|='row']").prop("id").stripID()
+                    text = (id !== "Lifeform" ? id + " " : "") + loc.prop("id").stripID()
+                }
                 break
             default:
                 if (loc.is("input"))
@@ -2427,12 +2442,15 @@ NMSCE.prototype.getImageText = function (evt, draw) {
 NMSCE.prototype.restoreImageText = function (txt, draw) {
     let loc = $("#img-text")
 
+    if (!fcedata)
+        return
+
     if (txt)
         nmsce.imageText = mergeObjects(nmsce.imageText, txt)
 
     nmsce.imageText.selGlyphs.ck = false
     nmsce.imageText.myLogo.ck = false
-    nmsce.imageText.logo.ck = false
+    nmsce.imageText.logo.ck = true
 
     let keys = Object.keys(nmsce.imageText)
     for (let id of keys) {
@@ -2495,6 +2513,7 @@ NMSCE.prototype.onLoadLogo = function (evt) {
     text.right = img.naturalWidth * scale
     text.ascent = 0
     text.left = 0
+    text.ck = true
 
     $("#ck-" + text.id).prop("checked", true)
     if (text.id !== "logo")
@@ -3263,7 +3282,7 @@ NMSCE.prototype.extractGlyphs = function (mid) {
         nmsce.changeAddr(null, g)
 
         $('html, body').animate({
-            scrollTop: $("#id-glyphCanvas").offset().top
+            scrollTop: $("#panels").offset().top
         }, 500)
 
         $("body")[0].style.cursor = "default"
@@ -3639,7 +3658,7 @@ NMSCE.prototype.getEntries = function () {
 
             let ref = bhs.fs.collection("nmsce/" + bhs.user.galaxy + "/" + t.name)
             ref = ref.where("uid", "==", bhs.user.uid)
-            ref = ref.orderBy("modded", "desc")
+            ref = ref.orderBy("created", "desc")
 
             p.push(ref.get().then(snapshot => {
                 return snapshot
@@ -4077,7 +4096,7 @@ NMSCE.prototype.displaySelected = function (e, noscroll) {
 
         if (!noscroll)
             $('html, body').animate({
-                scrollTop: $('#imgtable').offset().top
+                scrollTop: $('#dispimage').offset().top
             }, 500)
     })
 
@@ -4298,6 +4317,7 @@ NMSCE.prototype.sortLoc = function (evt) {
             })
             break
         case "Modified":
+        case "Created":
             list.sort((a, b) => {
                 let av = new Date($(a).find("#" + id).text().stripMarginWS())
                 let bv = new Date($(b).find("#" + id).text().stripMarginWS())
@@ -4387,6 +4407,8 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
         h += /title/ [Symbol.replace](l, "Editors Choice")
         l = /idname/g [Symbol.replace](itm, "Visited")
         h += /title/ [Symbol.replace](l, "Visited")
+        l = /idname/g [Symbol.replace](itm, "Created")
+        h += /title/ [Symbol.replace](l, "Created")
         l = /idname/g [Symbol.replace](itm, "Modified")
         h += /title/ [Symbol.replace](l, "Modified")
         l = /idname/g [Symbol.replace](itm, "Posted")
@@ -4401,18 +4423,15 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
         l = /idname/g [Symbol.replace](itm, "Visited")
         l = /pointer/ [Symbol.replace](l, "")
         h += /title/ [Symbol.replace](l, e.votes.visited)
+        l = /idname/g [Symbol.replace](itm, "Created")
+        l = /pointer/ [Symbol.replace](l, "")
+        h += /title/ [Symbol.replace](l, e.created.toDate().toDateLocalTimeString())
         l = /idname/g [Symbol.replace](itm, "Modified")
         l = /pointer/ [Symbol.replace](l, "")
         h += /title/ [Symbol.replace](l, e.modded.toDate().toDateLocalTimeString())
         l = /idname/g [Symbol.replace](itm, "Posted")
         l = /pointer/ [Symbol.replace](l, "")
-
-        let r = e.reddit
-        let date = r ? "Posted " : ""
-        if (r && typeof r.toDate !== "undefined")
-            date += r.toDate().toDateLocalTimeString()
-
-        h += /title/ [Symbol.replace](l, date)
+        h += /title/ [Symbol.replace](l, e.reddit ? e.reddit.toDate().toDateLocalTimeString() : "")
     }
 
     h += end
@@ -4624,8 +4643,7 @@ const shipList = [{
         T1: 15-19 slots<br>
         T2: 20-29 slots<br>
         T3: 30-38 slots`,
-    bodies: "/images/fighter-bodies.svg",
-    wings: "/images/fighter-wings.svg",
+    bodies: "/images/fighter.svg",
     asymmetric: true,
 }, {
     name: "Hauler",
@@ -5781,6 +5799,7 @@ const objectList = [{
             type: "radio",
             ttip: "slotTtip",
             sub: "slotList",
+            onchange: updateSlots,
             imgText: true,
             search: true,
         }, {
@@ -5861,6 +5880,13 @@ const objectList = [{
         inputHide: true,
     }, {
         name: "Color",
+        type: "tags",
+        imgText: true,
+        list: colorList,
+        max: 4,
+        search: true,
+    }, {
+        name: "Markings",
         type: "tags",
         imgText: true,
         list: colorList,
@@ -5950,16 +5976,11 @@ const objectList = [{
         type: "img",
         required: true,
     }, {
-        name: "capital",
+        name: "bodies",
         type: "map",
-        map: "/images/freighter-capital.svg",
+        map: "/images/freighter.svg",
         search: true,
-    }, {
-        name: "common",
-        type: "map",
-        map: "/images/freighter-system.svg",
-        search: true,
-    }, ]
+    }]
 }, {
     name: "Frigate",
     imgText: [{
