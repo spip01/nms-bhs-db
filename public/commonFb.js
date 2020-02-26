@@ -138,10 +138,13 @@ blackHoleSuns.prototype.onAuthStateChanged = async function (usr) {
             let doc = await ref.get()
             if (doc.exists)
                 user = doc.data()
-            else
+            else {
                 user.firsttime = firebase.firestore.Timestamp.now()
+                user.page = window.location.pathname
+            }
         } catch {
             user.firsttime = firebase.firestore.Timestamp.now()
+            user.page = window.location.pathname
         }
 
         user.email = usr.email

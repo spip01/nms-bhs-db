@@ -257,7 +257,7 @@ blackHoleSuns.prototype.buildUserPanel = function () {
                 <label id="fileupload" class="txt-input-def text-right align-bottom hidden">
                     <input id="ck-fileupload" type="checkbox">
                     &nbsp;File Upload&nbsp;
-                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Bulk entry upload using a comma or tab separated '.csv' file.">
                     </i>
                 </label>
@@ -420,20 +420,20 @@ blackHoleSuns.prototype.buildEntryList = function (entry) {
         <div class="card-header bkg-def">
             <div class="row">
                 <div class="h4 col-7 txt-def">System List&nbsp;
-                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Hit 'Load' to download entries from server. Click on column titles to sort data based on column. 
                         Click on data entry to display in input section and highlight entry in map.  Once selected entry may be edited.">
                     </i>
                 </div>
                 <button id="btn-load" type="button"
                     class="btn btn-sm btn-def text-center col-4" onclick="bhs.loadEntries()">Load</button>&nbsp;&nbsp;
-                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Load all entries for selected Player/Galaxy/Platform.">
                     </i>
                 <div class="h6 col-7 txt-def">Total Displayed: <span id="total"></span></div>
                 <div id="btn-utSettings" class="col-7 pointer align-vertical txt-def">
                     <i class="fa fa-cog txt-def"></i>&nbsp;Settings&nbsp;
-                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Opens date range and column selection panel. Checked column labels will be displayed in list. Actions take effect after hitting 'Save'.">
                     </i>
                 </div>
@@ -443,7 +443,7 @@ blackHoleSuns.prototype.buildEntryList = function (entry) {
         <div id="utSettings" class="card card-body" style="display:none">
             <div class="row">
                 <label class="col-lg-7 col-md-14 col-sm-7 col-14 txt-label-def">Start Date&nbsp;
-                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Date entry was created. Delete date to ignore.">
                     </i>&nbsp;
                     <input id="id-start" type="date" class="rounded col-8">
@@ -970,16 +970,16 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
     let header = `        
         <div class="row">`
     let title = `
-            <div class="size txt-label-def">titlettip</div>`
+            <div class="size txt-label-def">title&nbsp;</div>`
     let block = `
             <div id="menu-idname" class="size dropdown">
                 <button id="btn-idname" class="btn border btn-sm dropdown-toggle" style="rgbcolor" type="button" data-toggle="dropdown"></button>
-            </div>
+         ttip   </div>
         </div>`
     const tText = `&nbsp;
-        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
-            data-placement="bottom" title="ttip"></i>`
-    const rText = `&nbsp;<span class="h5 text-danger">*</span>ttip`
+        <span class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
+            data-placement="bottom" title="ttip"></span>&nbsp;`
+    const rText = `&nbsp;<span class="h5 text-danger">*</span>`
 
     let item = ``
     let hdr = ``
@@ -1014,24 +1014,20 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
     }
 
     if (!options.nolabel || options.required || options.tip) {
-        let l = /title/ [Symbol.replace](title, options.nolabel ? "&nbsp;" : label)
-
-        if (options.required)
-            l = /ttip/ [Symbol.replace](l, rText)
-
-        if (options.tip) {
-            l = /ttip/ [Symbol.replace](l, tText)
-            l = /ttip/ [Symbol.replace](l, options.tip)
-        } else
-            l = /ttip/ [Symbol.replace](l, "")
-
+        let t = (options.nolabel ? "" : label)+(options.required?rText:"")
+        let l = /title/ [Symbol.replace](title, t)
         l = /size/ [Symbol.replace](l, options.labelsize)
-
         h += l
     }
 
     let l = /idname/g [Symbol.replace](block, id)
     l = /size/ [Symbol.replace](l, options.menusize)
+
+    if (options.tip) {
+        l = /ttip/ [Symbol.replace](l, tText)
+        l = /ttip/ [Symbol.replace](l, options.tip)
+    } else
+        l = /ttip/ [Symbol.replace](l, "")
 
     h += /rgbcolor/ [Symbol.replace](l, "")
     loc.find("#id-" + id).empty()
@@ -1375,7 +1371,7 @@ blackHoleSuns.prototype.buildMap = function () {
                 <div class="row">
                     <div class="col-1"></div>
                     <div class="col-5 txt-def">Min&nbsp;
-                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                             data-placement="bottom" title="Set display range of map.">
                         </i>
                     </div>
@@ -1407,14 +1403,14 @@ blackHoleSuns.prototype.buildMap = function () {
                 <label id="id-drawcon" class="h6 txt-def">
                     <input id="ck-drawcon" type="checkbox" checked>
                     Draw Connections&nbsp;
-                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Draw lines between black hole and exit.  WARNING this is slow.">
                     </i>
                 </label>
                 <label id="id-zoomreg" class="h6 txt-def">
                     <input id="ck-zoomreg" type="checkbox" checked>
                     Auto Zoom&nbsp;
-                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="When the search button beside the 'Region Name' input 
                         is used then zoom the map into that region using the 'Zoom Radius'.">
                     </i>&nbsp
@@ -1422,7 +1418,7 @@ blackHoleSuns.prototype.buildMap = function () {
                 <label class="h6 txt-def">
                     <input id="ck-chain" type="checkbox" checked>
                     Select Chain&nbsp;
-                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom" title="Follow black holes from current exit to the next black
                         hole if closer than selected radius. Continue chain forward and backward in time using depth.">
                     </i>&nbsp
@@ -1448,7 +1444,7 @@ blackHoleSuns.prototype.buildMap = function () {
             <label class="col-sm-3 col-7 h6 txt-def">
             <input id="ck-addzero" type="checkbox" checked>
                 &nbsp;Add 0&nbsp;
-                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                     data-placement="bottom" title="Add line to center of galaxy.">
                 </i>
             </label>
@@ -1463,7 +1459,7 @@ blackHoleSuns.prototype.buildMap = function () {
                 </div>
             </div>
             <div class="col-9 border">
-                <div class="col-14 h6 clr-creme text-center">
+                <div class="col-14 h6 clr-cream text-center">
                     Click on map to select system & draw connections. 
                 </div>
             </div>

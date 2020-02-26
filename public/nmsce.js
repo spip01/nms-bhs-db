@@ -989,6 +989,25 @@ NMSCE.prototype.searchEntriesList = function () {
     nmsce.searchList(s, list, loc)
 }
 
+NMSCE.prototype.refineSearchToDate = function (date) {
+    let loc = $("#resultLists #id-Search-Results")
+    let list = nmsce.resultLists["Search-Results"]
+    let nfound = 0
+
+    for (let l of Object.keys(list)) {
+        let e = list[l]
+        let id = "#row-" + (e.type + "-" + e.id).nameToId()
+
+        if (e.created > date) {
+            loc.find(id).show()
+            nfound++
+        } else
+            loc.find(id).hide()
+    }
+
+    $("#numFound").text(nfound)
+}
+
 NMSCE.prototype.refineSearch = function () {
     $("#status").empty()
 
@@ -1512,7 +1531,7 @@ const tSubList = `<div id="slist-idname" class="row pl-10" style="display:none">
 const tReq = `&nbsp;<font style="color:red">*</font>`
 const tText = `&nbsp;
     <span data-toggle="tooltip" data-html="true" data-placement="bottom" title="ttext">
-        <i class="fa fa-question-circle-o text-danger h6"></i>
+        <i class="far fa-question-circle text-danger h6"></i>
     </span>`
 
 const inpHdr = `<div class="col-lg-7 col-14" data-allowhide="ihide">`
@@ -2218,7 +2237,7 @@ NMSCE.prototype.buildImageText = function () {
             <label class="col-lg-8 col-7 txt-label-def pl-15">
                 <input id="ck-selGlyphs" type="checkbox" data-type="selGlyphs" onchange="nmsce.getImageText(this, true)">
                 Select Glyphs&nbsp;
-                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
+                <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
                     data-placement="bottom"
                     title="Drag glyph box to glyphs and resize to select glyphs.">
                 </i>&nbsp;
@@ -2226,7 +2245,7 @@ NMSCE.prototype.buildImageText = function () {
              <button type="button" class="col-lg-5 col-md-12 col-5 btn btn-def btn-sm" onclick="nmsce.extractGlyphs()">
                 Apply
             </button>&nbsp;
-            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                 data-placement="bottom"
                 title="<span class='h5 text-danger'>Always</span> double-check glyph output. For best results take a high contrast clear background for glyph processing. Take a snapshot just to capture glyphs then proceed as normal.">
             </i>
@@ -2236,7 +2255,7 @@ NMSCE.prototype.buildImageText = function () {
                 <input id="ck-myLogo" type="checkbox" data-loc="#id-myLogo" data-type="img"
                         onchange="nmsce.getImageText(this, true)">
                         Load Overlay&nbsp;
-                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
+                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
                     data-placement="bottom"
                     title="Load a 2nd image as an overlay. You can resize and move the 2nd image."></i>&nbsp;
             </label>
@@ -2248,7 +2267,7 @@ NMSCE.prototype.buildImageText = function () {
                 <input id="ck-Text" type="checkbox" data-loc="#id-Text"
                     onchange="nmsce.getImageText(this, true)">
                 Text&nbsp;
-                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="false"
+                <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
                     data-placement="bottom"
                     title="Use Line break, <br>, to separate multiple lines.">
                 </i>&nbsp;
@@ -3281,10 +3300,6 @@ NMSCE.prototype.extractGlyphs = function (mid) {
         // bhs.status(str, true)
         nmsce.changeAddr(null, g)
 
-        $('html, body').animate({
-            scrollTop: $("#panels").offset().top
-        }, 500)
-
         $("body")[0].style.cursor = "default"
     })
 }
@@ -3707,15 +3722,6 @@ const resultsTable = [{
 
 NMSCE.prototype.selDisplay = function (evt) {
     $(".cover-container").hide()
-
-    if ($(evt).text() === "Latest") {
-        $("#showlast").show()
-        $("#showdate").show()
-    } else {
-        $("#showlast").hide()
-        $("#showdate").hide()
-    }
-
     let id = $(evt).text().stripMarginWS().nameToId()
     let btn = $(evt).closest("[id|='menu']").find("[id|='btn']").first()
     btn.text($(evt).text().stripMarginWS())
@@ -3725,6 +3731,20 @@ NMSCE.prototype.selDisplay = function (evt) {
     loc.show()
 
     $("#numFound").text(loc.children().length)
+
+    let text = $(evt).text()
+
+    if (text === "Latest" || text === "Search Results") {
+        $("#showlast").show()
+        if (nmsce.resultsDate[text] && nmsce.resultsDate[text].date) {
+            $("#sinceDate").text(nmsce.resultsDate[text].date)
+            $("#displaysince").val(nmsce.resultsDate[text].days)
+            $("#showdate").show()
+        }
+    } else {
+        $("#showlast").hide()
+        $("#showdate").hide()
+    }
 }
 
 NMSCE.prototype.getMyFavorites = function () {
@@ -3795,7 +3815,6 @@ NMSCE.prototype.getNew = function () {
 
     bhs.buildMenu($("#resultshdr"), "show", resultsTable, nmsce.selDisplay, {
         nolabel: true,
-        tip: "Click on an image to see an expanded image and detailed information."
     })
 
     $("#resultshdr #btn-show").text("Latest")
@@ -3810,29 +3829,47 @@ NMSCE.prototype.getNew = function () {
         let d = Math.floor((new Date() - dt) / (1000 * 60 * 60 * 24))
 
         $("#displaysince").val(d)
+
+        if (typeof nmsce.resultsDate === "undefined")
+            nmsce.resultsDate = {}
+        if (typeof nmsce.resultsDate.Latest === "undefined")
+            nmsce.resultsDate.Latest = {}
+
+        nmsce.resultsDate.Latest.date = dt.toDateLocalTimeString()
+        nmsce.resultsDate.Latest.days = d
     } else
         nmsce.getLatest()
 }
 
+
 NMSCE.prototype.getLatest = function () {
+    let sel = $("#resultshdr #btn-show").text().stripMarginWS()
     let s = parseInt($("#displaysince").val())
-    if (s < 1) {
-        s = 1
-        $("#displaysince").val(s)
-    } else if (s > 30) {
-        s = 30
+    if (s > 180) {
+        s = 180
         $("#displaysince").val(s)
     }
-
     let dt = new Date()
     dt.setDate(dt.getDate() - s)
 
-    $("#resultshdr #sinceDate").text(dt.toDateLocalTimeString())
+    if (typeof nmsce.resultsDate === "undefined")
+        nmsce.resultsDate = {}
+    if (typeof nmsce.resultsDate[sel] === "undefined")
+        nmsce.resultsDate[sel] = {}
+
+    nmsce.resultsDate[sel].date = dt.toDateLocalTimeString()
+    nmsce.resultsDate[sel].days = s
+
+    $("#resultshdr #sinceDate").text(nmsce.resultsDate[sel].date)
     $("#resultshdr #sinceDate").show()
+    $("#showdate").show()
 
     let fd = firebase.firestore.Timestamp.fromDate(dt)
 
-    nmsce.getAfterDate(fd)
+    if (sel === "Latest")
+        nmsce.getAfterDate(fd)
+    else
+        nmsce.refineSearchToDate(fd)
 }
 
 const resultsCover = `<div id="id-idname" class="row cover-container bkg-def" style="display:none"></div>`
@@ -4227,7 +4264,7 @@ NMSCE.prototype.displayList = function (entries) {
                     <i class="far fa-caret-square-up hidden h4""></i>
                     <i class="far fa-caret-square-down h4"></i>&nbsp;
                     <div id="id-idname" class="col-6">title&nbsp;
-                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                             data-placement="top" title="Click on the field labels to sort items on that field.">
                         </i>
                     </div>
@@ -5079,9 +5116,11 @@ const colorList = [{
 }, {
     name: "Black",
 }, {
-    name: "Bronze",
+    name: "Cream",
 }, {
     name: "Chrome",
+}, {
+    name: "Cream",
 }, {
     name: "Gold",
 }, {
@@ -5880,6 +5919,7 @@ const objectList = [{
         inputHide: true,
     }, {
         name: "Color",
+        ttip: "Main body & wing colors. For colored chrome use the color + chrome.",
         type: "tags",
         imgText: true,
         list: colorList,
@@ -5887,6 +5927,7 @@ const objectList = [{
         search: true,
     }, {
         name: "Markings",
+        ttip: "Any decals, stripes, etc.",
         type: "tags",
         imgText: true,
         list: colorList,

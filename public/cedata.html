@@ -109,7 +109,7 @@
         </div>
 
         <div class="card">
-            <div class="card-header bkg-def clr-creme h5 pointer"
+            <div class="card-header bkg-def clr-cream h5 pointer"
                 onclick="nmsce.expandPanels($(this).find('.fa-caret-square-down').is(':visible'))">
                 Click <i id="hidden" class="far fa-caret-square-up btn-def h3" data-allowhide=true></i>
                 <i class="far fa-caret-square-down btn-def h3 hidden" data-hide=true
@@ -150,7 +150,7 @@
                             <div class="row">
                                 <div class="col-sm-3 col-5 txt-label-def">Coords
                                     <span class="h5 text-danger">&nbsp;*</span>&nbsp;
-                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
                                         data-html="true" data-placement="bottom"
                                         title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
                                                 A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.  
@@ -164,7 +164,7 @@
                                     <label class=" txt-label-def">
                                         <input id="ck-glyphs" type="checkbox" onchange="nmsce.setGlyphInput(this)">
                                         Input Glyphs&nbsp;
-                                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
                                             data-html="true" data-placement="bottom"
                                             title="Display glyph input buttons and show glyphs in input field.">
                                         </i>
@@ -185,7 +185,7 @@
                                 <div class="col-md-2 col-sm-3 col-4 txt-label-def">
                                     Glyph&nbsp;
                                     <span class="text-danger">*</span>&nbsp;
-                                    <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
+                                    <i class="far fa-question-circle text-danger" data-toggle="tooltip"
                                         data-html="true" data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
                                                 digit hex, 0-9 a-f, value can be entered directly in the field.">
                                     </i>
@@ -197,7 +197,7 @@
                                     <label class=" txt-label-def">
                                         <input id="ck-glyphs" type="checkbox" onchange="nmsce.setGlyphInput(this)">
                                         Input Glyphs&nbsp;
-                                        <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
+                                        <i class="far fa-question-circle text-danger" data-toggle="tooltip"
                                             data-html="true" data-placement="bottom" title="Hide glyph input buttons.">
                                         </i>
                                     </label>
@@ -220,7 +220,7 @@
                             <div id="foundsys" class="col hidden">
                                 <div class="row">
                                     <i class="fas fa-check text-success"></i>&nbsp;
-                                    <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
+                                    <i class="far fa-question-circle text-danger" data-toggle="tooltip"
                                         data-html="true" data-placement="bottom" title="System found in database.">
                                     </i>
                                 </div>
@@ -233,7 +233,7 @@
                             <div id="foundreg" class="col hidden">
                                 <div class="row">
                                     <i class="fas fa-check text-success"></i>&nbsp;
-                                    <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
+                                    <i class="far fa-question-circle text-danger" data-toggle="tooltip"
                                         data-html="true" data-placement="bottom" title="Region found in database.">
                                     </i>
                                 </div>
@@ -246,8 +246,8 @@
                         </div>
 
                         <div class="row">
-                            <div id="id-Lifeform" class="col-xl-6 col-lg-7 col-14"></div>
-                            <div id="id-Economy" class="col-xl-6 col-lg-7 col-14"></div>
+                            <div id="id-Lifeform" class="col-14"></div>
+                            <div id="id-Economy" class="col-14"></div>
                         </div>
                         <br>
 
@@ -271,7 +271,7 @@
                                         <input id="ck-updateScreenshot" type="checkbox">
                                         <label for="ck-updateScreenshot" class=" txt-label-def">Update
                                             Screenshot</label>&nbsp;
-                                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
                                             data-html="true" data-placement="bottom"
                                             title="Select wether to overwrite currently saved screenshot with the updated one below.">
                                         </i>
@@ -292,7 +292,7 @@
                                     <div class="row">
                                         <div class="text-danger h6">
                                             <span>*</span>&nbsp;Required Entry,&nbsp;
-                                            <i id="ttipmsg" class="fa fa-question-circle-o">&nbsp;Tool Tip</i>
+                                            <i id="ttipmsg" class="far fa-question-circle">&nbsp;Tool Tip</i>
                                         </div>
                                     </div>
                                 </div>
@@ -310,7 +310,7 @@
                                         onclick="nmsce.searchEntriesList()">Search</button>&nbsp;
                                     <button id="showall" type="button" class="col-6 btn btn-sm btn-def"
                                         onclick="nmsce.showAll()">Show All</button>&nbsp;
-                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
                                         data-html="true" data-placement="bottom"
                                         title="Search is for players own entries.">
                                     </i>
@@ -325,7 +325,7 @@
                                     <label class="col-lg-3 col-md-7 col-14 txt-label-def">
                                         <input id="ck-notify" type="checkbox">
                                         Notify&nbsp;
-                                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
                                             data-html="true" data-placement="bottom"
                                             title="Check box and save to receive an email for future matches of this search. To disable uncheck and re-save.">
                                         </i>
@@ -362,7 +362,7 @@
                                 style="box-shadow:4px 4px gray;" onclick="nmsce.redditCreate()">
                                 <img src="images/reddit.png" style="width:30px; height:30px"
                                     alt="Create Reddit Post"></button>&nbsp;
-                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                                 data-placement="bottom"
                                 title="You can only submit an entry after it has been saved.  If you have modified the image save it first because it posts the saved version.">
                             </i>
@@ -370,7 +370,7 @@
                         <div class="col-10">
                             <div id="posted" class="row text-danger h4"></div>
                             <label class="row txt-label-def">Reddit Link&nbsp;
-                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom"
                                     title="If you make the post from the app then this field will be auto-filled. If you make the post manually then copy the post url here.">
                                 </i>&nbsp;
@@ -389,7 +389,7 @@
                             </label>
                         </div>
                         <button class="btn btn-sm btn-def" onclick="nmsce.redditPost()">Post</button>&nbsp;
-                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                             data-placement="bottom"
                             title="Post to selected SubReddit. When successful the post link will be entered in the 'Reddit Link' field above.">
                         </i>
@@ -425,7 +425,7 @@
                             </div>
                             <br>
                             <div clss="row">
-                                <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                                <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                                     data-placement="top" title="You can position text by clicking and dragging.">
                                 </i>&nbsp;
                                 <button class="btn btn-sm col-2 btn-def" onclick="nmsce.alignText('left')">
@@ -449,7 +449,7 @@
                     <br>
                     <a id="permalink" class="row h5 pl-30" href="">
                         Permalink&nbsp;
-                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                             data-placement="bottom" title="You can use this link to directly access this entry.">&nbsp;
                         </i>
                     </a>
@@ -461,7 +461,7 @@
         <div class="card pad-bottom">
             <div class="card-header txt-def">
                 <div class="row h4">Entry List&nbsp;
-                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                         data-placement="bottom"
                         title="Click on a heading to open list. Click on an image to select it for editing.">
                     </i>
@@ -474,7 +474,7 @@
     </div>
 
     <br>
-    <div class="clr-creme text-right h6">
+    <div class="clr-cream text-right h6">
         <i class="fa fa-copyright"></i> 2019-2020 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     </div>
 </body>

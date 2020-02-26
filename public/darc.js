@@ -514,7 +514,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
             <div class="col-md-4 col-14">
                 <div class="row h5">title</div>
             </div>
-            <div class="col clr-creme">
+            <div class="col clr-cream">
                 <div id="res-row" class="row"></div>
             </div>`
 

@@ -109,7 +109,7 @@
                 <i class="far fa-caret-square-up hidden h3"></i>
                 <i class="far fa-caret-square-down h3"></i>
                 &nbsp;Toggle search input panel display. &nbsp;
-                <i class="h5 fa fa-question-circle-o text-danger" data-toggle="tooltip" data-html="true"
+                <i class="h5 far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
                     data-placement="bottom"
                     title="On the search panel you can specify a specific player, coordinates or other system information.<br>For ships when you select a 'Type' from the menu it will display a selection of parts for searching. Just click on a part to select it.<br>Any information specified must match exactly for an item to be returned with a search.">
                 </i>
@@ -131,7 +131,7 @@
                         <div id="id-addrInput">
                             <div class="row">
                                 <div class="col-md-3 col-sm-3 col-5 txt-label-def">Coords
-                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
                                         data-html="true" data-placement="bottom"
                                         title="Search at a specific address.<br>Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
                                                     A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.
@@ -145,7 +145,7 @@
                                     <label class=" txt-label-def">
                                         <input id="ck-glyphs" type="checkbox" onchange="nmsce.setGlyphInput(this)">
                                         Input Glyphs&nbsp;
-                                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
                                             data-html="true" data-placement="bottom"
                                             title="Display glyph input buttons and show glyphs in input field.">
                                         </i>
@@ -165,7 +165,7 @@
                             <div class="row">
                                 <div class="col-md-2 col-sm-3 col-4 txt-label-def">
                                     Glyph&nbsp;
-                                    <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
                                         data-html="true" data-placement="bottom"
                                         title="Search at a specific address.<br>Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
                                                     A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.
@@ -179,7 +179,7 @@
                                     <label class=" txt-label-def">
                                         <input id="ck-glyphs" type="checkbox" onchange="nmsce.setGlyphInput(this)">
                                         Input Glyphs&nbsp;
-                                        <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip"
+                                        <i class="far fa-question-circle text-danger" data-toggle="tooltip"
                                             data-html="true" data-placement="bottom" title="Hide glyph input buttons.">
                                         </i>
                                     </label>
@@ -207,8 +207,8 @@
                         </div>
 
                         <div class="row">
-                            <div id="id-Lifeform" class="col-xl-6 col-lg-7 col-14"></div>
-                            <div id="id-Economy" class="col-xl-6 col-lg-7 col-14"></div>
+                            <div id="id-Lifeform" class="col-14"></div>
+                            <div id="id-Economy" class="col-14"></div>
                         </div>
                         <br>
 
@@ -238,7 +238,7 @@
                                     <label class="col txt-label-def">
                                         <input id="ck-notify" type="checkbox">
                                         Notify&nbsp;
-                                        <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip"
+                                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
                                             data-html="true" data-placement="bottom"
                                             title="Check box and save to receive an email for future matches of this search. To disable uncheck and re-save.">
                                         </i>
@@ -247,7 +247,7 @@
                                 <div class="row">
                                     <button id="savesearch" type="button" class="col-md-4 col-6 btn btn-sm btn-def"
                                         onclick="nmsce.saveSearch()">Save</button>&nbsp;
-                                    <i id="searchlocaltt" class="fa fa-question-circle-o text-danger"
+                                    <i id="searchlocaltt" class="far fa-question-circle text-danger"
                                         data-toggle="tooltip" data-html="true" data-placement="bottom"
                                         title="You can save multiple searches by logging in.">
                                     </i>&nbsp;
@@ -261,7 +261,7 @@
                                     <div class="col text-danger h6 border rounded"
                                         style="border-color:red; height:50px;">
                                         * Required Entry<br>
-                                        <i id="ttipmsg" class="fa fa-question-circle-o">&nbsp;Tool Tip</i><br>
+                                        <i id="ttipmsg" class="far fa-question-circle">&nbsp;Tool Tip</i><br>
                                     </div>
                                 </div>
                             </div>
@@ -277,15 +277,20 @@
         <div class="card bkg-def border">
             <div class="card-header txt-def h3">
                 <div id="resultshdr" class="row">
-                    <div id="showdate" class="col-lg-5 col-7 h4">Entries since:&nbsp<span id="sinceDate"></span>
-                    </div>
                     <label id="showlast" class="col-lg-5 col-7 h4">
                         Show last&nbsp;
-                        <input id="displaysince" class="col-lg-3 col-7" type="text" value=3
-                            onchange="nmsce.getLatest(nmsce.displayResults, this)">
+                        <input id="displaysince" class="col-lg-3 col-7" type="number" value=3 min=1 max=90
+                            onblur="nmsce.getLatest(nmsce.displayResults, this)">
                         &nbsp;days.&nbsp;
                     </label>
-                    <div class="col-lg-4 col-7 h4"><span id="numFound"></span> Entries found.</div>
+                    <div id="showdate" class="col-lg-5 col-7 h4">Entries since:&nbsp<span id="sinceDate"></span>
+                    </div>
+                    <div class="col-lg-4 col-7 h4"><span id="numFound"></span> Entries found.&nbsp;
+                        <i class="far fa-question-circle text-danger h5" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom"
+                            title="Click on an image to see an expanded image and detailed information.">
+                        </i>
+                    </div>
                     <div id="id-show" class="col-lg-2 col-7 clr-def h4"></div>
                 </div>
             </div>
@@ -305,7 +310,7 @@
                     <div class="row">
                         <button type="button" class="col-7 btn btn-sm btn-def" onclick="nmsce.searchSystem()">System
                             Search</button>&nbsp;
-                        <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip" data-html="true"
+                        <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
                             data-placement="bottom" title="Search for any other items in this system.">
                         </i>
                     </div>
@@ -319,7 +324,7 @@
                             <span class="row">
                                 <i id="voted-visited" class="fas fa-square h3" style="color:grey"></i>
                                 &nbsp;Visited&nbsp;
-                                <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip" data-html="true"
+                                <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom" title="If you retrieved an item or visited a location.">
                                 </i>
                             </span>
@@ -328,7 +333,7 @@
                             <span class="row">
                                 <i id="voted-report" class="fas fa-square h3" style="color:grey"></i>
                                 &nbsp;Report&nbsp;
-                                <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip" data-html="true"
+                                <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom" title="Something about this entry is offensive.">
                                 </i>
                             </span>
@@ -351,7 +356,7 @@
                     <div class="row">
                         <a id="permalink" class="col-7 h5 pl-30" href="">
                             Permalink&nbsp;
-                            <i class="fa fa-question-circle-o text-danger h6" data-toggle="tooltip" data-html="true"
+                            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                                 data-placement="bottom" title="You can use this link to directly access this entry.">
                             </i>
                         </a>
@@ -362,7 +367,7 @@
                         <div class="col text-center">
                             <img src="images/bhs-logo.png" style="height:80px; width:80px;" />
                             <span class="txt-label-def h4">&nbsp;DaRC</span>&nbsp;
-                            <i class="fa fa-question-circle-o text-danger" data-toggle="tooltip" data-html="true"
+                            <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
                                 data-placement="bottom"
                                 title="Open window with Black Hole Sun's Distance and Route Calculator. Enters coordinate of selected item as the destination coord.">
                             </i>
@@ -376,7 +381,7 @@
     </div>
     <br>
 
-    <div class="clr-creme text-right h6">
+    <div class="clr-cream text-right h6">
         <i class="fa fa-copyright"></i> 2019-2020 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     </div>
 </body>
