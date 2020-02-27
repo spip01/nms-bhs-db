@@ -4680,7 +4680,7 @@ const shipList = [{
         T1: 15-19 slots<br>
         T2: 20-29 slots<br>
         T3: 30-38 slots`,
-    bodies: "/images/fighter.svg",
+    bodies: "/images/fighter-opt.svg",
     asymmetric: true,
 }, {
     name: "Hauler",
@@ -4689,7 +4689,7 @@ const shipList = [{
         T1: 25-31 slots<br>
         T2: 32-39 slots<br>
         T3: 40-48 slots`,
-    bodies: "/images/hauler.svg",
+    bodies: "/images/hauler-opt.svg",
 }, {
     name: "Shuttle",
     slotList: [{
@@ -4700,12 +4700,12 @@ const shipList = [{
     slotTtip: `
         T1: 18-23 slots<br>
         T2: 24-28 slots`,
-    bodies: "/images/shuttle-bodies.svg",
-    wings: "/images/shuttle-wings.svg",
+    bodies: "/images/shuttle-bodies-opt.svg",
+    wings: "/images/shuttle-wings-opt.svg",
     asymmetric: true,
 }, {
     name: "Explorer",
-    bodies: "/images/explorer.svg",
+    bodies: "/images/explorer-opt.svg",
     slotList: tierList,
     asymmetric: true,
     slotTtip: `
@@ -4714,7 +4714,7 @@ const shipList = [{
         T3: 30-38 slots`,
 }, {
     name: "Exotic",
-    bodies: "/images/exotic.svg",
+    bodies: "/images/exotic-opt.svg",
 }]
 
 const mtList = [{
@@ -6019,7 +6019,7 @@ const objectList = [{
     }, {
         name: "bodies",
         type: "map",
-        map: "/images/freighter.svg",
+        map: "/images/freighter-opt.svg",
         search: true,
     }]
 }, {
