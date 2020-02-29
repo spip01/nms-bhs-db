@@ -31,8 +31,7 @@ $(document).ready(async () => {
             let img = new Image()
             img.crossOrigin = "anonymous"
             img.onload = nmsce.onLoadLogo
-            img.src = "/images/nmsce-logo.png"
-
+            img.src = "/images/app-logo.png"
             nmsce.model = await tmImage.load("/bin/model.json", "/bin/metadata.json")
         }
 
@@ -543,7 +542,7 @@ NMSCE.prototype.extractEntry = function () {
     entry.xyzs = addressToXYZ(entry.addr)
     let err = bhs.validateAddress(entry.addr)
     if (err) {
-        bhs.status(err)
+        this.status(err)
         ok = false
     }
 
@@ -552,7 +551,7 @@ NMSCE.prototype.extractEntry = function () {
             if (!last || entry.sys !== last.sys || entry.reg !== last.reg || entry.life !== last.life || entry.Economy !== last.Economy)
                 bhs.updateEntry(entry)
         } else {
-            bhs.status(bhs.user._name + " is not creator of " + entry.addr + " " + entry.sys)
+            this.status(bhs.user._name + " is not creator of " + entry.addr + " " + entry.sys)
             ok = false
         }
     }
@@ -644,7 +643,7 @@ NMSCE.prototype.extractEntry = function () {
                     }
 
                 if (!ok) {
-                    bhs.status(id + " required. Entry not saved.")
+                    this.status(id + " required. Entry not saved.")
                     break
                 }
             }
@@ -665,24 +664,25 @@ NMSCE.prototype.extractEntry = function () {
         entry.imageText = bhs.user.imageText
 
         if (!nmsce.last || nmsce.last.uid === bhs.user.uid || bhs.isRole("admin")) {
-            nmsce.updateEntry(entry)
+            if (typeof nmsce.entries === "undefined")
+                nmsce.entries = {}
+            if (typeof nmsce.entries[entry.type.nameToId()] === "undefined")
+                nmsce.entries[entry.type.nameToId()] = {}
 
-            if (!nmsce.last || nmsce.last.uid === bhs.user.uid) {
-                if (typeof nmsce.entries === "undefined")
-                    nmsce.entries = {}
-                if (typeof nmsce.entries[entry.type.nameToId()] === "undefined")
-                    nmsce.entries[entry.type.nameToId()] = {}
+            nmsce.initVotes(entry)
+            nmsce.entries[entry.type.nameToId()][entry.id] = entry
+            nmsce.displayListEntry(entry, true)
 
-                nmsce.entries[entry.type.nameToId()][entry.id] = entry
-                nmsce.displayListEntry(entry, true)
+            if (!(ok = nmsce.updateScreenshot(entry)))
+                this.status("Error: Photo required.")
+            else {
+                nmsce.updateEntry(entry)
+
+                this.status(entry.type + " " + entry.Name + " validated, saving...")
+                $("#imgtable").hide()
             }
-
-            nmsce.updateScreenshot(entry)
-
-            bhs.status(entry.type + " " + entry.Name + " validated, saving...")
-            $("#imgtable").hide()
         } else {
-            bhs.status(bhs.user._name + " is not creator of " + entry.type + " " + entry.Name)
+            this.status(bhs.user._name + " is not creator of " + entry.type + " " + entry.Name)
             ok = false
         }
     }
@@ -859,7 +859,7 @@ NMSCE.prototype.executeSearch = function (search) {
 
     let s = nmsce.lastsearch = search
     if (!s || s.search === []) {
-        bhs.status("No search selection.")
+        this.status("No search selection.")
         return
     }
 
@@ -897,14 +897,14 @@ NMSCE.prototype.executeSearch = function (search) {
 
     ref.get().then(snapshot => {
         if (snapshot.size === 0) {
-            bhs.status("No matching entries found.<br>Try specifying fewer things. Everything you specify has to match in order to find an item.")
+            this.status("No matching entries found.<br>Try specifying fewer things. Everything you specify has to match in order to find an item.")
             $("#numFound").text("0")
             $("body")[0].style.cursor = "default"
             return
         }
 
         if (!bhs.user.uid && snapshot.size === 50)
-            bhs.status("Showing first 50 matches. Login to see more matches or modify search to see better matches.")
+            this.status("Showing first 50 matches. Login to see more matches or modify search to see better matches.")
 
         let nfound = 0
 
@@ -939,7 +939,7 @@ NMSCE.prototype.executeSearch = function (search) {
             }, 500)
         }
 
-        bhs.status(nfound + " matching entries found.")
+        this.status(nfound + " matching entries found.")
 
         $("body")[0].style.cursor = "default"
 
@@ -972,13 +972,13 @@ NMSCE.prototype.searchEntriesList = function () {
 
     let s = nmsce.lastsearch = nmsce.extractSearch()
     if (!s || s.search === []) {
-        bhs.status("No search selection.")
+        this.status("No search selection.")
         return
     }
 
     let list = nmsce.entries[s.type.nameToId()]
     if (list.length === 0) {
-        bhs.status("No search results.")
+        this.status("No search results.")
         return
     }
 
@@ -1013,13 +1013,13 @@ NMSCE.prototype.refineSearch = function () {
 
     let s = nmsce.lastsearch = nmsce.extractSearch()
     if (!s || s.search === []) {
-        bhs.status("No search selection.")
+        this.status("No search selection.")
         return
     }
 
     let list = nmsce.resultLists["Search-Results"]
     if (list.length === 0) {
-        bhs.status("No search reslts to refine.")
+        this.status("No search reslts to refine.")
         return
     }
 
@@ -1080,7 +1080,7 @@ NMSCE.prototype.searchList = function (s, list, loc) {
         scrollTop: loc.offset().top
     }, 500)
 
-    bhs.status(nfound + " matching entries found.")
+    this.status(nfound + " matching entries found.")
 
     if (!bhs.user.uid) {
         if (typeof (Storage) !== "undefined")
@@ -1110,7 +1110,7 @@ NMSCE.prototype.saveSearch = function () {
             }
 
             window.localStorage.setItem('nmsce-search', JSON.stringify(search))
-            bhs.status("Search saved.", true)
+            this.status("Search saved.")
         }
     } else {
         search.uid = bhs.user.uid
@@ -1123,9 +1123,9 @@ NMSCE.prototype.saveSearch = function () {
             let ref = bhs.fs.doc("users/" + bhs.user.uid + "/nmsce-saved-searches/" + search.name.nameToId())
             ref.set(search, {
                 merge: true
-            }).then(() => bhs.status(search.name + " saved."))
+            }).then(() => this.status(search.name + " saved."))
         } else {
-            bhs.status("No save name specified.")
+            this.status("No save name specified.")
             return
         }
 
@@ -1170,7 +1170,7 @@ NMSCE.prototype.deleteSearch = function () {
         let name = $("#searchname").val()
 
         if (!name) {
-            bhs.status("No search name provided.")
+            this.status("No search name provided.")
             return
         }
 
@@ -1179,7 +1179,7 @@ NMSCE.prototype.deleteSearch = function () {
         if (i !== -1) {
             let ref = bhs.fs.doc("users/" + bhs.user.uid + "/nmsce-saved-searches/" + name.nameToId())
             ref.delete().then(() => {
-                bhs.status(name + " search deleted.")
+                this.status(name + " search deleted.")
 
                 nmsce.searchlist.splice(i, 1)
                 let loc = $("#menu-Saved #item-" + name.nameToId())
@@ -1187,7 +1187,7 @@ NMSCE.prototype.deleteSearch = function () {
 
             })
         } else {
-            bhs.status("Named search not found.")
+            this.status("Named search not found.")
         }
     }
 }
@@ -1246,7 +1246,7 @@ NMSCE.prototype.extractSearch = function (fcn) {
     let search = s.search
 
     if (!galaxy) {
-        bhs.status("No Galaxy Selected.")
+        this.status("No Galaxy Selected.")
         return null
     }
 
@@ -1437,7 +1437,7 @@ NMSCE.prototype.searchSystem = function () {
         }
 
         nmsce.displayResultList("Search-Results")
-        bhs.status(nfound + " matching entries found.")
+        this.status(nfound + " matching entries found.")
 
         if (nfound) {
             nmsce.selDisplay("#item-Search-Results")
@@ -1470,7 +1470,7 @@ NMSCE.prototype.save = function () {
             ref.set(bhs.user, {
                 merge: true
             }).then().catch(err => {
-                bhs.status("ERROR: " + err)
+                this.status("ERROR: " + err)
             })
         }
     }
@@ -1509,10 +1509,7 @@ NMSCE.prototype.search = function () {
     nmsce.executeSearch(search)
 }
 
-blackHoleSuns.prototype.status = function (str, clear) {
-    // if (clear)
-    //     $("#status").empty()
-
+NMSCE.prototype.status = function (str) {
     $("#status").append(str + "</br>")
 }
 
@@ -1678,6 +1675,9 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
         let id = f.name.nameToId()
 
         switch (f.type) {
+            case "link":
+                appenditem(itm, f.link, f.name, id, null, null, null, f.inputHide)
+                break
             case "number":
                 l = /range/ [Symbol.replace](tNumber, f.range)
                 l = /stype/ [Symbol.replace](l, f.query ? f.query : "")
@@ -1881,11 +1881,19 @@ NMSCE.prototype.addTag = function (evt) {
     }
 }
 
-NMSCE.prototype.deleteTag = function (evt) {
-    if (fnmsce) {
-        let row = $(evt).closest("[id|='row']")
-        let id = row.prop("id").stripID()
-        let list = row.find("#list-" + id)
+NMSCE.prototype.deleteTag = function (evt, write) {
+    if (write) {
+        let id = $(evt).closest("[id|='row']").prop("id").stripID()
+        let i = id.indexOf("-")
+        let type = id.slice(0, i)
+        id = id.slice(i + 1)
+        let e = nmsce.entries[type][id]
+        let field = $(evt).parent().prop("id").stripID()
+        let tag = $(evt).prop("id").stripID()
+
+        delete e[field][tag]
+        entry.modded = firebase.firestore.Timestamp.now()
+        nmsce.updateEntry(e)
     }
 
     $(evt).remove()
@@ -1983,7 +1991,7 @@ NMSCE.prototype.setMapSize = function (loc) {
 
 NMSCE.prototype.loadMap = function (loc, fname) {
     loc.load(fname, () => {
-        loc.find("#layer1").hide()
+        // loc.find("#layer1").hide()
 
         let bdr = loc.find("[id|='bdr']")
         bdr.css("stroke-opacity", "0")
@@ -1996,17 +2004,35 @@ NMSCE.prototype.loadMap = function (loc, fname) {
         if (typeof nmsce[name] === "undefined")
             nmsce[name] = {}
 
-        for (let l of map) {
+        for (let l of bdr) {
             let id = $(l).prop("id").stripID()
             let d = $(l).find("desc").text()
+            let t = $(l).find("title").text()
             nmsce[name][id] = {}
-            nmsce[name].type = "map"
 
-            if (d !== "")
+            if (d !== "") {
+                nmsce[name].type = "map"
                 nmsce[name][id] = JSON.parse(d)
+            }
+
+            if (t !== "")
+                nmsce[name][id].title = t.stripMarginWS()
+
+            nmsce[name][id].state = "enabled"
+        }
+
+        for (let l of map) {
+            let id = $(l).prop("id").stripID()
+
+            if (nmsce[name][id].type !== "map") {
+                nmsce[name].type = "map"
+                let d = $(l).find("desc").text()
+
+                if (d !== "")
+                    nmsce[name][id] = JSON.parse(d)
+            }
 
             nmsce[name][id].loc = $(l)
-            nmsce[name][id].state = "enabled"
         }
 
         bdr.click(function () {
@@ -2318,7 +2344,8 @@ NMSCE.prototype.buildImageText = function () {
     bhs.buildMenu($("#imgtable"), "Font", fontList, nmsce.setFont, {
         labelsize: "col-5",
         menusize: "col",
-        sort: true
+        sort: true,
+        font: true,
     })
 }
 
@@ -2354,7 +2381,7 @@ NMSCE.prototype.initImageText = function (id) {
             break
         default:
             nmsce.imageText[id] = {
-                font: id === "Glyphs" ? "glyph" : "Arial",
+                font: id === "Glyphs" ? "NMS Glyphs" : "Arial",
                 fSize: 24,
                 color: "#ffffff",
                 ck: false,
@@ -2524,7 +2551,7 @@ NMSCE.prototype.extractImageText = function () {
 }
 
 NMSCE.prototype.onLoadLogo = function (evt) {
-    let text = evt.currentTarget.src.includes("nmsce-logo.png") ? nmsce.imageText.logo : nmsce.imageText.myLogo
+    let text = evt.currentTarget.src.includes("app-logo") ? nmsce.imageText.logo : nmsce.imageText.myLogo
     let img = text.img = evt.currentTarget
 
     let scale = text.right ? Math.min(text.right / img.naturalWidth, text.decent / img.naturalHeight) : .1
@@ -2720,7 +2747,7 @@ NMSCE.prototype.setFont = function (evt) {
         let text = nmsce.imageText[id]
 
         if (text.sel && text.type !== "img") {
-            text.font = id === "Glyphs" ? "glyph" : font
+            text.font = id === "Glyphs" ? "NMS Glyphs" : font
             text = nmsce.measureText(text)
         }
     }
@@ -2729,11 +2756,10 @@ NMSCE.prototype.setFont = function (evt) {
 }
 
 NMSCE.prototype.drawText = function (alt, altw) {
-    let img = $("#imgtable")
-    if (!img.is(":visible"))
+    if (!$("#imageTextBlock").is(":visible"))
         return
 
-    img = img.find("#id-img")
+    let img = $("#id-img")
 
     let canvas = alt ? alt : document.getElementById("id-canvas")
     let width = img.width()
@@ -2754,8 +2780,7 @@ NMSCE.prototype.drawText = function (alt, altw) {
         canvas.height = parseInt(sh * canvas.width / sw)
     }
 
-    nmsce.imageText.logo.right = nmsce.imageText.logo.decent = parseInt(Math.min(txtcanvas.width, txtcanvas.height) * .1)
-
+    nmsce.imageText.logo.right = nmsce.imageText.logo.decent = parseInt(Math.min(txtcanvas.width, txtcanvas.height) * .15)
     if ($("#imageTextBlock").is(":visible")) {
         let ctx = txtcanvas.getContext("2d")
         ctx.clearRect(0, 0, txtcanvas.width, txtcanvas.height)
@@ -2778,7 +2803,7 @@ NMSCE.prototype.drawText = function (alt, altw) {
                     text.x = -text.left
 
                 if (id === "Glyphs") {
-                    text.font = "glyph"
+                    text.font = "NMS Glyphs"
 
                     ctx.fillStyle = text.color
                     ctx.fillRect(text.x + text.left - 5, text.y - text.ascent - 5, text.right - text.left + 9, text.ascent + text.decent + 8)
@@ -3297,7 +3322,7 @@ NMSCE.prototype.extractGlyphs = function (mid) {
             // if (i === 5)
             //     str += "<br>"
         }
-        // bhs.status(str, true)
+        // this.status(str)
         nmsce.changeAddr(null, g)
 
         $("body")[0].style.cursor = "default"
@@ -3422,7 +3447,7 @@ NMSCE.prototype.handleMouseMove = function (e) {
                     case "tl":
                     case "l":
                         if (text.type === "text") {
-                            text.fSize -= text.font === "glyph" ? dx / 10 : dx / 3
+                            text.fSize -= text.font === "NMS Glyphs" ? dx / 10 : dx / 3
                             nmsce.measureText(text)
                             text.x += old.right - text.right
                         } else {
@@ -3435,7 +3460,7 @@ NMSCE.prototype.handleMouseMove = function (e) {
                     case "tr":
                     case "r":
                         if (text.type === "text") {
-                            text.fSize += text.font === "glyph" ? dx / 10 : dx / 3
+                            text.fSize += text.font === "NMS Glyphs" ? dx / 10 : dx / 3
                             nmsce.measureText(text)
                         } else {
                             text.decent *= (text.right + dx) / text.right
@@ -3552,7 +3577,7 @@ NMSCE.prototype.deleteEntry = function (entry) {
     let ref = bhs.fs.doc("nmsce/" + entry.galaxy + "/" + entry.type + "/" + entry.id)
 
     ref.delete().then(() => {
-        bhs.status(entry.id + " deleted.")
+        this.status(entry.id + " deleted.")
         $("#save").text("Save")
 
         let ref = bhs.fbstorage.ref().child(originalPath + entry.Photo)
@@ -3564,51 +3589,58 @@ NMSCE.prototype.deleteEntry = function (entry) {
         ref = bhs.fbstorage.ref().child(thumbPath + entry.Photo)
         ref.delete()
     }).catch(err => {
-        bhs.status("ERROR: " + err.code)
+        this.status("ERROR: " + err.code)
         console.log(err)
     })
 }
 
 NMSCE.prototype.updateScreenshot = function (entry) {
-    if (!$("#id-canvas").is(":visible") || $("#ck-updateScreenshot").is(":visible") && !$("#ck-updateScreenshot").prop("checked"))
+    if (!$("#imgtable").is(":visible"))
         return null
 
-    let disp = document.createElement('canvas')
-    nmsce.drawText(disp, 1024)
-    disp.toBlob(blob => {
-        bhs.fbstorage.ref().child(displayPath + entry.Photo).put(blob).then(() => {
-            // bhs.status("Saved " + displayPath + entry.Photo)
-        })
-    }, "image/jpeg", .9)
+    if ($("#id-canvas").is(":visible") || $("#ck-updateScreenshot").is(":visible") && $("#ck-updateScreenshot").prop("checked")) {
+        if (typeof entry.Photo === "undefined")
+            entry.Photo = entry.type + "-" + entry.id + ".jpg"
 
-    let thumb = document.createElement('canvas')
-    nmsce.drawText(thumb, 400)
-    thumb.toBlob(blob => {
-        nmsce.saved = blob
-        bhs.fbstorage.ref().child(thumbPath + entry.Photo).put(blob).then(() => {
-            // bhs.status("Saved " + thumbPath + entry.Photo)
-        })
-    }, "image/jpeg", .8)
+        let disp = document.createElement('canvas')
+        nmsce.drawText(disp, 1024)
+        disp.toBlob(blob => {
+            bhs.fbstorage.ref().child(displayPath + entry.Photo).put(blob).then(() => {
+                // this.status("Saved " + displayPath + entry.Photo)
+            })
+        }, "image/jpeg", .9)
 
-    let orig = document.createElement('canvas')
-    let ctx = orig.getContext("2d")
-    orig.width = Math.min(2048, nmsce.screenshot.width)
-    orig.height = parseInt(nmsce.screenshot.height * orig.width / nmsce.screenshot.width)
-    ctx.drawImage(nmsce.screenshot, 0, 0, orig.width, orig.height)
-    orig.toBlob(blob => {
-        bhs.fbstorage.ref().child(originalPath + entry.Photo).put(blob).then(() => {
-            // bhs.status("Saved " + originalPath + entry.Photo)
-        })
-    }, "image/jpeg", .9)
+        let thumb = document.createElement('canvas')
+        nmsce.drawText(thumb, 400)
+        thumb.toBlob(blob => {
+            nmsce.saved = blob
+            bhs.fbstorage.ref().child(thumbPath + entry.Photo).put(blob).then(() => {
+                // this.status("Saved " + thumbPath + entry.Photo)
+            })
+        }, "image/jpeg", .8)
 
-    let loc = $("#id-table #sub-" + entry.type.nameToId())
-    nmsce.toggleSub(entry.type.nameToId(), true)
+        let orig = document.createElement('canvas')
+        let ctx = orig.getContext("2d")
+        orig.width = Math.min(2048, nmsce.screenshot.width)
+        orig.height = parseInt(nmsce.screenshot.height * orig.width / nmsce.screenshot.width)
+        ctx.drawImage(nmsce.screenshot, 0, 0, orig.width, orig.height)
+        orig.toBlob(blob => {
+            bhs.fbstorage.ref().child(originalPath + entry.Photo).put(blob).then(() => {
+                // this.status("Saved " + originalPath + entry.Photo)
+            })
+        }, "image/jpeg", .9)
 
-    loc = loc.find("#row-" + entry.type.nameToId() + "-" + entry.id + " img")
-    if (loc.length > 0) {
-        let url = thumb.toDataURL()
-        loc.attr("src", url)
+        let loc = $("#id-table #sub-" + entry.type.nameToId())
+        nmsce.toggleSub(entry.type.nameToId(), true)
+
+        loc = loc.find("#row-" + entry.type.nameToId() + "-" + entry.id + " img")
+        if (loc.length > 0) {
+            let url = thumb.toDataURL()
+            loc.attr("src", url)
+        }
     }
+
+    return true
 }
 
 NMSCE.prototype.updateEntry = function (entry) {
@@ -3628,9 +3660,9 @@ NMSCE.prototype.updateEntry = function (entry) {
     ref = ref.doc(entry.id)
 
     ref.set(entry).then(() => {
-        bhs.status(entry.type + " " + entry.Name + " saved.")
+        this.status(entry.type + " " + entry.Name + " saved.")
     }).catch(err => {
-        bhs.status("ERROR: " + err.code)
+        this.status("ERROR: " + err.code)
     })
 }
 
@@ -4397,7 +4429,12 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
             <div class="row pl-10">`
     const item = `<div id="id-idname" class="col-md-7 col-14 border pointer">title</div>`
     const sortItem = `<div id="id-idname" class="col-md-7 col-14 border pointer" onclick="nmsce.sortLoc(this)">title</div>`
+    const deleteTag = `<div id="id-idname" class="border rounded pointer" onclick="nmsce.deleteTag(this, true)">title</div>`
     const end = `</div></div>`
+    const svg = `
+        <svg height="30px" width="30px"> 
+            <use xlink:href="fname#map-idname" transform="translate(xx,yy)">
+        </svg>`
 
     let h = ""
     let fstring = typeof e === "string"
@@ -4420,8 +4457,35 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
 
         if (f.type !== "img" && f.type !== "map") {
             let l = /idname/g [Symbol.replace](itm, id)
-            if (!fstring)
+            if (!fstring) {
                 l = /pointer/ [Symbol.replace](l, "")
+
+                // if (f.type === "map") {
+                //     title = ""
+                //     for (let p of Object.keys(e.parts)) {
+                //         let mloc = nmsce[i][f.name]
+                //         if (!mloc)
+                //             continue
+                //         mloc = mloc.loc
+                //         let r = mloc[0].getBBox()
+                //         let l = /fname/ [Symbol.replace](svg, f.map)
+                //         l = /xx/ [Symbol.replace](l, -r.x)
+                //         l = /yy/ [Symbol.replace](l, -r.y)
+                //         l = /idname/ [Symbol.replace](l, p)
+                //         title += l
+                //     }
+                // }
+            }
+            if (!fstring && f.type === "tags" && e.type === "Ship" && window.location.hostname.includes("localhost")) {
+                let nt = ""
+                for (let t of title) {
+                    let l = /idname/ [Symbol.replace](deleteTag, t)
+                    l = /title/ [Symbol.replace](l, t)
+                    nt += l
+                }
+                title = nt
+            }
+
             h += /title/ [Symbol.replace](l, title)
 
             if (typeof f.sublist !== "undefined")
@@ -4429,8 +4493,31 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
                     let id = s.name.nameToId()
                     let title = fstring ? s.name : typeof e[s.name] === "undefined" ? "" : e[s.name]
 
+                    // if (!fstring && s.type === "map") {
+                    //     let i = getIndex(f.list, "name", e.Type)
+                    //     let list = f.list[i]
+                    //     let fname = list[s.sub]
+                    //     if (fname) {
+                    //         title = ""
+                    //         for (let p of Object.keys(e.parts)) {
+                    //             let mloc = nmsce[list.name.toLowerCase()][p]
+                    //             if (!mloc)
+                    //                 continue
+                    //             mloc = mloc.loc
+                    //             let r = mloc[0].getBBox()
+                    //             let l = /fname/ [Symbol.replace](svg, fname)
+                    //             l = /idname/ [Symbol.replace](l, p)
+                    //             l = /xx/ [Symbol.replace](l, -r.x)
+                    //             l = /yy/ [Symbol.replace](l, -r.y)
+                    //             title += l
+                    //         }
+                    //     }
+                    // }
+
                     if (s.type !== "img" && s.type !== "map") {
                         let l = /idname/g [Symbol.replace](itm, id)
+                        if (s.type === "map")
+                            l = /col-md-7 / [Symbol.replace](l, "")
                         h += /title/ [Symbol.replace](l, title)
                     }
                 }
@@ -4462,10 +4549,10 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
         h += /title/ [Symbol.replace](l, e.votes.visited)
         l = /idname/g [Symbol.replace](itm, "Created")
         l = /pointer/ [Symbol.replace](l, "")
-        h += /title/ [Symbol.replace](l, e.created.toDate().toDateLocalTimeString())
+        h += /title/ [Symbol.replace](l, e.created ? e.created.toDate().toDateLocalTimeString() : "")
         l = /idname/g [Symbol.replace](itm, "Modified")
         l = /pointer/ [Symbol.replace](l, "")
-        h += /title/ [Symbol.replace](l, e.modded.toDate().toDateLocalTimeString())
+        h += /title/ [Symbol.replace](l, e.modded ? e.modded.toDate().toDateLocalTimeString() : "")
         l = /idname/g [Symbol.replace](itm, "Posted")
         l = /pointer/ [Symbol.replace](l, "")
         h += /title/ [Symbol.replace](l, e.reddit ? e.reddit.toDate().toDateLocalTimeString() : "")
@@ -5116,8 +5203,6 @@ const colorList = [{
 }, {
     name: "Black",
 }, {
-    name: "Cream",
-}, {
     name: "Chrome",
 }, {
     name: "Cream",
@@ -5150,31 +5235,17 @@ const colorList = [{
 const fontList = [{
     name: "Arial",
 }, {
-    name: "Courier New",
-}, {
     name: "Georgia",
-}, {
-    name: "Times New Roman",
-}, {
-    name: "Verdana",
-}, {
-    name: "Open Sans",
-}, {
-    name: "Roboto",
-}, {
-    name: "Lato",
-}, {
-    name: "Helvetica",
-}, {
-    name: "Calibri",
-}, {
-    name: "Cambria",
 }, {
     name: "Perpetua",
 }, {
-    name: "Consolas",
+    name: "Verdana",
 }, {
-    name: "Tahoma",
+    name: "Roboto",
+}, {
+    name: "Helvetica",
+}, {
+    name: "Cambria",
 }, {
     name: "Century Gothic",
 }, {
@@ -5811,7 +5882,7 @@ const objectList = [{
         id: "#id-addrInput #id-addr",
         name: "Glyphs",
         field: "addr",
-        font: "glyph",
+        font: "NMS Glyphs",
         type: "glyph",
     }, {
         field: "Economy",
@@ -5849,12 +5920,12 @@ const objectList = [{
             search: true,
             inputHide: true,
         }, {
-            name: "bodies",
+            name: "Parts",
             type: "map",
             sub: "bodies",
             search: true,
         }, {
-            name: "wings",
+            name: "Parts-2",
             type: "map",
             sub: "wings",
             search: true,
@@ -5947,6 +6018,107 @@ const objectList = [{
         required: true,
     }]
 }, {
+    name: "Living-Ship",
+    imgText: [{
+        id: "#id-Player",
+        field: "_name",
+        name: "Player",
+        type: "string",
+        required: true,
+    }, {
+        id: "#id-Galaxy",
+        field: "galaxy",
+        name: "Galaxy",
+        type: "menu",
+        required: true,
+    }, {
+        id: "#id-Platform",
+        field: "Platform",
+        name: "Platform",
+        type: "radio",
+        required: true,
+    }, {
+        id: "#id-addrInput #id-addr",
+        field: "addr",
+        name: "Coords",
+        type: "string",
+        required: true,
+    }, {
+        id: "#id-addrInput #id-addr",
+        field: "addr",
+        name: "Glyphs",
+        font: "NMS Glyphs",
+        type: "glyph",
+    }, ],
+    fields: [{
+        name: "Xane's World",
+        type: "link",
+        link: "<a href='https://www.youtube.com/watch?v=NUPzFpQmQc8'>How to get Living Ships, Xaine's World.</a>",
+        inputHide: true,
+    }, {
+        name: "Name",
+        type: "string",
+        search: true,
+        imgText: true,
+        onchange: getEntry,
+        inputHide: true,
+    }, {
+        name: "Planet Name",
+        type: "string",
+        imgText: true,
+        search: true,
+        inputHide: true,
+    }, {
+        name: "Planet Index",
+        type: "number",
+        range: 15,
+        ttip: planetNumTip,
+    }, {
+        name: "Latitude",
+        imgText: true,
+        type: "float",
+    }, {
+        name: "Longitude",
+        imgText: true,
+        type: "float",
+    }, {
+        name: "Damage",
+        type: "number",
+        inputHide: true,
+    }, {
+        name: "Shield",
+        type: "number",
+        inputHide: true,
+    }, {
+        name: "Hyperdrive",
+        type: "number",
+        inputHide: true,
+    }, {
+        name: "Seed",
+        type: "string",
+        searchText: true,
+        ttip: "Found in save file. Can be used to reskin.",
+        inputHide: true,
+    }, {
+        name: "Color",
+        type: "tags",
+        searchText: true,
+        max: 4,
+        list: colorList,
+        search: true,
+    }, {
+        name: "Tags",
+        type: "tags",
+        max: 4,
+        imgText: true,
+        search: true,
+        inputHide: true,
+    }, {
+        name: "Photo",
+        type: "img",
+        required: true,
+    }]
+}, {
     name: "Freighter",
     imgText: [{
         id: "#id-Player",
@@ -5970,7 +6142,7 @@ const objectList = [{
         id: "#id-addrInput #id-addr",
         name: "Glyphs",
         field: "addr",
-        font: "glyph",
+        font: "NMS Glyphs",
         type: "glyph",
     }, {
         field: "Economy",
@@ -6017,7 +6189,7 @@ const objectList = [{
         type: "img",
         required: true,
     }, {
-        name: "bodies",
+        name: "Parts",
         type: "map",
         map: "/images/freighter-opt.svg",
         search: true,
@@ -6046,7 +6218,7 @@ const objectList = [{
         id: "#id-addrInput #id-addr",
         name: "Glyphs",
         field: "addr",
-        font: "glyph",
+        font: "NMS Glyphs",
         type: "glyph",
     }, ],
     fields: [{
@@ -6062,18 +6234,18 @@ const objectList = [{
         list: frigateList,
         imgText: true,
         search: true,
-    }, {
-        name: "Benefits",
-        type: "tags",
-        list: frigateBenefits,
-        search: true,
-        inputHide: true,
-    }, {
-        name: "Negatives",
-        type: "tags",
-        list: frigateNegatives,
-        search: true,
-        inputHide: true,
+        // }, {
+        //     name: "Benefits",
+        //     type: "tags",
+        //     list: frigateBenefits,
+        //     search: true,
+        //     inputHide: true,
+        // }, {
+        //     name: "Negatives",
+        //     type: "tags",
+        //     list: frigateNegatives,
+        //     search: true,
+        //     inputHide: true,
     }, {
         name: "Color",
         type: "tags",
@@ -6123,7 +6295,7 @@ const objectList = [{
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Glyphs",
-        font: "glyph",
+        font: "NMS Glyphs",
         type: "glyph",
     }, ],
     fields: [{
@@ -6233,7 +6405,7 @@ const objectList = [{
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Glyphs",
-        font: "glyph",
+        font: "NMS Glyphs",
         type: "glyph",
     }, ],
     fields: [{
@@ -6309,7 +6481,7 @@ const objectList = [{
         id: "#id-addrInput #id-addr",
         name: "Glyphs",
         field: "addr",
-        font: "glyph",
+        font: "NMS Glyphs",
         type: "glyph",
     }, ],
     fields: [{
@@ -6332,25 +6504,12 @@ const objectList = [{
         imgText: true,
         search: true,
     }, {
-        name: "Extreme Weather",
-        type: "checkbox",
-        ttip: "Any deadly weather pattern.",
-        searchText: true,
-        search: true,
-        inputHide: true,
-    }, {
         name: "Sentinels",
         type: "menu",
         list: sentinelList,
         ttip: `Low - Sentinels only guard secure facilities<br>
             High - Patrols are present throughout the planet (orange icon)<br>
             Aggressive - Patrols are present throughout the planet and Sentinels will attack on sight (red icon)<br>`,
-        search: true,
-        inputHide: true,
-    }, {
-        name: "Predators",
-        type: "checkbox",
-        ttip: `Does planet have agressive predators?`,
         search: true,
         inputHide: true,
     }, {
@@ -6420,7 +6579,7 @@ const objectList = [{
         id: "#id-addrInput #id-addr",
         field: "addr",
         name: "Glyphs",
-        font: "glyph",
+        font: "NMS Glyphs",
         type: "glyph",
     }, ],
     fields: [{

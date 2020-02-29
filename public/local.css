@@ -97,17 +97,17 @@
 }
 
 @font-face {
-    font-family: 'glyph';
+    font-family: 'NMS Glyphs';
     src: url('/bin/NMS-Glyphs-Mono.ttf') format('truetype');
 }
 
 .glyph {
-    font-family: "glyph" !important;
+    font-family: "NMS Glyphs" !important;
     font-weight: bold;
 }
 
 .txt-glyph-disp {
-    font-family: "glyph" !important;
+    font-family: "NMS Glyphs" !important;
     font-weight: bold;
 }
 
