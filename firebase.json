@@ -53,7 +53,7 @@
         "value": "max-age=1000000"
       }]
     }, {
-      "source": "**/*.*",
+      "source": "**/*.@(html|css|js)",
       "headers": [{
         "key": "Cache-Control",
         "value": "max-age=600"
