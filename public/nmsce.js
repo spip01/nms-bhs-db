@@ -151,38 +151,40 @@ NMSCE.prototype.buildPanels = function () {
 
     addGlyphButtons($("#glyphbuttons"), nmsce.addGlyph)
 
-    let img = $("#id-canvas")
+    if (fcedata) {
+        let img = $("#id-canvas")
 
-    img.on("touchstart", e => {
-        event.offsetX = event.targetTouches[0].pageX - img.offset().left
-        event.offsetY = event.targetTouches[0].pageY - img.offset().top
+        img.on("touchstart", e => {
+            event.offsetX = event.targetTouches[0].pageX - img.offset().left
+            event.offsetY = event.targetTouches[0].pageY - img.offset().top
 
-        nmsce.handleMouseDown(e)
-    })
-    img.on("touchmove", e => {
-        event.offsetX = event.targetTouches[0].pageX - img.offset().left
-        event.offsetY = event.targetTouches[0].pageY - img.offset().top
+            nmsce.handleMouseDown(e)
+        })
+        img.on("touchmove", e => {
+            event.offsetX = event.targetTouches[0].pageX - img.offset().left
+            event.offsetY = event.targetTouches[0].pageY - img.offset().top
 
-        nmsce.handleMouseMove(e)
-    })
-    img.on("touchend", e => {
-        nmsce.handleMouseUp(e)
-    })
-    img.mouseout(e => {
-        nmsce.handleMouseOut(e)
-    })
-    img.mousedown(e => {
-        nmsce.handleMouseDown(e)
-    })
-    img.mousemove(e => {
-        nmsce.handleMouseMove(e)
-    })
-    img.mouseup(e => {
-        nmsce.handleMouseUp(e)
-    })
-    img.mouseout(e => {
-        nmsce.handleMouseOut(e)
-    })
+            nmsce.handleMouseMove(e)
+        })
+        img.on("touchend", e => {
+            nmsce.handleMouseUp(e)
+        })
+        img.mouseout(e => {
+            nmsce.handleMouseOut(e)
+        })
+        img.mousedown(e => {
+            nmsce.handleMouseDown(e)
+        })
+        img.mousemove(e => {
+            nmsce.handleMouseMove(e)
+        })
+        img.mouseup(e => {
+            nmsce.handleMouseUp(e)
+        })
+        img.mouseout(e => {
+            nmsce.handleMouseOut(e)
+        })
+    }
 }
 
 NMSCE.prototype.setGlyphInput = function (evt) {
@@ -382,8 +384,10 @@ NMSCE.prototype.displayUser = function () {
     }
 
     let loc = $("#row-playerInput")
-    if (fcedata)
+    if (fcedata) {
         loc.find("#id-Player").val(bhs.user._name)
+        loc.find("#id-Version").val(bhs.user.versionNo)
+    }
 
     loc.find("#btn-Galaxy").text(bhs.user.galaxy)
 
@@ -406,7 +410,7 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     const clr = (pnl) => {
         pnl.find("input").each(function () {
             let id = $(this).prop("id").stripID()
-            if (id === "glyphs" || id === "PC" || id === "XBox" || id === "PS4" || fcedata && id === "Player")
+            if (id === "versionNo" || id === "glyphs" || id === "PC" || id === "XBox" || id === "PS4" || fcedata && id === "Player")
                 return
 
             let type = $(this).prop("type")
@@ -522,12 +526,14 @@ NMSCE.prototype.extractEntry = function () {
         entry.Platform = last.Platform
         entry.platform = last.Platform === "PS4" ? "PS4" : last.Platform === "PC" || last.Platform === "XBox" ? "PC-XBox" : ""
         entry.galaxy = last.galaxy
+        entry.versionNo = last.versionNo ? last.versionNo : ""
     } else {
         entry._name = bhs.user._name
         entry.uid = bhs.user.uid
         entry.Platform = bhs.user.Platform
         entry.platform = entry.Platform === "PS4" ? "PS4" : entry.Platform === "PC" || entry.Platform === "XBox" ? "PC-XBox" : ""
         entry.galaxy = bhs.user.galaxy
+        entry.versionNo = bhs.user.versionNo
     }
 
     entry.version = "beyond"
@@ -680,7 +686,7 @@ NMSCE.prototype.extractEntry = function () {
 
             nmsce.initVotes(entry)
             nmsce.entries[entry.type.nameToId()][entry.id] = entry
-            nmsce.displayListEntry(entry, true)
+            nmsce.displayEntryInList(entry, true)
 
             if (!(ok = nmsce.updateScreenshot(entry)))
                 bhs.status("Error: Photo required.")
@@ -948,6 +954,9 @@ NMSCE.prototype.executeSearch = function (search) {
                 if (!found)
                     break
             }
+
+            if (found && s.versionNo && (!e.versionNo || s.versionNo > e.versionNo))
+                found = false
 
             if (found) {
                 nfound++
@@ -1281,9 +1290,13 @@ NMSCE.prototype.extractSearch = function (fcn) {
     s.galaxy = galaxy
     s.type = tab
 
-    let name = $("#searchname").val()
+    let name = $("#id-Player").val()
     if (name)
         s.name = name
+
+    let ver = $("#id-Version").val()
+    if (ver)
+        s.versionNo = ver
 
     let obj = null
     let i = getIndex(objectList, "name", tab)
@@ -1506,6 +1519,7 @@ NMSCE.prototype.extractUser = function () {
 
     u.version = "beyond"
     u._name = loc.find("#id-Player").val()
+    u.versionNo = loc.find("#id-Version").val()
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber()
 
     loc = loc.find("#id-Platform :checked")
@@ -1910,7 +1924,7 @@ NMSCE.prototype.deleteTag = function (evt, write) {
         let tag = $(evt).prop("id").stripID()
 
         delete e[field][tag]
-        entry.modded = firebase.firestore.Timestamp.now()
+        e.modded = firebase.firestore.Timestamp.now()
         nmsce.updateEntry(e)
     }
 
@@ -3713,59 +3727,37 @@ function getEntry() {
     }
 }
 
-NMSCE.prototype.getEntries = function (type, end) {
+NMSCE.prototype.getEntries = function () {
     let p = []
-    if (typeof nmsce.entries === "undefined") {
+    if (typeof nmsce.entries === "undefined")
         nmsce.entries = {}
-        nmsce.lastDownload = {}
-    }
 
     const getNext = (type) => {
         let ref = bhs.fs.collection("nmsce/" + bhs.user.galaxy + "/" + type)
         ref = ref.where("uid", "==", bhs.user.uid)
         ref = ref.orderBy("created", "desc")
 
-        if (nmsce.lastDownload[type])
-            ref = ref.startAfter(nmsce.lastDownload[type])
-
-        ref = ref.limit(50)
-
         return ref.get().then(snapshot => {
-            if (snapshot.size)
-                nmsce.lastDownload[type] = snapshot.docs[snapshot.size - 1]
-
             return snapshot
         })
     }
 
     if (bhs.user.galaxy) {
-        if (type) {
-            p.push(getNext(type))
-        } else
-            for (let t of objectList) {
-                if (typeof nmsce.entries[t.name] === "undefined")
-                    nmsce.entries[t.name] = {}
+        for (let t of objectList) {
+            if (typeof nmsce.entries[t.name] === "undefined")
+                nmsce.entries[t.name] = {}
 
-                if (typeof nmsce.lastDownload[t.name] === "undefined")
-                    nmsce.lastDownload[t.name] = 0
-
-                p.push(getNext(t.name))
-            }
+            p.push(getNext(t.name))
+        }
 
         Promise.all(p).then(res => {
-            let updated = {}
             for (let snapshot of res)
                 for (let doc of snapshot.docs) {
                     let e = doc.data()
-
-                    if (typeof updated[e.type] === "undefined")
-                        updated[e.type] = {}
-
                     nmsce.entries[e.type][e.id] = e
-                    updated[e.type][e.id] = e
                 }
 
-            nmsce.displayList(updated, type)
+            nmsce.displayEntryList(nmsce.entries)
         })
     }
 }
@@ -3919,14 +3911,15 @@ NMSCE.prototype.getNew = function () {
         nmsce.getLatest()
 }
 
-
 NMSCE.prototype.getLatest = function () {
     let sel = $("#resultshdr #btn-show").text().stripMarginWS()
     let s = parseInt($("#displaysince").val())
+
     if (s > 180) {
         s = 180
         $("#displaysince").val(s)
     }
+
     let dt = new Date()
     dt.setDate(dt.getDate() - s)
 
@@ -3952,12 +3945,12 @@ NMSCE.prototype.getLatest = function () {
 
 const resultsCover = `<div id="id-idname" class="row cover-container bkg-def" style="display:none"></div>`
 const resultsItem = `
-    <div id="row-idname" class="col-xl-p200 col-lg-p250 col-md-p333 col-sm-7 col-14 cover-item bkg-white txt-label-def border rounded">
+    <div id="row-idname" class="col-xl-p200 col-lg-p250 col-md-p333 col-sm-7 col-14 pointer cover-item bkg-white txt-label-def border rounded" 
+      data-panel="epanel" data-type="etype" data-id="eid" onclick="nmsce.selectResult(this)">
         galaxy<br>
         by<br>
-        <img id="img-idname" data-panel="epanel" data-thumb="ethumb" data-type="etype" data-id="eid" class="pointer" 
-        onclick="nmsce.selectResult(this)" style="height:90%"
-        onload="nmsce.imageLoaded(this, $(this).parent().width(), $(this).height()*.8)" />
+        <img id="img-idname" data-thumb="ethumb"
+          onload="nmsce.imageLoaded(this, $(this).parent().width(), $(this).parent().height()*.8)" />
     </div>`
 
 NMSCE.prototype.getAfterDate = function (date) {
@@ -3982,18 +3975,18 @@ NMSCE.prototype.getAfterDate = function (date) {
 
                     if (r.date)
                         pdt.push(ref.get().then(snapshot => {
-                            return ({
+                            return {
                                 rt: r,
                                 snapshot: snapshot
-                            })
-                        }))
+                            }
+                        }).catch(err => {}))
                     else
                         p.push(ref.get().then(snapshot => {
                             return {
                                 rt: r,
                                 snapshot: snapshot
                             }
-                        }))
+                        }).catch(err => {}))
                 }
             }
         }
@@ -4005,24 +3998,25 @@ NMSCE.prototype.getAfterDate = function (date) {
         let top = {}
         top.count = 0
 
-        for (let r of res) {
-            let rid = r.rt.name.nameToId()
-            rts[rid] = r
+        for (let r of res)
+            if (r) {
+                let rid = r.rt.name.nameToId()
+                rts[rid] = r
 
-            for (let doc of r.snapshot.docs) {
-                let e = doc.data()
-                let tid = e.type.nameToId()
-                lists[rid][tid + "-" + e.id] = e
+                for (let doc of r.snapshot.docs) {
+                    let e = doc.data()
+                    let tid = e.type.nameToId()
+                    lists[rid][tid + "-" + e.id] = e
 
-                if (r.rt.field === "votes.favorite" || r.rt.field === "votes.edchoice") {
-                    let total = e.votes.favorite * 10 + e.votes.edchoice * 15 + e.votes.visited * 20 + e.votes.clickcount / 8
-                    if (total > top.count) {
-                        top.count = total
-                        top.entry = e
+                    if (r.rt.field === "votes.favorite" || r.rt.field === "votes.edchoice") {
+                        let total = e.votes.favorite * 10 + e.votes.edchoice * 15 + e.votes.visited * 20 + e.votes.clickcount / 8
+                        if (total > top.count) {
+                            top.count = total
+                            top.entry = e
+                        }
                     }
                 }
             }
-        }
 
         if (top.count > 0)
             nmsce.displaySelected(top.entry, true)
@@ -4063,8 +4057,35 @@ NMSCE.prototype.createThumbObserver = function (loc) {
             evts => {
                 for (let evt of evts) {
                     if (evt.intersectionRatio > 0) {
-                        evt.target.src = evt.target.dataset.src
-                        io.unobserve(evt.target)
+                        let loc = $(evt.target).closest("[id|='row']")
+                        let data = $(evt.target).data()
+                        let len = thumbLookAhead * 2
+
+                        if (data.count > 0) {
+                            len = thumbLookAhead
+                            loc = loc.nextAll().eq(thumbLookAhead)
+                        }
+
+                        for (let i = 0; i <= len; ++i) {
+                            if (loc.length === 1) {
+                                let img = loc.find("img")
+                                if (img.length > 0) {
+                                    let data = img.data()
+
+                                    if (data && data.src) {
+                                        img.prop("src", data.src)
+
+                                        img.on("load", () => {
+                                            try {
+                                                io.unobserve(evt.target)
+                                            } catch (err) {}
+                                        })
+                                    }
+                                }
+
+                                loc = loc.next()
+                            }
+                        }
                     }
                 }
             }, {
@@ -4078,35 +4099,18 @@ NMSCE.prototype.createThumbObserver = function (loc) {
     return io
 }
 
-NMSCE.prototype.createEntryObserver = function (loc) {
-    if (window.IntersectionObserver) {
-        var io = new IntersectionObserver(
-            evts => {
-                for (let evt of evts) {
-                    if (evt.intersectionRatio > 0) {
-                        let type = $(evt.target).closest("[id|='list']").prop("id").stripID()
-                        nmsce.getEntries(type)
-                        io.unobserve(evt.target)
-                    }
-                }
-            }, {
-                root: loc[0],
-                rootMargin: '0px 0px 0px 0px',
-                threshold: .1
-            }
-        )
-    }
-
-    return io
-}
-
-NMSCE.prototype.displayResultList = function (id) {
+NMSCE.prototype.displayResultList = function (id, start) {
     let h = ""
+    let loc = $("#resultLists #id-" + id)
 
-    let list = nmsce.resultLists[id]
+    if (!start)
+        loc.empty()
 
-    for (let t of Object.keys(list)) {
-        let e = list[t]
+    let list = Object.keys(nmsce.resultLists[id])
+
+    for (let i = start ? start : 0; i < list.length; ++i) {
+        let t = list[i]
+        let e = nmsce.resultLists[id][t]
 
         let l = /idname/g [Symbol.replace](resultsItem, t)
         l = /etype/ [Symbol.replace](l, e.type)
@@ -4117,29 +4121,43 @@ NMSCE.prototype.displayResultList = function (id) {
         l = /by/ [Symbol.replace](l, e._name)
 
         h += l
+
+        if (i - start === 25) {
+            setTimeout(function () {
+                nmsce.displayResultList(id, i + 1)
+            }, 2000)
+
+            break
+        }
     }
 
-    let loc = $("#resultLists #id-" + id)
-    loc.html(h)
-
+    loc.append(h)
     nmsce.displayThumbnails(loc)
 }
+
+const thumbLookAhead = 25
 
 NMSCE.prototype.displayThumbnails = function (loc) {
     let io = nmsce.createThumbObserver(loc)
 
     let imgs = loc.find("[id|='img']")
-    for (let l of imgs) {
+    for (let i = 0; i < imgs.length; ++i) {
+        let l = imgs[i]
         let data = $(l).data()
 
-        let ref = bhs.fbstorage.ref().child(data.thumb)
-        ref.getDownloadURL().then(url => {
-            if (io) {
-                $(l).attr("data-src", url)
-                io.observe(l)
-            } else
-                $(l).attr("src", url)
-        }).catch(err => console.log(err))
+        if (!data || !data.src) {
+            let ref = bhs.fbstorage.ref().child(data.thumb)
+            ref.getDownloadURL().then(url => {
+                $(l).data("src", url)
+                $(l).data("count", i)
+
+                if (!io || $(l).is(":visible"))
+                    $(l).attr("src", url)
+
+                if (io && i % thumbLookAhead === 0)
+                    io.observe(l)
+            }).catch(err => console.log(err))
+        }
     }
 }
 
@@ -4291,6 +4309,14 @@ NMSCE.prototype.displaySelected = function (e, noscroll) {
         }
     }
 
+    if (e.versionNo) {
+        let h = /idname/g [Symbol.replace](row, "Version")
+        h = /title/ [Symbol.replace](h, "Version")
+        h = /value/ [Symbol.replace](h, e.versionNo)
+        h = /font/ [Symbol.replace](h, "")
+        loc.append(h)
+    }
+
     if (e.redditlink) {
         let h = /idname/g [Symbol.replace](row, "link")
         h = /title/ [Symbol.replace](h, "")
@@ -4356,7 +4382,7 @@ NMSCE.prototype.displayInList = function (list, tab) {
     }
 }
 
-NMSCE.prototype.displayList = function (entries, intype) {
+NMSCE.prototype.displayEntryList = function (entries, intype, start) {
     const card = `
         <div class="container-flex">
             <div id="ttl-idname" class="card-header border-bottom txt-def h5 pointer" onclick="nmsce.toggleSub('idname')">
@@ -4376,21 +4402,24 @@ NMSCE.prototype.displayList = function (entries, intype) {
             </div>
         </div>`
 
-
     if (intype) {
         let list = Object.keys(entries[intype])
         let loc = $("#id-table #list-" + intype)
-        let io = this.createEntryObserver(loc)
-        let count =0
 
-        for (let id of list) {
-            nmsce.addDisplayListEntry(entries[intype][id], loc)
+        for (let i = start; i < list.length; ++i) {
+            let id = list[i]
+            nmsce.addDisplayEntryList(entries[intype][id], loc)
+            
+            if (i - start === 50) {
+                setTimeout(function () {
+                    nmsce.displayEntryList(entries, intype, i + 1)
+                }, 2000)
 
-            if (io && ++count === 25 && list.length >= 50) {
-                let l = loc.find("#row-" + intype + "-" + id)
-                io.observe(l[0])
+                break
             }
         }
+
+        nmsce.displayThumbnails(loc)
     } else
         for (let type of Object.keys(entries)) {
             let list = Object.keys(entries[type])
@@ -4401,34 +4430,35 @@ NMSCE.prototype.displayList = function (entries, intype) {
             $("#id-table").append(l)
             let loc = $("#id-table #list-" + type)
 
-                        nmsce.addDisplayListEntry(type, loc)
+            nmsce.addDisplayEntryList(type, loc)
 
-            let io = this.createEntryObserver(loc)
-            let count = 0
+            for (let i = 0; i < list.length; ++i) {
+                let id = list[i]
+                nmsce.addDisplayEntryList(entries[type][id], loc)
 
-            for (let id of list) {
-                nmsce.addDisplayListEntry(entries[type][id], loc)
+                if (i === 50) {
+                    setTimeout(function () {
+                        nmsce.displayEntryList(entries, type, i + 1)
+                    }, 2000)
 
-                if (io && ++count === 25 && list.length >= 49) {
-                    let l = loc.find("#row-" + type + "-" + id)
-                    io.observe(l[0])
+                    break
                 }
             }
-        }
 
-    nmsce.displayThumbnails($('#id-table'))
+            nmsce.displayThumbnails(loc)
+        }
 }
 
-NMSCE.prototype.displayListEntry = function (entry, scroll) {
+NMSCE.prototype.displayEntryInList = function (entry, scroll) {
     let loc = $("#id-table #sub-" + entry.type.nameToId())
     let id = entry.type.nameToId() + "-" + entry.id
     let eloc = loc.find("#row-" + id)
 
     if (eloc.length === 0) {
-        nmsce.addDisplayListEntry(entry, loc, true)
+        nmsce.addDisplayEntryList(entry, loc, true)
         loc = $("#id-table #ttl-" + entry.type.nameToId())
     } else {
-        nmsce.updateDisplayListEntry(entry, eloc)
+        nmsce.updateDisplayEntryList(entry, eloc)
         loc = eloc
     }
 
@@ -4508,7 +4538,7 @@ NMSCE.prototype.sortLoc = function (evt) {
     loc.append(list)
 }
 
-NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
+NMSCE.prototype.addDisplayEntryList = function (e, loc, prepend) {
     const key = `
         <div id="row-key" class="col-md-p250 col-sm-p333 col-7 border border-black txt-def" >
             <div class="row">`
@@ -4569,15 +4599,6 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
                 //     }
                 // }
             }
-            if (!fstring && f.type === "tags" && e.type === "Ship" && window.location.hostname.includes("localhost")) {
-                let nt = ""
-                for (let t of title) {
-                    let l = /idname/ [Symbol.replace](deleteTag, t)
-                    l = /title/ [Symbol.replace](l, t)
-                    nt += l
-                }
-                title = nt
-            }
 
             h += /title/ [Symbol.replace](l, title)
 
@@ -4624,6 +4645,8 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
         h += /title/ [Symbol.replace](l, "Editors Choice")
         l = /idname/g [Symbol.replace](itm, "Visited")
         h += /title/ [Symbol.replace](l, "Visited")
+        l = /idname/g [Symbol.replace](itm, "Version")
+        h += /title/ [Symbol.replace](l, "Version")
         l = /idname/g [Symbol.replace](itm, "Created")
         h += /title/ [Symbol.replace](l, "Created")
         l = /idname/g [Symbol.replace](itm, "Modified")
@@ -4640,6 +4663,9 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
         l = /idname/g [Symbol.replace](itm, "Visited")
         l = /pointer/ [Symbol.replace](l, "")
         h += /title/ [Symbol.replace](l, e.votes.visited)
+        l = /idname/g [Symbol.replace](itm, "Version")
+        l = /pointer/ [Symbol.replace](l, "")
+        h += /title/ [Symbol.replace](l, e.versionNo ? e.versionNo : "")
         l = /idname/g [Symbol.replace](itm, "Created")
         l = /pointer/ [Symbol.replace](l, "")
         h += /title/ [Symbol.replace](l, e.created ? e.created.toDate().toDateLocalTimeString() : "")
@@ -4659,7 +4685,7 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
         loc.append(h)
 }
 
-NMSCE.prototype.updateDisplayListEntry = function (e, loc) {
+NMSCE.prototype.updateDisplayEntryList = function (e, loc) {
     let i = getIndex(objectList, "name", e.type)
     for (let f of objectList[i].fields) {
         let id = f.name.nameToId()
@@ -5349,6 +5375,58 @@ const fontList = [{
     name: 'Amatic SC',
 }, {
     name: 'Notable',
+}, ]
+
+const encounterList = [{
+    name: "Alien Repair"
+}, {
+    name: "Alien Trader"
+}, {
+    name: "Alien Trader Special Offer"
+}, {
+    name: "Anomalous Numbers Station"
+}, {
+    name: "Asteroid Larvae"
+}, {
+    name: "Black Hole"
+}, {
+    name: "Child of Helios"
+}, {
+    name: "Condensed Stellar Ice"
+}, {
+    name: "Derelict Freighter"
+}, {
+    name: "Dyson Lens"
+}, {
+    name: "Emergency Civilisation Shelter Pod"
+}, {
+    name: "Gaseous Sentience"
+}, {
+    name: "Grave of the Ocean King"
+}, {
+    name: "Hazard Containment Field"
+}, {
+    name: "Ironbound Relic"
+}, {
+    name: "Jettisoned Storage Silo"
+}, {
+    name: "Living Metalloid"
+}, {
+    name: "Messenger of Atlas"
+}, {
+    name: "Pirate Controlled Monitoring Station"
+}, {
+    name: "Plasmic Accident"
+}, {
+    name: "Relic Gate"
+}, {
+    name: "Rubble of the First Spawn"
+}, {
+    name: "Secret Listening Post"
+}, {
+    name: "Stellar Intelligence"
+}, {
+    name: "Void Egg"
 }, ]
 
 const biomeList = [{
@@ -6166,14 +6244,17 @@ const objectList = [{
         type: "number",
         range: 15,
         ttip: planetNumTip,
+        required: true,
     }, {
         name: "Latitude",
         imgText: true,
         type: "float",
+        required: true,
     }, {
         name: "Longitude",
         imgText: true,
         type: "float",
+        required: true,
     }, {
         name: "Damage",
         type: "number",
