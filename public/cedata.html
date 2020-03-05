@@ -59,8 +59,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
 
-    <link
-        href="https://fonts.googleapis.com/css?family=Notable:regular|Berkshire+Swash:regular|Caveat+Brush:regular|Amatic+SC:regular&display=auto"
+    <link href="https://fonts.googleapis.com/css?family=Notable:regular|Berkshire+Swash:regular|Caveat+Brush:regular|Amatic+SC:regular&display=auto"
         rel="stylesheet">
 
     <script src="/__/firebase/7.6.2/firebase-app.js"></script>
@@ -123,20 +122,11 @@
                 <div class="row">
                     <div id="panels" class="col-md-9 col-14" style="border-width:3px; border-color:black;">
                         <div id="row-playerInput" class="row" data-allowhide=true>
-                            <div class="col-md-4 col-6 txt-label-def">
+                            <div class="col-sm-4 col-6 txt-label-def">
                                 Player Name&nbsp;
                                 <span class="h5 text-danger">*</span>&nbsp;
                             </div>
-                            <input id="id-Player" class="rounded col-md-7 col-8 txt-input-def" type="text">
-
-                            <div class="col-md-4 col-6 txt-label-def">
-                                Version Number&nbsp;
-                                <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
-                                    data-placement="bottom"
-                                    title="Game version used when discovery was made. This will help with searching for disoveries made after a certain version.">
-                                </i>&nbsp;
-                            </div>
-                            <input id="id-VersionNo" class="rounded col-5 txt-input-def" type="text">
+                            <input id="id-Player" class="rounded col-md-6 col-8 txt-input-def" type="text">
 
                             <div id="id-Galaxy" class="col-lg-6 col-14 pl-10"></div>
                             <div id="id-Platform" class="col-lg-8 col-14 nopadding"></div>
@@ -195,8 +185,8 @@
                                 <div class="col-md-2 col-sm-3 col-4 txt-label-def">
                                     Glyph&nbsp;
                                     <span class="text-danger">*</span>&nbsp;
-                                    <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
-                                        data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
+                                    <i class="far fa-question-circle text-danger" data-toggle="tooltip"
+                                        data-html="true" data-placement="bottom" title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
                                                 digit hex, 0-9 a-f, value can be entered directly in the field.">
                                     </i>
                                 </div>
@@ -230,8 +220,8 @@
                             <div id="foundsys" class="col hidden">
                                 <div class="row">
                                     <i class="fas fa-check text-success"></i>&nbsp;
-                                    <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
-                                        data-placement="bottom" title="System found in database.">
+                                    <i class="far fa-question-circle text-danger" data-toggle="tooltip"
+                                        data-html="true" data-placement="bottom" title="System found in database.">
                                     </i>
                                 </div>
                             </div>
@@ -243,8 +233,8 @@
                             <div id="foundreg" class="col hidden">
                                 <div class="row">
                                     <i class="fas fa-check text-success"></i>&nbsp;
-                                    <i class="far fa-question-circle text-danger" data-toggle="tooltip" data-html="true"
-                                        data-placement="bottom" title="Region found in database.">
+                                    <i class="far fa-question-circle text-danger" data-toggle="tooltip"
+                                        data-html="true" data-placement="bottom" title="Region found in database.">
                                     </i>
                                 </div>
                             </div>
@@ -268,10 +258,10 @@
                             <div class="row">
                                 <div class="col-lg-5 col-14">
                                     <div class="row" style="padding-top:2px;">
-                                        <button id="save" type="button" class="col-6 btn btn-sm btn-def"
-                                            onclick="nmsce.saveEntry()">Save</button>&nbsp;
+                                        <button id="save" type="button"
+                                            class="col-6 btn btn-sm btn-def">Save</button>&nbsp;
                                         <button id="delete" type="button" class="col-6 btn btn-sm btn-def disabled"
-                                            disabled onclick="nmsce.deleteEntry()">Delete</button>&nbsp;
+                                            disabled>Delete</button>&nbsp;
                                     </div>
                                     <div id="updatenext" class="row hidden">
                                         <button type="button" class="col-6 btn btn-sm btn-def">Update +
@@ -317,7 +307,7 @@
                             <span id="searchPanel" class="hidden">
                                 <div class="row">
                                     <button id="search" type="button" class="col-6 btn btn-sm btn-def"
-                                        onclick="nmsce.search()">Search</button>&nbsp;
+                                        onclick="nmsce.searchEntriesList()">Search</button>&nbsp;
                                     <button id="showall" type="button" class="col-6 btn btn-sm btn-def"
                                         onclick="nmsce.showAll()">Show All</button>&nbsp;
                                     <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
@@ -468,10 +458,19 @@
         </div>
         <br>
 
-        <div class="card">
-            <nav id="id-entryListTabs" class="nav nav-tabs row" role="tablist"></nav>
-            <div id="id-entryListPanels" class="tab-content border-top"></div>
+        <div class="card pad-bottom">
+            <div class="card-header txt-def">
+                <div class="row h4">Entry List&nbsp;
+                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
+                        data-placement="bottom"
+                        title="Click on a heading to open list. Click on an image to select it for editing.">
+                    </i>
+                </div>
+            </div>
+
+            <div id="id-table" class="card-body"></div>
         </div>
+        <br>
     </div>
 
     <br>

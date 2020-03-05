@@ -1090,7 +1090,7 @@ blackHoleSuns.prototype.extractUser = function () {
     u.platform = loc.find("#btn-Platform").text().stripNumber()
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber()
     u.org = loc.find("#btn-Civ-Org").text().stripNumber()
-    u.version = "beyond" // loc.find("#btn-Version").text().stripNumber()
+    u.version = "living ships" // loc.find("#btn-Version").text().stripNumber()
 
     if (u.org === "--blank--")
         u.org = ""
