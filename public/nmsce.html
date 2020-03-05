@@ -130,7 +130,7 @@
                                     title="Search for discoveries made with this version number.">
                                 </i>&nbsp;
                             </div>
-                            <input id="id-Version" class="rounded col-5 txt-input-def" type="text">
+                            <input id="id-VersionNo" class="rounded col-5 txt-input-def" type="text">
 
                             <div id="id-Galaxy" class="col-lg-6 col-14 pl-10"></div>
                             <div id="id-Platform" class="col-lg-8 col-14 nopadding"></div>
@@ -231,8 +231,6 @@
                                 <div class="row">
                                     <button id="search" type="button" class="col-md-4 col-6 btn btn-sm btn-def"
                                         onclick="nmsce.search()">Search</button>&nbsp;
-                                    <button id="searchResults" type="button" class="col-md-4 col-6 btn btn-sm btn-def"
-                                        onclick="nmsce.refineSearch()">Refine</button>&nbsp;
                                     <button id="clear" type="button" class="col-md-4 col-6 btn btn-sm btn-def"
                                         onclick="nmsce.clearPanel(true)">Reset</button>&nbsp;
                                     <button id="searchlocal" type="button" class="col-6 btn btn-sm btn-def"
@@ -286,15 +284,7 @@
         <div class="card bkg-def border">
             <div class="card-header txt-def h3">
                 <div id="resultshdr" class="row">
-                    <label id="showlast" class="col-lg-5 col-7 h4">
-                        Show last&nbsp;
-                        <input id="displaysince" class="col-lg-3 col-7" type="number" value=3 min=1 max=90
-                            onblur="nmsce.getLatest(nmsce.displayResults, this)">
-                        &nbsp;days.&nbsp;
-                    </label>
-                    <div id="showdate" class="col-lg-5 col-7 h4">Entries since:&nbsp<span id="sinceDate"></span>
-                    </div>
-                    <div class="col-lg-4 col-7 h4"><span id="numFound"></span> Entries found.&nbsp;
+                    <div class="col-lg-4 col-7 h4">Showing 1 - <span id="numFound"></span>&nbsp;
                         <i class="far fa-question-circle text-danger h5" data-toggle="tooltip" data-html="true"
                             data-placement="bottom"
                             title="Click on an image to see an expanded image and detailed information.">

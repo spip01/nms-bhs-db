@@ -136,7 +136,7 @@
                                     title="Game version used when discovery was made. This will help with searching for disoveries made after a certain version.">
                                 </i>&nbsp;
                             </div>
-                            <input id="id-Version" class="rounded col-5 txt-input-def" type="text">
+                            <input id="id-VersionNo" class="rounded col-5 txt-input-def" type="text">
 
                             <div id="id-Galaxy" class="col-lg-6 col-14 pl-10"></div>
                             <div id="id-Platform" class="col-lg-8 col-14 nopadding"></div>
@@ -268,10 +268,10 @@
                             <div class="row">
                                 <div class="col-lg-5 col-14">
                                     <div class="row" style="padding-top:2px;">
-                                        <button id="save" type="button"
-                                            class="col-6 btn btn-sm btn-def">Save</button>&nbsp;
+                                        <button id="save" type="button" class="col-6 btn btn-sm btn-def"
+                                            onclick="nmsce.saveEntry()">Save</button>&nbsp;
                                         <button id="delete" type="button" class="col-6 btn btn-sm btn-def disabled"
-                                            disabled>Delete</button>&nbsp;
+                                            disabled onclick="nmsce.deleteEntry()">Delete</button>&nbsp;
                                     </div>
                                     <div id="updatenext" class="row hidden">
                                         <button type="button" class="col-6 btn btn-sm btn-def">Update +
@@ -317,7 +317,7 @@
                             <span id="searchPanel" class="hidden">
                                 <div class="row">
                                     <button id="search" type="button" class="col-6 btn btn-sm btn-def"
-                                        onclick="nmsce.searchEntriesList()">Search</button>&nbsp;
+                                        onclick="nmsce.search()">Search</button>&nbsp;
                                     <button id="showall" type="button" class="col-6 btn btn-sm btn-def"
                                         onclick="nmsce.showAll()">Show All</button>&nbsp;
                                     <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
@@ -468,19 +468,10 @@
         </div>
         <br>
 
-        <div class="card pad-bottom">
-            <div class="card-header txt-def">
-                <div class="row h4">Entry List&nbsp;
-                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
-                        data-placement="bottom"
-                        title="Click on a heading to open list. Click on an image to select it for editing.">
-                    </i>
-                </div>
-            </div>
-
-            <div id="id-table" class="card-body"></div>
+        <div class="card">
+            <nav id="id-entryListTabs" class="nav nav-tabs row" role="tablist"></nav>
+            <div id="id-entryListPanels" class="tab-content border-top"></div>
         </div>
-        <br>
     </div>
 
     <br>
