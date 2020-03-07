@@ -153,37 +153,46 @@ NMSCE.prototype.buildPanels = function () {
 
     if (fcedata) {
         let img = $("#id-canvas")
+        let lastDownTarget
+        let canvas = document.getElementById("id-canvas")
 
         img.on("touchstart", e => {
             event.offsetX = event.targetTouches[0].pageX - img.offset().left
             event.offsetY = event.targetTouches[0].pageY - img.offset().top
 
-            nmsce.handleMouseDown(e)
+            nmsce.imageMouseDown(e)
         })
         img.on("touchmove", e => {
             event.offsetX = event.targetTouches[0].pageX - img.offset().left
             event.offsetY = event.targetTouches[0].pageY - img.offset().top
 
-            nmsce.handleMouseMove(e)
+            nmsce.imageMouseMove(e)
         })
         img.on("touchend", e => {
-            nmsce.handleMouseUp(e)
+            nmsce.imageMouseUp(e)
         })
         img.mouseout(e => {
-            nmsce.handleMouseOut(e)
+            nmsce.imageMouseOut(e)
         })
         img.mousedown(e => {
-            nmsce.handleMouseDown(e)
+            lastDownTarget = canvas
+            nmsce.imageMouseDown(e)
         })
         img.mousemove(e => {
-            nmsce.handleMouseMove(e)
+            nmsce.imageMouseMove(e)
         })
         img.mouseup(e => {
-            nmsce.handleMouseUp(e)
+            nmsce.imageMouseUp(e)
         })
-        img.mouseout(e => {
-            nmsce.handleMouseOut(e)
-        })
+
+        document.addEventListener('mousedown', function (e) {
+            lastDownTarget = e.target
+        }, true)
+
+        document.addEventListener('keydown', function (e) {
+            if (lastDownTarget == canvas)
+                nmsce.imageKeypress(e)
+        }, true)
     }
 }
 
@@ -549,12 +558,12 @@ NMSCE.prototype.extractEntry = function () {
     }
 
     if (ok) {
-        if (!last || last.uid === bhs.user.uid || bhs.isRole("admin")) {
-            if (!last || entry.sys !== last.sys || entry.reg !== last.reg || entry.life !== last.life || entry.Economy !== last.Economy)
-                bhs.updateEntry(entry)
-        } else
-            bhs.status("WARNING: System info not updated. " + bhs.user._name + " is not creator of " + entry.addr + " " + entry.sys)
-    }
+        if (!last || last.uid === bhs.user.uid || bhs.isRole("admin") ||
+            !last.sys || !last.reg || !last.life || !last.Economy)
+
+            bhs.updateEntry(entry)
+    } else
+        bhs.status("WARNING: System info not updated. " + bhs.user._name + " is not creator of " + entry.addr + " " + entry.sys)
 
     if (ok) {
         delete entry.created
@@ -565,6 +574,12 @@ NMSCE.prototype.extractEntry = function () {
             entry.Photo = nmsce.last.Photo
             entry._name = nmsce.last._name
             entry.uid = nmsce.last.uid
+        } else {
+            entry._name = bhs.user._name
+            entry.uid = bhs.user.uid
+            entry.Platform = bhs.user.Platform
+            entry.platform = entry.Platform === "PS4" ? "PS4" : entry.Platform === "PC" || entry.Platform === "XBox" ? "PC-XBox" : ""
+            entry.galaxy = bhs.user.galaxy
         }
 
         let tab = $("#typeTabs .active").prop("id").stripID()
@@ -2010,7 +2025,6 @@ NMSCE.prototype.loadMap = function (loc, fname) {
         for (let l of bdr) {
             let id = $(l).prop("id").stripID()
             let d = $(l).find("desc").text()
-            let t = $(l).find("title").text()
             nmsce[name][id] = {}
 
             if (d !== "") {
@@ -2018,15 +2032,13 @@ NMSCE.prototype.loadMap = function (loc, fname) {
                 nmsce[name][id] = JSON.parse(d)
             }
 
+            let t = $(l).find("title").text()
             if (t !== "")
                 nmsce[name][id].title = t.stripMarginWS()
-
-            nmsce[name][id].state = "enabled"
         }
 
         for (let l of map) {
             let id = $(l).prop("id").stripID()
-
             if (nmsce[name][id].type !== "map") {
                 nmsce[name].type = "map"
                 let d = $(l).find("desc").text()
@@ -2035,6 +2047,7 @@ NMSCE.prototype.loadMap = function (loc, fname) {
                     nmsce[name][id] = JSON.parse(d)
             }
 
+            nmsce[name][id].state = "enabled"
             nmsce[name][id].loc = $(l)
         }
 
@@ -2480,7 +2493,6 @@ NMSCE.prototype.getImageText = function (evt, draw) {
             nmsce.imageText[k].sel = false
 
         nmsce.imageText[id].ck = true
-        nmsce.imageText[id].sel = true
 
         if (text) {
             nmsce.imageText[id].text = text
@@ -2860,7 +2872,10 @@ NMSCE.prototype.drawText = function (alt, altw) {
                     ctx.strokeStyle = "white"
                     ctx.setLineDash([3, 2])
                     ctx.beginPath()
-                    ctx.rect(text.x + text.left, text.y - text.ascent, text.right - text.left, text.ascent + text.decent)
+                    if (id === "Glyphs")
+                        ctx.rect(text.x + text.left - 6, text.y - text.ascent - 6, text.right - text.left + 10, text.ascent + text.decent + 9)
+                    else
+                        ctx.rect(text.x + text.left, text.y - text.ascent, text.right - text.left, text.ascent + text.decent)
                     ctx.stroke()
                 }
             }
@@ -3359,7 +3374,7 @@ NMSCE.prototype.hitTestCorner = function (x, y, text) {
 
 var lastsel = 0
 
-NMSCE.prototype.handleMouseDown = function (e) {
+NMSCE.prototype.imageMouseDown = function (e) {
     e.preventDefault()
 
     let startX = e.offsetX
@@ -3408,7 +3423,68 @@ NMSCE.prototype.handleMouseDown = function (e) {
     nmsce.drawText()
 }
 
-NMSCE.prototype.handleMouseMove = function (e) {
+NMSCE.prototype.imageKeypress = function (e) {
+    if (!e.code.includes("Arrow"))
+        return
+
+    e.preventDefault()
+
+    let changed = false
+    let keys = Object.keys(nmsce.imageText)
+
+    for (let k of keys) {
+        let text = nmsce.imageText[k]
+
+        if (text.sel) {
+            changed = true
+
+            if (e.shiftKey) {
+                switch (e.code) {
+                    case "ArrowLeft":
+                    case "ArrowDown":
+                        if (text.type === "text") {
+                            text.fSize -= text.font === "NMS Glyphs" ? 1 / 10 : 1 / 3
+                            nmsce.measureText(text)
+                        } else {
+                            text.decent *= (text.right - 1) / text.right
+                            text.right -= 1
+                        }
+                        break
+                    case "ArrowRight":
+                    case "ArrowUp":
+                        if (text.type === "text") {
+                            text.fSize += text.font === "NMS Glyphs" ? 1 / 10 : 1 / 3
+                            nmsce.measureText(text)
+                        } else {
+                            text.decent *= (text.right + 1) / text.right
+                            text.right += 1
+                        }
+                        break
+                }
+            } else {
+                switch (e.code) {
+                    case "ArrowRight":
+                        text.x++
+                        break
+                    case "ArrowUp":
+                        text.y--
+                        break
+                    case "ArrowLeft":
+                        text.x--
+                        break
+                    case "ArrowDown":
+                        text.y++
+                        break
+                }
+            }
+        }
+    }
+
+    if (changed)
+        nmsce.drawText()
+}
+
+NMSCE.prototype.imageMouseMove = function (e) {
     e.preventDefault()
 
     let mouseX = e.offsetX
@@ -3425,13 +3501,12 @@ NMSCE.prototype.handleMouseMove = function (e) {
 
     let ncursor = "crosshair"
 
-    let old = {}
     let resize = ""
 
     let keys = Object.keys(nmsce.imageText)
     for (let k of keys) {
         let text = nmsce.imageText[k]
-        if (text.resize) {
+        if (text.sel && text.resize) {
             resize = text.resize
             break
         }
@@ -3441,20 +3516,18 @@ NMSCE.prototype.handleMouseMove = function (e) {
         let text = nmsce.imageText[k]
 
         if (text.sel && typeof nmsce.startX !== "undefined") {
-            if (resize) {
+            if (text.id === "logo" || !resize) {
+                text.x += dx
+                text.y += dy
+            } else if (resize) {
+                let old = {}
                 old.ascent = text.ascent
                 old.decent = text.decent
                 old.left = text.left
                 old.right = text.right
                 ncursor = "col-resize"
-            }
 
-            if (text.id === "logo") {
-                text.x += dx
-                text.y += dy
-            } else
                 switch (resize) {
-                    case "tl":
                     case "l":
                         if (text.type === "text") {
                             text.fSize -= text.font === "NMS Glyphs" ? dx / 10 : dx / 3
@@ -3467,7 +3540,6 @@ NMSCE.prototype.handleMouseMove = function (e) {
                             text.x += old.right - text.right
                         }
                         break
-                    case "tr":
                     case "r":
                         if (text.type === "text") {
                             text.fSize += text.font === "NMS Glyphs" ? dx / 10 : dx / 3
@@ -3478,36 +3550,11 @@ NMSCE.prototype.handleMouseMove = function (e) {
                             text.y += old.decent - text.decent
                         }
                         break
-                    case "bl":
-                        if (text.type === "text") {
-                            text.fSize -= dx
-                            nmsce.measureText(text)
-                            text.y -= old.ascent - text.ascent
-                            text.x += old.right - text.right
-                        } else {
-                            text.decent *= (text.right - dx) / text.right
-                            text.right -= dx
-                            text.x += old.right - text.right
-                        }
-                        break
-                    case "br":
-                        if (text.type === "text") {
-                            text.fSize += dx
-                            nmsce.measureText(text)
-                            text.y -= old.ascent - text.ascent
-                        } else {
-                            text.right *= (text.decent + dx) / text.decent
-                            text.decent += dx
-                        }
-                        break
-                    default:
-                        text.x += dx
-                        text.y += dy
-                        break
                 }
+            }
         }
 
-        if (ncursor === "crosshair") {
+        if (text.sel && ncursor === "crosshair") {
             if (text.id !== "logo" && nmsce.hitTestCorner(mouseX, mouseY, text))
                 ncursor = "ew-resize"
             else if (nmsce.hitTest(mouseX, mouseY, text))
@@ -3521,7 +3568,7 @@ NMSCE.prototype.handleMouseMove = function (e) {
         nmsce.drawText()
 }
 
-NMSCE.prototype.handleMouseUp = function (e) {
+NMSCE.prototype.imageMouseUp = function (e) {
     e.preventDefault()
 
     delete nmsce.startX
@@ -3534,9 +3581,9 @@ NMSCE.prototype.handleMouseUp = function (e) {
     $("#id-canvas")[0].style.cursor = "crosshair"
 }
 
-NMSCE.prototype.handleMouseOut = function (e) {
+NMSCE.prototype.imageMouseOut = function (e) {
     e.preventDefault()
-    nmsce.handleMouseUp(e)
+    nmsce.imageMouseUp(e)
 
     $("body")[0].style.cursor = "default"
 }
@@ -4030,7 +4077,10 @@ NMSCE.prototype.createObserver = function (loc) {
             evts => {
                 for (let evt of evts) {
                     if (evt.intersectionRatio > 0) {
+                        evt.target.height = 0
+                        evt.target.width = 0
                         evt.target.src = evt.target.dataset.src
+                        
                         io.unobserve(evt.target)
                     }
                 }
@@ -4437,7 +4487,7 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
         <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black" >
             <div id="id-Photo" class="row pointer pl-10 pr-10" data-type="etype" data-id="eid" onclick="nmsce.selectList(this)" style="min-height:20px">
                 <img id="img-idname" data-thumb="ethumb"
-                onload="nmsce.imageLoaded(this, $(this).parent().width(), $(this).parent().height(), true)">
+                onload="nmsce.imageLoaded(this, $(this).parent().width(), $('#id-row').height(), false)">
             </div>
             <div class="row pl-10">`
     const item = `<div id="id-idname" class="col-md-7 col-14 border pointer">title</div>`
@@ -5161,6 +5211,8 @@ const colorList = [{
     name: "Blue",
 }, {
     name: "Black",
+}, {
+    name: "Brown",
 }, {
     name: "Chrome",
 }, {
