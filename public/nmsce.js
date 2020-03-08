@@ -48,8 +48,6 @@ $(document).ready(async () => {
         })
 
         $("#delete").click(() => {
-            $("#status").empty()
-
             if (nmsce.last)
                 nmsce.deleteEntry(nmsce.last)
         })
@@ -874,13 +872,9 @@ NMSCE.prototype.displaySearch = function (search) {
 }
 
 NMSCE.prototype.executeSearch = function (search) {
-    $("#status").empty()
-
     let s = nmsce.lastsearch = search
-    if (!s || s.search === []) {
-        bhs.status("No search selection.")
+    if (!s)
         return
-    }
 
     $("#numFound").text("searching...")
     $("body")[0].style.cursor = "wait"
@@ -987,13 +981,9 @@ NMSCE.prototype.executeSearch = function (search) {
 }
 
 NMSCE.prototype.searchEntriesList = function () {
-    $("#status").empty()
-
     let s = nmsce.lastsearch = nmsce.extractSearch()
-    if (!s || s.search === []) {
-        bhs.status("No search selection.")
+    if (!s)
         return
-    }
 
     let list = nmsce.entries[s.type.nameToId()]
     if (list.length === 0) {
@@ -1028,13 +1018,11 @@ NMSCE.prototype.refineSearchToDate = function (date) {
 }
 
 NMSCE.prototype.refineSearch = function () {
-    $("#status").empty()
+    bhs.status("", true)
 
     let s = nmsce.lastsearch = nmsce.extractSearch()
-    if (!s || s.search === []) {
-        bhs.status("No search selection.")
+    if (!s)
         return
-    }
 
     let list = nmsce.resultLists["Search-Results"]
     if (list.length === 0) {
@@ -1115,6 +1103,9 @@ NMSCE.prototype.searchList = function (s, list, loc) {
 
 NMSCE.prototype.saveSearch = function () {
     let search = nmsce.extractSearch()
+    if (!search)
+        return
+
     search.saved = true
     search.page = window.location.pathname
 
@@ -1264,7 +1255,7 @@ NMSCE.prototype.extractSearch = function (fcn) {
     s.search = []
     let search = s.search
 
-    if (!galaxy) {
+    if (galaxy === "") {
         bhs.status("No Galaxy Selected.")
         return null
     }
@@ -1419,6 +1410,11 @@ NMSCE.prototype.extractSearch = function (fcn) {
         }
     }
 
+    if (s.search === []) {
+        bhs.status("No search selection.")
+        return null
+    }
+
     return s
 }
 
@@ -1471,7 +1467,6 @@ NMSCE.prototype.searchSystem = function () {
 }
 
 NMSCE.prototype.save = function () {
-    $("#status").empty()
     let ok = bhs.user.uid
 
     if (!nmsce.last || nmsce.last.uid === bhs.user.uid) {
@@ -1524,12 +1519,19 @@ NMSCE.prototype.extractUser = function () {
 }
 
 NMSCE.prototype.search = function () {
+    bhs.status("", true)
     let search = nmsce.extractSearch()
-    nmsce.executeSearch(search)
+
+    if (search)
+        nmsce.executeSearch(search)
 }
 
-blackHoleSuns.prototype.status = function (str) {
-    $("#status").append(str + "</br>")
+blackHoleSuns.prototype.status = function (str, clear) {
+    if (clear)
+        $("#status").empty()
+
+    if (str !== "")
+        $("#status").prepend(str + "</br>")
 }
 
 let nav = `<a class="nav-item nav-link txt-def h6 rounded-top active" style="border-color:black;" 
@@ -4080,7 +4082,7 @@ NMSCE.prototype.createObserver = function (loc) {
                         evt.target.height = 0
                         evt.target.width = 0
                         evt.target.src = evt.target.dataset.src
-                        
+
                         io.unobserve(evt.target)
                     }
                 }
