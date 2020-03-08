@@ -2205,7 +2205,7 @@ NMSCE.prototype.selectMap = function (evt, set) {
             if (part.state === "selected") {
                 if (!min || part.slots < min)
                     min = part.slots
-                if (!max || part.slots < max)
+                if (!max || part.slots > max)
                     max = part.slots
             }
         }
@@ -2459,11 +2459,11 @@ NMSCE.prototype.getImageText = function (evt, draw) {
                 break
             case "number":
                 text = loc.find("input").val()
-                text = text === -1 ? "" : text.toString()
+                text = !text || text === -1 ? "" : text.toString()
                 break
             case "float":
                 text = loc.find("input").val()
-                text = text === -1 ? "" : text.toString()
+                text = !text || text === -1 ? "" : text.toString()
                 break
             case "glyph":
                 text = loc.val()
@@ -4398,15 +4398,13 @@ NMSCE.prototype.displayListEntry = function (entry, scroll) {
 
     if (eloc.length === 0) {
         nmsce.addDisplayListEntry(entry, loc, true)
-        loc = $("#id-table #ttl-" + entry.type.nameToId())
-    } else {
+        eloc = loc
+    } else
         nmsce.updateDisplayListEntry(entry, eloc)
-        loc = eloc
-    }
 
-    if (scroll && loc.length > 0)
+    if (scroll)
         $('html, body').animate({
-            scrollTop: loc.offset().top
+            scrollTop: eloc.offset().top
         }, 500)
 }
 
