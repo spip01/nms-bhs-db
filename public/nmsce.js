@@ -227,13 +227,13 @@ NMSCE.prototype.addGlyph = function (evt, val) {
 
 NMSCE.prototype.changeAddr = function (evt, a) {
     let addr = a ? a : $(evt).val()
+    let p = 0
+    let idx = $("[role='tabpanel'] [id='id-Planet-Index']")
+
     if (addr !== "") {
         if (addr.length === 12) {
-            let p = addr.slice(0, 1)
-            let tab = $("[role='tabpanel']")
-
-            for (let l of tab)
-                $(l).find("#id-Planet-Index").val(p)
+            p = addr.slice(0, 1)
+            idx.val(p)
         }
 
         addr = reformatAddress(addr)
@@ -245,6 +245,8 @@ NMSCE.prototype.changeAddr = function (evt, a) {
         if (!fnmsce) {
             $("#foundreg").hide()
             $("#foundsys").hide()
+            $("[data-type='string'] .fa-check").hide()
+            getPlanet(idx.first())
 
             bhs.getEntry(addr, nmsce.displaySystem, null, null, true).then(entry => {
                 if (!entry) {
@@ -454,6 +456,7 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     let loc = $("#pnl-map [id|='map']")
     loc.find("*").css("stroke", mapColors.enabled)
     $("[id='asym-checkmark']").hide()
+    $(".fa-check").hide()
 
     for (let p of Object.keys(nmsce)) {
         let map = nmsce[p]
@@ -1558,7 +1561,8 @@ const inpEnd = `</div>`
 const tString = `
     <div id="row-idname" data-type="string" data-req="ifreq" class="row">
         <div class="col-lg-6 col-4 txt-label-def">titlettip&nbsp;</div>
-        <input id="id-idname" class="rounded col-lg-7 col-9">
+        <input id="id-idname" class="rounded col-lg-7 col-9">&nbsp;
+        <i class="fas fa-check text-success hidden"></i>
     </div>`
 const tMap = `<div id="row-idname" class="col-14" data-type="map"></div>`
 const tLongString = `
@@ -1702,11 +1706,15 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 l = /range/ [Symbol.replace](tNumber, f.range)
                 l = /stype/ [Symbol.replace](l, f.query ? f.query : "")
                 appenditem(itm, l, f.name, id, f.ttip, f.required, null, f.inputHide)
+                if (f.onchange)
+                    itm.find("#id-" + id).change(f.onchange)
                 break
             case "float":
                 l = /range/ [Symbol.replace](tFloat, f.range)
                 l = /stype/ [Symbol.replace](l, f.query ? f.query : "")
                 appenditem(itm, l, f.name, id, f.ttip, f.required, null, f.inputHide)
+                if (f.onchange)
+                    itm.find("#id-" + id).change(f.onchange)
                 break
             case "img":
                 appenditem(itm, tImg, f.name, id, f.ttip, f.required, inpLongHdr, f.inputHide)
@@ -1746,6 +1754,8 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 break
             case "long string":
                 appenditem(itm, tLongString, f.name, id, f.ttip, f.required, inpLongHdr, f.inputHide)
+                if (f.onchange)
+                    itm.find("#id-" + id).change(f.onchange)
                 break
             case "blank":
                 itm.append(inpHdr + inpEnd)
@@ -3739,6 +3749,30 @@ NMSCE.prototype.initVotes = function (entry) {
     }
 }
 
+async function getPlanet(evt) {
+    let gal = $("#btn-Galaxy").text().stripNumber()
+    let addr = $("#panels #id-addr").val()
+    let planet = $(evt.target ? evt.target : evt).val()
+    if (gal === "" || addr === "" || planet <= 0)
+        return
+
+    for (let obj of objectList) {
+        let ref = bhs.fs.collection("nmsce/" + gal + "/" + obj.name)
+        ref = ref.where("Planet-Index", "==", planet)
+        ref = ref.where("addr", "==", addr)
+        let snapshot = await ref.get()
+
+        for (let doc of snapshot.docs) {
+            let e = doc.data()
+            if (e["Planet-Name"] && e["Planet-Name"] !== "") {
+                $("[id='id-Planet-Name']").val(e["Planet-Name"])
+                $("[id='row-Planet-Name'] .fa-check").show()
+                return
+            }
+        }
+    }
+}
+
 function getEntry() {
     let addr = $("#panels #id-addr").val()
     let name = $(this).val()
@@ -3750,8 +3784,9 @@ function getEntry() {
         ref = ref.where("Name", "==", name)
         ref = ref.where("addr", "==", addr)
         ref.get().then(snapshot => {
-            if (!snapshot.empty)
+            if (!snapshot.empty) {
                 nmsce.displaySingle(snapshot.docs[0].data())
+                $("#typePanels .active #row-Name .fa-check").show()}
         })
     }
 }
@@ -6027,6 +6062,7 @@ const objectList = [{
         type: "number",
         range: 15,
         startState: "hidden",
+        onchange: getPlanet,
     }, {
         name: "Class",
         type: "radio",
@@ -6301,6 +6337,7 @@ const objectList = [{
         type: "number",
         range: 15,
         ttip: planetNumTip,
+        onchange: getPlanet,
         inputHide: true,
     }, {
         name: "Latitude",
@@ -6413,6 +6450,7 @@ const objectList = [{
         type: "number",
         range: 15,
         required: true,
+        onchange: getPlanet,
         ttip: planetNumTip,
     }, {
         name: "Photo",
@@ -6458,6 +6496,7 @@ const objectList = [{
         range: 15,
         type: "number",
         required: true,
+        onchange: getPlanet,
         ttip: planetNumTip,
     }, {
         name: "Biome",
@@ -6566,6 +6605,7 @@ const objectList = [{
         name: "Planet Index",
         type: "number",
         range: 15,
+        onchange: getPlanet,
         ttip: planetNumTip,
     }, {
         name: "Latitude",
@@ -6652,6 +6692,7 @@ const objectList = [{
         type: "number",
         range: 15,
         ttip: planetNumTip,
+        onchange: getPlanet,
         required: true,
     }, {
         name: "Latitude",
