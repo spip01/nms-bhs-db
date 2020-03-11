@@ -372,6 +372,13 @@ NMSCE.prototype.displayUser = function () {
         if (typeof nmsce.entries === "undefined")
             nmsce.getEntries()
 
+        let loc = $("#id-table")
+        for (let k of Object.keys(bhs.user.nmsceTotals)) {
+            let tloc = loc.find("#tot-" + k)
+            if (tloc.length > 0)
+                tloc.text(bhs.user.nmsTotals[k])
+        }
+
         nmsce.expandPanels(bhs.user.nmscesettings && bhs.user.nmscesettings.expandPanels || (!bhs.user.galaxy || fcedata && (!bhs.user._name || !bhs.user.Platform)))
     } else if (fnmsce) {
         if (bhs.user.uid)
@@ -3798,9 +3805,11 @@ NMSCE.prototype.updateCommon = function (entry, ref) {
         e["Planet-Name"] = entry["Planet-Name"]
 
     ref = ref.collection("nmsceCommon").doc(entry.id)
-    ref.set(e/*, {
-        merge: true
-    }*/).then().catch(err => {
+    ref.set(e
+        /*, {
+                merge: true
+            }*/
+    ).then().catch(err => {
         bhs.status("ERROR: " + err.message)
     })
 }
@@ -4477,7 +4486,7 @@ NMSCE.prototype.displayList = function (entries) {
 
         let l = /idname/g [Symbol.replace](card, type)
         l = /title/ [Symbol.replace](l, type.idToName())
-        l = /total/ [Symbol.replace](l, list.length)
+        l = /total/ [Symbol.replace](l, bhs.user.nmsceTotals ? bhs.user.nmsceTotals[type] : list.length)
         $("#id-table").append(l)
         let loc = $("#id-table #list-" + type)
 
