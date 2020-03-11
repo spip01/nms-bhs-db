@@ -3795,6 +3795,7 @@ NMSCE.prototype.updateCommon = function (entry, ref) {
     e.id = entry.id
     e.type = entry.type
     e.galaxy = entry.galaxy
+    e.addr = entry.addr
     e.Photo = entry.Photo
 
     if (entry.Type)
@@ -3814,28 +3815,34 @@ NMSCE.prototype.updateCommon = function (entry, ref) {
     })
 }
 
-async function getPlanet(evt) {
+function getPlanet(evt) {
+    if (!fcedata)
+        return
+
     let gal = $("#btn-Galaxy").text().stripNumber()
     let addr = $("#panels #id-addr").val()
     let planet = $(evt.target ? evt.target : evt).val()
+
     if (gal === "" || addr === "" || planet <= 0)
         return
 
-    for (let obj of objectList) {
-        let ref = bhs.fs.collection("nmsce/" + gal + "/" + obj.name)
-        ref = ref.where("Planet-Index", "==", planet)
-        ref = ref.where("addr", "==", addr)
-        let snapshot = await ref.get()
+    let ref = bhs.fs.collectionGroup("nmsceCommon")
+    ref = ref.where("galaxy", "==", gal)
+    ref = ref.where("addr", "==", addr)
+    ref = ref.where("Planet-Index", "==", planet)
+    ref = ref.limit(1)
 
-        for (let doc of snapshot.docs) {
-            let e = doc.data()
+    ref.get().then(snapshot => {
+        if (!snapshot.empty) {
+            let e = snapshot.docs[0].data()
+
             if (e["Planet-Name"] && e["Planet-Name"] !== "") {
                 $("[id='id-Planet-Name']").val(e["Planet-Name"])
                 $("[id='row-Planet-Name'] .fa-check").show()
-                return
             }
-        }
-    }
+        } else
+            $("[id='row-Planet-Name'] .fa-check").hide()
+    })
 }
 
 function getEntry() {
@@ -6815,65 +6822,4 @@ const objectList = [{
         type: "img",
         required: true,
     }]
-}, {
-    name: "Space-Encounter",
-    imgText: [{
-        id: "#id-Player",
-        field: "_name",
-        name: "Player",
-        type: "string",
-        required: true,
-    }, {
-        id: "#id-Galaxy",
-        field: "galaxy",
-        name: "Galaxy",
-        type: "menu",
-        required: true,
-    }, {
-        id: "#id-Platform",
-        field: "Platform",
-        name: "Platform",
-        type: "radio",
-        required: true,
-    }, {
-        id: "#id-addrInput #id-addr",
-        field: "addr",
-        name: "Coords",
-        type: "string",
-        required: true,
-    }, {
-        id: "#id-addrInput #id-addr",
-        field: "addr",
-        name: "Glyphs",
-        font: "NMS Glyphs",
-        type: "glyph",
-    }, ],
-    fields: [{
-        name: "Type",
-        type: "menu",
-        list: encounterList,
-        required: true,
-    }, {
-        name: "Number",
-        type: "number",
-        imgText: true,
-        search: true,
-        query: "<=",
-    }, {
-        name: "Tags",
-        type: "tags",
-        max: 4,
-        imgText: true,
-        search: true,
-        inputHide: true,
-    }, {
-        name: "Notes",
-        type: "long string",
-        imgText: true,
-        inputHide: true,
-    }, {
-        name: "Photo",
-        type: "img",
-        required: true,
-    }]
-}, ]
+}]

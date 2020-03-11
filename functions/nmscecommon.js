@@ -37,6 +37,7 @@ function updateCommon(entry, ref) {
     e.id = entry.id
     e.type = entry.type
     e.galaxy = entry.galaxy
+    e.addr = entry.addr
     e.Photo = entry.Photo
 
     if (entry.Type)
