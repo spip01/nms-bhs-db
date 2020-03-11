@@ -3786,7 +3786,8 @@ function getEntry() {
         ref.get().then(snapshot => {
             if (!snapshot.empty) {
                 nmsce.displaySingle(snapshot.docs[0].data())
-                $("#typePanels .active #row-Name .fa-check").show()}
+                $("#typePanels .active #row-Name .fa-check").show()
+            }
         })
     }
 }
@@ -6670,17 +6671,18 @@ const objectList = [{
         type: "glyph",
     }, ],
     fields: [{
-        name: "Xane's World",
-        type: "link",
-        link: "<a href='https://www.youtube.com/watch?v=NUPzFpQmQc8'>How to get Living Ships, Xaine's World.</a>",
-        inputHide: true,
-    }, {
         name: "Name",
         type: "string",
         search: true,
         imgText: true,
         onchange: getEntry,
         inputHide: true,
+    }, {
+        name: "First Ship",
+        type: "checkbox",
+        search: true,
+        imgText: true,
+        ttip: "First ship after a mission location reset on this planet."
     }, {
         name: "Planet Name",
         type: "string",
