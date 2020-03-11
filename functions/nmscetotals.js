@@ -10,36 +10,46 @@ admin.initializeApp({
 
 async function main() {
     let ref = admin.firestore().collection("nmsce")
-
     ref.listDocuments().then(async refs => {
         for (let ref of refs) { // galaxy
             ref.listCollections().then(async refs => {
+                let totals = {}
+
                 for (let ref of refs) { // type
                     let snapshot = await ref.get()
                     console.log(snapshot.size)
-                    let users = {}
 
-                    for (let doc of snapshot.docs) {
-                        let e = doc.data()
+                    totals[ref.id] = (totals[ref.id] ? totals[ref.id] : 0) + snapshot.size
+                    // let users = {}
 
-                        if (typeof users[e.uid] === "undefined")
-                            users[e.uid] = 0
+                    // for (let doc of snapshot.docs) {
+                    //     let e = doc.data()
 
-                        users[e.uid]++
-                    }
+                    //     if (typeof users[e.uid] === "undefined")
+                    //         users[e.uid] = 0
 
-                    for (let u of Object.keys(users)) {
-                        let total = {}
-                        total[ref.id] = users[u]
-                        console.log("users/"+ u, JSON.stringify(total))
-                        let uref = admin.firestore().doc("users/"+u)
-                        uref.set({
-                            nmsceTotals: total
-                        }, {
-                            merge: true
-                        })
-                    }
+                    //     users[e.uid]++
+                    // }
+
+                    // for (let u of Object.keys(users)) {
+                    //     let total = {}
+                    //     total[ref.id] = users[u]
+                    //     console.log("users/" + u, JSON.stringify(total))
+
+                    //     let uref = admin.firestore().doc("users/" + u)
+                    //     uref.set({
+                    //         nmsceTotals: total
+                    //     }, {
+                    //         merge: true
+                    //     })
+                    // }
                 }
+
+                let tref = admin.firestore().doc("bhs/nmsceTotals")
+                console.log("totals", JSON.stringify(totals))
+                tref.set(totals, {
+                    merge: true
+                })
             })
         }
     })

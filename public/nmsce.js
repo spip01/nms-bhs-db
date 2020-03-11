@@ -3718,9 +3718,12 @@ NMSCE.prototype.updateScreenshot = function (entry) {
 NMSCE.prototype.updateEntry = function (entry) {
     entry.modded = firebase.firestore.Timestamp.now()
     nmsce.initVotes(entry)
+    let created = false
 
-    if (typeof entry.created === "undefined")
+    if (typeof entry.created === "undefined") {
         entry.created = firebase.firestore.Timestamp.now()
+        created = true
+    }
 
     if (typeof entry.id === "undefined")
         entry.id = uuidv4()
@@ -3733,6 +3736,11 @@ NMSCE.prototype.updateEntry = function (entry) {
 
     ref.set(entry).then(() => {
         bhs.status(entry.type + " " + entry.Name + " saved.")
+
+        if (created)
+            nmsce.incrementTotals(entry, 1)
+
+        nmsce.updateCommon(entry, ref)
     }).catch(err => {
         bhs.status("ERROR: " + err.code)
     })
@@ -3748,6 +3756,53 @@ NMSCE.prototype.initVotes = function (entry) {
         entry.votes.edchoice = 0
         entry.votes.bhspoi = 0
     }
+}
+
+NMSCE.prototype.incrementTotals = function (e, val) {
+    let t = {}
+    t[e.type] = firebase.firestore.FieldValue.increment(val)
+
+    let ref = bhs.fs.doc("bhs/nmsceTotals")
+    ref.set(t, {
+        merge: true
+    }).then().catch(err => {
+        bhs.status("ERROR: " + err.message)
+    })
+
+    ref = bhs.getUsersColRef(bhs.user.uid)
+    ref.set({
+        nmsceTotals: t
+    }, {
+        merge: true
+    }).then().catch(err => {
+        bhs.status("ERROR: " + err.message)
+    })
+}
+
+NMSCE.prototype.updateCommon = function (entry, ref) {
+    let e = {}
+    e.created = entry.created
+    e.votes = entry.votes
+    e._name = entry._name
+    e.uid = entry.uid
+    e.id = entry.id
+    e.type = entry.type
+    e.galaxy = entry.galaxy
+    e.Photo = entry.Photo
+
+    if (entry.Type)
+        e.Type = entry.Type
+    if (entry["Planet-Index"])
+        e["Planet-Index"] = entry["Planet-Index"]
+    if (entry["Planet-Name"])
+        e["Planet-Name"] = entry["Planet-Name"]
+
+    ref = ref.collection("nmsceCommon").doc(entry.id)
+    ref.set(e/*, {
+        merge: true
+    }*/).then().catch(err => {
+        bhs.status("ERROR: " + err.message)
+    })
 }
 
 async function getPlanet(evt) {
@@ -4110,7 +4165,7 @@ NMSCE.prototype.getAfterDate = function (date) {
     }
 }
 
-NMSCE.prototype.createObserver = function (loc) {
+NMSCE.prototype.thumbObserver = function (loc) {
     if (window.IntersectionObserver) {
         var io = new IntersectionObserver(
             evts => {
@@ -4160,7 +4215,7 @@ NMSCE.prototype.displayResultList = function (id) {
 }
 
 NMSCE.prototype.displayThumbnails = function (loc) {
-    let io = nmsce.createObserver(loc)
+    let io = nmsce.thumbObserver(loc)
 
     let imgs = loc.find("[id|='img']")
     for (let l of imgs) {
@@ -4207,6 +4262,13 @@ NMSCE.prototype.vote = async function (evt) {
         e = {}
         e[id] = firebase.firestore.FieldValue.increment(v)
 
+        ref.set({
+            votes: e
+        }, {
+            merge: true
+        })
+
+        ref = ref.doc("nmsceCommon/" + id)
         ref.set({
             votes: e
         }, {

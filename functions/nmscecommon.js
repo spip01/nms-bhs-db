@@ -20,25 +20,45 @@ async function main() {
 
                     for (let doc of snapshot.docs) {
                         let e = doc.data()
-
-                        let ref = doc.ref
-                        ref = ref.collection("nmsceCommon").doc("data")
-                        ref.set({
-                            created: e.created,
-                            votes: e.votes,
-                            _name: e._name,
-                            uid: e.uid,
-                            id: e.id,
-                            type: e.type,
-                            Type: e.Type ? e.Type : "",
-                            galaxy: e.galaxy,
-                            Photo: e.Photo,
-                        })
+                        updateCommon(e, doc.ref)
                     }
                 }
             })
         }
     })
 }
+
+function updateCommon(entry, ref) {
+    let e = {}
+    e.created = entry.created
+    e.votes = entry.votes
+    e._name = entry._name
+    e.uid = entry.uid
+    e.id = entry.id
+    e.type = entry.type
+    e.galaxy = entry.galaxy
+    e.Photo = entry.Photo
+
+    if (entry.Type)
+        e.Type = entry.Type
+    if (entry["Planet-Index"])
+        e["Planet-Index"] = entry["Planet-Index"]
+    if (entry["Planet-Name"])
+        e["Planet-Name"] = entry["Planet-Name"]
+
+    let dref = ref.collection("nmsceCommon").doc("data")
+    dref.delete()
+
+    ref = ref.collection("nmsceCommon").doc(entry.id)
+    ref.set(e
+        /*, {
+                merge: true
+            }*/
+    ).then().catch(err => {
+        bhs.status("ERROR: " + err.message)
+    })
+
+}
+
 
 main()
