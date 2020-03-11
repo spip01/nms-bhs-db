@@ -426,6 +426,8 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
             if ((!fcedata || all || id !== "Type") && id != "Galaxy")
                 $(this).find("[id|='btn']").text("")
         })
+
+        pnl.find(".fa-check").hide()
     }
 
     clr($("#typePanels"))
@@ -456,7 +458,6 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     let loc = $("#pnl-map [id|='map']")
     loc.find("*").css("stroke", mapColors.enabled)
     $("[id='asym-checkmark']").hide()
-    $(".fa-check").hide()
 
     for (let p of Object.keys(nmsce)) {
         let map = nmsce[p]
@@ -6708,15 +6709,15 @@ const objectList = [{
         required: true,
     }, {
         name: "Damage",
-        type: "number",
+        type: "float",
         inputHide: true,
     }, {
         name: "Shield",
-        type: "number",
+        type: "float",
         inputHide: true,
     }, {
         name: "Hyperdrive",
-        type: "number",
+        type: "float",
         inputHide: true,
     }, {
         name: "Seed",
