@@ -3823,8 +3823,10 @@ function getPlanet(evt) {
     let addr = $("#panels #id-addr").val()
     let planet = $(evt.target ? evt.target : evt).val()
 
-    if (gal === "" || addr === "" || planet <= 0)
+    if (gal === "" || addr === "" || planet <= 0) {
+        $("[id='row-Planet-Name'] .fa-check").hide()
         return
+    }
 
     let ref = bhs.fs.collectionGroup("nmsceCommon")
     ref = ref.where("galaxy", "==", gal)
@@ -3893,14 +3895,14 @@ NMSCE.prototype.getEntries = function () {
     }
 }
 
-const resultsTable = [{
+const resultTables = [{
     name: "Latest",
     field: "created",
     date: true,
 }, {
     name: "Top Favorites",
     field: "votes.favorite",
-    limit: 3,
+    limit: 10,
 }, {
     name: "My Favorites",
     group: "votes",
@@ -3910,15 +3912,11 @@ const resultsTable = [{
 }, {
     name: "Moderators Choice",
     field: "votes.edchoice",
-    limit: 3,
+    limit: 10,
 }, {
     name: "Top Visited",
     field: "votes.visited",
-    limit: 3,
-}, {
-    name: "Top Click Count",
-    field: "votes.clickcount",
-    limit: 2,
+    limit: 10,
 }, ]
 
 NMSCE.prototype.selDisplay = function (evt) {
@@ -3956,7 +3954,6 @@ NMSCE.prototype.getMyFavorites = function () {
     ref.get().then(snapshot => {
         let p = []
         for (let doc of snapshot.docs) {
-            //"nmsce/Euclid/Base/3d-maze/votesSV14SdNbzRbfW8NRbNQpTRJ7y612"
             let path = doc.ref.path.replace(/((?:.*?\/){3}.*?)\/.*/, "$1")
             let ref = bhs.fs.doc(path)
             p.push(ref.get().then(doc => {
@@ -4004,7 +4001,7 @@ NMSCE.prototype.getNew = function () {
 
     let lists = nmsce.resultLists
 
-    for (let r of resultsTable) {
+    for (let r of resultTables) {
         let rid = r.name.nameToId()
         lists[rid] = {}
 
@@ -4015,7 +4012,7 @@ NMSCE.prototype.getNew = function () {
     if (typeof (Storage) !== "undefined")
         date = window.localStorage.getItem('nmsce-LastUpdate')
 
-    bhs.buildMenu($("#resultshdr"), "show", resultsTable, nmsce.selDisplay, {
+    bhs.buildMenu($("#resultshdr"), "show", resultTables, nmsce.selDisplay, {
         nolabel: true,
     })
 
@@ -4090,36 +4087,31 @@ NMSCE.prototype.getAfterDate = function (date) {
     let pdt = []
     let p = []
 
-    for (let r of resultsTable) {
-        if (!r.group) {
-            for (let t of objectList) {
-                if (r.field) {
-                    let ref = bhs.fs.collectionGroup(t.name.nameToId())
+    for (let r of resultTables) {
+        if (!r.group && r.field) {
+            let ref = bhs.fs.collectionGroup("nmsceCommon")
+            if (r.date)
+                ref = ref.where(r.field, ">=", date)
+            else
+                ref = ref.orderBy(r.field, "desc")
 
-                    if (r.date)
-                        ref = ref.where(r.field, ">=", date)
-                    else
-                        ref = ref.orderBy(r.field, "desc")
+            if (r.limit)
+                ref = ref.limit(r.limit)
 
-                    if (r.limit)
-                        ref = ref.limit(r.limit)
-
-                    if (r.date)
-                        pdt.push(ref.get().then(snapshot => {
-                            return ({
-                                rt: r,
-                                snapshot: snapshot
-                            })
-                        }))
-                    else
-                        p.push(ref.get().then(snapshot => {
-                            return {
-                                rt: r,
-                                snapshot: snapshot
-                            }
-                        }))
-                }
-            }
+            if (r.date)
+                pdt.push(ref.get().then(snapshot => {
+                    return ({
+                        rt: r,
+                        snapshot: snapshot
+                    })
+                }))
+            else
+                p.push(ref.get().then(snapshot => {
+                    return {
+                        rt: r,
+                        snapshot: snapshot
+                    }
+                }))
         }
     }
 
@@ -4139,7 +4131,7 @@ NMSCE.prototype.getAfterDate = function (date) {
                 lists[rid][tid + "-" + e.id] = e
 
                 if (r.rt.field === "votes.favorite" || r.rt.field === "votes.edchoice") {
-                    let total = e.votes.favorite * 10 + e.votes.edchoice * 15 + e.votes.visited * 20 + e.votes.clickcount / 8
+                    let total = e.votes.favorite * 10 + e.votes.edchoice * 15 + e.votes.visited * 20
                     if (total > top.count) {
                         top.count = total
                         top.entry = e
@@ -4296,23 +4288,21 @@ NMSCE.prototype.vote = async function (evt) {
 NMSCE.prototype.selectResult = function (evt) {
     let data = $(evt).data()
     let e = nmsce.resultLists[data.panel][data.type + "-" + data.id]
-    nmsce.last = e
-
-    let v = {}
-    v.votes = {}
-    v.votes.clickcount = firebase.firestore.FieldValue.increment(1)
 
     let ref = bhs.fs.doc("nmsce/" + e.galaxy + "/" + e.type + "/" + e.id)
-    ref.set(v, {
-        merge: true
-    }).catch(err => console.log(err))
+    ref.get().then(doc => {
+        if (doc.exists) {
+            let e = doc.data()
+            nmsce.last = e
 
-    if (bhs.user.uid && (e.uid === bhs.user.uid || bhs.hasRole("admin")))
-        $("#btn-ceedit").show()
-    else
-        $("#btn-ceedit").hide()
+            if (bhs.user.uid && (e.uid === bhs.user.uid || bhs.hasRole("admin")))
+                $("#btn-ceedit").show()
+            else
+                $("#btn-ceedit").hide()
 
-    nmsce.displaySelected(e)
+            nmsce.displaySelected(e)
+        }
+    })
 }
 
 NMSCE.prototype.displaySelected = function (e, noscroll) {
