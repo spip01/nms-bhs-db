@@ -39,7 +39,7 @@ function updateCommon(entry, ref) {
     e.galaxy = entry.galaxy
     e.addr = entry.addr
     e.Photo = entry.Photo
-
+    e.Name = entry.Name?entry.Name:""
     if (entry.Type)
         e.Type = entry.Type
     if (entry["Planet-Index"])

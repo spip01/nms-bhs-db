@@ -38,19 +38,13 @@ $(document).ready(async () => {
         nmsce.buildPanels()
         nmsce.buildTypePanels()
 
+        if (fcedata)
+            nmsce.buildDisplayList()
+
         if (fnmsce) {
             nmsce.getNew()
             nmsce.getFeatured()
         }
-
-        $("#save").click(async () => {
-            nmsce.save()
-        })
-
-        $("#delete").click(() => {
-            if (nmsce.last)
-                nmsce.deleteEntry(nmsce.last)
-        })
     }
 
     //https://localhost:5000/preview.html?i=0547-0086-0E45-00A1-himodan-s-coup&g=Euclid&t=Ship
@@ -373,11 +367,17 @@ NMSCE.prototype.displayUser = function () {
             nmsce.getEntries()
 
         let loc = $("#id-table")
+        let t = 0
         for (let k of Object.keys(bhs.user.nmsceTotals)) {
+            t += bhs.user.nmsceTotals[k]
             let tloc = loc.find("#tot-" + k)
+
             if (tloc.length > 0)
-                tloc.text(bhs.user.nmsTotals[k])
+                tloc.text(bhs.user.nmsceTotals[k])
         }
+
+        let tloc = loc.find("#tot-All")
+        tloc.text(t)
 
         nmsce.expandPanels(bhs.user.nmscesettings && bhs.user.nmscesettings.expandPanels || (!bhs.user.galaxy || fcedata && (!bhs.user._name || !bhs.user.Platform)))
     } else if (fnmsce) {
@@ -689,16 +689,14 @@ NMSCE.prototype.extractEntry = function () {
 
         if (!nmsce.last || nmsce.last.uid === bhs.user.uid || bhs.isRole("admin")) {
             if (typeof nmsce.entries === "undefined")
-                nmsce.entries = {}
-            if (typeof nmsce.entries[entry.type.nameToId()] === "undefined")
-                nmsce.entries[entry.type.nameToId()] = {}
+                nmsce.entries = []
 
             nmsce.initVotes(entry)
 
             if (typeof entry.id === "undefined")
                 entry.id = uuidv4()
 
-            nmsce.entries[entry.type.nameToId()][entry.id] = entry
+            nmsce.entries[entry.type].push(entry)
             nmsce.displayListEntry(entry, true)
 
             if (!(ok = nmsce.updateScreenshot(entry)))
@@ -882,20 +880,34 @@ NMSCE.prototype.displaySearch = function (search) {
     }
 }
 
-NMSCE.prototype.executeSearch = function (search) {
-    let s = nmsce.lastsearch = search
-    if (!s)
+NMSCE.prototype.executeSearch = function (evt, search, loc, dispFcn, param) {
+    if (!search && !nmsce.lastSearch || nmsce.lastSearch && nmsce.lastSearch.lastRef === "done")
         return
 
-    $("#numFound").text("searching...")
-    $("body")[0].style.cursor = "wait"
+    if (search) {
+        if (typeof nmsce.lastSearch === "undefined")
+            nmsce.lastSearch = {}
 
-    let ref = bhs.fs.collection("nmsce/" + s.galaxy + "/" + s.type)
+        nmsce.lastSearch.search = search
+        nmsce.lastSearch.lastRef = null
+        nmsce.lastSearch.fcn = dispFcn
+        nmsce.lastSearch.param = param
+        nmsce.lastSearch.found = 0
+
+        if (typeof nmsce.lastSearch.observer === "undefined")
+            nmsce.lastSearch.observer = nmsce.fcnObserver(loc, nmsce.executeSearch)
+    }
+
+    search = nmsce.lastSearch.search
+    dispFcn = nmsce.lastSearch.fcn
+    param = nmsce.lastSearch.param
+
+    let ref = bhs.fs.collection("nmsce/" + search.galaxy + "/" + search.type)
 
     let firstarray = 0
     let arraylist = []
 
-    for (let q of s.search) {
+    for (let q of search.search) {
         switch (q.type) {
             case "tags":
                 arraylist.push(q)
@@ -913,22 +925,20 @@ NMSCE.prototype.executeSearch = function (search) {
         }
     }
 
-    if (!bhs.user.uid)
-        ref = ref.limit(50)
+    if (nmsce.lastSearch.lastRef)
+        ref = ref.startAfter(nmsce.lastSearch.lastRef)
 
-    $("#id-Search-Results").empty()
-    let list = nmsce.resultLists["Search-Results"] = {}
+    ref = ref.limit(50)
+
+    let list = []
 
     ref.get().then(snapshot => {
+        nmsce.lastSearch.lastRef = snapshot.size === 50 ? snapshot.docs[snapshot.size - 1] : "done"
+
         if (snapshot.size === 0) {
             bhs.status("No matching entries found.<br>Try specifying fewer things. Everything you specify has to match in order to find an item.")
-            $("#numFound").text("0")
-            $("body")[0].style.cursor = "default"
             return
         }
-
-        if (!bhs.user.uid && snapshot.size === 50)
-            bhs.status("Showing first 50 matches. Login to see more matches or modify search to see better matches.")
 
         let nfound = 0
 
@@ -950,166 +960,39 @@ NMSCE.prototype.executeSearch = function (search) {
 
             if (found) {
                 nfound++
-                list[e.type.nameToId() + "-" + e.id] = e
+                list.push(e)
             }
         }
 
-        if (nfound) {
-            nmsce.displayResultList("Search-Results")
-            nmsce.selDisplay("#item-Search-Results")
+        if (nfound)
+            dispFcn(list, param)
 
-            $('html, body').animate({
-                scrollTop: $('#resultshdr').offset().top
-            }, 500)
-        }
+        if (evt)
+            loc = $(evt.target).closest("[id|='list']")
 
-        bhs.status(nfound + " matching entries found.")
-
-        $("body")[0].style.cursor = "default"
-
-        if (!bhs.user.uid) {
-            if (typeof (Storage) !== "undefined") {
-                window.localStorage.setItem('nmsce-galaxy', $("#btn-Galaxy").text().stripNumber())
-
-                s.uid = window.localStorage.getItem('nmsce-tempuid')
-                if (!s.uid) {
-                    s.uid = uuidv4()
-                    window.localStorage.setItem('nmsce-tempuid', s.uid)
-                }
-            }
-        } else {
-            search.uid = bhs.user.uid
-            search._name = bhs.user._name
-        }
-
-        s.results = nfound
-        search.date = firebase.firestore.Timestamp.now()
-        search.page = window.location.pathname
-
-        let sref = bhs.fs.collection("nmsce-searches")
-        sref.add(s)
+        let eloc = loc.find("[id|='row']:nth-last-child(50)")
+        nmsce.lastSearch.observer.observe(eloc.length !== 0 ? eloc[0] : loc[0])
     })
 }
 
-NMSCE.prototype.searchEntriesList = function () {
-    let s = nmsce.lastsearch = nmsce.extractSearch()
-    if (!s)
-        return
+NMSCE.prototype.searchEntries = function (search) {
+    if (!search) {
+        search = nmsce.extractSearch()
 
-    let list = nmsce.entries[s.type.nameToId()]
-    if (list.length === 0) {
-        bhs.status("No search results.")
-        return
+        if (!search)
+            return
     }
 
-    $("body")[0].style.cursor = "wait"
-    let loc = $("#list-" + s.type.nameToId())
+    $("#dltab-Search").show()
+    $("#dltab-Search").click()
+    $("#dl-Search #list-Search").empty()
 
-    nmsce.toggleSub(s.type.nameToId(), true)
-    nmsce.searchList(s, list, loc)
-}
-
-NMSCE.prototype.refineSearchToDate = function (date) {
-    let loc = $("#resultLists #id-Search-Results")
-    let list = nmsce.resultLists["Search-Results"]
-    let nfound = 0
-
-    for (let l of Object.keys(list)) {
-        let e = list[l]
-        let id = "#row-" + (e.type + "-" + e.id).nameToId()
-
-        if (e.created > date) {
-            loc.find(id).show()
-            nfound++
-        } else
-            loc.find(id).hide()
+    let display = (list, type) => {
+        nmsce.entries[type] = list
+        nmsce.displayList(list, type)
     }
 
-    $("#numFound").text(nfound)
-}
-
-NMSCE.prototype.refineSearch = function () {
-    bhs.status("", true)
-
-    let s = nmsce.lastsearch = nmsce.extractSearch()
-    if (!s)
-        return
-
-    let list = nmsce.resultLists["Search-Results"]
-    if (list.length === 0) {
-        bhs.status("No search reslts to refine.")
-        return
-    }
-
-    $("#numFound").text("searching...")
-    $("body")[0].style.cursor = "wait"
-    let loc = $("#resultLists #id-Search-Results")
-
-    nmsce.searchList(s, list, loc)
-}
-
-NMSCE.prototype.searchList = function (s, list, loc) {
-    let nfound = 0
-
-    for (let l of Object.keys(list)) {
-        let e = list[l]
-        let ok = true
-
-        for (let q of s.search) {
-            ok = e[q.name]
-
-            if (!ok)
-                break
-
-            switch (q.type) {
-                case "tags":
-                    for (let l of q.list)
-                        if (!e[q.name].includes(l))
-                            ok = false
-                    break
-                case "map":
-                    for (let l of q.list)
-                        if (!e[q.name][l])
-                            ok = false
-                    break
-                case "checkbox":
-                    ok = e[q.name] === q.val
-                    break
-                default:
-                    ok = q.query === ">=" ? e[q.name] >= q.val : e[q.name] === q.val
-                    break
-            }
-
-            if (!ok)
-                break
-        }
-
-        let id = "#row-" + (e.type + "-" + e.id).nameToId()
-        if (ok) {
-            loc.find(id).show()
-            nfound++
-        } else
-            loc.find(id).hide()
-    }
-
-    $("body")[0].style.cursor = "default"
-
-    $('html, body').animate({
-        scrollTop: loc.offset().top
-    }, 500)
-
-    bhs.status(nfound + " matching entries found.")
-
-    if (!bhs.user.uid) {
-        if (typeof (Storage) !== "undefined")
-            s.uid = window.localStorage.getItem('nmsce-tempuid')
-    } else
-        s.uid = bhs.user.uid
-
-    s.date = firebase.firestore.Timestamp.now()
-    s.refine = true
-    let sref = bhs.fs.collection("nmsce-searches")
-    sref.add(s)
+    nmsce.executeSearch(null, search, $("#dl-Search #list-Search"), display, "Search")
 }
 
 NMSCE.prototype.saveSearch = function () {
@@ -1240,10 +1123,11 @@ NMSCE.prototype.executeSaved = function (evt) {
 
     if (i !== -1) {
         nmsce.displaySearch(nmsce.searchlist[i])
+
         if (fnmsce)
-            nmsce.executeSearch(nmsce.searchlist[i])
+            nmsce.search(nmsce.searchlist[i])
         else
-            nmsce.searchEntriesList()
+            nmsce.searchEntries(nmsce.searchlist[i])
     }
 }
 
@@ -1255,12 +1139,12 @@ NMSCE.prototype.searchLocal = function (evt) {
             s = JSON.parse(s)
 
             nmsce.displaySearch(s)
-            nmsce.executeSearch(s)
+            nmsce.search(s)
         }
     }
 }
 
-NMSCE.prototype.extractSearch = function (fcn) {
+NMSCE.prototype.extractSearch = function () {
     let galaxy = $("#btn-Galaxy").text().stripNumber()
     let s = {}
     s.search = []
@@ -1277,9 +1161,14 @@ NMSCE.prototype.extractSearch = function (fcn) {
     s.galaxy = galaxy
     s.type = tab
 
-    let name = $("#searchname").val()
+    let name = $("#id-Player").val()
     if (name)
-        s.name = name
+        search.push({
+            name: "_name",
+            type: "string",
+            id: "id-Player",
+            val: name
+        })
 
     let obj = null
     let i = getIndex(objectList, "name", tab)
@@ -1477,7 +1366,7 @@ NMSCE.prototype.searchSystem = function () {
     })
 }
 
-NMSCE.prototype.save = function () {
+NMSCE.prototype.saveEntry = function () {
     let ok = bhs.user.uid
 
     if (!nmsce.last || nmsce.last.uid === bhs.user.uid) {
@@ -1534,7 +1423,7 @@ NMSCE.prototype.search = function () {
     let search = nmsce.extractSearch()
 
     if (search)
-        nmsce.executeSearch(search)
+        nmsce.executeSearch(null, search)
 }
 
 blackHoleSuns.prototype.status = function (str, clear) {
@@ -1545,10 +1434,11 @@ blackHoleSuns.prototype.status = function (str, clear) {
         $("#status").prepend(str + "</br>")
 }
 
-let nav = `<a class="nav-item nav-link txt-def h6 rounded-top active" style="border-color:black;" 
-    id="tab-idname" data-toggle="tab" href="#hdr-idname" role="tab" aria-controls="pnl-idname" aria-selected="true">
-    title
-</a>`
+let nav = `
+    <a id="tab-idname" class="nav-item nav-link txt-def h6 rounded-top active" style="border-color:black;" 
+        data-toggle="tab" href="#hdr-idname" role="tab" aria-controls="hdr-idname" aria-selected="true">
+        title
+    </a>`
 let header = `
     <div id="hdr-idname" class="tab-pane active" role="tabpanel" aria-labelledby="tab-idname">
         <div id="pnl-idname" class="row"></div>
@@ -1600,7 +1490,7 @@ const tTags = `
             <div id="list-idname" class="row"></div>
         </div>
     </div>`
-const tTag = `<div id="tag-idname" class="border pointer txt-input-def" style="border-radius:8px; background-color:#d0d0d0" onclick="nmsce.deleteTag(this)">&nbsp;title&nbsp;<i class="far fa-times-circle" style="color:#ffffff;"></i>&nbsp;</div>&nbsp;`
+const tTag = `<div id="tag-idname" class="border pointer txt-input-def" style="border-radius:8px; background-color:#d0d0d0" onclick="$(this).remove()">&nbsp;title&nbsp;<i class="far fa-times-circle" style="color:#ffffff;"></i>&nbsp;</div>&nbsp;`
 const tMenu = `
     <div id="row-idname" data-type="menu" data-allowhide="ihide" data-req="ifreq">
         <div id="id-idname"></div>
@@ -1639,8 +1529,10 @@ NMSCE.prototype.buildTypePanels = function () {
     for (let obj of objectList) {
         let id = obj.name.nameToId()
         let h = /idname/g [Symbol.replace](nav, id)
-        if (!first)
+        if (!first) {
             h = /active/ [Symbol.replace](h, "")
+            h = /true/ [Symbol.replace](h, "false")
+        }
         h = /title/ [Symbol.replace](h, obj.name)
         tabs.append(h)
 
@@ -1917,24 +1809,6 @@ NMSCE.prototype.addTag = function (evt) {
         row.find("#list-" + id).append(h)
         row.find("#btn-" + id).text(id.idToName())
     }
-}
-
-NMSCE.prototype.deleteTag = function (evt, write) {
-    if (write) {
-        let id = $(evt).closest("[id|='row']").prop("id").stripID()
-        let i = id.indexOf("-")
-        let type = id.slice(0, i)
-        id = id.slice(i + 1)
-        let e = nmsce.entries[type][id]
-        let field = $(evt).parent().prop("id").stripID()
-        let tag = $(evt).prop("id").stripID()
-
-        delete e[field][tag]
-        e.modded = firebase.firestore.Timestamp.now()
-        nmsce.updateEntry(e)
-    }
-
-    $(evt).remove()
 }
 
 NMSCE.prototype.newTag = function (evt) {
@@ -3650,8 +3524,9 @@ NMSCE.prototype.alignText = function (how) {
     nmsce.drawText()
 }
 
-NMSCE.prototype.deleteEntry = function (entry) {
+NMSCE.prototype.deleteEntry = function () {
     if (nmsce.last) {
+        let entry = nmsce.last
         let ref = bhs.fs.doc("nmsce/" + entry.galaxy + "/" + entry.type + "/" + entry.id)
 
         ref.delete().then(() => {
@@ -3709,14 +3584,18 @@ NMSCE.prototype.updateScreenshot = function (entry) {
             })
         }, "image/jpeg", .9)
 
-        let loc = $("#id-table #sub-" + entry.type.nameToId())
-        nmsce.toggleSub(entry.type.nameToId(), true)
+        $("#dltab-" + entry.type).click()
 
-        loc = loc.find("#row-" + entry.type.nameToId() + "-" + entry.id + " img")
+        let loc = $("#displayPanels #list-" + entry.type)
+        loc = loc.find("#row-" + entry.id + " img")
         if (loc.length > 0) {
             let url = thumb.toDataURL()
             loc.attr("src", url)
         }
+
+        $('html, body').animate({
+            scrollTop: loc.offset().top
+        }, 500)
     }
 
     return true
@@ -3797,6 +3676,7 @@ NMSCE.prototype.updateCommon = function (entry, ref) {
     e.galaxy = entry.galaxy
     e.addr = entry.addr
     e.Photo = entry.Photo
+    e.Name = entry.Name ? entry.Name : ""
 
     if (entry.Type)
         e.Type = entry.Type
@@ -3806,11 +3686,9 @@ NMSCE.prototype.updateCommon = function (entry, ref) {
         e["Planet-Name"] = entry["Planet-Name"]
 
     ref = ref.collection("nmsceCommon").doc(entry.id)
-    ref.set(e
-        /*, {
-                merge: true
-            }*/
-    ).then().catch(err => {
+    ref.set(e, {
+        merge: true
+    }).then().catch(err => {
         bhs.status("ERROR: " + err.message)
     })
 }
@@ -3866,38 +3744,115 @@ function getEntry() {
     }
 }
 
-NMSCE.prototype.getEntries = function () {
-    let p = []
-    nmsce.entries = {}
+NMSCE.prototype.fcnObserver = function (loc, fcn) {
+    if (window.IntersectionObserver) {
+        var io = new IntersectionObserver(
+            evts => {
+                for (let evt of evts) {
+                    if (evt.intersectionRatio > 0) {
+                        fcn(evt)
+                        io.unobserve(evt.target)
+                    }
+                }
+            }, {
+                root: loc[0],
+                rootMargin: '0px 0px 0px 0px',
+                threshold: .1
+            }
+        )
+    }
 
-    if (bhs.user.galaxy) {
-        for (let t of objectList) {
-            nmsce.entries[t.name.nameToId()] = {}
+    return io
+}
 
-            let ref = bhs.fs.collection("nmsce/" + bhs.user.galaxy + "/" + t.name)
+NMSCE.prototype.getEntries = function (evt, finish) {
+    if (typeof nmsce.entries === "undefined")
+        nmsce.entries = {}
+
+    if (typeof nmsce.lastEntry === "undefined")
+        nmsce.lastEntry = {}
+
+    if (typeof nmsce.entryObserver === "undefined")
+        nmsce.entryObserver = nmsce.fcnObserver($("#displayPanels"), nmsce.getEntries)
+
+    const getSnapshot = (ref, type) => {
+        if (typeof nmsce.entries[type] === "undefined")
+            nmsce.entries[type] = []
+
+        if (type !== "Search") {
             ref = ref.where("uid", "==", bhs.user.uid)
             ref = ref.orderBy("created", "desc")
-
-            p.push(ref.get().then(snapshot => {
-                return snapshot
-            }))
         }
 
-        Promise.all(p).then(res => {
-            for (let snapshot of res)
-                for (let doc of snapshot.docs) {
-                    let e = doc.data()
-                    nmsce.entries[e.type.nameToId()][e.id] = e
-                }
+        let limit = 50
 
-            nmsce.displayList(nmsce.entries)
+        if (nmsce.lastEntry[type])
+            ref = ref.startAfter(nmsce.lastEntry[type])
+
+        if (!finish)
+            ref = ref.limit(limit)
+
+        ref.get().then(snapshot => {
+            if (snapshot.empty)
+                return
+
+            let loc = $("#displayPanels #list-" + type)
+            let eloc = loc.find("[id|='row']:nth-last-child(30)")
+            nmsce.entryObserver.observe(eloc.length === 0 ? $(loc)[0] : eloc[0])
+
+            let entries = []
+
+            for (let doc of snapshot.docs) {
+                let e = doc.data()
+                nmsce.entries[type].push(e)
+                entries.push(e)
+            }
+
+            nmsce.lastEntry[type] = snapshot.docs[snapshot.size - 1]
+            nmsce.displayList(entries, type)
         })
+    }
+
+    if (evt) {
+        let type = $(evt.target).prop("id")
+        let rows = []
+        if (type.split("-")[0] === "list") {
+            type = type.stripID()
+            rows = $(evt.target).find("[id|='row']")
+        } else {
+            type = $(evt.target).closest("[id|='list']").prop("id").stripID()
+            rows = $(evt.target).nextAll()
+        }
+
+        for (let loc of rows) {
+            let img = $(loc).find("img")
+            let data = img.data()
+            if (data && data.src)
+                img.prop("src", data.src)
+        }
+
+        if (type === "All") {
+            let ref = bhs.fs.collectionGroup("nmsceCommon")
+            getSnapshot(ref, "All")
+        } else {
+            let ref = bhs.fs.collection("nmsce/" + bhs.user.galaxy + "/" + type)
+            getSnapshot(ref, type)
+        }
+    } else {
+        for (let obj of objectList) {
+            let ref = bhs.fs.collection("nmsce/" + bhs.user.galaxy + "/" + obj.name)
+            getSnapshot(ref, obj.name)
+        }
+
+        let ref = bhs.fs.collectionGroup("nmsceCommon")
+        getSnapshot(ref, "All")
     }
 }
 
 const resultTables = [{
     name: "Latest",
     field: "created",
+    load: 50,
     date: true,
 }, {
     name: "Top Favorites",
@@ -3909,6 +3864,7 @@ const resultTables = [{
     field: "favorite",
 }, {
     name: "Search Results",
+    load: 50,
 }, {
     name: "Moderators Choice",
     field: "votes.edchoice",
@@ -4231,11 +4187,7 @@ NMSCE.prototype.displayThumbnails = function (loc) {
 
         let ref = bhs.fbstorage.ref().child(data.thumb)
         ref.getDownloadURL().then(url => {
-            if (io) {
-                $(l).attr("data-src", url)
-                io.observe(l)
-            } else
-                $(l).attr("src", url)
+            $(l).attr("data-src", url)
         }).catch(err => console.log(err))
     }
 }
@@ -4438,79 +4390,73 @@ NMSCE.prototype.showVotes = function (entry) {
     }
 }
 
-NMSCE.prototype.hideDisplayList = function (tab) {
-    let loc = $("#id-table #list-" + tab)
-    loc.find("[id|='row']").hide()
-    loc.find("#row-idname").show()
-}
-
 NMSCE.prototype.showAll = function () {
     let loc = $("#id-table")
     loc.find("[id|='row']").show()
 }
 
-NMSCE.prototype.displayInList = function (list, tab) {
-    for (let i of Object.keys(list[tab])) {
-        let e = list[tab][i]
-
-        let loc = $("#id-table #list-" + tab)
-        loc.find("#row-" + e.id).show()
-    }
-}
-
-NMSCE.prototype.displayList = function (entries) {
-    const card = `
-        <div class="container-flex">
-            <div id="ttl-idname" class="card-header border-bottom txt-def h5 pointer" onclick="nmsce.toggleSub('idname')">
-                <div class="row">
-                    <i class="far fa-caret-square-up hidden h4""></i>
-                    <i class="far fa-caret-square-down h4"></i>&nbsp;
-                    <div id="id-idname" class="col-6">title&nbsp;
-                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
-                            data-placement="top" title="Click on the field labels to sort items on that field.">
-                        </i>
-                    </div>
-                    <div class="col">Total: <span id="tot-idname">total</span></div>
-                </div>
-            </div>
-            <div id="sub-idname" class="container-flex h6 hidden">
-                <div id="list-idname" class="scrollbar row" style="overflow-y: scroll; height: 550px"></div>
-            </div>
+NMSCE.prototype.buildDisplayList = function () {
+    let nav = `
+        <a id="dltab-idname" class="nav-item nav-link txt-def h6 rounded-top" style="border-color:black;" 
+            data-toggle="tab" href="#dl-idname" role="tab" aria-controls="dl-idname" aria-selected="false">
+            title&nbsp;(<span id="tot-idname"></span>)
+        </a>`
+    let header = `
+        <div id="dl-idname" class="tab-pane hidden pl-15 pr-15" role="tabpanel" aria-labelledby="dltab-idname">
+            <div id="list-idname" class="scroll row" style="height:600px"></div>
         </div>`
 
-    for (let type of Object.keys(entries)) {
-        let list = Object.keys(entries[type])
+    let l = /idname/g [Symbol.replace](nav, "All")
+    l = /title/ [Symbol.replace](l, "All")
+    $("#displayTabs").append(l)
 
-        let l = /idname/g [Symbol.replace](card, type)
+    l = /idname/g [Symbol.replace](header, "All")
+    $("#displayPanels").append(l)
+
+    l = /idname/g [Symbol.replace](nav, "Search")
+    l = /title/ [Symbol.replace](l, "Search")
+    l = l.replace(/(.*?)\(.*\)/, "$1")
+    $("#displayTabs").append(l)
+    $("#dltab-Search").hide()
+
+    l = /idname/g [Symbol.replace](header, "Search")
+    $("#displayPanels").append(l)
+
+    for (let obj of objectList) {
+        let type = obj.name
+
+        let l = /idname/g [Symbol.replace](nav, type)
         l = /title/ [Symbol.replace](l, type.idToName())
-        l = /total/ [Symbol.replace](l, bhs.user.nmsceTotals ? bhs.user.nmsceTotals[type] : list.length)
-        $("#id-table").append(l)
-        let loc = $("#id-table #list-" + type)
+        $("#displayTabs").append(l)
 
+        l = /idname/g [Symbol.replace](header, type)
+        $("#displayPanels").append(l)
+
+        let loc = $("#displayPanels #list-" + type)
         nmsce.addDisplayListEntry(type, loc)
-
-        for (let id of list)
-            nmsce.addDisplayListEntry(entries[type][id], loc)
     }
-
-    nmsce.displayThumbnails($('#id-table'))
 }
 
-NMSCE.prototype.displayListEntry = function (entry, scroll) {
-    let loc = $("#id-table #sub-" + entry.type.nameToId())
-    let id = entry.type.nameToId() + "-" + entry.id
-    let eloc = loc.find("#row-" + id)
+NMSCE.prototype.displayList = function (entries, type) {
+    let loc = $("#displayPanels #list-" + type)
+
+    for (let e of entries)
+        nmsce.addDisplayListEntry(e, loc, false, type)
+}
+
+NMSCE.prototype.displayListEntry = function (entry) {
+    let loc = $("#displayPanels #list-" + entry.type)
+    let eloc = loc.find("#row-" + entry.id)
+    let all = $("#displayPanels #list-All")
+    let aloc = all.find("#row-" + entry.id)
 
     if (eloc.length === 0) {
         nmsce.addDisplayListEntry(entry, loc, true)
-        eloc = loc
-    } else
+        nmsce.addDisplayListEntry(entry, all, true)
+    } else {
         nmsce.updateDisplayListEntry(entry, eloc)
-
-    if (scroll)
-        $('html, body').animate({
-            scrollTop: eloc.offset().top
-        }, 500)
+        nmsce.updateDisplayListEntry(entry, aloc)
+    }
 }
 
 NMSCE.prototype.sortLoc = function (evt) {
@@ -4583,13 +4529,13 @@ NMSCE.prototype.sortLoc = function (evt) {
     loc.append(list)
 }
 
-NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
+NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend, type) {
     const key = `
         <div id="row-key" class="col-md-p250 col-sm-p333 col-7 border border-black txt-def" >
             <div class="row">`
 
     const row = `     
-        <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black" >
+        <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black h6" >
             <div id="id-Photo" class="row pointer pl-10 pr-10" data-type="etype" data-id="eid" onclick="nmsce.selectList(this)" style="min-height:20px">
                 <img id="img-idname" data-thumb="ethumb"
                 onload="nmsce.imageLoaded(this, $(this).parent().width(), $('#id-row').height(), false)">
@@ -4608,76 +4554,103 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend) {
         itm = sortItem
     } else {
         h = /etype/ [Symbol.replace](row, e.type.nameToId())
-        h = /idname/ [Symbol.replace](h, e.type.nameToId() + "-" + e.id)
+        h = /idname/ [Symbol.replace](h, e.id)
         h = /eid/ [Symbol.replace](h, e.id)
         h = /ethumb/ [Symbol.replace](h, thumbPath + e.Photo)
     }
 
-    let i = getIndex(objectList, "name", fstring ? e : e.type)
-    for (let f of objectList[i].fields) {
-        let id = f.name.nameToId()
-        let title = fstring ? f.name : typeof e[f.name] === "undefined" ? "" : e[f.name]
-
-        if (f.type !== "img" && f.type !== "map") {
-            let l = /idname/g [Symbol.replace](itm, id)
-            if (!fstring)
-                l = /pointer/ [Symbol.replace](l, "")
-
-            h += /title/ [Symbol.replace](l, title)
-
-            if (typeof f.sublist !== "undefined")
-                for (let s of f.sublist) {
-                    let id = s.name.nameToId()
-                    let title = fstring ? s.name : typeof e[s.name] === "undefined" ? "" : e[s.name]
-
-                    if (s.type !== "img" && s.type !== "map") {
-                        let l = /idname/g [Symbol.replace](itm, id)
-                        h += /title/ [Symbol.replace](l, title)
-                    }
-                }
+    if (type === "All" || type === "Search") {
+        let l = /idname/g [Symbol.replace](itm, "type")
+        l = /pointer/ [Symbol.replace](l, "")
+        h += /title/ [Symbol.replace](l, e.type)
+        if (e.Type) {
+            l = /idname/g [Symbol.replace](itm, "Type")
+            l = /pointer/ [Symbol.replace](l, "")
+            h += /title/ [Symbol.replace](l, e.Type)
         }
-    }
-
-    if (fstring) {
-        let l = /idname/g [Symbol.replace](itm, "Favorite")
-        h += /title/ [Symbol.replace](l, "Favorite")
-        l = /idname/g [Symbol.replace](itm, "Editors-Choice")
-        h += /title/ [Symbol.replace](l, "Editors Choice")
-        l = /idname/g [Symbol.replace](itm, "Visited")
-        h += /title/ [Symbol.replace](l, "Visited")
-        l = /idname/g [Symbol.replace](itm, "Created")
-        h += /title/ [Symbol.replace](l, "Created")
-        l = /idname/g [Symbol.replace](itm, "Modified")
-        h += /title/ [Symbol.replace](l, "Modified")
-        l = /idname/g [Symbol.replace](itm, "Posted")
-        h += /title/ [Symbol.replace](l, "Posted")
+        l = /idname/g [Symbol.replace](itm, "Name")
+        l = /pointer/ [Symbol.replace](l, "")
+        h += /title/ [Symbol.replace](l, e.Name)
+        l = /idname/g [Symbol.replace](itm, "Addr")
+        l = /pointer/ [Symbol.replace](l, "")
+        h += /title/ [Symbol.replace](l, e.addr)
     } else {
-        let l = /idname/g [Symbol.replace](itm, "Favorite")
-        l = /pointer/ [Symbol.replace](l, "")
-        h += /title/ [Symbol.replace](l, e.votes.favorite)
-        l = /idname/g [Symbol.replace](itm, "Editors-Choice")
-        l = /pointer/ [Symbol.replace](l, "")
-        h += /title/ [Symbol.replace](l, e.votes.edchoice)
-        l = /idname/g [Symbol.replace](itm, "Visited")
-        l = /pointer/ [Symbol.replace](l, "")
-        h += /title/ [Symbol.replace](l, e.votes.visited)
-        l = /idname/g [Symbol.replace](itm, "Created")
-        l = /pointer/ [Symbol.replace](l, "")
-        h += /title/ [Symbol.replace](l, e.created ? e.created.toDate().toDateLocalTimeString() : "")
-        l = /idname/g [Symbol.replace](itm, "Modified")
-        l = /pointer/ [Symbol.replace](l, "")
-        h += /title/ [Symbol.replace](l, e.modded ? e.modded.toDate().toDateLocalTimeString() : "")
-        l = /idname/g [Symbol.replace](itm, "Posted")
-        l = /pointer/ [Symbol.replace](l, "")
-        h += /title/ [Symbol.replace](l, e.reddit ? e.reddit.toDate().toDateLocalTimeString() : "")
+        let i = getIndex(objectList, "name", fstring ? e : e.type)
+        for (let f of objectList[i].fields) {
+            let id = f.name.nameToId()
+            let title = fstring ? f.name : typeof e[f.name] === "undefined" ? "" : e[f.name]
+
+            if (f.type !== "img" && f.type !== "map") {
+                let l = /idname/g [Symbol.replace](itm, id)
+                if (!fstring)
+                    l = /pointer/ [Symbol.replace](l, "")
+
+                h += /title/ [Symbol.replace](l, title)
+
+                if (typeof f.sublist !== "undefined")
+                    for (let s of f.sublist) {
+                        let id = s.name.nameToId()
+                        let title = fstring ? s.name : typeof e[s.name] === "undefined" ? "" : e[s.name]
+
+                        if (s.type !== "img" && s.type !== "map") {
+                            let l = /idname/g [Symbol.replace](itm, id)
+                            h += /title/ [Symbol.replace](l, title)
+                        }
+                    }
+            }
+        }
+
+        if (fstring) {
+            let l = /idname/g [Symbol.replace](itm, "Favorite")
+            h += /title/ [Symbol.replace](l, "Favorite")
+            l = /idname/g [Symbol.replace](itm, "Editors-Choice")
+            h += /title/ [Symbol.replace](l, "Editors Choice")
+            l = /idname/g [Symbol.replace](itm, "Visited")
+            h += /title/ [Symbol.replace](l, "Visited")
+            l = /idname/g [Symbol.replace](itm, "Created")
+            h += /title/ [Symbol.replace](l, "Created")
+            l = /idname/g [Symbol.replace](itm, "Modified")
+            h += /title/ [Symbol.replace](l, "Modified")
+            l = /idname/g [Symbol.replace](itm, "Posted")
+            h += /title/ [Symbol.replace](l, "Posted")
+        } else {
+            let l = /idname/g [Symbol.replace](itm, "Favorite")
+            l = /pointer/ [Symbol.replace](l, "")
+            h += /title/ [Symbol.replace](l, e.votes.favorite)
+            l = /idname/g [Symbol.replace](itm, "Editors-Choice")
+            l = /pointer/ [Symbol.replace](l, "")
+            h += /title/ [Symbol.replace](l, e.votes.edchoice)
+            l = /idname/g [Symbol.replace](itm, "Visited")
+            l = /pointer/ [Symbol.replace](l, "")
+            h += /title/ [Symbol.replace](l, e.votes.visited)
+            l = /idname/g [Symbol.replace](itm, "Created")
+            l = /pointer/ [Symbol.replace](l, "")
+            h += /title/ [Symbol.replace](l, e.created ? e.created.toDate().toDateLocalTimeString() : "")
+            l = /idname/g [Symbol.replace](itm, "Modified")
+            l = /pointer/ [Symbol.replace](l, "")
+            h += /title/ [Symbol.replace](l, e.modded ? e.modded.toDate().toDateLocalTimeString() : "")
+            l = /idname/g [Symbol.replace](itm, "Posted")
+            l = /pointer/ [Symbol.replace](l, "")
+            h += /title/ [Symbol.replace](l, e.reddit ? e.reddit.toDate().toDateLocalTimeString() : "")
+        }
     }
 
     h += end
 
     if (prepend)
         loc.find("#row-key").after(h)
-    else
+    else {
         loc.append(h)
+        loc = loc.find("#row-" + e.id + " img")
+
+        let ref = bhs.fbstorage.ref().child(thumbPath + e.Photo)
+        ref.getDownloadURL().then(url => {
+            if (loc.is(":visible"))
+                loc.attr("src", url)
+            else
+                loc.attr("data-src", url)
+        }).catch(err => console.log(err))
+    }
 }
 
 NMSCE.prototype.updateDisplayListEntry = function (e, loc) {
@@ -4790,10 +4763,14 @@ NMSCE.prototype.toggleSearch = function (evt) {
 }
 
 NMSCE.prototype.selectList = function (evt) {
-    let data = $(evt).data()
-    let e = nmsce.entries[data.type][data.id]
-
-    nmsce.displaySingle(e)
+    let id = $(evt).closest("[id|='row']").prop("id").stripID()
+    let type = $(evt).closest("[id|='list']").prop("id").stripID()
+    let i = getIndex(nmsce.entries[type], "id", id)
+    let e = nmsce.entries[type][i]
+    let ref = bhs.fs.doc("nmsce/" + e.galaxy + "/" + e.type + "/" + e.id)
+    ref.get().then(doc => {
+        nmsce.displaySingle(doc.data())
+    })
 }
 
 NMSCE.prototype.newDARC = function (evt) {
