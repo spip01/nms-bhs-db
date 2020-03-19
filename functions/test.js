@@ -9,86 +9,71 @@ admin.initializeApp({
 })
 
 async function main() {
-    let ref = admin.firestore().collection("nmsce")
-    ref.listDocuments().then(async refs => {
-        for (let ref of refs) { // galaxy
-            // ref.listCollections().then(async refs => {
-            // for (let ref of refs) { // type
-            console.log(ref.id)
+    let bh = {}
+    let addr = {}
 
-            let sref = ref.collection("Ship")
-            let snapshot = await sref.get()
-            console.log(snapshot.size)
+    let ref = admin.firestore().collection("stars5")
+    let docrefs = await ref.listDocuments()
+
+    for (let gref of docrefs) {
+        if (typeof bh[gref.id] === "undefined")
+            bh[gref.id] = {}
+
+        let colrefs = await gref.listCollections()
+        for (let pref of colrefs) {
+            if (typeof bh[gref.id][pref.id] === "undefined")
+                bh[gref.id][pref.id] = {}
+
+            ref = pref.where("blackhole", "==", true)
+            let snapshot = await ref.get()
 
             for (let doc of snapshot.docs) {
                 let e = doc.data()
 
-                if (typeof e.parts === "undefined") {
-                    let parts = {}
+                if (typeof addr[e.addr] === "undefined")
+                    addr[e.addr] = 0
 
-                    switch (e.Type) {
-                        case "Fighter":
-                        case "Hauler":
-                        case "Shuttle":
-                            parts = e.wings ? e.wings : {}
-                            if (e.bodies)
-                                for (let p of Object.keys(e.bodies))
-                                    parts["h" + (parseInt(p.slice(1)) + 100)] = true
+                addr[e.addr]++
 
-                            if (e.Type === "Fighter" && parts.h17 && !e.Asymmetric)
-                                parts.h117 = true
-                            break
-                        case "Exotic":
-                            parts = e.bodies
-                            break
-                        case "Explorer":
-                            parts = e.bodies
-
-                            if (!e.Asymmetric) {
-                                const pairs = [16, 20, 13, 5, 14, 15, 18, 17, 21, 24, 19, 30, 22, 25, 28, 23, 29, 31, 27, 26]
-                                let list = Object.keys(e.parts)
-
-                                for (let i of list) {
-                                    let left = parseInt(i.slice(1))
-                                    if (pairs.includes(left))
-                                        parts["h" + (100 + left)] = true
-                                }
-                            }
-
-                            break
-                    }
-
-                    console.log(e.id, JSON.stringify(parts))
-                    // doc.ref.set({
-                    //     parts: parts
-                    // }, {
-                    //     merge: true
-                    // })
-                }
+                bh[e.galaxy][e.platform][e.addr] = e
             }
+        }
+    }
 
-            let fref = ref.collection("Freighter")
-            snapshot = await fref.get()
+    let gallist = Object.keys(bh)
 
-            for (let doc of snapshot.docs) {
-                let e = doc.data()
-                if (typeof e.parts === "undefined") {
-                    let parts = e.common ? e.common : {}
-                    if (e.capital)
-                        for (let p of Object.keys(e.capital))
-                            parts["h" + (parseInt(p.slice(1)) + 100)] = true
+    for (let g of gallist) {
+        for (let p of Object.keys(bh[g])) {
+            for (let a of Object.keys(bh[g][p])) {
+                if (addr[a] === 1)
+                    continue // only 1 entrance for address
 
-                    console.log(e.id, JSON.stringify(parts))
-                    // doc.ref.set({
-                    //     parts: parts
-                    // }, {
-                    //     merge: true
-                    // })
+                let e = bh[g][p][a]
+
+                for (let g of gallist) {
+                    for (let p of Object.keys(bh[g])) {
+                        if (typeof bh[g][p][a] === "undefined" || g === e.galaxy && p === e.platform)
+                            continue // self or doesn't exist
+
+                        // matching entrance
+                        let m = bh[g][p][a]
+                        let o = [e.galaxy, e.platform, e.addr, e.sys, e.reg, e.x.addr, e.x.sys, e.x.reg, m.galaxy, m.platform, m.addr, m.sys, m.reg, m.x.addr, m.x.sys, m.x.reg]
+
+                        if (e.connection === m.connection) // entrance & exit match
+                            o.unshift("hit")
+                        else
+                            o.unshift("miss")
+
+                        let s = JSON.stringify(o)
+                        s = s.slice(1, s.length - 1)
+
+                        console.log(s)
+                    }
                 }
             }
         }
-
-    })
+    }
 }
+
 
 main()

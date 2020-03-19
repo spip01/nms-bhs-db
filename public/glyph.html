@@ -44,6 +44,9 @@
         integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+
     <script src="glyph.js"></script>
     <script src="commonNms.js"></script>
 
@@ -117,7 +120,7 @@
         </div>
         <br>
 
-        <div class="card">
+        <div id="glyph-card" class="card">
             <div class="card-header txt-def h4">Glyph to Coordinates</div>
             <div class="card-body">
                 <div class="row">
@@ -127,7 +130,20 @@
                         <i class="far fa-question-circle text-danger h6"></i>
                     </div>
                     <input id="id-glyph" class="col-lg-4 col-md-5 col-sm-6 col-14 rounded txt-glyph-disp" maxength="19"
-                        onchange="dispGlyph(this)" placeholder="000000000000">
+                        onchange="dispGlyph(this)" placeholder="000000000000">&nbsp;
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-2 col-4 txt-label-def" data-toggle="tooltip" data-html="true"
+                        data-placement="bottom" title="Load unmodified screenshot containing glyphs.">
+                        Screenshot&nbsp;
+                        <i class="far fa-question-circle text-danger h6"></i>
+                    </div>
+                    <input type="file" class="col-4 form-control form-control-sm" accept="image/*" name="files[]"
+                        data-type="img" onchange="glyph.loadGlyphImage(this)">
+                    <div class="col-14">
+                        <canvas id="ss-canvas" class="border" style="height:10px;width:20px;"></canvas>
+                    </div>
                 </div>
 
                 <div class="row">
@@ -155,6 +171,41 @@
     <br>
     <div class="clr-cream text-right h6">
         <i class="fa fa-copyright"></i> 2019-2020 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+
+    <div id="glyphModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="glyphModal"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-def border-3">
+                <div class="modal-header bkg-def txt-def">
+                    <h5 class="modal-title" id="exampleModalLabel">Read Glyphs From Screenshot</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="row-idname" class="row">
+                        <div class="col-lg-2 col-4 txt-label-def">Screenshot&nbsp;</div>
+                        <input id="id-idname" type="file" class="col form-control form-control-sm" accept="image/*"
+                            name="files[]" data-type="img" onchange="glyph.loadGlyphImage(this)">
+                    </div>
+                    <br>
+                    <div id="img-row" class="row">
+                        <canvas id="id-canvas" class="border"></canvas>
+                    </div>
+                    <p class="h6">Click and drag glyph selection box so it overlays the glyphs on the sreenshot. Click
+                        on one end of the box
+                        to grow or shrink the box. Use the arrow keys to move the selection box by 1 pixel and
+                        shift+arrow keys to grow or shrink selection box by 1 pixel.</p>
+                </div>
+                <div class="modal-footer bkg-def">
+                    <button type="button" class="btn btn-sm btn-def" data-dismiss="modal">Close</button>&nbsp;
+                    <button type="button" class="btn btn-sm btn-def" data-dismiss="modal"
+                        onclick="glyph.extractGlyphs()">Extract
+                        Glyphs</button>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 

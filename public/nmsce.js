@@ -8,8 +8,6 @@ const displayPath = "/nmsce/disp/"
 const originalPath = "/nmsce/orig/"
 const thumbPath = "/nmsce/disp/thumb/"
 
-const tm_url = "https://teachablemachine.withgoogle.com/models/w6CSJkkY/"
-
 $(document).ready(async () => {
     startUp()
 
@@ -33,6 +31,7 @@ $(document).ready(async () => {
             nmsce.getResultsLists()
             // nmsce.getFeatured()
         }
+
         if (fcedata) {
             nmsce.buildImageText()
 
@@ -40,7 +39,8 @@ $(document).ready(async () => {
             img.crossOrigin = "anonymous"
             img.onload = nmsce.onLoadLogo
             img.src = "/images/app-logo.png"
-            nmsce.model = await tmImage.load("/bin/model.json", "/bin/metadata.json")
+
+            tmImage.load("/bin/model.json", "/bin/metadata.json").then(model => nmsce.model = model)
 
             nmsce.buildDisplayList()
         }
@@ -124,6 +124,8 @@ NMSCE.prototype.buildPanels = function () {
     })
 
     if (fnmsce) {
+        addRadioList($("#id-Version"), "Version", versionList)
+
         let ref = bhs.fs.collection("nmsce")
         ref.get().then(snapshot => {
             let galaxyList = []
@@ -850,8 +852,11 @@ NMSCE.prototype.displaySearch = function (search) {
             case "string":
                 loc.find("#id-" + itm.name.nameToId()).val(itm.val)
                 break
-            case "menu":
-                if (itm.name === "Type")
+       case "date":
+           loc.find("#id-" + itm.name.nameToId()).val(itm.date)
+                break
+                    case "menu":
+                        if (itm.name === "Type")
                     loc.find("#item-" + itm.val.nameToId()).click()
                 else
                     loc.find("#btn-" + (itm.id ? itm.id.stripID() : itm.name.nameToId())).text(itm.val)
@@ -1127,6 +1132,28 @@ NMSCE.prototype.extractSearch = function () {
             type: "string",
             id: "id-Player",
             val: name
+        })
+
+    let loc = $("#id-Version").find(":checked")
+    if (loc.length > 0) {
+        let val = loc.parent().text().stripMarginWS()
+        search.push({
+            name: "version",
+            type: "radio",
+            id: "id-Version",
+            val: val
+        })
+    }
+
+    let date = $("#id-Created").val()
+    if (date)
+        search.push({
+            name: "created",
+            type: "date",
+            id: "id-Created",
+            query: ">=",
+            date: date,
+            val: firebase.firestore.Timestamp.fromDate(new Date(date))
         })
 
     let obj = null
