@@ -169,44 +169,7 @@
     </div>
 
     <br>
-    <div class="clr-cream text-right h6">
-        <i class="fa fa-copyright"></i> 2019-2020 Black Hole Suns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    </div>
-
-    <div id="glyphModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="glyphModal"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content border-def border-3">
-                <div class="modal-header bkg-def txt-def">
-                    <h5 class="modal-title" id="exampleModalLabel">Read Glyphs From Screenshot</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div id="row-idname" class="row">
-                        <div class="col-lg-2 col-4 txt-label-def">Screenshot&nbsp;</div>
-                        <input id="id-idname" type="file" class="col form-control form-control-sm" accept="image/*"
-                            name="files[]" data-type="img" onchange="glyph.loadGlyphImage(this)">
-                    </div>
-                    <br>
-                    <div id="img-row" class="row">
-                        <canvas id="id-canvas" class="border"></canvas>
-                    </div>
-                    <p class="h6">Click and drag glyph selection box so it overlays the glyphs on the sreenshot. Click
-                        on one end of the box
-                        to grow or shrink the box. Use the arrow keys to move the selection box by 1 pixel and
-                        shift+arrow keys to grow or shrink selection box by 1 pixel.</p>
-                </div>
-                <div class="modal-footer bkg-def">
-                    <button type="button" class="btn btn-sm btn-def" data-dismiss="modal">Close</button>&nbsp;
-                    <button type="button" class="btn btn-sm btn-def" data-dismiss="modal"
-                        onclick="glyph.extractGlyphs()">Extract
-                        Glyphs</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="footer"></div>
 </body>
 
 </html>

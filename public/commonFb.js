@@ -43,6 +43,8 @@ function startUp() {
         })
     })
 
+    $("#footer").load("footer.html")
+
     $("body").tooltip({
         selector: '[data-toggle="tooltip"]'
     })

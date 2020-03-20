@@ -29,7 +29,9 @@ $(document).ready(() => {
         })
     })
 
-    let gloc = $("[id='glyphbuttons']")
+    $("#footer").load("footer.html")
+
+   let gloc = $("[id='glyphbuttons']")
     addGlyphButtons(gloc, addGlyph)
     buildGlyphModal(dispGlyph)
 

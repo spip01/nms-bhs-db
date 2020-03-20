@@ -32,6 +32,8 @@ $(document).ready(() => {
         addGlyphButtons(gloc, addGlyph)
     })
 
+    $("#footer").load("footer.html")
+
     if (typeof (Storage) !== "undefined") {
         let start = window.localStorage.getItem('navstart')
         let end = window.localStorage.getItem('navend')
