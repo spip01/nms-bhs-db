@@ -129,14 +129,13 @@ Glyph.prototype.scaleSelection = function () {
 
 Glyph.prototype.extractGlyphs = function () {
     let sel = glyph.selectLocation
-    let scale = 1 //glyph.screenshot.naturalWidth / glyph.selectCanvas.width
-    let div = sel.width * scale / 12
+    let div = sel.width / 12
 
     let canvas = document.createElement('canvas')
     let ctx = canvas.getContext("2d")
     canvas.width = glyph.screenshot.naturalWidth
     canvas.height = glyph.screenshot.naturalHeight
-    ctx.drawImage(glyph.screenshot, 0, 0, glyph.screenshot.naturalWidth, glyph.screenshot.naturalHeight)
+    ctx.drawImage(glyph.screenshot, 0, 0)
 
     let sloc = $("#ss-canvas")
     sloc.width(sel.width + 12)
@@ -151,14 +150,13 @@ Glyph.prototype.extractGlyphs = function () {
     scanglyph.width = div
     scanglyph.height = div
 
-    let x = sel.x * scale
+    let x = sel.x 
     let p = []
 
     for (let i = 0; i < 12; ++i) {
-        let imgData = ctx.getImageData(x, sel.y * scale, div, sel.height * scale)
+        let imgData = ctx.getImageData(x, sel.y , div, sel.height )
         scanctx.putImageData(imgData, 0, 0)
         sctx.putImageData(imgData, (div+1) * i, 0)
-
         x += div
 
         p.push(glyph.model.predict(scanglyph).then(predict => {

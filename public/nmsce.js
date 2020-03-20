@@ -353,13 +353,13 @@ NMSCE.prototype.showSearchPanel = function (evt) {
 }
 
 NMSCE.prototype.expandPanels = function (show) {
-    if (show) {
-        $('[data-hide=true]').hide()
-        $('[data-allowhide=true]').show()
-    } else {
-        $('[data-hide=true]').show()
-        $('[data-allowhide=true]').hide()
-    }
+    // if (show) {
+    $('[data-hide=true]').hide()
+    $('[data-allowhide=true]').show()
+    // } else {
+    //     $('[data-hide=true]').show()
+    //     $('[data-allowhide=true]').hide()
+    // }
 }
 
 NMSCE.prototype.displayUser = function () {
@@ -852,11 +852,11 @@ NMSCE.prototype.displaySearch = function (search) {
             case "string":
                 loc.find("#id-" + itm.name.nameToId()).val(itm.val)
                 break
-       case "date":
-           loc.find("#id-" + itm.name.nameToId()).val(itm.date)
+            case "date":
+                loc.find("#id-" + itm.name.nameToId()).val(itm.date)
                 break
-                    case "menu":
-                        if (itm.name === "Type")
+            case "menu":
+                if (itm.name === "Type")
                     loc.find("#item-" + itm.val.nameToId()).click()
                 else
                     loc.find("#btn-" + (itm.id ? itm.id.stripID() : itm.name.nameToId())).text(itm.val)
@@ -948,16 +948,22 @@ NMSCE.prototype.search = function (search) {
             return
     }
 
+    let first = true
+
     let display = (list, type) => {
-        if (fnmsce)
-            nmsce.displayResultList(list, type)
-        else
+        if (fnmsce) {
+            if (list.length > 0) {
+                first = false
+                $("#dltab-Search-Results").click()
+                nmsce.displayResultList(list, type)
+            } else if (first)
+                bhs.status("Nothing matching selection found. Try selecting fewer items. To match an entry it must contain everything selected.", true)
+        } else
             nmsce.displayList(list, type)
     }
 
     $("#list-Search-Results").empty()
     $("#dltab-Search-Results").show()
-    $("#dltab-Search-Results").click()
     nmsce.entries["Search-Results"] = []
 
     nmsce.executeSearch(search, "Search Results", display)
@@ -1176,7 +1182,7 @@ NMSCE.prototype.extractSearch = function () {
             case "radio":
                 loc = loc.find(":checked")
                 if (loc.length > 0)
-                    val = loc.prop("id").stripID()
+                    val = loc.parent().text().stripMarginWS()
                 break
             default:
                 val = loc.val()
@@ -1312,15 +1318,18 @@ NMSCE.prototype.searchSystem = function () {
     if (!nmsce.last)
         return
 
+    nmsce.entries["Search-Results"] = []
+
     let ref = bhs.fs.collectionGroup("nmsceCommon")
     ref = ref.where("addr", "==", nmsce.last.addr)
 
     ref.get().then(snapshot => {
-        let list = nmsce.entries["Search-Results"] = []
+        let list = []
         for (let doc of snapshot.docs)
             list.push(doc.data())
 
-        nmsce.displayResultList(nmsce.entries["Search-Results"], "Search-Results")
+        $("#dltab-Search-Results").click()
+        nmsce.displayResultList(list, "Search-Results")
     })
 }
 
@@ -1729,6 +1738,9 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
         if (f.startState === "hidden")
             itm.find("#row-" + id).hide()
     }
+
+    let tloc = $("#item-Fighter")
+    tloc.click()
 }
 
 NMSCE.prototype.addTag = function (evt) {
@@ -2127,16 +2139,8 @@ NMSCE.prototype.buildImageText = function () {
 
     const textInp = `
         <div class="row">
-            <label class="col-lg-8 col-7 txt-label-def pl-15">
-                <input id="ck-selGlyphs" type="checkbox" data-type="selGlyphs" onchange="nmsce.getImageText(this, true)">
-                Select Glyphs&nbsp;
-                <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
-                    data-placement="bottom"
-                    title="Drag glyph box to glyphs and resize to select glyphs.">
-                </i>&nbsp;
-            </label>
              <button type="button" class="col-lg-5 col-md-12 col-5 btn btn-def btn-sm" onclick="nmsce.extractGlyphs()">
-                Apply
+                Scan Glyphs
             </button>&nbsp;
             <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                 data-placement="bottom"
@@ -2184,7 +2188,6 @@ NMSCE.prototype.buildImageText = function () {
     nmsce.initImageText("logo")
     nmsce.initImageText("Text")
     nmsce.initImageText("myLogo")
-    nmsce.initImageText("selGlyphs")
 
     for (let obj of objectList) {
         for (let txt of obj.imgText)
@@ -2236,16 +2239,6 @@ NMSCE.prototype.initImageText = function (id) {
                 type: "img",
             }
             break
-        case "selGlyphs":
-            nmsce.imageText[id] = {
-                ck: id === "logo",
-                type: "img",
-                ascent: 0,
-                decent: 20,
-                left: 0,
-                right: 240,
-            }
-            break
         default:
             nmsce.imageText[id] = {
                 font: id === "Glyphs" ? "NMS Glyphs" : "Arial",
@@ -2284,8 +2277,6 @@ NMSCE.prototype.getImageText = function (evt, draw) {
         }
 
         switch (data.type) {
-            case "selGlyphs":
-                break
             case "menu":
                 loc = loc.find("[id|='btn']")
                 text = loc.text().stripNumber()
@@ -2360,7 +2351,6 @@ NMSCE.prototype.restoreImageText = function (txt, draw) {
     if (txt)
         nmsce.imageText = mergeObjects(nmsce.imageText, txt)
 
-    nmsce.imageText.selGlyphs.ck = false
     nmsce.imageText.myLogo.ck = false
     nmsce.imageText.logo.ck = true
 
@@ -2457,6 +2447,18 @@ NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
     $("#redditPost").hide()
 
     if (evt || edit) {
+        nmsce.glyphLocation = {
+            x: 4,
+            y: 412,
+            height: 14,
+            width: 158,
+            naturalWidth: 3840,
+            naturalHeight: 2160,
+            modalWidth: 782,
+            modalHeight: 439,
+            scale: 0,
+        }
+
         $("#editScreenshot").hide()
         $("#id-ssImage").hide()
         $("#id-canvas").show()
@@ -2484,6 +2486,7 @@ NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
 
                 nmsce.screenshot.onload = function () {
                     nmsce.restoreImageText(null, true)
+                    nmsce.scaleGlyphLocation()
 
                     $('html, body').animate({
                         scrollTop: $('#imgtable').offset().top
@@ -2512,6 +2515,7 @@ NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
 
                     nmsce.screenshot.onload = function () {
                         nmsce.restoreImageText(null, true)
+                        nmsce.scaleGlyphLocation()
 
                         $("body")[0].style.cursor = "default"
                     }
@@ -2675,23 +2679,6 @@ NMSCE.prototype.drawText = function (alt, altw) {
                     ctx.fillRect(text.x + text.left - 5, text.y - text.ascent - 5, text.right - text.left + 9, text.ascent + text.decent + 8)
                     ctx.fillStyle = "#000000"
                     ctx.fillRect(text.x + text.left - 3, text.y - text.ascent - 3, text.right - text.left + 5, text.ascent + text.decent + 4)
-                }
-
-                if (id === "selGlyphs") {
-                    ctx.strokeStyle = "white"
-                    ctx.beginPath()
-                    ctx.rect(text.x, text.y, text.right, text.decent)
-                    ctx.stroke()
-
-                    let div = text.right / 12
-                    for (let i = 1; i < 12; ++i) {
-                        let x = text.x + div * i
-
-                        ctx.beginPath()
-                        ctx.moveTo(x, text.y)
-                        ctx.lineTo(x, text.y + text.decent)
-                        ctx.stroke()
-                    }
                 }
 
                 if (text.type === "text") {
@@ -3103,15 +3090,24 @@ NMSCE.prototype.postStatus = function (str) {
     $("#posted").html("<h5>" + str + "</h5>")
 }
 
+NMSCE.prototype.scaleGlyphLocation = function () {
+    if (!nmsce.glyphLocation.scale) {
+        nmsce.glyphLocation.scale = nmsce.screenshot.naturalWidth / nmsce.glyphLocation.modalWidth
+        nmsce.glyphLocation.x *= nmsce.glyphLocation.scale
+        nmsce.glyphLocation.y *= nmsce.screenshot.naturalHeight / nmsce.glyphLocation.modalHeight
+        nmsce.glyphLocation.width *= nmsce.glyphLocation.scale
+        nmsce.glyphLocation.height *= nmsce.glyphLocation.scale
+    }
+}
+
 NMSCE.prototype.extractGlyphs = function (mid) {
     $("body")[0].style.cursor = "wait"
 
     let row = $("#row-glyphCanvas")
     row.show()
 
-    let text = nmsce.imageText.selGlyphs
-    text.sel = false
-    text.resize = ""
+    let sel = nmsce.glyphLocation
+    let div = sel.width / 12
 
     let ss = document.createElement('canvas')
     let ssctx = ss.getContext("2d")
@@ -3119,46 +3115,23 @@ NMSCE.prototype.extractGlyphs = function (mid) {
     ss.height = nmsce.screenshot.naturalHeight
     ssctx.drawImage(nmsce.screenshot, 0, 0)
 
-    let canvas = document.getElementById("id-canvas")
-    let scale = nmsce.screenshot.naturalWidth / canvas.width
-    let imgData = ssctx.getImageData(text.x * scale, text.y * scale, text.right * scale, text.decent * scale)
-
-    // mid = mid ? mid * 3 : 87 * 3
-    // let mult = 765 / (765 - mid) / 3
-
-    // let gscalc = (p) => {
-    //     for (let i = 0; i < p.length; i += 4) {
-    //         let gs = p[i] + p[i + 1] + p[i + 2]
-    //         gs = gs < mid ? 0 : (gs - mid) * mult
-    //         p[i] = gs // red
-    //         p[i + 1] = gs // green
-    //         p[i + 2] = gs // blue
-    //     }
-    // }
-
-    // gscalc(imgData.data)
-
     let gcanvas = document.getElementById("id-glyphCanvas")
     let gctx = gcanvas.getContext("2d")
-    let size = nmsce.calcImageSize(text.right * scale, text.decent * scale, row.width(), row.height(), true)
-    gcanvas.width = parseInt(Math.min(size.width, text.right * scale))
-    gcanvas.height = parseInt(Math.min(size.height, text.decent * scale))
-    gctx.putImageData(imgData, 0, 0)
-
-    let p = []
-    let div = parseInt(text.right * scale / 12)
-    let x = text.x * scale
+    gcanvas.width = (sel.width + 12)
+    gcanvas.height = sel.height
 
     let scanglyph = document.createElement('canvas')
     let scanctx = scanglyph.getContext("2d")
     scanglyph.width = div
     scanglyph.height = div
 
-    for (let i = 0; i < 12; ++i) {
-        let imgData = ssctx.getImageData(x, text.y * scale, div, text.decent * scale)
-        // gscalc(imgData.data)
+    let p = []
+    let x = sel.x
 
+    for (let i = 0; i < 12; ++i) {
+        let imgData = ssctx.getImageData(x, sel.y, div, sel.height)
         scanctx.putImageData(imgData, 0, 0)
+        gctx.putImageData(imgData, (div + 1) * i, 0)
         x += div
 
         p.push(nmsce.model.predict(scanglyph).then(predict => {
@@ -3184,14 +3157,9 @@ NMSCE.prototype.extractGlyphs = function (mid) {
     Promise.all(p).then(res => {
         res.sort((a, b) => a.idx - b.idx)
         let g = ""
-        let str = ""
-        for (let i = 0; i < res.length; ++i) {
+        for (let i = 0; i < res.length; ++i)
             g += res[i].class
-            // str += "<span class='glyph'>" + res[i].class + "</span>-" + res[i].prob + " "
-            // if (i === 5)
-            //     str += "<br>"
-        }
-        // bhs.status(str)
+
         nmsce.changeAddr(null, g)
 
         $("body")[0].style.cursor = "default"
@@ -3766,7 +3734,7 @@ const resultTables = [{
 
 NMSCE.prototype.buildResultsList = function () {
     let nav = `
-        <a id="dltab-idname" class="nav-item nav-link txt-def h6 rounded-top" style="border-color:black;" 
+        <a id="dltab-idname" class="nav-item nav-link txt-def h5 rounded-top" style="border-color:black;" 
             data-toggle="tab" href="#dl-idname" role="tab" aria-controls="dl-idname" aria-selected="false">
             title
         </a>`
@@ -3809,6 +3777,7 @@ NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
             if (Atomics.compareExchange(obs.arr, 0, 0, 1) === 0)
                 ref.get().then(snapshot => {
                     if (snapshot.empty) {
+                        obs.dispFcn([], obs.type)
                         obs.cont = false
                         return
                     }
@@ -3924,6 +3893,9 @@ const resultsItem = `
     </div>`
 
 NMSCE.prototype.displayResultList = function (entries, type) {
+    if (entries.length === 0)
+        return
+
     let h = ""
     let loc = $("#displayPanels #list-" + type.nameToId())
 
@@ -3975,7 +3947,7 @@ NMSCE.prototype.vote = async function (evt) {
         let doc = await vref.get()
         if (doc.exists) {
             e = doc.data()
-            v = typeof e[id] === "undefined" ? true : !e[id]
+            v = typeof e[id] === "undefined" ? 1 : e[id] ? 0 : 1
         }
 
         e[id] = v
@@ -3983,7 +3955,7 @@ NMSCE.prototype.vote = async function (evt) {
         e.uid = bhs.user.uid
         e.id = nmsce.last.id
         e.galaxy = nmsce.last.galaxy
-        e.Photo = nmsce.laste.Photo
+        e.Photo = nmsce.last.Photo
         e._name = nmsce.last._name
         e.created = nmsce.last.created
         e.type = nmsce.last.type
@@ -3997,7 +3969,7 @@ NMSCE.prototype.vote = async function (evt) {
         nmsce.showVotes(e)
 
         e = {}
-        e[id] = firebase.firestore.FieldValue.increment(v)
+        e[id] = firebase.firestore.FieldValue.increment(v ? 1 : -1)
 
         ref.set({
             votes: e
@@ -4005,7 +3977,7 @@ NMSCE.prototype.vote = async function (evt) {
             merge: true
         })
 
-        ref = ref.doc("nmsceCommon/" + id)
+        ref = ref.collection("nmsceCommon").doc(id)
         ref.set({
             votes: e
         }, {
@@ -5098,6 +5070,12 @@ const fontList = [{
     name: 'Amatic SC',
 }, {
     name: 'Notable',
+}, {
+    name: 'Inknut Antiqua',
+}, {
+    name: 'Merienda One',
+}, {
+    name: 'Great Vibes',
 }, ]
 
 const encounterList = [{
@@ -6473,6 +6451,25 @@ const objectList = [{
         onchange: getEntry,
         inputHide: true,
     }, {
+        name: "blank",
+        type: "blank",
+    }, {
+        name: "Damage",
+        type: "float",
+        inputHide: true,
+    }, {
+        name: "Shield",
+        type: "float",
+        inputHide: true,
+    }, {
+        name: "Hyperdrive",
+        type: "float",
+        inputHide: true,
+    }, {
+        name: "Manuverability",
+        type: "float",
+        inputHide: true,
+    }, {
         name: "Planet Name",
         type: "string",
         imgText: true,
@@ -6496,7 +6493,7 @@ const objectList = [{
         type: "float",
         required: true,
     }, {
-        name: "First Ship",
+        name: "Reset Mission",
         type: "checkbox",
         search: true,
         imgText: true,
@@ -6508,22 +6505,6 @@ const objectList = [{
         search: true,
         inputHide: true,
         ttip: "Find specific living ship by pointing your ship at this location, e.g. planet name, before openning communications with alien ship."
-    }, {
-        name: "Damage",
-        type: "float",
-        inputHide: true,
-    }, {
-        name: "Shield",
-        type: "float",
-        inputHide: true,
-    }, {
-        name: "Hyperdrive",
-        type: "float",
-        inputHide: true,
-    }, {
-        name: "Manuverability",
-        type: "float",
-        inputHide: true,
     }, {
         name: "Seed",
         type: "string",
