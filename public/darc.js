@@ -144,6 +144,7 @@ blackHoleSuns.prototype.saveDarcSettings = function (evt) {
     let user = {}
     user.darcSettings = {}
     user.darcSettings.galalxy = $("#btn-Galaxy").text()
+    user.darcSettings.platform = $("#btn-Platform").text()
     user.darcSettings.range = $("#id-range").val()
     user.darcSettings.useBases = $("#ck-useBases").prop("checked")
     user.darcSettings.nearPath = $("#ck-nearPath").prop("checked")
@@ -167,6 +168,7 @@ blackHoleSuns.prototype.updateDarcSettings = function () {
 
     if (typeof bhs.user.darcSettings !== "undefined") {
         $("#btn-Galaxy").text(typeof bhs.user.darcSettings.galalxy === "undefined" ? bhs.user.galaxy : bhs.user.darcSettings.galalxy)
+        $("#btn-Platform").text(typeof bhs.user.darcSettings.platform === "undefined" ? bhs.user.platform : bhs.user.darcSettings.platform)
         $("#id-range").val(typeof bhs.user.darcSettings.range !== "undefined" ? bhs.user.darcSettings.range : 2000)
         $("#ck-useBases").prop("checked", bhs.user.uid && bhs.user.darcSettings.useBases)
         $("#ck-nearPath").prop("checked", bhs.user.darcSettings.nearPath)

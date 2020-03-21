@@ -3774,7 +3774,7 @@ NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
             ref = ref.startAfter(obs.last)
 
         if (!obs.last || obs.cont)
-            if (Atomics.compareExchange(obs.arr, 0, 0, 1) === 0)
+            if (++obs.counter === 1)
                 ref.get().then(snapshot => {
                     if (snapshot.empty) {
                         obs.dispFcn([], obs.type)
@@ -3791,7 +3791,7 @@ NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
 
                     obs.last = snapshot.docs[snapshot.size - 1]
 
-                    Atomics.compareExchange(obs.arr, 0, 1, 0)
+                    obs.counter--
 
                     obs.dispFcn(entries, obs.type)
                     let loc = $("#list-" + obs.type)
@@ -3840,10 +3840,7 @@ NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
         obs.dispFcn = dispFcn
         obs.last = null
         obs.cont = cont
-
-        const sab = new SharedArrayBuffer(4)
-        obs.arr = new Int32Array(sab)
-        obs.arr[0] = 0
+        obs.counter = 0
 
         getSnapshot(obs)
     }
