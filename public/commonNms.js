@@ -328,7 +328,7 @@ const galaxyRaw = [{
     step2: 1
 }]
 
-const lifeformList = [{
+var lifeformList = [{
     name: "Vy'keen",
     match: /^v/i
 }, {

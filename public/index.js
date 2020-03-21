@@ -350,6 +350,10 @@ blackHoleSuns.prototype.buildPanel = function (id) {
     let gloc = loc.find("#glyphbuttons")
     addGlyphButtons(gloc, bhs.addGlyph)
 
+    if (getIndex(lifeformList, "name", "none") === -1)
+        lifeformList.unshift({
+            name: 'none'
+        })
     bhs.buildMenu(loc, "Lifeform", lifeformList)
     bhs.buildMenu(loc, "Economy", economyList)
     bhs.buildMenu(loc, "Owned", ownershipList)
@@ -614,6 +618,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
         entry.sys = loc.find("#id-sys").val()
         entry.reg = loc.find("#id-reg").val()
         entry.life = loc.find("#btn-Lifeform").text().stripNumber()
+        entry.life = entry.life === "none" ? "" : entry.life
         entry.econ = loc.find("#btn-Economy").text().stripNumber()
 
         entry.dist = calcDist(entry.addr)
