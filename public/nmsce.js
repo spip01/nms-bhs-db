@@ -3663,27 +3663,6 @@ function getEntry() {
     }
 }
 
-NMSCE.prototype.fcnObserver = function (loc, fcn) {
-    if (window.IntersectionObserver) {
-        var io = new IntersectionObserver(
-            evts => {
-                for (let evt of evts) {
-                    if (evt.isIntersecting) {
-                        io.unobserve(evt.target)
-                        fcn(evt)
-                    }
-                }
-            }, {
-                root: loc[0],
-                rootMargin: '0px 0px 0px 0px',
-                threshold: .1
-            }
-        )
-    }
-
-    return io
-}
-
 NMSCE.prototype.getEntries = function (evt) {
     nmsce.entries = {}
 
@@ -3735,7 +3714,7 @@ const resultTables = [{
 
 NMSCE.prototype.buildResultsList = function () {
     let nav = `
-        <a id="dltab-idname" class="nav-item nav-link txt-def h5 rounded-top" style="border-color:black;" 
+        <a id="dltab-idname" class="nav-item nav-link txt-def h6 rounded-top" style="border-color:black;" 
             data-toggle="tab" href="#dl-idname" role="tab" aria-controls="dl-idname" aria-selected="false">
             title
         </a>`
@@ -3764,45 +3743,69 @@ NMSCE.prototype.buildResultsList = function () {
     $("#displayPanels .scroll").height(height + "px")
 }
 
-NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
-    if (typeof nmsce.entryObserver === "undefined")
-        nmsce.entryObserver = nmsce.fcnObserver($("#displayPanels"), nmsce.getWithObserver)
+NMSCE.prototype.fcnObserver = function (loc, fcn) {
+    if (window.IntersectionObserver) {
+        var io = new IntersectionObserver(
+            evts => {
+                let run = null
+                for (let evt of evts)
+                    if (evt.isIntersecting) {
+                        run = evt
+                        io.unobserve(evt.target)
+                    }
 
+                if (run)
+                    fcn(run)
+            }, {
+                root: loc[0],
+                rootMargin: '0px 0px 0px 0px',
+                threshold: .1
+            }
+        )
+    }
+
+    return io
+}
+
+NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
     const getSnapshot = (obs) => {
+        if (typeof obs.entryObserver === "undefined")
+            obs.entryObserver = nmsce.fcnObserver($("#displayPanels"), nmsce.getWithObserver)
+
         let ref = obs.ref
 
         if (obs.last)
             ref = ref.startAfter(obs.last)
 
         if (!obs.last || obs.cont)
-            if (++obs.counter === 1)
-                ref.get().then(snapshot => {
-                    if (snapshot.empty) {
-                        obs.dispFcn([], obs.type)
-                        obs.cont = false
-                        return
-                    }
+            // if (Atomics.compareExchange(obs.arr, 0, 0, 1) === 0)
+            ref.get().then(snapshot => {
+                if (snapshot.empty) {
+                    obs.cont = false
+                    return
+                }
 
-                    let entries = []
+                let entries = []
 
-                    for (let doc of snapshot.docs) {
-                        let e = doc.data()
-                        entries.push(e)
-                    }
+                for (let doc of snapshot.docs) {
+                    let e = doc.data()
+                    entries.push(e)
+                }
 
-                    obs.last = snapshot.docs[snapshot.size - 1]
+                obs.last = snapshot.docs[snapshot.size - 1]
 
-                    obs.counter--
+                // Atomics.compareExchange(obs.arr, 0, 1, 0)
 
-                    obs.dispFcn(entries, obs.type)
-                    let loc = $("#list-" + obs.type)
+                obs.dispFcn(entries, obs.type)
+                let loc = $("#list-" + obs.type)
 
-                    for (let i = 0; i < entries.length; i += 25) {
+                for (let i of [0, 10, 25, 45])
+                    if (i < entries.length) {
                         let rloc = loc.find("#row-" + entries[i].id)
                         if (rloc.length > 0)
-                            nmsce.entryObserver.observe(rloc[0])
+                            obs.entryObserver.observe(rloc[0])
                     }
-                })
+            })
     }
 
     if (evt) {
@@ -3841,7 +3844,10 @@ NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
         obs.dispFcn = dispFcn
         obs.last = null
         obs.cont = cont
-        obs.counter = 0
+
+        // const sab = new SharedArrayBuffer(4)
+        // obs.arr = new Int32Array(sab)
+        // obs.arr[0] = 0
 
         getSnapshot(obs)
     }
