@@ -147,6 +147,10 @@ NMSCE.prototype.buildPanels = function () {
     addGlyphButtons($("#glyphbuttons"), nmsce.addGlyph)
 
     if (fcedata) {
+        let rloc = $("#panels")
+        rloc.find("input").change(updateImageText)
+        rloc.find("button").click(updateImageText)
+
         let img = $("#id-canvas")
         let lastDownTarget
         let canvas = document.getElementById("id-canvas")
@@ -1565,15 +1569,11 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 l = /range/ [Symbol.replace](tNumber, f.range)
                 l = /stype/ [Symbol.replace](l, f.query ? f.query : "")
                 appenditem(itm, l, f.name, id, f.ttip, f.required, null, f.inputHide)
-                if (f.onchange)
-                    itm.find("#id-" + id).change(f.onchange)
                 break
             case "float":
                 l = /range/ [Symbol.replace](tFloat, f.range)
                 l = /stype/ [Symbol.replace](l, f.query ? f.query : "")
                 appenditem(itm, l, f.name, id, f.ttip, f.required, null, f.inputHide)
-                if (f.onchange)
-                    itm.find("#id-" + id).change(f.onchange)
                 break
             case "img":
                 appenditem(itm, tImg, f.name, id, f.ttip, f.required, inpLongHdr, f.inputHide)
@@ -1598,23 +1598,15 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                         l = /idname/g [Symbol.replace](l, "False")
                         l = /tname/g [Symbol.replace](l, "False")
                         ckloc.append(l)
-                    } else {
+                    } else
                         appenditem(itm, tCkItem, f.name, id, f.ttip, f.required, null, f.inputHide)
-
-                        if (f.onchange)
-                            itm.find("#ck-" + id).change(f.onchange)
-                    }
                 }
                 break
             case "string":
                 appenditem(itm, tString, f.name, id, f.ttip, f.required, null, f.inputHide)
-                if (f.onchange)
-                    itm.find("#id-" + id).change(f.onchange)
                 break
             case "long string":
                 appenditem(itm, tLongString, f.name, id, f.ttip, f.required, inpLongHdr, f.inputHide)
-                if (f.onchange)
-                    itm.find("#id-" + id).change(f.onchange)
                 break
             case "blank":
                 itm.append(inpHdr + inpEnd)
@@ -1715,9 +1707,6 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                     if (fcedata) {
                         if (i.default)
                             rdo.prop("checked", true)
-
-                        if (f.onchange)
-                            rdo.change(f.onchange)
                     }
                 }
                 break
@@ -1733,6 +1722,18 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                     nmsce.loadMap(loc.find("#row-" + iid), f.map ? f.map : slist[f.sub])
                 }
                 break
+        }
+
+        if (f.onchange) {
+            let rloc = itm.find("#row-" + f.name)
+            rloc.find("input").change(f.onchange)
+            rloc.find("button").click(f.onchange)
+        }
+
+        if (f.imgText) {
+            let rloc = itm.find("#row-" + f.name)
+            rloc.find("input").change(updateImageText)
+            rloc.find("button").click(updateImageText)
         }
 
         if (f.startState === "hidden")
@@ -1929,7 +1930,7 @@ const mapColors = {
     error: "#ff0000",
 }
 
-function updateSlots() {
+function updateImageText() {
     nmsce.restoreImageText(null, true)
 }
 
@@ -5778,7 +5779,6 @@ const objectList = [{
             type: "radio",
             ttip: "slotTtip",
             sub: "slotList",
-            onchange: updateSlots,
             imgText: true,
             search: true,
         }, {
@@ -5862,18 +5862,16 @@ const objectList = [{
         name: "Color",
         ttip: "Main body & wing colors. For colored chrome use the color + chrome.",
         type: "tags",
-        imgText: true,
+        search: true,
         list: colorList,
         max: 4,
-        search: true,
     }, {
         name: "Markings",
         ttip: "Any decals, stripes, etc.",
         type: "tags",
-        imgText: true,
+        search: true,
         list: colorList,
         max: 4,
-        search: true,
     }, {
         name: "Tags",
         type: "tags",
@@ -5942,10 +5940,9 @@ const objectList = [{
     }, {
         name: "Color",
         type: "tags",
-        imgText: true,
+        search: true,
         list: colorList,
         max: 4,
-        search: true,
     }, {
         name: "Tags",
         type: "tags",
@@ -6006,7 +6003,6 @@ const objectList = [{
     }, {
         name: "Color",
         type: "tags",
-        searchText: true,
         list: colorList,
         max: 4,
         search: true,
@@ -6095,13 +6091,13 @@ const objectList = [{
     }, {
         name: "Space Station",
         type: "checkbox",
+        imgText: true,
         search: true,
         inputHide: true,
     }, {
         name: "Planet Name",
         type: "string",
         imgText: true,
-        search: true,
         inputHide: true,
     }, {
         name: "Planet Index",
@@ -6135,7 +6131,6 @@ const objectList = [{
     }, {
         name: "Color",
         type: "tags",
-        searchText: true,
         max: 4,
         list: colorList,
         search: true,
@@ -6201,7 +6196,6 @@ const objectList = [{
         name: "Height",
         type: "float",
         range: 15.0,
-        imgText: true,
         search: true,
         query: ">="
     }, {
@@ -6371,6 +6365,7 @@ const objectList = [{
         name: "Planet Name",
         type: "string",
         imgText: true,
+        searchText: true,
         inputHide: true,
     }, {
         name: "Planet Index",
@@ -6378,6 +6373,7 @@ const objectList = [{
         range: 15,
         onchange: getPlanet,
         ttip: planetNumTip,
+        searchText: true,
     }, {
         name: "Latitude",
         imgText: true,
@@ -6479,6 +6475,7 @@ const objectList = [{
         ttip: planetNumTip,
         onchange: getPlanet,
         required: true,
+        searchText: true,
     }, {
         name: "Latitude",
         imgText: true,
@@ -6511,7 +6508,6 @@ const objectList = [{
     }, {
         name: "Color",
         type: "tags",
-        searchText: true,
         max: 4,
         list: colorList,
         search: true,
