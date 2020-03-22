@@ -3714,7 +3714,7 @@ const resultTables = [{
 
 NMSCE.prototype.buildResultsList = function () {
     let nav = `
-        <a id="dltab-idname" class="nav-item nav-link txt-def h6 rounded-top" style="border-color:black;" 
+        <a id="dltab-idname" class="nav-item nav-link txt-def h5 rounded-top" style="border-color:black;" 
             data-toggle="tab" href="#dl-idname" role="tab" aria-controls="dl-idname" aria-selected="false">
             title
         </a>`

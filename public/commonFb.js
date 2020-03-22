@@ -70,7 +70,7 @@ blackHoleSuns.prototype.initFirebase = function () {
     bhs.fs = firebase.firestore()
     bhs.fbstorage = firebase.storage()
     bhs.fs.settings({
-        cacheSizeBytes: 1024 * 1024 * 2
+        cacheSizeBytes: 1024 * 1024
     })
     bhs.fs.enablePersistence({
         synchronizeTabs: true
