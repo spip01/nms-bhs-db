@@ -30,6 +30,7 @@ $(document).ready(() => {
 
         let gloc = $("[id='glyphbuttons']")
         addGlyphButtons(gloc, addGlyph)
+        buildGlyphModal(dispGlyph)
     })
 
     $("#footer").load("footer.html")
@@ -81,7 +82,7 @@ function dispAddr(evt) {
 
         let err = validateAddress(saddr)
         if (err !== "") {
-            bhs.status(err)
+            status(err)
             return
         }
     }
@@ -99,7 +100,7 @@ function dispAddr(evt) {
 
         let err = validateAddress(eaddr)
         if (err !== "") {
-            bhs.status(err)
+            status(err)
             return
         }
     }
@@ -124,11 +125,15 @@ function dispAddr(evt) {
     }
 }
 
-function dispGlyph(evt) {
-    let glyph = $(evt).val().toUpperCase()
+function dispGlyph(evt, loc) {
+    let glyph = typeof evt === "string" ? evt : $(evt).val().toUpperCase()
     if (glyph !== "") {
-        $(evt).val(glyph)
-        let id = $(evt).closest("[id|='w']").prop("id")
+        if (loc)
+            loc.closest("[id|='w']").find("#id-glyph").val(glyph)
+        else
+            $(evt).val(glyph)
+
+        let id = loc ? loc.closest("[id|='w']").prop("id") : $(evt).closest("[id|='w']").prop("id")
 
         let addr = reformatAddress(glyph)
         $("#id-addrInput #" + id + " #id-addr").val(addr)
@@ -156,6 +161,15 @@ function addGlyph(evt) {
     if (a.length === 12)
         dispGlyph(loc)
 }
+
+function status(str, clear) {
+    if (clear)
+        $("#status").empty()
+
+    if (str !== "")
+        $("#status").prepend(str + "</br>")
+}
+
 
 var tglZoom = false
 

@@ -3799,7 +3799,7 @@ NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
                 obs.dispFcn(entries, obs.type)
                 let loc = $("#list-" + obs.type)
 
-                for (let i of [0, 10, 25, 45])
+                for (let i of [0, 15, 30, 45])
                     if (i < entries.length) {
                         let rloc = loc.find("#row-" + entries[i].id)
                         if (rloc.length > 0)
@@ -3810,12 +3810,12 @@ NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
 
     if (evt) {
         let type = $(evt.target).parent()
-        let rows = type.find("img").not("[src]")
+        let rows = type.find("img")
         type = type.prop("id").stripID()
 
         for (let loc of rows) {
             let data = $(loc).data()
-            if (data.src)
+            if (!$(loc).prop("src") && data.src)
                 $(loc).prop("src", data.src)
         }
 
