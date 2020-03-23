@@ -3809,22 +3809,14 @@ NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
     }
 
     if (evt) {
-        let img = $(evt.target).find("img")
-        let data = img.data()
-
-        if (!img.prop("src") && data && data.src)
-            img.prop("src", data.src)
-
         let type = $(evt.target).parent()
-        let rows = type.children()
+        let rows = type.find("img").not("[src]")
         type = type.prop("id").stripID()
 
         for (let loc of rows) {
-            let img = $(loc).find("img")
-            let data = img.data()
-
-            if (!img.prop("src") && data && data.src)
-                img.prop("src", data.src)
+            let data = $(loc).data()
+            if (data.src)
+                $(loc).prop("src", data.src)
         }
 
         getSnapshot(nmsce.observerList[type])
