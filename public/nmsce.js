@@ -507,7 +507,11 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     if (!savelast)
         nmsce.last = null
 
-    if (!fnmsce) {
+    let tab = $("#typeTabs .active").prop("id").stripID()
+    if (tab === "Freighter")
+        $("#pnl-map #pnl-Freighter").show()
+
+    if (fcedata) {
         let canvas = document.getElementById("id-canvas")
         let ctx = canvas.getContext("2d")
         ctx.clearRect(0, 0, canvas.width, canvas.height)
