@@ -1724,20 +1724,20 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 break
         }
 
+        let rloc = itm.find("#row-" + id)
+
         if (f.onchange) {
-            let rloc = itm.find("#row-" + f.name)
             rloc.find("input").change(f.onchange)
             rloc.find("button").click(f.onchange)
         }
 
         if (f.imgText) {
-            let rloc = itm.find("#row-" + f.name)
             rloc.find("input").change(updateImageText)
             rloc.find("button").click(updateImageText)
         }
 
         if (f.startState === "hidden")
-            itm.find("#row-" + id).hide()
+            rloc.hide()
     }
 
     let tloc = $("#item-Fighter")
