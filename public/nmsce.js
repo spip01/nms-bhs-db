@@ -2325,8 +2325,12 @@ NMSCE.prototype.getImageText = function (evt, draw) {
                 break
         }
 
-        for (let k of Object.keys(nmsce.imageText))
+        for (let k of Object.keys(nmsce.imageText)) {
+            if (k === "textsize")
+                continue
+
             nmsce.imageText[k].sel = false
+        }
 
         nmsce.imageText[id].ck = true
 
@@ -2357,6 +2361,9 @@ NMSCE.prototype.restoreImageText = function (txt, draw) {
 
     let keys = Object.keys(nmsce.imageText)
     for (let id of keys) {
+        if (id === "textsize")
+            continue
+
         let f = nmsce.imageText[id]
 
         if (id === "Text" && f.text)
@@ -2383,6 +2390,9 @@ NMSCE.prototype.extractImageText = function () {
 
     let keys = Object.keys(s)
     for (let k of keys) {
+        if (k === "textsize")
+            continue
+
         let f = s[k]
 
         if (f.type === "text") {
@@ -2585,6 +2595,9 @@ NMSCE.prototype.setColor = function (evt) {
 
     let keys = Object.keys(nmsce.imageText)
     for (let id of keys) {
+        if (id === "textsize")
+            continue
+
         let text = nmsce.imageText[id]
 
         if (text.sel && text.type !== "img")
@@ -2599,6 +2612,9 @@ NMSCE.prototype.setSize = function (evt) {
 
     let keys = Object.keys(nmsce.imageText)
     for (let id of keys) {
+        if (id === "textsize")
+            continue
+
         let text = nmsce.imageText[id]
 
         if (text.sel && text.type !== "img") {
@@ -2615,6 +2631,9 @@ NMSCE.prototype.setFont = function (evt) {
 
     let keys = Object.keys(nmsce.imageText)
     for (let id of keys) {
+        if (id === "textsize")
+            continue
+
         let text = nmsce.imageText[id]
 
         if (text.sel && text.type !== "img") {
@@ -2651,6 +2670,15 @@ NMSCE.prototype.drawText = function (alt, altw) {
         canvas.height = parseInt(sh * canvas.width / sw)
     }
 
+    if (typeof nmsce.imageText.textsize === "undefined")
+        nmsce.imageText.textsize = {}
+
+    if (nmsce.imageText.textsize.height && nmsce.imageText.textsize.height != txtcanvas.height || nmsce.imageText.textsize.width && nmsce.imageText.textsize.width != txtcanvas.width)
+        nmsce.scaleImageText(txtcanvas.height, txtcanvas.width)
+
+    nmsce.imageText.textsize.height = txtcanvas.height
+    nmsce.imageText.textsize.width = txtcanvas.width
+
     nmsce.imageText.logo.right = nmsce.imageText.logo.decent = parseInt(Math.min(txtcanvas.width, txtcanvas.height) * .15)
     if ($("#imageTextBlock").is(":visible")) {
         let ctx = txtcanvas.getContext("2d")
@@ -2659,6 +2687,9 @@ NMSCE.prototype.drawText = function (alt, altw) {
         let loc = $("#img-text")
         let keys = Object.keys(nmsce.imageText)
         for (let id of keys) {
+            if (id === "textsize")
+                continue
+
             let text = nmsce.imageText[id]
             let tloc = loc.find("#ck-" + id)
 
@@ -2718,6 +2749,28 @@ NMSCE.prototype.drawText = function (alt, altw) {
         ctx = canvas.getContext("2d")
         ctx.drawImage(nmsce.screenshot, 0, 0, canvas.width, canvas.height)
         ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
+    }
+}
+
+NMSCE.prototype.scaleImageText = function (height, width) {
+    let hscale = height / nmsce.imageText.textsize.height
+    let wscale = width / nmsce.imageText.textsize.width
+
+    let keys = Object.keys(nmsce.imageText)
+    for (let id of keys) {
+        if (id === "textsize")
+            continue
+
+        let text = nmsce.imageText[id]
+
+        text.x *= wscale
+        text.left *= wscale
+        text.right *= wscale
+
+        text.fSize *= hscale
+        text.y *= hscale
+        text.ascent *= hscale
+        text.decent *= hscale
     }
 }
 
@@ -3198,6 +3251,9 @@ NMSCE.prototype.imageMouseDown = function (e) {
 
     let keys = Object.keys(nmsce.imageText)
     for (let k of keys) {
+        if (k === "textsize")
+            continue
+
         let text = nmsce.imageText[k]
         if (text.id !== "logo" && (!$("#ck-" + text.id).is(":visible") || !text.ck))
             continue
@@ -3226,11 +3282,15 @@ NMSCE.prototype.imageMouseDown = function (e) {
 
     if (!e.shiftKey && !nochange) {
         let keys = Object.keys(nmsce.imageText)
-        for (let i of keys)
+        for (let i of keys) {
+            if (i === "textsize")
+                continue
+
             if (!hit || i !== hit.id) {
                 let text = nmsce.imageText[i]
                 text.sel = false
             }
+        }
     }
 
     nmsce.drawText()
@@ -3246,6 +3306,9 @@ NMSCE.prototype.imageKeypress = function (e) {
     let keys = Object.keys(nmsce.imageText)
 
     for (let k of keys) {
+        if (k === "textsize")
+            continue
+
         let text = nmsce.imageText[k]
 
         if (text.sel) {
@@ -3318,6 +3381,9 @@ NMSCE.prototype.imageMouseMove = function (e) {
 
     let keys = Object.keys(nmsce.imageText)
     for (let k of keys) {
+        if (k === "textsize")
+            continue
+
         let text = nmsce.imageText[k]
         if (text.sel && text.resize) {
             resize = text.resize
@@ -3409,6 +3475,9 @@ NMSCE.prototype.alignText = function (how) {
         bottom = Number.MAX_SAFE_INTEGER
 
     for (let k of keys) {
+        if (k === "textsize")
+            continue
+
         let text = nmsce.imageText[k]
 
         if (text.sel) {
@@ -6457,10 +6526,6 @@ const objectList = [{
         type: "float",
         inputHide: true,
     }, {
-        name: "Manuverability",
-        type: "float",
-        inputHide: true,
-    }, {
         name: "Planet Name",
         type: "string",
         imgText: true,
@@ -6490,13 +6555,6 @@ const objectList = [{
         search: true,
         imgText: true,
         ttip: "Find specific living ship by resetting mission log location while on this planet."
-    }, {
-        name: "Aim At",
-        type: "string",
-        imgText: true,
-        search: true,
-        inputHide: true,
-        ttip: "Find specific living ship by pointing your ship at this location, e.g. planet name, before openning communications with alien ship."
     }, {
         name: "Seed",
         type: "string",
