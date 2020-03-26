@@ -3953,7 +3953,7 @@ const resultsItem = `
     <div id="row-idname" class="col-lg-p250 col-md-p333 col-sm-7 col-14 pointer bkg-white txt-label-def border rounded h6"
         onclick="nmsce.selectResult(this)" style="pad-bottom:3px">
         galaxy<br>
-        by<br>
+        byname<br>
         date<br>
         <div class="pl-5 pr-5" style="min-height:20px">
             <img id="img-idname" data-thumb="ethumb"
@@ -3974,7 +3974,7 @@ NMSCE.prototype.displayResultList = function (entries, type) {
         let l = /idname/g [Symbol.replace](resultsItem, e.id)
         l = /galaxy/ [Symbol.replace](l, e.galaxy)
         l = /ethumb/ [Symbol.replace](l, thumbPath + e.Photo)
-        l = /by/ [Symbol.replace](l, e._name)
+        l = /byname/ [Symbol.replace](l, e._name)
         l = /date/ [Symbol.replace](l, e.created.toDate().toDateLocalTimeString())
         h += l
     }
