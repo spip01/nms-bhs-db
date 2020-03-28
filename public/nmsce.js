@@ -4046,7 +4046,7 @@ NMSCE.prototype.vote = async function (evt) {
             merge: true
         })
 
-        ref = ref.collection("nmsceCommon").doc(id)
+        ref = ref.collection("nmsceCommon").doc(nmsce.last.id)
         ref.set({
             votes: e
         }, {
