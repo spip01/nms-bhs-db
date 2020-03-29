@@ -3847,27 +3847,30 @@ NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
 
         let ref = obs.ref
 
-        if (obs.last)
+        if (obs.last && obs.cont) {
+            console.log(obs.last.data().created.toDate().toString())
             ref = ref.startAfter(obs.last)
+            obs.last = null
+            obs.run = true
+        }
 
-        if (!obs.last || obs.cont)
+        if (obs.run) {
+            obs.run = false
             // if (Atomics.compareExchange(obs.arr, 0, 0, 1) === 0)
-            ref.get().then(snapshot => {
+            
+            ref.get({
+                source: "server"
+            }).then(snapshot => {
                 if (snapshot.empty) {
                     obs.cont = false
                     return
                 }
 
                 let entries = []
-
                 for (let doc of snapshot.docs) {
                     let e = doc.data()
                     entries.push(e)
                 }
-
-                obs.last = snapshot.docs[snapshot.size - 1]
-
-                // Atomics.compareExchange(obs.arr, 0, 1, 0)
 
                 obs.dispFcn(entries, obs.type)
                 let loc = $("#list-" + obs.type)
@@ -3878,7 +3881,11 @@ NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
                         if (rloc.length > 0)
                             obs.entryObserver.observe(rloc[0])
                     }
+
+                obs.last = snapshot.docs[snapshot.size - 1]
+                // Atomics.compareExchange(obs.arr, 0, 1, 0)
             })
+        }
     }
 
     if (evt) {
@@ -3908,6 +3915,7 @@ NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
         obs.ref = ref
         obs.dispFcn = dispFcn
         obs.last = null
+        obs.run = true
         obs.cont = cont
 
         // const sab = new SharedArrayBuffer(4)
@@ -3985,7 +3993,7 @@ NMSCE.prototype.displayResultList = function (entries, type) {
     for (let img of imgs) {
         let data = $(img).data()
 
-        if (!data.src || $(img).prop("src")) {
+        if (!data.src && !$(img).prop("src")) {
             let ref = bhs.fbstorage.ref().child(data.thumb)
             ref.getDownloadURL().then(url => {
                 if ($(img).is(":visible"))
@@ -3997,8 +4005,6 @@ NMSCE.prototype.displayResultList = function (entries, type) {
             })
         }
     }
-
-    // return loc.find("#row-" + entries[0].id)
 }
 
 NMSCE.prototype.vote = async function (evt) {
