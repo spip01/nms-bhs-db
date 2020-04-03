@@ -542,15 +542,16 @@ NMSCE.prototype.extractEntry = function () {
         entry.Platform = last.Platform
         entry.platform = last.Platform === "PS4" ? "PS4" : last.Platform === "PC" || last.Platform === "XBox" ? "PC-XBox" : ""
         entry.galaxy = last.galaxy
+        entry.version = last.version ? last.version : "living ships"
     } else {
         entry._name = bhs.user._name
         entry.uid = bhs.user.uid
         entry.Platform = bhs.user.Platform
         entry.platform = entry.Platform === "PS4" ? "PS4" : entry.Platform === "PC" || entry.Platform === "XBox" ? "PC-XBox" : ""
         entry.galaxy = bhs.user.galaxy
+        entry.version = "living ships"
     }
 
-    entry.version = "living ships"
     entry.page = "nmsce"
 
     loc = $("#panels")
@@ -921,27 +922,30 @@ NMSCE.prototype.executeSearch = function (search, panel, dispFcn) {
 
     const filterResults = (entries, panel) => {
         let list = []
-
-        for (let e of entries) {
-            let found = true
-            for (let l of arraylist) {
-                for (let t of l.list) {
-                    if (!e[l.name].includes(t)) {
-                        found = false
-                        break
+        if (entries)
+            for (let e of entries) {
+                let found = true
+                for (let l of arraylist) {
+                    for (let t of l.list) {
+                        if (!e[l.name].includes(t)) {
+                            found = false
+                            break
+                        }
                     }
+
+                    if (!found)
+                        break
                 }
 
-                if (!found)
-                    break
+                if (found) {
+                    list.push(e)
+                }
             }
 
-            if (found) {
-                list.push(e)
-            }
-        }
-
-        dispFcn(list, panel)
+        if (list.length === 0)
+            bhs.status("Nothing matching selection found. Try selecting fewer items. To match an entry it must contain everything selected.", true)
+        else
+            dispFcn(list, panel)
     }
 
     ref = ref.limit(50)
@@ -952,21 +956,18 @@ NMSCE.prototype.search = function (search) {
     if (!search) {
         search = nmsce.extractSearch()
 
-        if (!search)
+        if (!search) {
+            bhs.status("Nothing selected for search.", true)
             return
+        }
     }
 
-    let first = true
-
     let display = (list, type) => {
-        if (fnmsce) {
-            if (list.length > 0) {
-                first = false
-                $("#dltab-Search-Results").click()
-                nmsce.displayResultList(list, type)
-            } else if (first)
-                bhs.status("Nothing matching selection found. Try selecting fewer items. To match an entry it must contain everything selected.", true)
-        } else
+        $("#dltab-Search-Results").click()
+
+        if (fnmsce)
+            nmsce.displayResultList(list, type)
+        else
             nmsce.displayList(list, type)
     }
 
@@ -1522,12 +1523,20 @@ NMSCE.prototype.buildTypePanels = function () {
         $("[id|='search']").show()
 
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (evt) {
-        let id = $(evt.currentTarget).prop("id").stripID()
+        let loc = $("#typePanels .active")
+        let id = loc.prop("id").stripID()
 
         let mloc = $("#pnl-map")
         mloc.find("[id|='pnl']").hide()
         mloc = mloc.find("#pnl-" + id)
         mloc.show()
+
+        loc = loc.find("#btn-Type")
+        if (loc.length > 0) {
+            let type = loc.text().stripMarginWS()
+            mloc = mloc.find("#slist-" + type)
+            mloc.show()
+        }
 
         nmsce.setMapSize(mloc)
     })
@@ -3753,7 +3762,9 @@ NMSCE.prototype.getEntries = function (evt) {
     ref = ref.where("uid", "==", bhs.user.uid)
     ref = ref.orderBy("created", "desc")
     ref = ref.limit(50)
-    nmsce.getWithObserver(null, ref, "All", true, nmsce.displayList)
+    nmsce.getWithObserver(null, ref, "All", true, nmsce.displayList, {
+        source: "server"
+    })
 }
 
 const resultTables = [{
@@ -3840,7 +3851,7 @@ NMSCE.prototype.fcnObserver = function (loc, fcn) {
     return io
 }
 
-NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
+NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn, options) {
     const getSnapshot = (obs) => {
         if (typeof obs.entryObserver === "undefined")
             obs.entryObserver = nmsce.fcnObserver($("#displayPanels"), nmsce.getWithObserver)
@@ -3848,7 +3859,6 @@ NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
         let ref = obs.ref
 
         if (obs.last && obs.cont) {
-            console.log(obs.last.data().created.toDate().toString())
             ref = ref.startAfter(obs.last)
             obs.last = null
             obs.run = true
@@ -3857,12 +3867,11 @@ NMSCE.prototype.getWithObserver = function (evt, ref, type, cont, dispFcn) {
         if (obs.run) {
             obs.run = false
             // if (Atomics.compareExchange(obs.arr, 0, 0, 1) === 0)
-            
-            ref.get({
-                source: "server"
-            }).then(snapshot => {
+
+            ref.get(obs.options).then(snapshot => {
                 if (snapshot.empty) {
                     obs.cont = false
+                    obs.dispFcn([], obs.type)
                     return
                 }
 
@@ -3941,7 +3950,9 @@ NMSCE.prototype.getResultsLists = function (type) {
             ref = ref.orderBy("created", "desc")
             ref = ref.limit(r.limit)
 
-            nmsce.getWithObserver(null, ref, r.name, r.cont, nmsce.displayResultList)
+            nmsce.getWithObserver(null, ref, r.name, r.cont, nmsce.displayResultList, {
+                source: "server"
+            })
         }
     } else
         for (let r of resultTables) {
@@ -3952,7 +3963,9 @@ NMSCE.prototype.getResultsLists = function (type) {
                 ref = ref.orderBy(r.field, "desc")
                 ref = ref.limit(r.limit)
 
-                nmsce.getWithObserver(null, ref, r.name, r.cont, nmsce.displayResultList)
+                nmsce.getWithObserver(null, ref, r.name, r.cont, nmsce.displayResultList, {
+                    source: "server"
+                })
             }
         }
 }
@@ -3970,7 +3983,7 @@ const resultsItem = `
     </div>`
 
 NMSCE.prototype.displayResultList = function (entries, type) {
-    if (entries.length === 0)
+    if (!entries || entries.length === 0)
         return
 
     let h = ""
@@ -6525,10 +6538,6 @@ const objectList = [{
         type: "blank",
     }, {
         name: "Damage",
-        type: "float",
-        inputHide: true,
-    }, {
-        name: "Shield",
         type: "float",
         inputHide: true,
     }, {
