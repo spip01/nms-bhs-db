@@ -1782,7 +1782,24 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
         paper_bgcolor: opt["clr-page"],
         plot_bgcolor: opt["clr-bkg"],
         scene: {
-            zaxis: {
+            camera: {
+                up: {
+                    x: 0,
+                    y: 0,
+                    z: 1
+                },
+                center: {
+                    x: 0,
+                    y: 0,
+                    z: 0
+                },
+                eye: {
+                    x: 0,
+                    y: -.01,
+                    z: 2,
+                }
+            },
+           zaxis: {
                 backgroundcolor: opt["clr-bkg"],
                 gridcolor: opt["clr-grid"],
                 zerolinecolor: opt["clr-grid"],

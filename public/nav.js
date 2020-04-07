@@ -109,13 +109,15 @@ function dispAddr(evt) {
         let dist = calcDist(saddr, eaddr)
         $("#id-dist").text(dist + " ly")
 
-        let xzAngle = calcAngle(saddr, eaddr, "x", "z")
-        $("#id-angle").text(xzAngle + " deg")
+        let a = calcAngles(addressToXYZ(saddr), addressToXYZ(eaddr))
+        $("#id-updown").html((a.vdist > 0 ? "Up: " : "Up: ") + a.v + "&#176;")
+        $("#id-leftright").html((a.hdist < 0 ? "Right: " : "Left: ") + +a.h + "&#176;")
 
         if (range !== "")
             $("#id-jumps").text(Math.ceil(dist / range))
 
         mapPoints("plymap", saddr, eaddr)
+        mapAngles("frontmap", a, saddr, eaddr)
     }
 
     if (typeof (Storage) !== "undefined") {
@@ -170,15 +172,17 @@ function status(str, clear) {
         $("#status").prepend(str + "</br>")
 }
 
-
 var tglZoom = false
 
 function zoom() {
+    var gd = document.getElementById('plymap')
+    gd = gd.layout.camera
+
     tglZoom = !tglZoom
-    Plotly.relayout('plymap', changeMapLayout(tglZoom))
+    Plotly.relayout('plymap', changeMapLayout('plymap', tglZoom))
 }
 
-function changeMapLayout(zoom) {
+function changeMapLayout(plot, zoom) {
     let xstart = 0
     let xctr = 2048
     let xend = 4095
@@ -235,13 +239,23 @@ function changeMapLayout(zoom) {
         paper_bgcolor: "#000000",
         plot_bgcolor: "#000000",
         scene: {
-            // camera: {
-            //     eye: {
-            //         x: sxyz.x,
-            //         y: sxyz.z,
-            //         z: sxyz.y
-            //     }
-            // },
+            camera: {
+                up: {
+                    x: 0,
+                    y: 0,
+                    z: 1
+                },
+                center: {
+                    x: 0,
+                    y: 0,
+                    z: 0
+                },
+                eye: {
+                    x: 0,
+                    y: -.01,
+                    z: 2,
+                }
+            },
             zaxis: {
                 backgroundcolor: "#000000",
                 gridcolor: "#c0c0c0",
@@ -300,32 +314,204 @@ function changeMapLayout(zoom) {
                 tickangle: 45,
             },
         },
+        margin: {
+            l: 0,
+            r: 0,
+            b: 0,
+            t: 0
+        }
     }
 
-    layout.margin = {
-        l: 0,
-        r: 0,
-        b: 0,
-        t: 0
-    }
-
-    let w = Math.min($("#plymap").width() - 8, 400)
+    let w = $("#" + plot).width() - 8
     layout.width = w
     layout.height = w
 
     return layout
 }
 
+function calcPlane(C) {
+    const A = zero
+    const B = {
+        x: 0x7ff,
+        y: 0x90,
+        z: 0x7ff
+    }
+
+    // a=(By−Ay)(Cz−Az)−(Cy−Ay)(Bz−Az) 
+    // b=(Bz−Az)(Cx−Ax)−(Cz−Az)(Bx−Ax) 
+    // c=(Bx−Ax)(Cy−Ay)−(Cx−Ax)(By−Ay) 
+    // d=−(aAx+bAy+cAz) 
+    let n = {}
+    n.a = (B.y - A.y) * (C.z - A.z) - (C.y - A.y) * (B.z - A.z)
+    n.b = (B.z - A.z) * (C.x - A.x) - (C.z - A.z) * (B.x - A.x)
+    n.c = (B.x - A.x) * (C.y - A.y) - (C.x - A.x) * (B.y - A.y)
+    n.d = -(n.a * C.x + n.b * C.y + n.c * C.z)
+
+    let v = {}
+    v.x = A.x - C.x
+    v.y = A.y - C.y
+    v.z = A.z - C.z
+
+    let u = {
+        x: n.a,
+        y: n.b,
+        z: n.c
+    }
+
+    let r = {}
+    // | r.a, r.b, r.c | 
+    // | u.x, u.y, u.z |
+    // | v.x, v.y, v.z |
+
+    r.a = u.y * v.z - u.z * v.y
+    r.b = -u.x * v.z + u.z * v.x
+    r.c = u.x * v.y - u.y * v.x
+    r.d = -(r.a * C.x + r.b * C.y + r.c * C.z) // ?????????????/
+
+    return {
+        n: n,
+        r: r,
+    }
+}
+
+function projOnPlane(p, xyz, rt) {
+    let n = rt ? p.r : p.n
+
+    let t = -(n.a * xyz.x + n.b * xyz.y + n.c * xyz.z + n.d) / (n.a * n.a + n.b * n.b + n.c * n.c)
+    let pr = {}
+    pr.x = n.a * t + xyz.x
+    pr.y = n.b * t + xyz.y
+    pr.z = n.c * t + xyz.z
+
+    return pr
+}
+
+function distToPlane(p, xyz, rt) {
+    let n = !rt ? p.r : p.n
+    return (n.a * xyz.x + n.b * xyz.y + n.c * xyz.z) / Math.sqrt(n.a * n.a + n.b * n.b + n.c * n.c)
+}
+
+function calcAngles(b, c) { // b = start, c = dest
+    let a = zero
+
+    let p = calcPlane(b)
+    let cv = projOnPlane(p, c)
+    let ch = projOnPlane(p, c, true)
+
+    return {
+        v: parseInt(calcAngleA(a, b, cv)),
+        vdist: distToPlane(p, c),
+        h: parseInt(calcAngleA(a, b, ch)),
+        hdist: distToPlane(p, c, true),
+    }
+}
+
+function calcAngleA(a, b, c) {
+    let t = ((b.x - a.x) * (c.x - a.x) + (b.y - a.y) * (c.y - a.y) + (b.z - a.z) * (c.z - a.z)) /
+        (Math.sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y) + (b.z - a.z) * (b.z - a.z)) *
+            Math.sqrt((c.x - a.x) * (c.x - a.x) + (c.y - a.y) * (c.y - a.y) + (c.z - a.z) * (c.z - a.z)))
+
+    return Math.acos(t) * 180 / Math.PI
+}
+
+function mapAngles(plot, a, saddr, eaddr) {
+    let hdir = a.hdist > 0
+    let vdir = a.vdist > 0
+    let hdist = Math.abs(a.hdist)
+    let vdist = Math.abs(a.vdist)
+
+    let xctr = !hdir ? 0 : hdist
+    let xdist = hdir ? 0 : hdist
+    let yctr = vdir ? 0 : vdist
+    let ydist = !vdir ? 0 : vdist
+    let range = Math.max(hdist, vdist)
+
+    let data = []
+    let out = initout()
+    out.x.push(xctr)
+    out.y.push(ydist)
+    out.x.push(xctr)
+    out.y.push(yctr)
+    out.x.push(xdist)
+    out.y.push(yctr)
+    data.push(makedata(out, 1, "#ffffff", "#ffff00", "x", "y"))
+
+    out = initout()
+    out.x.push(xctr)
+    out.y.push(yctr)
+    out.t.push(saddr)
+
+    out.x.push(xdist)
+    out.y.push(ydist)
+    out.t.push(eaddr)
+    data.push(makedata(out, 6, "#ff0000", "#ff4040", "x", "y"))
+
+    out = initout()
+    out.x.push(xctr)
+    out.y.push(yctr)
+    data.push(makedata(out, 6, "#00ff00", null, "x", "y"))
+
+
+    let layout = {
+        hovermode: "closest",
+        showlegend: false,
+        paper_bgcolor: "#000000",
+        plot_bgcolor: "#000000",
+        xaxis: {
+            backgroundcolor: "#000000",
+            showgrid: false,
+            zerolinecolor: "#c0c0c0",
+            showzero: true,
+            showbackground: true,
+            showticklabels: false,
+            range: [0, range],
+            title: (!hdir ? "right " : "left ") + a.h + "&#176;",
+            titlefont: {
+                family: 'Arial, sans-serif',
+                size: 11,
+                color: 'white'
+            },
+        },
+        yaxis: {
+            backgroundcolor: "#000000",
+            showgrid: false,
+            showzero: true,
+            zerolinecolor: "#c0c0c0",
+            showbackground: true,
+            showticklabels: false,
+            range: [0, range],
+            title: (vdir ? "up " : "down ") + a.v + "&#176;",
+            titlefont: {
+                family: 'Arial, sans-serif',
+                size: 11,
+                color: 'white'
+            },
+        },
+        margin: {
+            l: 20,
+            r: 0,
+            b: 20,
+            t: 0
+        }
+    }
+
+    let w = $("#" + plot).width() - 8
+    layout.width = w
+    layout.height = w
+
+    Plotly.newPlot(plot, data, layout)
+}
+
+const zero = {
+    x: 2048,
+    y: 128,
+    z: 2048,
+}
+
 function mapPoints(plot, saddr, eaddr, axis1, axis2) {
     let w = $("#maplogo").width()
     $("#logo").css("width", Math.min(w, 100) + "px")
     $("#logo").height(Math.min(w, 100) + "px")
-
-    let zero = {
-        x: 2048,
-        y: 128,
-        z: 2048,
-    }
 
     const sxyz = addressToXYZ(saddr)
     const exyz = addressToXYZ(eaddr)
@@ -345,8 +531,20 @@ function mapPoints(plot, saddr, eaddr, axis1, axis2) {
     pushentry(out, exyz, eaddr)
     data.push(makedata(out, 5, "#ff0000", null, axis1, axis2))
 
+    // let p = calcPlane(sxyz)
+    // let v = projOnPlane(p, exyz)
+    // let h = projOnPlane(p, exyz, true)
+
+    // out = initout()
+    // pushentry(out, v)
+    // data.push(makedata(out, 3, "#ffff00", null, axis1, axis2))
+
+    // out = initout()
+    // pushentry(out, h)
+    // data.push(makedata(out, 3, "#0000ff", null, axis1, axis2))
+
     tglZoom = true
-    let layout = changeMapLayout(tglZoom)
+    let layout = changeMapLayout(plot, tglZoom)
 
     if (axis1) {
         layout.width = 200

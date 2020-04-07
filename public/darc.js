@@ -787,7 +787,24 @@ function changeMapLayout(zoom, saddr, eaddr) {
         paper_bgcolor: "#000000",
         plot_bgcolor: "#000000",
         scene: {
-            zaxis: {
+            camera: {
+                up: {
+                    x: 0,
+                    y: 0,
+                    z: 1
+                },
+                center: {
+                    x: 0,
+                    y: 0,
+                    z: 0
+                },
+                eye: {
+                    x: 0,
+                    y: -.01,
+                    z: 2,
+                }
+            },
+         zaxis: {
                 backgroundcolor: "#000000",
                 gridcolor: "#c0c0c0",
                 zerolinecolor: "#c0c0c0",
