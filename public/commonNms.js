@@ -373,10 +373,12 @@ const versionList = [{
     name: "next",
 }, {
     name: "beyond",
-},{
+}, {
     name: "synthesis",
-},{
+}, {
     name: "living ships",
+}, {
+    name: "exo mech",
 }]
 
 const modeList = [{

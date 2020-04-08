@@ -45,7 +45,7 @@
         integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
     </script>
 
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!--script src="https://cdn.plot.ly/plotly-latest.min.js"></script-->
     <!--script src="https://cdn.plot.ly/plotly-1.50.1.min.js" crossorigin="anonymous"></script-->
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
@@ -85,7 +85,7 @@
         </div>
 
         <div class="row bkg-def">
-            <div class="col-lg-6 col-md-8 col-14">
+            <div id="id-input" class="col-md-8 col-14">
                 <div id="id-addrInput" class="card card-body">
                     <div id="w-start">
                         <div class="row">
@@ -225,24 +225,23 @@
                         <div id="id-jumps" class="col-5 txt-label-def"></div>
                     </div>
                 </div>
-                <br>
             </div>
 
-            <div class="col-lg-8 col-md-6 col-14">
+            <div class="col-md-6 col-14">
                 <div class="card card-body bkg-def border">
-                    <div class="row">
-                        <div id="mapcol" class="border col-lg-10 col-md-11 col-14">
+                    <!--div class="row">
+                        <div id="mapcol" class="border col-md-9 col-14">
                             <div id="plymap"></div>
                         </div>
 
-                        <div class="col-lg-4 col-md-3 col-14 pl-15">
+                        <div class="col-md-5 col-14 pl-15">
                             <br>
                             <div class="row">
-                                <a id="maplogo" class="col-8 text-center">
+                                <div id="maplogo" class="col-7 text-center">
                                     <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo"
-                                        width="20px" height="20px">
-                                </a>
-                                <div class="col-5 text-center">
+                                        width="40px" height="40px">
+                                </div>
+                                <div class="col-6 text-center">
                                     <br>
                                     <div class="row">
                                         &nbsp;&nbsp;
@@ -252,14 +251,14 @@
                                     </div>
                                 </div>
                             </div>
-                            <br>
-                            <div class="row">
-                                <div class="col border">
-                                    <div id="frontmap"></div>
-                                </div>
-                            </div>
+                            <br-->
+                    <div class="row">
+                        <div class="col">
+                            <canvas id="dir-canvas" class="border" height=120 width=120></canvas>
                         </div>
                     </div>
+                    <!--/div>
+                    </div-->
                 </div>
             </div>
         </div>

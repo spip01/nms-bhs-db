@@ -611,7 +611,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
             entry.galaxy = bhs.user.galaxy
         }
 
-        entry.version = "living ships"
+        entry.version = "exo mech"
         entry.page = "bhs"
 
         entry.addr = addr

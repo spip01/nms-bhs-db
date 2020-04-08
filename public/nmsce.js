@@ -542,14 +542,14 @@ NMSCE.prototype.extractEntry = function () {
         entry.Platform = last.Platform
         entry.platform = last.Platform === "PS4" ? "PS4" : last.Platform === "PC" || last.Platform === "XBox" ? "PC-XBox" : ""
         entry.galaxy = last.galaxy
-        entry.version = last.version ? last.version : "living ships"
+        entry.version = last.version ? last.version : "exo mech"
     } else {
         entry._name = bhs.user._name
         entry.uid = bhs.user.uid
         entry.Platform = bhs.user.Platform
         entry.platform = entry.Platform === "PS4" ? "PS4" : entry.Platform === "PC" || entry.Platform === "XBox" ? "PC-XBox" : ""
         entry.galaxy = bhs.user.galaxy
-        entry.version = "living ships"
+        entry.version = "exo mech"
     }
 
     entry.page = "nmsce"
@@ -1371,12 +1371,11 @@ NMSCE.prototype.saveEntry = function () {
 
 NMSCE.prototype.changeName = function (uid, newname) {}
 
-
 NMSCE.prototype.extractUser = function () {
     let loc = $("#panels")
     let u = {}
 
-    u.version = "living ships"
+    u.version = "exo mech"
     u._name = loc.find("#id-Player").val()
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber()
 

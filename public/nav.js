@@ -2,6 +2,7 @@
 
 // Copyright 2019-2020 Black Hole Suns
 // Written by Stephen Piper
+let shipimg
 
 $(document).ready(() => {
     $("#javascript").remove()
@@ -10,6 +11,10 @@ $(document).ready(() => {
     $("body").tooltip({
         selector: '[data-toggle="tooltip"]'
     })
+
+    shipimg = new Image()
+    shipimg.crossOrigin = "anonymous"
+    shipimg.src = "/images/ship.svg"
 
     $("#bhsmenus").load("bhsmenus.html", () => {
         $("#login").hide()
@@ -34,6 +39,10 @@ $(document).ready(() => {
     })
 
     $("#footer").load("footer.html")
+
+    // let w = $("#maplogo").parent().width()
+    // $("#logo").width(Math.min(w, 100))
+    // $("#logo").height(Math.min(w, 100))
 
     if (typeof (Storage) !== "undefined") {
         let start = window.localStorage.getItem('navstart')
@@ -110,13 +119,13 @@ function dispAddr(evt) {
         $("#id-dist").text(dist + " ly")
 
         let a = calcAngles(addressToXYZ(saddr), addressToXYZ(eaddr))
-        $("#id-updown").html((a.vdist > 0 ? "Up: " : "Up: ") + a.v + "&#176;")
-        $("#id-leftright").html((a.hdist < 0 ? "Right: " : "Left: ") + +a.h + "&#176;")
+        $("#id-updown").html((a.vdist > 0 ? "Up: " : "Down: ") + (a.v > 90 ? 180 - a.v : a.v) + "&#176;")
+        $("#id-leftright").html((a.hdist > 0 ? "Right: " : "Left: ") + +a.h + "&#176;")
 
         if (range !== "")
             $("#id-jumps").text(Math.ceil(dist / range))
 
-        mapPoints("plymap", saddr, eaddr)
+        //mapPoints("plymap", saddr, eaddr)
         mapAngles("frontmap", a, saddr, eaddr)
     }
 
@@ -176,13 +185,71 @@ var tglZoom = false
 
 function zoom() {
     var gd = document.getElementById('plymap')
-    gd = gd.layout.camera
+    gd = gd.layout.scene.camera.eye
+    console.log(JSON.stringify(gd))
 
     tglZoom = !tglZoom
     Plotly.relayout('plymap', changeMapLayout('plymap', tglZoom))
 }
 
-function changeMapLayout(plot, zoom) {
+function alignXaxis() {
+    var camera = document.getElementById('plymap')
+    camera = camera.layout.scene.camera
+    camera.center.x = camera.eye.x
+
+    Plotly.relayout('plymap', changeMapLayout('plymap', tglZoom, camera))
+}
+
+function setCamera(evt) {
+    camera.eye.x = $('#eyeX').val()
+    camera.eye.y = $('#eyeY').val()
+    camera.eye.z = $('#eyeZ').val()
+    camera.center.x = $('#ctrX').val()
+    camera.center.y = $('#ctrY').val()
+    camera.center.z = $('#ctrZ').val()
+    camera.up.x = $('#upX').val()
+    camera.up.y = $('#upY').val()
+    camera.up.z = $('#upZ').val()
+    Plotly.relayout('plymap', changeMapLayout('plymap', tglZoom, camera))
+}
+
+var camera = {}
+camera.eye = {
+    x: 0,
+    y: -.001,
+    z: 2
+}
+camera.center = {
+    x: 0,
+    y: 0,
+    z: 0
+}
+camera.up = {
+    x: 0,
+    y: 0,
+    z: 1
+}
+
+function changeMapLayout(plot, zoom, cam) {
+    if (!cam) {
+        camera.eye = {
+            x: 0,
+            y: -.001,
+            z: 2.5
+        }
+        camera.center = {
+            x: 0,
+            y: 0,
+            z: 0
+        }
+        camera.up = {
+            x: 0,
+            y: 0,
+            z: 1
+        }
+    } else
+        camera = cam
+
     let xstart = 0
     let xctr = 2048
     let xend = 4095
@@ -233,29 +300,19 @@ function changeMapLayout(plot, zoom) {
             zend = 255
     }
 
+    // camera.eye.x = -Math.cos((xstart-xctr)/(ystart-yctr))
+    // camera.eye.y =-2*Math.sin((xstart-xctr)/(ystart-yctr))
+    // camera.center.x = camera.eye.x
+
+    // console.log(JSON.stringify(sxyz), JSON.stringify(camera))
+
     let layout = {
         hovermode: "closest",
         showlegend: false,
         paper_bgcolor: "#000000",
         plot_bgcolor: "#000000",
         scene: {
-            camera: {
-                up: {
-                    x: 0,
-                    y: 0,
-                    z: 1
-                },
-                center: {
-                    x: 0,
-                    y: 0,
-                    z: 0
-                },
-                eye: {
-                    x: 0,
-                    y: -.01,
-                    z: 2,
-                }
-            },
+            camera: camera,
             zaxis: {
                 backgroundcolor: "#000000",
                 gridcolor: "#c0c0c0",
@@ -331,11 +388,7 @@ function changeMapLayout(plot, zoom) {
 
 function calcPlane(C) {
     const A = zero
-    const B = {
-        x: 0x7ff,
-        y: 0x90,
-        z: 0x7ff
-    }
+    const B = aboveZero
 
     // a=(By−Ay)(Cz−Az)−(Cy−Ay)(Bz−Az) 
     // b=(Bz−Az)(Cx−Ax)−(Cz−Az)(Bx−Ax) 
@@ -366,7 +419,7 @@ function calcPlane(C) {
     r.a = u.y * v.z - u.z * v.y
     r.b = -u.x * v.z + u.z * v.x
     r.c = u.x * v.y - u.y * v.x
-    r.d = -(r.a * C.x + r.b * C.y + r.c * C.z) // ?????????????/
+    r.d = -(r.a * C.x + r.b * C.y + r.c * C.z)
 
     return {
         n: n,
@@ -388,7 +441,7 @@ function projOnPlane(p, xyz, rt) {
 
 function distToPlane(p, xyz, rt) {
     let n = !rt ? p.r : p.n
-    return (n.a * xyz.x + n.b * xyz.y + n.c * xyz.z) / Math.sqrt(n.a * n.a + n.b * n.b + n.c * n.c)
+    return (n.a * xyz.x + n.b * xyz.y + n.c * xyz.z + n.d) / Math.sqrt(n.a * n.a + n.b * n.b + n.c * n.c)
 }
 
 function calcAngles(b, c) { // b = start, c = dest
@@ -401,8 +454,8 @@ function calcAngles(b, c) { // b = start, c = dest
     return {
         v: parseInt(calcAngleA(a, b, cv)),
         vdist: distToPlane(p, c),
-        h: parseInt(calcAngleA(a, b, ch)),
-        hdist: distToPlane(p, c, true),
+        h: parseInt(180 - calcAngleA(a, b, ch)),
+        hdist: distToPlane(p, c, true)
     }
 }
 
@@ -414,92 +467,94 @@ function calcAngleA(a, b, c) {
     return Math.acos(t) * 180 / Math.PI
 }
 
-function mapAngles(plot, a, saddr, eaddr) {
-    let hdir = a.hdist > 0
-    let vdir = a.vdist > 0
-    let hdist = Math.abs(a.hdist)
-    let vdist = Math.abs(a.vdist)
+let drawing = document.createElement('canvas')
 
-    let xctr = !hdir ? 0 : hdist
-    let xdist = hdir ? 0 : hdist
-    let yctr = vdir ? 0 : vdist
-    let ydist = !vdir ? 0 : vdist
-    let range = Math.max(hdist, vdist)
+function mapAngles(p, a, saddr, eaddr) {
+    let s = addressToXYZ(saddr)
+    let e = addressToXYZ(eaddr)
+    console.log(JSON.stringify(s), JSON.stringify(e), JSON.stringify(a))
 
-    let data = []
-    let out = initout()
-    out.x.push(xctr)
-    out.y.push(ydist)
-    out.x.push(xctr)
-    out.y.push(yctr)
-    out.x.push(xdist)
-    out.y.push(yctr)
-    data.push(makedata(out, 1, "#ffffff", "#ffff00", "x", "y"))
+    let ctx = drawing.getContext("2d")
+    drawing.width = drawing.height = 215
 
-    out = initout()
-    out.x.push(xctr)
-    out.y.push(yctr)
-    out.t.push(saddr)
+    ctx.strokeStyle = "white"
+    ctx.lineWidth = 1
+    ctx.lineCap = "round"
+    ctx.beginPath()
+    ctx.moveTo(20, 20) //vert
+    ctx.lineTo(20, 180)
+    ctx.moveTo(10, 100) //cross-0
+    ctx.lineTo(30, 100)
+    ctx.moveTo(120, 20) //to ctr
+    ctx.lineTo(120, 100)
+    ctx.stroke()
 
-    out.x.push(xdist)
-    out.y.push(ydist)
-    out.t.push(eaddr)
-    data.push(makedata(out, 6, "#ff0000", "#ff4040", "x", "y"))
+    ctx.strokeStyle = "#606060"
+    ctx.beginPath()
+    ctx.moveTo(200, 100)
+    ctx.arc(120, 100, 80, 0, 2 * Math.PI)
+    ctx.stroke()
 
-    out = initout()
-    out.x.push(xctr)
-    out.y.push(yctr)
-    data.push(makedata(out, 6, "#00ff00", null, "x", "y"))
+    ctx.strokeStyle = "white"
+    ctx.lineWidth = 1
+    ctx.lineCap = "round"
+    ctx.beginPath()
 
+    for (let i = 1; i < 6; ++i) {
+        let x1 = Math.sin(i * 32.5 / 180 * Math.PI) * (i % 2 ? 65 : 72)
+        let y1 = Math.cos((i * 32.5 - 180) / 180 * Math.PI) * (i % 2 ? 65 : 72)
+        let x2 = Math.sin(i * 32.5 / 180 * Math.PI) * 80
+        let y2 = Math.cos((i * 32.5 - 180) / 180 * Math.PI) * 80
 
-    let layout = {
-        hovermode: "closest",
-        showlegend: false,
-        paper_bgcolor: "#000000",
-        plot_bgcolor: "#000000",
-        xaxis: {
-            backgroundcolor: "#000000",
-            showgrid: false,
-            zerolinecolor: "#c0c0c0",
-            showzero: true,
-            showbackground: true,
-            showticklabels: false,
-            range: [0, range],
-            title: (!hdir ? "right " : "left ") + a.h + "&#176;",
-            titlefont: {
-                family: 'Arial, sans-serif',
-                size: 11,
-                color: 'white'
-            },
-        },
-        yaxis: {
-            backgroundcolor: "#000000",
-            showgrid: false,
-            showzero: true,
-            zerolinecolor: "#c0c0c0",
-            showbackground: true,
-            showticklabels: false,
-            range: [0, range],
-            title: (vdir ? "up " : "down ") + a.v + "&#176;",
-            titlefont: {
-                family: 'Arial, sans-serif',
-                size: 11,
-                color: 'white'
-            },
-        },
-        margin: {
-            l: 20,
-            r: 0,
-            b: 20,
-            t: 0
-        }
+        ctx.moveTo(120 + x1, 100 + y1)
+        ctx.lineTo(120 + x2, 100 + y2)
+
+        ctx.moveTo(120 - x1, 100 + y1)
+        ctx.lineTo(120 - x2, 100 + y2)
     }
 
-    let w = $("#" + plot).width() - 8
-    layout.width = w
-    layout.height = w
+    ctx.stroke()
 
-    Plotly.newPlot(plot, data, layout)
+    ctx.font = "11px Arial"
+    ctx.fillStyle = "white"
+    ctx.fillText("Horizon", 5, 195)
+    ctx.fillText("Angle from Galactic Center", 60, 195)
+    ctx.fillText("32.5", 165, 30)
+    ctx.fillText("0", 117, 18)
+    ctx.fillText("0", 3, 104)
+
+    let u = 100 - (a.v > 90 ? 180 - a.v : a.v) * (a.vdist > 0 ? 1 : -1)
+    ctx.strokeStyle = "red"
+    ctx.lineWidth = 3
+    ctx.lineCap = "round"
+    ctx.beginPath()
+    ctx.moveTo(18, u)
+    ctx.lineTo(30, u)
+    ctx.stroke()
+
+    ctx.fillText(a.v > 90 ? 180 - a.v : a.v, 3, u + 4)
+
+    let x = Math.sin(a.h / 180 * Math.PI) * 80
+    let y = Math.cos((a.h - 180) / 180 * Math.PI) * 80
+
+    ctx.strokeStyle = "red"
+    ctx.lineWidth = 2
+    ctx.lineCap = "round"
+    ctx.beginPath()
+    ctx.moveTo(120, 100)
+    ctx.lineTo(120 + x * (a.hdist > 0 ? 1 : -1), 100 + y)
+    ctx.stroke()
+
+    ctx.fillText(a.h, 120 + x * (a.hdist > 0 ? 1 : -1) + (a.hdist > 0 ? 3 : -20),
+        100+y * (a.hdist > 0 ? 1 : 1) + (a.hdist > 0 ? 5 : 5))
+
+    ctx.drawImage(shipimg, 112, 88, 16, 20)
+
+    let canvas = document.getElementById("dir-canvas")
+    ctx = canvas.getContext("2d")
+    let width = $("#id-input").height()
+    canvas.width = canvas.height = Math.min(width, 320)
+    ctx.drawImage(drawing, 0, 0, canvas.width, canvas.height)
 }
 
 const zero = {
@@ -508,11 +563,13 @@ const zero = {
     z: 2048,
 }
 
-function mapPoints(plot, saddr, eaddr, axis1, axis2) {
-    let w = $("#maplogo").width()
-    $("#logo").css("width", Math.min(w, 100) + "px")
-    $("#logo").height(Math.min(w, 100) + "px")
+const aboveZero = {
+    x: 0x7ff,
+    y: 0xfe,
+    z: 0x7ff
+}
 
+function mapPoints(plot, saddr, eaddr, axis1, axis2) {
     const sxyz = addressToXYZ(saddr)
     const exyz = addressToXYZ(eaddr)
 
@@ -532,6 +589,19 @@ function mapPoints(plot, saddr, eaddr, axis1, axis2) {
     data.push(makedata(out, 5, "#ff0000", null, axis1, axis2))
 
     // let p = calcPlane(sxyz)
+
+    // out = initout()
+    // pushentry(out, zero)
+    // pushentry(out, aboveZero)
+    // pushentry(out, sxyz)
+    // data.push(makedata(out, 1, "#ffff00", "#ffff00", axis1, axis2))
+
+    // out = initout()
+    // pushentry(out, projOnPlane(p,{x:zero.x-0x100,y:zero.y-0x20,z:zero.z-0x100},true))
+    // pushentry(out, projOnPlane(p,{x:sxyz.x-0x100,y:sxyz.y-0x20,z:sxyz.z-0x100},true))
+    // pushentry(out, projOnPlane(p,exyz,true))
+    // data.push(makedata(out, 1, "#ffff00", "#ffff00", axis1, axis2))
+
     // let v = projOnPlane(p, exyz)
     // let h = projOnPlane(p, exyz, true)
 
