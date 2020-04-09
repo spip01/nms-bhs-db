@@ -13,6 +13,19 @@
     <meta name="Classification" content="Game">
     <meta name="keywords" content="darc,nms,bhs,no mans sky,black hole suns,route calculator,distance calculator">
 
+    <meta property="og:title" content="No Man's Sky Distance and Route Calculator (DARC)" />
+    <meta property="og:description"
+        content="Travel anywhere in No Man's Sky using black holes. We'll calculate the quickest route for you." />
+    <meta property="og:url" content="https://darc.blackholesuns.com/" />
+    <meta property="og:secure_url" content="https://darc.blackholesuns.com/" />
+    <meta property="og:type" content="website" />
+
+    <meta property="og:image:url"
+        content="http://raw.githubusercontent.com/spip01/nms-bhs-db/master/public/images/darc-ss.png" />
+    <meta property="og:image:secure_url" content="https://nav.blackholesuns.com/images/darc-ss.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="Screenshot of NMS Distance and Route Calculator App" />
+
     <link rel="shortcut icon" href="images/bhs.ico">
     <script src="env.js"></script>
 
@@ -97,7 +110,7 @@
 
         <div class="row">
             <div class="col-md-7 col-14">
-                <div class="card card-body pad-bottom">
+                <div id="id-input" class="card card-body pad-bottom">
                     <div id="pnl-user">
                         <div class="row">
                             <div class="col-md-7 col-sm-7 col-14">
@@ -184,61 +197,52 @@
                             <i id="ttipmsg" class="far fa-question-circle">&nbsp;Tool Tip</i>
                         </div>
                     </div>
-                    <br>
                 </div>
+                <br>
+            </div>
 
-                <div class="col-md-7 col-14">
-                    <div id="pnl-map" class="card card-body border txt-def">
-                        <div class="card-header h4 txt-def border-bottom">
-                            3D Map&nbsp;
-                            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
-                                data-placement="bottom" title="When zoomed in, direction step selected, the grey line is towards the galactic center. To approximate 
-                            the galactic map view align the green starting position with the galactic center.">
-                            </i>
+            <div class="col-md-7 col-14">
+                <div id="pnl-map" class="card card-body border txt-def">
+                    <div class="row">
+                        <div id="mapcol" class="col-md-7 col-sm-11 col-14 pr-15">
+                            <div id="plymap" class="hidden border"></div>
+                            <div id="image" class="hidden border"></div>
                         </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div id="mapcol" class="col-md-11 col-sm-11 col-14">
-                                    <div id="plymap" class="hidden"></div>
-                                    <div id="image" class="hidden"></div>
-                                </div>
-                                <br>
+                        <br>
 
-                                <div class="col-md-3 col-sm-3 col-14">
-                                    <div class="row">
-                                        <a id="maplogo" class="col-sm-14 col-10">
-                                            <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo"
-                                                width="20" height="20">
-                                        </a>
-                                        <div class="col-4">
-                                            <br>
-                                            <button id="btn-switch" type="button" class="btn-def btn btn-sm "
-                                                onclick="redraw()">Redraw</button>
-                                        </div>
-                                    </div>
+                        <div class="col-md-7 col-sm-3 col-14">
+                            <div class="row">
+                                <a id="maplogo" class="col-sm-14 col-10">
+                                    <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo"
+                                        width="20" height="20">
+                                </a>
+                                <div class="col-4">
+                                    <br>
+                                    <button id="btn-switch" type="button" class="btn-def btn btn-sm "
+                                        onclick="redraw()">Redraw</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <br>
+        </div>
+        <br>
 
-            <div class="container-fluid border rounded">
-                <div id="pnl-results" class="">
-                    <div id="res-hdr" class="row txt-def pl-15">
-                        <div class="h4">
-                            Results&nbsp;
-                            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
-                                data-placement="bottom" title="Click on entry to expand directions and draw map. Click on
+        <div class="container-fluid border rounded">
+            <div id="pnl-results" class="">
+                <div id="res-hdr" class="row txt-def pl-15">
+                    <div class="h4">
+                        Results&nbsp;
+                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="bottom" title="Click on entry to expand directions and draw map. Click on
                             direction step to zoom map.">
-                            </i>
-                        </div>
+                        </i>
                     </div>
-                    <div id="resHeader" class="row border-bottom txt-def">Results:</div>
-                    <div id="resItems" class="scrollbar pl-0 pr-0"
-                        style="overflow-y:scroll; overflow-x:scroll; width:100%; height:388px">
-                    </div>
+                </div>
+                <div id="resHeader" class="row border-bottom txt-def">Results:</div>
+                <div id="resItems" class="scrollbar pl-0 pr-0"
+                    style="overflow-y:scroll; overflow-x:scroll; width:100%; height:388px">
                 </div>
             </div>
         </div>

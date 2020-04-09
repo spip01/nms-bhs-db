@@ -189,7 +189,7 @@ blackHoleSuns.prototype.updateDarcSettings = function () {
 
 blackHoleSuns.prototype.showPOI = function (name) {
     const img = `<img id="img-pic" height="auto" width="wsize" />`
-    let w = Math.min($("#mapcol").width() - 8, 400)
+    let w = Math.min($("#id-input").height() + 20, screen.width - 30)
     let h = /wsize/ [Symbol.replace](img, w + "px")
 
     $("#plymap").hide()
@@ -214,7 +214,7 @@ blackHoleSuns.prototype.showPOI = function (name) {
 
 blackHoleSuns.prototype.showOrg = function (name) {
     const img = `<img id="img-pic" height="auto" width="wsize" />`
-    let w = Math.min($("#mapcol").width() - 8, 400)
+    let w = Math.min($("#id-input").height() + 20, screen.width - 30)
     let h = /wsize/ [Symbol.replace](img, w + "px")
 
     $("#plymap").hide()
@@ -575,8 +575,8 @@ function selectRoute(evt) {
 
 blackHoleSuns.prototype.buildDarcMap = function () {
     let w = $("#maplogo").width()
-    $("#logo").css("width", Math.min(w, 100) + "px")
-    $("#logo").height(Math.min(w, 100) + "px")
+    $("#logo").width(Math.min(w, 120))
+    $("#logo").height(Math.min(w, 120))
 
     let zero = {
         x: 2048,
@@ -804,7 +804,7 @@ function changeMapLayout(zoom, saddr, eaddr) {
                     z: 2,
                 }
             },
-         zaxis: {
+            zaxis: {
                 backgroundcolor: "#000000",
                 gridcolor: "#c0c0c0",
                 zerolinecolor: "#c0c0c0",
@@ -871,7 +871,7 @@ function changeMapLayout(zoom, saddr, eaddr) {
         t: 0
     }
 
-    let w = Math.min($("#mapcol").width() - 8, 400)
+    let w = Math.min($("#id-input").height() + 20, screen.width - 30)
     layout.width = w
     layout.height = w
 
