@@ -4,7 +4,7 @@
 <head>
     <title>No Man's Sky Star Navigator</title>
     <meta name="description" content="Get help navigating in No Man's Sky. 
-        We generate a 3d map for your route to help you find your destination on the galactic map view.">
+        Page generates a heads up view based on your current location and destination for use on the galactic map view.">
     <meta name="subject" content="Navigation aid for the game No Man's Sky.">
     <meta name="author" content="Stephen Piper">
     <meta name="designer" content="Stephen Piper">
@@ -12,6 +12,19 @@
     <meta name="copyright" content="Black Hole Suns">
     <meta name="Classification" content="Game">
     <meta name="keywords" content="navigator,nav,nms,bhs,no mans sky,black hole suns,3d map,3d display,map view">
+
+    <meta property="og:title" content="NMS-Black Hole Suns Star Navigator" />
+    <meta property="og:description"
+        content="Heads up view of your route to help you find your destination on the galactic map." />
+    <meta property="og:url" content="https://nav.blackholesuns.com/" />
+    <meta property="og:secure_url" content="https://nav.blackholesuns.com/" />
+    <meta property="og:type" content="website" />
+
+    <meta property="og:image:url"
+        content="http://raw.githubusercontent.com/spip01/nms-bhs-db/master/public/images/nav-ss.png" />
+    <meta property="og:image:secure_url" content="https://nav.blackholesuns.com/images/nav-ss.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="Screenshot of Star Navigator App" />
 
     <link rel="shortcut icon" href="images/bhs.ico">
     <script src="env.js"></script>
@@ -81,11 +94,8 @@
     <br>
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
-        <div id="loggedout" class="row txt-def">All input is saved to local browser storage.<br>
-        </div>
-
         <div class="row bkg-def">
-            <div id="id-input" class="col-md-8 col-14">
+            <div id="id-input" class="col-md-7 col-14">
                 <div id="id-addrInput" class="card card-body">
                     <div id="w-start">
                         <div class="row">
@@ -167,7 +177,6 @@
                             </div>
                         </div>
 
-
                         <div class="row">
                             <div class="col-md-3 col-4 txt-label-def">Coords</div>
                             <div id="id-addr" class="col-10 txt-label-def"></div>
@@ -203,62 +212,49 @@
                         <div id="glyphbuttons" class="row"></div>
                     </div>
                 </div>
-                <br>
-
-                <div class="card card-body pad-bottom">
-                    <div class="row">
-                        <div class="col-lg-2 col-md-3 col-8 txt-label-def">Distance</div>
-                        <div id="id-dist" class="col-lg-2 col-md-3 col-5 txt-label-def"></div>
-                        <div id="id-updown" class="col-md-3 col-5 txt-label-def"></div>
-                        <div id="id-leftright" class="col-md-3 col-5 txt-label-def"></div>
-                    </div>
-                    <br>
-
-                    <div class="row">
-                        <div class="col-md-3 col-5 txt-label-def">Jump Range</div>
-                        <input id="id-range" type="number" class="rounded col-lg-3 col-md-4 col-7" value=2000
-                            onchange="dispAddr(this)">
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-3 col-5 txt-label-def">Jumps</div>
-                        <div id="id-jumps" class="col-5 txt-label-def"></div>
-                    </div>
-                </div>
             </div>
 
-            <div class="col-md-6 col-14">
+            <div class="col-md-7 col-14">
                 <div class="card card-body bkg-def border">
-                    <!--div class="row">
-                        <div id="mapcol" class="border col-md-9 col-14">
-                            <div id="plymap"></div>
-                        </div>
-
-                        <div class="col-md-5 col-14 pl-15">
-                            <br>
+                    <div class="row">
+                        <div class="col-7 pr-5">
                             <div class="row">
-                                <div id="maplogo" class="col-7 text-center">
-                                    <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo"
-                                        width="40px" height="40px">
-                                </div>
-                                <div class="col-6 text-center">
-                                    <br>
-                                    <div class="row">
-                                        &nbsp;&nbsp;
-                                        <button id="btn-switch" type="button"
-                                            class="btn-def btn btn-sm col-lg-11 col-14 h6" onclick="zoom()">Toggle
-                                            Zoom</button>
-                                    </div>
+                                <div class="col">
+                                    <canvas id="dir-canvas" class="border" height=120 width=120></canvas>
                                 </div>
                             </div>
-                            <br-->
-                    <div class="row">
-                        <div class="col">
-                            <canvas id="dir-canvas" class="border" height=120 width=120></canvas>
+                        </div>
+
+                        <div class="col-7">
+                            <div class="bkg-white border rounded pl-15">
+                                <div class="row">
+                                    <div class="col-5 txt-label-def">Distance</div>
+                                    <div id="id-dist" class="col  txt-label-def"></div>
+                                </div>
+                                <div class="row">
+                                    <div id="id-updown" class="col-5 txt-label-def"></div>
+                                    <div id="id-leftright" class="col-5 txt-label-def"></div>
+                                </div>
+                                <br>
+
+                                <div class="row">
+                                    <div class="col-5 txt-label-def">Jump Range</div>
+                                    <input id="id-range" type="number" class="rounded col-4" value=2000
+                                        onchange="dispAddr(this)">
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-5 txt-label-def">Jumps</div>
+                                    <div id="id-jumps" class="col txt-label-def"></div>
+                                </div>
+                            </div>
+                            <br>
+                            <div id="maplogo" class="row">
+                                <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo" width="40px"
+                                    height="40px">
+                            </div>
                         </div>
                     </div>
-                    <!--/div>
-                    </div-->
                 </div>
             </div>
         </div>

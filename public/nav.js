@@ -40,9 +40,9 @@ $(document).ready(() => {
 
     $("#footer").load("footer.html")
 
-    // let w = $("#maplogo").parent().width()
-    // $("#logo").width(Math.min(w, 100))
-    // $("#logo").height(Math.min(w, 100))
+    let w = $("#maplogo").parent().width()
+    $("#logo").width(Math.min(w, 140))
+    $("#logo").height(Math.min(w, 140))
 
     if (typeof (Storage) !== "undefined") {
         let start = window.localStorage.getItem('navstart')
@@ -472,7 +472,6 @@ let drawing = document.createElement('canvas')
 function mapAngles(p, a, saddr, eaddr) {
     let s = addressToXYZ(saddr)
     let e = addressToXYZ(eaddr)
-    console.log(JSON.stringify(s), JSON.stringify(e), JSON.stringify(a))
 
     let ctx = drawing.getContext("2d")
     drawing.width = drawing.height = 215
@@ -501,8 +500,8 @@ function mapAngles(p, a, saddr, eaddr) {
     ctx.beginPath()
 
     for (let i = 1; i < 6; ++i) {
-        let x1 = Math.sin(i * 32.5 / 180 * Math.PI) * (i % 2 ? 65 : 72)
-        let y1 = Math.cos((i * 32.5 - 180) / 180 * Math.PI) * (i % 2 ? 65 : 72)
+        let x1 = Math.sin(i * 32.5 / 180 * Math.PI) * (i % 2 ? 65 : 75)
+        let y1 = Math.cos((i * 32.5 - 180) / 180 * Math.PI) * (i % 2 ? 65 : 75)
         let x2 = Math.sin(i * 32.5 / 180 * Math.PI) * 80
         let y2 = Math.cos((i * 32.5 - 180) / 180 * Math.PI) * 80
 
@@ -552,7 +551,7 @@ function mapAngles(p, a, saddr, eaddr) {
 
     let canvas = document.getElementById("dir-canvas")
     ctx = canvas.getContext("2d")
-    let width = $("#id-input").height()
+    let width = $("#dir-canvas").parent().parent().parent().width()
     canvas.width = canvas.height = Math.min(width, 320)
     ctx.drawImage(drawing, 0, 0, canvas.width, canvas.height)
 }
