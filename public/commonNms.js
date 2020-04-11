@@ -226,7 +226,7 @@ function getIndex(list, field, id) {
 
     return list.map(x => {
         if (field === "name" && typeof x.match !== "undefined" && id.match(x.match))
-            return x.name.toLowerCase()
+            return id.toLowerCase()
         else
             return typeof x[field] === "string" ? x[field].toLowerCase() : x[field]
     }).indexOf(typeof id === "string" ? id.toLowerCase() : id)
@@ -262,6 +262,233 @@ function calcAngle(saddr, eaddr, xp, yp) {
     let b = calcDist(saddr, zero, xp, yp)
     let angle = parseInt(Math.acos((a * a - b * b - c * c) / (-2 * b * c)) * 180 / Math.PI)
     return Number.isNaN(angle) ? 0 : angle
+}
+
+function calcPlane(C) {
+    const A = zero
+    const B = aboveZero
+
+    // a=(By−Ay)(Cz−Az)−(Cy−Ay)(Bz−Az) 
+    // b=(Bz−Az)(Cx−Ax)−(Cz−Az)(Bx−Ax) 
+    // c=(Bx−Ax)(Cy−Ay)−(Cx−Ax)(By−Ay) 
+    // d=−(aAx+bAy+cAz) 
+    let n = {}
+    n.a = (B.y - A.y) * (C.z - A.z) - (C.y - A.y) * (B.z - A.z)
+    n.b = (B.z - A.z) * (C.x - A.x) - (C.z - A.z) * (B.x - A.x)
+    n.c = (B.x - A.x) * (C.y - A.y) - (C.x - A.x) * (B.y - A.y)
+    n.d = -(n.a * C.x + n.b * C.y + n.c * C.z)
+
+    let v = {}
+    v.x = A.x - C.x
+    v.y = A.y - C.y
+    v.z = A.z - C.z
+
+    let u = {
+        x: n.a,
+        y: n.b,
+        z: n.c
+    }
+
+    let r = {}
+    // | r.a, r.b, r.c | 
+    // | u.x, u.y, u.z |
+    // | v.x, v.y, v.z |
+
+    r.a = u.y * v.z - u.z * v.y
+    r.b = -u.x * v.z + u.z * v.x
+    r.c = u.x * v.y - u.y * v.x
+    r.d = -(r.a * C.x + r.b * C.y + r.c * C.z)
+
+    return {
+        n: n,
+        r: r,
+    }
+}
+
+function projOnPlane(p, xyz, rt) {
+    let n = rt ? p.r : p.n
+
+    let t = -(n.a * xyz.x + n.b * xyz.y + n.c * xyz.z + n.d) / (n.a * n.a + n.b * n.b + n.c * n.c)
+    let pr = {}
+    pr.x = n.a * t + xyz.x
+    pr.y = n.b * t + xyz.y
+    pr.z = n.c * t + xyz.z
+
+    return pr
+}
+
+function distToPlane(p, xyz, rt) {
+    let n = !rt ? p.r : p.n
+    return (n.a * xyz.x + n.b * xyz.y + n.c * xyz.z + n.d) / Math.sqrt(n.a * n.a + n.b * n.b + n.c * n.c)
+}
+
+function calcAngles(b, c) { // b = start, c = dest
+    let a = zero
+
+    let p = calcPlane(b)
+    let cv = projOnPlane(p, c)
+    let ch = projOnPlane(p, c, true)
+
+    return {
+        v: parseInt(calcAngleA(a, b, cv)),
+        vdist: distToPlane(p, c),
+        h: parseInt(180 - calcAngleA(a, b, ch)),
+        hdist: distToPlane(p, c, true),
+        dist: parseInt(calcDistXYZ(b, c) * 400)
+    }
+}
+
+function calcAngleA(a, b, c) {
+    let t = ((b.x - a.x) * (c.x - a.x) + (b.y - a.y) * (c.y - a.y) + (b.z - a.z) * (c.z - a.z)) /
+        (Math.sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y) + (b.z - a.z) * (b.z - a.z)) *
+            Math.sqrt((c.x - a.x) * (c.x - a.x) + (c.y - a.y) * (c.y - a.y) + (c.z - a.z) * (c.z - a.z)))
+
+    return Math.acos(t) * 180 / Math.PI
+}
+
+var shipimg = null
+
+function mapAngles(canvasid, a, width, height) {
+    if (!shipimg) {
+        shipimg = new Image()
+        shipimg.onload = function(evt) {
+            mapAngles(canvasid, a, width, height)
+        }
+        shipimg.crossOrigin = "anonymous"
+        shipimg.src = "/images/ship.svg"
+    }
+
+    let drawing = document.getElementById(canvasid)
+    let ctx = drawing.getContext("2d")
+
+    if (typeof width === 'undefined')
+        width = height = $("#" + canvasid).parent().width()
+
+    drawing.width = width
+    drawing.height = height
+
+    let margin = 20
+    let marginb = 20
+
+    let elevx = margin
+    let elevy = margin
+    let elevw = width * .1
+    let elevh = drawing.height - margin - marginb - 30
+    let elev0y = elevy + elevh / 2
+    let elev0x = elevx
+
+    ctx.strokeStyle = "white"
+    ctx.lineWidth = 2
+    ctx.lineCap = "round"
+    ctx.beginPath()
+    ctx.moveTo(elevx + elevw / 2, elevy) //vert
+    ctx.lineTo(elevx + elevw / 2, elevy + elevh)
+    ctx.stroke()
+
+    let u = elev0y - (a.v > 90 ? 180 - a.v : a.v) * (a.vdist > 0 ? 1 : -1) * elevh / 2 / 90
+
+    ctx.font = screen.width > 1024 ? "22px Arial" : "15px Arial"
+    ctx.fillStyle = "white"
+    ctx.fillText("0", elevx - 8, elev0y + 3)
+    let txtw = ctx.measureText("Horizon").width
+    ctx.fillText("Horizon", elevx + elevw / 2 - txtw / 2, drawing.height - marginb)
+    txtw = ctx.measureText(a.v > 90 ? 180 - a.v : a.v).width
+    ctx.fillText(a.v > 90 ? 180 - a.v : a.v, elevx - 10, u + 3)
+
+    ctx.strokeStyle = "red"
+    ctx.lineWidth = 4
+    ctx.beginPath()
+    ctx.moveTo(elev0x + txtw - 5, u)
+    ctx.lineTo(elev0x + elevw, u)
+    ctx.stroke()
+
+    ctx.strokeStyle = "white"
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.moveTo(elev0x + 2, elev0y) //0 cross bar
+    ctx.lineTo(elev0x + elevw, elev0y)
+    ctx.stroke()
+
+    // angle indicator
+
+    let marginc = 10
+    let offsetx = 5
+    let radius = (drawing.width - margin * 2 - elevw - marginc * 2) / 2
+    let ctrx = margin + elevw + marginc + radius + offsetx
+    let ctry = margin + marginc + radius + 15
+
+    txtw = ctx.measureText("Angle from Galactic Center").width
+    ctx.fillText("Angle from Galactic Center", ctrx - txtw / 2, drawing.height - marginb)
+
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.moveTo(ctrx, ctry - radius) //angle to ctr
+    ctx.lineTo(ctrx, ctry)
+    ctx.stroke()
+
+    ctx.beginPath()
+    ctx.moveTo(ctrx + radius, ctry)
+    ctx.arc(ctrx, ctry, radius, 0, 2 * Math.PI)
+    ctx.stroke()
+
+    ctx.beginPath()
+
+    for (let i = 1; i < 6; ++i) {
+        let x1 = Math.sin(i * 32.5 / 180 * Math.PI) * (i % 2 ? radius - 25 : radius - 10)
+        let y1 = Math.cos((i * 32.5 - 180) / 180 * Math.PI) * (i % 2 ? radius - 25 : radius - 10)
+        let x2 = Math.sin(i * 32.5 / 180 * Math.PI) * radius
+        let y2 = Math.cos((i * 32.5 - 180) / 180 * Math.PI) * radius
+
+        ctx.moveTo(ctrx + x1, ctry + y1)
+        ctx.lineTo(ctrx + x2, ctry + y2)
+
+        ctx.moveTo(ctrx - x1, ctry + y1)
+        ctx.lineTo(ctrx - x2, ctry + y2)
+    }
+
+    ctx.stroke()
+
+    const txtr = radius + 18
+    let x = Math.sin(32.5 / 180 * Math.PI) * txtr
+    let y = Math.cos((32.5 - 180) / 180 * Math.PI) * txtr
+    ctx.fillText("32.5", ctrx + x, ctry + y)
+
+    x = Math.sin(0 / 180 * Math.PI) * txtr
+    y = Math.cos((0 - 180) / 180 * Math.PI) * txtr
+    ctx.fillText("0", ctrx + x, ctry + y)
+
+    x = Math.sin(a.h / 180 * Math.PI) * radius
+    y = Math.cos((a.h - 180) / 180 * Math.PI) * radius
+
+    ctx.strokeStyle = "red"
+    ctx.lineWidth = 2
+    ctx.lineCap = "round"
+    ctx.beginPath()
+    ctx.moveTo(ctrx, ctry)
+    ctx.lineTo(ctrx + x * (a.hdist > 0 ? 1 : -1), ctry + y)
+    ctx.stroke()
+
+    x = Math.sin(a.h / 180 * Math.PI) * txtr
+    y = Math.cos((a.h - 180) / 180 * Math.PI) * txtr
+    txtw = ctx.measureText(a.h).width
+    ctx.fillText(a.h, ctrx + x * (a.hdist > 0 ? 1 : -1) + (a.hdist > 0 ? 0 : -txtw), ctry + y)
+
+    txtw = ctx.measureText(a.dist + " LY").width
+    ctx.fillText(a.dist + " LY", ctrx + (a.hdist > 0 ? -txtw - 10 : 10), ctry)
+
+    ctx.drawImage(shipimg, ctrx - 10, ctry - 12, 20, 24)
+}
+
+const zero = {
+    x: 2048,
+    y: 128,
+    z: 2048,
+}
+
+const aboveZero = {
+    x: 0x7ff,
+    y: 0xfe,
+    z: 0x7ff
 }
 
 Array.prototype.intersects = function (array) {

@@ -3,7 +3,8 @@
 
 <head>
     <title>No Man's Sky Star Navigator</title>
-    <meta name="description" content="Get help navigating in No Man's Sky. 
+    <meta name="description"
+        content="Get help navigating in No Man's Sky. 
         Page generates a heads up view based on your current location and destination for use on the galactic map view.">
     <meta name="subject" content="Navigation aid for the game No Man's Sky.">
     <meta name="author" content="Stephen Piper">
@@ -58,9 +59,6 @@
         integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
     </script>
 
-    <!--script src="https://cdn.plot.ly/plotly-latest.min.js"></script-->
-    <!--script src="https://cdn.plot.ly/plotly-1.50.1.min.js" crossorigin="anonymous"></script-->
-
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
 
@@ -94,9 +92,10 @@
     <br>
 
     <div id="jssite" class="container-fluid pad-bottom" style="display:none">
-        <div class="row bkg-def">
-            <div id="id-input" class="col-md-7 col-14">
-                <div id="id-addrInput" class="card card-body">
+        <div class="row">
+            <div class="col-xl-6 col-lg-8 col-md-9 col-14">
+
+                <div id="id-addrInput" class="card card-body border rounded">
                     <div id="w-start">
                         <div class="row">
                             <div class="col-lg-2 col-md-4 col-3 txt-label-def">
@@ -212,20 +211,11 @@
                         <div id="glyphbuttons" class="row"></div>
                     </div>
                 </div>
-            </div>
+                <br>
 
-            <div class="col-md-7 col-14">
                 <div class="card card-body bkg-def border">
                     <div class="row">
-                        <div class="col-7 pr-5">
-                            <div class="row">
-                                <div class="col">
-                                    <canvas id="dir-canvas" class="border" height=120 width=120></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-7">
+                        <div id="id-results" class="col-md-10 col-11">
                             <div class="bkg-white border rounded pl-15">
                                 <div class="row">
                                     <div class="col-5 txt-label-def">Distance</div>
@@ -239,7 +229,7 @@
 
                                 <div class="row">
                                     <div class="col-5 txt-label-def">Jump Range</div>
-                                    <input id="id-range" type="number" class="rounded col-4" value=2000
+                                    <input id="id-range" type="number" class="rounded col-6" value=2000
                                         onchange="dispAddr(this)">
                                 </div>
 
@@ -249,13 +239,19 @@
                                 </div>
                             </div>
                             <br>
-                            <div id="maplogo" class="row">
-                                <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo" width="40px"
-                                    height="40px">
-                            </div>
+                        </div>
+
+                        <div id="maplogo" class="col-md-4 col-3 float-right">
+                            <img id="logo" src="images/bhs-logo.png" alt="BHS Logo" width="40px"
+                                height="40px">
                         </div>
                     </div>
                 </div>
+                <br>
+            </div>
+
+            <div class="col-xl-4 col-lg-5 col-md-5 col-14">
+                <canvas id="dir-canvas" class="border rounded" height=120 width=120></canvas>
             </div>
         </div>
     </div>
