@@ -39,28 +39,49 @@ $(document).ready(() => {
     $("#logo").width(w)
     $("#logo").height(w)
 
-    if (typeof (Storage) !== "undefined") {
-        let start = window.localStorage.getItem('navstart')
-        let end = window.localStorage.getItem('navend')
-        let range = window.localStorage.getItem('navrange')
+    let start = null
+    let end = null
+    let range = 2000
 
-        let loc = $("#id-addrInput")
+    //https://localhost:5000/preview.html?i=0547-0086-0E45-00A1-himodan-s-coup&g=Euclid&t=Ship
+    let passed = {}
+    let param = location.search.substring(1).split("&")
 
-        if (start) {
-            let sloc = loc.find("#w-start")
-            sloc.find("#id-addr").val(start)
+    for (let p of param) {
+        if (p) {
+            let obj = p.split("=")
+            passed[unescape(obj[0])] = obj[1] ? unescape(obj[1]) : true
         }
-
-        if (end) {
-            let eloc = loc.find("#w-end")
-            eloc.find("#id-addr").val(end)
-        }
-
-        if (range)
-            $("#id-range").val(range)
-
-        dispAddr()
     }
+
+    if (passed.start && passed.end) {
+        start = passed.start
+        end = passed.end
+
+        if (passed.range)
+            range = passed.range
+
+    } else if (typeof (Storage) !== "undefined") {
+        start = window.localStorage.getItem('navstart')
+        end = window.localStorage.getItem('navend')
+        range = window.localStorage.getItem('navrange')
+    }
+
+    let loc = $("#id-addrInput")
+    if (start) {
+        let sloc = loc.find("#w-start")
+        sloc.find("#id-addr").val(reformatAddress(start))
+    }
+
+    if (end) {
+        let eloc = loc.find("#w-end")
+        eloc.find("#id-addr").val(reformatAddress(end))
+    }
+
+    if (range)
+        $("#id-range").val(range)
+
+    dispAddr()
 })
 
 function dispAddr(evt) {

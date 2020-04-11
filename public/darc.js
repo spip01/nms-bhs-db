@@ -10,7 +10,25 @@ $(document).ready(() => {
     bhs.buildQueryPanel()
     bhs.buildDarcMap()
 
-    if (typeof (Storage) !== "undefined") {
+    //https://localhost:5000/preview.html?i=0547-0086-0E45-00A1-himodan-s-coup&g=Euclid&t=Ship
+    let passed = {}
+    let param = location.search.substring(1).split("&")
+
+    for (let p of param) {
+        if (p) {
+            let obj = p.split("=")
+            passed[unescape(obj[0])] = obj[1] ? unescape(obj[1]) : true
+        }
+    }
+
+    if (passed.start && passed.end) {
+        bhs.setAddress("start", passed.start)
+        bhs.setAddress("end", passed.end)
+
+        let i = passed.galaxy ? getIndex(galaxyList, "name", passed.galaxy) : -1
+        $("#btn-Galaxy").text(i !== -1 ? galaxyList[i].number + " " + galaxyList[i].name : "Euclid")
+
+    } else if (typeof (Storage) !== "undefined") {
         let route = window.localStorage.getItem('darcroute')
 
         if (route) {
@@ -21,7 +39,45 @@ $(document).ready(() => {
             bhs.displayResults(bhs.route)
         }
     }
+
+    let gloc = $("[id='glyphbuttons']")
+    addGlyphButtons(gloc, addGlyph)
+    buildGlyphModal(dispGlyph)
 })
+
+function dispGlyph(evt, loc) {
+    let glyph = typeof evt === "string" ? evt : $(evt).val().toUpperCase()
+    if (glyph !== "") {
+        if (loc)
+            loc.closest("[id|='w']").find("#id-glyph").val(glyph)
+        else
+            $(evt).val(glyph)
+
+        let id = loc ? loc.closest("[id|='w']").prop("id") : $(evt).closest("[id|='w']").prop("id")
+
+        bhs.setAddress(id.stripID(),glyph)
+    }
+}
+
+function setGlyphInput(evt) {
+    if ($(evt).prop("checked")) {
+        $("#id-glyphInput").show()
+        $("#id-addrInput").hide()
+        $("[id='ck-glyphs']").prop("checked", true)
+    } else {
+        $("#id-glyphInput").hide()
+        $("#id-addrInput").show()
+        $("[id='ck-glyphs']").prop("checked", false)
+    }
+}
+
+function addGlyph(evt) {
+    let loc = $(evt).closest("[id|='w']").find("#id-glyph")
+    let a = loc.val() + $(evt).text().trim().slice(0, 1)
+    loc.val(a)
+    if (a.length === 12)
+        dispGlyph(loc)
+}
 
 blackHoleSuns.prototype.buildDarcUserPnl = function () {
     let loc = $("#pnl-user")
@@ -102,15 +158,27 @@ blackHoleSuns.prototype.buildQueryPanel = async function () {
     })
 }
 
-blackHoleSuns.prototype.setAddress = function (evt) {
-    let addr = $(evt).val()
+blackHoleSuns.prototype.setAddress = function (evt, addr) {
+    if (!addr)
+        addr = $(evt).val()
+
     if (addr !== "") {
         addr = reformatAddress(addr)
-        $(evt).val(addr)
-
         let err = bhs.validateAddress(addr, true)
         if (err !== "")
             bhs.status(err)
+        else {
+            let id = typeof evt === "string" ? evt : $(evt).closest("[id|='w']").prop("id").stripID()
+            let glyph = addrToGlyph(addr)
+            let loc = $("#id-addrInput #w-" + id)
+            loc.find("#id-addr").val(addr)
+            loc.find("#id-glyph").text(glyph)
+            loc.find("#id-hex").text(glyph)
+
+            loc = $("#id-glyphInput #w-" + id)
+            loc.find("#id-addr").text(addr)
+            loc.find("#id-glyph").val(glyph)
+        }
     }
 }
 
@@ -120,24 +188,24 @@ blackHoleSuns.prototype.select = function (btn) {
     if (id === "POI") {
         let i = getIndex(bhs.poiList, "_name", name)
         let itm = bhs.poiList[i]
-        $("#id-end").val(itm.addr)
+        bhs.setAddress("end", itm.addr)
         $("#btn-Civ-Org").text("")
         bhs.showPOI(name)
     } else {
         let i = getIndex(bhs.orgList, "_name", name)
         let itm = bhs.orgList[i]
-        $("#id-end").val(itm.addr)
+        bhs.setAddress("end", itm.addr)
         $("#btn-Points-Of-Interest").text("")
         bhs.showOrg(name)
     }
 }
 
 blackHoleSuns.prototype.switchSE = function () {
-    let s = $("#id-start").val()
-    let e = $("#id-end").val()
+    let s = $("#id-addrInput #w-start #id-addr").val()
+    let e = $("#id-addrInput #w-end #id-addr").val()
 
-    $("#id-start").val(e)
-    $("#id-end").val(s)
+    bhs.setAddress("start", e)
+    bhs.setAddress("end", s)
 }
 
 blackHoleSuns.prototype.saveDarcSettings = function (evt) {
@@ -149,8 +217,8 @@ blackHoleSuns.prototype.saveDarcSettings = function (evt) {
     user.darcSettings.useBases = $("#ck-useBases").prop("checked")
     user.darcSettings.nearPath = $("#ck-nearPath").prop("checked")
     user.darcSettings.maxJumps = $("#id-maxJumps").val()
-    user.darcSettings.start = $("#id-start").val()
-    user.darcSettings.end = $("#id-end").val()
+    user.darcSettings.start = $("#id-addrInput #w-start #id-addr").val()
+    user.darcSettings.end = $("#id-addrInput #w-end #id-addr").val()
 
     if (typeof (Storage) !== "undefined" && !bhs.user.uid)
         window.localStorage.setItem('darcsettings', JSON.stringify(user.darcSettings))
@@ -173,9 +241,8 @@ blackHoleSuns.prototype.updateDarcSettings = function () {
         $("#ck-useBases").prop("checked", bhs.user.uid && bhs.user.darcSettings.useBases)
         $("#ck-nearPath").prop("checked", bhs.user.darcSettings.nearPath)
         $("#id-maxJumps").val(typeof bhs.user.darcSettings.maxJumps !== "undefined" ? bhs.user.darcSettings.maxJumps : 20)
-        $("#id-start").val(typeof bhs.user.darcSettings.start !== "undefined" ? bhs.user.darcSettings.start : "")
-        if ($("#id-end").val() === "")
-            $("#id-end").val(typeof bhs.user.darcSettings.end !== "undefined" ? bhs.user.darcSettings.end : "")
+        bhs.setAddress("start", typeof bhs.user.darcSettings.start !== "undefined" ? bhs.user.darcSettings.start : "")
+        bhs.setAddress("end", typeof bhs.user.darcSettings.end !== "undefined" ? bhs.user.darcSettings.end : "")
     }
 
     if (typeof (Storage) !== "undefined") {
@@ -238,13 +305,12 @@ blackHoleSuns.prototype.showOrg = function (name) {
 }
 
 blackHoleSuns.prototype.calcroute = async function (proximity) {
-    let now = new Date().getTime()
     bhs.status("starting", true)
     let loc = $("#resItems")
     loc.empty()
 
-    let start = $("#id-start").val()
-    let end = $("#id-end").val()
+    let start = $("#id-addrInput #w-start #id-addr").val()
+    let end = $("#id-addrInput #w-end #id-addr").val()
 
     let err = bhs.validateAddress(start)
     if (err !== "") {
@@ -296,7 +362,7 @@ blackHoleSuns.prototype.calcroute = async function (proximity) {
                 bhs.status("ERROR: " + res.data.err)
             else {
                 bhs.route = res.data.route
-                bhs.status("calc " + res.data.calc)
+                bhs.status(" done " + res.data.calc)
                 bhs.displayResults(bhs.route)
             }
         })
@@ -564,8 +630,8 @@ function selectRoute(evt) {
     $("[id|='block']").hide()
     $("#block-" + idx).show()
 
-    $("#id-start").val(bhs.route[selected].route[0].addr)
-    $("#id-end").val(bhs.route[selected].route[bhs.route[selected].route.length - 1].addr)
+    bhs.setAddress("start", bhs.route[selected].route[0].addr)
+    bhs.setAddress("end", bhs.route[selected].route[bhs.route[selected].route.length - 1].addr)
 
     mapRoute(bhs.route[selected].route)
 
@@ -574,7 +640,7 @@ function selectRoute(evt) {
 }
 
 blackHoleSuns.prototype.buildDarcMap = function () {
-    let w = $("#maplogo").width()
+    let w = $("#maplogo").parent().width()
     $("#logo").width(Math.min(w, 120))
     $("#logo").height(Math.min(w, 120))
 
@@ -871,7 +937,7 @@ function changeMapLayout(zoom, saddr, eaddr) {
         t: 0
     }
 
-    let w = Math.min($("#id-input").height() + 20, screen.width - 30)
+    let w = Math.min($("#plymap").parent().width(), screen.width - 30)
     layout.width = w
     layout.height = w
 

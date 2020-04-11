@@ -61,6 +61,9 @@
     <!--script src="https://cdn.plot.ly/plotly-latest.min.js"></script-->
     <script src="https://cdn.plot.ly/plotly-1.50.1.min.js" crossorigin="anonymous"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+
     <script src="/__/firebase/7.11.0/firebase-app.js"></script>
     <script src="/__/firebase/7.11.0/firebase-auth.js"></script>
     <script src="/__/firebase/7.11.0/firebase-firestore.js"></script>
@@ -71,6 +74,7 @@
     <script src="commonFb.js"></script>
     <script src="commonUI.js"></script>
     <script src="commonNms.js"></script>
+    <script src="glyphReader.js"></script>
     <script src="darc.js"></script>
 
     <link rel="stylesheet" type="text/css" href="local.css">
@@ -108,118 +112,211 @@
             <br>
         </div>
 
-        <div class="row">
-            <div class="col-md-7 col-14">
-                <div id="id-input" class="card card-body pad-bottom">
-                    <div id="pnl-user">
-                        <div class="row">
-                            <div class="col-md-7 col-sm-7 col-14">
-                                <div class="row">
-                                    <div class="col-13 txt-label-def">Player Name</div>
-                                    <input id="id-Player" class="rounded col-13 txt-input-def" type="text">
-                                </div>
-                            </div>
-                            <label class="col-md-7 col-sm-7 col-14 txt-label-def">
-                                <input id="ck-useBases" type="checkbox">
-                                Use Player Bases&nbsp;
-                                <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
-                                    data-placement="bottom" title="With this enabled the DARC will use the players bases as starting points for the route generator. 
-                                    These can be entered on the input page.">
-                                </i>
-                            </label>
-                        </div>
-
-                        <div class="container-fluid">
+        <div class="card card-body">
+            <div id="pnl-query" class="row">
+                <div class="col-md-7 col-14">
+                    <div id="pnl-user" class="row">
+                        <div class="col-md-7 col-sm-7 col-14">
                             <div class="row">
-                                <div id="id-Galaxy" class="col-lg-7 col-md-14 col-sm-6 col-14"></div>
-                                <div id="id-Platform" class="col-lg-7 col-md-14 col-sm-6 col-14"></div>
+                                <div class="col-13 txt-label-def">Player Name</div>
+                                <input id="id-Player" class="rounded col-13 txt-input-def" type="text">
                             </div>
                         </div>
+                        <label class="col-md-7 col-sm-7 col-14 txt-label-def">
+                            <input id="ck-useBases" type="checkbox">
+                            Use Player Bases&nbsp;
+                            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
+                                data-placement="bottom" title="With this enabled the DARC will use the players bases as starting points for the route generator. 
+                                    These can be entered on the input page.">
+                            </i>
+                        </label>
+
+                        <div id="id-Galaxy" class="col-lg-7 col-md-14 col-sm-6 col-14"></div>
+                        <div id="id-Platform" class="col-lg-7 col-md-14 col-sm-6 col-14"></div>
+
                     </div>
                     <br>
-                    <div id="pnl-query" class="container-fluid border-top border-3">
-                        <div class="row">
-                            <div class="col-sm-3 col-4 txt-label-def">
-                                Start&nbsp;
-                                <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
-                                    data-placement="bottom"
-                                    title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
-                                    A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
-                                </i>
-                            </div>
-                            <input id="id-start" class="rounded col-lg-7 col-md-7 col-sm-5 col-8"
-                                placeholder="0000:0000:0000:0000" onchange="bhs.setAddress(this)">
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-3 col-4 txt-label-def">End&nbsp;</div>
-                            <input id="id-end" class="rounded col-lg-7 col-md-7 col-sm-5 col-8"
-                                placeholder="0000:0000:0000:0000" onchange="bhs.setAddress(this)">&nbsp;
-                            <button id="btn-switch" type="button" class="btn-def btn btn-sm" onclick="bhs.switchSE()"><i
-                                    class="fa fa-exchange-alt txt-def"></i></button>
-                        </div>
-                        <div class="row">
-                            <div class="card card-body no-border">
-                                <div class="row">
-                                    <div id="id-POI" class="col-lg-7 col-md-14 col-sm-7 col-14"></div>
-                                    <div id="id-Civ-Org" class="col-lg-7 col-md-14 col-sm-7 col-14"></div>
+                    <div id="id-addrInput" class="card card-body">
+                        <div id="w-start">
+                            <div class="row border-top border-3">
+                                <div class="col-lg-2 col-md-4 col-3 txt-label-def">
+                                    Start&nbsp;
+                                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
+                                        data-html="true" data-placement="bottom"
+                                        title="Coordinatess can be entered without leading zeros or as a 16 digit number without separators. 
+                                                 A <span class='h5'>12</span> digit hex, 0-9 a-f, value can be entered directly in the field.">
+                                    </i>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-6 col-9 txt-label-def">Average Jump Range&nbsp;</div>
-                            <input id="id-range" class="rounded col-sm-3 col-5" type="number" value="2000">
-                        </div>
-                        <br>
-                        <div class="border-top border-3">
-                            <div class="row">
-                                <button id="btn-searchRegion" type="button" class="col-6 btn-def btn btn-sm"
-                                    onclick="bhs.calcroute()">Calculate Route</button>&nbsp
+                                <input id="id-addr" class="txt-input-def col-lg-5 col-md-7 col-10"
+                                    placeholder="0000:0000:0000:0000" onchange="dispAddr(this)">
                                 <label class="col-7 txt-label-def">
-                                    <input id="ck-nearPath" type="checkbox">
-                                    POI near route
+                                    <input id="ck-glyphs" type="checkbox" onchange="setGlyphInput(this)">
+                                    Input Glyphs&nbsp;
+                                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
+                                        data-html="true" data-placement="bottom"
+                                        title="Display glyph input buttons and show glyphs in input field.">
+                                    </i>
                                 </label>
                             </div>
                             <div class="row">
-                                <button id="btn-proximity" type="button" class="col-6 btn-def btn btn-sm"
-                                    onclick="bhs.calcroute(true)">POI
-                                    Proximity</button>&nbsp
-                                <div class="col-4 txt-label-def">Max Jumps&nbsp;</div>
-                                <input id="id-maxJumps" class="rounded col-3" value="20">
+                                <div class="col-3 txt-label-def">Glyphs</div>
+                                <div id="id-glyph" class="col txt-glyph-disp"></div>
                             </div>
-                            <br>
-                            <div id="status" class="border row text-danger scrollbar container-fluid"
-                                style="overflow-y: scroll; height: 40px"></div>
+                            <div class="row">
+                                <div class="col-3 txt-label-def">Hex</div>
+                                <div id="id-hex" class="col txt-label-def"></div>
+                            </div>
+                        </div>
+
+                        <div id="w-end">
+                            <div class="row">
+                                <div class="col-lg-2 col-md-4 col-3 txt-label-def">End</div>
+                                <input id="id-addr" class="txt-input-def col-lg-5 col-md-7 col-10"
+                                    placeholder="0000:0000:0000:0000" onchange="dispAddr(this)">
+                                <button id="btn-switch" type="button" class="btn-def btn btn-sm"
+                                    onclick="bhs.switchSE()"><i class="fa fa-exchange-alt txt-def"></i></button>
+                            </div>
+                            <div class="row">
+                                <div class="col-3 txt-label-def">Glyphs</div>
+                                <div id="id-glyph" class="col txt-glyph-disp"></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3 txt-label-def">Hex</div>
+                                <div id="id-hex" class="col txt-label-def"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="id-glyphInput" class="card card-body hidden">
+                        <div id="w-start">
+                            <div class="row">
+                                <div class="col-lg-2 col-md-4 col-3 txt-label-def">Start&nbsp;
+                                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
+                                        data-html="true" data-placement="bottom"
+                                        title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
+                                                        digit hex, 0-9 a-f, value can be entered directly in the field.">
+                                    </i>
+                                </div>
+                                <input id="id-glyph" class="col-lg-8 col-md-8 col-14 txt-glyph-disp" maxength="19"
+                                    onchange="dispGlyph(this)">
+                                <label class=" txt-label-def col-7">
+                                    <input id="ck-glyphs" type="checkbox" onchange="setGlyphInput(this)">
+                                    Input Coords&nbsp;
+                                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
+                                        data-html="true" data-placement="bottom" title="Hide glyph input buttons.">
+                                    </i>
+                                </label>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3 col-4 txt-label-def" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom" title="Load unmodified screenshot containing glyphs.">
+                                    Screenshot&nbsp;
+                                    <i class="far fa-question-circle text-danger h6"></i>
+                                </div>
+                                <input type="file" class="col-4 form-control form-control-sm" accept="image/*"
+                                    name="files[]" data-type="img" onchange="glyph.loadGlyphImage(this)">
+                                <div class="col-14">
+                                    <canvas id="ss-canvas" class="border" style="height:10px;width:20px;"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3 col-4 txt-label-def">Coords</div>
+                                <div id="id-addr" class="col-10 txt-label-def"></div>
+                            </div>
+
+                            <div id="glyphbuttons" class="row"></div>
+                        </div>
+
+                        <div id="w-end">
+                            <div class="row">
+                                <div class="col-lg-2 col-md-4 col-3 txt-label-def">End</div>
+                                <input id="id-glyph" class="col-lg-8 col-md-8 col-14 txt-glyph-disp" maxength="19"
+                                    onchange="dispGlyph(this)">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3 col-4 txt-label-def">Coords</div>
+                                <div id="id-addr" class="col-10 txt-label-def"></div>
+                                <button id="btn-switch" type="button" class="btn-def btn btn-sm"
+                                    onclick="bhs.switchSE()"><i class="fa fa-exchange-alt txt-def"></i></button>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3 col-4 txt-label-def" data-toggle="tooltip" data-html="true"
+                                    data-placement="bottom" title="Load unmodified screenshot containing glyphs.">
+                                    Screenshot&nbsp;
+                                    <i class="far fa-question-circle text-danger h6"></i>
+                                </div>
+                                <input type="file" class="col-4 form-control form-control-sm" accept="image/*"
+                                    name="files[]" data-type="img" onchange="glyph.loadGlyphImage(this)">
+                                <div class="col-14">
+                                    <canvas id="ss-canvas" class="border" style="height:10px;width:20px;"></canvas>
+                                </div>
+                            </div>
+
+                            <div id="glyphbuttons" class="row"></div>
                         </div>
                         <br>
 
-                        <div class="text-danger h6">
-                            <span class="h5">*</span>&nbsp;Required Entry,&nbsp;
-                            <i id="ttipmsg" class="far fa-question-circle">&nbsp;Tool Tip</i>
+                        <div class="row">
+                            <div id="id-POI" class="col-lg-7 col-md-14 col-sm-7 col-14"></div>
+                            <div id="id-Civ-Org" class="col-lg-7 col-md-14 col-sm-7 col-14"></div>
                         </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-6 col-9 txt-label-def">Average Jump Range&nbsp;</div>
+                        <input id="id-range" class="rounded col-sm-3 col-5" type="number" value="2000">
+                    </div>
+                    <br>
+
+                    <div class="row border-top border-3">
+                        <button id="btn-searchRegion" type="button" class="col-6 btn-def btn btn-sm"
+                            onclick="bhs.calcroute()">Calculate Route</button>&nbsp
+                        <label class="col-7 txt-label-def">
+                            <input id="ck-nearPath" type="checkbox">
+                            POI near route
+                        </label>
+                    </div>
+                    <div class="row">
+                        <button id="btn-proximity" type="button" class="col-6 btn-def btn btn-sm"
+                            onclick="bhs.calcroute(true)">POI
+                            Proximity</button>&nbsp
+                        <div class="col-4 txt-label-def">Max Jumps&nbsp;</div>
+                        <input id="id-maxJumps" class="rounded col-3" value="20">
+                    </div>
+                    <br>
+                    <div id="status" class="border row text-danger scrollbar container-fluid"
+                        style="overflow-y: scroll; height: 40px"></div>
+
+                    <div class="text-danger h6">
+                        <span class="h5">*</span>&nbsp;Required Entry,&nbsp;
+                        <i id="ttipmsg" class="far fa-question-circle">&nbsp;Tool Tip</i>
                     </div>
                 </div>
                 <br>
-            </div>
 
-            <div class="col-md-7 col-14">
-                <div id="pnl-map" class="card card-body border txt-def">
-                    <div class="row">
-                        <div id="mapcol" class="col-md-7 col-sm-11 col-14 pr-15">
-                            <div id="plymap" class="hidden border"></div>
-                            <div id="image" class="hidden border"></div>
-                        </div>
-                        <br>
+                <div class="col-md-7 col-14">
+                    <div id="pnl-map" class="card card-body border txt-def">
+                        <div class="row">
+                            <div id="mapcol" class="col-md-11 col-14 pr-15">
+                                <div id="plymap" class="hidden border"></div>
+                                <div id="image" class="hidden border"></div>
+                            </div>
+                            <br>
 
-                        <div class="col-md-7 col-sm-3 col-14">
-                            <div class="row">
-                                <a id="maplogo" class="col-sm-14 col-10">
-                                    <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo"
-                                        width="20" height="20">
-                                </a>
-                                <div class="col-4">
-                                    <br>
-                                    <button id="btn-switch" type="button" class="btn-def btn btn-sm "
-                                        onclick="redraw()">Redraw</button>
+                            <div class="col pl-15">
+                                <div class="row">
+                                    <div id="maplogo" class="col-sm-14 col-10">
+                                        <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo"
+                                            width="20" height="20">
+                                    </div>
+                                    <div class="col-4">
+                                        <br>
+                                        <button id="btn-switch" type="button" class="btn-def btn btn-sm "
+                                            onclick="redraw()">Redraw</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
