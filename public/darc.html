@@ -300,15 +300,18 @@
                 <div class="col-md-7 col-14">
                     <div id="pnl-map" class="card card-body border txt-def">
                         <div class="row">
-                            <div id="mapcol" class="col-md-11 col-14 pr-15">
-                                <div id="plymap" class="hidden border"></div>
-                                <div id="image" class="hidden border"></div>
+                            <div class="col-md-9 col-14 pr-15">
+                                <div id="plymap" class="border rounded hidden"></div>
+                                <div id="image" class="border rounded hidden"></div>
+                                <div class="col-md-8 col-14">
+                                    <canvas id="navcanvas" class="border rounded hidden"></canvaas>
+                                </div>
                             </div>
                             <br>
 
                             <div class="col pl-15">
                                 <div class="row">
-                                    <div id="maplogo" class="col-sm-14 col-10">
+                                    <div id="maplogo" class="col-md-14 col-10">
                                         <img id="logo" src="images/bhs-logo.png" class="float-left" alt="BHS Logo"
                                             width="20" height="20">
                                     </div>

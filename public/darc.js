@@ -55,7 +55,7 @@ function dispGlyph(evt, loc) {
 
         let id = loc ? loc.closest("[id|='w']").prop("id") : $(evt).closest("[id|='w']").prop("id")
 
-        bhs.setAddress(id.stripID(),glyph)
+        bhs.setAddress(id.stripID(), glyph)
     }
 }
 
@@ -260,6 +260,7 @@ blackHoleSuns.prototype.showPOI = function (name) {
     let h = /wsize/ [Symbol.replace](img, w + "px")
 
     $("#plymap").hide()
+    $("#navcanas").hide()
     let loc = $("#image")
     loc.empty()
     loc.show()
@@ -285,6 +286,7 @@ blackHoleSuns.prototype.showOrg = function (name) {
     let h = /wsize/ [Symbol.replace](img, w + "px")
 
     $("#plymap").hide()
+    $("#navcanas").hide()
     let loc = $("#image")
     loc.empty()
     loc.show()
@@ -609,7 +611,7 @@ blackHoleSuns.prototype.displayResults = function (routes) {
                 h += /title/ [Symbol.replace](resrow, "Cornell Index of " + rte.bh + " black holes.")
         } else {
             let l = /col-md-7/ [Symbol.replace](resrow, "col-md-9")
-            h += /title/ [Symbol.replace](l, calc + " warp jumps, distance " + dist + " light years.")
+            h += /title/ [Symbol.replace](l, calc + " direct warp jumps, distance " + dist + " light years.")
         }
         if ($("#ck-nearPath").prop("checked") && poi > 0)
             h += /title/ [Symbol.replace](resrow, poi + " additional POI along route.")
@@ -665,6 +667,7 @@ function redraw() {
 
 function mapRoute(route) {
     $("#image").hide()
+    $("#navcanas").hide()
     $("#plymap").show()
 
     let data = []
@@ -735,8 +738,6 @@ function mapRow(evt) {
     let sloc = $(evt)
     let start = sloc.prop("id").stripID()
     let sxyz = addressToXYZ(start)
-    let sreg = sloc.find("#itm-reg").text()
-    let ssys = sloc.find("#itm-sys").text()
 
     let eloc = $(evt).next()
     let end = eloc.prop("id")
@@ -745,42 +746,13 @@ function mapRow(evt) {
 
     end = end.stripID()
     let exyz = addressToXYZ(end)
-    let ereg = eloc.find("#itm-reg").text()
-    let esys = eloc.find("#itm-sys").text()
 
-    let zero = {
-        x: 2048,
-        y: 128,
-        z: 2048,
-    }
+   $("#plymap").hide()
+   $("#navcanvas").show()
+   $("#image").hide()
 
-    let data = []
-    let out = initout()
-    pushentry(out, zero, "Galactic Center")
-    pushentry(out, sxyz)
-    data.push(makedata(out, 2, "#ffffff", "#c0c0c0"))
-
-    if (exyz.x !== sxyz.x || exyz.y !== sxyz.y || exyz.z !== sxyz.z) {
-        out = initout()
-        pushentry(out, sxyz)
-        pushentry(out, exyz, end + (ereg ? "<br>" + ereg : "") + (esys ? "<br>" + esys : ""))
-        data.push(makedata(out, 4, "#ff0000", "#40ff00"))
-
-        out = initout()
-        pushentry(out, sxyz, start + (sreg ? "<br>" + sreg : "") + (ssys ? "<br>" + ssys : ""))
-        data.push(makedata(out, 4, "#00ff00"))
-    } else {
-        out = initout()
-        pushentry(out, exyz, end + (ereg ? "<br>" + ereg : "") + (esys ? "<br>" + esys : ""))
-        data.push(makedata(out, 4, "#00ff00"))
-    }
-
-    Plotly.react('plymap', data, changeMapLayout(true, start, end))
-
-    if (typeof (Storage) !== "undefined") {
-        window.localStorage.setItem('navstart', start)
-        window.localStorage.setItem('navend', end)
-    }
+   let a = calcAngles(sxyz, exyz)
+   mapAngles("navcanvas", a)
 }
 
 function pushentry(out, xyz, label) {
