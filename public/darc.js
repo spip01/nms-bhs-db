@@ -260,7 +260,7 @@ blackHoleSuns.prototype.showPOI = function (name) {
     let h = /wsize/ [Symbol.replace](img, w + "px")
 
     $("#plymap").hide()
-    $("#navcanas").hide()
+    $("#navcanvas").hide()
     let loc = $("#image")
     loc.empty()
     loc.show()
@@ -286,7 +286,7 @@ blackHoleSuns.prototype.showOrg = function (name) {
     let h = /wsize/ [Symbol.replace](img, w + "px")
 
     $("#plymap").hide()
-    $("#navcanas").hide()
+    $("#navcanvas").hide()
     let loc = $("#image")
     loc.empty()
     loc.show()
@@ -667,7 +667,7 @@ function redraw() {
 
 function mapRoute(route) {
     $("#image").hide()
-    $("#navcanas").hide()
+    $("#navcanvas").hide()
     $("#plymap").show()
 
     let data = []

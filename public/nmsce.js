@@ -116,7 +116,7 @@ NMSCE.prototype.buildPanels = function () {
     addRadioList($("#id-Lifeform"), "Lifeform", lifeformList)
     addRadioList($("#id-Platform"), "Platform", platformListAll)
 
-    bhs.buildMenu($("#panels"), "Galaxy", galaxyList, null, {
+    bhs.buildMenu($("#panels"), "Galaxy", galaxyList, nmsce.setGalaxy, {
         tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
         required: true,
         labelsize: "col-md-6 col-4",
@@ -142,7 +142,6 @@ NMSCE.prototype.buildPanels = function () {
             })
         })
     }
-
 
     addGlyphButtons($("#glyphbuttons"), nmsce.addGlyph)
 
@@ -193,6 +192,14 @@ NMSCE.prototype.buildPanels = function () {
                 nmsce.imageKeypress(e)
         }, true)
     }
+}
+
+NMSCE.prototype.setGalaxy = function (evt) {
+    bhs.updateUser({
+        galaxy: $(evt).text().stripNumber()
+    })
+
+    nmsce.getEntries(true)
 }
 
 NMSCE.prototype.setGlyphInput = function (evt) {
@@ -3744,26 +3751,32 @@ function getEntry() {
     }
 }
 
-NMSCE.prototype.getEntries = function (evt) {
-    nmsce.entries = {}
+NMSCE.prototype.getEntries = function (skipAll) {
+    if (typeof nmsce.entries === "undefined")
+        nmsce.entries = {}
 
     for (let obj of objectList) {
         nmsce.entries[obj.name] = []
+        nmsce.clearDisplayList(obj.name)
         let ref = bhs.fs.collection("nmsce/" + bhs.user.galaxy + "/" + obj.name)
+        // let ref = bhs.fs.collectionGroup("nmsceCommon")
+        // ref = ref.where("type", "==", obj.name)
         ref = ref.where("uid", "==", bhs.user.uid)
         ref = ref.orderBy("created", "desc")
         ref = ref.limit(50)
         nmsce.getWithObserver(null, ref, obj.name, true, nmsce.displayList)
     }
 
-    let ref = bhs.fs.collectionGroup("nmsceCommon")
-    nmsce.entries["All"] = []
-    ref = ref.where("uid", "==", bhs.user.uid)
-    ref = ref.orderBy("created", "desc")
-    ref = ref.limit(50)
-    nmsce.getWithObserver(null, ref, "All", true, nmsce.displayList, {
-        source: "server"
-    })
+    if (!skipAll) {
+        let ref = bhs.fs.collectionGroup("nmsceCommon")
+        nmsce.entries["All"] = []
+        ref = ref.where("uid", "==", bhs.user.uid)
+        ref = ref.orderBy("created", "desc")
+        ref = ref.limit(50)
+        nmsce.getWithObserver(null, ref, "All", true, nmsce.displayList, {
+            source: "server"
+        })
+    }
 }
 
 const resultTables = [{
@@ -4264,6 +4277,11 @@ NMSCE.prototype.buildDisplayList = function () {
 
     let height = $("html")[0].clientHeight - 100
     $("#displayPanels .scroll").height(height + "px")
+}
+
+NMSCE.prototype.clearDisplayList=function(type){
+    let loc = $("#displayPanels #list-" + type)
+    loc.empty()
 }
 
 NMSCE.prototype.displayList = function (entries, type) {
