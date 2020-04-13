@@ -387,7 +387,7 @@ function mapAngles(canvasid, a, width, height) {
 
     let u = elev0y - (a.v > 90 ? 180 - a.v : a.v) * (a.vdist > 0 ? 1 : -1) * elevh / 2 / 90
 
-    ctx.font = screen.width > 1024 ? "22px Arial" : "15px Arial"
+    ctx.font = screen.width > 1024 ? "18px Arial" : "15px Arial"
     ctx.fillStyle = "white"
     ctx.fillText("0", elevx - 8, elev0y + 3)
     let txtw = ctx.measureText("Horizon").width
@@ -448,7 +448,7 @@ function mapAngles(canvasid, a, width, height) {
 
     ctx.stroke()
 
-    const txtr = radius + 18
+    const txtr = radius + 12
     let x = Math.sin(32.5 / 180 * Math.PI) * txtr
     let y = Math.cos((32.5 - 180) / 180 * Math.PI) * txtr
     ctx.fillText("32.5", ctrx + x, ctry + y)
@@ -471,7 +471,7 @@ function mapAngles(canvasid, a, width, height) {
     x = Math.sin(a.h / 180 * Math.PI) * txtr
     y = Math.cos((a.h - 180) / 180 * Math.PI) * txtr
     txtw = ctx.measureText(a.h).width
-    ctx.fillText(a.h, ctrx + x * (a.hdist > 0 ? 1 : -1) + (a.hdist > 0 ? 0 : -txtw), ctry + y)
+    ctx.fillText(a.h, ctrx + x * (a.hdist > 0 ? 1 : -1) + (a.hdist > 0 ? -8 : -txtw), ctry + y)
 
     txtw = ctx.measureText(a.dist + " LY").width
     ctx.fillText(a.dist + " LY", ctrx + (a.hdist > 0 ? -txtw - 10 : 10), ctry)
