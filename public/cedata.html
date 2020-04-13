@@ -381,21 +381,21 @@
                         </div>
 
                         <div class="row">
-                            <label class="txt-label-def">Reddit Link&nbsp;
+                            <label class="col-14 txt-label-def">Reddit Link&nbsp;
                                 <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
                                     data-placement="bottom"
                                     title="If you make the post from the app then this field will be auto-filled. If you make the post manually then copy the post url here.">
                                 </i>&nbsp;
-                                <input id="redditlink" class="col-7" type="text">
+                                <input id="redditlink" class="col-12" type="text">
                             </label>
                         </div>
 
                         <div id="redditPost" class="row">
-                            <div id="id-SubReddit" class="col-md-7 col-14"></div>
-                            <div id="id-Flair" class="col-md-7 col-14"></div>
+                            <div id="id-SubReddit" class="col-14"></div>
+                            <div id="id-Flair" class="col-14"></div>
                             <label class="col-14 txt-label-def">Title&nbsp;
                                 <span class="h5 text-danger">*</span>&nbsp;
-                                <input id="id-Title" class="col-8" type="text" maxength=300>
+                                <input id="id-Title" class="col-12" type="text" maxength=300>
                             </label>
                             <button class="col-2 btn btn-sm btn-def" onclick="nmsce.redditPost()">Post</button>&nbsp;
                             <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
@@ -406,7 +406,7 @@
                         <br>
                     </div>
 
-                    <div id="editingScreenshot" class="hidden">
+                    <div id="editingScreenshot" class="border-top hidden">
                         <div class="row">
                             <button type="button" class="col-5 btn btn-def btn-sm" onclick="nmsce.extractGlyphs()">
                                 Scan Glyphs
@@ -427,10 +427,10 @@
                                 min=0>
                         </label>
 
-                        <label class="row txt-label-def">Font Color
+                        <label class="row txt-label-def">Font Color&nbsp;
                             <input type="text" class="col-2 border border-3 bdr-black rounded h6" id="color-font">
                         </label>
-                        <label class="row txt-label-def">Background Color
+                        <label class="row txt-label-def">Background Color&nbsp;
                             <input type="text" class="col-2 border border-3 bdr-black rounded h6" id="color-background">
                         </label>
                         <div clss="row" style="padding-top:0px;">
@@ -486,7 +486,7 @@
                 <input id="id-myLogo" type="file" class="col-md-5 col-7 border rounded" accept="image/*"
                     name="files[]" onchange="nmsce.loadMyLogo(this)">
             </div>
-            
+
                 <div id="img-text" class="container-fluid row txt-label-def container-fluid"></div>
 
                 <button id="editreset" class="btn btn-sm btn-def col-md-2 col-7"

@@ -2588,7 +2588,7 @@ NMSCE.prototype.setColor = function (inid, value) {
         let text = nmsce.imageText[id]
 
         if (text.sel && text.type !== "img")
-            text[inid==="font"?"color":inid] = value
+            text[inid === "font" ? "color" : inid] = value
     }
 
     nmsce.drawText()
@@ -2965,7 +2965,9 @@ NMSCE.prototype.redditGetSubscribed = function (accessToken) {
                     })
 
                 bhs.buildMenu($("#redditPost"), "SubReddit", nmsce.subReddits, nmsce.setSubReddit, {
-                    required: true
+                    required: true,
+                    labelsize: "col-4",
+                    menusize: "col"
                 })
             },
             error(err) {
@@ -3004,7 +3006,9 @@ NMSCE.prototype.setSubReddit = function (evt, accessToken) {
                     })
 
                 bhs.buildMenu($("#redditPost"), "Flair", nmsce.subRedditFlair, null, {
-                    required: true
+                    required: true,
+                    labelsize: "col-4",
+                    menusize: "col"
                 })
             },
             error(err) {
