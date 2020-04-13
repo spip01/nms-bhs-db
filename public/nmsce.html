@@ -13,8 +13,7 @@
     <meta name="keywords" content="nmsce,nms,coordinate exchange,no mans sky,reddit">
 
     <meta property="og:title" content="No Man's Sky Coordinate Exchange App" />
-    <meta property="og:description"
-        content="Search for ships, freighters, multi-tools, fauna and more." />
+    <meta property="og:description" content="Search for ships, freighters, multi-tools, fauna and more." />
     <meta property="og:url" content="https://nmsce.com/" />
     <meta property="og:secure_url" content="https://nmsce.com/" />
     <meta property="og:type" content="website" />
@@ -285,6 +284,17 @@
                         <div id="imgcol" class="col-lg-10 col-md-9 col-14">
                             <img id="dispimage"
                                 onload="nmsce.imageLoaded(this, $(this).parent().width(), $(window).height(), true)" />
+                            <div class="row">
+                                <a id="permalink" class="col-10 h4 pl-30" href="">
+                                    Shareable Link&nbsp;
+                                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
+                                        data-html="true" data-placement="bottom"
+                                        title="Share this link for direct access this entry. Just use the browsers copy link address.">&nbsp;
+                                    </i>
+                                </a>
+                                <button id="btn-ceedit" type="button" class="col-3 btn btn-sm btn-def hidden"
+                                    onclick="nmsce.editSelected()">Edit</button>
+                            </div>
                         </div>
                         <div class="col-lg-4 col-md-5 col-14 pl-15">
                             <div id="imagedata"></div>
@@ -339,17 +349,6 @@
                                 </div>
                             </div>
                             <br>
-                            <div class="row">
-                                <a id="permalink" class="col-7 h5 pl-30" href="">
-                                    Permalink&nbsp;
-                                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
-                                        data-html="true" data-placement="bottom"
-                                        title="You can use this link to directly access this entry.">
-                                    </i>
-                                </a>
-                                <button id="btn-ceedit" type="button" class="col-3 btn btn-sm btn-def hidden"
-                                    onclick="nmsce.editSelected()">Edit</button>
-                            </div>
                             <div class="row" onclick="nmsce.newDARC('#imagedata #val-Coords')"
                                 class="pointer text-center">
                                 <div class="col text-center">

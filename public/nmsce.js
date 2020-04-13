@@ -2152,47 +2152,10 @@ let txtcanvas = document.createElement('canvas')
 
 NMSCE.prototype.buildImageText = function () {
     const ckbox = `
-        <label class="col-lg-6 col-md-14 col-sm-4 col-6">
+        <label class="col-lg-2 col-md-3 col-sm-4 col-7">
             <input id="ck-idname" type="checkbox" ftype loc row sub onchange="nmsce.getImageText(this, true)">
             &nbsp;title
         </label>`
-
-    const textInp = `
-        <div class="row">
-             <button type="button" class="col-lg-5 col-md-12 col-5 btn btn-def btn-sm" onclick="nmsce.extractGlyphs()">
-                Scan Glyphs
-            </button>&nbsp;
-            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
-                data-placement="bottom"
-                title="<span class='h5 text-danger'>Always</span> double-check glyph output. For best results take a high contrast clear background for glyph processing. Take a snapshot just to capture glyphs then proceed as normal.">
-            </i>
-       </div>
-        <div class="row">
-            <label class="col-lg-6 col-md-13 col-5 txt-label-def pl-15">
-                <input id="ck-myLogo" type="checkbox" data-loc="#id-myLogo" data-type="img"
-                        onchange="nmsce.getImageText(this, true)">
-                        Load Overlay&nbsp;
-                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
-                    data-placement="bottom"
-                    title="Load a 2nd image as an overlay. You can resize and move the 2nd image."></i>&nbsp;
-            </label>
-            <input id="id-myLogo" type="file" class="col-lg-8 col-md-13 col form-control form-control-sm" 
-                accept="image/*" name="files[]" onchange="nmsce.loadMyLogo(this)">&nbsp
-        </div>
-        <div class="row">
-            <label class="col-lg-6 col-md-13 col-5 txt-label-def pl-15">
-                <input id="ck-Text" type="checkbox" data-loc="#id-Text"
-                    onchange="nmsce.getImageText(this, true)">
-                Text&nbsp;
-                <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
-                    data-placement="bottom"
-                    title="Use Line break, <br>, to separate multiple lines.">
-                </i>&nbsp;
-            </label>
-            <input id="id-Text" class="rounded col-lg-8 col" type="text" onchange="nmsce.getImageText(this, true)">
-        </div>`
-
-    $("#img-text").html(textInp)
 
     let appenditem = (title, type, loc, row, sub) => {
         let h = /idname/ [Symbol.replace](ckbox, title.nameToId())
@@ -2236,6 +2199,11 @@ NMSCE.prototype.buildImageText = function () {
         menusize: "col",
         sort: true,
         font: true,
+    })
+
+    $("[id|='color']").colorpicker().on('colorpickerChange', evt => {
+        $(evt.target).css("background-color", evt.color.toRgbString())
+        nmsce.setColor($(evt.target).prop("id").stripID(), evt.color.toRgbString())
     })
 }
 
@@ -2493,6 +2461,7 @@ NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
         $("#id-ssImage").hide()
         $("#id-canvas").show()
         $("#imageTextBlock").show()
+        $("#editingScreenshot").show()
 
         if (nmsce.last) {
             $("#updateScreenshot").show()
@@ -2504,6 +2473,7 @@ NMSCE.prototype.loadScreenshot = function (evt, fname, edit) {
         $("#id-canvas").hide()
         $("#id-ssImage").show()
         $("#updateScreenshot").hide()
+        $("#editingScreenshot").hide()
     }
 
     if (evt) {
@@ -2609,9 +2579,7 @@ NMSCE.prototype.measureText = function (t) {
     return t
 }
 
-NMSCE.prototype.setColor = function (evt) {
-    let color = $(evt).val()
-
+NMSCE.prototype.setColor = function (inid, value) {
     let keys = Object.keys(nmsce.imageText)
     for (let id of keys) {
         if (id === "textsize")
@@ -2620,7 +2588,7 @@ NMSCE.prototype.setColor = function (evt) {
         let text = nmsce.imageText[id]
 
         if (text.sel && text.type !== "img")
-            text.color = color
+            text[inid==="font"?"color":inid] = value
     }
 
     nmsce.drawText()
@@ -2723,16 +2691,21 @@ NMSCE.prototype.drawText = function (alt, altw) {
                 else if (text.x + text.left < 0)
                     text.x = -text.left
 
-                if (id === "Glyphs") {
-                    text.font = "NMS Glyphs"
+                // if (id === "Glyphs") {
+                //     text.font = "NMS Glyphs"
 
-                    ctx.fillStyle = text.color
-                    ctx.fillRect(text.x + text.left - 5, text.y - text.ascent - 5, text.right - text.left + 9, text.ascent + text.decent + 8)
-                    ctx.fillStyle = "#000000"
-                    ctx.fillRect(text.x + text.left - 3, text.y - text.ascent - 3, text.right - text.left + 5, text.ascent + text.decent + 4)
-                }
+                //     ctx.fillStyle = text.color
+                //     ctx.fillRect(text.x + text.left - 5, text.y - text.ascent - 5, text.right - text.left + 9, text.ascent + text.decent + 8)
+                //     ctx.fillStyle = "#000000"
+                //     ctx.fillRect(text.x + text.left - 3, text.y - text.ascent - 3, text.right - text.left + 5, text.ascent + text.decent + 4)
+                // }
 
                 if (text.type === "text") {
+                    if (typeof text.background !== "undefined") {
+                        ctx.fillStyle = text.background
+                        ctx.fillRect(text.x + text.left, text.y - text.ascent - 1, text.right - text.left + 1, text.ascent + text.decent + 2)
+                    }
+
                     ctx.font = text.fSize + "px " + text.font
                     ctx.fillStyle = text.color
 
@@ -2754,10 +2727,7 @@ NMSCE.prototype.drawText = function (alt, altw) {
                     ctx.strokeStyle = "white"
                     ctx.setLineDash([3, 2])
                     ctx.beginPath()
-                    if (id === "Glyphs")
-                        ctx.rect(text.x + text.left - 6, text.y - text.ascent - 6, text.right - text.left + 10, text.ascent + text.decent + 9)
-                    else
-                        ctx.rect(text.x + text.left, text.y - text.ascent, text.right - text.left, text.ascent + text.decent)
+                    ctx.rect(text.x + text.left, text.y - text.ascent - 1, text.right - text.left + 1, text.ascent + text.decent + 2)
                     ctx.stroke()
                 }
             }
@@ -3284,7 +3254,12 @@ NMSCE.prototype.imageMouseDown = function (e) {
             let loc = $("#imgtable")
             loc.find("#btn-Font").text(text.font)
             loc.find("#sel-size").val(text.fSize)
-            loc.find("#sel-color").val(text.color)
+
+            loc.find("#color-font").colorpicker("setValue", text.color)
+            if (typeof text.background !== "undefined")
+                loc.find("#color-background").colorpicker("setValue", text.background)
+            else
+                loc.find("#color-background").colorpicker("setValue", "rgba(0,0,0,0)")
         }
 
         if (hit) {
@@ -4279,7 +4254,7 @@ NMSCE.prototype.buildDisplayList = function () {
     $("#displayPanels .scroll").height(height + "px")
 }
 
-NMSCE.prototype.clearDisplayList=function(type){
+NMSCE.prototype.clearDisplayList = function (type) {
     let loc = $("#displayPanels #list-" + type)
     loc.empty()
 }
@@ -4486,9 +4461,13 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend, type) {
 
     h += end
 
-    if (prepend)
-        loc.find("#row-key").after(h)
-    else {
+    if (prepend) {
+        let key = loc.find("#row-key")
+        if (key.length === 0)
+            loc.prepend(h)
+        else
+            key.after(h)
+    } else {
         loc.append(h)
         loc = loc.find("#row-" + e.id + " img")
 
