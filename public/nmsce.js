@@ -2194,6 +2194,21 @@ NMSCE.prototype.buildImageText = function () {
         }
     }
 
+    let loc = $("#img-text")
+    let next = loc.find("#id-myLogo").nextAll()
+    let list = []
+    for (let l of next) {
+        list.push({
+            id: $(l).find("input").prop("id"),
+            html: l.outerHTML
+        })
+        $(l).remove()
+    }
+
+    list.sort((a, b) => a.id > b.id ? 1 : -1)
+    for (let l of list)
+        loc.append(l.html)
+
     bhs.buildMenu($("#imgtable"), "Font", fontList, nmsce.setFont, {
         labelsize: "col-5",
         menusize: "col",

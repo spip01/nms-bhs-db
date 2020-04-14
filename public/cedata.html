@@ -463,34 +463,35 @@
             </div>
             <br>
 
-            <div id="imageTextBlock" class="container-fluid hidden">
-                <div class="row">
-                <label class="col-md-2 col-7 txt-label-def ">
-                    <input id="ck-Text" type="checkbox" data-loc="#id-Text"
+            <div id="imageTextBlock" class="hidden">
+                <div id="img-text" class="container-fluid row txt-label-def container-fluid">
+                    <label class="col-md-2 col-7 txt-label-def ">
+                        <input id="ck-Text" type="checkbox" data-loc="#id-Text"
+                            onchange="nmsce.getImageText(this, true)">
+                        Text&nbsp;
+                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
+                            data-placement="bottom" title="Use Line break, <br>, to separate multiple lines.">
+                        </i>&nbsp;
+                    </label>
+                    <input id="id-Text" class="rounded col-md-5 col-7" type="text"
                         onchange="nmsce.getImageText(this, true)">
-                    Text&nbsp;
-                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
-                        data-placement="bottom" title="Use Line break, <br>, to separate multiple lines.">
-                    </i>&nbsp;
-                </label>
-                <input id="id-Text" class="rounded col-md-5 col-7" type="text" onchange="nmsce.getImageText(this, true)">
 
-                <label class="col-md-2 col-7 txt-label-def ">
-                    <input id="ck-myLogo" type="checkbox" data-loc="#id-myLogo" data-type="img"
-                        onchange="nmsce.getImageText(this, true)">
-                    Load Overlay&nbsp;
-                    <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
-                        data-placement="bottom"
-                        title="Load a 2nd image as an overlay. You can resize and move the 2nd image."></i>&nbsp;
-                </label>
-                <input id="id-myLogo" type="file" class="col-md-5 col-7 border rounded" accept="image/*"
-                    name="files[]" onchange="nmsce.loadMyLogo(this)">
-            </div>
+                    <label class="col-md-2 col-7 txt-label-def ">
+                        <input id="ck-myLogo" type="checkbox" data-loc="#id-myLogo" data-type="img"
+                            onchange="nmsce.getImageText(this, true)">
+                        Load Overlay&nbsp;
+                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
+                            data-placement="bottom"
+                            title="Load a 2nd image as an overlay. You can resize and move the 2nd image."></i>&nbsp;
+                    </label>
+                    <input id="id-myLogo" type="file" class="col-md-5 col-7 border rounded" accept="image/*"
+                        name="files[]" onchange="nmsce.loadMyLogo(this)">
+                </div>
 
-                <div id="img-text" class="container-fluid row txt-label-def container-fluid"></div>
-
-                <button id="editreset" class="btn btn-sm btn-def col-md-2 col-7"
-                    onclick="nmsce.buildImageText(true)">Reset</button>&nbsp;
+                <button id="editreset" class="btn btn-sm btn-def col-md-3 col-7"
+                    onclick="nmsce.buildImageText()">Reset</button>&nbsp;
+                <button id="editrestore" class="btn btn-sm btn-def col-md-3 col-7"
+                    onclick="nmsce.restoreImageText(bhs.user.imageText, true)">Restore Saved</button>&nbsp;
             </div>
             <br>
         </div>
