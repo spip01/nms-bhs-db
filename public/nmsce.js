@@ -35,11 +35,6 @@ $(document).ready(async () => {
         if (fcedata) {
             nmsce.buildImageText()
 
-            let img = new Image()
-            img.crossOrigin = "anonymous"
-            img.onload = nmsce.onLoadLogo
-            img.src = "/images/app-logo.png"
-
             tmImage.load("/bin/model.json", "/bin/metadata.json").then(model => nmsce.model = model)
 
             nmsce.buildDisplayList()
@@ -2156,6 +2151,29 @@ NMSCE.prototype.buildImageText = function () {
             <input id="ck-idname" type="checkbox" ftype loc row sub onchange="nmsce.getImageText(this, true)">
             &nbsp;title
         </label>`
+    const fieldinputs = `
+        <label class="col-md-2 col-7 txt-label-def ">
+            <input id="ck-Text" type="checkbox" data-loc="#id-Text"
+                onchange="nmsce.getImageText(this, true)">
+            Text&nbsp;
+            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
+                data-placement="bottom" title="Use Line break, <br>, to separate multiple lines.">
+            </i>&nbsp;
+        </label>
+        <input id="id-Text" class="rounded col-md-5 col-7" type="text"
+            onchange="nmsce.getImageText(this, true)">
+
+        <label class="col-md-2 col-7 txt-label-def ">
+            <input id="ck-myLogo" type="checkbox" data-loc="#id-myLogo" data-type="img"
+                onchange="nmsce.getImageText(this, true)">
+            Load Overlay&nbsp;
+            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
+                data-placement="bottom"
+                title="Load a 2nd image as an overlay. You can resize and move the 2nd image."></i>&nbsp;
+        </label>
+        <input id="id-myLogo" type="file" class="col-md-5 col-7 border rounded" accept="image/*"
+            name="files[]" onchange="nmsce.loadMyLogo(this)">
+        `
 
     let appenditem = (title, type, loc, row, sub) => {
         let h = /idname/ [Symbol.replace](ckbox, title.nameToId())
@@ -2167,8 +2185,17 @@ NMSCE.prototype.buildImageText = function () {
         $("#img-text").append(h)
     }
 
+    $("#img-text").empty()
+    $("#img-text").append(fieldinputs)
+
     nmsce.imageText = {}
     nmsce.initImageText("logo")
+
+    let img = new Image()
+    img.crossOrigin = "anonymous"
+    img.onload = nmsce.onLoadLogo
+    img.src = "/images/app-logo.png"
+
     nmsce.initImageText("Text")
     nmsce.initImageText("myLogo")
 
@@ -2216,7 +2243,45 @@ NMSCE.prototype.buildImageText = function () {
         font: true,
     })
 
-    $("[id|='color']").colorpicker().on('colorpickerChange', evt => {
+    $("[id|='color']").colorpicker({
+        container: true,
+        format: null,
+        customClass: 'colorpicker-2x',
+        sliders: {
+            saturation: {
+                maxLeft: 200,
+                maxTop: 200
+            },
+            hue: {
+                maxTop: 200
+            },
+            alpha: {
+                maxTop: 200
+            }
+        },
+        extensions: [{
+            name: 'swatches', // extension name to load
+            options: { // extension options
+                colors: {
+                    '1': '#ffffff',
+                    '2': '#ff0000',
+                    '3': '#ff8000',
+                    '4': '#ffff00',
+                    // '5': '#80ff00',
+                    '6': '#00ff00',
+                    // '7': '#00ff80',
+                    '8': '#00ffff',
+                    // '9': '#0080ff',
+                    '10': '#0000ff',
+                    // '11': '#8000ff',
+                    '12': '#ff00ff',
+                    // '13': '#ff0080',
+                    '14': '#000000',
+                },
+                namesAsValues: true
+            }
+        }]
+    }).on('change', evt => {
         $(evt.target).css("background-color", evt.color.toRgbString())
         nmsce.setColor($(evt.target).prop("id").stripID(), evt.color.toRgbString())
     })
@@ -2247,6 +2312,7 @@ NMSCE.prototype.initImageText = function (id) {
                 font: id === "Glyphs" ? "NMS Glyphs" : "Arial",
                 fSize: 24,
                 color: "#ffffff",
+                background: id === "Glyphs" ? "#000000" : "rgba(0,0,0,0)",
                 ck: false,
                 text: "",
                 type: "text"
@@ -3274,11 +3340,17 @@ NMSCE.prototype.imageMouseDown = function (e) {
             loc.find("#btn-Font").text(text.font)
             loc.find("#sel-size").val(text.fSize)
 
+            loc.find("#color-font").colorpicker("disable")
+            loc.find("#color-background").colorpicker("disable")
+
             loc.find("#color-font").colorpicker("setValue", text.color)
             if (typeof text.background !== "undefined")
                 loc.find("#color-background").colorpicker("setValue", text.background)
             else
                 loc.find("#color-background").colorpicker("setValue", "rgba(0,0,0,0)")
+
+            loc.find("#color-font").colorpicker("enable")
+            loc.find("#color-background").colorpicker("enable")
         }
 
         if (hit) {
