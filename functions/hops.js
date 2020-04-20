@@ -309,7 +309,7 @@ function calcDistSqXYZ(xyz1, xyz2) {
 
 function addBases(user, start, gal, plat) {
     let ref = admin.firestore().collection("users")
-    ref = ref.where("_name", "==", user)
+    ref = ref.where("uid", "==", user)
     let startcoords = dc.coordinates(start === "" ? "0000:0000:0000:0000" : start)
 
     return ref.get().then(snapshot => {

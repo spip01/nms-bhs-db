@@ -518,10 +518,12 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
         let ctx = canvas.getContext("2d")
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-        $("#save").text("Save")
-
-        $("#delete").addClass("disabled")
-        $("#delete").prop("disabled", true)
+        $("#save-system").text("Save System")
+        $("#save").text("Save All")
+        $("#delete-system").addClass("disabled")
+        $("#delete-system").prop("disabled", true)
+        $("#delete-item").addClass("disabled")
+        $("#delete-item").prop("disabled", true)
 
         $("#openReddit").addClass("disabled")
         $("#openReddit").prop("disabled", true)
@@ -529,7 +531,7 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
     }
 }
 
-NMSCE.prototype.extractEntry = function () {
+NMSCE.prototype.extractSystem = function () {
     let entry = {}
     let ok = true
 
@@ -585,6 +587,13 @@ NMSCE.prototype.extractEntry = function () {
             bhs.updateEntry(entry)
     } else
         bhs.status("WARNING: System info not updated. " + bhs.user._name + " is not creator of " + entry.addr + " " + entry.sys)
+
+    return ok ? entry : null
+}
+
+NMSCE.prototype.extractEntry = function () {
+    let entry = nmsce.extractSystem()
+    let ok = entry !== null
 
     if (ok) {
         delete entry.created
@@ -754,6 +763,7 @@ NMSCE.prototype.displaySingle = function (entry, noscroll) {
         entry.Economy = "T" + entry.Economy
 
     nmsce.displaySystem(entry)
+    nmsce.changeAddr(null, entry.addr)
 
     let link = "https://nmsce.com/preview.html?i=" + entry.id + "&g=" + entry.galaxy.nameToId() + "&t=" + entry.type.nameToId()
     $("#permalink").attr("href", link)
@@ -833,9 +843,12 @@ NMSCE.prototype.displaySingle = function (entry, noscroll) {
 
     $("#redditlink").val(entry.redditlink ? entry.redditlink : "")
 
-    $("#save").text("UPDATE")
-    $("#delete").removeClass("disabled")
-    $("#delete").removeAttr("disabled")
+    $("#save-system").text("UPDATE System")
+    $("#save").text("UPDATE All")
+    $("#delete-system").removeClass("disabled")
+    $("#delete-system").removeAttr("disabled")
+    $("#delete-item").removeClass("disabled")
+    $("#delete-item").removeAttr("disabled")
 
     let r = entry.reddit
     let date = r ? "Posted " : ""
@@ -1073,7 +1086,6 @@ NMSCE.prototype.deleteSearch = function () {
                 nmsce.searchlist.splice(i, 1)
                 let loc = $("#menu-Saved #item-" + name.nameToId())
                 loc.remove()
-
             })
         } else {
             bhs.status("Named search not found.")
@@ -1369,6 +1381,28 @@ NMSCE.prototype.saveEntry = function () {
 
     if (ok && nmsce.extractEntry())
         nmsce.clearPanel()
+}
+
+NMSCE.prototype.saveSystem = function () {
+    let ok = bhs.user.uid
+
+    if (!nmsce.last || nmsce.last.uid === bhs.user.uid) {
+        let user = nmsce.extractUser()
+        ok = bhs.validateUser(user)
+
+        if (ok) {
+            bhs.user = mergeObjects(bhs.user, user)
+            let ref = bhs.getUsersColRef(bhs.user.uid)
+            ref.set(bhs.user, {
+                merge: true
+            }).then().catch(err => {
+                bhs.status("ERROR: " + err)
+            })
+        }
+    }
+
+    if (ok)
+       nmsce.lastsys= nmsce.extractSystem()
 }
 
 NMSCE.prototype.changeName = function (uid, newname) {}
@@ -3600,11 +3634,14 @@ NMSCE.prototype.alignText = function (how) {
 NMSCE.prototype.deleteEntry = function () {
     if (nmsce.last) {
         let entry = nmsce.last
+        nmsce.last = null
         let ref = bhs.fs.doc("nmsce/" + entry.galaxy + "/" + entry.type + "/" + entry.id)
 
         ref.delete().then(() => {
             bhs.status(entry.id + " deleted.")
-            $("#save").text("Save")
+            $("#save").text("Save All")
+            $("#delete-item").addClass("disabled")
+            $("#delete-item").prop("disabled", true)
 
             let ref = bhs.fbstorage.ref().child(originalPath + entry.Photo)
             ref.delete()
@@ -3618,6 +3655,15 @@ NMSCE.prototype.deleteEntry = function () {
             bhs.status("ERROR: " + err.code)
             console.log(err)
         })
+    }
+}
+
+NMSCE.prototype.deleteSystem = function () {
+    if (nmsce.lastsys && bhs.deleteEntry(nmsce.lastsys)) {
+        nmsce.lastsys = null
+        $("#save-system").text("Save System")
+        $("#delete-system").addClass("disabled")
+        $("#delete-system").prop("disabled", true)
     }
 }
 

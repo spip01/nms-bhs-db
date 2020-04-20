@@ -255,6 +255,13 @@
                             <div id="id-Lifeform" class="col-14"></div>
                             <div id="id-Economy" class="col-14"></div>
                         </div>
+
+                        <div class="row border-top">
+                            <button id="save-system" type="button" class="col-4 btn btn-sm btn-def"
+                                onclick="nmsce.saveSystem()">Save System</button>&nbsp;
+                            <button id="delete-system" type="button" class="col-4 btn btn-sm btn-def disabled" disabled
+                                onclick="nmsce.deleteSystem()">Delete System</button>&nbsp;
+                        </div>
                         <br>
 
                         <nav class="nav nav-tabs row" id="typeTabs" role="tablist"></nav>
@@ -265,9 +272,9 @@
                                 <div class="col-lg-5 col-14">
                                     <div class="row" style="padding-top:2px;">
                                         <button id="save" type="button" class="col-6 btn btn-sm btn-def"
-                                            onclick="nmsce.saveEntry()">Save</button>&nbsp;
-                                        <button id="delete" type="button" class="col-6 btn btn-sm btn-def disabled"
-                                            disabled onclick="nmsce.deleteEntry()">Delete</button>&nbsp;
+                                            onclick="nmsce.saveEntry()">Save All</button>&nbsp;
+                                        <button id="delete-item" type="button" class="col-6 btn btn-sm btn-def disabled"
+                                            disabled onclick="nmsce.deleteEntry()">Delete Item</button>&nbsp;
                                     </div>
                                     <div id="updatenext" class="row hidden">
                                         <button type="button" class="col-6 btn btn-sm btn-def">Update +

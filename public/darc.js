@@ -358,7 +358,7 @@ blackHoleSuns.prototype.calcroute = async function (proximity) {
             galaxy: $("#btn-Galaxy").text().stripNumber(),
             platform: $("#btn-Platform").text(),
             proximity: proximity,
-            user: $("#id-Player").val(),
+            user: typeof bhs.user.uid === "undefined" ? "" : bhs.user.uid,
             usebases: $("#ck-useBases").prop("checked"),
             nearPath: $("#ck-nearPath").prop("checked")
         }).then(async res => {
