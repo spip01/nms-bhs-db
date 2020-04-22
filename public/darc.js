@@ -262,6 +262,7 @@ blackHoleSuns.prototype.showPOI = function (name) {
     $("#plymap").hide()
     $("#navcanvas").hide()
     $("#navHowto").hide()
+    $("#navse").hide()
     let loc = $("#image")
     loc.empty()
     loc.show()
@@ -289,6 +290,7 @@ blackHoleSuns.prototype.showOrg = function (name) {
     $("#plymap").hide()
     $("#navcanvas").hide()
     $("#navHowto").hide()
+    $("#navse").hide()
     let loc = $("#image")
     loc.empty()
     loc.show()
@@ -671,7 +673,8 @@ function mapRoute(route) {
     $("#image").hide()
     $("#navcanvas").hide()
     $("#navHowto").hide()
-    $("#plymap").show()
+   $("#navse").hide()
+$("#plymap").show()
 
     let data = []
 
@@ -748,22 +751,21 @@ function mapRow(evt) {
     let end = eloc.prop("id")
     if (typeof end === "undefined")
         return
-
     end = end.stripID()
     let exyz = addressToXYZ(end)
 
-    if (pair || sxyz.x === exyz.x && sxyz.y === exyz.y && sxyz.z === exyz.z) {
-        $("#plymap").show()
-        $("#navcanvas").hide()
-        $("#navHowto").hide()
-    } else {
-        $("#plymap").hide()
-        $("#navcanvas").show()
-        $("#navHowto").show()
+    $("#navse").text(start+" to "+end)
+    $("#plymap").hide()
+    $("#navcanvas").show()
+    $("#navHowto").show()
+    $("#navse").show()
 
-        let a = calcAngles(sxyz, exyz)
-        mapAngles("navcanvas", a)
-    }
+    let a = calcAngles(sxyz, exyz)
+    mapAngles("navcanvas", a)
+
+    $('html, body').animate({
+        scrollTop: $("#navcanvas").offset().top
+    }, 500)
 
     $("#image").hide()
 }
