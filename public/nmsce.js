@@ -49,6 +49,8 @@ $(document).ready(async () => {
         if (p) {
             let obj = p.split("=")
             passed[unescape(obj[0])] = obj[1] ? unescape(obj[1]) : true
+            if (obj[0] === 'g')
+                passed.g = passed.g.idToName()
         }
     }
 
@@ -58,11 +60,11 @@ $(document).ready(async () => {
     else if (passed.sq && passed.g) {
         nmsce.last = {}
         nmsce.last.addr = reformatAddress(passed.sq)
-        nmsce.last.galaxy = passed.g.idToName()
+        nmsce.last.galaxy = passed.g
         nmsce.searchSystem()
 
     } else if (passed.i && passed.g && passed.t) {
-        let ref = bhs.fs.doc("nmsce/" + passed.g.nameToId() + "/" + passed.t + "/" + passed.i)
+        let ref = bhs.fs.doc("nmsce/" + passed.g + "/" + passed.t + "/" + passed.i)
         ref.get().then(doc => {
             if (doc.exists) {
                 if (fnmsce || fpreview)
@@ -738,6 +740,9 @@ NMSCE.prototype.extractEntry = function () {
 }
 
 NMSCE.prototype.displaySingle = function (entry, noscroll) {
+    if (!entry || !entry.type)
+        return
+
     nmsce.clearPanel(true, true)
     nmsce.last = entry
 
@@ -1402,7 +1407,7 @@ NMSCE.prototype.saveSystem = function () {
     }
 
     if (ok)
-       nmsce.lastsys= nmsce.extractSystem()
+        nmsce.lastsys = nmsce.extractSystem()
 }
 
 NMSCE.prototype.changeName = function (uid, newname) {}
@@ -3637,13 +3642,37 @@ NMSCE.prototype.deleteEntry = function () {
         nmsce.last = null
         let ref = bhs.fs.doc("nmsce/" + entry.galaxy + "/" + entry.type + "/" + entry.id)
 
+        let vref = ref.collection("votes")
+        vref.get().then(snapshot => {
+            for (let doc of snapshot.docs)
+                doc.ref.delete()
+        })
+
+        vref = ref.collection("nmsceCommon")
+        vref.get().then(snapshot => {
+            for (let doc of snapshot.docs)
+                doc.ref.delete()
+        })
+
         ref.delete().then(() => {
             bhs.status(entry.id + " deleted.")
             $("#save").text("Save All")
             $("#delete-item").addClass("disabled")
             $("#delete-item").prop("disabled", true)
 
-            let ref = bhs.fbstorage.ref().child(originalPath + entry.Photo)
+            let vref = ref.collection("votes")
+            vref.get().then(snapshot => {
+                for (let doc of snapshot.docs)
+                    doc.ref.delete()
+            })
+
+            vref = ref.collection("nmsceCommon")
+            vref.get().then(snapshot => {
+                for (let doc of snapshot.docs)
+                    doc.ref.delete()
+            })
+
+            ref = bhs.fbstorage.ref().child(originalPath + entry.Photo)
             ref.delete()
 
             ref = bhs.fbstorage.ref().child(displayPath + entry.Photo)
@@ -4709,9 +4738,12 @@ NMSCE.prototype.selectList = function (evt) {
     let type = $(evt).closest("[id|='list']").prop("id").stripID()
     let i = getIndex(nmsce.entries[type], "id", id)
     let e = nmsce.entries[type][i]
+    nmsce.displaySingle(e)
+
     let ref = bhs.fs.doc("nmsce/" + e.galaxy + "/" + e.type + "/" + e.id)
     ref.get().then(doc => {
-        nmsce.displaySingle(doc.data())
+        if (doc.exists)
+            nmsce.displaySingle(doc.data())
     })
 }
 
