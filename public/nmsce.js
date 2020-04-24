@@ -30,13 +30,12 @@ $(document).ready(async () => {
             nmsce.buildResultsList()
             nmsce.getResultsLists()
             // nmsce.getFeatured()
+            nmsce.expandPanels(false)
         }
 
         if (fcedata) {
             nmsce.buildImageText()
-
             tmImage.load("/bin/model.json", "/bin/metadata.json").then(model => nmsce.model = model)
-
             nmsce.buildDisplayList()
         }
     }
@@ -361,13 +360,13 @@ NMSCE.prototype.showSearchPanel = function (evt) {
 }
 
 NMSCE.prototype.expandPanels = function (show) {
-    // if (show) {
-    $('[data-hide=true]').hide()
-    $('[data-allowhide=true]').show()
-    // } else {
-    //     $('[data-hide=true]').show()
-    //     $('[data-allowhide=true]').hide()
-    // }
+    if (show) {
+        $('[data-hide=true]').hide()
+        $('[data-allowhide=true]').show()
+    } else {
+        $('[data-hide=true]').show()
+        $('[data-allowhide=true]').hide()
+    }
 }
 
 NMSCE.prototype.displayUser = function () {
@@ -390,7 +389,6 @@ NMSCE.prototype.displayUser = function () {
         let tloc = loc.find("#tot-All")
         tloc.text(t)
 
-        nmsce.expandPanels(bhs.user.nmscesettings && bhs.user.nmscesettings.expandPanels || (!bhs.user.galaxy || fcedata && (!bhs.user._name || !bhs.user.Platform)))
     } else if (fnmsce) {
         if (!bhs.user.uid && typeof (Storage) !== "undefined" && !bhs.user.galaxy)
             bhs.user.galaxy = window.localStorage.getItem('nmsce-galaxy')
@@ -401,6 +399,8 @@ NMSCE.prototype.displayUser = function () {
         if (bhs.user.uid && typeof nmsce.entries["My Favorites"] === "undefined")
             nmsce.getResultsLists("My Favorites")
     }
+
+    nmsce.expandPanels(fcedata || (bhs.user.nmscesettings && bhs.user.nmscesettings.expandPanels))
 
     let loc = $("#row-playerInput")
     if (fcedata)
@@ -1426,10 +1426,8 @@ NMSCE.prototype.extractUser = function () {
 
     u.platform = u.Platform === "PS4" ? "PS4" : u.Platform === "PC" || u.Platform === "XBox" ? "PC-XBox" : ""
 
-    if (fcedata) {
-        u.nmscesettings = {}
-        u.nmscesettings.expandPanels = $("#hidden").is(":visible")
-    }
+    u.nmscesettings = {}
+    u.nmscesettings.expandPanels = $("#hidden").is(":visible")
 
     return u
 }
@@ -6067,7 +6065,6 @@ const objectList = [{
         onchange: showLatLong,
         imgText: true,
         search: true,
-        inputHide: true,
     }, {
         name: "Latitude",
         type: "float",
@@ -6440,7 +6437,6 @@ const objectList = [{
         type: "menu",
         list: faunaList,
         search: true,
-        inputHide: true,
     }, {
         name: "Tamed Product",
         type: "menu",
@@ -6452,14 +6448,14 @@ const objectList = [{
         type: "float",
         range: 15.0,
         search: true,
-        query: ">="
+        query: ">=",
+        inputHide: true,
     }, {
         name: "Tags",
         type: "tags",
         max: 4,
         imgText: true,
         search: true,
-        inputHide: true,
     }, {
         name: "Planet Name",
         imgText: true,
@@ -6609,13 +6605,13 @@ const objectList = [{
         imgText: true,
         onchange: getEntry,
         search: true,
-        inputHide: true,
     }, {
         name: "Owner",
         type: "string",
         required: true,
         imgText: true,
         search: true,
+        inputHide: true,
     }, {
         name: "Planet Name",
         type: "string",

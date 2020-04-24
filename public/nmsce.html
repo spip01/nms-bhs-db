@@ -115,25 +115,34 @@
 
             <div id="displayPanels" class="tab-content border-top" style="border-color:black;">
                 <div id="dl-Search" class="tab-pane active pl-15 pr-15" role="tabpanel" aria-labelledby="dltab-Search">
+                    <div class="row bkg-black clr-cream h5 pointer"
+                        onclick="nmsce.expandPanels($(this).find('.fa-caret-square-down').is(':visible'))">
+                        Click&nbsp;
+                        <i id="hidden" class="far fa-caret-square-up txt-def h5" data-allowhide=true></i>
+                        <i class="far fa-caret-square-down h5 txt-def hidden" data-hide=true></i>&nbsp;to&nbsp;
+                        <span class="txt-def" data-allowhide=true>hide</span>
+                        <span class="txt-def hidden" data-hide=true>show</span
+                        >&nbsp;additional inputs.
+                    </div>
                     <div class="row">
                         <div id="panels" class="col-md-9 col-14" style="border-width:3px; border-color:black;">
-                            <div id="row-playerInput" class="row" data-allowhide=true>
-                                <div class="col-sm-4 col-6 txt-label-def">
+                            <div id="row-playerInput" class="row">
+                                <div class="col-sm-4 col-6 txt-label-def" data-allowhide=true>
                                     Player Name
                                 </div>
-                                <input id="id-Player" class="rounded col-md-6 col-8 txt-input-def" type="text">
-
+                                <input id="id-Player" class="rounded col-md-6 col-8 txt-input-def" data-allowhide=true
+                                    type="text">
                                 <div id="id-Galaxy" class="col-md-6 col-14 pl-10"></div>
-                                <div id="id-Platform" class="col-md-8 col-14 nopadding"></div>
-                                <div id="id-Version" class="col-14"></div>
-                                <div class="col-7 txt-label-def">Created After
+                                <div id="id-Platform" class="col-md-8 col-14 nopadding" data-allowhide=true></div>
+                                <div id="id-Version" class="col-14" data-allowhide=true></div>
+                                <div class="col-7 txt-label-def" data-allowhide=true>Created After
                                     <input id="id-Created" type="date">
                                 </div>
                             </div>
 
-                            <div class="row txt-def h5">System Info</div>
+                            <div class="row txt-def h5" data-allowhide=true>System Info</div>
                             <div id="id-addrInput">
-                                <div class="row">
+                                <div class="row" data-allowhide=true>
                                     <div class="col-md-3 col-sm-3 col-5 txt-label-def">Coords
                                         <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
                                             data-html="true" data-placement="bottom"
@@ -157,7 +166,7 @@
                                     </div>
                                 </div>
 
-                                <div class="row">
+                                <div class="row" data-allowhide=true>
                                     <div class="col-md-2 col-3 txt-label-def">Glyphs</div>
                                     <div id="id-glyph"
                                         class="col-lg-4 col-md-5 col-sm-6 col-9 text-center txt-glyph-disp">
@@ -167,7 +176,7 @@
                             </div>
 
                             <div id="id-glyphInput" class="hidden">
-                                <div class="row">
+                                <div class="row" data-allowhide=true>
                                     <div class="col-md-2 col-sm-3 col-4 txt-label-def">
                                         Glyph&nbsp;
                                         <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
@@ -192,9 +201,9 @@
                                     </div>
                                 </div>
 
-                                <div id="glyphbuttons" class="row"></div>
+                                <div id="glyphbuttons" class="row" data-allowhide=true></div>
 
-                                <div class="row">
+                                <div class="row" data-allowhide=true>
                                     <div class="col-md-2 col-3 txt-label-def">Coords&nbsp;</div>
                                     <div id="id-addr"
                                         class="col-lg-4 col-md-5 col-sm-6 col-9 text-center txt-label-def">
@@ -213,7 +222,7 @@
                                 <input id="id-reg" class="rounded col-lg-5 col-md-7 col-sm-5 col-7 txt-input-def">&nbsp
                             </div>
 
-                            <div class="row">
+                            <div class="row" data-allowhide=true>
                                 <div id="id-Lifeform" class="col-14"></div>
                                 <div id="id-Economy" class="col-14"></div>
                             </div>
@@ -231,10 +240,10 @@
                                             onclick="nmsce.search()">Search</button>&nbsp;
                                         <button id="clear" type="button" class="col-md-4 col-6 btn btn-sm btn-def"
                                             onclick="nmsce.clearPanel(true)">Reset</button>&nbsp;
+                                    </div>
+                                    <div id="row-savesearch" class="row" data-allowhide=true>
                                         <button id="searchlocal" type="button" class="col-6 btn btn-sm btn-def"
                                             onclick="nmsce.searchLocal()">Saved Search</button>
-                                    </div>
-                                    <div id="row-savesearch" class="row" style="display:none;">
                                         <div id="id-Saved" class="col-md-4 col-6"></div>&nbsp;
                                         <label class="col-md-7 col-14 txt-label-def">
                                             Name&nbsp;
@@ -248,8 +257,6 @@
                                                 title="Check box and save to receive an email for future matches of this search. To disable uncheck and re-save.">
                                             </i>
                                         </label>
-                                    </div>
-                                    <div class="row">
                                         <button id="savesearch" type="button" class="col-md-4 col-6 btn btn-sm btn-def"
                                             onclick="nmsce.saveSearch()">Save</button>&nbsp;
                                         <i id="searchlocaltt" class="far fa-question-circle text-danger"
