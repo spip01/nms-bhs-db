@@ -42,7 +42,7 @@
      showgrid="false"
      inkscape:zoom="2.4748737"
      inkscape:cx="166.31288"
-     inkscape:cy="353.43019"
+     inkscape:cy="337.26775"
      inkscape:current-layer="fighter-wings" />
   <g
      id="layer1">
@@ -4739,13 +4739,12 @@
    x="47.722"
    id="tspan2320">✓</tspan>    </text>
   <g
-     style="stroke-opacity:1"
-     id="btn-asym"
+     id="g5452"
      onclick="toggleAsym(this)"
      onmouseover="setCursor(&quot;pointer&quot;)"
      onmouseout="setCursor(&quot;default&quot;)">
     <path
-       style="fill:#ff0000;fill-opacity:0.00799997;stroke:#0000ff;stroke-width:0.45100001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+       style="fill:#ff0000;fill-opacity:0.00799997;stroke:#0000ff;stroke-width:0.45100001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 47.587,162.707 h 2.503 v 2.503 h -2.503 z"
        stroke-miterlimit="4"
@@ -4759,7 +4758,7 @@
        font-style="normal"
        font-stretch="normal"
        font-size="2.861"
-       style="font-style:normal;font-variant:normal;font-weight:700;font-stretch:normal;font-size:2.86100006px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Bold';letter-spacing:0;word-spacing:0;fill:#0800ff;fill-opacity:1;stroke:none;stroke-width:0.215"
+       style="font-style:normal;font-variant:normal;font-weight:700;font-stretch:normal;font-size:2.86100006px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Bold';letter-spacing:0;word-spacing:0;fill:#0800ff;fill-opacity:1;stroke:none;stroke-width:0.215;stroke-opacity:1"
        y="165.11"
        x="50.956001"
        id="text2318">         <tspan
