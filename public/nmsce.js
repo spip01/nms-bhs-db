@@ -330,18 +330,22 @@ NMSCE.prototype.displaySystem = function (entry) {
             entry.Platform = "PS4"
     }
 
-    const setRadio = function (loc, val) {
-        loc.find(".radio").prop("checked", false)
-        if (val)
-            loc.find("#rdo-" + val.nameToId()).prop("checked", true)
-    }
-
     if (typeof entry.Economy === "number")
         entry.Economy = "T" + entry.Economy
 
     setRadio($("#id-Economy"), entry.Economy)
     setRadio($("#id-Lifeform"), entry.Lifeform)
     setRadio($("#id-Platform"), entry.Platform)
+}
+
+function setRadio(loc, val) {
+    loc.find("input").prop("checked", false)
+    loc.find("input").data("last", false)
+
+    if (val) {
+        loc.find("#rdo-" + val.nameToId()).prop("checked", true)
+        loc.find("#rdo-" + val.nameToId()).data("last", true)
+    }
 }
 
 NMSCE.prototype.showSearchPanel = function (evt) {
@@ -1874,6 +1878,7 @@ NMSCE.prototype.toggleRadio = function (evt) {
     } else {
         let loc = $(evt).closest("#list").find("input")
         loc.prop("checked", false)
+        loc.data("last", false)
         $(evt).prop("checked", true)
         $(evt).data("last", true)
     }
@@ -1990,24 +1995,26 @@ function setCursor(cursor) {
 }
 
 function setAsym(evt) {
-    if (evt.target.checked) {
-        $("[id='ck-Asymmetric']").prop("checked", true)
-        $("[id='asym-checkmark']").show()
-    } else {
-        $("[id='ck-Asymmetric']").prop("checked", false)
-        $("[id='asym-checkmark']").hide()
-    }
+    let id = $(evt.target).closest("[id|='slist']").prop("id")
+    let row = $("#pnl-map #" + id)
+
+    if (evt.target.checked && (fcedata || $(evt.target).prop("id") === "rdo-True"))
+        row.find("#asym-checkmark").show()
+    else
+        row.find("#asym-checkmark").hide()
 }
 
 function toggleAsym(evt) {
-    let type = $(evt).closest("[id|='slist']").prop("id")
-    let pnl = $(evt).closest("[id|='pnl']").prop("id")
-    let asym = $("#typePanels #" + pnl + " #" + type + " #ck-Asymmetric")
+    let ck = $(evt).closest("[id|='row']").find("#asym-checkmark")
+    let id = $(evt).closest("[id|='slist']").prop("id")
+    let row = $("#panels #" + id + " #row-Asymmetric")
 
-    if (asym.prop("checked")) {
+    if (ck.is(":visible")) {
+        setRadio(row, "False")
         $("[id='ck-Asymmetric']").prop("checked", false)
         $("[id='asym-checkmark']").hide()
     } else {
+        setRadio(row, "True")
         $("[id='ck-Asymmetric']").prop("checked", true)
         $("[id='asym-checkmark']").show()
     }
@@ -2024,7 +2031,7 @@ NMSCE.prototype.selectMap = function (evt, set) {
         pnl = type
     }
 
-    asym = asym.find("#ck-Asymmetric")
+    asym = fnmsce ? asym.find("#row-Asymmetric #rdo-True") : asym.find("#ck-Asymmetric")
     asym = asym.length > 0 ? asym.prop("checked") : false
 
     let pnlid = pnl.prop("id").stripID().toLowerCase()

@@ -13,7 +13,7 @@
    version="1.1"
    viewBox="0 0 84.7 206.7"
    sodipodi:docname="fighter-opt.svg"
-   inkscape:version="0.92.4 (5da689c313, 2019-01-14)">
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
   <metadata
      id="metadata940">
     <rdf:RDF>
@@ -41,7 +41,7 @@
      id="namedview936"
      showgrid="false"
      inkscape:zoom="2.4748737"
-     inkscape:cx="270.96469"
+     inkscape:cx="166.31288"
      inkscape:cy="353.43019"
      inkscape:current-layer="fighter-wings" />
   <g
@@ -4740,7 +4740,10 @@
    id="tspan2320">✓</tspan>    </text>
   <g
      style="stroke-opacity:1"
-     id="btn-asym">
+     id="btn-asym"
+     onclick="toggleAsym(this)"
+     onmouseover="setCursor(&quot;pointer&quot;)"
+     onmouseout="setCursor(&quot;default&quot;)">
     <path
        style="fill:#ff0000;fill-opacity:0.00799997;stroke:#0000ff;stroke-width:0.45100001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
        inkscape:connector-curvature="0"
