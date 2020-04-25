@@ -2108,6 +2108,7 @@ NMSCE.prototype.selectMap = function (evt, set) {
 
     let min = ""
     let max = ""
+    let eq = ""
     let slotsfound = false
 
     for (let p of partsList) {
@@ -2116,6 +2117,8 @@ NMSCE.prototype.selectMap = function (evt, set) {
             slotsfound = true
 
             if (part.state === "selected") {
+                if (part.slots[0] === "=")
+                    eq = part.slots.slice(1)
                 if (!min || part.slots < min)
                     min = part.slots
                 if (!max || part.slots > max)
@@ -2128,7 +2131,9 @@ NMSCE.prototype.selectMap = function (evt, set) {
         let sloc = $("#typePanels [id|='row-Slots']")
         sloc.find("input").prop("checked", false)
 
-        if (type === "Hauler")
+        if (eq)
+            sloc = sloc.find("[id|='rdo-" + eq + "']")
+        else if (type.prop("id") === "slist-Hauler")
             sloc = sloc.find("[id|='rdo-" + (min ? min : "T1") + "']")
         else
             sloc = sloc.find("[id|='rdo-" + (max ? max : "T1") + "']")

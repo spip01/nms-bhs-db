@@ -13,7 +13,7 @@
    version="1.1"
    viewBox="0 0 84.7 203.154"
    sodipodi:docname="hauler-opt.svg"
-   inkscape:version="1.0beta2 (368ca91, 2020-02-26)">
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
   <metadata
      id="metadata3485">
     <rdf:RDF>
@@ -22,7 +22,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -47,7 +47,7 @@
      id="namedview3481"
      showgrid="false"
      inkscape:zoom="0.91118808"
-     inkscape:cx="160"
+     inkscape:cx="-124.24428"
      inkscape:cy="384.11389"
      inkscape:current-layer="hauler-bodies" />
   <g
@@ -7471,7 +7471,7 @@
      id="map-h7">
     <desc
        id="desc4983">
-        {&quot;group&quot;:[1], &quot;slots&quot;:&quot;T3&quot;}
+        {&quot;group&quot;:[1], &quot;slots&quot;:&quot;=T3&quot;}
       </desc>
     <g
        style="stroke:#0000ff;stroke-opacity:1"
@@ -9155,7 +9155,7 @@
      id="map-h12">
     <desc
        id="desc4985">
-        {&quot;group&quot;:[2]}
+        {&quot;group&quot;:[2],&quot;slots&quot;:&quot;T2&quot;}
       </desc>
     <path
        style="stroke:#0000ff;stroke-opacity:1"
@@ -9663,7 +9663,7 @@
      id="map-h13">
     <desc
        id="desc4987">
-        {&quot;group&quot;:[2]}
+        {&quot;group&quot;:[2],&quot;slots&quot;:&quot;T2&quot;}
       </desc>
     <path
        style="stroke:#0000ff;stroke-opacity:1"
@@ -10083,7 +10083,7 @@
      id="map-h14">
     <desc
        id="desc4989">
-        {&quot;group&quot;:[2]}
+        {&quot;group&quot;:[2],&quot;slots&quot;:&quot;T2&quot;}
       </desc>
     <path
        style="stroke:#0000ff;stroke-opacity:1"
@@ -10395,7 +10395,7 @@
      id="map-h15">
     <desc
        id="desc4991">
-        {&quot;group&quot;:[2]}
+        {&quot;group&quot;:[2],&quot;slots&quot;:&quot;T2&quot;}
       </desc>
     <path
        style="stroke:#0000ff;stroke-opacity:1"
