@@ -6721,7 +6721,7 @@ const objectList = [{
         name: "Planet Name",
         type: "string",
         imgText: true,
-        search: true,
+        searchText: true,
         inputHide: true,
     }, {
         name: "Planet Index",
@@ -6729,18 +6729,15 @@ const objectList = [{
         range: 15,
         ttip: planetNumTip,
         onchange: getPlanet,
-        required: true,
         searchText: true,
     }, {
         name: "Latitude",
         imgText: true,
         type: "float",
-        required: true,
     }, {
         name: "Longitude",
         imgText: true,
         type: "float",
-        required: true,
     }, {
         name: "Reset Mission",
         type: "checkbox",
