@@ -334,6 +334,8 @@ NMSCE.prototype.displaySystem = function (entry) {
         entry.Economy = "T" + entry.Economy
 
     setRadio($("#id-Economy"), entry.Economy)
+    if (!entry.Lifeform && entry.life)
+        entry.Lifeform = entry.life
     setRadio($("#id-Lifeform"), entry.Lifeform)
     setRadio($("#id-Platform"), entry.Platform)
 }
@@ -427,7 +429,7 @@ NMSCE.prototype.displayUser = function () {
     nmsce.getSearches()
 }
 
-NMSCE.prototype.clearPanel = function (all, savelast) {
+NMSCE.prototype.clearPanel = function (all) {
     const clr = (pnl) => {
         pnl.find("input").each(function () {
             let id = $(this).prop("id").stripID()
@@ -512,8 +514,7 @@ NMSCE.prototype.clearPanel = function (all, savelast) {
         $(loc).find("#list-" + id).empty()
     }
 
-    if (!savelast)
-        nmsce.last = null
+    nmsce.last = null
 
     let tab = $("#typeTabs .active").prop("id").stripID()
     if (tab === "Freighter")
@@ -747,7 +748,7 @@ NMSCE.prototype.displaySingle = function (entry, noscroll) {
     if (!entry || !entry.type)
         return
 
-    nmsce.clearPanel(true, true)
+    nmsce.clearPanel(true)
     nmsce.last = entry
 
     if (!noscroll)
@@ -868,7 +869,7 @@ NMSCE.prototype.displaySingle = function (entry, noscroll) {
 }
 
 NMSCE.prototype.displaySearch = function (search) {
-    nmsce.clearPanel(true, true)
+    nmsce.clearPanel(true)
 
     $("#btn-Galaxy").text(search.galaxy)
     $("#ck-notify").prop("checked", search.notify)

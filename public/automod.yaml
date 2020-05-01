@@ -16,7 +16,7 @@ comment: |
 ### catch any starship flair that contains class and not crash in the title
 type: submission
 flair_text (includes, regex): "starship|freighter"
-title (includes): class
+title (includes, regex): '[abcs]\W?class'
 ~title (includes, regex): "crash|exotic|upgrade|squid"
 action: filter
 comment_locked: true
@@ -35,7 +35,7 @@ comment: |
 ### catch any starship flair that contains platform or mode
 type: submission
 flair_text (includes, regex): "starship|freighter"
-title (includes, regex): 'x.?box|ps4|\Wpc\W|normal|creative|\Wpd\W|survival|perma.?death'
+title (includes, regex): 'x.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death'
 #action: filter
 comment_locked: true
 comment_stickied: true
@@ -50,7 +50,7 @@ comment: |
 ### catch any starship flair that contains trading post or ss
 type: submission
 flair_text (includes): "starship"
-title (includes, regex): 'trade(ing|rs)?.?(post|station)|\Wss\W|space.?station'
+title (includes, regex): 'trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station'
 #action: filter
 comment_locked: true
 comment_stickied: true
@@ -188,7 +188,7 @@ comment: |
 ### catch any starship flair that contains platform or mode
 type: submission
 flair_text (includes, regex): "starship|freighter"
-title (includes, regex): 'x.?box|ps4|\Wpc\W|normal|creative|\Wpd\W|survival|perma.?death'
+title (includes, regex): 'x.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death'
 author:
     comment_karma: "< 2"
 action: filter
@@ -208,7 +208,7 @@ comment: |
 ### catch any starship flair that contains trading post or ss
 type: submission
 flair_text (includes): "starship"
-title (includes, regex): 'trade(ing|rs)?.?(post|station)|\Wss\W|space.?station'
+title (includes, regex): 'trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station'
 author:
     comment_karma: "< 2"
 action: filter
