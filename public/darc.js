@@ -673,8 +673,8 @@ function mapRoute(route) {
     $("#image").hide()
     $("#navcanvas").hide()
     $("#navHowto").hide()
-   $("#navse").hide()
-$("#plymap").show()
+    $("#navse").hide()
+    $("#plymap").show()
 
     let data = []
 
@@ -754,7 +754,7 @@ function mapRow(evt) {
     end = end.stripID()
     let exyz = addressToXYZ(end)
 
-    $("#navse").text(start+" to "+end)
+    $("#navse").text(start + " to " + end)
     $("#plymap").hide()
     $("#navcanvas").show()
     $("#navHowto").show()

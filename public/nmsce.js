@@ -952,7 +952,7 @@ NMSCE.prototype.executeSearch = function (search, panel, dispFcn) {
                 let found = true
                 for (let l of arraylist) {
                     for (let t of l.list) {
-                        if (!e[l.name].includes(t)) {
+                        if (!e[l.name] || !e[l.name].includes(t)) {
                             found = false
                             break
                         }
@@ -3085,6 +3085,9 @@ NMSCE.prototype.redditGetSubscribed = function (accessToken) {
             headers: {
                 Authorization: "Bearer " + accessToken,
             },
+            data: {
+                limit: 100,
+            },
             crossDomain: true,
             success(res) {
                 nmsce.subReddits = []
@@ -3094,7 +3097,6 @@ NMSCE.prototype.redditGetSubscribed = function (accessToken) {
                         url: s.data.url,
                         link: s.data.name
                     })
-
                 bhs.buildMenu($("#redditPost"), "SubReddit", nmsce.subReddits, nmsce.setSubReddit, {
                     required: true,
                     labelsize: "col-4",

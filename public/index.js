@@ -195,7 +195,8 @@ blackHoleSuns.prototype.buildPanel = function (id) {
                             <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
                                 data-html="true" data-placement="bottom"
                                 title="Enter value using the glyph buttons or a <span class='h5'>12</span> 
-                                digit hex, 0-9 a-f, value can be entered directly in the field.">
+                                digit hex, 0-9 a-f, value can be entered directly in the field. The first glyph
+                                will always be 0 since it is the planet index.">
                             </i>
                         </div>
                         <input id="id-glyph" class="col-lg-7 col-14 txt-glyph-disp" maxength="19"

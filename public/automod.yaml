@@ -109,6 +109,25 @@ comment: |
 type: submission
 is_edited: false 
 flair_text (includes, regex): 'Base|Farm'
+~title (includes, regex): '(?=.*(x.?box|ps4|\bpc\b))(?=.*(normal|creative|\bpd\b|survival|perma.?death))'
+comment_locked: true
+comment_stickied: true
+comment: |
+    Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}. 
+    
+    Your post is **missing** some **required** items. Please check the list below and you can add the information as a comment. If the info is in the screenshot please ignore this.
+
+       * Galaxy name 
+       * Picture of {{match}}
+       * Glyphs/Coordinates
+       * Planet Name (if not included in glyphs)
+       * Platform (PC/PS4/Xbox)
+       * Game Mode (Normal/Survival/Permadeath/Creative)
+
+---
+type: submission
+is_edited: false 
+flair_text (includes, regex): 'Base|Farm'
 comment_locked: true
 comment_stickied: true
 comment: |
@@ -122,7 +141,7 @@ comment: |
        * Planet Name (if not included in glyphs)
        * Platform (PC/PS4/Xbox)
        * Game Mode (Normal/Survival/Permadeath/Creative)
-
+       
 ---
 type: submission
 is_edited: false 

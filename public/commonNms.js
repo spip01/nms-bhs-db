@@ -89,6 +89,7 @@ function addressToXYZ(addr) {
 
     // xxx:yyy:zzz:sss
     if (addr) {
+        out.p = 0
         out.x = parseInt(addr.slice(0, 4), 16)
         out.y = parseInt(addr.slice(5, 9), 16)
         out.z = parseInt(addr.slice(10, 14), 16)
@@ -99,13 +100,34 @@ function addressToXYZ(addr) {
 }
 
 function xyzToAddress(xyz) {
-    let x = xyz.x.toString(16)
-    let z = xyz.z.toString(16)
-    let y = xyz.y.toString(16)
-    let s = xyz.s.toString(16)
+    let x = "000" + xyz.x.toString(16).toUpperCase()
+    let z = "000" + xyz.z.toString(16).toUpperCase()
+    let y = "000" + xyz.y.toString(16).toUpperCase()
+    let s = "000" + xyz.s.toString(16).toUpperCase()
 
-    let addr = x + "." + y + "." + z + "." + s
-    return reformatAddress(addr)
+    x = x.slice(x.length - 4)
+    z = z.slice(z.length - 4)
+    y = y.slice(y.length - 4)
+    s = s.slice(s.length - 4)
+
+    let addr = x + ":" + y + ":" + z + ":" + s
+    return addr
+}
+
+function xyzToGlyph(xyz) {
+    let xs = "00" + xyz.s.toString(16).toUpperCase()
+    let xx = "00" + (xyz.x + 0x801).toString(16).toUpperCase()
+    let xy = "00" + (xyz.y + 0x81).toString(16).toUpperCase()
+    let xz = "00" + (xyz.z + 0x801).toString(16).toUpperCase()
+
+    //const portalFormat = "psssyyxxxzzz"
+    s = xyz.p.toString(16).toUpperCase()
+    s += xs.slice(xs.length - 3)
+    s += xy.slice(xy.length - 2)
+    s += xz.slice(xz.length - 3)
+    s += xx.slice(xx.length - 3)
+
+    return s
 }
 
 function glyphToAddr(glyph) {
@@ -113,6 +135,7 @@ function glyphToAddr(glyph) {
 
     if (glyph) {
         let xyz = {}
+        xyz.p = parseInt(glyph.slice(0, 1), 16)
         xyz.s = parseInt(glyph.slice(1, 4), 16)
         xyz.y = (parseInt(glyph.slice(4, 6), 16) - 0x81) & 0xff
         xyz.z = (parseInt(glyph.slice(6, 9), 16) - 0x801) & 0xfff
@@ -351,7 +374,7 @@ var shipimg = null
 function mapAngles(canvasid, a, width, height) {
     if (!shipimg) {
         shipimg = new Image()
-        shipimg.onload = function(evt) {
+        shipimg.onload = function (evt) {
             mapAngles(canvasid, a, width, height)
         }
         shipimg.crossOrigin = "anonymous"
