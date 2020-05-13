@@ -42,16 +42,14 @@ async function main() {
     }
 
     for (let u of Object.keys(users)) {
-        let total = {}
-        total[ref.id] = users[u]
-        console.log("users/" + u, JSON.stringify(total))
+        console.log("users/" + u, JSON.stringify(users[u]))
 
-        // let uref = admin.firestore().doc("users/" + u)
-        // uref.set({
-        //     nmsceTotals: total
-        // }, {
-        //     merge: true
-        // })
+        let uref = admin.firestore().doc("users/" + u)
+        uref.set({
+            nmsceTotals: users[u]
+        }, {
+            merge: true
+        })
     }
 
     let tref = admin.firestore().doc("bhs/nmsceTotals")

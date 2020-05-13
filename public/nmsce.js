@@ -1362,6 +1362,7 @@ NMSCE.prototype.searchSystem = function () {
             list.push(doc.data())
 
         $("#dltab-Search-Results").click()
+        $("#displayPanels #list-Search-Results").empty()
         nmsce.displayResultList(list, "Search-Results")
     })
 }
@@ -2913,7 +2914,8 @@ const reddit = {
     subscriber_endpt: "/subreddits/mine/subscriber",
     user_endpt: "/api/v1/me",
     getflair_endpt: "api/link_flair_v2",
-    submitLink_endpt: "/api/submit"
+    submitLink_endpt: "/api/submit",
+    comment_endpt: "/api/comment"
 }
 
 NMSCE.prototype.redditLogin = function (state) {
@@ -3228,6 +3230,24 @@ NMSCE.prototype.redditSubmit = function (accessToken) {
                         let what = r[2]
                         let link = what === "call" ? r[3][0] : ""
                         if (link && link.includes("https://www.reddit.com/")) {
+                            let t = link.split("/")
+                            t = "t3_" + t[6]
+                            let url = reddit.api_oauth_url + reddit.comment_endpt
+
+                            $.ajax({
+                                type: "post",
+                                url: url,
+                                dataType: 'json',
+                                headers: {
+                                    Authorization: "Bearer " + accessToken,
+                                },
+                                data: {
+                                    thing_id: t,
+                                    text: "This was posted from the [NMSCE web app](https://nmsce.com). Here is the direct [link]("+plink+") to this item."
+                                },
+                                crossDomain: true,
+                            })
+
                             let e = plink.split("&")
                             for (let i of e) {
                                 let p = i.split("=")
