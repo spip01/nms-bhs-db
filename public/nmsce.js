@@ -3243,7 +3243,7 @@ NMSCE.prototype.redditSubmit = function (accessToken) {
                                 },
                                 data: {
                                     thing_id: t,
-                                    text: "This was posted from the [NMSCE web app](https://nmsce.com). Here is the direct [link]("+plink+") to this item."
+                                    text: "This was posted from the [NMSCE web app](https://nmsce.com). Here is the direct [link](" + plink + ") to this item."
                                 },
                                 crossDomain: true,
                             })
@@ -4365,6 +4365,18 @@ NMSCE.prototype.displaySelected = function (e) {
             }
         }
     }
+
+    h = /idname/g [Symbol.replace](row, "Created")
+    h = /title/ [Symbol.replace](h, "Date")
+    h = /value/ [Symbol.replace](h, e.created ? e.created.toDate().toDateLocalTimeString() : "")
+    h = /font/ [Symbol.replace](h, "")
+    loc.append(h)
+
+    h = /idname/g [Symbol.replace](row, "Version")
+    h = /title/ [Symbol.replace](h, "Version")
+    h = /value/ [Symbol.replace](h, e.version)
+    h = /font/ [Symbol.replace](h, "")
+    loc.append(h)
 
     if (e.redditlink) {
         let h = /idname/g [Symbol.replace](row, "link")
