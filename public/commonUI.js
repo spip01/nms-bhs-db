@@ -19,6 +19,7 @@ blackHoleSuns.prototype.doLoggedout = function () {
 
     $("#favorite").hide()
     $("#edchoice").hide()
+    $("#id-private").hide()
     $("#bhspoi").hide()
     $("#poiorg").hide()
     $("#setError").hide()
@@ -63,8 +64,10 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
         if (doc.exists) {
             bhs.roles = doc.data().roles
 
-            if (bhs.roles.includes("nmsceEditor"))
+            if (bhs.roles.includes("nmsceEditor")) {
                 $("#edchoice").show()
+                $("#id-private").show()
+            }
 
             if (bhs.roles.includes("editor") || bhs.roles.includes("admin"))
                 $("#poiorg").show()
@@ -1799,7 +1802,7 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
                     z: 2,
                 }
             },
-           zaxis: {
+            zaxis: {
                 backgroundcolor: opt["clr-bkg"],
                 gridcolor: opt["clr-grid"],
                 zerolinecolor: opt["clr-grid"],

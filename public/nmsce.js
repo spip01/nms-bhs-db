@@ -503,6 +503,7 @@ NMSCE.prototype.clearPanel = function (all) {
     $("#imgtable").hide()
     $("#imageTextBlock").hide()
     $("#updateScreenshot").hide()
+    $("#ck-private").prop("checked", false)
 
     let tags = $("[data-type='tags']")
 
@@ -618,6 +619,8 @@ NMSCE.prototype.extractEntry = function () {
             entry.platform = entry.Platform === "PS4" ? "PS4" : entry.Platform === "PC" || entry.Platform === "XBox" ? "PC-XBox" : ""
             entry.galaxy = bhs.user.galaxy
         }
+
+        entry.private = $("#id-private").is(":visible") && $("#ck-private").prop("checked") && bhs.hasRole("nmsceEditor")
 
         let tab = $("#typeTabs .active").prop("id").stripID()
         let pnl = $("#typePanels #pnl-" + tab)
@@ -866,6 +869,8 @@ NMSCE.prototype.displaySingle = function (entry, noscroll) {
         date += r.toDate().toDateLocalTimeString()
 
     $("#posted").html(date)
+
+    $("#ck-private").prop("checked", entry.private)
 }
 
 NMSCE.prototype.displaySearch = function (search) {
@@ -3850,6 +3855,7 @@ NMSCE.prototype.updateCommon = function (entry, ref) {
     let e = {}
     e.created = entry.created
     e.votes = entry.votes
+    e.private = entry.private ? true : false
     e._name = entry._name
     e.uid = entry.uid
     e.id = entry.id
@@ -4176,6 +4182,9 @@ NMSCE.prototype.displayResultList = function (entries, type) {
     let loc = $("#displayPanels #list-" + type.nameToId())
 
     for (let e of entries) {
+        if (e.private && e.uid !== bhs.user.uid && !bhs.hasRole("nmsceEditor"))
+            continue
+
         nmsce.entries[type].push(e)
 
         let l = /idname/g [Symbol.replace](resultsItem, e.id)
@@ -4183,6 +4192,10 @@ NMSCE.prototype.displayResultList = function (entries, type) {
         l = /ethumb/ [Symbol.replace](l, thumbPath + e.Photo)
         l = /byname/ [Symbol.replace](l, e._name)
         l = /date/ [Symbol.replace](l, e.created.toDate().toDateLocalTimeString())
+
+        if (e.private)
+            l = /bkg-white/ [Symbol.replace](l, "bkg-yellow")
+
         h += l
     }
 

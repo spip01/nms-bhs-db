@@ -1,5 +1,21 @@
 ### Rules that match conditions are executed in 2 groups removal/approval actions run first then the rest ###
 ---
+type: comment
+body (includes, regex): '!m-base'
+author: is_moderator
+comment_stickied: true
+comment: |
+    Please add the **missing** information to your post. You can add it as a reply to this comment. 
+    A base or farm requires the galaxy name, screenshot, glyphs or coordinates, platform & game mode.
+
+---
+type: comment
+body: "!shiploc"
+comment_locked: true
+comment: |
+    All starships in a given system can be found at the Space Station AND at any Trade Post located within the system.
+
+---
 ### catch any request w/o request flair
 type: submission
 ~flair_text (includes): "request"
@@ -35,7 +51,7 @@ comment: |
 ### catch any starship flair that contains platform or mode
 type: submission
 flair_text (includes, regex): "starship|freighter"
-title (includes, regex): 'x.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death'
+title (includes, regex): '\bx.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death'
 #action: filter
 comment_locked: true
 comment_stickied: true
@@ -109,7 +125,7 @@ comment: |
 type: submission
 is_edited: false 
 flair_text (includes, regex): 'Base|Farm'
-~title (includes, regex): '(?=.*(x.?box|ps4|\bpc\b))(?=.*(normal|creative|\bpd\b|survival|perma.?death))'
+~title (includes, regex): '(?=.*(\bx.?box|ps4|\bpc\b))(?=.*(normal|creative|\bpd\b|survival|perma.?death))'
 comment_locked: true
 comment_stickied: true
 comment: |
@@ -128,6 +144,7 @@ comment: |
 type: submission
 is_edited: false 
 flair_text (includes, regex): 'Base|Farm'
+title (includes, regex): '(?=.*(\bx.?box|ps4|\bpc\b))(?=.*(normal|creative|\bpd\b|survival|perma.?death))'
 comment_locked: true
 comment_stickied: true
 comment: |
@@ -207,9 +224,9 @@ comment: |
 ### catch any starship flair that contains platform or mode
 type: submission
 flair_text (includes, regex): "starship|freighter"
-title (includes, regex): 'x.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death'
+title (includes, regex): '\bx.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death'
 author:
-    comment_karma: "< 2"
+    comment_karma: "< 5"
 action: filter
 message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
@@ -229,7 +246,7 @@ type: submission
 flair_text (includes): "starship"
 title (includes, regex): 'trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station'
 author:
-    comment_karma: "< 2"
+    comment_karma: "< 5"
 action: filter
 message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
@@ -248,7 +265,7 @@ type: submission
 is_edited: false 
 flair_text (includes): "fauna"
 author:
-    comment_karma: "< 2"
+    comment_karma: "< 5"
 action: filter
 message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
@@ -270,7 +287,7 @@ type: submission
 is_edited: false 
 flair_text (includes): "request"
 author:
-    comment_karma: "< 2"
+    comment_karma: "< 5"
 action: filter
 message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
@@ -287,7 +304,7 @@ type: submission
 is_edited: false 
 flair_text (includes, regex): 'planet|interest'
 author:
-    comment_karma: "< 2"
+    comment_karma: "< 5"
 action: filter
 message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
@@ -310,7 +327,7 @@ type: submission
 is_edited: false 
 flair_text (includes, regex): 'Base|Farm'
 author:
-    comment_karma: "< 2"
+    comment_karma: "< 5"
 action: filter
 message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
@@ -334,7 +351,7 @@ type: submission
 is_edited: false 
 flair_text (includes): "freighter"
 author:
-    comment_karma: "< 2"
+    comment_karma: "< 5"
 action: filter
 message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
@@ -361,7 +378,7 @@ type: submission
 is_edited: false 
 flair_text (includes): "multi tool"
 author:
-    comment_karma: "< 2"
+    comment_karma: "< 5"
 action: filter
 message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
@@ -387,7 +404,7 @@ type: submission
 is_edited: false 
 flair_text (full-text): "Living Ship"
 author:
-    comment_karma: "< 2"
+    comment_karma: "< 5"
 action: filter
 message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
@@ -411,7 +428,7 @@ comment: |
 ### catch the rest of low karma
 type: submission
 author:
-    comment_karma: "< 2"
+    comment_karma: "< 5"
 action: filter
 message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
@@ -429,18 +446,18 @@ comment: |
 
     * Be sure to check out our [Web app](https://nmsce.com) hosted by /r/NMSBlackHoleSuns.
 
----
-### reapprove any 1st reports
-type: any
-reports: 1
-action: approve
-
----
-### remove any post that gets 2 reports, goes to modqueue
-type: any
-reports: 2
-action: filter
-
+#---
+#### reapprove any 1st reports
+#type: any
+#reports: 1
+#action: approve
+#
+#---
+#### remove any post that gets 2 reports, goes to modqueue
+#type: any
+#reports: 2
+#action: filter
+#
 ---
 ### automatically approve posts from the nmsce app images domain
 type: submission

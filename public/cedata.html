@@ -269,7 +269,7 @@
 
                         <div id="entrybuttons" style="border-color:black;">
                             <div class="row">
-                                <div class="col-lg-5 col-14">
+                                <div class="col-lg-5 col-14 pl-10">
                                     <div class="row" style="padding-top:2px;">
                                         <button id="save" type="button" class="col-6 btn btn-sm btn-def"
                                             onclick="nmsce.saveEntry()">Save All</button>&nbsp;
@@ -294,6 +294,16 @@
                                             onclick="nmsce.clearPanel()">Clear Item</button>&nbsp;
                                         <button id="clear" type="button" class="col-6 btn btn-sm btn-def"
                                             onclick="nmsce.clearPanel(true)">Clear All</button>&nbsp;
+                                    </div>
+                                    <div class="row">
+                                        <label id="id-private" class="txt-label-def hidden">
+                                            Private&nbsp;
+                                            <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
+                                                data-html="true" data-placement="bottom"
+                                                title="Make this entry private. It won't show up in any search or lists except for you and moderators. Posting to reddit or using the shared link will still work normally.">
+                                            </i>&nbsp;
+                                            <input id="ck-private" type="checkbox">
+                                        </label>
                                     </div>
                                 </div>
 
