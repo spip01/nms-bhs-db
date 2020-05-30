@@ -1,19 +1,86 @@
 ### Rules that match conditions are executed in 2 groups removal/approval actions run first then the rest ###
----
-type: comment
-body (includes, regex): '!m-base'
-author: is_moderator
-comment_stickied: true
-comment: |
-    Please add the **missing** information to your post. You can add it as a reply to this comment. 
-    A base or farm requires the galaxy name, screenshot, glyphs or coordinates, platform & game mode.
 
 ---
 type: comment
-body: "!shiploc"
+body (includes): "!command"
+moderators_exempt: false
+author: 
+    is_moderator: true
+moderators_exempt: false
 comment_locked: true
 comment: |
-    All starships in a given system can be found at the Space Station AND at any Trade Post located within the system.
+    Moderator commands (original command comment is removed):
+
+    !m-base or !mb - add comment about missing base requirements\
+    !m-galaxy or !mg - add comment about missing galaxy\
+    !m-loc or !ml - add comment about missing coordinates\
+    !m-ss or !ms - add comment about missing screenshot
+
+---
+type: comment
+body (includes): "!command"
+moderators_exempt: false
+comment_locked: true
+comment: |
+    List of current automod commands available for users:
+
+    !commands - this list\
+    !shiploc - comments with a message about ships being available anywhere in system and across platforms
+
+    To test these just create a test post and add the ! command as a comment. Then after you see the result just delete your test post.
+
+---
+type: comment
+body (includes, regex): '!m-base|!mb'
+author: 
+    is_moderator: true
+moderators_exempt: false
+comment_stickied: true
+action: remove
+comment: |
+    Please add the **missing** information to your post. You can add it as a reply to this comment.\
+    A base or farm requires the galaxy name, screenshot, glyphs or coordinates, platform & game mode. Please remember to the galaxy, game mode and platform the title of your future base or farm post. Thanks.
+
+---
+type: comment
+body (includes, regex): '!m-gal|!mg'
+moderators_exempt: false
+author: 
+    is_moderator: true
+comment_stickied: true
+action: remove
+comment: |
+    Your post needs the galaxy to be complete. You can add it as a reply to this comment. Please, remember to add it to future post. All finds posted to r/{{subreddit}} must have the galaxy. Thanks.
+
+---
+type: comment
+body (includes, regex): '!m-loc|!ml'
+author: 
+    is_moderator: true
+moderators_exempt: false
+comment_stickied: true
+action: remove
+comment: |
+    Your post is missing the coordinates or glyphs.  You can add the coordinates as a reply to this comment. Glyphs can be included in a screenshot. Coordinates can be found by placing a signal booster on any planet. The first 4 characters displayed are not part of the coordinates. You can capture the glyph from a screenshot. To convert them to coordinates you can type in [use](https://glyphs.blackholesuns.com). Please remember all finds posted to r/{{subreddit}} must have coordinates.
+
+---
+type: comment
+body (includes, regex): '!m-ss|!ms'
+moderators_exempt: false
+author: 
+    is_moderator: true
+comment_stickied: true
+action: remove
+comment: |
+    Your post needs a screenshot to be complete. You can edit your post to add it or delete and repost. Please remember all finds posted to r/{{subreddit}} must have a screenshot. Thanks.
+
+---
+type: comment
+body (includes): "!shiploc"
+moderators_exempt: false
+comment_locked: true
+comment: |
+    All starships in a given system can be found at the Space Station AND at any Trade Post located within the system. The same ships are available on all platforms and game modes. Things to check if you don't find the item you're looking for. 1) Are you in the correct galaxy. 2) Are you in the correct system. It's very easy to enter the glyphs incorrectly so double check your location.
 
 ---
 ### catch any request w/o request flair
@@ -32,7 +99,7 @@ comment: |
 ### catch any starship flair that contains class and not crash in the title
 type: submission
 flair_text (includes, regex): "starship|freighter"
-title (includes, regex): '[abcs]\W?class'
+title (includes, regex): '\b[abcs]\W?class'
 ~title (includes, regex): "crash|exotic|upgrade|squid"
 action: filter
 comment_locked: true
@@ -66,7 +133,7 @@ comment: |
 ### catch any starship flair that contains trading post or ss
 type: submission
 flair_text (includes): "starship"
-title (includes, regex): 'trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station'
+title (includes, regex): 'trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station|\bwave\b'
 #action: filter
 comment_locked: true
 comment_stickied: true

@@ -2113,9 +2113,9 @@ NMSCE.prototype.selectMap = function (evt, set) {
     for (let p of partsList)
         disableParts(p)
 
-    let min = ""
     let max = ""
-    let eq = ""
+    let end = 0
+    let endval = ""
     let slotsfound = false
 
     for (let p of partsList) {
@@ -2124,12 +2124,12 @@ NMSCE.prototype.selectMap = function (evt, set) {
             slotsfound = true
 
             if (part.state === "selected") {
-                if (part.slots[0] === "=")
-                    eq = part.slots.slice(1)
-                if (!min || part.slots < min)
-                    min = part.slots
                 if (!max || part.slots > max)
                     max = part.slots
+                if (part.pos && end < part.pos) {
+                    end = part.pos
+                    endval = part.slots
+                }
             }
         }
     }
@@ -2138,10 +2138,8 @@ NMSCE.prototype.selectMap = function (evt, set) {
         let sloc = $("#typePanels [id|='row-Slots']")
         sloc.find("input").prop("checked", false)
 
-        if (eq)
-            sloc = sloc.find("[id|='rdo-" + eq + "']")
-        else if (type.prop("id") === "slist-Hauler")
-            sloc = sloc.find("[id|='rdo-" + (min ? min : "T1") + "']")
+        if (type.prop("id") === "slist-Hauler")
+            sloc = sloc.find("[id|='rdo-" + (end > 0 ? endval : "T1") + "']")
         else
             sloc = sloc.find("[id|='rdo-" + (max ? max : "T1") + "']")
 
@@ -4891,7 +4889,9 @@ const shipList = [{
         T2: 20-29 slots<br>
         T3: 30-38 slots`,
     bodies: "/images/fighter-opt.svg",
-    asymmetric: true,
+    //asymmetric: true,
+    upgrade: "Damage",
+    // maxUpgrade: 181
 }, {
     name: "Hauler",
     slotList: tierList,
@@ -4922,6 +4922,8 @@ const shipList = [{
         T1: 15-19 slots<br>
         T2: 20-29 slots<br>
         T3: 30-38 slots`,
+    upgrade: "Hyperdrive",
+    maxUpgrade: 181
 }, {
     name: "Exotic",
     bodies: "/images/exotic-opt.svg",
