@@ -4136,7 +4136,7 @@ NMSCE.prototype.getResultsLists = function (type) {
 
             let ref = bhs.fs.collectionGroup("votes")
             ref = ref.where("uid", "==", bhs.user.uid)
-            ref = ref.where("favorite", "==", true)
+            ref = ref.where("favorite", "==", 1)
             ref = ref.orderBy("created", "desc")
             ref = ref.limit(r.limit)
 
@@ -4151,6 +4151,8 @@ NMSCE.prototype.getResultsLists = function (type) {
 
                 let ref = bhs.fs.collectionGroup("nmsceCommon")
                 ref = ref.orderBy(r.field, "desc")
+                // if (r.created)
+                //     ref = ref.orderBy("created", "desc")
                 ref = ref.limit(r.limit)
 
                 nmsce.getWithObserver(null, ref, r.name, r.cont, nmsce.displayResultList, {
@@ -4189,7 +4191,7 @@ NMSCE.prototype.displayResultList = function (entries, type) {
         l = /galaxy/ [Symbol.replace](l, e.galaxy)
         l = /ethumb/ [Symbol.replace](l, thumbPath + e.Photo)
         l = /byname/ [Symbol.replace](l, e._name)
-        l = /date/ [Symbol.replace](l, e.created.toDate().toDateLocalTimeString())
+        l = /date/ [Symbol.replace](l, e.created ? e.created.toDate().toDateLocalTimeString() : "")
 
         if (e.private)
             l = /bkg-white/ [Symbol.replace](l, "bkg-yellow")
@@ -4336,7 +4338,7 @@ NMSCE.prototype.displaySelected = function (e) {
         let h = /idname/g [Symbol.replace](row, fld.name.nameToId())
         h = /title/ [Symbol.replace](h, fld.name)
         h = /value/ [Symbol.replace](h, fld.name === "Glyphs" ? addrToGlyph(e[fld.field], e["Planet-Index"]) : e[fld.field])
-        h = /font/ [Symbol.replace](h, fld.font ? fld.font : "")
+        h = /font/ [Symbol.replace](h, fld.font ? fld.font === "NMS Glyphs" ? "glyph" : fld.font : "")
         loc.append(h)
     }
 
