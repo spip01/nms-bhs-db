@@ -47,8 +47,8 @@
      id="namedview3481"
      showgrid="false"
      inkscape:zoom="1.6518538"
-     inkscape:cx="-297.36493"
-     inkscape:cy="359.89867"
+     inkscape:cx="-278.59813"
+     inkscape:cy="359.89866"
      inkscape:current-layer="hauler-bodies" />
   <g
      style="stroke:#0000ff;stroke-opacity:1"
@@ -56,6 +56,8 @@
      stroke="#0000ff"
      fill-opacity="0"
      id="map-h102">
+    <title
+       id="title2043">Box Nose</title>
     <desc
        id="desc5021">{&quot;group&quot;:[5,11], &quot;requires&quot;:[&quot;h107&quot;]}</desc>
     <path
@@ -323,6 +325,8 @@
      stroke="#0000ff"
      fill-opacity="0"
      id="map-h103">
+    <title
+       id="title2041">Goose Neck</title>
     <desc
        id="desc5019">{&quot;group&quot;:[5,11], &quot;requires&quot;:[&quot;h107&quot;]}</desc>
     <g
@@ -590,6 +594,8 @@
      stroke="#0000ff"
      fill-opacity="0"
      id="map-h105">
+    <title
+       id="title2045">Robot</title>
     <desc
        id="desc5009">{&quot;group&quot;:[4,11]}</desc>
     <path
@@ -1085,6 +1091,8 @@
      stroke="#0000ff"
      fill-opacity="0"
      id="map-h106">
+    <title
+       id="title2049">Turret</title>
     <desc
        id="desc5013">{&quot;group&quot;:[4,11]}</desc>
     <path
@@ -1337,6 +1345,8 @@
      stroke="#0000ff"
      fill-opacity="0"
      id="map-h107">
+    <title
+       id="title2037">Mack</title>
     <desc
        id="desc5015">{&quot;group&quot;:[4]}</desc>
     <path
@@ -1796,6 +1806,8 @@
      stroke="#0000ff"
      fill-opacity="0"
      id="map-h109">
+    <title
+       id="title2039">Long Neck</title>
     <desc
        id="desc5017">{&quot;group&quot;:[5,11], &quot;requires&quot;:[&quot;h107&quot;]}</desc>
     <path
@@ -4064,6 +4076,8 @@
      stroke="#0000ff"
      fill-opacity="0"
      id="map-h119">
+    <title
+       id="title2047">Pelican</title>
     <desc
        id="desc5011">{&quot;group&quot;:[4,11]}</desc>
     <path
@@ -4337,6 +4351,8 @@
      stroke="#0000ff"
      fill-opacity="0"
      id="map-h118">
+    <title
+       id="title2051">Box</title>
     <desc
        id="desc5003">{&quot;group&quot;:[3]}</desc>
     <g
@@ -5538,236 +5554,115 @@
        id="rect1293-6-8" />
   </g>
   <g
-     style="stroke:#0000ff;stroke-opacity:1"
-     transform="matrix(-0.67583,0,0,0.67583,111.47646,-94.8697)"
+     style="display:inline;fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
+     transform="matrix(-0.67583,0,0,0.67583,111.80643,-95.249057)"
      display="inline"
-     stroke-opacity="1"
-     stroke="#0000ff"
-     fill-opacity="0"
-     fill="#000000"
      id="map-h110">
+    <title
+       id="title2055">V-Wing</title>
     <desc
        id="desc1655">{&quot;group&quot;:[6,10]}</desc>
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.48002899;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 44.047,218.014 -0.28,0.42 a 511.51,511.51 0 0 1 1.984,5.33 c 0.397,1.104 0.397,1.203 -0.22,2.661 a 827.032,827.032 0 0 1 -3.087,7.092 l 0.155,0.825 c 1.48,0.177 2.958,0.353 3.78,0.436 0.823,0.083 0.989,0.073 1.186,-0.018 0.197,-0.09 0.425,-0.262 1.53,-1.855 1.105,-1.592 3.088,-4.607 4.115,-6.203 1.027,-1.595 1.1,-1.771 1.115,-1.958 0.016,-0.187 -0.026,-0.384 -0.866,-1.484 -0.84,-1.1 -2.48,-3.103 -3.373,-4.166 -0.892,-1.064 -1.037,-1.189 -1.212,-1.304 -0.174,-0.116 -0.386,-0.227 -1.195,-0.188 -0.81,0.039 -2.22,0.226 -3.632,0.412 z"
-       stroke-width="0.480029"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path826-20" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.145575;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 42.444,233.517 c 0.918,0.146 1.837,0.291 2.42,0.358 0.584,0.068 0.833,0.058 1.048,-0.013 0.216,-0.07 0.397,-0.2 1.375,-1.618 0.978,-1.42 2.753,-4.128 3.697,-5.562 0.944,-1.435 1.058,-1.596 1.09,-1.806 0.03,-0.21 -0.021,-0.47 -0.745,-1.502 -0.724,-1.032 -2.12,-2.838 -2.925,-3.83 -0.805,-0.993 -1.026,-1.177 -1.25,-1.28 -0.222,-0.104 -0.45,-0.13 -1.016,-0.089 -0.566,0.042 -1.468,0.15 -2.371,0.26"
-       stroke-width="0.145575"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path830-10" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.145575;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 46.04,224.8 6.039,-0.077"
-       stroke-width="0.145575"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path834-0" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.145575;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 46.07,233.969 1.48,0.887"
-       stroke-width="0.145575"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path838-2" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.145575;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 48.701,217.843 -1.634,0.452"
-       stroke-width="0.145575"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path842-7" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.145575;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 52.079,224.723 2.288,-0.016"
-       stroke-width="0.145575"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path846-5" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.058;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="M 50.725,219.929 50.18,220.52"
-       stroke-width="0.058"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path850-2" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.058;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 50.935,220.334 -0.545,0.591"
-       stroke-width="0.058"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path850-1" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.058;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 51.23,220.692 -0.544,0.591"
-       stroke-width="0.058"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path850-9" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.058;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 51.495,220.972 -0.545,0.591"
-       stroke-width="0.058"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path850-6-2" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.058;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 51.79,221.345 -0.544,0.592"
-       stroke-width="0.058"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path850-8-3" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.058;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 52.102,221.734 -0.545,0.592"
-       stroke-width="0.058"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path850-3" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.058;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 45.837,225.968 h 0.109 l 0.732,0.016 0.342,0.389 -2.693,5.977 -0.498,0.234 -0.81,-0.125"
-       stroke-width="0.058"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path891-8" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.058;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 45.635,226.373 0.871,0.062 -1.167,2.724 -0.825,-0.124"
-       stroke-width="0.058"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path893-62" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.058;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 44.467,229.221 0.685,0.156 -1.105,2.662 -0.778,-0.11"
-       stroke-width="0.058"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path895-6" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.058;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 48.063,227.182 1.603,0.094 0.156,-0.56 -1.712,-0.094 z"
-       stroke-width="0.058"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path897-2" />
     <path
-       style="stroke:#0000ff;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.058;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        d="m 48.343,226.326 2.133,0.078 0.186,-0.607 -2.397,-0.109 -0.109,0.654 z"
-       stroke-width="0.058"
-       stroke-opacity="1"
        stroke-miterlimit="4"
-       stroke-linecap="round"
-       stroke-dasharray="none"
-       stroke="#0000ff"
-       fill-opacity="0"
-       fill="#000000"
        id="path899-8" />
   </g>
   <g
@@ -11781,7 +11676,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h2" />
+     id="bdr-h2">
+    <title
+       id="title2085">Split Shield</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -11795,7 +11693,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h3" />
+     id="bdr-h3">
+    <title
+       id="title2087">Tie Shield</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -11809,7 +11710,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h6" />
+     id="bdr-h6">
+    <title
+       id="title2089">Shield</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -11823,7 +11727,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h10" />
+     id="bdr-h10">
+    <title
+       id="title2091">V-Wing</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -11837,7 +11744,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h11" />
+     id="bdr-h11">
+    <title
+       id="title2093">Aftershock</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -11851,7 +11761,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h5" />
+     id="bdr-h5">
+    <title
+       id="title2095">W-Wing</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -11865,7 +11778,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h17" />
+     id="bdr-h17">
+    <title
+       id="title2097">High Wing</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -11879,7 +11795,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h4" />
+     id="bdr-h4">
+    <title
+       id="title2099">E-Wing</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -11893,7 +11812,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h8" />
+     id="bdr-h8">
+    <title
+       id="title2101">D-flect</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -11907,7 +11829,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h9" />
+     id="bdr-h9">
+    <title
+       id="title2103">C-Wing</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -11935,7 +11860,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h7" />
+     id="bdr-h7">
+    <title
+       id="title2105">Fan Wing</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -11949,7 +11877,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h12" />
+     id="bdr-h12">
+    <title
+       id="title2107">Serenity</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -11963,7 +11894,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h13" />
+     id="bdr-h13">
+    <title
+       id="title2078">Sabre</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -11977,7 +11911,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h14" />
+     id="bdr-h14">
+    <title
+       id="title2109">2rpedo</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -11991,7 +11928,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h15" />
+     id="bdr-h15">
+    <title
+       id="title2111">Tilt</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12005,7 +11945,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h16" />
+     id="bdr-h16">
+    <title
+       id="title2113">V-Blade</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12016,7 +11959,10 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h107" />
+     id="bdr-h107">
+    <title
+       id="title2071">Mack</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12027,7 +11973,10 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h109" />
+     id="bdr-h109">
+    <title
+       id="title2075">Long Neck</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12038,7 +11987,10 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h103" />
+     id="bdr-h103">
+    <title
+       id="title2077">Goose Neck</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12049,7 +12001,10 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h102" />
+     id="bdr-h102">
+    <title
+       id="title2073">Box Nose</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12071,7 +12026,10 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h105" />
+     id="bdr-h105">
+    <title
+       id="title2069">Robot</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12082,7 +12040,10 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h119" />
+     id="bdr-h119">
+    <title
+       id="title2067">Pelican</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12093,7 +12054,10 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h106" />
+     id="bdr-h106">
+    <title
+       id="title2065">Turret</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12104,18 +12068,18 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h104" />
+     id="bdr-h104">
+    <title
+       id="title2061">Long Tail</title>
+  </path>
   <path
-     style="stroke:#0000ff;stroke-opacity:1"
+     style="fill:#ff0000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-opacity:1"
      inkscape:connector-curvature="0"
-     d="m -0.1805442,53.8053 31.4000002,-9.386 -1.334,13.59 -16.32,5.554 -4.3840002,0.641 -1.21,-6.104 z"
-     stroke-width="0.265"
-     stroke-opacity="1"
-     stroke-linecap="round"
-     stroke="#ffff06"
-     fill-opacity="0"
-     fill="#ff0000"
-     id="bdr-h118" />
+     d="m -0.1805442,54.334675 31.4000002,-9.386 -1.334,13.59 -16.32,5.554 -4.3840002,0.641 -1.21,-6.104 z"
+     id="bdr-h118">
+    <title
+       id="title2063">Box Tail</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12126,7 +12090,10 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h108" />
+     id="bdr-h108">
+    <title
+       id="title2053">Short Tail</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12137,7 +12104,10 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h113" />
+     id="bdr-h113">
+    <title
+       id="title2083">Double Wide</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12148,7 +12118,10 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h114" />
+     id="bdr-h114">
+    <title
+       id="title2076">Box</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12159,7 +12132,10 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h115" />
+     id="bdr-h115">
+    <title
+       id="title2079">Ball</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12170,7 +12146,10 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h116" />
+     id="bdr-h116">
+    <title
+       id="title2081">Shielded Ball</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12184,7 +12163,10 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h110" />
+     id="bdr-h110">
+    <title
+       id="title2059">V-Wing</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12198,5 +12180,8 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h111" />
+     id="bdr-h111">
+    <title
+       id="title2057">Aftershock</title>
+  </path>
 </svg>

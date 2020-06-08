@@ -40,10 +40,13 @@
      inkscape:window-height="480"
      id="namedview936"
      showgrid="false"
-     inkscape:zoom="2.4748737"
-     inkscape:cx="-147.64254"
-     inkscape:cy="207.96822"
-     inkscape:current-layer="layer1" />
+     inkscape:zoom="2.6847404"
+     inkscape:cx="194.08225"
+     inkscape:cy="375.17121"
+     inkscape:current-layer="layer1"
+     inkscape:snap-others="false"
+     inkscape:snap-nodes="false"
+     inkscape:snap-global="false" />
   <g
      inkscape:groupmode="layer"
      id="layer2"
@@ -402,65 +405,6 @@
          y="125.00089"
          style="stroke-width:0.26499999">3,10</tspan></text>
     <g
-       id="g5452"
-       onclick="toggleAsym(this)"
-       onmouseover="setCursor("pointer")"
-       onmouseout="setCursor("default")">
-      <path
-         style="fill:#ff0000;fill-opacity:0.00799997;stroke:#0000ff;stroke-width:0.45100001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         inkscape:connector-curvature="0"
-         d="m 47.587,162.707 h 2.503 v 2.503 h -2.503 z"
-         stroke-miterlimit="4"
-         id="rect2314" />
-      <text
-         xml:space="preserve"
-         word-spacing="0"
-         letter-spacing="0"
-         font-weight="700"
-         font-variant="normal"
-         font-style="normal"
-         font-stretch="normal"
-         font-size="2.861"
-         style="font-style:normal;font-variant:normal;font-weight:700;font-stretch:normal;font-size:2.86100006px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Bold';letter-spacing:0;word-spacing:0;fill:#0800ff;fill-opacity:1;stroke:none;stroke-width:0.215;stroke-opacity:1"
-         y="165.11"
-         x="50.956001"
-         id="text2318">         <tspan
-   font-weight="700"
-   font-variant="normal"
-   font-style="normal"
-   font-stretch="normal"
-   y="165.11"
-   x="50.956001"
-   id="tspan2316"
-   style="font-style:normal;font-variant:normal;font-weight:700;font-stretch:normal;font-family:Arial;-inkscape-font-specification:'Arial Bold';fill:#0800ff;fill-opacity:1;stroke:none;stroke-width:0.215;stroke-opacity:1">Asymmetric</tspan>      </text>
-    </g>
-    <text
-       style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-size:4.41200018px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Heavy';letter-spacing:0;word-spacing:0;fill:#00a000;fill-opacity:1;stroke:#00be00;stroke-width:0.237;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       xml:space="preserve"
-       word-spacing="0"
-       onmouseover="setCursor("pointer")"
-       onmouseout="setCursor("default")"
-       onclick="toggleAsym(this)"
-       letter-spacing="0"
-       font-weight="900"
-       font-variant="normal"
-       font-style="normal"
-       font-stretch="normal"
-       font-size="4.412"
-       stroke-miterlimit="4"
-       y="164.929"
-       x="47.722"
-       id="asym-checkmark">       <tspan
-   font-weight="900"
-   font-variant="normal"
-   font-style="normal"
-   font-stretch="normal"
-   stroke-miterlimit="4"
-   style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-family:Arial;-inkscape-font-specification:'Arial Heavy';fill:#00a000;fill-opacity:1;stroke:#00be00;stroke-width:0.237;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-   y="164.929"
-   x="47.722"
-   id="tspan2320">✓</tspan>    </text>
-    <g
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
        id="map-h17">
       <path
@@ -569,18 +513,78 @@
        id="bdr-h17">
       <desc
          id="desc9974">
-        {"group":[3,6,7], "okGroup":[7,13], "pair":"h117"}
+        {&quot;group&quot;:[3,6,7], &quot;okGroup&quot;:[7,13], &quot;pair&quot;:&quot;h117&quot;}
       </desc>
       <title
          id="title9972">
         E
       </title>
     </path>
+    <g
+       id="g5452"
+       onclick="toggleAsym(this)"
+       onmouseover="setCursor(&quot;pointer&quot;)"
+       onmouseout="setCursor(&quot;default&quot;)">
+      <path
+         style="fill:#ff0000;fill-opacity:0.00799997;stroke:#0000ff;stroke-width:0.45100001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         inkscape:connector-curvature="0"
+         d="m 47.587,162.707 h 2.503 v 2.503 h -2.503 z"
+         stroke-miterlimit="4"
+         id="rect2314" />
+      <text
+         xml:space="preserve"
+         word-spacing="0"
+         letter-spacing="0"
+         font-weight="700"
+         font-variant="normal"
+         font-style="normal"
+         font-stretch="normal"
+         font-size="2.861"
+         style="font-style:normal;font-variant:normal;font-weight:700;font-stretch:normal;font-size:2.86100006px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Bold';letter-spacing:0;word-spacing:0;fill:#0800ff;fill-opacity:1;stroke:none;stroke-width:0.215;stroke-opacity:1"
+         y="165.11"
+         x="50.956001"
+         id="text2318">         <tspan
+   font-weight="700"
+   font-variant="normal"
+   font-style="normal"
+   font-stretch="normal"
+   y="165.11"
+   x="50.956001"
+   id="tspan2316"
+   style="font-style:normal;font-variant:normal;font-weight:700;font-stretch:normal;font-family:Arial;-inkscape-font-specification:'Arial Bold';fill:#0800ff;fill-opacity:1;stroke:none;stroke-width:0.215;stroke-opacity:1">Asymmetric</tspan>      </text>
+    </g>
+    <text
+       style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-size:4.41200018px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Heavy';letter-spacing:0;word-spacing:0;fill:#00a000;fill-opacity:1;stroke:#00be00;stroke-width:0.237;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       xml:space="preserve"
+       word-spacing="0"
+       onmouseover="setCursor(&quot;pointer&quot;)"
+       onmouseout="setCursor(&quot;default&quot;)"
+       onclick="toggleAsym(this)"
+       letter-spacing="0"
+       font-weight="900"
+       font-variant="normal"
+       font-style="normal"
+       font-stretch="normal"
+       font-size="4.412"
+       stroke-miterlimit="4"
+       y="164.929"
+       x="47.722"
+       id="asym-checkmark">       <tspan
+   font-weight="900"
+   font-variant="normal"
+   font-style="normal"
+   font-stretch="normal"
+   stroke-miterlimit="4"
+   style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-family:Arial;-inkscape-font-specification:'Arial Heavy';fill:#00a000;fill-opacity:1;stroke:#00be00;stroke-width:0.237;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+   y="164.929"
+   x="47.722"
+   id="tspan2320">✓</tspan>    </text>
   </g>
   <g
      inkscape:groupmode="layer"
      id="layer1"
-     inkscape:label="Layer 2">
+     inkscape:label="Layer 2"
+     style="display:inline">
     <g
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
        id="map-h7">
@@ -1335,7 +1339,7 @@
     <g
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
        id="map-h12"
-       transform="translate(2.1415234,1.9542754)">
+       transform="translate(2.4693862,6.7555951)">
       <path
          style="stroke-width:0.44299999;stroke-miterlimit:4;stroke-dasharray:none"
          inkscape:connector-curvature="0"
@@ -1406,7 +1410,7 @@
     <g
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
        id="map-h14"
-       transform="translate(0.85660935,5.9962656)">
+       transform="translate(-0.41696015,12.177968)">
       <path
          style="stroke-width:0.44299999;stroke-miterlimit:4;stroke-dasharray:none"
          inkscape:connector-curvature="0"
@@ -1427,7 +1431,7 @@
     <g
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
        id="map-h15"
-       transform="translate(0.85660935,5.9962656)">
+       transform="translate(-0.41696015,12.177968)">
       <path
          style="stroke-width:0.44299999;stroke-miterlimit:4;stroke-dasharray:none"
          inkscape:connector-curvature="0"
@@ -1453,7 +1457,7 @@
     <g
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
        id="map-h16"
-       transform="translate(0.85660935,5.9962656)">
+       transform="translate(-0.41696015,12.177968)">
       <path
          style="stroke-width:0.44299999;stroke-miterlimit:4;stroke-dasharray:none"
          inkscape:connector-curvature="0"
@@ -1478,7 +1482,8 @@
     </g>
     <g
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
-       id="map-h18">
+       id="map-h18"
+       transform="translate(-4.5404769,0.49352998)">
       <path
          style="stroke-width:0.119"
          inkscape:connector-curvature="0"
@@ -1513,7 +1518,8 @@
     </g>
     <g
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
-       id="map-h19">
+       id="map-h19"
+       transform="translate(0.29611801,-2.2702381)">
       <path
          style="stroke-width:0.44299999;stroke-miterlimit:4;stroke-dasharray:none"
          inkscape:connector-curvature="0"
@@ -1552,11 +1558,10 @@
          id="path3579" />
     </g>
     <g
-       style=""
        id="map-h20">
       <desc
          id="desc9944">
-        {"group":[3,12,13], "slots":"T2", "okGroup":[6]}
+        {&quot;group&quot;:[3,12,13], &quot;slots&quot;:&quot;T2&quot;, &quot;okGroup&quot;:[6]}
       </desc>
       <title
          id="title9942">
@@ -1935,7 +1940,7 @@
     </g>
     <g
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       transform="matrix(0.97275,0,0,0.97275,2.256,3.3300001)"
+       transform="matrix(0.97275,0,0,0.97275,-6.6275406,10.042008)"
        stroke-miterlimit="4"
        id="map-h4">
       <path
@@ -2157,7 +2162,8 @@
     <g
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        stroke-miterlimit="4"
-       id="map-h3">
+       id="map-h3"
+       transform="translate(-0.78964843,-7.8964804)">
       <path
          style="stroke-width:0.44299999"
          inkscape:connector-curvature="0"
@@ -2704,7 +2710,7 @@
     <g
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
        id="map-h27"
-       transform="translate(0,-8.0307128)">
+       transform="translate(0,-6.7674373)">
       <path
          style="stroke-width:0.44299999;stroke-miterlimit:4;stroke-dasharray:none"
          inkscape:connector-curvature="0"
@@ -2770,7 +2776,7 @@
     <g
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
        id="map-h25"
-       transform="translate(0.21415234,-4.2830468)">
+       transform="translate(0,-4.4971992)">
       <path
          style="stroke-width:0.44299999;stroke-miterlimit:4;stroke-dasharray:none"
          inkscape:connector-curvature="0"
@@ -2851,7 +2857,8 @@
     </g>
     <g
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-opacity:1"
-       id="map-h117">
+       id="map-h117"
+       transform="translate(-1.039017,-3.5066672)">
       <path
          style="stroke-width:0.012"
          inkscape:connector-curvature="0"
@@ -4803,7 +4810,7 @@
        stroke-miterlimit="4"
        id="bdr-h20">
       <desc
-         id="desc2608">        {"group":[3,12,13], "slots":"T2", "okGroup":[6]}
+         id="desc2608">        {&quot;group&quot;:[3,12,13], &quot;slots&quot;:&quot;T2&quot;, &quot;okGroup&quot;:[6]}
       </desc>
     </path>
     <path
@@ -4814,7 +4821,7 @@
        id="bdr-h21">
       <desc
          id="desc9962">
-        {"group":[3,16]}
+        {&quot;group&quot;:[3,16]}
       </desc>
       <title
          id="title9934">
@@ -4824,12 +4831,12 @@
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
-       d="m 59.128,159.45 0.36,-3.415 13.656,-17.709 2.326,0.93 -2.725,6.181 5.384,5.849 6.247,5.981 -2.659,3.323 -11.165,-6.446 -6.845,5.3 z"
+       d="m 59.424118,157.17976 0.36,-3.415 13.656,-17.709 2.326,0.93 -2.725,6.181 5.384,5.849 6.247,5.981 -2.659,3.323 -11.165,-6.446 -6.845,5.3 z"
        stroke-miterlimit="4"
        id="bdr-h19">
       <desc
          id="desc9932">
-        {"group":[3,15], "okGroup":[11]}
+        {&quot;group&quot;:[3,15], &quot;okGroup&quot;:[11]}
       </desc>
       <title
          id="title9930">
@@ -4844,7 +4851,7 @@
        id="bdr-h13">
       <desc
          id="desc9904">
-        {"group":[3,6,8], "okGroup":[12]}
+        {&quot;group&quot;:[3,6,8], &quot;okGroup&quot;:[12]}
       </desc>
       <title
          id="title9902">
@@ -4859,7 +4866,7 @@
        id="bdr-h2">
       <desc
          id="desc9960">
-        {"group":[3,12,13], "slots":"T3", "okGroup":[6]}
+        {&quot;group&quot;:[3,12,13], &quot;slots&quot;:&quot;T3&quot;, &quot;okGroup&quot;:[6]}
       </desc>
       <title
          id="title9958">
@@ -4874,7 +4881,7 @@
        id="bdr-h7">
       <desc
          id="desc8178">
-        {"group":[3,6,8],"okGroup":[12]}
+        {&quot;group&quot;:[3,6,8],&quot;okGroup&quot;:[12]}
       </desc>
       <title
          id="title8176">
@@ -4884,12 +4891,12 @@
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
-       d="m 28.609523,145.50128 4.721,0.522 5.152,-4.316 1.897,-13.213 -3.33,-1.012 z"
+       d="m 28.937386,150.3026 4.721,0.522 5.152,-4.316 1.897,-13.213 -3.33,-1.012 z"
        stroke-miterlimit="4"
        id="bdr-h12">
       <desc
          id="desc9900">
-        {"group":[16]}
+        {&quot;group&quot;:[16]}
       </desc>
       <title
          id="title9898">
@@ -4899,12 +4906,12 @@
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
-       d="m 31.058609,151.99327 2.924,2.725 17.811,-11.365 -1.661,-1.794 z"
+       d="m 29.78504,158.17497 2.924,2.725 17.811,-11.365 -1.661,-1.794 z"
        stroke-miterlimit="4"
        id="bdr-h14">
       <desc
          id="desc9912">
-        {"group":[3,4], "okGroup":[4],"requires":["h16","h12"]}
+        {&quot;group&quot;:[3,4], &quot;okGroup&quot;:[4],&quot;requires&quot;:[&quot;h16&quot;,&quot;h12&quot;]}
       </desc>
       <title
          id="title9910">
@@ -4914,12 +4921,12 @@
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
-       d="m 33.517609,155.61927 -0.266,3.123 21.533,0.997 1.13,-1.661 -3.257,-1.994 z"
+       d="m 32.24404,161.80097 -0.266,3.123 21.533,0.997 1.13,-1.661 -3.257,-1.994 z"
        stroke-miterlimit="4"
        id="bdr-h15">
       <desc
          id="desc9916">
-        {"group":[3,4], "okGroup":[4],"requires":["h12","h14","h16"]}
+        {&quot;group&quot;:[3,4], &quot;okGroup&quot;:[4],&quot;requires&quot;:[&quot;h12&quot;,&quot;h14&quot;,&quot;h16&quot;]}
       </desc>
       <title
          id="title9914">
@@ -4934,7 +4941,7 @@
        id="bdr-h10">
       <desc
          id="desc9894">
-        {"group":[3]}
+        {&quot;group&quot;:[3]}
       </desc>
       <title
          id="title9892">
@@ -4949,7 +4956,7 @@
        id="bdr-h29">
       <desc
          id="desc9948">
-        {"slots":"T2", "group":[3,14], "okGroup":[5]}
+        {&quot;slots&quot;:&quot;T2&quot;, &quot;group&quot;:[3,14], &quot;okGroup&quot;:[5]}
       </desc>
       <title
          id="title9946">
@@ -4957,14 +4964,15 @@
       </title>
     </path>
     <path
-       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.27436036;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
-       d="m 73.63,127.533 -4.282,3.802 10.395,8.235 4.174,-0.58 z"
+       d="m 73.278181,120.27285 -4.921076,3.54608 11.452895,7.97683 5.290488,-0.83708 z"
        stroke-miterlimit="4"
-       id="bdr-h3">
+       id="bdr-h3"
+       sodipodi:nodetypes="ccccc">
       <desc
          id="desc9956">
-        {"group":[3,5,6], "okGroup":[13,14]}
+        {&quot;group&quot;:[3,5,6], &quot;okGroup&quot;:[13,14]}
       </desc>
       <title
          id="title9954">
@@ -4972,14 +4980,14 @@
       </title>
     </path>
     <path
-       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.28171352;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
-       d="m 83.822,123.612 -1.984,3.134 -13.93,-0.25 1.862,-4.93 z"
+       d="m 74.93846,130.59023 -1.984,3.54179 -13.930001,-0.28253 1.862,-5.57148 z"
        stroke-miterlimit="4"
        id="bdr-h4">
       <desc
          id="desc9952">
-        {"group":[3,10], "requires":["h25"]}
+        {&quot;group&quot;:[3,10], &quot;requires&quot;:[&quot;h25&quot;]}
       </desc>
       <title
          id="title9950">
@@ -4994,7 +5002,7 @@
        id="bdr-h28">
       <desc
          id="desc9940">
-        {"group":[3,9], "requires":["h27"]}
+        {&quot;group&quot;:[3,9], &quot;requires&quot;:[&quot;h27&quot;]}
       </desc>
       <title
          id="title9938">
@@ -5004,12 +5012,12 @@
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
-       d="m 34.913609,160.01027 -3.456,2.99 4.12,4.188 22.397,-1.064 -0.665,-2.724 -18.342,-1.33 z"
+       d="m 33.64004,166.19197 -3.456,2.99 4.12,4.188 22.397,-1.064 -0.665,-2.724 -18.342,-1.33 z"
        stroke-miterlimit="4"
        id="bdr-h16">
       <desc
          id="desc9920">
-        {"group":[3,4], "okGroup":[4],"requires":["h12"]}
+        {&quot;group&quot;:[3,4], &quot;okGroup&quot;:[4],&quot;requires&quot;:[&quot;h12&quot;]}
       </desc>
       <title
          id="title9918">
@@ -5019,12 +5027,12 @@
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
-       d="m 48.399,122.347 0.93,5.583 9.836,12.827 -5.05,2.06 -0.599,2.924 4.918,0.399 -3.057,5.317 2.127,1.993 8.374,-8.772 0.332,-6.048 z"
+       d="m 43.858524,122.84053 0.93,5.583 9.836,12.827 -5.05,2.06 -0.599,2.924 4.918,0.399 -3.057,5.317 2.127,1.993 8.374,-8.772 0.332,-6.048 z"
        stroke-miterlimit="4"
        id="bdr-h18">
       <desc
          id="desc9928">
-        {"group":[3]}
+        {&quot;group&quot;:[3]}
       </desc>
       <title
          id="title9926">
@@ -5034,12 +5042,12 @@
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
-       d="m 32.229,175.93729 8.24,-0.997 0.333,11.098 -6.38,0.4 -3.456,-6.846 z"
+       d="m 32.229,177.20056 8.24,-0.997 0.333,11.098 -6.38,0.4 -3.456,-6.846 z"
        stroke-miterlimit="4"
        id="bdr-h27">
       <desc
          id="desc9966">
-        {"group":[3,11,12,13], "slots":"T2", "okGroup":[6,9,15]}
+        {&quot;group&quot;:[3,11,12,13], &quot;slots&quot;:&quot;T2&quot;, &quot;okGroup&quot;:[6,9,15]}
       </desc>
       <title
          id="title9964">
@@ -5049,12 +5057,12 @@
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
-       d="m 31.882152,191.13895 9.172,0.199 -0.133,10.7 -8.64,-0.2 z"
+       d="m 31.668,190.9248 9.172,0.199 -0.133,10.7 -8.64,-0.2 z"
        stroke-miterlimit="4"
        id="bdr-h25">
       <desc
          id="desc9970">
-        {"group":[3,11], "slots":"T2", "okGroup":[10,15]}
+        {&quot;group&quot;:[3,11], &quot;slots&quot;:&quot;T2&quot;, &quot;okGroup&quot;:[10,15]}
       </desc>
       <title
          id="title9968">
@@ -5065,12 +5073,12 @@
        style="display:inline;fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
        display="inline"
-       d="m 80.311,162.514 -3.255,5.464 0.64,5.115 6.045,1.163 0.116,2.209 -7.382,1.395 -1.047,1.686 -3.72,-0.233 -1.395,-6.975 -13.021,-1.57 0.523,-2.965 14.358,-1.569 6.801,-4.534 z"
+       d="m 79.271983,159.00733 -3.255,5.464 0.64,5.115 6.045,1.163 0.116,2.209 -7.382,1.395 -1.047,1.686 -3.72,-0.233 -1.395,-6.975 -13.021,-1.57 0.523,-2.965 14.358,-1.569 6.801,-4.534 z"
        stroke-miterlimit="4"
        id="bdr-h117">
       <desc
          id="desc9924">
-        {"group":[3,6], "okGroup":[13], "xgroup":[3,6,7], "xokGroup":[7,13], "xpair":"h17"}
+        {&quot;group&quot;:[3,6], &quot;okGroup&quot;:[13]}
       </desc>
       <title
          id="title9922">
@@ -5085,7 +5093,7 @@
        id="bdr-h11">
       <desc
          id="desc9896">
-        {"group":[3,12], "okGroup":[8]}
+        {&quot;group&quot;:[3,12], &quot;okGroup&quot;:[8]}
       </desc>
     </path>
     <path
@@ -5096,7 +5104,7 @@
        id="bdr-h8">
       <desc
          id="desc9886">
-        {"group":[3,10], "requires":["h25"]}
+        {&quot;group&quot;:[3,10], &quot;requires&quot;:[&quot;h25&quot;]}
       </desc>
       <title
          id="title9884">
@@ -5111,7 +5119,7 @@
        id="bdr-h6">
       <desc
          id="desc9882">
-        {"group":[3]}
+        {&quot;group&quot;:[3]}
       </desc>
       <title
          id="title9880">
@@ -5126,7 +5134,7 @@
        id="bdr-h9">
       <desc
          id="desc9890">
-        {"group":[3]}
+        {&quot;group&quot;:[3]}
       </desc>
       <title
          id="title9888">
@@ -5141,7 +5149,7 @@
        id="bdr-h107">
       <desc
          id="desc9988">
-        {"group":[1]}
+        {&quot;group&quot;:[1]}
       </desc>
       <title
          id="title9986">
@@ -5156,7 +5164,7 @@
        id="bdr-h102">
       <desc
          id="desc9978">
-        {"group":[1]}
+        {&quot;group&quot;:[1]}
       </desc>
       <title
          id="title9976">
@@ -5171,7 +5179,7 @@
        id="bdr-h104">
       <desc
          id="desc10008">
-        {"group":[1]}
+        {&quot;group&quot;:[1]}
       </desc>
       <title
          id="title10006">
@@ -5186,7 +5194,7 @@
        id="bdr-h108">
       <desc
          id="desc10004">
-        {"group":[1]}
+        {&quot;group&quot;:[1]}
       </desc>
       <title
          id="title10002">
@@ -5201,7 +5209,7 @@
        id="bdr-h106">
       <desc
          id="desc10000">
-        {"group":[1]}
+        {&quot;group&quot;:[1]}
       </desc>
       <title
          id="title9998">
@@ -5216,7 +5224,7 @@
        id="bdr-h109">
       <desc
          id="desc9992">
-        {"group":[1]}
+        {&quot;group&quot;:[1]}
       </desc>
       <title
          id="title9990">
@@ -5231,12 +5239,10 @@
        id="bdr-h110">
       <desc
          id="desc9996">
-        {"group":[1]}
+        {&quot;group&quot;:[1]}
       </desc>
       <title
-         id="title9994">
-        Dragster
-      </title>
+         id="title9994">Long Nose</title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5246,7 +5252,7 @@
        id="bdr-h111">
       <desc
          id="desc10012">
-        {"group":[2]}
+        {&quot;group&quot;:[2]}
       </desc>
       <title
          id="title10010">
@@ -5261,7 +5267,7 @@
        id="bdr-h112">
       <desc
          id="desc10016">
-        {"group":[2]}
+        {&quot;group&quot;:[2]}
       </desc>
       <title
          id="title10014">
@@ -5276,7 +5282,7 @@
        id="bdr-h113">
       <desc
          id="desc10020">
-        {"group":[2]}
+        {&quot;group&quot;:[2]}
       </desc>
       <title
          id="title10018">
@@ -5291,7 +5297,7 @@
        id="bdr-h105">
       <desc
          id="desc9984">
-        {"group":[1]}
+        {&quot;group&quot;:[1]}
       </desc>
       <title
          id="title9982">
@@ -5306,7 +5312,7 @@
        id="bdr-h103">
       <desc
          id="desc9980">
-        {"group":[1]}
+        {&quot;group&quot;:[1]}
       </desc>
       <title
          id="title9878">
