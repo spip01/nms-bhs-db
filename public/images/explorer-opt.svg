@@ -28,8 +28,8 @@
   <sodipodi:namedview
      inkscape:document-rotation="0"
      inkscape:current-layer="explorer"
-     inkscape:cy="505.98399"
-     inkscape:cx="-129.00541"
+     inkscape:cy="675.02347"
+     inkscape:cx="-178.66759"
      inkscape:zoom="2.12968"
      showgrid="false"
      id="namedview1409"
@@ -198,7 +198,10 @@
      id="bdr-h3"
      d="m 12.805,0.091 -2.154,3 4.308,15.441 8.547,9.068 5.94,1.24 7.307,-4.505 -2.085,-7.308 -7.573,-8.487 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2231">Slaver</title>
+  </path>
   <g
      id="map-h4"
      transform="matrix(0.8773,0,0,0.8773,14.772,-157.584)"
@@ -381,7 +384,10 @@
      id="bdr-h4"
      d="m 26.695,0.369 0.522,4.307 14.26,6.334 3.325,2.154 19.67,0.914 0.783,-3.787 -1.632,-7.248 -8.488,-2.675 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2233">Hopper</title>
+  </path>
   <g
      id="map-h6"
      transform="matrix(-0.8773,0,0,0.8773,75.377795,-156.91586)"
@@ -481,7 +487,10 @@
      id="bdr-h6"
      d="m 47.817795,15.199136 -0.522,10.426 -5.675,-0.26 -6.53,-10.131 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.232;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.232;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2235">Curved</title>
+  </path>
   <g
      style="stroke-width:0.890203"
      id="map-h7"
@@ -629,12 +638,18 @@
      id="bdr-h7"
      d="m 53.85159,14.44839 -0.168523,0.224638 -5.200631,1.753297 4.800669,9.359529 2.254842,-0.224638 3.277218,-1.693768 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.179;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.179;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2225">Antenna</title>
+  </path>
   <path
      id="bdr-h8"
      d="m 7.1279658,11.289458 -3.4650007,0.239518 -1.7532597,0.801556 0.8339253,8.033343 2.1672565,0.412636 5.1957218,-1.69797 0.144721,-2.188864 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.155;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.155;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2321">Antenna</title>
+  </path>
   <g
      id="map-h10"
      transform="matrix(0.71274,0,0,0.71274,67.769,-150.835)"
@@ -758,11 +773,16 @@
      id="bdr-h10"
      d="m 68.458,4.817 4.506,-4.61 8.39,0.95 2.7,3.556 -0.317,1.167 -14.143,0.159 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.189;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.189;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2215">Chin Spikes</title>
+  </path>
   <g
      id="map-h11"
      transform="matrix(0.89711,0,0,0.89711,49.297,-31.248)"
      style="stroke:#0000ff;stroke-opacity:1">
+    <title
+       id="title2217">Chin Dishes</title>
     <desc
        id="desc9203">
         {&quot;group&quot;:[2], &quot;requires&quot;:[&quot;h4&quot;]}
@@ -984,7 +1004,10 @@
      id="bdr-h11"
      d="m 68.765,14.236 -0.298,-5.535 2.557,-1.31 10.765,-0.238 1.902,1.965 -0.06,4.225 -2.027,1.848 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.212;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.212;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2221">Chin Dishes</title>
+  </path>
   <g
      id="map-h12"
      transform="matrix(0.72237411,0,0,0.72281472,39.771405,-136.92746)"
@@ -1163,7 +1186,10 @@
      id="bdr-h12"
      d="m 71.701628,16.6696 0.59269,4.875245 4.415699,2.830131 1.319351,0.06542 4.613977,-3.226928 0.198278,-4.616791 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.218001;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.218001;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2219">Spectrometer</title>
+  </path>
   <g
      id="map-h16"
      transform="matrix(0.98352,0,0,0.98352,-23.998,-30.63)"
@@ -1421,7 +1447,10 @@
      id="bdr-h16"
      d="m 5.702,29.662 -4.11,3.787 -0.458,5.35 1.888,5.291 5.095,2.223 6.855,-0.653 7.632,-3.856 V 32.6 l -5.026,-1.702 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff09;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff09;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2237">Solar Pod</title>
+  </path>
   <g
      id="map-h13"
      transform="matrix(0.7514,0,0,0.7514,-39.19,-95.476)"
@@ -1518,7 +1547,10 @@
      id="bdr-h13"
      d="m 7.92,51.363 -4.957,2.282 -2.548,4.83 0.979,5.477 4.573,3.659 6.393,0.522 4.633,-4.829 7.307,-0.783 0.392,-4.632 -11.41,-6.393 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff09;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff09;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2245">Heavy</title>
+  </path>
   <g
      id="map-h20"
      transform="matrix(0.0355,0,0,0.0355,-46.272,22.964)"
@@ -1615,7 +1647,10 @@
      id="bdr-h20"
      d="m 27.787,39.29 -4.18,3.197 -1.957,4.377 v 6.265 l 2.222,2.606 6.197,3.324 5.94,-1.11 4.308,-4.702 0.065,-6.786 -3.068,-5.154 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff09;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff09;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2241">Proteus</title>
+  </path>
   <g
      id="map-h107"
      transform="matrix(-0.71458755,0,0,0.71430366,41.239779,-141.40532)"
@@ -1762,7 +1797,10 @@
      id="bdr-h107"
      d="M 5.6000597,-0.46729246 5.4410659,-0.25578325 0.5469255,1.3932716 5.065697,10.202571 7.1876069,9.9910613 10.271848,8.396975 Z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.158;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.158;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2227">Antenna</title>
+  </path>
   <path
      id="path3831"
      stroke-miterlimit="4"
@@ -2038,7 +2076,10 @@
      id="bdr-h15"
      d="m 4.027,93.072 -0.196,8.164 29.506,-0.979 0.391,-6.59 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff09;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff09;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2257">Wraith</title>
+  </path>
   <g
      id="map-h5"
      transform="matrix(0.8773,0,0,0.8773,-53.685,-88.283)"
@@ -2143,7 +2184,10 @@
      id="bdr-h5"
      d="m 9.949,69.08 h 10.327 l 5.29,12.982 -5.418,7.967 -9.403,0.13 -4.76,-6.913 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff09;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff09;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2249">Solar Tie</title>
+  </path>
   <g
      id="map-h14"
      transform="matrix(-0.7937,0,0,0.7937,41.825,-92.646)"
@@ -2352,7 +2396,10 @@
      id="bdr-h14"
      d="M 38.793,65.405 38.27,90.878 29.133,90.421 30.046,65.243 Z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff09;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff09;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2253">Ajairu</title>
+  </path>
   <g
      id="map-h17"
      transform="matrix(-0.0236,0,0,0.02144,66.91,92.927)"
@@ -2424,6 +2471,8 @@
      d="m 12.324,104.631 4.701,2.154 -1.042,21.933 0.522,17.605 -5.478,1.239 1.17,-29.21 0.26,-9.6 -0.848,-2.026 z"
      inkscape:connector-curvature="0"
      style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2265">Lance</title>
     <desc
        id="desc1429">
         {&quot;group&quot;:[6,11], &quot;pair&quot;:&quot;h117&quot;, &quot;requires&quot;:[&quot;h28&quot;]}
@@ -2541,7 +2590,10 @@
      id="bdr-h22"
      d="m 18.373,143.76 0.326,10.917 21.637,0.065 0.327,-10.819 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2285">Solar Fins</title>
+  </path>
   <g
      id="map-h31"
      transform="matrix(-0.86823974,-0.1255484,-0.1255484,0.86823974,91.668945,191.49979)"
@@ -2630,7 +2682,10 @@
      id="bdr-h31"
      d="m 38.154,184.531 0.141,12.605 -6.722,0.294 -0.872,-6.548 1.628,-6.38 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2309">Cap</title>
+  </path>
   <g
      id="map-h19"
      transform="matrix(0.6908,0,0,0.6908,34.363,-28.52)"
@@ -2867,7 +2922,10 @@
      id="bdr-h19"
      d="m 28.134,133.796 0.214,8.484 -9.049,-1.285 1.931,-10.745 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.191;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.191;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2277">Xtara</title>
+  </path>
   <g
      id="map-h18"
      transform="matrix(-0.02762,0,0,0.02873,56.326,91.876)"
@@ -2931,7 +2989,10 @@
      id="bdr-h18"
      d="m 5.804,102.714 2.477,0.068 -0.457,25.153 -1.239,4.202 1.308,6.175 -1.308,12.986 -3.656,-0.476 0.457,-9.979 -2.802,-5.634 -0.065,-6.584 2.477,-4.141 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.237;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.237;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2261">Curved Tie</title>
+  </path>
   <g
      id="map-h24"
      transform="matrix(0.8773,0,0,0.8773,16.384,34.163)"
@@ -3017,7 +3078,10 @@
      id="bdr-h24"
      d="m 25.916,117.96 -5.744,3.137 -0.587,7.051 18.392,-0.195 0.196,-9.403 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2273">Janus</title>
+  </path>
   <g
      id="map-h25"
      transform="matrix(0.93826,0,0,0.93826,-22.097,72.046)"
@@ -3074,7 +3138,10 @@
      id="bdr-h25"
      d="m 0.962,155.984 v 15.041 l 6.984,-0.278 V 156.02 Z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.248;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.248;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2289">Xenia</title>
+  </path>
   <g
      id="map-h30"
      transform="matrix(-0.81787,0,0,0.81787,66.932,58.735)"
@@ -3289,7 +3356,10 @@
      id="bdr-h30"
      d="m 39.497,132.361 -0.061,8.582 -8.335,0.243 -0.182,-8.453 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.21600001;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.21600001;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2279">Xtara</title>
+  </path>
   <g
      id="map-h23"
      transform="matrix(0.84583,0,0,0.84583,48.93,-36.265)"
@@ -3393,7 +3463,10 @@
      id="bdr-h23"
      d="m 26.702,156.8 -4.111,4.7 4.504,10.426 -9.727,3.069 -0.065,6.068 21.244,-0.457 0.783,-4.436 2.35,-3.914 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2297">Dragonfly</title>
+  </path>
   <g
      id="map-h26"
      transform="matrix(0.9186,0,0,0.9186,-0.647,-64.75)"
@@ -3461,7 +3534,10 @@
      id="bdr-h26"
      d="m 0.93,200.799 0.585,4.701 39.144,1.24 -0.587,-5.744 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2317">Glider</title>
+  </path>
   <g
      id="map-h27"
      transform="matrix(0.92647,0,0,0.92647,-31.875,-72.112)"
@@ -3536,7 +3612,10 @@
      id="bdr-h27"
      d="m 0.932,188.52 0.391,3.983 8.616,2.607 7.445,4.7 11.31,0.588 -1.308,-6.462 -8.743,-0.914 -14.556,-4.956 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2313">Arc</title>
+  </path>
   <g
      id="map-h28"
      transform="matrix(1.0917,0,0,1.0917,-64.794,-149.78)"
@@ -3615,7 +3694,10 @@
      id="bdr-h28"
      d="m 9.265,156.974 0.718,13.475 10.622,0.065 -0.783,-14.851 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2293">Nucleo</title>
+  </path>
   <g
      id="map-h29"
      transform="matrix(-0.91933451,-0.05993,-0.03193562,0.9126,95.602084,-78.104864)"
@@ -3689,7 +3771,10 @@
      id="bdr-h29"
      d="m 10.134885,173.11214 -3.4954103,-0.286 0.3370126,11.192 4.4837367,2.57 0.301846,-3.718 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.168353;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.168353;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2301">Dagger</title>
+  </path>
   <g
      id="map-h21"
      transform="matrix(0.01888,0,0,0.01888,5.436,94.426)"
@@ -3901,7 +3986,10 @@
      id="bdr-h21"
      d="m 24.142,102.295 -3.855,13.572 4.83,0.653 13.375,-0.13 0.196,-6.728 -13.376,-7.445 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2269">X-Wing</title>
+  </path>
   <path
      id="path5451"
      stroke-miterlimit="4"
@@ -3978,7 +4066,10 @@
      id="bdr-h117"
      d="m 72.187,104.722 -4.7,2.154 1.042,21.933 -0.523,17.604 5.479,1.24 -1.17,-29.21 -0.261,-9.6 0.848,-2.026 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2267">Lance</title>
+  </path>
   <g
      id="map-h122"
      transform="matrix(-0.86845,0,0,0.86845,34.371,-67.507)"
@@ -4091,7 +4182,10 @@
      id="bdr-h122"
      d="m 66.139,143.85 -0.327,10.918 -21.637,0.065 -0.327,-10.819 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2287">Solar Fins</title>
+  </path>
   <g
      id="map-h131"
      transform="matrix(0.86823974,-0.1255484,0.1255484,0.86823974,-7.1590178,191.59073)"
@@ -4180,7 +4274,10 @@
      id="bdr-h131"
      d="m 46.358,184.622 -0.142,12.605 6.723,0.293 0.871,-6.547 -1.627,-6.38 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2311">Cap</title>
+  </path>
   <g
      id="map-h119"
      transform="matrix(-0.6908,0,0,0.6908,50.148,-28.43)"
@@ -4417,7 +4514,10 @@
      id="bdr-h119"
      d="m 56.377,133.887 -0.214,8.484 9.05,-1.285 -1.933,-10.746 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.191;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.191;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2283">Xtara</title>
+  </path>
   <g
      id="map-h118"
      transform="matrix(0.02762,0,0,0.02873,28.185,91.967)"
@@ -4481,7 +4581,10 @@
      id="bdr-h118"
      d="m 78.708,102.805 -2.477,0.068 0.457,25.152 1.238,4.203 -1.307,6.175 1.307,12.985 3.657,-0.475 -0.457,-9.98 2.8,-5.633 0.066,-6.584 -2.477,-4.141 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.237;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.237;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2263">Curved Tie</title>
+  </path>
   <g
      id="map-h124"
      transform="matrix(-0.8773,0,0,0.8773,66.75,34.254)"
@@ -4567,7 +4670,10 @@
      id="bdr-h124"
      d="m 58.595,118.05 5.744,3.137 0.587,7.052 -18.392,-0.195 -0.195,-9.403 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2275">Janus</title>
+  </path>
   <g
      id="map-h125"
      transform="matrix(-0.93826,0,0,0.93826,106.608,72.136)"
@@ -4624,7 +4730,10 @@
      id="bdr-h125"
      d="m 83.55,156.075 v 15.041 l -6.985,-0.279 v -14.726 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.248;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.248;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2291">Xenia</title>
+  </path>
   <g
      id="map-h130"
      transform="matrix(0.81787,0,0,0.81787,17.58,58.826)"
@@ -4839,7 +4948,10 @@
      id="bdr-h130"
      d="m 45.015,132.452 0.06,8.582 8.335,0.243 0.183,-8.453 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.21600001;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.21600001;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2281">Xtara</title>
+  </path>
   <g
      id="map-h126"
      transform="matrix(-0.9186,0,0,0.9186,85.159,-64.66)"
@@ -4907,7 +5019,10 @@
      id="bdr-h126"
      d="m 83.582,200.89 -0.587,4.701 -39.144,1.24 0.587,-5.744 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2319">Glider</title>
+  </path>
   <g
      id="map-h127"
      transform="matrix(-0.92647,0,0,0.92647,116.387,-72.021)"
@@ -4982,7 +5097,10 @@
      id="bdr-h127"
      d="m 83.58,188.61 -0.392,3.984 -8.615,2.606 -7.446,4.702 -11.31,0.587 1.308,-6.462 8.743,-0.914 14.556,-4.957 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2315">Arc</title>
+  </path>
   <g
      id="map-h128"
      transform="matrix(-1.0917,0,0,1.0917,149.306,-149.688)"
@@ -5061,7 +5179,10 @@
      id="bdr-h128"
      d="m 75.247,157.065 -0.718,13.474 -10.622,0.066 0.783,-14.851 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2295">Nucleo</title>
+  </path>
   <g
      id="map-h129"
      transform="matrix(0.94975741,-0.05993,0.03299245,0.9126,-13.907616,-78.013864)"
@@ -5135,7 +5256,10 @@
      id="bdr-h129"
      d="m 74.388651,173.20314 3.610324,-0.286 -0.347409,11.192 -4.63287,2.57 -0.311078,-3.718 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.171117;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.171117;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2303">Dagger</title>
+  </path>
   <g
      id="map-h121"
      transform="matrix(-0.01888,0,0,0.01888,79.075,94.517)"
@@ -5347,7 +5471,10 @@
      id="bdr-h121"
      d="m 60.369,102.385 3.855,13.573 -4.829,0.653 -13.376,-0.13 -0.195,-6.728 13.376,-7.445 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2271">X-Wing</title>
+  </path>
   <g
      id="map-h150"
      transform="matrix(0.06136584,-0.98555553,-0.92363923,-0.04466579,323.69259,282.68599)"
@@ -5422,7 +5549,10 @@
      id="bdr-h150"
      d="m 69.133276,184.15199 0.362295,4.54032 -13.098702,1.94779 0.762735,-5.55193 2.026275,-2.47651 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.196318;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.196318;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2307">Chick</title>
+  </path>
   <g
      id="map-h123"
      transform="matrix(-0.84583,0,0,0.84583,35.582,-36.383)"
@@ -5526,7 +5656,10 @@
      id="bdr-h123"
      d="m 57.81,156.89 4.11,4.702 -4.504,10.425 9.727,3.069 0.065,6.068 -21.244,-0.458 -0.783,-4.435 -2.35,-3.915 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2299">Dragonfly</title>
+  </path>
   <g
      id="map-h116"
      transform="matrix(-0.98352,0,0,0.98352,108.488,-30.82)"
@@ -5784,7 +5917,10 @@
      id="bdr-h116"
      d="m 78.982,29.765 4.111,3.787 0.458,5.35 -1.889,5.291 -5.094,2.223 -6.855,-0.653 -7.633,-3.856 V 32.702 L 67.106,31 Z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#fcff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#fcff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2239">Solar Pod</title>
+  </path>
   <g
      id="map-h113"
      transform="matrix(-0.7514,0,0,0.7514,123.875,-95.373)"
@@ -5881,7 +6017,10 @@
      id="bdr-h113"
      d="m 76.765,51.466 4.957,2.282 2.547,4.83 -0.979,5.477 -4.573,3.659 -6.393,0.522 -4.632,-4.829 -7.308,-0.783 -0.391,-4.632 11.409,-6.393 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#fcff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#fcff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2247">Heavy</title>
+  </path>
   <g
      id="map-h120"
      transform="matrix(-0.0355,0,0,0.0355,130.956,23.067)"
@@ -5976,9 +6115,12 @@
   </g>
   <path
      id="bdr-h120"
-     d="m 56.898,39.394 4.18,3.196 1.957,4.377 v 6.265 l -2.223,2.606 -6.196,3.324 -5.94,-1.11 -4.308,-4.702 -0.066,-6.786 3.069,-5.154 z"
+     d="m 57.9,38.711 4.18,3.196 1.957,4.377 v 6.265 l -2.223,2.606 -6.196,3.324 -5.94,-1.11 -4.308,-4.702 -0.066,-6.786 3.069,-5.154 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#fcff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#fcff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2243">Proteus</title>
+  </path>
   <g
      id="map-h115"
      transform="matrix(-1.02286,0,0,1.02286,96.164,-138.443)"
@@ -6248,7 +6390,10 @@
      id="bdr-h115"
      d="m 80.657,93.175 0.196,8.164 -29.505,-0.979 -0.392,-6.59 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#fcff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#fcff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2259">Wraith</title>
+  </path>
   <g
      id="map-h105"
      transform="matrix(-0.8773,0,0,0.8773,138.37,-88.18)"
@@ -6353,7 +6498,10 @@
      id="bdr-h105"
      d="M 74.736,69.183 H 64.409 l -5.292,12.982 5.42,7.967 9.402,0.13 4.761,-6.912 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#fcff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#fcff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2251">Solar Tie</title>
+  </path>
   <g
      id="map-h114"
      transform="matrix(0.7937,0,0,0.7937,42.86,-92.543)"
@@ -6562,11 +6710,16 @@
      id="bdr-h114"
      d="m 45.892,65.508 0.522,25.473 9.137,-0.457 -0.914,-25.178 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#fcff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#fcff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+    <title
+       id="title2255">Ajairu</title>
+  </path>
   <g
      style="stroke-width:0.84318"
      id="map-h8"
      transform="matrix(1.1828349,-0.08975086,0.08978905,1.1823316,6.3189459,109.79914)">
+    <title
+       id="title2229">Antenna</title>
     <desc
        id="desc3733">
         {&quot;group&quot;:[3,5], &quot;requires&quot;:[&quot;h4&quot;]}
@@ -7149,7 +7302,10 @@
      d="m 61.247727,15.358704 -2.293772,3.757034 2.049498,5.754944 3.902918,0.683495 4.048607,-0.974857 -0.0482,-1.561962 -3.025501,-6.926963 z"
      display="inline"
      inkscape:connector-curvature="0"
-     style="display:inline;fill:#ffffff;fill-opacity:0;stroke:#ffff00;stroke-width:0.294999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+     style="display:inline;fill:#ffffff;fill-opacity:0;stroke:#ffff00;stroke-width:0.294999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">
+    <title
+       id="title2223">Antenna</title>
+  </path>
   <text
      id="asym-checkmark"
      x="30.575001"
@@ -7282,5 +7438,8 @@
      inkscape:connector-curvature="0"
      d="m 14.791813,185.29102 -0.290351,4.56059 13.123068,1.13464 -0.850114,-5.50188 -2.064427,-2.34968 z"
      id="bdr-h50"
-     sodipodi:nodetypes="cccccc" />
+     sodipodi:nodetypes="cccccc">
+    <title
+       id="title2305">Chick</title>
+  </path>
 </svg>
