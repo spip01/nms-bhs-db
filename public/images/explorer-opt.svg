@@ -28,9 +28,9 @@
   <sodipodi:namedview
      inkscape:document-rotation="0"
      inkscape:current-layer="explorer"
-     inkscape:cy="675.02347"
-     inkscape:cx="-178.66759"
-     inkscape:zoom="2.12968"
+     inkscape:cy="590.76568"
+     inkscape:cx="143.68356"
+     inkscape:zoom="5.5384666"
      showgrid="false"
      id="namedview1409"
      inkscape:window-height="480"
@@ -485,9 +485,10 @@
   </g>
   <path
      id="bdr-h6"
-     d="m 47.817795,15.199136 -0.522,10.426 -5.675,-0.26 -6.53,-10.131 z"
+     d="m 47.817795,15.199136 -0.522,10.426 -8.163053,-0.116458 -4.041947,-10.274542 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.232;stroke-linecap:round;stroke-opacity:1">
+     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1"
+     sodipodi:nodetypes="ccccc">
     <title
        id="title2235">Curved</title>
   </path>
@@ -636,19 +637,21 @@
   </g>
   <path
      id="bdr-h7"
-     d="m 53.85159,14.44839 -0.168523,0.224638 -5.200631,1.753297 4.800669,9.359529 2.254842,-0.224638 3.277218,-1.693768 z"
+     d="m 53.767328,14.560709 -5.284892,1.865616 0.8772,9.550918 6.178311,0.493069 3.75569,-1.885156 -1.854058,-8.816074 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.179;stroke-linecap:round;stroke-opacity:1">
+     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.17900001;stroke-linecap:round;stroke-opacity:1"
+     sodipodi:nodetypes="ccccccc">
     <title
-       id="title2225">Antenna</title>
+       id="title2225">Antennae</title>
   </path>
   <path
      id="bdr-h8"
-     d="m 7.1279658,11.289458 -3.4650007,0.239518 -1.7532597,0.801556 0.8339253,8.033343 2.1672565,0.412636 5.1957218,-1.69797 0.144721,-2.188864 z"
+     d="m 9.2810888,11.145916 -5.6181237,0.38306 -2.94943917,0.466626 0.40330067,8.846745 3.7940606,-0.06584 6.8703728,-0.645332 -0.812222,-5.873097 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.155;stroke-linecap:round;stroke-opacity:1">
+     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.155;stroke-linecap:round;stroke-opacity:1"
+     sodipodi:nodetypes="cccccccc">
     <title
-       id="title2321">Antenna</title>
+       id="title2321">Antennae</title>
   </path>
   <g
      id="map-h10"
@@ -1184,9 +1187,10 @@
   </g>
   <path
      id="bdr-h12"
-     d="m 71.701628,16.6696 0.59269,4.875245 4.415699,2.830131 1.319351,0.06542 4.613977,-3.226928 0.198278,-4.616791 z"
+     d="m 71.701628,16.6696 0.59269,4.875245 2.980284,4.122005 5.625597,0.06542 1.743146,-4.518802 0.198278,-4.616791 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.218001;stroke-linecap:round;stroke-opacity:1">
+     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.21800099;stroke-linecap:round;stroke-opacity:1"
+     sodipodi:nodetypes="ccccccc">
     <title
        id="title2219">Spectrometer</title>
   </path>
@@ -1795,11 +1799,12 @@
   </g>
   <path
      id="bdr-h107"
-     d="M 5.6000597,-0.46729246 5.4410659,-0.25578325 0.5469255,1.3932716 5.065697,10.202571 7.1876069,9.9910613 10.271848,8.396975 Z"
+     d="M 6.8124366,0.35616982 0.5469255,1.3932716 0.99868682,9.9633351 7.1876069,9.9910613 10.271848,8.396975 Z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.158;stroke-linecap:round;stroke-opacity:1">
+     style="fill:#000000;fill-opacity:0;stroke:#ffff03;stroke-width:0.15800001;stroke-linecap:round;stroke-opacity:1"
+     sodipodi:nodetypes="cccccc">
     <title
-       id="title2227">Antenna</title>
+       id="title2227">Antennae</title>
   </path>
   <path
      id="path3831"
@@ -2680,9 +2685,10 @@
   </g>
   <path
      id="bdr-h31"
-     d="m 38.154,184.531 0.141,12.605 -6.722,0.294 -0.872,-6.548 1.628,-6.38 z"
+     d="m 39.302332,184.19607 -0.720249,13.22701 -7.726791,0.43754 -1.015541,-7.31355 0.336126,-6.85847 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1"
+     sodipodi:nodetypes="cccccc">
     <title
        id="title2309">Cap</title>
   </path>
@@ -2920,9 +2926,10 @@
   </g>
   <path
      id="bdr-h19"
-     d="m 28.134,133.796 0.214,8.484 -9.049,-1.285 1.931,-10.745 z"
+     d="m 29.330179,130.351 0.118306,11.97685 -10.245179,-0.0409 0.352043,-12.27611 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.191;stroke-linecap:round;stroke-opacity:1">
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.191;stroke-linecap:round;stroke-opacity:1"
+     sodipodi:nodetypes="ccccc">
     <title
        id="title2277">Xtara</title>
   </path>
@@ -3354,9 +3361,10 @@
   </g>
   <path
      id="bdr-h30"
-     d="m 39.497,132.361 -0.061,8.582 -8.335,0.243 -0.182,-8.453 z"
+     d="m 39.640542,130.78204 0.60886,11.2136 -9.722568,-0.13978 0.48786,-10.9889 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.21600001;stroke-linecap:round;stroke-opacity:1">
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.21600001;stroke-linecap:round;stroke-opacity:1"
+     sodipodi:nodetypes="ccccc">
     <title
        id="title2279">Xtara</title>
   </path>
@@ -3610,9 +3618,10 @@
   </g>
   <path
      id="bdr-h27"
-     d="m 0.932,188.52 0.391,3.983 8.616,2.607 7.445,4.7 11.31,0.588 -1.308,-6.462 -8.743,-0.914 -14.556,-4.956 z"
+     d="m 0.932,188.52 0.391,3.983 8.1853754,3.65964 7.8756246,3.64736 11.31,0.588 -1.308,-6.462 -8.743,-0.914 -14.556,-4.956 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1"
+     sodipodi:nodetypes="ccccccccc">
     <title
        id="title2313">Arc</title>
   </path>
@@ -3769,9 +3778,10 @@
   </g>
   <path
      id="bdr-h29"
-     d="m 10.134885,173.11214 -3.4954103,-0.286 0.3370126,11.192 4.4837367,2.57 0.301846,-3.718 z"
+     d="m 11.426759,172.68152 -5.504992,0.001 -0.2371535,11.95755 6.2540825,1.7566 0.06261,-5.20126 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.168353;stroke-linecap:round;stroke-opacity:1">
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.16835301;stroke-linecap:round;stroke-opacity:1"
+     sodipodi:nodetypes="cccccc">
     <title
        id="title2301">Dagger</title>
   </path>
@@ -4272,9 +4282,10 @@
   </g>
   <path
      id="bdr-h131"
-     d="m 46.358,184.622 -0.142,12.605 6.723,0.293 0.871,-6.547 -1.627,-6.38 z"
+     d="m 45.401056,184.14353 -0.0463,13.4184 8.062721,-0.23332 L 53.81,190.973 53.331332,184.01883 Z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1"
+     sodipodi:nodetypes="cccccc">
     <title
        id="title2311">Cap</title>
   </path>
@@ -4512,9 +4523,10 @@
   </g>
   <path
      id="bdr-h119"
-     d="m 56.377,133.887 -0.214,8.484 9.05,-1.285 -1.933,-10.746 z"
+     d="M 55.754987,130.34631 56.163,142.371 l 9.528472,0.10257 -0.784668,-12.03788 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.191;stroke-linecap:round;stroke-opacity:1">
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.191;stroke-linecap:round;stroke-opacity:1"
+     sodipodi:nodetypes="ccccc">
     <title
        id="title2283">Xtara</title>
   </path>
@@ -4946,9 +4958,10 @@
   </g>
   <path
      id="bdr-h130"
-     d="m 45.015,132.452 0.06,8.582 8.335,0.243 0.183,-8.453 z"
+     d="m 44.297292,130.77735 0.203542,11.21359 9.961804,0.004 -0.15193,-11.32383 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.21600001;stroke-linecap:round;stroke-opacity:1">
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.21600001;stroke-linecap:round;stroke-opacity:1"
+     sodipodi:nodetypes="ccccc">
     <title
        id="title2281">Xtara</title>
   </path>
@@ -5095,9 +5108,10 @@
   </g>
   <path
      id="bdr-h127"
-     d="m 83.58,188.61 -0.392,3.984 -8.615,2.606 -7.446,4.702 -11.31,0.587 1.308,-6.462 8.743,-0.914 14.556,-4.957 z"
+     d="m 83.58,188.61 -0.392,3.984 -6.461877,3.70649 -9.599123,3.60151 -11.31,0.587 1.308,-6.462 8.743,-0.914 14.556,-4.957 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1">
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.23199999;stroke-linecap:round;stroke-opacity:1"
+     sodipodi:nodetypes="ccccccccc">
     <title
        id="title2315">Arc</title>
   </path>
@@ -5254,9 +5268,10 @@
   </g>
   <path
      id="bdr-h129"
-     d="m 74.388651,173.20314 3.610324,-0.286 -0.347409,11.192 -4.63287,2.57 -0.311078,-3.718 z"
+     d="m 74.388651,173.20314 4.51942,-0.286 0.03537,12.72311 -6.881688,2.13938 -0.07184,-5.05773 z"
      inkscape:connector-curvature="0"
-     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.171117;stroke-linecap:round;stroke-opacity:1">
+     style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.17111699;stroke-linecap:round;stroke-opacity:1"
+     sodipodi:nodetypes="cccccc">
     <title
        id="title2303">Dagger</title>
   </path>
@@ -7299,12 +7314,13 @@
   <path
      id="bdr-h33"
      stroke-miterlimit="4"
-     d="m 61.247727,15.358704 -2.293772,3.757034 2.049498,5.754944 3.902918,0.683495 4.048607,-0.974857 -0.0482,-1.561962 -3.025501,-6.926963 z"
+     d="m 61.247727,15.358704 -2.293772,3.757034 2.049498,6.568346 3.902918,-0.129907 5.579717,0.07778 -1.435768,-5.868208 -0.920226,-3.769049 z"
      display="inline"
      inkscape:connector-curvature="0"
-     style="display:inline;fill:#ffffff;fill-opacity:0;stroke:#ffff00;stroke-width:0.294999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">
+     style="display:inline;fill:#ffffff;fill-opacity:0;stroke:#ffff00;stroke-width:0.294999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     sodipodi:nodetypes="cccccccc">
     <title
-       id="title2223">Antenna</title>
+       id="title2223">Antennae</title>
   </path>
   <text
      id="asym-checkmark"
@@ -7436,7 +7452,7 @@
   <path
      style="fill:#000000;fill-opacity:0;stroke:#ffff00;stroke-width:0.196318;stroke-linecap:round;stroke-opacity:1"
      inkscape:connector-curvature="0"
-     d="m 14.791813,185.29102 -0.290351,4.56059 13.123068,1.13464 -0.850114,-5.50188 -2.064427,-2.34968 z"
+     d="m 14.456883,184.23838 0.04458,5.61323 13.123068,1.13464 0.05898,-5.83681 -2.973523,-2.01475 z"
      id="bdr-h50"
      sodipodi:nodetypes="cccccc">
     <title
