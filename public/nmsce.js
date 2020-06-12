@@ -48,17 +48,19 @@ $(document).ready(async () => {
         if (p) {
             let obj = p.split("=")
             passed[unescape(obj[0])] = obj[1] ? unescape(obj[1]) : true
-            if (obj[0] === 'g')
-                passed.g = passed.g.idToName()
+            if (obj[0] === 'g') {
+                let i = getIndex(galaxyList,"name",passed.g.idToName())
+                passed.g = galaxyList[i].name
+            }
         }
     }
 
     if (passed.state && passed.code)
         nmsce.redditLoggedIn(passed.state, passed.code)
 
-    else if (passed.sq && passed.g) {
+    else if (passed.s && passed.g) {
         nmsce.last = {}
-        nmsce.last.addr = reformatAddress(passed.sq)
+        nmsce.last.addr = reformatAddress(passed.s)
         nmsce.last.galaxy = passed.g
         nmsce.searchSystem()
 
@@ -1359,6 +1361,7 @@ NMSCE.prototype.searchSystem = function () {
     nmsce.entries["Search-Results"] = []
 
     let ref = bhs.fs.collectionGroup("nmsceCommon")
+    ref = ref.where("galaxy", "==", nmsce.last.galaxy)
     ref = ref.where("addr", "==", nmsce.last.addr)
 
     ref.get().then(snapshot => {
