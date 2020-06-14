@@ -620,6 +620,8 @@ const platformListAll = [{
 }]
 
 const versionList = [{
+    name: "Nothing Selected",
+}, {
     name: "next",
 }, {
     name: "beyond",
@@ -629,6 +631,8 @@ const versionList = [{
     name: "living ships",
 }, {
     name: "exo mech",
+}, {
+    name: "crossplay",
 }]
 
 const modeList = [{

@@ -612,7 +612,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
             entry.galaxy = bhs.user.galaxy
         }
 
-        entry.version = "exo mech"
+        entry.version = "crossplay"
         entry.page = "bhs"
 
         entry.addr = addr

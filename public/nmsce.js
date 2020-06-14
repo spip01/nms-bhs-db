@@ -49,7 +49,7 @@ $(document).ready(async () => {
             let obj = p.split("=")
             passed[unescape(obj[0])] = obj[1] ? unescape(obj[1]) : true
             if (obj[0] === 'g') {
-                let i = getIndex(galaxyList,"name",passed.g.idToName())
+                let i = getIndex(galaxyList, "name", passed.g.idToName())
                 passed.g = galaxyList[i].name
             }
         }
@@ -122,7 +122,10 @@ NMSCE.prototype.buildPanels = function () {
     })
 
     if (fnmsce) {
-        addRadioList($("#id-Version"), "Version", versionList)
+        bhs.buildMenu($("#panels"), "Version", versionList, null, {
+            labelsize: "col-md-6 col-4",
+            menusize: "col",
+        })
 
         let ref = bhs.fs.collection("nmsce")
         ref.get().then(snapshot => {
@@ -475,8 +478,10 @@ NMSCE.prototype.clearPanel = function (all) {
 
         clr($("#panels"))
 
-        if (fnmsce)
+        if (fnmsce) {
             $("#id-Player").val("")
+            $("#btn-Version").text("Nothing Selected")
+        }
     }
 
     let loc = $("#pnl-map [id|='map']")
@@ -556,14 +561,14 @@ NMSCE.prototype.extractSystem = function () {
         entry.Platform = last.Platform
         entry.platform = last.Platform === "PS4" ? "PS4" : last.Platform === "PC" || last.Platform === "XBox" ? "PC-XBox" : ""
         entry.galaxy = last.galaxy
-        entry.version = last.version ? last.version : "exo mech"
+        entry.version = last.version ? last.version : "crossplay"
     } else {
         entry._name = bhs.user._name
         entry.uid = bhs.user.uid
         entry.Platform = bhs.user.Platform
         entry.platform = entry.Platform === "PS4" ? "PS4" : entry.Platform === "PC" || entry.Platform === "XBox" ? "PC-XBox" : ""
         entry.galaxy = bhs.user.galaxy
-        entry.version = "exo mech"
+        entry.version = "crossplay"
     }
 
     entry.page = "nmsce"
@@ -1180,13 +1185,12 @@ NMSCE.prototype.extractSearch = function () {
             val: name
         })
 
-    let loc = $("#id-Version").find(":checked")
-    if (loc.length > 0) {
-        let val = loc.parent().text().stripMarginWS()
+    let val = $("#btn-Version").text().stripMarginWS()
+    if (val.length > 0 && val !== "Nothing Selected") {
         search.push({
             name: "version",
-            type: "radio",
-            id: "id-Version",
+            type: "menu",
+            id: "btn-Version",
             val: val
         })
     }
@@ -1430,7 +1434,7 @@ NMSCE.prototype.extractUser = function () {
     let loc = $("#panels")
     let u = {}
 
-    u.version = "exo mech"
+    u.version = "crossplay"
     u._name = loc.find("#id-Player").val()
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber()
 
@@ -4915,8 +4919,7 @@ const shipList = [{
     slotTtip: `
         T1: 18-23 slots<br>
         T2: 24-28 slots`,
-    bodies: "/images/shuttle-bodies-opt.svg",
-    wings: "/images/shuttle-wings-opt.svg",
+    bodies: "/images/shuttle-opt.svg",
     asymmetric: true,
 }, {
     name: "Explorer",

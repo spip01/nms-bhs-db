@@ -47,8 +47,8 @@
      id="namedview3481"
      showgrid="false"
      inkscape:zoom="1.6518538"
-     inkscape:cx="-415.4808"
-     inkscape:cy="359.89866"
+     inkscape:cx="34.988932"
+     inkscape:cy="311.46823"
      inkscape:current-layer="hauler-bodies" />
   <g
      style="stroke:#0000ff;stroke-opacity:1"
@@ -11736,15 +11736,15 @@
      inkscape:connector-curvature="0"
      display="inline"
      d="m 60.709706,116.12283 -6.396,7.44998 0.978,0.752 21.898,2.03202 3.762,-4.74002 z"
-     stroke-width="0.265"
-     stroke-opacity="1"
      stroke-miterlimit="4"
-     stroke-linecap="round"
+     id="bdr-h11"
      stroke-dasharray="none"
+     stroke-opacity="1"
+     stroke-linecap="round"
+     stroke-width="0.265"
      stroke="#ffff00"
      fill-opacity="0"
-     fill="#ff0000"
-     id="bdr-h11">
+     fill="#ff0000">
     <title
        id="title2093">Aftershock</title>
   </path>
