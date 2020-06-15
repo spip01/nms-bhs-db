@@ -1635,14 +1635,18 @@ NMSCE.prototype.addPanel = function (list, pnl, itmid, slist, pid) {
                 appenditem(itm, f.link, f.name, id, null, null, null, f.inputHide)
                 break
             case "number":
-                l = /range/ [Symbol.replace](tNumber, f.range)
-                l = /stype/ [Symbol.replace](l, f.query ? f.query : "")
-                appenditem(itm, l, f.name, id, f.ttip, f.required, null, f.inputHide)
+                if (!f.sub || slist[f.ttip]) {
+                    l = /range/ [Symbol.replace](tNumber, f.range)
+                    l = /stype/ [Symbol.replace](l, f.query ? f.query : "")
+                    appenditem(itm, l, f.name, id, !f.sub ? f.ttip : slist[f.ttip], f.required, null, f.inputHide)
+                }
                 break
             case "float":
-                l = /range/ [Symbol.replace](tFloat, f.range)
-                l = /stype/ [Symbol.replace](l, f.query ? f.query : "")
-                appenditem(itm, l, f.name, id, f.ttip, f.required, null, f.inputHide)
+                if (!f.sub || slist[f.ttip]) {
+                    l = /range/ [Symbol.replace](tFloat, f.range)
+                    l = /stype/ [Symbol.replace](l, f.query ? f.query : "")
+                    appenditem(itm, l, f.name, id, !f.sub ? f.ttip : slist[f.ttip], f.required, null, f.inputHide)
+                }
                 break
             case "img":
                 appenditem(itm, tImg, f.name, id, f.ttip, f.required, inpLongHdr, f.inputHide)
@@ -2423,10 +2427,14 @@ NMSCE.prototype.getImageText = function (evt, draw) {
             case "number":
                 text = loc.find("input").val()
                 text = !text || text === -1 ? "" : text.toString()
+                if (text.length > 0)
+                    text = loc.closest("[id|='row']").prop("id").stripID().idToName() + " " + text
                 break
             case "float":
                 text = loc.find("input").val()
                 text = !text || text === -1 ? "" : text.toString()
+                if (text.length > 0)
+                    text = loc.closest("[id|='row']").prop("id").stripID().idToName() + " " + text
                 break
             case "glyph":
                 text = loc.val()
@@ -2843,7 +2851,7 @@ NMSCE.prototype.drawText = function (alt, altw) {
                 // }
 
                 if (text.type === "text") {
-                    if (typeof text.background !== "undefined") {
+                    if (typeof text.background !== "undefined" && text.text.length > 0) {
                         ctx.fillStyle = text.background
                         ctx.fillRect(text.x + text.left, text.y - text.ascent - 1, text.right - text.left + 1, text.ascent + text.decent + 2)
                     }
@@ -4899,8 +4907,7 @@ const shipList = [{
         T3: 30-38 slots`,
     bodies: "/images/fighter-opt.svg",
     //asymmetric: true,
-    upgrade: "Damage",
-    // maxUpgrade: 181
+    upgradeTtip: "Maximum damage value for fighter UPGRADED to S-Class"
 }, {
     name: "Hauler",
     slotList: tierList,
@@ -4930,8 +4937,7 @@ const shipList = [{
         T1: 15-19 slots<br>
         T2: 20-29 slots<br>
         T3: 30-38 slots`,
-    upgrade: "Hyperdrive",
-    maxUpgrade: 181
+    upgradeTtip: "Maximum range value for explorer UPGRADED to S-Class"
 }, {
     name: "Exotic",
     bodies: "/images/exotic-opt.svg",
@@ -6105,6 +6111,15 @@ const objectList = [{
             imgText: true,
             search: true,
         }, {
+            name: "Max Upgrade",
+            type: "float",
+            ttip: "upgradeTtip",
+            sub: true,
+            // search: true,
+            // query: ">=",
+            imgText: true,
+            inputHide: true,
+        }, {
             name: "Asymmetric",
             type: "checkbox",
             sub: "asymmetric",
@@ -6123,13 +6138,13 @@ const objectList = [{
             search: true,
         }]
     }, {
-        name: "Frequency",
-        ttip: "Arrival frequency.",
-        type: "menu",
-        list: occurenceList,
-        search: true,
-        inputHide: true,
-    }, {
+        //     name: "Frequency",
+        //     ttip: "Arrival frequency.",
+        //     type: "menu",
+        //     list: occurenceList,
+        //     search: true,
+        //     inputHide: true,
+        // }, {
         name: "Crashed",
         type: "checkbox",
         onchange: showLatLong,
