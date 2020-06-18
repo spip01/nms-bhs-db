@@ -5403,6 +5403,14 @@ const fontList = [{
     name: 'Merienda One',
 }, {
     name: 'Great Vibes',
+}, {
+    name: 'Redressed',
+}, {
+    name: 'Sedgwick Ave Display',
+}, {
+    name: 'Kaushan Script',
+}, {
+    name: 'Permanent Marker',
 }, ]
 
 const encounterList = [{
