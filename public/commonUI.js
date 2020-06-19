@@ -988,10 +988,10 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
     let hdr = ``
     if (list.length > 8) {
         hdr = `<ul id="list" class="dropdown-menu scrollable-menu" role="menu"></ul>`
-        item = `<li id="item-idname" class="dropdown-item" type="button" style="font rgbcolor cursor: pointer">iname</li>`
+        item = `<li id="item-idname" class="dropdown-item" type="button" style="font bkgcolor txtcolor cursor: pointer">iname</li>`
     } else {
         hdr = `<div id="list" class="dropdown-menu"></div>`
-        item = `<button id="item-idname" class="dropdown-item border-bottom" type="button" style="font rgbcolor cursor: pointer">iname</button>`
+        item = `<button id="item-idname" class="dropdown-item border-bottom" type="button" style="font bkgcolor txtcolor cursor: pointer">iname</button>`
     }
 
     let id = label.nameToId()
@@ -1032,7 +1032,9 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
     } else
         l = /ttip/ [Symbol.replace](l, "")
 
-    h += /rgbcolor/ [Symbol.replace](l, "")
+    l = /bkgcolor/ [Symbol.replace](l, "")
+    h += /txtcolor/ [Symbol.replace](l, "")
+
     loc.find("#id-" + id).empty()
     loc.find("#id-" + id).append(h)
 
@@ -1051,7 +1053,8 @@ blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, optio
         h = /idname/ [Symbol.replace](item, lid)
         h = /iname/ [Symbol.replace](h, (typeof l.number !== "undefined" ? l.number + " " : "") + l.name)
         h = /font/ [Symbol.replace](h, typeof options.font === "boolean" ? "font: 16pt " + l.name + ";" : typeof options.font === "string" ? "font: 16pt " + options.font + ";" : "")
-        h = /rgbcolor/ [Symbol.replace](h, "background-color: " + (typeof l.color === "undefined" ? "#d0d0d0" : l.color) + ";")
+        h = /bkgcolor/ [Symbol.replace](h, "background-color: " + (typeof l.color === "undefined" ? "#c0c0c0" : l.color) + ";")
+        h = /txtcolor/ [Symbol.replace](h, typeof l.text_color === "undefined" ? "" : "color: " + l.text_color + ";")
 
         mlist.append(h)
         bhs.bindMenuChange(mlist.find("#item-" + lid), changefcn)

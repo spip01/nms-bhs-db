@@ -1355,7 +1355,7 @@ NMSCE.prototype.extractSearch = function () {
 }
 
 NMSCE.prototype.openSearch = function () {
-    window.open("nmsce.html?sq=" + nmsce.last.addr.nameToId() + "&g=" + nmsce.last.galaxy.nameToId(), '_self')
+    window.open("nmsce.html?s=" + nmsce.last.addr.nameToId() + "&g=" + nmsce.last.galaxy.nameToId(), '_self')
 }
 
 NMSCE.prototype.searchSystem = function () {
@@ -3153,7 +3153,7 @@ NMSCE.prototype.setSubReddit = function (evt, accessToken) {
                 for (let s of res)
                     nmsce.subRedditFlair.push({
                         name: s.text,
-                        text_color: s.text_color,
+                        text_color: s.text_color === "light" ? "white" : "black",
                         color: s.background_color,
                         id: s.id,
                     })
