@@ -5,7 +5,7 @@
 bootstrap.css
 bootstrap.js
 bhs-app.json
-reddittest.js
+nmsce-bot.json
 *.env
 env.js
 *.cache
@@ -64,3 +64,4 @@ Temporary Items
 functions/email.js
 public/reddittest.js
 public/redditpost.json
+functions/nmsce-bot.json
