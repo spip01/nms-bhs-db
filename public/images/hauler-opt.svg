@@ -47,7 +47,7 @@
      id="namedview3481"
      showgrid="false"
      inkscape:zoom="1.6518538"
-     inkscape:cx="34.988932"
+     inkscape:cx="-133.60952"
      inkscape:cy="311.46823"
      inkscape:current-layer="hauler-bodies" />
   <g
@@ -10229,7 +10229,7 @@
      fill="#000000"
      id="map-h15">
     <desc
-       id="desc4991">{&quot;group&quot;:[2],&quot;slots&quot;:&quot;T1&quot;,&quot;pos&quot;:2}</desc>
+       id="desc4991">{&quot;group&quot;:[2,12,9],&quot;slots&quot;:&quot;T1&quot;,&quot;pos&quot;:2}</desc>
     <path
        style="stroke:#0000ff;stroke-opacity:1"
        inkscape:connector-curvature="0"

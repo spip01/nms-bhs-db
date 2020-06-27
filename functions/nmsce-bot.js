@@ -1,836 +1,956 @@
 'use strict'
 
-const {
-    CommentStream
-} = require('snoostorm');
+// const {
+//     CommentStream
+// } = require('snoostorm')
+
+const snoowrap = require('snoowrap')
+const login = require('./nmsce-bot.json')
+const r = new snoowrap(login)
 
 async function main() {
-    const snoowrap = require('snoowrap')
-    const login = require('./nmsce-bot.json')
-    const r = new snoowrap(login)
+    const subreddit = await r.getSubreddit('NMSCoordinateExchange')
+    // let flair = await r.oauthRequest({ uri: `r/NMSCoordinateExchange/api/link_flair_v2` })
 
-    const subreddit = await r.getSubreddit('NMSCoordinateExchange');
-    const newPosts = await subreddit.getNew({
-        limit: 100
+    let posts = await subreddit.getNew({
+        limit: 10
     })
-    const flair = await subreddit.getLinkFlairTemplates()
+    validatePosts(posts)
 
-    for (let post of newPosts) {
-        if (post.link_flair_text.includes("Question") ||
-        post.link_flair_text.includes("Tip") ||
-        post.link_flair_text.includes("Showcase") ||
-        post.link_flair_text.includes("Information") ||
-        post.link_flair_text.includes("Request"))
-            continue
-
-        if (post.link_flair_text.includes("EDIT")) {
-            console.log("EDIT", post.link_flair_text, post.title, post.permalink)
-            continue
-        }
-
-        let words = post.link_flair_text.split(/\b/)
-        let i = -1
-        for (let w of words) {
-            i = getIndex(galaxyList, "name", w)
-            if (i >= 0)
-                break
-        }
-
-        if (i === -1) {
-            words = post.title.split(/\b/)
-            i = -1
-            for (let w of words) {
-                i = getIndex(galaxyList, "name", w)
-                if (i >= 0)
-                    break
-            }
-
-            if (i === -1)
-                console.log("error", post.link_flair_text, post.title, post.permalink)
-        }
-    }
+    posts = await subreddit.getModqueue()
+    validatePosts(posts)
 }
 
 main()
 
-function getIndex(list, field, id) {
-    if (!id)
-        return -1
+function validatePosts(posts) {
+    let flair
 
-    return list.map(x => {
-        if (field === "name" && typeof x.match !== "undefined" && id.match(x.match))
-            return id.toLowerCase()
-        else
-            return typeof x[field] === "string" ? x[field].toLowerCase() : x[field]
-    }).indexOf(typeof id === "string" ? id.toLowerCase() : id)
+    for (let post of posts) {
+        let ok = post.link_flair_text
+        let reason = ""
+
+        if (!ok)
+            reason += "flair"
+
+        if (ok)
+            ok = (flair = getItem(flairList, post.link_flair_text)) !== null
+
+        let galaxy, platform, mode
+
+        if (flair && flair.galaxy) {
+            galaxy = checkList(galaxyList, post)
+            if (!galaxy) {
+                reason += (reason ? ", " : "") + "galaxy"
+                ok = false
+            }
+        }
+
+        if (flair && flair.platform) {
+            platform = checkList(platformList, post)
+            if (!platform) {
+                reason += (reason ? ", " : "") + "platform"
+                ok = false
+            }
+        }
+
+        if (flair && flair.mode) {
+            mode = checkList(modeList, post)
+            if (!mode) {
+                reason += (reason ? ", " : "") + "game mode"
+                ok = false
+            }
+        }
+
+        if (ok) {
+            let newFlair = flair.name + "/" + galaxy.name + (flair.platform ? "/" + platform.name + (flair.mode ? "/" + mode.name : "") : "")
+            if (newFlair !== post.link_flair_text) {
+                if (!post.removed || post.removed_by_category === "automod_filtered") {
+                    console.log("edit", post.link_flair_text, newFlair, "https://reddit.com" + post.permalink)
+                    r.getSubmission(post.id).selectFlair({
+                        flair_template_id: post.link_flair_template_id,
+                        text: newFlair
+                    }).catch(err => console.log(JSON.stringify(err)))
+                }
+            }
+            if (post.removed_by_category === "automod_filtered" || post.mod_reports.length > 0) {
+                console.log("approve", newFlair, "https://reddit.com" + post.permalink)
+                r.getSubmission(post.id).approve()
+                    .catch(err => console.log(JSON.stringify(err)))
+            }
+        } else if (reason && post.removed_by_category !== "automod_filtered" && post.mod_reports.length === 0) {
+            console.log("report", reportMsg.replace(/(.*?)MISSING(.*?)/, "$1" + reason + "$2"), post.link_flair_text, post.title, "https://reddit.com" + post.permalink)
+            // r.getSubmission(post.id).report({
+            //         reason: "missing" + reason
+            //     }).reply(reportMsg.replace(/(.*?)MISSING(.*?)/, "$1"+reason+"$2"))
+            //     .distinguish({
+            //         status: true
+            //     })
+            //     .catch(err => console.log(JSON.stringify(err)))
+        }
+    }
 }
 
+function checkList(list, post) {
+    let item = getItem(list, post.link_flair_text)
+    if (!item)
+        item = getItem(list, post.title)
+    return item
+}
+
+function getItem(list, str) {
+    if (!str)
+        return null
+
+    for (let i = 0; i < list.length; ++i) {
+        if (str.match(list[i].match))
+            return list[i]
+    }
+
+    return null
+}
+
+const reportMsg = "Thank You for posting to r/NMSCoordinateExchange. Your post has been reported because I couldn't find all the required information (MISSING) in the title or flair. \
+You can edit the flair after the post is made. When you select the flair you can edit the text in the box. In the app there is an edit button you need to press.\n\n*This action was taken by \
+the nmsceBot. If you have any questions please contact the moderators.*"
+
+const flairList = [{
+    match: /Starship/i,
+    name: "Starship",
+    galaxy: true
+}, {
+    match: /Living Ship/i,
+    name: "Living Ship",
+    galaxy: true
+}, {
+    match: /Multi Tool/i,
+    name: "Multi Tool",
+    galaxy: true
+}, {
+    match: /Freighter/i,
+    name: "Freighter",
+    galaxy: true
+}, {
+    match: /Frigate/i,
+    name: "Frigate",
+    galaxy: true
+}, {
+    match: /Base/i,
+    name: "Base",
+    galaxy: true,
+    platform: true,
+    mode: true
+}, {
+    match: /Farm/i,
+    name: "Farm",
+    galaxy: true,
+    platform: true,
+    mode: true
+}, {
+    match: /Fauna/i,
+    name: "Fauna",
+    galaxy: true
+}, {
+    match: /Planet/i,
+    name: "Planet",
+    galaxy: true
+}, {
+    match: /Interest/i,
+    name: "Point of Interest",
+    galaxy: true
+}, ]
+
+const platformList = [{
+    match: /\bPC\b/i,
+    name: "PC"
+}, {
+    match: /X.?Box/i,
+    name: "XBox"
+}, {
+    match: /PS4/i,
+    name: "PS4"
+}]
+
+const modeList = [{
+    match: /Normal/i,
+    name: "Normal"
+}, {
+    match: /Creative/i,
+    name: "Creative"
+}, {
+    match: /Permadeath|\bPD\b/i,
+    name: "Permadeath"
+}, {
+    match: /Survival/i,
+    name: "Survival"
+}]
+
 const galaxyList = [{
-    name: "Euclid",
-    number: 1,
+    match: /\bEucl\w+d\b/i,
+    name: "Euclid"
 }, {
-    name: "Hilbert",
-    number: 2
+    match: /\bHilb\w+t\b/i,
+    name: "Hilbert"
 }, {
-    name: "Calypso",
-    number: 3
+    match: /\bCaly\w+o\b/i,
+    name: "Calypso"
 }, {
-    name: "Hesperius",
-    number: 4
+    match: /\bHesp\w+s\b/i,
+    name: "Hesperius"
 }, {
-    name: "Hyades",
-    number: 5
+    match: /\bHyad\w+s\b/i,
+    name: "Hyades"
 }, {
-    name: "Ickjamatew",
-    number: 6
+    match: /\bIckj\w+w\b/i,
+    name: "Ickjamatew"
 }, {
-    name: "Budullangr",
-    number: 7
+    match: /\bBudu\w+r\b/i,
+    name: "Budullangr"
 }, {
-    name: "Kikolgallr",
-    number: 8
+    match: /\bKiko\w+r\b/i,
+    name: "Kikolgallr"
 }, {
-    name: "Eltiensleen",
-    number: 9
+    match: /\bElti\w+n\b/i,
+    name: "Eltiensleen"
 }, {
-    name: "Eissentam",
-    number: 10
+    match: /\bEis{1,2}\w+[mn]\b/i,
+    name: "Eissentam"
 }, {
-    name: "Elkupalos",
-    number: 11
+    match: /\bElk[ua]\w+s\b/i,
+    name: "Elkupalos"
 }, {
-    name: "Aptarkaba",
-    number: 12
+    match: /\bApta\w+a\b/i,
+    name: "Aptarkaba"
 }, {
-    name: "Ontiniangp",
-    number: 13
+    match: /\bOnti\w+p\b/i,
+    name: "Ontiniangp"
 }, {
-    name: "Odiwagiri",
-    number: 14
+    match: /\bOdiw\w+i\b/i,
+    name: "Odiwagiri"
 }, {
-    name: "Ogtialabi",
-    number: 15
+    match: /\bOgti\w+i\b/i,
+    name: "Ogtialabi"
 }, {
-    name: "Muhacksonto",
-    number: 16
+    match: /\bMuha\w+o\b/i,
+    name: "Muhacksonto"
 }, {
-    name: "Hitonskyer",
-    number: 17
+    match: /\bHito\w+r\b/i,
+    name: "Hitonskyer"
 }, {
-    name: "Rerasmutul",
-    number: 18
+    match: /\bRera\w+l\b/i,
+    name: "Rerasmutul"
 }, {
-    name: "Isdoraijung",
-    number: 19
+    match: /\bIsdo\w+g\b/i,
+    name: "Isdoraijung"
 }, {
-    name: "Doctinawyra",
-    number: 20
+    match: /\bDoct\w+a\b/i,
+    name: "Doctinawyra"
 }, {
-    name: "Loychazinq",
-    number: 21
+    match: /\bLoyc\w+q\b/i,
+    name: "Loychazinq"
 }, {
-    name: "Zukasizawa",
-    number: 22
+    match: /\bZuka\w+a\b/i,
+    name: "Zukasizawa"
 }, {
-    name: "Ekwathore",
-    number: 23
+    match: /\bEkwa\w+e\b/i,
+    name: "Ekwathore"
 }, {
-    name: "Yeberhahne",
-    number: 24
+    match: /\bYebe\w+e\b/i,
+    name: "Yeberhahne"
 }, {
-    name: "Twerbetek",
-    number: 25
+    match: /\bTwer\w+k\b/i,
+    name: "Twerbetek"
 }, {
-    name: "Sivarates",
-    number: 26
+    match: /\bSiva\w+s\b/i,
+    name: "Sivarates"
 }, {
-    name: "Eajerandal",
-    number: 27
+    match: /\bEaje\w+l\b/i,
+    name: "Eajerandal"
 }, {
-    name: "Aldukesci",
-    number: 28
+    match: /\bAldu\w+i\b/i,
+    name: "Aldukesci"
 }, {
-    name: "Wotyarogii",
-    number: 29
+    match: /\bWoty\w+i\b/i,
+    name: "Wotyarogii"
 }, {
-    name: "Sudzerbal",
-    number: 30
+    match: /\bSudz\w+l\b/i,
+    name: "Sudzerbal"
 }, {
-    name: "Maupenzhay",
-    number: 31
+    match: /\bMaup\w+y\b/i,
+    name: "Maupenzhay"
 }, {
-    name: "Sugueziume",
-    number: 32
+    match: /\bSugu\w+e\b/i,
+    name: "Sugueziume"
 }, {
-    name: "Brogoweldian",
-    number: 33
+    match: /\bBrog\w+n\b/i,
+    name: "Brogoweldian"
 }, {
-    name: "Ehbogdenbu",
-    number: 34
+    match: /\bEhbo\w+u\b/i,
+    name: "Ehbogdenbu"
 }, {
-    name: "Ijsenufryos",
-    number: 35
+    match: /\bIjse\w+s\b/i,
+    name: "Ijsenufryos"
 }, {
-    name: "Nipikulha",
-    number: 36
+    match: /\bNipi\w+a\b/i,
+    name: "Nipikulha"
 }, {
-    name: "Autsurabin",
-    number: 37
+    match: /\bAuts\w+n\b/i,
+    name: "Autsurabin"
 }, {
-    name: "Lusontrygiamh",
-    number: 38
+    match: /\bLuso\w+h\b/i,
+    name: "Lusontrygiamh"
 }, {
-    name: "Rewmanawa",
-    number: 39
+    match: /\bRewm\w+a\b/i,
+    name: "Rewmanawa"
 }, {
-    name: "Ethiophodhe",
-    number: 40
+    match: /\bEthi\w+e\b/i,
+    name: "Ethiophodhe"
 }, {
-    name: "Urastrykle",
-    number: 41
+    match: /\bUras\w+e\b/i,
+    name: "Urastrykle"
 }, {
-    name: "Xobeurindj",
-    number: 42
+    match: /\bXobe\w+j\b/i,
+    name: "Xobeurindj"
 }, {
-    name: "Oniijialdu",
-    number: 43
+    match: /\bOnii\w+u\b/i,
+    name: "Oniijialdu"
 }, {
-    name: "Wucetosucc",
-    number: 44
+    match: /\bWuce\w+c\b/i,
+    name: "Wucetosucc"
 }, {
-    name: "Ebyeloofdud",
-    number: 45
+    match: /\bEbye\w+d\b/i,
+    name: "Ebyeloofdud"
 }, {
-    name: "Odyavanta",
-    number: 46
+    match: /\bOdya\w+a\b/i,
+    name: "Odyavanta"
 }, {
-    name: "Milekistri",
-    number: 47
+    match: /\bMile\w+i\b/i,
+    name: "Milekistri"
 }, {
-    name: "Waferganh",
-    number: 48
+    match: /\bWafe\w+h\b/i,
+    name: "Waferganh"
 }, {
-    name: "Agnusopwit",
-    number: 49
+    match: /\bAgnu\w+t\b/i,
+    name: "Agnusopwit"
 }, {
-    name: "Teyaypilny",
-    number: 50
+    match: /\bT[ae]ya\w+y\b/i,
+    name: "Teyaypilny"
 }, {
-    name: "Zalienkosm",
-    number: 51
+    match: /\bZali\w+m\b/i,
+    name: "Zalienkosm"
 }, {
-    name: "Ladgudiraf",
-    number: 52
+    match: /\bLadg\w+f\b/i,
+    name: "Ladgudiraf"
 }, {
-    name: "Mushonponte",
-    number: 53
+    match: /\bMush\w+e\b/i,
+    name: "Mushonponte"
 }, {
-    name: "Amsentisz",
-    number: 54
+    match: /\bAmse\w+z\b/i,
+    name: "Amsentisz"
 }, {
-    name: "Fladiselm",
-    number: 55
+    match: /\bFlad\w+m\b/i,
+    name: "Fladiselm"
 }, {
-    name: "Laanawemb",
-    number: 56
+    match: /\bLaan\w+b\b/i,
+    name: "Laanawemb"
 }, {
-    name: "Ilkerloor",
-    number: 57
+    match: /\bIlke\w+r\b/i,
+    name: "Ilkerloor"
 }, {
-    name: "Davanossi",
-    number: 58
+    match: /\bDava\w+i\b/i,
+    name: "Davanossi"
 }, {
-    name: "Ploehrliou",
-    number: 59
+    match: /\bPloe\w+u\b/i,
+    name: "Ploehrliou"
 }, {
-    name: "Corpinyaya",
-    number: 60
+    match: /\bCorp\w+a\b/i,
+    name: "Corpinyaya"
 }, {
-    name: "Leckandmeram",
-    number: 61
+    match: /\bLeck\w+m\b/i,
+    name: "Leckandmeram"
 }, {
-    name: "Quulngais",
-    number: 62
+    match: /\bQuul\w+s\b/i,
+    name: "Quulngais"
 }, {
-    name: "Nokokipsechl",
-    number: 63
+    match: /\bNoko\w+l\b/i,
+    name: "Nokokipsechl"
 }, {
-    name: "Rinblodesa",
-    number: 64
+    match: /\bRinb\w+a\b/i,
+    name: "Rinblodesa"
 }, {
-    name: "Loydporpen",
-    number: 65
+    match: /\bLoyd\w+n\b/i,
+    name: "Loydporpen"
 }, {
-    name: "Ibtrevskip",
-    number: 66
+    match: /\bIbtr\w+p\b/i,
+    name: "Ibtrevskip"
 }, {
-    name: "Elkowaldb",
-    number: 67
+    match: /\bElko\w+b\b/i,
+    name: "Elkowaldb"
 }, {
-    name: "Heholhofsko",
-    number: 68
+    match: /\bHeho\w+o\b/i,
+    name: "Heholhofsko"
 }, {
-    name: "Yebrilowisod",
-    number: 69
+    match: /\bYebr\w+d\b/i,
+    name: "Yebrilowisod"
 }, {
-    name: "Husalvangewi",
-    number: 70
+    match: /\bHusa\w+i\b/i,
+    name: "Husalvangewi"
 }, {
-    name: "Ovna'uesed",
-    number: 71
+    match: /\bOvna[\w']+d\b/i,
+    name: "Ovna'uesed"
 }, {
-    name: "Bahibusey",
-    number: 72
+    match: /\bBahi\w+y\b/i,
+    name: "Bahibusey"
 }, {
-    name: "Nuybeliaure",
-    number: 73
+    match: /\bNuyb\w+e\b/i,
+    name: "Nuybeliaure"
 }, {
-    name: "Doshawchuc",
-    number: 74
+    match: /\bDosh\w+c\b/i,
+    name: "Doshawchuc"
 }, {
-    name: "Ruckinarkh",
-    number: 75
+    match: /\bRuck\w+h\b/i,
+    name: "Ruckinarkh"
 }, {
-    name: "Thorettac",
-    number: 76
+    match: /\bThor\w+c\b/i,
+    name: "Thorettac"
 }, {
-    name: "Nuponoparau",
-    number: 77
+    match: /\bNupo\w+u\b/i,
+    name: "Nuponoparau"
 }, {
-    name: "Moglaschil",
-    number: 78
+    match: /\bMogl\w+l\b/i,
+    name: "Moglaschil"
 }, {
-    name: "Uiweupose",
-    number: 79
+    match: /\bUiwe\w+e\b/i,
+    name: "Uiweupose"
 }, {
-    name: "Nasmilete",
-    number: 80
+    match: /\bNasm\w+e\b/i,
+    name: "Nasmilete"
 }, {
-    name: "Ekdaluskin",
-    number: 81
+    match: /\bEkda\w+n\b/i,
+    name: "Ekdaluskin"
 }, {
-    name: "Hakapanasy",
-    number: 82
+    match: /\bHaka\w+y\b/i,
+    name: "Hakapanasy"
 }, {
-    name: "Dimonimba",
-    number: 83
+    match: /\bDimo\w+a\b/i,
+    name: "Dimonimba"
 }, {
-    name: "Cajaccari",
-    number: 84
+    match: /\bCaja\w+i\b/i,
+    name: "Cajaccari"
 }, {
-    name: "Olonerovo",
-    number: 85
+    match: /\bOlon\w+o\b/i,
+    name: "Olonerovo"
 }, {
-    name: "Umlanswick",
-    number: 86
+    match: /\bUmla\w+k\b/i,
+    name: "Umlanswick"
 }, {
-    name: "Henayliszm",
-    number: 87
+    match: /\bHena\w+m\b/i,
+    name: "Henayliszm"
 }, {
-    name: "Utzenmate",
-    number: 88
+    match: /\bUtze\w+e\b/i,
+    name: "Utzenmate"
 }, {
-    name: "Umirpaiya",
-    number: 89
+    match: /\bUmir\w+a\b/i,
+    name: "Umirpaiya"
 }, {
-    name: "Paholiang",
-    number: 90
+    match: /\bPaho\w+g\b/i,
+    name: "Paholiang"
 }, {
-    name: "Iaereznika",
-    number: 91
+    match: /\bIaer\w+a\b/i,
+    name: "Iaereznika"
 }, {
-    name: "Yudukagath",
-    number: 92
+    match: /\bYudu\w+h\b/i,
+    name: "Yudukagath"
 }, {
-    name: "Boealalosnj",
-    number: 93
+    match: /\bBoea\w+j\b/i,
+    name: "Boealalosnj"
 }, {
-    name: "Yaevarcko",
-    number: 94
+    match: /\bYaev\w+o\b/i,
+    name: "Yaevarcko"
 }, {
-    name: "Coellosipp",
-    number: 95
+    match: /\bCoel\w+p\b/i,
+    name: "Coellosipp"
 }, {
-    name: "Wayndohalou",
-    number: 96
+    match: /\bWayn\w+u\b/i,
+    name: "Wayndohalou"
 }, {
-    name: "Smoduraykl",
-    number: 97
+    match: /\bSmod\w+l\b/i,
+    name: "Smoduraykl"
 }, {
-    name: "Apmaneessu",
-    number: 98
+    match: /\bApma\w+u\b/i,
+    name: "Apmaneessu"
 }, {
-    name: "Hicanpaav",
-    number: 99
+    match: /\bHica\w+v\b/i,
+    name: "Hicanpaav"
 }, {
-    name: "Akvasanta",
-    number: 100
+    match: /\bAkva\w+a\b/i,
+    name: "Akvasanta"
 }, {
-    name: "Tuychelisaor",
-    number: 101
+    match: /\bTuyc\w+r\b/i,
+    name: "Tuychelisaor"
 }, {
-    name: "Rivskimbe",
-    number: 102
+    match: /\bRivs\w+e\b/i,
+    name: "Rivskimbe"
 }, {
-    name: "Daksanquix",
-    number: 103
+    match: /\bDaks\w+x\b/i,
+    name: "Daksanquix"
 }, {
-    name: "Kissonlin",
-    number: 104
+    match: /\bKiss\w+n\b/i,
+    name: "Kissonlin"
 }, {
-    name: "Aediabiel",
-    number: 105
+    match: /\bAedi\w+l\b/i,
+    name: "Aediabiel"
 }, {
-    name: "Ulosaginyik",
-    number: 106
+    match: /\bUlos\w+k\b/i,
+    name: "Ulosaginyik"
 }, {
-    name: "Roclaytonycar",
-    number: 107
+    match: /\bRocl\w+r\b/i,
+    name: "Roclaytonycar"
 }, {
-    name: "Kichiaroa",
-    number: 108
+    match: /\bKich\w+a\b/i,
+    name: "Kichiaroa"
 }, {
-    name: "Irceauffey",
-    number: 109
+    match: /\bIrce\w+y\b/i,
+    name: "Irceauffey"
 }, {
-    name: "Nudquathsenfe",
-    number: 110
+    match: /\bNudq\w+e\b/i,
+    name: "Nudquathsenfe"
 }, {
-    name: "Getaizakaal",
-    number: 111
+    match: /\bGeta\w+l\b/i,
+    name: "Getaizakaal"
 }, {
-    name: "Hansolmien",
-    number: 112
+    match: /\bHans\w+n\b/i,
+    name: "Hansolmien"
 }, {
-    name: "Bloytisagra",
-    number: 113
+    match: /\bBloy\w+a\b/i,
+    name: "Bloytisagra"
 }, {
-    name: "Ladsenlay",
-    number: 114
+    match: /\bLads\w+y\b/i,
+    name: "Ladsenlay"
 }, {
-    name: "Luyugoslasr",
-    number: 115
+    match: /\bLuyu\w+r\b/i,
+    name: "Luyugoslasr"
 }, {
-    name: "Ubredhatk",
-    number: 116
+    match: /\bUbre\w+k\b/i,
+    name: "Ubredhatk"
 }, {
-    name: "Cidoniana",
-    number: 117
+    match: /\bCido\w+a\b/i,
+    name: "Cidoniana"
 }, {
-    name: "Jasinessa",
-    number: 118
+    match: /\bJasi\w+a\b/i,
+    name: "Jasinessa"
 }, {
-    name: "Torweierf",
-    number: 119
+    match: /\bTorw\w+f\b/i,
+    name: "Torweierf"
 }, {
-    name: "Saffneckm",
-    number: 120
+    match: /\bSaff\w+m\b/i,
+    name: "Saffneckm"
 }, {
-    name: "Thnistner",
-    number: 121
+    match: /\bThni\w+r\b/i,
+    name: "Thnistner"
 }, {
-    name: "Dotusingg",
-    number: 122
+    match: /\bDotu\w+g\b/i,
+    name: "Dotusingg"
 }, {
-    name: "Luleukous",
-    number: 123
+    match: /\bLule\w+s\b/i,
+    name: "Luleukous"
 }, {
-    name: "Jelmandan",
-    number: 124
+    match: /\bJelm\w+n\b/i,
+    name: "Jelmandan"
 }, {
-    name: "Otimanaso",
-    number: 125
+    match: /\bOtim\w+o\b/i,
+    name: "Otimanaso"
 }, {
-    name: "Enjaxusanto",
-    number: 126
+    match: /\bEnja\w+o\b/i,
+    name: "Enjaxusanto"
 }, {
-    name: "Sezviktorew",
-    number: 127
+    match: /\bSezv\w+w\b/i,
+    name: "Sezviktorew"
 }, {
-    name: "Zikehpm",
-    number: 128
+    match: /\bZike\w+m\b/i,
+    name: "Zikehpm"
 }, {
-    name: "Bephembah",
-    number: 129
+    match: /\bBeph\w+h\b/i,
+    name: "Bephembah"
 }, {
-    name: "Broomerrai",
-    number: 130
+    match: /\bBroo\w+i\b/i,
+    name: "Broomerrai"
 }, {
-    name: "Meximicka",
-    number: 131
+    match: /\bMexi\w+a\b/i,
+    name: "Meximicka"
 }, {
-    name: "Venessika",
-    number: 132
+    match: /\bVene\w+a\b/i,
+    name: "Venessika"
 }, {
-    name: "Gaiteseling",
-    number: 133
+    match: /\bGait\w+g\b/i,
+    name: "Gaiteseling"
 }, {
-    name: "Zosakasiro",
-    number: 134
+    match: /\bZosa\w+o\b/i,
+    name: "Zosakasiro"
 }, {
-    name: "Drajayanes",
-    number: 135
+    match: /\bDraj\w+s\b/i,
+    name: "Drajayanes"
 }, {
-    name: "Ooibekuar",
-    number: 136
+    match: /\bOoib\w+r\b/i,
+    name: "Ooibekuar"
 }, {
-    name: "Urckiansi",
-    number: 137
+    match: /\bUrck\w+i\b/i,
+    name: "Urckiansi"
 }, {
-    name: "Dozivadido",
-    number: 138
+    match: /\bDozi\w+o\b/i,
+    name: "Dozivadido"
 }, {
-    name: "Emiekereks",
-    number: 139
+    match: /\bEmie\w+s\b/i,
+    name: "Emiekereks"
 }, {
-    name: "Meykinunukur",
-    number: 140
+    match: /\bMeyk\w+r\b/i,
+    name: "Meykinunukur"
 }, {
-    name: "Kimycuristh",
-    number: 141
+    match: /\bKimy\w+h\b/i,
+    name: "Kimycuristh"
 }, {
-    name: "Roansfien",
-    number: 142
+    match: /\bRoan\w+n\b/i,
+    name: "Roansfien"
 }, {
-    name: "Isgarmeso",
-    number: 143
+    match: /\bIsga\w+o\b/i,
+    name: "Isgarmeso"
 }, {
-    name: "Daitibeli",
-    number: 144
+    match: /\bDait\w+i\b/i,
+    name: "Daitibeli"
 }, {
-    name: "Gucuttarik",
-    number: 145
+    match: /\bGucu\w+k\b/i,
+    name: "Gucuttarik"
 }, {
-    name: "Enlaythie",
-    number: 146
+    match: /\bEnla\w+e\b/i,
+    name: "Enlaythie"
 }, {
-    name: "Drewweste",
-    number: 147
+    match: /\bDrew\w+e\b/i,
+    name: "Drewweste"
 }, {
-    name: "Akbulkabi",
-    number: 148
+    match: /\bAkbu\w+i\b/i,
+    name: "Akbulkabi"
 }, {
-    name: "Homskiw",
-    number: 149
+    match: /\bHoms\w+w\b/i,
+    name: "Homskiw"
 }, {
-    name: "Zavainlani",
-    number: 150
+    match: /\bZava\w+i\b/i,
+    name: "Zavainlani"
 }, {
-    name: "Jewijkmas",
-    number: 151
+    match: /\bJewi\w+s\b/i,
+    name: "Jewijkmas"
 }, {
-    name: "Itlhotagra",
-    number: 152
+    match: /\bItlh\w+a\b/i,
+    name: "Itlhotagra"
 }, {
-    name: "Podalicess",
-    number: 153
+    match: /\bPoda\w+s\b/i,
+    name: "Podalicess"
 }, {
-    name: "Hiviusauer",
-    number: 154
+    match: /\bHivi\w+r\b/i,
+    name: "Hiviusauer"
 }, {
-    name: "Halsebenk",
-    number: 155
+    match: /\bHals\w+k\b/i,
+    name: "Halsebenk"
 }, {
-    name: "Puikitoac",
-    number: 156
+    match: /\bPuik\w+c\b/i,
+    name: "Puikitoac"
 }, {
-    name: "Gaybakuaria",
-    number: 157
+    match: /\bGayb\w+a\b/i,
+    name: "Gaybakuaria"
 }, {
-    name: "Grbodubhe",
-    number: 158
+    match: /\bGrbo\w+e\b/i,
+    name: "Grbodubhe"
 }, {
-    name: "Rycempler",
-    number: 159
+    match: /\bRyce\w+r\b/i,
+    name: "Rycempler"
 }, {
-    name: "Indjalala",
-    number: 160
+    match: /\bIndj\w+a\b/i,
+    name: "Indjalala"
 }, {
-    name: "Fontenikk",
-    number: 161
+    match: /\bFont\w+k\b/i,
+    name: "Fontenikk"
 }, {
-    name: "Pasycihelwhee",
-    number: 162
+    match: /\bPasy\w+e\b/i,
+    name: "Pasycihelwhee"
 }, {
-    name: "Ikbaksmit",
-    number: 163
+    match: /\bIkba\w+t\b/i,
+    name: "Ikbaksmit"
 }, {
-    name: "Telicianses",
-    number: 164
+    match: /\bTeli\w+s\b/i,
+    name: "Telicianses"
 }, {
-    name: "Oyleyzhan",
-    number: 165
+    match: /\bOyle\w+n\b/i,
+    name: "Oyleyzhan"
 }, {
-    name: "Uagerosat",
-    number: 166
+    match: /\bUage\w+t\b/i,
+    name: "Uagerosat"
 }, {
-    name: "Impoxectin",
-    number: 167
+    match: /\bImpo\w+n\b/i,
+    name: "Impoxectin"
 }, {
-    name: "Twoodmand",
-    number: 168
+    match: /\bTwoo\w+d\b/i,
+    name: "Twoodmand"
 }, {
-    name: "Hilfsesorbs",
-    number: 169
+    match: /\bHilf\w+s\b/i,
+    name: "Hilfsesorbs"
 }, {
-    name: "Ezdaranit",
-    number: 170
+    match: /\bEzda\w+t\b/i,
+    name: "Ezdaranit"
 }, {
-    name: "Wiensanshe",
-    number: 171
+    match: /\bWien\w+e\b/i,
+    name: "Wiensanshe"
 }, {
-    name: "Ewheelonc",
-    number: 172
+    match: /\bEwhe\w+c\b/i,
+    name: "Ewheelonc"
 }, {
-    name: "Litzmantufa",
-    number: 173
+    match: /\bLitz\w+a\b/i,
+    name: "Litzmantufa"
 }, {
-    name: "Emarmatosi",
-    number: 174
+    match: /\bEmar\w+i\b/i,
+    name: "Emarmatosi"
 }, {
-    name: "Mufimbomacvi",
-    number: 175
+    match: /\bMufi\w+i\b/i,
+    name: "Mufimbomacvi"
 }, {
-    name: "Wongquarum",
-    number: 176
+    match: /\bWong\w+m\b/i,
+    name: "Wongquarum"
 }, {
-    name: "Hapirajua",
-    number: 177
+    match: /\bHapi\w+a\b/i,
+    name: "Hapirajua"
 }, {
-    name: "Igbinduina",
-    number: 178
+    match: /\bIgbi\w+a\b/i,
+    name: "Igbinduina"
 }, {
-    name: "Wepaitvas",
-    number: 179
+    match: /\bWepa\w+s\b/i,
+    name: "Wepaitvas"
 }, {
-    name: "Sthatigudi",
-    number: 180
+    match: /\bStha\w+i\b/i,
+    name: "Sthatigudi"
 }, {
-    name: "Yekathsebehn",
-    number: 181
+    match: /\bYeka\w+n\b/i,
+    name: "Yekathsebehn"
 }, {
-    name: "Ebedeagurst",
-    number: 182
+    match: /\bEbed\w+t\b/i,
+    name: "Ebedeagurst"
 }, {
-    name: "Nolisonia",
-    number: 183
+    match: /\bNoli\w+a\b/i,
+    name: "Nolisonia"
 }, {
-    name: "Ulexovitab",
-    number: 184
+    match: /\bUlex\w+b\b/i,
+    name: "Ulexovitab"
 }, {
-    name: "Iodhinxois",
-    number: 185
+    match: /\bIodh\w+s\b/i,
+    name: "Iodhinxois"
 }, {
-    name: "Irroswitzs",
-    number: 186
+    match: /\bIrro\w+s\b/i,
+    name: "Irroswitzs"
 }, {
-    name: "Bifredait",
-    number: 187
+    match: /\bBifr\w+t\b/i,
+    name: "Bifredait"
 }, {
-    name: "Beiraghedwe",
-    number: 188
+    match: /\bBeir\w+e\b/i,
+    name: "Beiraghedwe"
 }, {
-    name: "Yeonatlak",
-    number: 189
+    match: /\bYeon\w+k\b/i,
+    name: "Yeonatlak"
 }, {
-    name: "Cugnatachh",
-    number: 190
+    match: /\bCugn\w+h\b/i,
+    name: "Cugnatachh"
 }, {
-    name: "Nozoryenki",
-    number: 191
+    match: /\bNozo\w+i\b/i,
+    name: "Nozoryenki"
 }, {
-    name: "Ebralduri",
-    number: 192
+    match: /\bEbra\w+i\b/i,
+    name: "Ebralduri"
 }, {
-    name: "Evcickcandj",
-    number: 193
+    match: /\bEvci\w+j\b/i,
+    name: "Evcickcandj"
 }, {
-    name: "Ziybosswin",
-    number: 194
+    match: /\bZiyb\w+n\b/i,
+    name: "Ziybosswin"
 }, {
-    name: "Heperclait",
-    number: 195
+    match: /\bHepe\w+t\b/i,
+    name: "Heperclait"
 }, {
-    name: "Sugiuniam",
-    number: 196
+    match: /\bSugi\w+m\b/i,
+    name: "Sugiuniam"
 }, {
-    name: "Aaseertush",
-    number: 197
+    match: /\bAase\w+h\b/i,
+    name: "Aaseertush"
 }, {
-    name: "Uglyestemaa",
-    number: 198
+    match: /\bUgly\w+a\b/i,
+    name: "Uglyestemaa"
 }, {
-    name: "Horeroedsh",
-    number: 199
+    match: /\bHore\w+h\b/i,
+    name: "Horeroedsh"
 }, {
-    name: "Drundemiso",
-    number: 200
+    match: /\bDrun\w+o\b/i,
+    name: "Drundemiso"
 }, {
-    name: "Ityanianat",
-    number: 201
+    match: /\bItya\w+t\b/i,
+    name: "Ityanianat"
 }, {
-    name: "Purneyrine",
-    number: 202
+    match: /\bPurn\w+e\b/i,
+    name: "Purneyrine"
 }, {
-    name: "Dokiessmat",
-    number: 203
+    match: /\bDoki\w+t\b/i,
+    name: "Dokiessmat"
 }, {
-    name: "Nupiacheh",
-    number: 204
+    match: /\bNupi\w+h\b/i,
+    name: "Nupiacheh"
 }, {
-    name: "Dihewsonj",
-    number: 205
+    match: /\bDihe\w+j\b/i,
+    name: "Dihewsonj"
 }, {
-    name: "Rudrailhik",
-    number: 206
+    match: /\bRudr\w+k\b/i,
+    name: "Rudrailhik"
 }, {
-    name: "Tweretnort",
-    number: 207
+    match: /\bTwer\w+t\b/i,
+    name: "Tweretnort"
 }, {
-    name: "Snatreetze",
-    number: 208
+    match: /\bSnat\w+e\b/i,
+    name: "Snatreetze"
 }, {
-    name: "Iwunddaracos",
-    number: 209
+    match: /\bIwun\w+s\b/i,
+    name: "Iwunddaracos"
 }, {
-    name: "Digarlewena",
-    number: 210
+    match: /\bDiga\w+a\b/i,
+    name: "Digarlewena"
 }, {
-    name: "Erquagsta",
-    number: 211
+    match: /\bErqu\w+a\b/i,
+    name: "Erquagsta"
 }, {
-    name: "Logovoloin",
-    number: 212
+    match: /\bLogo\w+n\b/i,
+    name: "Logovoloin"
 }, {
-    name: "Boyaghosganh",
-    number: 213
+    match: /\bBoya\w+h\b/i,
+    name: "Boyaghosganh"
 }, {
-    name: "Kuolungau",
-    number: 214
+    match: /\bKuol\w+u\b/i,
+    name: "Kuolungau"
 }, {
-    name: "Pehneldept",
-    number: 215
+    match: /\bPehn\w+t\b/i,
+    name: "Pehneldept"
 }, {
-    name: "Yevettiiqidcon",
-    number: 216
+    match: /\bYeve\w+n\b/i,
+    name: "Yevettiiqidcon"
 }, {
-    name: "Sahliacabru",
-    number: 217
+    match: /\bSahl\w+u\b/i,
+    name: "Sahliacabru"
 }, {
-    name: "Noggalterpor",
-    number: 218
+    match: /\bNogg\w+r\b/i,
+    name: "Noggalterpor"
 }, {
-    name: "Chmageaki",
-    number: 219
+    match: /\bChma\w+i\b/i,
+    name: "Chmageaki"
 }, {
-    name: "Veticueca",
-    number: 220
+    match: /\bVeti\w+a\b/i,
+    name: "Veticueca"
 }, {
-    name: "Vittesbursul",
-    number: 221
+    match: /\bVitt\w+l\b/i,
+    name: "Vittesbursul"
 }, {
-    name: "Nootanore",
-    number: 222
+    match: /\bNoot\w+e\b/i,
+    name: "Nootanore"
 }, {
-    name: "Innebdjerah",
-    number: 223
+    match: /\bInne\w+h\b/i,
+    name: "Innebdjerah"
 }, {
-    name: "Kisvarcini",
-    number: 224
+    match: /\bKisv\w+i\b/i,
+    name: "Kisvarcini"
 }, {
-    name: "Cuzcogipper",
-    number: 225
+    match: /\bCuzc\w+r\b/i,
+    name: "Cuzcogipper"
 }, {
-    name: "Pamanhermonsu",
-    number: 226
+    match: /\bPama\w+u\b/i,
+    name: "Pamanhermonsu"
 }, {
-    name: "Brotoghek",
-    number: 227
+    match: /\bBrot\w+k\b/i,
+    name: "Brotoghek"
 }, {
-    name: "Mibittara",
-    number: 228
+    match: /\bMibi\w+a\b/i,
+    name: "Mibittara"
 }, {
-    name: "Huruahili",
-    number: 229
+    match: /\bHuru\w+i\b/i,
+    name: "Huruahili"
 }, {
-    name: "Raldwicarn",
-    number: 230
+    match: /\bRald\w+n\b/i,
+    name: "Raldwicarn"
 }, {
-    name: "Ezdartlic",
-    number: 231
+    match: /\bEzda\w+c\b/i,
+    name: "Ezdartlic"
 }, {
-    name: "Badesclema",
-    number: 232
+    match: /\bBade\w+a\b/i,
+    name: "Badesclema"
 }, {
-    name: "Isenkeyan",
-    number: 233
+    match: /\bIsen\w+n\b/i,
+    name: "Isenkeyan"
 }, {
-    name: "Iadoitesu",
-    number: 234
+    match: /\bIado\w+u\b/i,
+    name: "Iadoitesu"
 }, {
-    name: "Yagrovoisi",
-    number: 235
+    match: /\bYagr\w+i\b/i,
+    name: "Yagrovoisi"
 }, {
-    name: "Ewcomechio",
-    number: 236
+    match: /\bEwco\w+o\b/i,
+    name: "Ewcomechio"
 }, {
-    name: "Inunnunnoda",
-    number: 237
+    match: /\bInun\w+a\b/i,
+    name: "Inunnunnoda"
 }, {
-    name: "Dischiutun",
-    number: 238
+    match: /\bDisc\w+n\b/i,
+    name: "Dischiutun"
 }, {
-    name: "Yuwarugha",
-    number: 239
+    match: /\bYuwa\w+a\b/i,
+    name: "Yuwarugha"
 }, {
-    name: "Ialmendra",
-    number: 240
+    match: /\bIalm\w+a\b/i,
+    name: "Ialmendra"
 }, {
-    name: "Reponudrle",
-    number: 241
+    match: /\bRepo\w+e\b/i,
+    name: "Reponudrle"
 }, {
-    name: "Rinjanagrbo",
-    number: 242
+    match: /\bRinj\w+o\b/i,
+    name: "Rinjanagrbo"
 }, {
-    name: "Zeziceloh",
-    number: 243
+    match: /\bZezi\w+h\b/i,
+    name: "Zeziceloh"
 }, {
-    name: "Oeileutasc",
-    number: 244
+    match: /\bOeil\w+c\b/i,
+    name: "Oeileutasc"
 }, {
-    name: "Zicniijinis",
-    number: 245
+    match: /\bZicn\w+s\b/i,
+    name: "Zicniijinis"
 }, {
-    name: "Dugnowarilda",
-    number: 246
+    match: /\bDugn\w+a\b/i,
+    name: "Dugnowarilda"
 }, {
-    name: "Neuxoisan",
-    number: 247
+    match: /\bNeux\w+n\b/i,
+    name: "Neuxoisan"
 }, {
-    name: "Ilmenhorn",
-    number: 248
+    match: /\bIlme\w+n\b/i,
+    name: "Ilmenhorn"
 }, {
-    name: "Rukwatsuku",
-    number: 249
+    match: /\bRukw\w+u\b/i,
+    name: "Rukwatsuku"
 }, {
-    name: "Nepitzaspru",
-    number: 250
+    match: /\bNepi\w+u\b/i,
+    name: "Nepitzaspru"
 }, {
-    name: "Chcehoemig",
-    number: 251
+    match: /\bChce\w+g\b/i,
+    name: "Chcehoemig"
 }, {
-    name: "Haffneyrin",
-    number: 252
+    match: /\bHaff\w+n\b/i,
+    name: "Haffneyrin"
 }, {
-    name: "Uliciawai",
-    number: 253
+    match: /\bUlic\w+i\b/i,
+    name: "Uliciawai"
 }, {
-    name: "Tuhgrespod",
-    number: 254
+    match: /\bTuhg\w+d\b/i,
+    name: "Tuhgrespod"
 }, {
-    name: "Iousongola",
-    number: 255
+    match: /\bIous\w+a\b/i,
+    name: "Iousongola"
 }, {
-    name: "Odyalutai",
-    number: 256
+    match: /\bOdya\w+i\b/i,
+    name: "Odyalutai"
 }]

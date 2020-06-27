@@ -4,6 +4,7 @@
 *.log
 bootstrap.css
 bootstrap.js
+redditPost.json
 bhs-app.json
 nmsce-bot.json
 *.env
@@ -65,3 +66,4 @@ functions/email.js
 public/reddittest.js
 public/redditpost.json
 functions/nmsce-bot.json
+functions/redditPost.json

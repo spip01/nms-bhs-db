@@ -933,6 +933,8 @@ NMSCE.prototype.displaySearch = function (search) {
 NMSCE.prototype.executeSearch = function (search, panel, dispFcn) {
     if (!search)
         return
+        
+    $("#status").empty()
 
     let ref = bhs.fs.collection("nmsce/" + search.galaxy + "/" + search.type)
 
