@@ -7,21 +7,74 @@
 const snoowrap = require('snoowrap')
 const login = require('./nmsce-bot.json')
 const r = new snoowrap(login)
+var fs = require('fs')
 
-async function main() {
+// main()
+// const fname = "reddit.json"
+// async function main() {
+
+const fname = "/tmp/reddit.json"
+exports.nmsceBot = async function () {
     const subreddit = await r.getSubreddit('NMSCoordinateExchange')
-    // let flair = await r.oauthRequest({ uri: `r/NMSCoordinateExchange/api/link_flair_v2` })
 
-    let posts = await subreddit.getNew({
-        limit: 10
+    fs.readFile(fname, async (err, data) => {
+        let posts
+        let last = {}
+        let date = new Date().valueOf() - 1 * 60 * 60
+
+        if (err) {
+            last.full = new Date().valueOf()
+            posts = await subreddit.getNew({
+                limit: 100
+            })
+        } else {
+            last = JSON.parse(data)
+            if (!last.full || last.full < date) {
+                last.full = new Date().valueOf()
+                posts = await subreddit.getNew({
+                    limit: 100
+                })
+            } else
+                posts = await subreddit.getNew({
+                    after: last.after
+                })
+        }
+
+        if (posts.length > 0)
+            last.after = posts[posts.length - 1].id
+
+        validatePosts(posts)
+
+        posts = await subreddit.getModqueue()
+        validatePosts(posts)
+
+        let logs = await subreddit.getModerationLog(last.mod ? {
+            mod: last.mod
+        } : {
+            limit: 500
+        })
+
+        date = parseInt(new Date().valueOf() / 1000 - 24 * 60 * 60)
+        let list = []
+
+        for (let log of logs) {
+            if (log.target_fullname && log.created_utc < date)
+                last.mod = log.target_fullname.slice(3)
+
+            if (log.mod === "nmsceBot" && log.action === "removelink") {
+                if (!list.includes(log.target_fullname)) {
+                    list.push(log.target_fullname)
+                    let post = await (await r.getSubmission(log.target_fullname.slice(3))).refresh()
+                    posts.push(post)
+                    validatePosts(posts)
+                }
+            }
+        }
+        console.log(last)
+        if (last.after || last.mod || last.full)
+            fs.writeFileSync(fname, JSON.stringify(last))
     })
-    validatePosts(posts)
-
-    posts = await subreddit.getModqueue()
-    validatePosts(posts)
 }
-
-main()
 
 function validatePosts(posts) {
     let flair
@@ -30,11 +83,28 @@ function validatePosts(posts) {
         let ok = post.link_flair_text
         let reason = ""
 
-        if (!ok)
-            reason += "flair"
+        if (!post.name.includes("t3_")) // submission
+            continue
 
         if (ok)
             ok = (flair = getItem(flairList, post.link_flair_text)) !== null
+
+        if (!ok) {
+            if (!post.removed_by_category) {
+                console.log("bad flair", post.link_flair_text, "https://reddit.com" + post.permalink)
+                post.save().remove()
+                    .reply(missingFlair)
+                    .distinguish({
+                        status: true
+                    }).lock()
+                    .catch(err => console.log(JSON.stringify(err)))
+            }
+
+            continue
+        }
+
+        if (flair.noedit)
+            continue
 
         let galaxy, platform, mode
 
@@ -65,28 +135,29 @@ function validatePosts(posts) {
         if (ok) {
             let newFlair = flair.name + "/" + galaxy.name + (flair.platform ? "/" + platform.name + (flair.mode ? "/" + mode.name : "") : "")
             if (newFlair !== post.link_flair_text) {
-                if (!post.removed || post.removed_by_category === "automod_filtered") {
-                    console.log("edit", post.link_flair_text, newFlair, "https://reddit.com" + post.permalink)
-                    r.getSubmission(post.id).selectFlair({
-                        flair_template_id: post.link_flair_template_id,
-                        text: newFlair
-                    }).catch(err => console.log(JSON.stringify(err)))
-                }
+                console.log("edit", post.link_flair_text, newFlair, "https://reddit.com" + post.permalink)
+                post.selectFlair({
+                    flair_template_id: post.link_flair_template_id,
+                    text: newFlair
+                }).catch(err => console.log(JSON.stringify(err)))
             }
-            if (post.removed_by_category === "automod_filtered" || post.mod_reports.length > 0) {
+
+            if ((!flair.sclass || !post.title.match(/s\bclass/i) || post.title.match(/crash|sunk/i)) &&
+                (post.banned_by && post.banned_by.name === "nmsceBot" || post.removed_by_category === "automod_filtered" ||
+                    post.removed_by_category === "reddit" || post.mod_reports.length > 0)) {
+
                 console.log("approve", newFlair, "https://reddit.com" + post.permalink)
-                r.getSubmission(post.id).approve()
+                post.approve()
                     .catch(err => console.log(JSON.stringify(err)))
             }
-        } else if (reason && post.removed_by_category !== "automod_filtered" && post.mod_reports.length === 0) {
-            console.log("report", reportMsg.replace(/(.*?)MISSING(.*?)/, "$1" + reason + "$2"), post.link_flair_text, post.title, "https://reddit.com" + post.permalink)
-            // r.getSubmission(post.id).report({
-            //         reason: "missing" + reason
-            //     }).reply(reportMsg.replace(/(.*?)MISSING(.*?)/, "$1"+reason+"$2"))
-            //     .distinguish({
-            //         status: true
-            //     })
-            //     .catch(err => console.log(JSON.stringify(err)))
+        } else if (reason && !post.removed_by_category) {
+            console.log("remove", post.flair, "https://reddit.com" + post.permalink)
+            post.save().remove()
+                .reply(missingInfo.replace(/(.*?)MISSING(.*?)MISSING(.*?)/, "$1" + reason + "$2" + reason + "$3"))
+                .distinguish({
+                    status: true
+                }).lock()
+                .catch(err => console.log(JSON.stringify(err)))
         }
     }
 }
@@ -110,14 +181,21 @@ function getItem(list, str) {
     return null
 }
 
-const reportMsg = "Thank You for posting to r/NMSCoordinateExchange. Your post has been reported because I couldn't find all the required information (MISSING) in the title or flair. \
+const missingInfo = "Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because all the required information (MISSING) is not included in the title or flair. If you \
+add the MISSING within 24 hours it will be re-approved. \
 You can edit the flair after the post is made. When you select the flair you can edit the text in the box. In the app there is an edit button you need to press.\n\n*This action was taken by \
-the nmsceBot. If you have any questions please contact the moderators.*"
+the nmsceBot. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NMSCoordinateExchange).*"
+
+const missingFlair = "Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair was missing or unrecognized. If you \
+add the correct flair within 24 hours it will be re-approved. \
+You can edit the flair after the post is made. When you select the flair you can edit the text in the box. In the app there is an edit button you need to press.\n\n*This action was taken by \
+the nmsceBot. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NMSCoordinateExchange).*"
 
 const flairList = [{
     match: /Starship/i,
     name: "Starship",
-    galaxy: true
+    galaxy: true,
+    sclass: true
 }, {
     match: /Living Ship/i,
     name: "Living Ship",
@@ -129,10 +207,16 @@ const flairList = [{
 }, {
     match: /Freighter/i,
     name: "Freighter",
-    galaxy: true
+    galaxy: true,
+    sclass: true
 }, {
     match: /Frigate/i,
     name: "Frigate",
+    galaxy: true,
+    sclass: true
+}, {
+    match: /Wild Base/i,
+    name: "Wild Base",
     galaxy: true
 }, {
     match: /Base/i,
@@ -155,18 +239,18 @@ const flairList = [{
     name: "Planet",
     galaxy: true
 }, {
-    match: /Interest/i,
-    name: "Point of Interest",
-    galaxy: true
+    match: /Event|Request|Showcase|Question|Tips|Information|Top|Mod|NEWS|Removed/i,
+    noedit: true
 }, ]
 
 const platformList = [{
-    match: /\bPC\b/i,
+    match: /\bPC\b|steam/i,
     name: "PC"
 }, {
     match: /X.?Box/i,
     name: "XBox"
 }, {
+
     match: /PS4/i,
     name: "PS4"
 }]

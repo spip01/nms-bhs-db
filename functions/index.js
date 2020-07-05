@@ -96,6 +96,11 @@ exports.nmsceCreated = functions.firestore.document("nmsce/{galaxy}/{type}/{id}"
         return nmsce.checkSearch(e)
     })
 
+exports.scheduleNmsceBot = functions.pubsub.schedule('every 5 minutes').onRun(async context => {
+    const bot = require('./nmsce-bot.js')
+    return bot.nmsceBot()
+})
+
 exports.calcRoute = functions.https.onCall(async (data, context) => {
     const hops = require('./hops.js')
     return await hops.genRoute(data, context)
