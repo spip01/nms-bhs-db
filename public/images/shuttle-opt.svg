@@ -46,8 +46,8 @@
      id="namedview3619"
      showgrid="false"
      inkscape:zoom="4.2766708"
-     inkscape:cx="159.04765"
-     inkscape:cy="608.30027"
+     inkscape:cx="98.486524"
+     inkscape:cy="103.23451"
      inkscape:current-layer="layer1"
      inkscape:snap-nodes="false"
      inkscape:snap-others="false" />
@@ -493,7 +493,7 @@
        id="map-h103"
        style="fill:none;stroke:#0000ff;stroke-linecap:round">
       <desc
-         id="desc2883">{&quot;group&quot;:[1,10,13],&quot;okGroup&quot;:[2,3]}</desc>
+         id="desc2883">{&quot;group&quot;:[1,10,13],&quot;okGroup&quot;:[2,15,3]}</desc>
       <path
          inkscape:connector-curvature="0"
          d="m 28,10.4 10,0.472 1.1,-0.309 6.15,0.359 0.375,-0.201 c 0,0 0.452,-0.341 0.56,-0.589 0.456,-1.06 0.182,-2.29 0.193,-3.44 0.007,-0.661 -0.008,-1.32 -0.071,-1.98 -0.04,-0.404 -0.04,-0.825 -0.19,-1.2 A 1.347,1.347 0 0 0 45.726,2.951 C 45.636,2.88 45.404,2.825 45.404,2.825 l -6.54,-0.063 -0.277,-0.589 -9.14,-0.205 -0.87,0.828 -1.38,0.086 c 0,0 -0.285,0.842 -0.36,1.28 -0.112,0.664 -0.12,1.34 -0.124,2.02 -0.006,0.689 -0.009,1.38 0.097,2.07 0.073,0.47 0.133,0.965 0.368,1.38 0.182,0.32 0.404,0.772 0.771,0.789 z"
@@ -1044,7 +1044,7 @@
        id="map-h106"
        style="fill:none;stroke:#0000ff;stroke-linecap:round">
       <desc
-         id="desc2857">{&quot;group&quot;:[1,10],&quot;okGroup&quot;:[11,2],&quot;slots&quot;:&quot;T2&quot;}</desc>
+         id="desc2857">{&quot;group&quot;:[1,10,15],&quot;okGroup&quot;:[11,2],&quot;slots&quot;:&quot;T2&quot;}</desc>
       <path
          inkscape:connector-curvature="0"
          d="m 1688,1123 c -12.2,-1.87 -24.4,-3.74 -35.1,-8.9 -10.6,-5.17 -19.7,-13.6 -28.3,-31.4 -8.53,-17.7 -16.5,-44.8 -20.3,-72.3 -3.8,-27.5 -3.42,-55.5 0.063,-75.7 3.49,-20.2 10.1,-32.5 18.4,-40 8.27,-7.47 18.3,-10.1 28.2,-12.7 85.8,-12.3 172,-24.7 216,-31.2 44.8,-6.54 48.7,-7.28 52.3,-8.72 3.61,-1.43 6.97,-3.55 20.9,-15.3 13.9,-11.8 38.5,-33.2 63,-54.6 0.623,-5.98 1.25,-12 3.46,-18 2.21,-6 6.13,-12.4 13,-18.5 6.91,-6.1 16.9,-12.1 28.3,-11.3 11.4,0.8 24.4,8.22 38.7,25.4 14.3,17.2 29.8,44.1 41.5,72 11.7,27.9 19.4,57 24.8,88.8 5.48,31.8 8.72,66.4 7.6,104 -1.12,37.4 -6.6,77.5 -16.3,105 -9.7,27.5 -23.7,42.5 -39.5,49.1 -15.8,6.6 -33.5,4.86 -49.3,-2.86 -15.8,-7.72 -29.8,-21.4 -41,-34.3 -11.2,-12.9 -19.9,-25 -28.5,-37 l -12,-7.47 -287,36.2 z"
@@ -1247,6 +1247,8 @@
        style=""
        id="map-h107"
        transform="translate(-23.956373,6.7646976)">
+      <desc
+         id="desc2906">{&quot;requires&quot;:[&quot;h110&quot;]}</desc>
       <path
          sodipodi:nodetypes="cscscccccccsccccccc"
          inkscape:connector-curvature="0"
@@ -3675,7 +3677,7 @@
        id="map-h121"
        style="fill:none;stroke:#0000ff;stroke-linecap:round">
       <desc
-         id="desc2859">{&quot;group&quot;:[1,14],&quot;okGroup&quot;:[11,12,2],&quot;slots&quot;:&quot;T2&quot;}</desc>
+         id="desc2859">{&quot;group&quot;:[1,10,14],&quot;okGroup&quot;:[11,12,2],&quot;slots&quot;:&quot;T2&quot;}</desc>
       <path
          inkscape:connector-curvature="0"
          d="m 1666,925 102,7.78 c 0,0 21.8,3.63 31.6,8.3 8.5,4.03 22.8,16.6 22.8,16.6 l 204,150 c 0,0 40.9,18.8 62.7,23.8 15.9,3.71 32.4,4.95 48.7,4.67 16,-0.275 32.5,-1.11 47.7,-6.22 11.9,-4 24,-9.61 32.7,-18.7 3.91,-4.07 7.78,-15 7.78,-15"
@@ -10586,25 +10588,21 @@
        sodipodi:nodetypes="cccccccc" />
     <flowRoot
        xml:space="preserve"
-       id="warning"
-       style="font-size:10.66666603px;line-height:1;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;fill:#0000ff;stroke:none;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       transform="matrix(0.265,0,0,0.265,-5.0645845,-2.8319087)"
-       inkscape:label="#flowRoot3953"><flowRegion
-         id="flowRegion3955"
-         style="fill:#0000ff;stroke:none;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"><rect
-           id="rect3957"
-           width="233.76605"
-           height="25.825588"
-           x="48.08902"
-           y="764.28583"
-           style="fill:#0000ff;stroke:none;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" /></flowRegion><flowPara
-         id="flowPara3959"
-         style="text-align:center;text-anchor:middle;fill:#0000ff;stroke:none;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">Since all cockpits are the same please don't select parts that are part of the cockpit</flowPara></flowRoot>  </g>
+       id="flowRoot2908"
+       style="font-size:8px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px"
+       transform="matrix(0.265,0,0,0.265,1.127318,0.80553312)"><flowRegion
+         id="flowRegion2910"><rect
+           id="rect2912"
+           width="298.36292"
+           height="14.029596"
+           x="33.203396"
+           y="758.18323" /></flowRegion><flowPara
+         id="flowPara2914">Since all cockpits are the same please don't select the cockpit parts.</flowPara></flowRoot>  </g>
   <g
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Layer 2"
-     style="display:inline">
+     style="display:none">
     <text
        xml:space="preserve"
        style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
