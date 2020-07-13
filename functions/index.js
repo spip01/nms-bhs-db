@@ -96,7 +96,7 @@ exports.nmsceCreated = functions.firestore.document("nmsce/{galaxy}/{type}/{id}"
         return nmsce.checkSearch(e)
     })
 
-exports.scheduleNmsceBot = functions.pubsub.schedule('every 3 minutes').onRun(async context => {
+exports.scheduleNmsceBot = functions.pubsub.schedule('every 2 minutes').onRun(async context => {
     const bot = require('./nmsce-bot.js')
     return bot.nmsceBot()
 })

@@ -16,7 +16,9 @@ var last = {}
 // async function main() {
 
 exports.nmsceBot = async function () {
-    sub = await r.getSubreddit('NMSCoordinateExchange')
+    if (!sub)
+        sub = await r.getSubreddit('NMSCoordinateExchange')
+
 
     let posts
     let date = new Date().valueOf() / 1000
@@ -30,14 +32,16 @@ exports.nmsceBot = async function () {
                 last.post = posts[0].name
                 validatePosts(posts)
             }
-        })
+        }).catch(err => console.log(JSON.stringify(err)))
+
     } else
         sub.getNew().then(posts => {
             if (posts.length > 0) {
                 last.post = posts[0].name
                 validatePosts(posts)
             }
-        })
+        }).catch(err => console.log(JSON.stringify(err)))
+
 
     sub.getNewComments(last.comment ? {
         before: last.comment
@@ -60,46 +64,48 @@ exports.nmsceBot = async function () {
             last.comment = posts[0].name
             checkComments(posts, mods, rules)
         }
-    })
+    }).catch(err => console.log(JSON.stringify(err)))
+
 
     sub.getModqueue().then(posts => {
         validatePosts(posts)
-    })
+    }).catch(err => console.log(JSON.stringify(err)))
 
-    if (!last.logCheck || last.logCheck + 10 * 60 < date) {
-        last.logCheck = date
-        sub.getModerationLog(last.mod ? {
-            before: last.mod,
-        } : {
-            limit: 500
-        }).then(async logs => {
 
-            let list = []
-            posts = []
-            date = parseInt(date - 24 * 60 * 60)
+    // if (!last.logCheck || last.logCheck + 10 * 60 < date) {
+    //     last.logCheck = date
+    sub.getModerationLog(last.mod ? {
+        before: last.mod,
+    } : {
+        limit: 500
+    }).then(async logs => {
 
-            do {
-                let mod = getLast(logs, date)
-                last.mod = mod ? mod : last.mod
+        let list = []
+        posts = []
+        date = parseInt(date - 24 * 60 * 60)
 
-                for (let log of logs) {
-                    if (log.mod === "nmsceBot" && log.action === "removelink" && !list.includes(log.target_fullname)) {
-                        list.push(log.target_fullname)
-                        let post = await (await r.getSubmission(log.target_fullname.slice(3))).refresh()
-                        posts.push(post)
-                    }
+        do {
+            let mod = getLast(logs, date)
+            last.mod = mod ? mod : last.mod
+
+            for (let log of logs) {
+                if (log.mod === "nmsceBot" && log.action === "removelink" && !list.includes(log.target_fullname)) {
+                    list.push(log.target_fullname)
+                    let post = await (await r.getSubmission(log.target_fullname.slice(3))).refresh()
+                    posts.push(post)
                 }
+            }
 
-                if (logs.length === 25)
-                    logs = await sub.getModerationLog({
-                        before: logs[0].id
-                    })
-            } while (logs.length === 25 && logs[0].created_utc > date)
+            if (logs.length === 25)
+                logs = await sub.getModerationLog({
+                    before: logs[0].id
+                })
+        } while (logs.length === 25 && logs[0].created_utc > date)
 
-            console.log("log", posts.length)
-            validatePosts(posts)
-        })
-    }
+        validatePosts(posts)
+    }).catch(err => console.log(JSON.stringify(err)))
+
+    // }
 }
 
 function getLast(posts, stop) {
@@ -187,11 +193,12 @@ async function checkComments(posts, mods, rules) {
                 }).catch(err => console.log(JSON.stringify(err)))
 
             post.remove()
+                .catch(err => console.log(JSON.stringify(err)))
 
             console.log("remove " + remove, "missing: " + missing, "rule: " + match, "https://reddit.com" + oppost.permalink)
 
         } else if (!post.banned_by) {
-            let match = post.body.match(/!(shiploc|shipclass|portal|s2)/i)
+            let match = post.body.match(/!(shiploc|shipclass|portal|wildbase|s2)/i)
             if (match) {
                 let message = null
                 switch (match[1]) {
@@ -204,6 +211,9 @@ async function checkComments(posts, mods, rules) {
                     case "portal":
                         message = respPortal
                         break
+                    case "wildbase":
+                        message = respWildBase
+                        break
                     case "s2":
                         message = respS2
                         break
@@ -212,7 +222,9 @@ async function checkComments(posts, mods, rules) {
                 if (message) {
                     let op = await r.getComment(post.parent_id)
                     op.reply(message).lock()
+                        .catch(err => console.log(JSON.stringify(err)))
                     post.remove()
+                        .catch(err => console.log(JSON.stringify(err)))
                 }
             }
         }
@@ -226,10 +238,8 @@ function validatePosts(posts) {
         let ok = post.link_flair_text
         let reason = ""
 
-        if (!post.name.includes("t3_")) { // submission
-            console.log(JSON.stringify(post))
+        if (!post.name.includes("t3_") || post.locked || post.selftext === "[deleted]") // submission
             continue
-        }
 
         if (ok)
             ok = (flair = getItem(flairList, post.link_flair_text)) !== null
@@ -338,22 +348,24 @@ function getItem(list, str) {
 }
 
 const respS2 = `This system only uses the first 2 glyphs found. The first character is the planet index. So if you haven't found the glyph used for the planet index portal to the system using 0 or 1 and then fly to the indicated planet.`
-
 const respShiploc = `All starships in a given system can be found at the Space Station AND at any Trade Post located within the system. The same ships are available on all platforms and game modes. Things to check if you don't find the ship you're looking for. 1) Are you in the correct galaxy. 2) Are you in the correct system. It's very easy to enter the glyphs incorrectly so please double check your location.`
-
 const respShipclass = `Each individually spawned ship has a random class & number of slots. In a T3, wealthy, system a ship has a 2% chance of spawning as an S class. In a T2, developing, economy the percentage is 1%. In a T1 0%. The range of slots is based on the configuration of the ship. An S class ship will have the max possible number of slots in it's range. Only crashed ships have a fixed configuration of size and class.`
-
 const respPortal = `The first glyph of a portal address is the planet index. If you are going to pick up a ship then this character doesn't matter. It is usually given as 0 which will take you to the first planet in a system. For other items the glyph given should take you to the correct planet. The remaining 11 digits are the system address.`
+const respWildBase = `Before anything else **TURN OFF MULTIPLAYER AND DISCONNECT YOUR PC/CONSOLE FROM THE INTERNET**\n
 
+* Go to a Portal and input the glyphs provided in the post.\n
+* Once you’re on the other side. Go to the planetary latitude and longitude coordinates provided in the post.\n
+* When you get there you will find the Unclaimed Wild Base Computer.\n
+* Claim the base as yours (this is why turning multiplayer off is important) and then build a Teleporter.\n
+* Go back through the Portal you came in.\nOnce you're back in your home system, summon the Anomaly (aka the Nexus) and go to the big Teleporter in the back of it. Then teleport back to the wild base you just claimed - this is the only way to get back to it.\n
+* Once you are teleported to your new base there is no Portal Interference anymore.\n
+
+Make sure you **DO NOT UPLOAD** this Wild Base Computer. It is advised to DELETE the Wild Base Computer and build another base at least 500u away BEFORE turning multiplayer back on.`
 const missingInfo = 'Thank You for posting to r/NMSCoordinateExchange. Your post is missing the required [missing]. Please, edit your post to include the missing information and remember to include it in your next post.'
-
 const missingFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair was missing or unrecognized. If you add the correct flair within 24 hours it will be re-approved. Please be patient because this part of the bot only runs every 30 minutes. You can edit the flair after the post is made. When you select the flair you can edit the text in the box. In the app there is an edit button you need to press.'
-
 const editFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair or title did not contain the required [missing]. If you correct the flair within 24 hours it will be re-approved. You can edit the flair after the post is made. When you select the flair you can edit the text in the box. In the app there is an edit button you need to press.'
-
 const removePost = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because it violates the following rules for posting:\n\n'
-
-const botSig = "\n\n*This action was taken by the nmsceBot. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NMSCoordinateExchange).*"
+const botSig = "\n\n----------\n*This action was taken by the nmsceBot. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NMSCoordinateExchange).*"
 
 const flairList = [{
     match: /Starship/i,
