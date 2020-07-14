@@ -362,28 +362,28 @@ function getItem(list, str) {
 
     return null
 }
-const replyCommands = `List of bot commands \  
-\  
-    !shiploc - reply with comment about ships being available anywhere in the system \  
-    !shipclass - reply with comment about spawning ship classes \  
-    !portal - info about portal glyphs \  
-    !wildbase - info on claiming a wildbase \  
-    !help - this list\  `
-const replyModCommands = `\  
---- \  
-\  
-Moderator Commands: \  
-\  
-    !m-rN - remove post for violating rule number N. Specify multiple rules by separating the rule numbers with a comma. e.g. !m-1,2 \  
-    !m-gpmcls - Make comment about missing items where\  
-        g = missing galaxy \  
-        p = platform \  
-        m = mode \  
-        c = coordinates or glyphs \  
-        l = latitude & longitude \  
-        s = screenshot \  
-\  
-Missing items can be singular or multiple using the same command. e.g. !m-g or !m-gpm\  `
+const replyCommands = `List of bot commands
+
+   * !shiploc - reply with comment about ships being available anywhere in the system
+   * !shipclass - reply with comment about spawning ship classes
+   * !portal - info about portal glyphs
+   * !wildbase - info on claiming a wildbase
+   * !help - this list
+`
+const replyModCommands = `
+---
+Moderator Commands:
+
+   * !m-rN - remove post for violating rule number N. Specify multiple rules by separating the rule numbers with a comma. e.g !m-1,2
+   * !m-gpmcls - Make comment about missing items where
+      *  g = missing galaxy
+      *  p = platform
+      *  m = mode
+      *  c = coordinates or glyphs
+      *  l = latitude & longitude
+      *  s = screenshot
+
+Missing items can be singular or multiple using the same command. e.g. !m-g or !m-gpm`
 const respS2 = `This system only uses the first 2 glyphs found. The first character is the planet index. So if you haven't found the glyph used for the planet index portal to the system using 0 or 1 and then fly to the indicated planet.`
 const respShiploc = `All starships in a given system can be found at the Space Station AND at any Trade Post located within the system. The same ships are available on all platforms and game modes. Things to check if you don't find the ship you're looking for. 1) Are you in the correct galaxy. 2) Are you in the correct system. It's very easy to enter the glyphs incorrectly so please double check your location.`
 const respShipclass = `Each individually spawned ship has a random class & number of slots. In a T3, wealthy, system a ship has a 2% chance of spawning as an S class. In a T2, developing, economy the percentage is 1%. In a T1 0%. The range of slots is based on the configuration of the ship. An S class ship will have the max possible number of slots in it's range. Only crashed ships have a fixed configuration of size and class.`
