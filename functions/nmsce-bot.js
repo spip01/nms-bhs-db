@@ -46,7 +46,7 @@ exports.nmsceBot = async function () {
     sub.getNewComments(last.comment ? {
         before: last.comment
     } : {
-        limit: 200
+        limit: 300
     }).then(async posts => {
         if (posts.length > 0) {
             if (mods.length === 0) {
@@ -71,9 +71,6 @@ exports.nmsceBot = async function () {
         validatePosts(posts)
     }).catch(err => console.log(JSON.stringify(err)))
 
-
-    // if (!last.logCheck || last.logCheck + 10 * 60 < date) {
-    //     last.logCheck = date
     sub.getModerationLog(last.mod ? {
         before: last.mod,
     } : {
@@ -104,8 +101,6 @@ exports.nmsceBot = async function () {
 
         validatePosts(posts)
     }).catch(err => console.log(JSON.stringify(err)))
-
-    // }
 }
 
 function getLast(posts, stop) {
@@ -123,108 +118,129 @@ function getLast(posts, stop) {
 
 async function checkComments(posts, mods, rules) {
     for (let post of posts) {
-        if (!post.banned_by && post.body.includes("!m-") && mods.includes(post.author_fullname)) {
-            let missing = ""
-            let remove = false
-            let rule = ""
+        if (!post.banned_by) {
+            if (post.body.includes("!m-") && mods.includes(post.author_fullname)) {
+                let missing = ""
+                let remove = false
+                let rule = ""
 
-            let match = post.body.replace(/^!m-(\S+)/, "$1")
-            for (let c of match) {
-                switch (c) {
-                    case "g": // galaxy
-                        missing += (missing ? ", " : "") + "galaxy"
-                        break
-                    case "p": // platform
-                        missing += (missing ? ", " : "") + "platform"
-                        break
-                    case "m": // game mode
-                        missing += (missing ? ", " : "") + "game mode"
-                        break
-                    case "c": // coords
-                        missing += (missing ? ", " : "") + "coordinates or glyphs"
-                        break
-                    case "l": // coords
-                        missing += (missing ? ", " : "") + "planetary latitude & longitude"
-                        break
-                    case "s": // screenshot
-                        missing += (missing ? ", " : "") + "screenshot"
-                        break
-                    case "r": // remove
-                        remove = true
-                        break
+                let match = post.body.replace(/^!m-(\S+)/, "$1")
+                for (let c of match) {
+                    switch (c) {
+                        case "g": // galaxy
+                            missing += (missing ? ", " : "") + "galaxy"
+                            break
+                        case "p": // platform
+                            missing += (missing ? ", " : "") + "platform"
+                            break
+                        case "m": // game mode
+                            missing += (missing ? ", " : "") + "game mode"
+                            break
+                        case "c": // coords
+                            missing += (missing ? ", " : "") + "coordinates or glyphs"
+                            break
+                        case "l": // coords
+                            missing += (missing ? ", " : "") + "planetary latitude & longitude"
+                            break
+                        case "s": // screenshot
+                            missing += (missing ? ", " : "") + "screenshot"
+                            break
+                        case "r": // remove
+                            remove = true
+                            break
+                    }
                 }
-            }
 
-            match = post.body.replace(/!m-.*?([\d,]+)/, "$1").split(",")
-            for (let i of match) {
-                let r = parseInt(i)
-                if (r <= rules.length)
-                    rule += (rule ? "\n\n" : "") + "----------------------\n" + rules[r - 1]
-            }
-
-            let message = ""
-            if (remove)
-                message = removePost + rule + botSig
-            else if (missing)
-                message = missingInfo.replace(/\[missing\]/g, missing) + botSig
-
-            let op = null
-            let oppost = post
-
-            while (!op || oppost.parent_id) {
-                op = await r.getComment(oppost.parent_id)
-                oppost = await op.fetch()
-            }
-
-            op.reply(message)
-                .distinguish({
-                    status: true
-                }).lock()
-                .catch(err => console.log(JSON.stringify(err)))
-
-            if (remove)
-                op.report({
-                    reason: post.author.name + " rule " + match
-                }).remove()
-                .catch(err => console.log(JSON.stringify(err)))
-            else
-                op.report({
-                    reason: post.author.name + " missing " + missing
-                }).catch(err => console.log(JSON.stringify(err)))
-
-            post.remove()
-                .catch(err => console.log(JSON.stringify(err)))
-
-            console.log("remove " + remove, "missing: " + missing, "rule: " + match, "https://reddit.com" + oppost.permalink)
-
-        } else if (!post.banned_by) {
-            let match = post.body.match(/!(shiploc|shipclass|portal|wildbase|s2)/i)
-            if (match) {
-                let message = null
-                switch (match[1]) {
-                    case "shiploc":
-                        message = respShiploc
-                        break
-                    case "shipclass":
-                        message = respShipclass
-                        break
-                    case "portal":
-                        message = respPortal
-                        break
-                    case "wildbase":
-                        message = respWildBase
-                        break
-                    case "s2":
-                        message = respS2
-                        break
+                match = post.body.replace(/!m-.*?([\d,]+)/, "$1").split(",")
+                for (let i of match) {
+                    let r = parseInt(i)
+                    if (r <= rules.length)
+                        rule += (rule ? "\n\n" : "") + "----------------------\n" + rules[r - 1]
                 }
+
+                let message = ""
+                if (remove)
+                    message = removePost + rule + botSig
+                else if (missing)
+                    message = missingInfo.replace(/\[missing\]/g, missing) + botSig
 
                 if (message) {
-                    let op = await r.getComment(post.parent_id)
-                    op.reply(message).lock()
+                    let op = null
+                    let oppost = post
+
+                    while (!op || oppost.parent_id) {
+                        op = await r.getComment(oppost.parent_id)
+                        oppost = await op.fetch()
+                    }
+
+                    op.reply(message)
+                        .distinguish({
+                            status: true
+                        }).lock()
                         .catch(err => console.log(JSON.stringify(err)))
+
+                    if (remove)
+                        op.report({
+                            reason: post.author.name + " rule " + match
+                        }).remove()
+                        .catch(err => console.log(JSON.stringify(err)))
+                    else
+                        op.report({
+                            reason: post.author.name + " missing " + missing
+                        }).catch(err => console.log(JSON.stringify(err)))
+
                     post.remove()
                         .catch(err => console.log(JSON.stringify(err)))
+
+                    console.log("remove: " + remove, "missing: " + missing, "rule: " + match, "https://reddit.com" + oppost.permalink)
+                }
+            } else {
+                let match = post.body.match(/!(shiploc|help|shipclass|portal|wildbase|s2)/i)
+                if (match) {
+                    let message = null
+                    let reply = null
+                    switch (match[1]) {
+                        case "help":
+                            reply = replyCommands
+                            if (mods.includes(post.author_fullname))
+                                reply += replyModCommands
+                            break
+                        case "shiploc":
+                            message = respShiploc
+                            break
+                        case "shipclass":
+                            message = respShipclass
+                            break
+                        case "portal":
+                            message = respPortal
+                            break
+                        case "wildbase":
+                            message = respWildBase
+                            break
+                        case "s2":
+                            message = respS2
+                            break
+                    }
+
+                    if (message || reply) {
+                        let op = await r.getComment(post.parent_id)
+
+                        if (message)
+                            op.reply(message).lock()
+                            .catch(err => console.log(JSON.stringify(err)))
+                        else
+                            r.composeMessage({
+                                to: post.author,
+                                subject: "nmsceBot Commands",
+                                text: reply
+                            })
+                            .catch(err => console.log(JSON.stringify(err)))
+
+                        post.remove()
+                            .catch(err => console.log(JSON.stringify(err)))
+
+                        console.log("reply:", match[0])
+                    }
                 }
             }
         }
@@ -346,7 +362,28 @@ function getItem(list, str) {
 
     return null
 }
-
+const replyCommands = `List of bot commands \  
+\  
+    !shiploc - reply with comment about ships being available anywhere in the system \  
+    !shipclass - reply with comment about spawning ship classes \  
+    !portal - info about portal glyphs \  
+    !wildbase - info on claiming a wildbase \  
+    !help - this list\  `
+const replyModCommands = `\  
+--- \  
+\  
+Moderator Commands: \  
+\  
+    !m-rN - remove post for violating rule number N. Specify multiple rules by separating the rule numbers with a comma. e.g. !m-1,2 \  
+    !m-gpmcls - Make comment about missing items where\  
+        g = missing galaxy \  
+        p = platform \  
+        m = mode \  
+        c = coordinates or glyphs \  
+        l = latitude & longitude \  
+        s = screenshot \  
+\  
+Missing items can be singular or multiple using the same command. e.g. !m-g or !m-gpm\  `
 const respS2 = `This system only uses the first 2 glyphs found. The first character is the planet index. So if you haven't found the glyph used for the planet index portal to the system using 0 or 1 and then fly to the indicated planet.`
 const respShiploc = `All starships in a given system can be found at the Space Station AND at any Trade Post located within the system. The same ships are available on all platforms and game modes. Things to check if you don't find the ship you're looking for. 1) Are you in the correct galaxy. 2) Are you in the correct system. It's very easy to enter the glyphs incorrectly so please double check your location.`
 const respShipclass = `Each individually spawned ship has a random class & number of slots. In a T3, wealthy, system a ship has a 2% chance of spawning as an S class. In a T2, developing, economy the percentage is 1%. In a T1 0%. The range of slots is based on the configuration of the ship. An S class ship will have the max possible number of slots in it's range. Only crashed ships have a fixed configuration of size and class.`
