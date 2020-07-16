@@ -633,6 +633,8 @@ const versionList = [{
     name: "exo mech",
 }, {
     name: "crossplay",
+}, {
+    name: "desolation",
 }]
 
 const modeList = [{

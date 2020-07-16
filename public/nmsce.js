@@ -561,14 +561,14 @@ NMSCE.prototype.extractSystem = function () {
         entry.Platform = last.Platform
         entry.platform = last.Platform === "PS4" ? "PS4" : last.Platform === "PC" || last.Platform === "XBox" ? "PC-XBox" : ""
         entry.galaxy = last.galaxy
-        entry.version = last.version ? last.version : "crossplay"
+        entry.version = last.version ? last.version : "desolation"
     } else {
         entry._name = bhs.user._name
         entry.uid = bhs.user.uid
         entry.Platform = bhs.user.Platform
         entry.platform = entry.Platform === "PS4" ? "PS4" : entry.Platform === "PC" || entry.Platform === "XBox" ? "PC-XBox" : ""
         entry.galaxy = bhs.user.galaxy
-        entry.version = "crossplay"
+        entry.version = "desolation"
     }
 
     entry.page = "nmsce"
@@ -1436,7 +1436,7 @@ NMSCE.prototype.extractUser = function () {
     let loc = $("#panels")
     let u = {}
 
-    u.version = "crossplay"
+    u.version = "desolation"
     u._name = loc.find("#id-Player").val()
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber()
 

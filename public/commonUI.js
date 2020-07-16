@@ -1096,7 +1096,7 @@ blackHoleSuns.prototype.extractUser = function () {
     u.platform = loc.find("#btn-Platform").text().stripNumber()
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber()
     u.org = loc.find("#btn-Civ-Org").text().stripNumber()
-    u.version = "crossplay" // loc.find("#btn-Version").text().stripNumber()
+    u.version = "desolation" // loc.find("#btn-Version").text().stripNumber()
 
     if (u.org === "--blank--")
         u.org = ""
