@@ -10,6 +10,7 @@ admin.initializeApp({
 
 async function main() {
     let ref = admin.firestore().collectionGroup("votes")
+    ref=ref.limit(10)
     ref.get().then(async snapshot => {
         for (let doc of snapshot.docs) {
             let v = doc.data()
@@ -17,7 +18,7 @@ async function main() {
             let ref = admin.firestore().doc(path)
             let d = await ref.get()
             let e = d.data()
-
+console.log(path)
             v.id = e.id
             v.galaxy = e.galaxy
             v.Photo = e.Photo
@@ -27,7 +28,7 @@ async function main() {
             if (e.Type)
                 v.Type = e.Type
 
-            doc.ref.set(v)
+            // doc.ref.set(v)
         }
     })
 }

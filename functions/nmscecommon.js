@@ -30,32 +30,19 @@ async function main() {
 
 function updateCommon(entry, ref) {
     let e = {}
-    e.created = entry.created
-    e.votes = entry.votes
-    e._name = entry._name
-    e.uid = entry.uid
-    e.id = entry.id
-    e.type = entry.type
-    e.galaxy = entry.galaxy
-    e.addr = entry.addr
-    e.Photo = entry.Photo
-    e.Name = entry.Name?entry.Name:""
-    if (entry.Type)
-        e.Type = entry.Type
-    if (entry["Planet-Index"])
-        e["Planet-Index"] = entry["Planet-Index"]
-    if (entry["Planet-Name"])
-        e["Planet-Name"] = entry["Planet-Name"]
+    e.votes = {}
+    e.votes.hof = 0
 
-    let dref = ref.collection("nmsceCommon").doc("data")
-    dref.delete()
+    ref.set(e, {
+        merge: true
+    }).then().catch(err => {
+        bhs.status("ERROR: " + err.message)
+    })
 
     ref = ref.collection("nmsceCommon").doc(entry.id)
-    ref.set(e
-        /*, {
-                merge: true
-            }*/
-    ).then().catch(err => {
+    ref.set(e, {
+        merge: true
+    }).then().catch(err => {
         bhs.status("ERROR: " + err.message)
     })
 

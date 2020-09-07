@@ -28,6 +28,14 @@ $(document).ready(async () => {
 
         if (fnmsce) {
             nmsce.buildResultsList()
+            nmsce.buildTotals()
+
+            let ref = bhs.fs.doc("bhs/nmsceTotals")
+            bhs.subscribe("nmsce-totals", ref, nmsce.displayTotals)
+
+            ref = bhs.fs.doc("bhs/nmsceCommunityEvent")
+            bhs.subscribe("nmsce-ce", ref, nmsce.displayTotals)
+
             nmsce.getResultsLists()
             // nmsce.getFeatured()
             nmsce.expandPanels(false)
@@ -933,7 +941,7 @@ NMSCE.prototype.displaySearch = function (search) {
 NMSCE.prototype.executeSearch = function (search, panel, dispFcn) {
     if (!search)
         return
-        
+
     $("#status").empty()
 
     let ref = bhs.fs.collection("nmsce/" + search.galaxy + "/" + search.type)
@@ -3842,19 +3850,13 @@ NMSCE.prototype.initVotes = function (entry) {
         entry.votes.favorite = 0
         entry.votes.edchoice = 0
         entry.votes.bhspoi = 0
+        entry.votes.hof = 0
     }
 }
 
 NMSCE.prototype.incrementTotals = function (e, val) {
     let t = {}
     t[e.type] = firebase.firestore.FieldValue.increment(val)
-
-    let ref = bhs.fs.doc("bhs/nmsceTotals")
-    ref.set(t, {
-        merge: true
-    }).then().catch(err => {
-        bhs.status("ERROR: " + err.message)
-    })
 
     ref = bhs.getUsersColRef(bhs.user.uid)
     ref.set({
@@ -3994,12 +3996,19 @@ const resultTables = [{
     field: "votes.favorite",
     limit: 20,
 }, {
+    name: "Top Visited",
+    field: "votes.visited",
+    limit: 20,
+}, {
     name: "Moderators Choice",
     field: "votes.edchoice",
     limit: 20,
 }, {
-    name: "Top Visited",
-    field: "votes.visited",
+    name: "Hall of Fame",
+    field: "votes.hof",
+    limit: 20,
+}, {
+    name: "Totals",
     limit: 20,
 }, ]
 
@@ -4032,6 +4041,142 @@ NMSCE.prototype.buildResultsList = function () {
 
     let height = $("html")[0].clientHeight - 100
     $("#displayPanels .scroll").height(height + "px")
+}
+
+NMSCE.prototype.buildTotals = function () {
+    const header = `
+        <div class="row pl-15">
+            <div class="col-md-7 col-14">
+                <div class="card">
+                    <div class="card-header pl-15 txt-def">
+                        <div class="row">
+                            <label>
+                                <input id="ck-idname" type="checkbox" onclick="nmsce.showModTotals(this)">
+                                &nbsp;Show All
+                            </label>
+                        </div>
+                        <div class="row">
+                            <div id="id-name" class="col-6 pointer" onclick="nmsce.sortTotals(this)">Player&nbsp;&nbsp;<i class="fas fa-sort-alpha-down"></i></div>
+                            <div id="id-total" class="col-3 pointer" onclick="nmsce.sortTotals(this)">Overall&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div>
+                            <div id="id-event" class="col-3 pointer" onclick="nmsce.sortTotals(this)">Community Event&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div>
+                        </div>
+                    </div>
+                    <div id="totalsCard" class="card-body scroll" style="height:600px"></div>
+                </div>
+            </div>
+        </div>`
+
+    let loc = $("#dl-Totals")
+    loc.find("#list-Totals").remove()
+    loc.append(header)
+}
+
+NMSCE.prototype.displayTotals = function (list, path) {
+    const rows = `
+        <div id="row-uid" name="ismod" class="border-bottom h6">
+            <div class="row pointer" onclick="nmsce.expandTotals(this)">
+                <div id="id-name" class="col-4"><i class="far fa-caret-square-down txt-input"></i> nameS</div>
+                <div id="id-total" class="col-3 txt-right">totalT</div>
+                <div id="id-event" class="col-3 txt-right">eventT</div>
+            </div>
+            <div id="id-exp" class="row hidden" onclick="nmsce.expandTotals(this)">
+                <div id="id-details">detailT</div>
+            </div>
+        </div>`
+
+    let loc = $("#totalsCard")
+    for (let k of Object.keys(list)) {
+        let e = list[k]
+        if (typeof e.name !== "undefined") {
+            let t = 0
+            let s = ""
+
+            for (let k of Object.keys(e))
+                if (typeof e[k] === "number") {
+                    t += e[k]
+                    s += (s !== "" ? ",&nbsp;" : "") + k + ": " + e[k]
+                }
+
+            let l = loc.find("#row-" + k)
+
+            if (l.length === 0) {
+                let h = /uid/ [Symbol.replace](rows, k)
+                h = /nameS/ [Symbol.replace](h, e.name)
+                h = /detailT/ [Symbol.replace](h, s)
+                if (e.mod) {
+                    h = /ismod/ [Symbol.replace](h, "modT")
+                    h = /border-bottom/ [Symbol.replace](h, "border-bottom hidden")
+                }
+
+                if (path === "bhs/nmsceTotals") {
+                    h = /totalT/ [Symbol.replace](h, t)
+                    h = /eventT/ [Symbol.replace](h, "")
+                } else {
+                    h = /totalT/ [Symbol.replace](h, "")
+                    h = /eventT/ [Symbol.replace](h, t)
+                }
+
+                loc.append(h)
+            } else {
+                $(l).find("#id-details").text(s)
+                if (path === "bhs/nmsceTotals")
+                    $(l).find("#id-total").text(t)
+                else
+                    $(l).find("#id-event").text(t)
+            }
+        }
+    }
+
+    nmsce.sortTotals(null, "id-name")
+}
+
+NMSCE.prototype.showModTotals = function (evt) {
+    if ($(evt).prop("checked"))
+        $("#totalsCard [name='modT']").show()
+    else
+        $("#totalsCard [name='modT']").hide()
+}
+
+
+NMSCE.prototype.sortTotals = function (evt, id) {
+    let sort = typeof id !== "undefined" ? id : $(evt).prop("id")
+    let loc = $("#totalsCard")
+    let list = loc.children()
+
+    switch (sort) {
+        case "id-name":
+            list.sort((a, b) => {
+                a = $(a).find("#" + sort).text().stripMarginWS().toLowerCase()
+                b = $(b).find("#" + sort).text().stripMarginWS().toLowerCase()
+                return a > b ? 1 : -1
+            })
+            break
+        case "id-total":
+        case "id-event":
+            list.sort((a, b) => {
+                a = $(a).find("#" + sort).text().stripMarginWS()
+                a = a === "" ? 0 : parseInt(a)
+                b = $(b).find("#" + sort).text().stripMarginWS()
+                b = b === "" ? 0 : parseInt(b)
+                return b - a
+            })
+            break
+    }
+
+    loc.empty()
+    loc.append(list)
+}
+
+NMSCE.prototype.expandTotals = function (evt) {
+    let loc = $(evt).parent()
+    let exp = loc.find(".fa-caret-square-down")
+    if (exp.length > 0) {
+        exp.removeClass("fa-caret-square-down").addClass("fa-caret-square-up")
+        loc.find("#id-exp").show()
+    } else {
+        loc.find(".fa-caret-square-up").removeClass("fa-caret-square-up").addClass("fa-caret-square-down")
+        loc.find("#id-exp").hide()
+    }
 }
 
 NMSCE.prototype.fcnObserver = function (loc, fcn) {
@@ -4200,6 +4345,9 @@ NMSCE.prototype.displayResultList = function (entries, type) {
 
     for (let e of entries) {
         if (e.private && e.uid !== bhs.user.uid && !bhs.hasRole("nmsceEditor"))
+            continue
+
+        if (type === "Hall-of-Fame" && e.votes.hof < 1)
             continue
 
         nmsce.entries[type].push(e)
@@ -4436,12 +4584,14 @@ NMSCE.prototype.showVotes = function (entry) {
         shvote($("#voted-bhspoi"), entry.bhspoi)
         shvote($("#voted-visited"), entry.visited)
         shvote($("#voted-report"), entry.report)
+        shvote($("#voted-hof"), entry.hof)
     } else {
         $("#favorite").css("color", "grey")
         shvote($("#voted-edchoice"), false)
         shvote($("#voted-bhspoi"), false)
         shvote($("#voted-visited"), false)
         shvote($("#voted-report"), false)
+        shvote($("#voted-hof"), false)
     }
 }
 
@@ -4672,6 +4822,8 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend, type) {
             h += /title/ [Symbol.replace](l, "Editors Choice")
             l = /idname/g [Symbol.replace](itm, "Visited")
             h += /title/ [Symbol.replace](l, "Visited")
+            l = /idname/g [Symbol.replace](itm, "Hall-of-Fame")
+            h += /title/ [Symbol.replace](l, "Hall of Fame")
             l = /idname/g [Symbol.replace](itm, "Created")
             h += /title/ [Symbol.replace](l, "Created")
             l = /idname/g [Symbol.replace](itm, "Modified")
@@ -4688,6 +4840,9 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend, type) {
             l = /idname/g [Symbol.replace](itm, "Visited")
             l = /pointer/ [Symbol.replace](l, "")
             h += /title/ [Symbol.replace](l, e.votes.visited)
+            l = /idname/g [Symbol.replace](itm, "Hall of Fame")
+            l = /pointer/ [Symbol.replace](l, "")
+            h += /title/ [Symbol.replace](l, e.votes.hof)
             l = /idname/g [Symbol.replace](itm, "Created")
             l = /pointer/ [Symbol.replace](l, "")
             h += /title/ [Symbol.replace](l, e.created ? e.created.toDate().toDateLocalTimeString() : "")

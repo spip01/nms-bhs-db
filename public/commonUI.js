@@ -69,6 +69,11 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
                 $("#id-private").show()
             }
 
+            if (bhs.roles.includes("nmsceAdmin")) {
+                $("#hof").show()
+                $("#id-private").show()
+            }
+
             if (bhs.roles.includes("editor") || bhs.roles.includes("admin"))
                 $("#poiorg").show()
 

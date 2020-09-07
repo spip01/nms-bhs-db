@@ -1,53 +1,74 @@
 'use strict'
 
-// const {
-//     CommentStream
-// } = require('snoostorm')
-
-const snoowrap = require('snoowrap')
 const login = require('./nmsce-bot.json')
+const snoowrap = require('snoowrap')
 const r = new snoowrap(login)
+
+// const functions = require('firebase-functions')
+const admin = require('firebase-admin')
+// var serviceAccount = require("./nms-bhs-8025d3f3c02d.json")
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount)
+// })
+
 var sub = null
 var mods = []
 var rules = []
-var last = {}
+var lastPost = {}
+var lastComment = {}
+var oldComments = 0
+var lastMod = {}
 
 // main()
+// var full = true
+// var oldCommentLimit = 100
 // async function main() {
 
 exports.nmsceBot = async function () {
-    if (!sub)
-        sub = await r.getSubreddit('NMSCoordinateExchange')
+    let newInstance = sub === null
 
+    if (!sub) {
+        console.log("new instance")
+        sub = await r.getSubreddit('NMSCoordinateExchange')
+    }
 
     let posts
     let date = new Date().valueOf() / 1000
+    let p = []
 
-    if (!last.full || last.full + 15 * 60 < date) {
-        last.full = date
-        sub.getNew({
-            limit: 100
-        }).then(posts => {
-            if (posts.length > 0) {
-                last.post = posts[0].name
-                validatePosts(posts)
-            }
-        }).catch(err => console.log(JSON.stringify(err)))
+    if (oldComments + 3 * 60 * 60 < date) {
+        oldComments = date
+        p.push(getOldComments())
+    }
 
-    } else
-        sub.getNew().then(posts => {
-            if (posts.length > 0) {
-                last.post = posts[0].name
-                validatePosts(posts)
-            }
-        }).catch(err => console.log(JSON.stringify(err)))
-
-
-    sub.getNewComments(last.comment ? {
-        before: last.comment
+    p.push(sub.getNew(!lastPost.name || lastPost.full + 60 * 60 < date ? {
+        limit: newInstance && typeof full === "undefined" ? 25 : 100
     } : {
-        limit: 300
+        before: lastPost.name
+    }).then(posts => {
+        console.log("post", posts.length)
+
+        if (posts.length > 0 || !lastPost.full || lastPost.full + 60 * 60 < date)
+            lastPost.full = date
+
+        if (posts.length > 0) {
+            lastPost.name = posts[0].name
+            validatePosts(posts)
+        }
+    }).catch(err => {
+        console.log("post", JSON.stringify(err))
+    }))
+
+    p.push(sub.getNewComments(!lastComment.name || lastComment.full + 30 * 60 < date ? {
+        limit: newInstance && typeof full === "undefined" ? 25 : 500
+    } : {
+        before: lastComment.name
     }).then(async posts => {
+        console.log("comments", posts.length)
+
+        if (posts.length > 0 || !lastComment.full || lastComment.full + 30 * 60 < date)
+            lastComment.full = date
+
         if (posts.length > 0) {
             if (mods.length === 0) {
                 let m = await sub.getModerators()
@@ -61,46 +82,122 @@ exports.nmsceBot = async function () {
                     rules.push(x.description)
             }
 
-            last.comment = posts[0].name
+            lastComment.name = posts[0].name
             checkComments(posts, mods, rules)
         }
-    }).catch(err => console.log(JSON.stringify(err)))
+    }).catch(err => {
+        console.log("comments", JSON.stringify(err))
+    }))
 
-
-    sub.getModqueue().then(posts => {
+    p.push(sub.getModqueue().then(posts => {
+        console.log("queue", posts.length)
         validatePosts(posts)
-    }).catch(err => console.log(JSON.stringify(err)))
+    }).catch(err => {
+        console.log("queue", JSON.stringify(err))
+    }))
 
-    sub.getModerationLog(last.mod ? {
-        before: last.mod,
-    } : {
-        limit: 500
-    }).then(async logs => {
+    if (!lastMod.last || lastMod.last + 30 * 60 * 60 < date) {
+        lastMod.last = date
 
-        let list = []
-        posts = []
-        date = parseInt(date - 24 * 60 * 60)
+        p.push(sub.getModerationLog(!lastMod.name || lastMod.full + 60 * 60 < date ? {
+            limit: 250
+        } : {
+            before: last.name,
+        }).then(async logs => {
+            let list = []
+            posts = []
+            date = parseInt(date - 24 * 60 * 60)
 
-        do {
-            let mod = getLast(logs, date)
-            last.mod = mod ? mod : last.mod
+            if (logs.length > 0 || !lastMod.full || lastMod.full + 60 * 60 < date)
+                lastMod.full = date
 
-            for (let log of logs) {
-                if (log.mod === "nmsceBot" && log.action === "removelink" && !list.includes(log.target_fullname)) {
-                    list.push(log.target_fullname)
-                    let post = await (await r.getSubmission(log.target_fullname.slice(3))).refresh()
-                    posts.push(post)
+            let logCount = logs.length
+
+            do {
+                let mod = getLast(logs, date)
+                lastMod.name = mod ? mod : lastMod.name
+
+                for (let log of logs) {
+                    if (log.mod === "nmsceBot" && log.action === "removelink" && !list.includes(log.target_fullname)) {
+                        list.push(log.target_fullname)
+                        let post = await (await r.getSubmission(log.target_fullname.slice(3))).refresh()
+                        posts.push(post)
+                    }
                 }
+
+                if (logs.length === 25) {
+                    logs = await sub.getModerationLog({
+                        before: logs[0].id
+                    })
+                    logCount += logs.length
+                }
+            } while (logs.length === 25 && logs[0].created_utc > date)
+
+            console.log("log", logCount)
+            validatePosts(posts)
+        }).catch(err => {
+            console.log("log", JSON.stringify(err))
+        }))
+    }
+
+    return Promise.all(p)
+}
+
+async function getOldComments() {
+    let month = new Date().getMonth()
+    let list = {}
+    list.authors = {}
+    let oldlist = {}
+
+    let ref = admin.firestore().doc("bhs/nmsceSubComments")
+    let doc = await ref.get()
+    if (doc.exists) {
+        oldlist = doc.data()
+
+        for (let a of Object.keys(oldlist.authors)) {
+            list.authors[a] = {}
+            list.authors[a].comments = {}
+            list.authors[a].votes = 0
+
+            if (oldlist.lastMonth !== month)
+                list.authors[a][month] = 0
+        }
+    }
+
+    return sub.getNewComments( /*typeof list.last === "undefined" ?*/ {
+            limit:typeof oldCommentLimit !== "undefined" ? oldCommentLimit : 1000
+        }
+        /*: {
+               before: list.last
+           }*/
+    ).then(async posts => {
+        console.log("votes", posts.length)
+
+        for (let post of posts) {
+            let name = post.author.name
+
+            if (typeof list.authors[name] === "undefined") {
+                list.authors[name] = {}
+                list.authors[name].comments = {}
+                list.authors[name].votes = 0
+                list.authors[name][month] = 0
             }
 
-            if (logs.length === 25)
-                logs = await sub.getModerationLog({
-                    before: logs[0].id
-                })
-        } while (logs.length === 25 && logs[0].created_utc > date)
+            let author = list.authors[name]
+            let old = doc.exists ? oldlist.authors[name] : null
+            author.votes += post.ups - (old && old.comments[post.name] ? old.comments[post.name] : 1)
+            author[month] += post.ups - (old && old.comments[post.name] ? old.comments[post.name] : 1)
+            author.comments[post.name] = post.ups
+        }
 
-        validatePosts(posts)
-    }).catch(err => console.log(JSON.stringify(err)))
+        for (let a of Object.keys(list.authors)) {
+            let author = list.authors[a]
+            if (author.votes > 0)
+                console.log(a, author.votes)
+        }
+
+        await doc.ref.set(list)
+    })
 }
 
 function getLast(posts, stop) {
@@ -150,7 +247,6 @@ async function checkComments(posts, mods, rules) {
                             break
                     }
                 }
-
                 match = post.body.replace(/!m-.*?([\d,]+)/, "$1").split(",")
                 for (let i of match) {
                     let r = parseInt(i)
@@ -195,11 +291,33 @@ async function checkComments(posts, mods, rules) {
                     console.log("remove: " + remove, "missing: " + missing, "rule: " + match, "https://reddit.com" + oppost.permalink)
                 }
             } else {
-                let match = post.body.match(/!(shiploc|help|shipclass|portal|wildbase|s2)/i)
+                let match = post.body.match(/!(yes|shiploc|help|shipclass|portal|wildbase|s2)/)
                 if (match) {
                     let message = null
                     let reply = null
                     switch (match[1]) {
+                        case "yes":
+                            if (post.author.name !== "AutoModerator") {
+                                let op = null
+                                let oppost = post
+                                oppost.lock()
+
+                                while (!op || oppost.parent_id) {
+                                    op = await r.getComment(oppost.parent_id)
+                                    oppost = await op.fetch()
+                                    if (oppost.parent_id && oppost.author.name === "AutoModerator")
+                                        oppost.lock()
+                                }
+
+                                if (oppost.link_flair_text === "Ship Request?") {
+                                    console.log("approve ship request")
+                                    oppost.approve().selectFlair({
+                                        flair_template_id: oppost.link_flair_template_id,
+                                        text: "Ship Request"
+                                    })
+                                }
+                            }
+                            break
                         case "help":
                             reply = replyCommands
                             if (mods.includes(post.author_fullname))
@@ -219,6 +337,9 @@ async function checkComments(posts, mods, rules) {
                             break
                         case "s2":
                             message = respS2
+                            break
+                        case "search":
+                            message = respSearch
                             break
                     }
 
@@ -314,6 +435,7 @@ function validatePosts(posts) {
             }
 
             if ((!flair.sclass || !post.title.match(/s\bclass/i) || post.title.match(/crash|sunk/i)) &&
+                (!flair.station || !post.title.match(/trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station|\bwave\b|\bx.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death/i)) &&
                 (post.banned_by && post.banned_by.name === "nmsceBot" || post.removed_by_category === "automod_filtered" ||
                     post.removed_by_category === "reddit" || post.mod_reports.length > 0)) {
 
@@ -384,6 +506,7 @@ Moderator Commands:
       *  s = screenshot
 
 Missing items can be singular or multiple using the same command. e.g. !m-g or !m-gpm`
+const respSearch = "Please search r/NMSCoordinateExchange or the [NMSCE app](https://nmsce.com) before posting your request."
 const respS2 = `This system only uses the first 2 glyphs found. The first character is the planet index. So if you haven't found the glyph used for the planet index portal to the system using 0 or 1 and then fly to the indicated planet.`
 const respShiploc = `All starships in a given system can be found at the Space Station AND at any Trade Post located within the system. The same ships are available on all platforms and game modes. Things to check if you don't find the ship you're looking for. 1) Are you in the correct galaxy. 2) Are you in the correct system. It's very easy to enter the glyphs incorrectly so please double check your location.`
 const respShipclass = `Each individually spawned ship has a random class & number of slots. In a T3, wealthy, system a ship has a 2% chance of spawning as an S class. In a T2, developing, economy the percentage is 1%. In a T1 0%. The range of slots is based on the configuration of the ship. An S class ship will have the max possible number of slots in it's range. Only crashed ships have a fixed configuration of size and class.`
@@ -408,7 +531,8 @@ const flairList = [{
     match: /Starship/i,
     name: "Starship",
     galaxy: true,
-    sclass: true
+    sclass: true,
+    station: true
 }, {
     match: /Living Ship/i,
     name: "Living Ship",
@@ -416,6 +540,10 @@ const flairList = [{
 }, {
     match: /Multi Tool/i,
     name: "Multi Tool",
+    galaxy: true
+}, {
+    match: /Derelict Freighter/i,
+    name: "Derelict Freighter",
     galaxy: true
 }, {
     match: /Freighter/i,
@@ -452,7 +580,7 @@ const flairList = [{
     name: "Planet",
     galaxy: true
 }, {
-    match: /Event|Request|Showcase|Question|Tips|Information|Top|Mod|NEWS|Removed/i,
+    match: /Event|Request|Showcase|Question|Tips|Information|Top|Mod|NEWS|Removed|Best/i,
     noedit: true
 }, ]
 

@@ -14,13 +14,12 @@ async function main() {
 
     let ref = admin.firestore().collection("nmsce")
     let refs = await ref.listDocuments()
-    
+
     for (let ref of refs) { // galaxy
         let refs = await ref.listCollections()
 
         for (let ref of refs) { // type
             let snapshot = await ref.get()
-            console.log(snapshot.size)
 
             if (typeof totals[ref.id] === "undefined")
                 totals[ref.id] = 0
@@ -37,26 +36,40 @@ async function main() {
                     users[e.uid][ref.id] = 0
 
                 users[e.uid][ref.id]++
+
+                if (typeof totals[e.uid] === "undefined") {
+                    totals[e.uid] = {}
+                    totals[e.uid].name = e._name
+                }
+
+                if (typeof totals[e.uid][ref.id] === "undefined")
+                    totals[e.uid][ref.id] = 0
+
+                totals[e.uid][ref.id]++
             }
         }
     }
 
     for (let u of Object.keys(users)) {
-        console.log("users/" + u, JSON.stringify(users[u]))
-
-        let uref = admin.firestore().doc("users/" + u)
-        uref.set({
-            nmsceTotals: users[u]
-        }, {
-            merge: true
-        })
+        let ref = admin.firestore().doc("admin/" + u)
+        let ed = await ref.get()
+        totals[u].mod = ed.exists && ed.data().roles.includes("nmsceEditor")
     }
 
     let tref = admin.firestore().doc("bhs/nmsceTotals")
-    console.log("totals", JSON.stringify(totals))
-    // tref.set(totals, {
-    //     merge: true
-    // })
+    tref.set(totals)
+
+    for (let u of Object.keys(users)) {
+        let uref = admin.firestore().doc("users/" + u)
+
+        uref.get().then(doc => {
+            let e = doc.data()
+            e.nmsceTotals = users[u]
+            doc.ref.set(e)
+        })
+    }
+
+
 }
 
 main()

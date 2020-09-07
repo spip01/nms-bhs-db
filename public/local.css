@@ -131,6 +131,10 @@ body {
     padding-right: 5px !important;
 }
 
+.txt-right {
+    text-align:right;
+}
+
 .nopadding {
     padding: 0px !important;
     margin: 0px !important;

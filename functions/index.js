@@ -89,7 +89,74 @@ exports.getGPList = functions.https.onRequest((request, response) => {
     })
 })
 
-exports.nmsceCreated = functions.firestore.document("nmsce/{galaxy}/{type}/{id}")
+
+exports.nmsceItemCreated = functions.firestore.document("nmsce/{galaxy}/{type}/{id}")
+    .onCreate(async (doc, context) => {
+        let p = []
+        let e = doc.data()
+
+        let ref = admin.firestore().doc("admin/" + e.uid)
+        let ed = await ref.get()
+        let mod = ed.exists && ed.data().roles.includes("nmsceEditor")
+
+        ref = admin.firestore().doc("bhs/nmsceTotals")
+        p.push(ref.get().then(async doc => {
+            let d = {}
+            if (doc.exists)
+                d = doc.data()
+
+            if (typeof d[e.uid] === "undefined")
+                d[e.uid] = {}
+
+            if (typeof d[e.uid][e.type] === "undefined")
+                d[e.uid][e.type] = 0
+
+            if (typeof d[e.type] === "undefined")
+                d[e.type] = 0
+
+            d[e.type]++
+
+            d[e.uid][e.type]++
+            d[e.uid].name = e._name
+            if (mod)
+                d[e.uid].mod = true
+
+            return doc.ref.set(d, {
+                merge: true
+            })
+        }))
+
+        ref = admin.firestore().doc("bhs/nmsceCommunityEvent")
+        p.push(ref.get().then(async doc => {
+            let d = {}
+            if (doc.exists)
+                d = doc.data()
+
+            if (typeof d[e.uid] === "undefined")
+                d[e.uid] = {}
+
+            if (typeof d[e.uid][e.type] === "undefined")
+                d[e.uid][e.type] = 0
+
+            if (typeof d[e.type] === "undefined")
+                d[e.type] = 0
+
+            d[e.type]++
+
+            d[e.uid][e.type]++
+            d[e.uid].name = e._name
+            if (mod)
+                d[e.uid].mod = true
+
+            return doc.ref.set(d, {
+                merge: true
+            })
+        }))
+
+        return Promise.all(p)
+    })
+
+exports.nmsceCheckSearch = functions.firestore.document("nmsce/{galaxy}/{type}/{id}")
     .onCreate(async (doc, context) => {
         const nmsce = require('./nmsce.js')
         let e = doc.data()
@@ -98,7 +165,7 @@ exports.nmsceCreated = functions.firestore.document("nmsce/{galaxy}/{type}/{id}"
 
 exports.scheduleNmsceBot = functions.pubsub.schedule('every 2 minutes').onRun(async context => {
     const bot = require('./nmsce-bot.js')
-    return bot.nmsceBot()
+    return await bot.nmsceBot()
 })
 
 exports.calcRoute = functions.https.onCall(async (data, context) => {
