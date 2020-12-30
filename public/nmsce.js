@@ -569,14 +569,14 @@ NMSCE.prototype.extractSystem = function () {
         entry.Platform = last.Platform
         entry.platform = last.Platform === "PS4" ? "PS4" : last.Platform === "PC" || last.Platform === "XBox" ? "PC-XBox" : ""
         entry.galaxy = last.galaxy
-        entry.version = last.version ? last.version : "desolation"
+        entry.version = last.version ? last.version : latestversion
     } else {
         entry._name = bhs.user._name
         entry.uid = bhs.user.uid
         entry.Platform = bhs.user.Platform
         entry.platform = entry.Platform === "PS4" ? "PS4" : entry.Platform === "PC" || entry.Platform === "XBox" ? "PC-XBox" : ""
         entry.galaxy = bhs.user.galaxy
-        entry.version = "desolation"
+        entry.version = latestversion
     }
 
     entry.page = "nmsce"
@@ -1444,7 +1444,7 @@ NMSCE.prototype.extractUser = function () {
     let loc = $("#panels")
     let u = {}
 
-    u.version = "desolation"
+    u.version = latestversion
     u._name = loc.find("#id-Player").val()
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber()
 
@@ -1510,7 +1510,7 @@ const tNumber = `
 const tFloat = `
     <div id="row-idname" data-type="float" data-allowhide="ihide" data-req="ifreq" data-search="stype" class="row">
         <div class="col-lg-6 col-4 txt-label-def">titlettip&nbsp;</div>
-        <input id="id-idname" type="number" class="rounded col-lg-7 col-9" step=0.1 min=-1 max=range value=-1>
+        <input id="id-idname" type="number" class="rounded col-lg-7 col-9" step=0.1 max=range value=-1>
     </div>`
 const tTags = `
     <div id="row-idname" class="row pl-10 pr-10" data-type="tags" data-allowhide="ihide" data-req="ifreq">
@@ -6574,13 +6574,13 @@ const objectList = [{
         name: "Size",
         type: "radio",
         list: [{
-            name: "Riffle"
+            name: "Rifle"
         }, {
-            name: "Compact Riffle"
+            name: "Compact Rifle"
         }, {
             name: "Pistol"
         }],
-        ttip: "Riffle: 17-24 slots<br>Compact Riffle: 11-16 slots<br>Pistol: 5-10 slots",
+        ttip: "Rifle: 17-24 slots<br>Compact Rifle: 11-16 slots<br>Pistol: 5-10 slots",
         imgText: true,
         search: true,
     }, {

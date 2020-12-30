@@ -36,10 +36,10 @@ exports.nmsceBot = async function () {
     let date = new Date().valueOf() / 1000
     let p = []
 
-    if (oldComments + 3 * 60 * 60 < date) {
-        oldComments = date
-        p.push(getOldComments())
-    }
+    // if (oldComments + 3 * 60 * 60 < date) {
+    //     oldComments = date
+    //     p.push(getOldComments())
+    // }
 
     p.push(sub.getNew(!lastPost.name || lastPost.full + 60 * 60 < date ? {
         limit: newInstance && typeof full === "undefined" ? 25 : 100
@@ -435,6 +435,7 @@ function validatePosts(posts) {
             }
 
             if ((!flair.sclass || !post.title.match(/s\bclass/i) || post.title.match(/crash|sunk/i)) &&
+                (flair.name !== "Starship" || !post.title.match(/black/i)) &&
                 (!flair.station || !post.title.match(/trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station|\bwave\b|\bx.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death/i)) &&
                 (post.banned_by && post.banned_by.name === "nmsceBot" || post.removed_by_category === "automod_filtered" ||
                     post.removed_by_category === "reddit" || post.mod_reports.length > 0)) {
@@ -592,8 +593,8 @@ const platformList = [{
     name: "XBox"
 }, {
 
-    match: /PS4/i,
-    name: "PS4"
+    match: /PS4|PS5|\bPS\b/i,
+    name: "PS"
 }]
 
 const modeList = [{

@@ -612,7 +612,7 @@ blackHoleSuns.prototype.extractEntry = async function (idx) {
             entry.galaxy = bhs.user.galaxy
         }
 
-        entry.version = "desolation"
+        entry.version = latestversion
         entry.page = "bhs"
 
         entry.addr = addr

@@ -635,7 +635,13 @@ const versionList = [{
     name: "crossplay",
 }, {
     name: "desolation",
+} ,{
+    name: "origins",
+},{
+    name: "next generation",
 }]
+
+const latestversion = "next generation"
 
 const modeList = [{
     name: "Normal",
