@@ -639,9 +639,11 @@ const versionList = [{
     name: "origins",
 },{
     name: "next generation",
+},{
+    name: "companions",
 }]
 
-const latestversion = "next generation"
+const latestversion = versionList[(versionList.length-1)].name
 
 const modeList = [{
     name: "Normal",
