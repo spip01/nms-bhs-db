@@ -1,127 +1,59 @@
 ### Rules that match conditions are executed in 2 groups removal/approval actions run first then the rest ###
 
 ---
-type: comment
-body (includes): "!command"
-moderators_exempt: false
-author: 
-    is_moderator: true
-moderators_exempt: false
-comment_locked: true
-comment: |
-    Moderator commands (original command comment is removed):
-
-    !m-galaxy or !mg - add comment about missing galaxy  
-    !m-loc or !ml - add comment about missing coordinates  
-    !m-ss - add comment about missing screenshot  
-    !m-galloc or !mgl - add comment about missing galaxy and coordinates  
-
----
-type: comment
-body (includes): "!command"
-moderators_exempt: false
-comment_locked: true
-comment: |
-    List of current automod commands available for users:
-
-    !commands - this list  
-    !shiploc - comments with a message about ships being available anywhere in system and across platforms  
-    !shipclass - comments with a message about spawning and ship class  
-    !portal - short explanation of portal addresses  
-
-    To test these just create a test post and add the ! command as a comment. Then after you see the result please delete your test post.
-
----
-type: comment
-body (includes, regex): '!s2'
-author: 
-    is_moderator: true
-moderators_exempt: false
-action: remove
-comment: |
-    This system only uses the first 2 glyphs found. The first character is the planet index. So if you haven't found the glyph used for the planet index portal to the system using 0 or 1 and then fly to the indicated planet.
-
----
-type: comment
-body (includes, regex): '!m-gal(?!loc)|!mg'
-moderators_exempt: false
-author: 
-    is_moderator: true
-comment_stickied: true
-comment_locked: true
-action: remove
-comment: |
-    Your post needs the galaxy to be complete. You can edit the flair to include the galaxy after the post is made. e.g. "Starship/Euclid". Please remember that all finds posted to r/{{subreddit}} must have the galaxy. Thanks.
-
----
-type: comment
-body (includes, regex): '!m-loc|!ml'
-author: 
-    is_moderator: true
-moderators_exempt: false
-comment_locked: true
-comment_stickied: true
-action: remove
-comment: |
-    Your post is missing the coordinates or glyphs.  For this post you can add the coordinates as comment. **Please** remember all finds posted to r/{{subreddit}} must have the coordinates or glyphs.
-
-    *Videos must have the coordinates or glyphs included in the title or first frame of the video.
-
-    Coordinates can be found by placing a signal booster on any planet. The first 4 characters displayed are not part of the coordinates. You can capture the glyph in a screenshot and convert them to coordinates you can type in [here](https://glyphs.blackholesuns.com). For future post the glyphs can be included in the screenshot.
-
----
-type: comment
-body (includes, regex): '!m-galloc|!mgl'
-author: 
-    is_moderator: true
-moderators_exempt: false
-comment_stickied: true
-comment_locked: true
-action: remove
-comment: |
-    Your post is missing the galaxy and coordinates or glyphs.  You can edit the flair to add galaxy after the post is made. e.g. "Starship/Euclid". Coordinates can be found by placing a signal booster on any planet. The first 4 characters displayed are not part of the coordinates. You can capture the glyph in a screenshot and convert them to coordinates you can type in [here](https://glyphs.blackholesuns.com). For future post the glyphs can be included in the screenshot. Please remember all finds posted to r/{{subreddit}} must have the galaxy and coordinates or glyphs.
-
----
-type: comment
-body (includes, regex): '!m-ss|!mss'
-moderators_exempt: false
-author: 
-    is_moderator: true
-comment_stickied: true
-comment_locked: true
-action: remove
-comment: |
-    Your post needs a screenshot to be complete. You can edit your post to add it or delete and repost. Please remember all finds posted to r/{{subreddit}} must have a screenshot. Thanks.
-
----
-type: comment
-body (includes): "!shiploc"
-moderators_exempt: false
-comment_locked: true
-comment: |
-    All starships in a given system can be found at the Space Station AND at any Trade Post located within the system. The same ships are available on all platforms and game modes. Things to check if you don't find the item you're looking for. 1) Are you in the correct galaxy. 2) Are you in the correct system. It's very easy to enter the glyphs incorrectly so please double check your location.
-
----
-type: comment
-body (includes): "!shipclass"
-moderators_exempt: false
-comment_locked: true
-comment: |
-    Each individually spawned ship has a random class & number of slots. In a T3, wealthy, system a ship has a 2% chance of spawning as an S class. The range of slots is based on the configuration of the ship. An S class ship will have the max possible number of slots in it's range. Only crashed ships have a fixed configuration of size and class.
-
----
-type: comment
-body (includes): "!portal"
-moderators_exempt: false
-comment_locked: true
-comment: |
-    The first glyph of a portal address is the planet index. If you are going to pick up a ship then this character doesn't matter. It is usually given as 0 which will take you to the first planet in a system. For other items the glyph given should take you to the correct planet. The remaining 11 digits are the system address. If it seems you aren't in the right place please check the address by comparing with the address in your screenshot. It's very easy to misenter a glyph address. Remember if the first glyph is 0 then you'll actually be on planet 1 and that is what the screenshot will show. If it still doesn't look right double check your current galaxy to make sure you're where the item is posted. For items like bases check to make sure you're on the right platform and game mode.
-
----
 ### automatically approve posts from the nmsce app images domain
 type: submission
 url (regex): "https://firebasestorage.googleapis.com/v0/b/nms-bhs.appspot.com/.*"
 action: approve
+
+---
+### Filters any post with "black" in title 
+type: submission
+flair_text (includes): "starship"
+title (includes): "black"
+action: filter
+comment_locked: true
+comment_stickied: true
+comment: |
+    Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}. Your post has been set for moderator review. Please be patient until a (human) moderator has a chance to review this post. This post was automatically flagged because it appears you used the word "black" to describe this starship.
+
+    * If you only used the word "black" to describe smaller trim pieces, there is a good chance your post **WILL** be approved.
+
+    * However, if you  used the word "black" to describe the overall color of this starship, there is a good chance this post **WILL NOT** be approved. Especially if your photo has poor lighting...
+
+    See [this post](https://www.reddit.com/r/NMSCoordinateExchange/comments/d0ljoz/psa_black_ships_aside_from_freighters_do_not/) for more information.
+
+---
+### catch any submission with “rare” in the title
+type: submission
+~flair_text (includes, regex): "question|tip|guide|fauna"
+title (includes, regex): "rare|uncommon"
+action: remove
+comment_locked: true
+comment_stickied: true
+comment: |
+    Your submission has been automatically removed.
+
+    We ask that you do NOT mention the rarity of objects when submitting to /r/{{subreddit}}. 
+
+    Please repost **WITHOUT** mention of object rarity.
+
+    **If this post was removed in error please provide a link to the moderators for review.**
+modmail: |
+        The above post by /u/{{author}}, with title "{{title}}" was removed because it contained object rarity in the post title.
+
+        Please investigate and make sure that this action was correct.
+
+---
+### Profanity filter
+title+body (regex): ["a(ss|rse|es)([ -]?holes?)?","b(i|\\*)o?(tch|\\*{3})(y|es)?","cocks?([ -]?suck(ers?|ing)?)?","cum(ming|[ -]shots?)?","cunts?","((mother|motha|mutha)[ -]?)?f(u?c?k?k|\\*ck|\\*{0,2}k|\\*{3})(er|ed|ing|s)?", "s(h(i|ar?|\\*)t|\\*{3}|h\\*{2})(s|ter|e|ting)?"]
+action: remove
+message: |
+    Your [{{kind}}]({{permalink}}) in /r/{{subreddit}}) was automatically removed.
+
+    /r/{{subreddit}} Community rule 10: Be Polite, Be Respectful
+
+    "...Blatant hostility, rudeness or swearing will **NOT** be tolerated"
 
 ---
 ### catch any request w/o request flair
@@ -137,27 +69,33 @@ comment: |
 
     We currently only allow requests for Ships and Multi-Tools to be posted to /r/{{subreddit}}. For other requests please see this post for more information on [searching](https://www.reddit.com/r/NMSCoordinateExchange/comments/cygpkq/psa_the_coordinate_exchange_has_a_search_bar/) /r/{{subreddit}} or use the [NMSCE app](https://nmsce.com).
 
+    **If this post was removed in error please provide a link to the moderators for review.**
+modmail: |
+        The above post by /u/{{author}}, with title "{{title}}" was removed because it contained a request for an object other than a ship or multi-tool.
+
+        Please investigate and make sure that this action was correct.
+
 ---
 ### catch any starship flair that contains class and not crash in the title
 type: submission
 flair_text (includes, regex): "starship|freighter"
 title (includes, regex): '\b[abcs]\W?class'
-~title (includes, regex): "crash|exotic|upgrade|max|squid|sunk"
+~title (includes, regex): "crash|exotic|upgrade|max|squid|sunk|derelict"
 action: remove
 action_reason: "contains class"
 comment_locked: true
 comment_stickied: true
 comment: |
-    Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}. Your post has been removed because we're trying to keep confusing and misleading information give to new users to a minimum. Thank you for helping us with this.
+    Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}. Your post has been removed because we're trying to keep confusing and misleading information given to new users to a minimum. Thank you for helping us with this.
 
-    *The class of a ship and its exact slot count are only valid for a *crashed* ship. For any other ship location it's based on the individual ship that gets spawned so should NOT be included.
-    *Freighter class and slot counts are also based on spawning so should NOT be included.
+    * The class of a ship and its exact slot count are only valid for a *crashed* ship. For any other ship location, ship class and slot count is entirely *random* and should NOT be included.
+    * Freighter class and slot counts are also *random* based on spawning so should also NOT be included.
 
     **Please**, repost your {{match-flair_text}} keeping this in mind. 
 
     For a more detailed explanation please read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/g6kb2j/psa_basic_recommendations_to_avoid_confusion_when/)
 
-    If this post was removed in error please provide a link to the moderators for review.
+    **If this post was removed in error please provide a link to the moderators for review.**
 
 ---
 ### catch any starship flair that contains platform or mode
@@ -171,9 +109,9 @@ comment_stickied: true
 comment: |
     Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}. Your post has been removed because we're trying to keep confusing and misleading information given to new users to a minimum. Thank you for your help with this.
 
-    *Ships are common across all platforms and game modes so this information should NOT be included.
+    * Ships are common across **ALL** PLATFORMS (PS4/PC/XB1) **AND** GAME MODES (Normal/Survival/Permadeath/Creative) so this information should **NOT** be mentioned.
     
-    **Please**, repost your {{match-flair_text}}  keeping this in mind. 
+    **Please**, repost your {{match-flair_text}}  WITHOUT mention of your PLATFORM **AND** GAME MODE. 
 
     For a more detailed explanation please read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/g6kb2j/psa_basic_recommendations_to_avoid_confusion_when/)
 
@@ -182,23 +120,41 @@ comment: |
 type: submission
 flair_text (includes): "starship"
 title (includes, regex): 'trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station|\bwave\b'
+~title (includes): 'first wave'
 action: filter
 action_reason: "contains tp/ss/wave"
 comment_locked: true
 comment_stickied: true
 comment: |
-    Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}. Your post has been set for moderator review because we're trying to keep confusing and misleading information given to new users to a minimum. Thank you for your help with this.
+    Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}. Your post has been set for moderator review. Please be patient until a (human) moderator has a chance to review this post. We are trying to keep confusing and misleading information given to new users to a minimum. Thank you for your help with this.
 
-    *Ships are found across the entire system so please do not include traders post or space station in your description unless it's a first wave at a space station. First wave is only valid at a space station and is the first group of ships, usually 4, to land after a reload or reset. Later waves should not be mentioned.
+    * Ships are found across the entire system so please **DO NOT** include "trade post" or "space station" in your description unless it's a first wave at a space station. First wave is only valid at a space station and is the first group of ships, usually 4, to land **AFTER** a reload or reset. Later waves should not be mentioned.
     
-    **Please**, repost your {{match-flair_text}} keeping this in mind.
 
     For a more detailed explanation please read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/g6kb2j/psa_basic_recommendations_to_avoid_confusion_when/)
 
 ---
 type: submission
 is_edited: false 
-flair_text (includes): "request"
+flair_text (includes): "ship request?"
+moderators_exempt: false
+action: filter
+#comment_locked: true
+comment_stickied: true
+comment: |
+    Thank you for posting to r/{{subreddit}}! Your post will **NOT** be visible to others until you *reply* to this comment. If you have searched r/{{subreddit}} and the [web app](https://nmsce.com) *reply* to **this** comment with 
+
+    ```!yes``` 
+
+    It will take a couple of minutes for the bot to approve the post after your reply so please be patient.
+
+    Here is a detailed [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/cygpkq/psa_the_coordinate_exchange_has_a_search_bar/) on how to use the Reddit search bar.
+
+---
+type: submission
+is_edited: false 
+flair_text (includes): "multitool request"
+action: filter
 comment_locked: true
 comment_stickied: true
 comment: |
@@ -208,16 +164,15 @@ comment: |
 type: submission
 is_edited: false 
 flair_text (includes): "freighter"
+~flair_text (includes): "derelict"
 comment_locked: true
 comment_stickied: true
 comment: |
-    Thank You for posting to /r/{{subreddit}} and adding this **{{match}}** to our catalogue!
-
-    How to find **Freighters** using member submitted coordinates: 
+    **How to find Freighters using member submitted coordinates:** 
 
     **System Freighters** (15-19 inventory slots) can be found by traveling via portal using the coordinates provided in this post. Once you are in the right system, pulse around in space until the correct system freighter spawns.
 
-    **Capital Freighters** (24-34 inventory slots) are slightly more complex to find using member submitted coordinates. See [this guide](https://www.reddit.com/r/NMSCoordinateExchange/comments/cz937n/psa_how_to_get_a_cap_ship_via_coords/) for more information.
+    **Capital Freighters** (24-34 inventory slots) are slightly more complex to find using member submitted coordinates. See [this guide](https://www.reddit.com/r/NMSCoordinateExchange/comments/j5grbr/finding_capital_freighters_with_coordinates_is/) for more information.
 
 ---
 type: submission
@@ -233,13 +188,67 @@ comment: |
 ---
 type: submission
 is_edited: false 
+flair_text (includes): "Multi Tool"
+comment_locked: true
+comment_stickied: true
+comment: |
+    **Tips for finding Multi-tools from shared coordinates**
+
+    User error is the most common reason players have difficulty finding Multi-tools from shared coordinates. If you are having troubles locating this MT, please read the tips below! 
+
+    * Turn off multiplayer before going through the portal 
+    * Ensure you are in the correct galaxy 
+    * Double check that you entered the glyph sequence correctly 
+    * Make sure you follow the OP’s instructions exactly 
+    * Not every MT is located at the space station 
+    * Some MT’s required you to save and reload on a specific planet/moon (or the space station) and then travel to a specific location to acquire the MT
+
+---
+type: submission
+is_edited: false 
+flair_text (includes): "Planet"
+comment_locked: true
+comment_stickied: true
+comment: |
+    **No glyphs? No problem!**
+
+    Contact PanGalactic Star Cabs - [Discord link](https://discord.gg/esyPWtm)
+
+    They can take you anywhere in the NMS universe for free! Any galaxy, any system, any platform.
+---
+type: submission
+flair_text (includes, regex): "base|farm"
+~flair_text (includes): "wild"
+comment_locked: true
+comment_stickied: true
+comment: |
+    **NMS is NOT a “traditional” cross-play game in some aspects**
+
+    * **IMPORTANT NOTE**: Outside of multiplayer, you will not see this {{match-flair_text}} UNLESS you are on the same PLATFORM / GAME MODE (and in the same galaxy) as advertised in the flair of this post. 
+
+    * Inside of multiplayer, at least one player **MUST** be from the PLATFORM / GAME MODE advertised in the flair of this post for all players in your group to see this {{match-flair_text}}.
+
+---
+type: submission
+is_edited: false 
 flair_text (includes): "Wild Base"
 comment_locked: true
 comment_stickied: true
 comment: |
-    Thank You for posting to /r/{{subreddit}} and adding this **{{match}}** to our catalogue!
+    **How to use/claim wild base computers**
 
-    Read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/hlb2l2/how_to_use_wild_base_computers_to_bypass_portal/) for information on how to claim a wild base to bypass portal interferrence.
+    Read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/hlb2l2/how_to_use_wild_base_computers_to_bypass_portal/) for information on how to claim a wild base to bypass portal interference.
+
+---
+type: submission
+#is_edited: false 
+### add tip & question 3/8/21 -sp
+flair_text (includes,regex): 'Info.*|Tip.*|Question.*'
+action: filter
+comment_locked: true
+comment_stickied: true
+comment: |
+    Your post has been marked for moderator review due to the recent rise in the misuse of the "{{match}}" post flair. Please make sure there is not a more appropriate flair available for your post. Flair use is outlined on our [wiki page](https://www.reddit.com/r/NMSCoordinateExchange/wiki/flair). Post for "{{match}}" flair must still follow all the sub rules for approval by the moderators. 
 
 ################# duplicate with karma check ###############################
 ---
@@ -272,13 +281,11 @@ message: |
 comment_locked: true
 comment_stickied: true
 comment: |
-    Thank You for posting to /r/{{subreddit}} and adding this **{{match}}** to our catalogue!
-
-    How to find **Freighters** using member submitted coordinates: 
+    **How to find Freighters using member submitted coordinates:**
 
     **System Freighters** (15-19 inventory slots) can be found by traveling via portal using the coordinates provided in this post. Once you are in the right system, pulse around in space until the correct system freighter spawns.
 
-    **Capital Freighters** (24-34 inventory slots) are slightly more complex to find using member submitted coordinates. See [this guide](https://www.reddit.com/r/NMSCoordinateExchange/comments/cz937n/psa_how_to_get_a_cap_ship_via_coords/) for more information.
+    **Capital Freighters** (24-34 inventory slots) are slightly more complex to find using member submitted coordinates. See [this guide](https://www.reddit.com/r/NMSCoordinateExchange/comments/j5grbr/finding_capital_freighters_with_coordinates_is/) for more information.
 
 ---
 type: submission
@@ -312,6 +319,51 @@ message: |
 comment_locked: true
 comment_stickied: true
 comment: |
-    Thank You for posting to /r/{{subreddit}} and adding this **{{match}}** to our catalogue!
+    **How to use/claim wild base computers**
 
-    Read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/hlb2l2/how_to_use_wild_base_computers_to_bypass_portal/) for information on how to claim a wild base to bypass portal interferrence.
+    Read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/hlb2l2/how_to_use_wild_base_computers_to_bypass_portal/) for information on how to claim a wild base to bypass portal interference.
+
+---
+type: submission
+is_edited: false 
+flair_text (includes): "Multi Tool"
+author:
+    comment_karma: "< 5"
+action: filter
+action_reason: "karma <5 request"
+message_subject: Thank You for your post to /r/{{subreddit}}
+message: |
+    Since this post was made from a new account it was marked for moderator review. This is mainly a spam prevention measure. Once you've posted a few times the automatic review will go away. Thank you for your patience.
+comment_locked: true
+comment_stickied: true
+comment: |
+    **Tips for finding Multi-tools from shared coordinates**
+
+    User error is the most common reason players have difficulty finding Multi-tools from shared coordinates. If you are having troubles locating this MT, please read the tips below! 
+
+    * Turn off multiplayer before going through the portal 
+    * Ensure you are in the correct galaxy 
+    * Double check that you entered the glyph sequence correctly 
+    * Make sure you follow the OP’s instructions exactly 
+    * Not every MT is located at the space station 
+    * Some MT’s required you to save and reload on a specific planet/moon (or the space station) and then travel to a specific location to acquire the MT
+
+---
+type: submission
+is_edited: false 
+flair_text (includes): "Planet"
+author:
+    comment_karma: "< 5"
+action: filter
+action_reason: "karma <5 request"
+message_subject: Thank You for your post to /r/{{subreddit}}
+message: |
+    Since this post was made from a new account it was marked for moderator review. This is mainly a spam prevention measure. Once you've posted a few times the automatic review will go away. Thank you for your patience.
+comment_locked: true
+comment_stickied: true
+comment: |
+    **No glyphs? No problem!**
+
+    Contact PanGalactic Star Cabs - [Discord link](https://discord.gg/esyPWtm)
+
+    They can take you anywhere in the NMS universe for free! Any galaxy, any system, any platform.
