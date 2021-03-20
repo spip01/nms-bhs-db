@@ -623,27 +623,56 @@ const versionList = [{
     name: "Nothing Selected",
 }, {
     name: "next",
+    version: 1.5,
+    date: "7/26/2018",
 }, {
     name: "beyond",
+    version: 2.0,
+    date: "8/14/2019",
 }, {
     name: "synthesis",
+    version: 2.2,
+    date: "11/28/2019",
 }, {
     name: "living ships",
+    version: 2.3,
+    date: "2/19/2020",
+    changed: [{
+        type: "Ship",
+        attr: "Crashed"
+    }]
 }, {
     name: "exo mech",
+    version: 2.4,
+    date: "4/7/2020",
 }, {
     name: "crossplay",
+    version: 2.5,
+    date: "6/10/2020"
 }, {
     name: "desolation",
-} ,{
+    version: 2.6,
+    date: "7/16/2020",
+}, {
     name: "origins",
-},{
+    version: 3.0,
+    date: "9/23/2020",
+    changed: [{
+        type: "Planet"
+    }, {
+        type: "Fauna"
+    }]
+}, {
     name: "next generation",
-},{
+    version: 3.1,
+    date: "10/28/2020",
+}, {
     name: "companions",
+    version: 3.2,
+    date: "2/17/2021",
 }]
 
-const latestversion = versionList[(versionList.length-1)].name
+const latestversion = versionList[(versionList.length - 1)].name
 
 const modeList = [{
     name: "Normal",

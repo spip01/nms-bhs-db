@@ -68,8 +68,6 @@ async function main() {
             doc.ref.set(e)
         })
     }
-
-
 }
 
 main()

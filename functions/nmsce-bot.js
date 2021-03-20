@@ -42,7 +42,7 @@ exports.nmsceBot = async function () {
     // }
 
     p.push(sub.getNew(!lastPost.name || lastPost.full + 60 * 60 < date ? {
-        limit: newInstance && typeof full === "undefined" ? 25 : 100
+        limit: newInstance ? 25 : 100
     } : {
         before: lastPost.name
     }).then(posts => {
@@ -60,7 +60,7 @@ exports.nmsceBot = async function () {
     }))
 
     p.push(sub.getNewComments(!lastComment.name || lastComment.full + 30 * 60 < date ? {
-        limit: newInstance && typeof full === "undefined" ? 25 : 500
+        limit: newInstance ? 25 : 500
     } : {
         before: lastComment.name
     }).then(async posts => {
@@ -165,7 +165,7 @@ async function getOldComments() {
     }
 
     return sub.getNewComments( /*typeof list.last === "undefined" ?*/ {
-            limit:typeof oldCommentLimit !== "undefined" ? oldCommentLimit : 1000
+            limit: typeof oldCommentLimit !== "undefined" ? oldCommentLimit : 1000
         }
         /*: {
                before: list.last
@@ -257,6 +257,8 @@ async function checkComments(posts, mods, rules) {
                 let message = ""
                 if (remove)
                     message = removePost + rule + botSig
+                else if (rule)
+                    message = rule + botSig
                 else if (missing)
                     message = missingInfo.replace(/\[missing\]/g, missing) + botSig
 
@@ -291,7 +293,7 @@ async function checkComments(posts, mods, rules) {
                     console.log("remove: " + remove, "missing: " + missing, "rule: " + match, "https://reddit.com" + oppost.permalink)
                 }
             } else {
-                let match = post.body.match(/!(yes|shiploc|help|shipclass|portal|wildbase|s2)/)
+                let match = post.body.match(/!(yes|shiploc|help|shipclass|portal|wildbase|s2|search)/)
                 if (match) {
                     let message = null
                     let reply = null
@@ -497,14 +499,15 @@ const replyModCommands = `
 ---
 Moderator Commands:
 
-   * !m-rN - remove post for violating rule number N. Specify multiple rules by separating the rule numbers with a comma. e.g !m-1,2
-   * !m-gpmcls - Make comment about missing items where
-      *  g = missing galaxy
-      *  p = platform
-      *  m = mode
-      *  c = coordinates or glyphs
-      *  l = latitude & longitude
-      *  s = screenshot
+    * !m-N - Quote rule number N. Specify multiple rules by separating the rule numbers with a comma. e.g !m-1,2
+    * !m-rN - Remove post for violating rule number N. Quotes rule.
+    * !m-gpmcls - Make comment about missing items where
+        *  g = missing galaxy
+        *  p = platform
+        *  m = mode
+        *  c = coordinates or glyphs
+        *  l = latitude & longitude
+        *  s = screenshot
 
 Missing items can be singular or multiple using the same command. e.g. !m-g or !m-gpm`
 const respSearch = "Please search r/NMSCoordinateExchange or the [NMSCE app](https://nmsce.com) before posting your request."

@@ -23,6 +23,8 @@ comment: |
 
     See [this post](https://www.reddit.com/r/NMSCoordinateExchange/comments/d0ljoz/psa_black_ships_aside_from_freighters_do_not/) for more information.
 
+    * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
+
 ---
 ### catch any submission with “rare” in the title
 type: submission
@@ -95,14 +97,12 @@ comment: |
 
     For a more detailed explanation please read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/g6kb2j/psa_basic_recommendations_to_avoid_confusion_when/)
 
-    **If this post was removed in error please provide a link to the moderators for review.**
-
 ---
 ### catch any starship flair that contains platform or mode
 type: submission
 flair_text (includes, regex): "starship|freighter"
 title (includes, regex): '\bx.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death'
-action: filter
+action: remove
 action_reason: "contains platform/mode"
 comment_locked: true
 comment_stickied: true
@@ -115,12 +115,14 @@ comment: |
 
     For a more detailed explanation please read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/g6kb2j/psa_basic_recommendations_to_avoid_confusion_when/)
 
+    **If this post was removed in error please provide a link to the moderators for review.**
+
 ---
 ### catch any starship flair that contains trading post or ss
 type: submission
 flair_text (includes): "starship"
 title (includes, regex): 'trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station|\bwave\b'
-~title (includes): 'first wave'
+~title (includes): '(first|1st)\bwave'
 action: filter
 action_reason: "contains tp/ss/wave"
 comment_locked: true
@@ -130,9 +132,9 @@ comment: |
 
     * Ships are found across the entire system so please **DO NOT** include "trade post" or "space station" in your description unless it's a first wave at a space station. First wave is only valid at a space station and is the first group of ships, usually 4, to land **AFTER** a reload or reset. Later waves should not be mentioned.
     
-
     For a more detailed explanation please read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/g6kb2j/psa_basic_recommendations_to_avoid_confusion_when/)
 
+    * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
 ---
 type: submission
 is_edited: false 
@@ -146,7 +148,7 @@ comment: |
 
     ```!yes``` 
 
-    It will take a couple of minutes for the bot to approve the post after your reply so please be patient.
+    It will take a couple of minutes for the bot to approve the post after your reply so please be patient. Answering yes when it is obvious that you have not searched will result in the removal of your post.
 
     Here is a detailed [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/cygpkq/psa_the_coordinate_exchange_has_a_search_bar/) on how to use the Reddit search bar.
 
@@ -154,7 +156,6 @@ comment: |
 type: submission
 is_edited: false 
 flair_text (includes): "multitool request"
-action: filter
 comment_locked: true
 comment_stickied: true
 comment: |
@@ -250,6 +251,8 @@ comment_stickied: true
 comment: |
     Your post has been marked for moderator review due to the recent rise in the misuse of the "{{match}}" post flair. Please make sure there is not a more appropriate flair available for your post. Flair use is outlined on our [wiki page](https://www.reddit.com/r/NMSCoordinateExchange/wiki/flair). Post for "{{match}}" flair must still follow all the sub rules for approval by the moderators. 
 
+    * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
+
 ################# duplicate with karma check ###############################
 ---
 type: submission
@@ -267,6 +270,7 @@ comment_stickied: true
 comment: |
     If You haven't already done so please try your search using the search bar. Here is a detailed [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/cygpkq/psa_the_coordinate_exchange_has_a_search_bar/). You can also try searching the [NMSCE app](https://nmsce.com).
 
+    * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
 ---
 type: submission
 is_edited: false 
@@ -277,7 +281,9 @@ action: filter
 action_reason: "karma <5 request"
 message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
-    Since this post was made from a new account it was marked for moderator review. This is mainly a spam prevention measure. Once you've posted a few times the automatic review will go away. Thank you for your patience.
+    Since this post was made from a new account it was marked for moderator review. This is mainly a spam prevention measure. Once you've posted a few times the automatic review will go away.
+
+    * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
 comment_locked: true
 comment_stickied: true
 comment: |
@@ -297,7 +303,9 @@ action: filter
 action_reason: "karma <5 request"
 message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
-    Since this post was made from a new account it was marked for moderator review. This is mainly a spam prevention measure. Once you've posted a few times the automatic review will go away. Thank you for your patience.
+    Since this post was made from a new account it was marked for moderator review. This is mainly a spam prevention measure. Once you've posted a few times the automatic review will go away. 
+
+    * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
 comment_locked: true
 comment_stickied: true
 comment: |
@@ -316,6 +324,8 @@ action_reason: "karma <5 request"
 message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
     Since this post was made from a new account it was marked for moderator review. This is mainly a spam prevention measure. Once you've posted a few times the automatic review will go away. Thank you for your patience.
+
+    * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
 comment_locked: true
 comment_stickied: true
 comment: |
@@ -333,7 +343,9 @@ action: filter
 action_reason: "karma <5 request"
 message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
-    Since this post was made from a new account it was marked for moderator review. This is mainly a spam prevention measure. Once you've posted a few times the automatic review will go away. Thank you for your patience.
+    Since this post was made from a new account it was marked for moderator review. This is mainly a spam prevention measure. Once you've posted a few times the automatic review will go away.
+
+    * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
 comment_locked: true
 comment_stickied: true
 comment: |
@@ -358,7 +370,9 @@ action: filter
 action_reason: "karma <5 request"
 message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
-    Since this post was made from a new account it was marked for moderator review. This is mainly a spam prevention measure. Once you've posted a few times the automatic review will go away. Thank you for your patience.
+    Since this post was made from a new account it was marked for moderator review. This is mainly a spam prevention measure. Once you've posted a few times the automatic review will go away. 
+
+    * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
 comment_locked: true
 comment_stickied: true
 comment: |

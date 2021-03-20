@@ -3858,7 +3858,7 @@ NMSCE.prototype.incrementTotals = function (e, val) {
     let t = {}
     t[e.type] = firebase.firestore.FieldValue.increment(val)
 
-    ref = bhs.getUsersColRef(bhs.user.uid)
+    let ref = bhs.getUsersColRef(bhs.user.uid)
     ref.set({
         nmsceTotals: t
     }, {
