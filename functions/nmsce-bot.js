@@ -443,9 +443,9 @@ function validatePosts(posts) {
                     post.removed_by_category === "reddit" || post.mod_reports.length > 0)) {
 
                 let approve = true
-                if (Array.isArray(post.mod_reports_dismissed))
-                    for (let r of post.mod_reports_dismissed) {
-                        if (r[0].includes("rule")) {
+                if (Array.isArray(post.mod_reports))
+                    for (let r of post.mod_reports) {
+                        if (r[0].includes("rule") || r[0].includes("missing")) {
                             approve = false
                             break
                         }
