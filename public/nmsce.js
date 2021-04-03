@@ -5341,7 +5341,9 @@ const faunaList = [{
 }, {
     name: "Bos - Spiders"
 }, {
-    name: "Conokinis - Beetle"
+    name: "Bosoptera - Flying beetles"
+}, {
+    name: "Conokinis - Swarming beetles"
 }, {
     name: "Felidae - Cat"
 }, {
@@ -5349,15 +5351,29 @@ const faunaList = [{
 }, {
     name: "Hexungulatis - Hexapodal cow"
 }, {
-    name: "Lok - Blobs, rare"
+    name: "Lok - Blobs"
 }, {
-    name: "Mogara - Grunts, bipedal species"
+    name: "Mechanoceris - Robot antelopes"
+}, {
+    name: "Mogara - Grunts, bipedal"
+}, {
+    name: "Osteofelidae - Bonecats"
+}, {
+    name: "Prionterrae - Ploughs"
 }, {
     name: "Procavya - Rodents"
+}, {
+    name: "Protosphaeridae - Protorollers"
+}, {
+    name: "Prototerrae - Protodiggers"
 }, {
     name: "Rangifae - Diplos"
 }, {
     name: "Reococcyx - Bipedal antelopes"
+}, {
+    name: "Spiralis - Drills"
+}, {
+    name: "Talpidae - Moles"
 }, {
     name: "Tetraceris - Antelopes"
 }, {
@@ -5367,19 +5383,25 @@ const faunaList = [{
 }, {
     name: "Ungulatis - Cow"
 }, {
+    name: "Procavaquatica - Swimming rodents"
+}, {
+    name: "Bosaquatica - Underwater crabs"
+}, {
+    name: "Chrysaora - Jellyfish"
+}, {
     name: "Ictaloris - Fish"
 }, {
-    name: "Prionace - Sharks"
+    name: "Prionace - Sharks, eels, seasnakes"
 }, {
     name: "Prionacefda - Swimming cows"
-}, {
-    name: "Unknown - Swimming rodents"
 }, {
     name: "Agnelis - Birds"
 }, {
     name: "Cycromys - Flying Lizard"
 }, {
     name: "Oxyacta - Wraiths / flying snake"
+}, {
+    name: "Protocaeli - Protoflyers"
 }, {
     name: "Rhopalocera - Butterflies"
 }]

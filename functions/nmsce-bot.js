@@ -18,6 +18,7 @@ var lastPost = {}
 var lastComment = {}
 var oldComments = 0
 var lastMod = {}
+const version = 3.3
 
 // main()
 // var full = true
@@ -220,6 +221,7 @@ async function checkComments(posts, mods, rules) {
                 let missing = ""
                 let remove = false
                 let rule = ""
+                let offtopic = false
 
                 let match = post.body.replace(/^!m-(\S+)/, "$1")
                 for (let c of match) {
@@ -245,24 +247,32 @@ async function checkComments(posts, mods, rules) {
                         case "r": // remove
                             remove = true
                             break
+                        case "o": // off topic
+                            offtopic = true
+                            break
                     }
                 }
+
                 match = post.body.replace(/!m-.*?([\d,]+)/, "$1").split(",")
                 for (let i of match) {
                     let r = parseInt(i)
                     if (r <= rules.length)
-                        rule += (rule ? "\n\n" : "") + "----------------------\n" + rules[r - 1]
+                        rule += (rule ? "\n\n" : "") + rules[r - 1]
                 }
 
                 let message = ""
+                if (missing)
+                    message += missingInfo.replace(/\[missing\]/g, missing) + "\n\n----\n"
+                if (offtopic)
+                    message += respOffTopic + "\n\n----\n"
                 if (remove)
-                    message = removePost + rule + botSig
-                else if (rule)
-                    message = rule + botSig
-                else if (missing)
-                    message = missingInfo.replace(/\[missing\]/g, missing) + botSig
+                    message += removePost + "\n\n----\n"
+                if (rule)
+                    message += rule + "\n\n----\n"
 
                 if (message) {
+                    message += botSig
+
                     let op = null
                     let oppost = post
 
@@ -427,7 +437,7 @@ function validatePosts(posts) {
         }
 
         if (ok) {
-            let newFlair = flair.name + "/" + galaxy.name + (flair.platform ? "/" + platform.name + (flair.mode ? "/" + mode.name : "") : "")
+            let newFlair = flair.name + "/" + galaxy.name + (flair.platform ? "/" + platform.name + (flair.mode ? "/" + mode.name : "") : "") + (flair.version ?  "/" +version : "")
             if (newFlair !== post.link_flair_text) {
                 console.log("edit", post.link_flair_text, newFlair, "https://reddit.com" + post.permalink)
                 post.selectFlair({
@@ -508,10 +518,12 @@ Moderator Commands:
         *  c = coordinates or glyphs
         *  l = latitude & longitude
         *  s = screenshot
-
-Missing items can be singular or multiple using the same command. e.g. !m-g or !m-gpm`
+    * !m-o - Add off topic comment and suggest reposting to nmstg
+    
+    Commands can be concatenated together e.g. !m-gpr2,3o for missing galaxy & platform, remove for violcation of rule 2 & 3 and add offtopic comment`
+const respOffTopic = "Since this post is off topic in this sub you might try posting in r/nomansskythegame."
 const respSearch = "Please search r/NMSCoordinateExchange or the [NMSCE app](https://nmsce.com) before posting your request."
-const respS2 = `This system only uses the first 2 glyphs found. The first character is the planet index. So if you haven't found the glyph used for the planet index portal to the system using 0 or 1 and then fly to the indicated planet.`
+const respS2 = `The first glyph is the planet index in the system. Ships are available anywhere in the system so either of the first 2 glyphs will get you there.`
 const respShiploc = `All starships in a given system can be found at the Space Station AND at any Trade Post located within the system. The same ships are available on all platforms and game modes. Things to check if you don't find the ship you're looking for. 1) Are you in the correct galaxy. 2) Are you in the correct system. It's very easy to enter the glyphs incorrectly so please double check your location.`
 const respShipclass = `Each individually spawned ship has a random class & number of slots. In a T3, wealthy, system a ship has a 2% chance of spawning as an S class. In a T2, developing, economy the percentage is 1%. In a T1 0%. The range of slots is based on the configuration of the ship. An S class ship will have the max possible number of slots in it's range. Only crashed ships have a fixed configuration of size and class.`
 const respPortal = `The first glyph of a portal address is the planet index. If you are going to pick up a ship then this character doesn't matter. It is usually given as 0 which will take you to the first planet in a system. For other items the glyph given should take you to the correct planet. The remaining 11 digits are the system address.`
@@ -529,36 +541,42 @@ const missingInfo = 'Thank You for posting to r/NMSCoordinateExchange. Your post
 const missingFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair was missing or unrecognized. If you add the correct flair within 24 hours it will be re-approved. Please be patient because this part of the bot only runs every 30 minutes. You can edit the flair after the post is made. When you select the flair you can edit the text in the box. In the app there is an edit button you need to press.'
 const editFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair or title did not contain the required [missing]. If you correct the flair within 24 hours it will be re-approved. You can edit the flair after the post is made. When you select the flair you can edit the text in the box. In the app there is an edit button you need to press.'
 const removePost = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because it violates the following rules for posting:\n\n'
-const botSig = "\n\n----------\n*This action was taken by the nmsceBot. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NMSCoordinateExchange).*"
+const botSig = "\n\n*This action was taken by the nmsceBot. The bot works based on selected flair. It is possible the incorrect action was taken if the flair selected was incorrect. Please, double check your flair selection and repost if it was incorrect. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NMSCoordinateExchange).*"
 
 const flairList = [{
     match: /Starship/i,
     name: "Starship",
     galaxy: true,
     sclass: true,
-    station: true
+    station: true,
+    version: true,
 }, {
     match: /Living Ship/i,
     name: "Living Ship",
-    galaxy: true
+    galaxy: true,
+    version: true,
 }, {
     match: /Multi Tool/i,
     name: "Multi Tool",
-    galaxy: true
+    galaxy: true,
+    version: true,
 }, {
     match: /Derelict Freighter/i,
     name: "Derelict Freighter",
-    galaxy: true
+    galaxy: true,
+    version: true,
 }, {
     match: /Freighter/i,
     name: "Freighter",
     galaxy: true,
-    sclass: true
+    sclass: true,
+    version: true,
 }, {
     match: /Frigate/i,
     name: "Frigate",
     galaxy: true,
-    sclass: true
+    sclass: true,
+    version: true,
 }, {
     match: /Wild Base/i,
     name: "Wild Base",
@@ -567,22 +585,26 @@ const flairList = [{
     match: /Base/i,
     name: "Base",
     galaxy: true,
-    platform: true,
-    mode: true
+    // platform: true,
+    mode: true,
+    version: true,
 }, {
     match: /Farm/i,
     name: "Farm",
     galaxy: true,
-    platform: true,
-    mode: true
+    // platform: true,
+    mode: true,
+    version: true,
 }, {
     match: /Fauna/i,
     name: "Fauna",
-    galaxy: true
+    galaxy: true,
+    version: true,
 }, {
     match: /Planet/i,
     name: "Planet",
-    galaxy: true
+    galaxy: true,
+    version: true,
 }, {
     match: /Event|Request|Showcase|Question|Tips|Information|Top|Mod|NEWS|Removed|Best/i,
     noedit: true
@@ -601,7 +623,7 @@ const platformList = [{
 }]
 
 const modeList = [{
-    match: /Normal/i,
+    match: /Norm.*\b/i,
     name: "Normal"
 }, {
     match: /Creative/i,
@@ -612,6 +634,9 @@ const modeList = [{
 }, {
     match: /Survival/i,
     name: "Survival"
+}, {
+    match: /Exped.*?\b|Explor.*?\b/i,
+    name: "Expedition"
 }]
 
 const galaxyList = [{

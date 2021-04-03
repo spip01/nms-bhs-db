@@ -639,7 +639,7 @@ const versionList = [{
     date: "2/19/2020",
     changed: [{
         type: "Ship",
-        attr: "Crashed"
+        Crashed: true
     }]
 }, {
     name: "exo mech",
@@ -670,6 +670,14 @@ const versionList = [{
     name: "companions",
     version: 3.2,
     date: "2/17/2021",
+}, {
+    name: "expeditions",
+    version: 3.3,
+    date: "3/31/2021",
+    changed: [{
+        type: "Ship",
+        Type: "Explorer"
+    }]
 }]
 
 const latestversion = versionList[(versionList.length - 1)].name

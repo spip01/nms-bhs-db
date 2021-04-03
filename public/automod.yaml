@@ -29,7 +29,7 @@ comment: |
 ### catch any submission with “rare” in the title
 type: submission
 ~flair_text (includes, regex): "question|tip|guide|fauna"
-title (includes, regex): "rare|uncommon"
+title (includes, regex): "rare|uncommon|unique"
 action: remove
 comment_locked: true
 comment_stickied: true
@@ -101,7 +101,7 @@ comment: |
 ### catch any starship flair that contains platform or mode
 type: submission
 flair_text (includes, regex): "starship|freighter"
-title (includes, regex): '\bx.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death'
+title (includes, regex): '\bx.?box\b|\bps4\b|\bps5\b|\bpc\b|\bnormal\b|\bcreative\b|\bpd\b|\bsurvival\b|\expl.*?\b|\bperma.?death\b'
 action: remove
 action_reason: "contains platform/mode"
 comment_locked: true
@@ -151,6 +151,18 @@ comment: |
     It will take a couple of minutes for the bot to approve the post after your reply so please be patient. Answering yes when it is obvious that you have not searched will result in the removal of your post.
 
     Here is a detailed [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/cygpkq/psa_the_coordinate_exchange_has_a_search_bar/) on how to use the Reddit search bar.
+---
+type: submission
+is_edited: false 
+flair_text (includes): 'edit'
+moderators_exempt: false
+action: filter
+#comment_locked: true
+comment_stickied: true
+comment: |
+    Thank you for posting to r/{{subreddit}}! Your post needs the flair edited for Galaxy and/or Game mode. If you included this information in the title then the bot will take care of it for you.
+
+    It will take a couple of minutes for the bot to approve the post after you or the bot edits the flair.
 
 ---
 type: submission
@@ -216,19 +228,19 @@ comment: |
     Contact PanGalactic Star Cabs - [Discord link](https://discord.gg/esyPWtm)
 
     They can take you anywhere in the NMS universe for free! Any galaxy, any system, any platform.
----
-type: submission
-flair_text (includes, regex): "base|farm"
-~flair_text (includes): "wild"
-comment_locked: true
-comment_stickied: true
-comment: |
-    **NMS is NOT a “traditional” cross-play game in some aspects**
-
-    * **IMPORTANT NOTE**: Outside of multiplayer, you will not see this {{match-flair_text}} UNLESS you are on the same PLATFORM / GAME MODE (and in the same galaxy) as advertised in the flair of this post. 
-
-    * Inside of multiplayer, at least one player **MUST** be from the PLATFORM / GAME MODE advertised in the flair of this post for all players in your group to see this {{match-flair_text}}.
-
+#---
+#type: submission
+#flair_text (includes, regex): "base|farm"
+#~flair_text (includes): "wild"
+#comment_locked: true
+#comment_stickied: true
+#comment: |
+#    **NMS is NOT a “traditional” cross-play game in some aspects**
+#
+#    * **IMPORTANT NOTE**: Outside of multiplayer, you will not see this {{match-flair_text}} UNLESS you are on the same PLATFORM / GAME MODE (and in the same galaxy) as advertised in the flair of this post. 
+#
+#    * Inside of multiplayer, at least one player **MUST** be from the PLATFORM / GAME MODE advertised in the flair of this post for all players in your group to see this {{match-flair_text}}.
+#
 ---
 type: submission
 is_edited: false 
