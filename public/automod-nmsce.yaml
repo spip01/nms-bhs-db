@@ -101,7 +101,7 @@ comment: |
 ### catch any starship flair that contains platform or mode
 type: submission
 flair_text (includes, regex): "starship|freighter"
-title (includes, regex): '\bx.?box\b|\bps4\b|\bps5\b|\bpc\b|\bnormal\b|\bcreative\b|\bpd\b|\bsurvival\b|\expl.*?\b|\bperma.?death\b'
+title (includes, regex): '\bx.?box\b|\bps4\b|\bps5\b|\bpc\b|\bnormal\b|\bcreative\b|\bpd\b|\bsurvival\b|\exped.*?\b|\bperma.?death\b'
 action: remove
 action_reason: "contains platform/mode"
 comment_locked: true
@@ -116,6 +116,22 @@ comment: |
     For a more detailed explanation please read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/g6kb2j/psa_basic_recommendations_to_avoid_confusion_when/)
 
     **If this post was removed in error please provide a link to the moderators for review.**
+
+---
+### catch any base flair that contains platform
+type: submission
+flair_text (includes, regex): "base|farm"
+title (includes, regex): '\bx.?box\b|\bps4\b|\bps5\b|\bpc\b'
+action: filter
+action_reason: "base contains platform"
+comment_locked: true
+comment_stickied: true
+comment: |
+    Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}. Your post has been sent to the moderators for approval because we're trying to keep confusing and misleading information given to new users to a minimum. Thank you for your help with this.
+
+    * Bases are common across **ALL** PLATFORMS (PS/PC/XBox) after version 3.3 so this information should **NOT** be mentioned.
+    
+    **Please**, delete and repost your {{match-flair_text}}  WITHOUT mention of the PLATFORM. 
 
 ---
 ### catch any starship flair that contains trading post or ss

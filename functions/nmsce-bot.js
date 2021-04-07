@@ -437,7 +437,9 @@ function validatePosts(posts) {
         }
 
         if (ok) {
-            let newFlair = flair.name + "/" + galaxy.name + (flair.platform ? "/" + platform.name + (flair.mode ? "/" + mode.name : "") : "") + (flair.version ?  "/" +version : "")
+            let newFlair = flair.name + "/" + galaxy.name + (flair.platform ? "/" + platform.name : "") + 
+              (flair.mode ? "/" + mode.name : "") + (flair.version ? "/" + version : "")
+              
             if (newFlair !== post.link_flair_text) {
                 console.log("edit", post.link_flair_text, newFlair, "https://reddit.com" + post.permalink)
                 post.selectFlair({
