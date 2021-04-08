@@ -674,10 +674,6 @@ const versionList = [{
     name: "expeditions",
     version: 3.3,
     date: "3/31/2021",
-    changed: [{
-        type: "Ship",
-        Type: "Explorer"
-    }]
 }]
 
 const latestversion = versionList[(versionList.length - 1)].name
@@ -690,6 +686,8 @@ const modeList = [{
     name: "Permadeath",
 }, {
     name: "Creative",
+}, {
+    name: "Expedition",
 }]
 
 const economyListTier = [{

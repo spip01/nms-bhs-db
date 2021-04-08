@@ -3210,6 +3210,9 @@ NMSCE.prototype.redditPost = function () {
     let link = "https://nmsce.com/preview.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
     window.localStorage.setItem('nmsce-reddit-plink', link)
 
+    link = "https://nmsce.com?g=" + e.galaxy.nameToId() + "&s=" + addrToGlyph(e.addr)
+    window.localStorage.setItem('nmsce-reddit-slink', link)
+
     bhs.fbstorage.ref().child(displayPath + nmsce.last.Photo).getDownloadURL().then(url => {
         window.localStorage.setItem('nmsce-reddit-link', url)
         nmsce.redditSubmit()
@@ -3230,6 +3233,7 @@ NMSCE.prototype.redditSubmit = function (accessToken) {
         let flairId = nmsce.subRedditFlair[i].id
 
         let plink = window.localStorage.getItem('nmsce-reddit-plink')
+        let slink = window.localStorage.getItem('nmsce-reddit-slink')
         let title = window.localStorage.getItem('nmsce-reddit-title') // + " <a href="+plink+">NMSCE app link</a>"
         let link = window.localStorage.getItem('nmsce-reddit-link')
 
@@ -3271,7 +3275,7 @@ NMSCE.prototype.redditSubmit = function (accessToken) {
                                 },
                                 data: {
                                     thing_id: t,
-                                    text: "This was posted from the [NMSCE web app](https://nmsce.com). Here is the direct [link](" + plink + ") to this item."
+                                    text: "This was posted from the [NMSCE web app](https://nmsce.com). Here is the direct [link](" + plink + ") to this item. This is a [link](" + slink + ") to everything in this system."
                                 },
                                 crossDomain: true,
                             })
