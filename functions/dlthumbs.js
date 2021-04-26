@@ -8,7 +8,6 @@ admin.initializeApp({
 const bucket = admin.storage().bucket('gs://nms-bhs.appspot.com')
 require('events').EventEmitter.defaultMaxListeners = 0
 const thumbPath = "/nmsce/disp/thumb/"
-const path = require('path');
 
 function main() {
     let ref = admin.firestore().collectionGroup("nmsceCommon")
