@@ -616,7 +616,12 @@ const flairList = [{
     galaxy: true,
     version: true,
 }, {
-    match: /Event|Request|Showcase|Question|Tips|Information|Top|Mod|NEWS|Removed|Best/i,
+    match: /Event/i,
+    name: "Community Event",
+    galaxy: true,
+    version: true,
+}, {
+    match: /Request|Showcase|Question|Tips|Information|Top|Mod|NEWS|Removed|Best/i,
     noedit: true
 }, ]
 
@@ -645,7 +650,7 @@ const modeList = [{
     match: /Survival/i,
     name: "Survival"
 }, {
-    match: /Exped.*?\b|Explor.*?\b/i,
+    match: /Exped\w+[ns]\b|Explor\w+[rn]\b/i,
     name: "Expedition"
 }]
 
@@ -653,13 +658,13 @@ const galaxyList = [{
     match: /\bEucl\w+d\b/i,
     name: "Euclid"
 }, {
-    match: /\bHilb\w+t\b/i,
+    match: /\bHilb\w+t\b(Dim\w+n\b)?/i,
     name: "Hilbert"
 }, {
     match: /\bCaly\w+o\b/i,
     name: "Calypso"
 }, {
-    match: /\bHesp\w+s\b/i,
+    match: /\bHesp\w+s\b(Dim\w+n\b)?/i,
     name: "Hesperius"
 }, {
     match: /\bHyad\w+s\b/i,
