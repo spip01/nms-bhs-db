@@ -5,7 +5,7 @@ const snoowrap = require('snoowrap')
 const r = new snoowrap(login)
 
 // const functions = require('firebase-functions')
-const admin = require('firebase-admin')
+// const admin = require('firebase-admin')
 // var serviceAccount = require("./nms-bhs-8025d3f3c02d.json")
 // admin.initializeApp({
 //     credential: admin.credential.cert(serviceAccount)
@@ -18,7 +18,7 @@ var lastPost = {}
 var lastComment = {}
 var oldComments = 0
 var lastMod = {}
-const version = 3.3
+const version = 3.37
 
 // main()
 // var full = true
@@ -144,62 +144,62 @@ exports.nmsceBot = async function () {
     return Promise.all(p)
 }
 
-async function getOldComments() {
-    let month = new Date().getMonth()
-    let list = {}
-    list.authors = {}
-    let oldlist = {}
+// async function getOldComments() {
+//     let month = new Date().getMonth()
+//     let list = {}
+//     list.authors = {}
+//     let oldlist = {}
 
-    let ref = admin.firestore().doc("bhs/nmsceSubComments")
-    let doc = await ref.get()
-    if (doc.exists) {
-        oldlist = doc.data()
+//     let ref = admin.firestore().doc("bhs/nmsceSubComments")
+//     let doc = await ref.get()
+//     if (doc.exists) {
+//         oldlist = doc.data()
 
-        for (let a of Object.keys(oldlist.authors)) {
-            list.authors[a] = {}
-            list.authors[a].comments = {}
-            list.authors[a].votes = 0
+//         for (let a of Object.keys(oldlist.authors)) {
+//             list.authors[a] = {}
+//             list.authors[a].comments = {}
+//             list.authors[a].votes = 0
 
-            if (oldlist.lastMonth !== month)
-                list.authors[a][month] = 0
-        }
-    }
+//             if (oldlist.lastMonth !== month)
+//                 list.authors[a][month] = 0
+//         }
+//     }
 
-    return sub.getNewComments( /*typeof list.last === "undefined" ?*/ {
-            limit: typeof oldCommentLimit !== "undefined" ? oldCommentLimit : 1000
-        }
-        /*: {
-               before: list.last
-           }*/
-    ).then(async posts => {
-        console.log("votes", posts.length)
+//     return sub.getNewComments( /*typeof list.last === "undefined" ?*/ {
+//             limit: typeof oldCommentLimit !== "undefined" ? oldCommentLimit : 1000
+//         }
+//         /*: {
+//                before: list.last
+//            }*/
+//     ).then(async posts => {
+//         console.log("votes", posts.length)
 
-        for (let post of posts) {
-            let name = post.author.name
+//         for (let post of posts) {
+//             let name = post.author.name
 
-            if (typeof list.authors[name] === "undefined") {
-                list.authors[name] = {}
-                list.authors[name].comments = {}
-                list.authors[name].votes = 0
-                list.authors[name][month] = 0
-            }
+//             if (typeof list.authors[name] === "undefined") {
+//                 list.authors[name] = {}
+//                 list.authors[name].comments = {}
+//                 list.authors[name].votes = 0
+//                 list.authors[name][month] = 0
+//             }
 
-            let author = list.authors[name]
-            let old = doc.exists ? oldlist.authors[name] : null
-            author.votes += post.ups - (old && old.comments[post.name] ? old.comments[post.name] : 1)
-            author[month] += post.ups - (old && old.comments[post.name] ? old.comments[post.name] : 1)
-            author.comments[post.name] = post.ups
-        }
+//             let author = list.authors[name]
+//             let old = doc.exists ? oldlist.authors[name] : null
+//             author.votes += post.ups - (old && old.comments[post.name] ? old.comments[post.name] : 1)
+//             author[month] += post.ups - (old && old.comments[post.name] ? old.comments[post.name] : 1)
+//             author.comments[post.name] = post.ups
+//         }
 
-        for (let a of Object.keys(list.authors)) {
-            let author = list.authors[a]
-            if (author.votes > 0)
-                console.log(a, author.votes)
-        }
+//         for (let a of Object.keys(list.authors)) {
+//             let author = list.authors[a]
+//             if (author.votes > 0)
+//                 console.log(a, author.votes)
+//         }
 
-        await doc.ref.set(list)
-    })
-}
+//         await doc.ref.set(list)
+//     })
+// }
 
 function getLast(posts, stop) {
     let last = ""
@@ -216,12 +216,14 @@ function getLast(posts, stop) {
 
 async function checkComments(posts, mods, rules) {
     for (let post of posts) {
-        if (!post.banned_by) {
+        if (!post.banned_by && post.body[0] === "!") {
+            console.log("command", post.body)
             if (post.body.includes("!m-") && mods.includes(post.author_fullname)) {
                 let missing = ""
                 let remove = false
                 let rule = ""
                 let offtopic = false
+                let shiprequest = false
 
                 let match = post.body.replace(/^!m-(\S+)/, "$1")
                 for (let c of match) {
@@ -250,6 +252,9 @@ async function checkComments(posts, mods, rules) {
                         case "o": // off topic
                             offtopic = true
                             break
+                        case "f": // ship request flair
+                            shiprequest = true
+                            break
                     }
                 }
 
@@ -265,6 +270,8 @@ async function checkComments(posts, mods, rules) {
                     message += missingInfo.replace(/\[missing\]/g, missing) + "\n\n----\n"
                 if (offtopic)
                     message += respOffTopic + "\n\n----\n"
+                if (shiprequest)
+                    message += respShipRequest + "\n\n----\n"
                 if (remove)
                     message += removePost + "\n\n----\n"
                 if (rule)
@@ -374,6 +381,43 @@ async function checkComments(posts, mods, rules) {
 
                         console.log("reply:", match[0])
                     }
+                } else {
+                    let glyph = null
+                    let addr = post.body.match(/!((?:[0-9A-F]{4}:?){4})/i)
+
+                    if (addr) {
+                        addr = addr[1]
+                        glyph = addrToGlyph(addr)
+                    } else {
+                        glyph = post.body.match(/!([0-9A-F]{12})/i)
+                        if (glyph)
+                            glyph = glyph[1]
+                    }
+
+                    if (glyph) {
+                        let op = null
+                        let oppost = post
+
+                        while (!op || oppost.parent_id) {
+                            op = await r.getComment(oppost.parent_id)
+                            oppost = await op.fetch()
+                        }
+
+                        let str = ""
+
+                        if (addr) {
+                            str = "Coordinates: " + addr + "\n\nGlyphs in hex: " + glyph + "\n\nGlyphs in [icons](https://nmsce.com/glyph.html?a=" + addr + ")"
+                        } else if (glyph)
+                            str = "Glyphs in hex: " + glyph + "\n\nGlyphs in [icons](https://nmsce.com/glyph.html?a=" + glyph + ")"
+
+                        post.remove()
+
+                        op.reply(str + "\n\n----\nThis is a comment generated by the NMSCE bot. For instructions post !help as a comment.")
+                            .distinguish({
+                                sticky: true
+                            })
+                            .lock()
+                    }
                 }
             }
         }
@@ -437,9 +481,9 @@ function validatePosts(posts) {
         }
 
         if (ok) {
-            let newFlair = flair.name + "/" + galaxy.name + (flair.platform ? "/" + platform.name : "") + 
-              (flair.mode ? "/" + mode.name : "") + (flair.version ? "/" + version : "")
-              
+            let newFlair = flair.name + "/" + galaxy.name + (flair.platform ? "/" + platform.name : "") +
+                (flair.mode ? "/" + mode.name : "") + (flair.version ? "/" + version : "")
+
             if (newFlair !== post.link_flair_text) {
                 console.log("edit", post.link_flair_text, newFlair, "https://reddit.com" + post.permalink)
                 post.selectFlair({
@@ -481,6 +525,66 @@ function validatePosts(posts) {
     }
 }
 
+function addressToXYZ(addr) {
+    let out = {
+        x: 0,
+        y: 0,
+        z: 0,
+        s: 0
+    }
+
+    // xxx:yyy:zzz:sss
+    if (addr) {
+        out.p = 0
+        out.x = parseInt(addr.slice(0, 4), 16)
+        out.y = parseInt(addr.slice(5, 9), 16)
+        out.z = parseInt(addr.slice(10, 14), 16)
+        out.s = parseInt(addr.slice(15), 16)
+    }
+
+    return out
+}
+
+function glyphToAddr(glyph) {
+    //const portalFormat = "psssyyzzzxxx"
+
+    if (glyph) {
+        let xyz = {}
+        xyz.p = parseInt(glyph.slice(0, 1), 16)
+        xyz.s = parseInt(glyph.slice(1, 4), 16)
+        xyz.y = (parseInt(glyph.slice(4, 6), 16) - 0x81) & 0xff
+        xyz.z = (parseInt(glyph.slice(6, 9), 16) - 0x801) & 0xfff
+        xyz.x = (parseInt(glyph.slice(9, 12), 16) - 0x801) & 0xfff
+
+        return xyzToAddress(xyz)
+    }
+
+    return ""
+}
+
+function addrToGlyph(addr, planet) {
+    let s = ""
+    //const portalFormat = "psssyyxxxzzz"
+
+    if (addr) {
+        let xyz = addressToXYZ(addr)
+        let xs = "00" + xyz.s.toString(16).toUpperCase()
+        let xx = "00" + (xyz.x + 0x801).toString(16).toUpperCase()
+        let xy = "00" + (xyz.y + 0x81).toString(16).toUpperCase()
+        let xz = "00" + (xyz.z + 0x801).toString(16).toUpperCase()
+
+        planet = typeof planet === "undefined" || planet === "" || planet < 0 || planet > 15 ? 0 : parseInt(planet)
+
+        s = planet.toString(16).toUpperCase().slice(0, 1)
+        s += xs.slice(xs.length - 3)
+        s += xy.slice(xy.length - 2)
+        s += xz.slice(xz.length - 3)
+        s += xx.slice(xx.length - 3)
+    }
+
+    return s
+}
+
 function checkList(list, post) {
     let item = getItem(list, post.link_flair_text)
     if (!item)
@@ -499,12 +603,15 @@ function getItem(list, str) {
 
     return null
 }
+
 const replyCommands = `List of bot commands
 
    * !shiploc - reply with comment about ships being available anywhere in the system
    * !shipclass - reply with comment about spawning ship classes
    * !portal - info about portal glyphs
    * !wildbase - info on claiming a wildbase
+   * !0000:0000:0000:0000 - replace with coordinates. bot will comment with glyphs & link showing glyphs
+   * !000000000000 - replace with glyphs. bot will comment with a link showing glyphs
    * !help - this list
 `
 const replyModCommands = `
@@ -520,12 +627,14 @@ Moderator Commands:
         *  c = coordinates or glyphs
         *  l = latitude & longitude
         *  s = screenshot
-    * !m-o - Add off topic comment and suggest reposting to nmstg
+    * !m-o - Add off topic comment and suggest reposting to nmstg. use with r8
+    * !m-f - request op repost using the 'ship request' flair. use with r1
     
     Commands can be concatenated together e.g. !m-gpr2,3o for missing galaxy & platform, remove for violcation of rule 2 & 3 and add offtopic comment`
 const respOffTopic = "Since this post is off topic in this sub you might try posting in r/nomansskythegame."
+const respShipRequest = "Please repost your request using the 'ship request' flair. The bot will return links to help your search."
 const respSearch = "Please search r/NMSCoordinateExchange or the [NMSCE app](https://nmsce.com) before posting your request."
-const respS2 = `The first glyph is the planet index in the system. Ships are available anywhere in the system so either of the first 2 glyphs will get you there.`
+const respS2 = `The first 2 glyphs you find will get you to the **system**. The first glyph of the coordinates is the planet index so either of the first 2 glyphs will get you to this system.`
 const respShiploc = `All starships in a given system can be found at the Space Station AND at any Trade Post located within the system. The same ships are available on all platforms and game modes. Things to check if you don't find the ship you're looking for. 1) Are you in the correct galaxy. 2) Are you in the correct system. It's very easy to enter the glyphs incorrectly so please double check your location.`
 const respShipclass = `Each individually spawned ship has a random class & number of slots. In a T3, wealthy, system a ship has a 2% chance of spawning as an S class. In a T2, developing, economy the percentage is 1%. In a T1 0%. The range of slots is based on the configuration of the ship. An S class ship will have the max possible number of slots in it's range. Only crashed ships have a fixed configuration of size and class.`
 const respPortal = `The first glyph of a portal address is the planet index. If you are going to pick up a ship then this character doesn't matter. It is usually given as 0 which will take you to the first planet in a system. For other items the glyph given should take you to the correct planet. The remaining 11 digits are the system address.`
@@ -608,7 +717,12 @@ const flairList = [{
     galaxy: true,
     version: true,
 }, {
-    match: /Event|Request|Showcase|Question|Tips|Information|Top|Mod|NEWS|Removed|Best/i,
+    match: /Event/i,
+    name: "Community Event",
+    galaxy: true,
+    version: true,
+}, {
+    match: /Request|Showcase|Question|Tips|Information|Top|Mod|NEWS|Removed|Best/i,
     noedit: true
 }, ]
 
@@ -637,7 +751,7 @@ const modeList = [{
     match: /Survival/i,
     name: "Survival"
 }, {
-    match: /Exped.*?\b|Explor.*?\b/i,
+    match: /Exped\w+[ns]\b|Explor\w+[rn]\b/i,
     name: "Expedition"
 }]
 
@@ -645,13 +759,13 @@ const galaxyList = [{
     match: /\bEucl\w+d\b/i,
     name: "Euclid"
 }, {
-    match: /\bHilb\w+t\b/i,
+    match: /\bHilb\w+t\b(Dim\w+n\b)?/i,
     name: "Hilbert"
 }, {
     match: /\bCaly\w+o\b/i,
     name: "Calypso"
 }, {
-    match: /\bHesp\w+s\b/i,
+    match: /\bHesp\w+s\b(Dim\w+n\b)?/i,
     name: "Hesperius"
 }, {
     match: /\bHyad\w+s\b/i,
@@ -774,8 +888,8 @@ const galaxyList = [{
     match: /\bWuce\w+c\b/i,
     name: "Wucetosucc"
 }, {
-    match: /\bEbye\w+d\b/i,
-    name: "Ebyeloofdud"
+    match: /\bEbye\w+f\b/i,
+    name: "Ebyeloof"
 }, {
     match: /\bOdya\w+a\b/i,
     name: "Odyavanta"

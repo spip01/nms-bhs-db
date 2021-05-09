@@ -375,18 +375,19 @@ blackHoleSuns.prototype.getEntryBySystem = async function (sys, displayfcn, gala
 blackHoleSuns.prototype.getEntryByRegionAddr = function (addr, displayfcn) {
     let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform)
 
-    ref = ref.where("addr", ">=", addr.slice(0, 15))
-    ref = ref.limit(1)
+    ref = ref.where("addr", ">=", addr.slice(0, 15)+"0000")
+    ref = ref.where("addr", "<=", addr.slice(0, 15)+"02FF")
 
     return ref.get().then(async snapshot => {
         if (!snapshot.empty) {
-            let d = snapshot.docs[0].data()
+            for (let doc of snapshot.docs) {
+                let d = doc.data()
+                if (d.reg !== "") {
+                    if (displayfcn)
+                        displayfcn(d)
 
-            if (d.addr.slice(0, 15) === addr.slice(0, 15)) {
-                if (displayfcn)
-                    displayfcn(d)
-
-                return d
+                    return d
+                }
             }
         }
     }).catch(err => {

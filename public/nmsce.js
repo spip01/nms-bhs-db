@@ -273,9 +273,10 @@ NMSCE.prototype.changeAddr = function (evt, a) {
                         $("#id-Economy [type='radio']").prop("checked", false)
                         $("#id-Lifeform [type|='radio']").prop("checked", false)
                     }
-
-                    bhs.getEntryByRegionAddr(addr, nmsce.displayRegion)
                 }
+
+                if (!entry || !entry.reg)
+                    bhs.getEntryByRegionAddr(addr, nmsce.displayRegion)
 
                 nmsce.lastsys = entry
             })

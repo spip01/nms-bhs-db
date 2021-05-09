@@ -31,36 +31,38 @@ $(document).ready(() => {
 
     $("#footer").load("footer.html")
 
-   let gloc = $("[id='glyphbuttons']")
+    let gloc = $("[id='glyphbuttons']")
     addGlyphButtons(gloc, addGlyph)
     buildGlyphModal(dispGlyph)
+
+    let passed = {}
+    let param = location.search.substring(1).split("&")
+
+    for (let p of param) {
+        if (p) {
+            let obj = p.split("=")
+            passed[unescape(obj[0])] = obj[1] ? unescape(obj[1]) : true
+            if (obj[0] === 'a') {
+                displayAll(passed.a)
+            }
+        }
+    }
 })
 
 function dispAddr(evt) {
     let loc = $(evt).closest(".card")
     let addr = loc.find("#id-addr").val()
+    let planet = loc.find("#id-planet").val()
 
-    if (addr !== "") {
-        addr = reformatAddress(addr)
-        loc.find("#id-addr").val(addr)
-
-        let planet = loc.find("#id-planet").val()
-        let glyph = addrToGlyph(addr, planet)
-        loc.find("#id-glyph").text(glyph)
-        loc.find("#id-hex").text(glyph)
-    }
+    if (addr !== "")
+        displayAll(addr, planet)
 }
 
 function dispGlyph(evt) {
     let glyph = typeof evt === "string" ? evt : $(evt).val().toUpperCase()
-    if (glyph !== "") {
-        let addr = reformatAddress(glyph)
-        let planet = glyph.slice(0, 1)
-        let loc = $("#glyph-card")
-        loc.find("#id-glyph").val(glyph)
-        loc.find("#id-addr").text(addr)
-        loc.find("#id-planet").text(planet)
-    }
+    
+    if (glyph !== "")
+        displayAll(glyph)
 }
 
 function addGlyph(evt) {
@@ -70,4 +72,21 @@ function addGlyph(evt) {
 
     if (a.length === 12)
         dispGlyph(loc)
+}
+
+function displayAll(addr, planet) {
+    if (planet === "" || typeof planet === "undefined")
+        planet = addr.length === 12 ? addr.slice(0, 1) : 0
+
+    addr = reformatAddress(addr)
+    let glyph = addrToGlyph(addr, planet)
+
+    $("div #id-glyph").text(glyph)
+    $("div #id-addr").text(addr)
+    $("div #id-planet").text(planet)
+    $("div #id-hex").text(glyph)
+
+    $("#glyph-card #id-glyph").val(glyph)
+    $("#addr-card #id-addr").val(addr)
+    $("#addr-card #id-planet").val(planet)
 }
