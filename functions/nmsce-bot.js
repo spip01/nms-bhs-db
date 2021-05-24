@@ -18,7 +18,7 @@ var lastPost = {}
 var lastComment = {}
 var oldComments = 0
 var lastMod = {}
-const version = 3.37
+const version = 3.40
 
 // main()
 // var full = true
@@ -255,6 +255,9 @@ async function checkComments(posts, mods, rules) {
                         case "f": // ship request flair
                             shiprequest = true
                             break
+                            // case "v": // get community event votes
+                            //     getVotes(post, post.body.replace(/!m-v(\d?)(.*)/, "$1"))
+                            //     return
                     }
                 }
 
@@ -262,7 +265,7 @@ async function checkComments(posts, mods, rules) {
                 for (let i of match) {
                     let r = parseInt(i)
                     if (r <= rules.length)
-                        rule += (rule ? "\n\n" : "") + rules[r - 1]
+                        rule += (rule ? "\n\n----\n" : "") + rules[r - 1]
                 }
 
                 let message = ""
@@ -481,7 +484,7 @@ function validatePosts(posts) {
         }
 
         if (ok) {
-            let newFlair = flair.name + "/" + galaxy.name + (flair.platform ? "/" + platform.name : "") +
+            let newFlair = flair.name + (post.title.match(/repost/i) ? " Repost" : "") + "/" + galaxy.name + (flair.platform ? "/" + platform.name : "") +
                 (flair.mode ? "/" + mode.name : "") + (flair.version ? "/" + version : "")
 
             if (newFlair !== post.link_flair_text) {
@@ -507,7 +510,7 @@ function validatePosts(posts) {
                         }
                     }
 
-                if (approve) {
+                if (approve && !post.title.match(/repost/i)) {
                     console.log("approve", newFlair, "https://reddit.com" + post.permalink)
                     post.approve()
                         .catch(err => console.log(JSON.stringify(err)))
@@ -524,7 +527,52 @@ function validatePosts(posts) {
         }
     }
 }
+/*
+function getVotes(op, newFlair) {
+    sub.search({
+        query: "subreddit:nmscoordinateexchange flair:community",
+        limit: 1000,
+        time: "month"
+    }).then(posts => {
+        let text = "Total submissions: " + posts.length + "\n"
 
+        let p = []
+        let total = 0
+
+        for (let post of posts) {
+            let flair = newFlair ? post.link_flair_text.replace(/community event(.*)/i, newFlair + "$1") : null
+
+            p.push({
+                link: post.permalink,
+                vote: post.ups,
+                title: post.title,
+                // flair: flair
+            })
+            total += post.ups
+
+            if (flair)
+                post.selectFlair({
+                    text: flair,
+                    flair_template_id: ""
+                })
+        }
+
+        p.sort((a, b) => {
+            return b.vote - a.votes
+        })
+
+        text += "Total votes: " + total + "\n"
+
+        for (let i = 0; i < 10; ++i)
+            text += p[i].vote + ": [" + p[i].title + "](https://reddit.com" + p[i].link + ")\n"
+
+        op.message(text)
+        op.remove()
+    }).catch(err => {
+        console.log("post", JSON.stringify(err))
+    })
+}
+*/
 function addressToXYZ(addr) {
     let out = {
         x: 0,
@@ -661,33 +709,39 @@ const flairList = [{
     sclass: true,
     station: true,
     version: true,
+    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
 }, {
     match: /Living Ship/i,
     name: "Living Ship",
     galaxy: true,
     version: true,
+    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
 }, {
     match: /Multi Tool/i,
     name: "Multi Tool",
     galaxy: true,
     version: true,
+    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
 }, {
     match: /Derelict Freighter/i,
     name: "Derelict Freighter",
     galaxy: true,
     version: true,
+    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
 }, {
     match: /Freighter/i,
     name: "Freighter",
     galaxy: true,
     sclass: true,
     version: true,
+    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
 }, {
     match: /Frigate/i,
     name: "Frigate",
     galaxy: true,
     sclass: true,
     version: true,
+    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
 }, {
     match: /Wild Base/i,
     name: "Wild Base",
@@ -706,21 +760,25 @@ const flairList = [{
     // platform: true,
     mode: true,
     version: true,
+    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
 }, {
     match: /Fauna/i,
     name: "Fauna",
     galaxy: true,
     version: true,
+    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
 }, {
     match: /Planet/i,
     name: "Planet",
     galaxy: true,
     version: true,
+    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
 }, {
     match: /Event/i,
     name: "Community Event",
     galaxy: true,
     version: true,
+    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
 }, {
     match: /Request|Showcase|Question|Tips|Information|Top|Mod|NEWS|Removed|Best/i,
     noedit: true

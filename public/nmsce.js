@@ -1,6 +1,6 @@
 'use strict'
 
-// Copyright 2019-2020 Black Hole Suns
+// Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper
 
 var nmsce
@@ -71,6 +71,12 @@ $(document).ready(async () => {
         nmsce.last.addr = reformatAddress(passed.s)
         nmsce.last.galaxy = passed.g
         nmsce.searchSystem()
+
+    } else if (passed.r && passed.g) {
+        nmsce.last = {}
+        nmsce.last.addr = reformatAddress(passed.r)
+        nmsce.last.galaxy = passed.g
+        nmsce.searchRegion()
 
     } else if (passed.i && passed.g && passed.t) {
         let ref = bhs.fs.doc("nmsce/" + passed.g + "/" + passed.t + "/" + passed.i)
@@ -1378,6 +1384,28 @@ NMSCE.prototype.searchSystem = function () {
     let ref = bhs.fs.collectionGroup("nmsceCommon")
     ref = ref.where("galaxy", "==", nmsce.last.galaxy)
     ref = ref.where("addr", "==", nmsce.last.addr)
+
+    ref.get().then(snapshot => {
+        let list = []
+        for (let doc of snapshot.docs)
+            list.push(doc.data())
+
+        $("#dltab-Search-Results").click()
+        $("#displayPanels #list-Search-Results").empty()
+        nmsce.displayResultList(list, "Search-Results")
+    })
+}
+
+NMSCE.prototype.searchRegion = function () {
+    if (!nmsce.last)
+        return
+
+    nmsce.entries["Search-Results"] = []
+
+    let ref = bhs.fs.collectionGroup("nmsceCommon")
+    ref = ref.where("galaxy", "==", nmsce.last.galaxy)
+    ref = ref.where("addr", ">=", nmsce.last.addr.slice(0, 15)+"0000")
+    ref = ref.where("addr", "<=", nmsce.last.addr.slice(0, 15)+"02FF")
 
     ref.get().then(snapshot => {
         let list = []

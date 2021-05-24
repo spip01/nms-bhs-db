@@ -1,6 +1,6 @@
 'use strict'
 
-// Copyright 2019-2020 Black Hole Suns
+// Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper
 
 const findex = window.location.pathname.includes("index.html") || window.location.pathname == "/"
@@ -674,6 +674,10 @@ const versionList = [{
     name: "expeditions",
     version: 3.35,
     date: "4/9/2021",
+}, {
+    name: "beachhead",
+    version: 3.4,
+    date: "5/17/2021",
 }]
 
 const latestversion = versionList[(versionList.length - 1)].name
