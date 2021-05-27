@@ -255,9 +255,9 @@ async function checkComments(posts, mods, rules) {
                         case "f": // ship request flair
                             shiprequest = true
                             break
-                            // case "v": // get community event votes
-                            //     getVotes(post, post.body.replace(/!m-v(\d?)(.*)/, "$1"))
-                            //     return
+                        case "v": // get community event votes
+                            getVotes(post, post.body.replace(/!m-v(.*)/, "$1"))
+                            return
                     }
                 }
 
@@ -527,14 +527,14 @@ function validatePosts(posts) {
         }
     }
 }
-/*
+
 function getVotes(op, newFlair) {
     sub.search({
         query: "subreddit:nmscoordinateexchange flair:community",
         limit: 1000,
         time: "month"
     }).then(posts => {
-        let text = "Total submissions: " + posts.length + "\n"
+        let text = "Total submissions: " + posts.length + "  "
 
         let p = []
         let total = 0
@@ -550,29 +550,31 @@ function getVotes(op, newFlair) {
             })
             total += post.ups
 
-            if (flair)
-                post.selectFlair({
-                    text: flair,
-                    flair_template_id: ""
-                })
+            // if (flair)
+            //     post.selectFlair({
+            //         text: flair,
+            //         flair_template_id: "7067471e-7326-11eb-ad17-0ef6cf5a16d9"
+            //     })
         }
 
         p.sort((a, b) => {
             return b.vote - a.votes
         })
 
-        text += "Total votes: " + total + "\n"
+        text += "Total votes: " + total + "  "
 
         for (let i = 0; i < 10; ++i)
-            text += p[i].vote + ": [" + p[i].title + "](https://reddit.com" + p[i].link + ")\n"
+            text += p[i].vote + ": [" + p[i].title + "](https://reddit.com" + p[i].link + ")  "
 
-        op.message(text)
+        op.reply(text)
         op.remove()
+            .catch(err => console.log(JSON.stringify(err)))
+
     }).catch(err => {
         console.log("post", JSON.stringify(err))
     })
 }
-*/
+
 function addressToXYZ(addr) {
     let out = {
         x: 0,
@@ -677,6 +679,7 @@ Moderator Commands:
         *  s = screenshot
     * !m-o - Add off topic comment and suggest reposting to nmstg. use with r8
     * !m-f - request op repost using the 'ship request' flair. use with r1
+    * !m-v[flair] - get current event vote count. Add new flair name to change. e.g. !m-vStarship
     
     Commands can be concatenated together e.g. !m-gpr2,3o for missing galaxy & platform, remove for violcation of rule 2 & 3 and add offtopic comment`
 const respOffTopic = "Since this post is off topic in this sub you might try posting in r/nomansskythegame."
@@ -715,33 +718,33 @@ const flairList = [{
     name: "Living Ship",
     galaxy: true,
     version: true,
-    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
+    id: ""
 }, {
     match: /Multi Tool/i,
     name: "Multi Tool",
     galaxy: true,
     version: true,
-    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
+    id: ""
 }, {
     match: /Derelict Freighter/i,
     name: "Derelict Freighter",
     galaxy: true,
     version: true,
-    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
+    id: ""
 }, {
     match: /Freighter/i,
     name: "Freighter",
     galaxy: true,
     sclass: true,
     version: true,
-    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
+    id: ""
 }, {
     match: /Frigate/i,
     name: "Frigate",
     galaxy: true,
     sclass: true,
     version: true,
-    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
+    id: ""
 }, {
     match: /Wild Base/i,
     name: "Wild Base",
@@ -753,6 +756,7 @@ const flairList = [{
     // platform: true,
     mode: true,
     version: true,
+    id: ""
 }, {
     match: /Farm/i,
     name: "Farm",
@@ -760,25 +764,25 @@ const flairList = [{
     // platform: true,
     mode: true,
     version: true,
-    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
+    id: ""
 }, {
     match: /Fauna/i,
     name: "Fauna",
     galaxy: true,
     version: true,
-    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
+    id: "7067471e-7326-11eb-ad17-0ef6cf5a16d9"
 }, {
     match: /Planet/i,
     name: "Planet",
     galaxy: true,
     version: true,
-    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
+    id: ""
 }, {
     match: /Event/i,
     name: "Community Event",
     galaxy: true,
     version: true,
-    id: "41384622-0123-11e9-b9f1-0ec22fa6984a"
+    id: ""
 }, {
     match: /Request|Showcase|Question|Tips|Information|Top|Mod|NEWS|Removed|Best/i,
     noedit: true
