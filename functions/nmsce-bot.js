@@ -534,7 +534,7 @@ function getVotes(op, newFlair) {
         limit: 1000,
         time: "month"
     }).then(posts => {
-        let text = "Total submissions: " + posts.length + "  "
+        let text = "Total submissions: " + posts.length + "  \n"
 
         let p = []
         let total = 0
@@ -558,15 +558,19 @@ function getVotes(op, newFlair) {
         }
 
         p.sort((a, b) => {
-            return b.vote - a.votes
+            return b.vote - a.vote
         })
 
-        text += "Total votes: " + total + "  "
-
+        text += "Total votes: " + total + "  \n"
         for (let i = 0; i < 10; ++i)
-            text += p[i].vote + ": [" + p[i].title + "](https://reddit.com" + p[i].link + ")  "
+            text += p[i].vote + ": [" + p[i].title + "](https://reddit.com" + p[i].link + ")  \n"
 
-        op.reply(text)
+        r.composeMessage({
+            to: op.author,
+            subject: "Community Event",
+            text: text
+        }).catch(err => console.log(JSON.stringify(err)))
+
         op.remove()
             .catch(err => console.log(JSON.stringify(err)))
 
