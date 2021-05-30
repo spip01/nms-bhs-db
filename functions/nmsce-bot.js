@@ -438,7 +438,7 @@ function validatePosts(posts) {
             continue
 
         if (ok)
-            ok = (flair = getItem(flairList, post.link_flair_text)) !== null
+            ok = (ccc) !== null
 
         if (!ok) {
             if (!post.removed_by_category) {
@@ -539,22 +539,26 @@ function getVotes(op, newFlair) {
         let p = []
         let total = 0
 
+        let flairobj = getItem(flairList, newFlair)
+
         for (let post of posts) {
-            let flair = newFlair ? post.link_flair_text.replace(/community event(.*)/i, newFlair + "$1") : null
+            let flair = flairobj ? post.link_flair_text.replace(/community event(.*)/i, flairobj.name + "$1") : null
 
             p.push({
                 link: post.permalink,
-                vote: post.ups,
+                vote: post.ups + post.downs,
                 title: post.title,
                 // flair: flair
             })
-            total += post.ups
+            total += post.ups + post.downs
 
-            // if (flair)
-            //     post.selectFlair({
-            //         text: flair,
-            //         flair_template_id: "7067471e-7326-11eb-ad17-0ef6cf5a16d9"
-            //     })
+            // text += post.link_flair_text + " " + flair + " " + flairobj.id + "  \n"
+
+            if (flair)
+                post.selectFlair({
+                    text: flair,
+                    flair_template_id: flairobj.id
+                })
         }
 
         p.sort((a, b) => {
@@ -683,7 +687,7 @@ Moderator Commands:
         *  s = screenshot
     * !m-o - Add off topic comment and suggest reposting to nmstg. use with r8
     * !m-f - request op repost using the 'ship request' flair. use with r1
-    * !m-v[flair] - get current event vote count. Add new flair name to change. e.g. !m-vStarship
+    * !m-v[flair] - get current event vote count. Optional new flair name to change. e.g. !m-vStarship
     
     Commands can be concatenated together e.g. !m-gpr2,3o for missing galaxy & platform, remove for violcation of rule 2 & 3 and add offtopic comment`
 const respOffTopic = "Since this post is off topic in this sub you might try posting in r/nomansskythegame."
@@ -722,33 +726,33 @@ const flairList = [{
     name: "Living Ship",
     galaxy: true,
     version: true,
-    id: ""
+    id: "2c4a6250-709d-11ea-805c-0ee48b1610a3"
 }, {
     match: /Multi Tool/i,
     name: "Multi Tool",
     galaxy: true,
     version: true,
-    id: ""
+    id: "3f6af1de-02c5-11e9-93f4-0e9e9df057fe"
 }, {
     match: /Derelict Freighter/i,
     name: "Derelict Freighter",
     galaxy: true,
     version: true,
-    id: ""
+    id: "0f48ed4c-c94f-11ea-bdb0-0e37ef4aee8f"
 }, {
     match: /Freighter/i,
     name: "Freighter",
     galaxy: true,
     sclass: true,
     version: true,
-    id: ""
+    id: "f4e8c824-dc40-11e9-9845-0e4351d5a984"
 }, {
     match: /Frigate/i,
     name: "Frigate",
     galaxy: true,
     sclass: true,
     version: true,
-    id: ""
+    id: "f4e8c824-dc40-11e9-9845-0e4351d5a984"
 }, {
     match: /Wild Base/i,
     name: "Wild Base",
@@ -760,7 +764,7 @@ const flairList = [{
     // platform: true,
     mode: true,
     version: true,
-    id: ""
+    id: "d10b49f8-7dac-11e7-9444-0ef61ee650f0"
 }, {
     match: /Farm/i,
     name: "Farm",
@@ -768,7 +772,7 @@ const flairList = [{
     // platform: true,
     mode: true,
     version: true,
-    id: ""
+    id: "d10b49f8-7dac-11e7-9444-0ef61ee650f0"
 }, {
     match: /Fauna/i,
     name: "Fauna",
@@ -780,7 +784,7 @@ const flairList = [{
     name: "Planet",
     galaxy: true,
     version: true,
-    id: ""
+    id: "6e0d3aa0-7b33-11ea-9e9f-0ee0e4c45271"
 }, {
     match: /Event/i,
     name: "Community Event",
