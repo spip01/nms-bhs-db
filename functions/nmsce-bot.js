@@ -20,12 +20,12 @@ var oldComments = 0
 var lastMod = {}
 const version = 3.40
 
-// main()
-// var full = true
-// var oldCommentLimit = 100
-// async function main() {
+main()
+var full = true
+var oldCommentLimit = 100
+async function main() {
 
-exports.nmsceBot = async function () {
+    // exports.nmsceBot = async function () {
     let newInstance = sub === null
 
     if (!sub) {
@@ -57,7 +57,7 @@ exports.nmsceBot = async function () {
             validatePosts(posts)
         }
     }).catch(err => {
-        console.log("post", JSON.stringify(err))
+        console.log("error 1",  typeof err === "string" ? err : JSON.stringify(err))
     }))
 
     p.push(sub.getNewComments(!lastComment.name || lastComment.full + 30 * 60 < date ? {
@@ -87,14 +87,14 @@ exports.nmsceBot = async function () {
             checkComments(posts, mods, rules)
         }
     }).catch(err => {
-        console.log("comments", JSON.stringify(err))
+        console.log("error 2", typeof err === "string" ? err : JSON.stringify(err))
     }))
 
     p.push(sub.getModqueue().then(posts => {
         console.log("queue", posts.length)
         validatePosts(posts)
     }).catch(err => {
-        console.log("queue", JSON.stringify(err))
+        console.log("error 3", typeof err === "string" ? err : JSON.stringify(err))
     }))
 
     if (!lastMod.last || lastMod.last + 30 * 60 * 60 < date) {
@@ -137,7 +137,7 @@ exports.nmsceBot = async function () {
             console.log("log", logCount)
             validatePosts(posts)
         }).catch(err => {
-            console.log("log", JSON.stringify(err))
+            console.log("error 4", typeof err === "string" ? err : JSON.stringify(err))
         }))
     }
 
@@ -295,20 +295,20 @@ async function checkComments(posts, mods, rules) {
                         .distinguish({
                             status: true
                         }).lock()
-                        .catch(err => console.log(JSON.stringify(err)))
+                        .catch(err => console.log("error 5", typeof err === "string" ? err : JSON.stringify(err)))
 
                     if (remove)
                         op.report({
                             reason: post.author.name + " rule " + match
                         }).remove()
-                        .catch(err => console.log(JSON.stringify(err)))
+                        .catch(err => console.log("error 6", typeof err === "string" ? err : JSON.stringify(err)))
                     else
                         op.report({
                             reason: post.author.name + " missing " + missing
-                        }).catch(err => console.log(JSON.stringify(err)))
+                        }).catch(err => console.log("error 7", typeof err === "string" ? err : JSON.stringify(err)))
 
                     post.remove()
-                        .catch(err => console.log(JSON.stringify(err)))
+                        .catch(err => console.log("error 8", typeof err === "string" ? err : JSON.stringify(err)))
 
                     console.log("remove: " + remove, "missing: " + missing, "rule: " + match, "https://reddit.com" + oppost.permalink)
                 }
@@ -370,17 +370,17 @@ async function checkComments(posts, mods, rules) {
 
                         if (message)
                             op.reply(message).lock()
-                            .catch(err => console.log(JSON.stringify(err)))
+                            .catch(err => console.log("error 9", typeof err === "string" ? err : JSON.stringify(err)))
                         else
                             r.composeMessage({
                                 to: post.author,
                                 subject: "nmsceBot Commands",
                                 text: reply
                             })
-                            .catch(err => console.log(JSON.stringify(err)))
+                            .catch(err => console.log("error 10", typeof err === "string" ? err : JSON.stringify(err)))
 
                         post.remove()
-                            .catch(err => console.log(JSON.stringify(err)))
+                            .catch(err => console.log("error 11", typeof err === "string" ? err : JSON.stringify(err)))
 
                         console.log("reply:", match[0])
                     }
@@ -438,7 +438,7 @@ function validatePosts(posts) {
             continue
 
         if (ok)
-            ok = (ccc) !== null
+        ok = (flair = getItem(flairList, post.link_flair_text)) !== null
 
         if (!ok) {
             if (!post.removed_by_category) {
@@ -448,7 +448,7 @@ function validatePosts(posts) {
                     .distinguish({
                         status: true
                     }).lock()
-                    .catch(err => console.log(JSON.stringify(err)))
+                    .catch(err => console.log("error 12", typeof err === "string" ? err : JSON.stringify(err)))
             }
 
             continue
@@ -492,7 +492,7 @@ function validatePosts(posts) {
                 post.selectFlair({
                     flair_template_id: post.link_flair_template_id,
                     text: newFlair
-                }).catch(err => console.log(JSON.stringify(err)))
+                }).catch(err => console.log("error 13", typeof err === "string" ? err : JSON.stringify(err)))
             }
 
             if ((!flair.sclass || !post.title.match(/s\bclass/i) || post.title.match(/crash|sunk/i)) &&
@@ -513,7 +513,7 @@ function validatePosts(posts) {
                 if (approve && !post.title.match(/repost/i)) {
                     console.log("approve", newFlair, "https://reddit.com" + post.permalink)
                     post.approve()
-                        .catch(err => console.log(JSON.stringify(err)))
+                        .catch(err => console.log("error 14", typeof err === "string" ? err : JSON.stringify(err)))
                 }
             }
         } else if (reason && !post.removed_by_category) {
@@ -523,7 +523,7 @@ function validatePosts(posts) {
                 .distinguish({
                     status: true
                 }).lock()
-                .catch(err => console.log(JSON.stringify(err)))
+                .catch(err => console.log("error 15", typeof err === "string" ? err : JSON.stringify(err)))
         }
     }
 }
@@ -573,13 +573,13 @@ function getVotes(op, newFlair) {
             to: op.author,
             subject: "Community Event",
             text: text
-        }).catch(err => console.log(JSON.stringify(err)))
+        }).catch(err => console.log("error 16", typeof err === "string" ? err : JSON.stringify(err)))
 
         op.remove()
-            .catch(err => console.log(JSON.stringify(err)))
+            .catch(err => console.log("error 17", typeof err === "string" ? err : JSON.stringify(err)))
 
     }).catch(err => {
-        console.log("post", JSON.stringify(err))
+        console.log("error 18", typeof err === "string" ? err : JSON.stringify(err))
     })
 }
 
