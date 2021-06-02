@@ -678,6 +678,10 @@ const versionList = [{
     name: "beachhead",
     version: 3.4,
     date: "5/17/2021",
+}, {
+    name: "prisms",
+    version: 3.5,
+    date: "6/2/2021",
 }]
 
 const latestversion = versionList[(versionList.length - 1)].name

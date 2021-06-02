@@ -1404,8 +1404,8 @@ NMSCE.prototype.searchRegion = function () {
 
     let ref = bhs.fs.collectionGroup("nmsceCommon")
     ref = ref.where("galaxy", "==", nmsce.last.galaxy)
-    ref = ref.where("addr", ">=", nmsce.last.addr.slice(0, 15)+"0000")
-    ref = ref.where("addr", "<=", nmsce.last.addr.slice(0, 15)+"02FF")
+    ref = ref.where("addr", ">=", nmsce.last.addr.slice(0, 15) + "0000")
+    ref = ref.where("addr", "<=", nmsce.last.addr.slice(0, 15) + "02FF")
 
     ref.get().then(snapshot => {
         let list = []
@@ -5623,7 +5623,17 @@ const fontList = [{
     name: 'Kaushan Script',
 }, {
     name: 'Permanent Marker',
-}, ]
+// }, {
+//     name: 'Bangers',
+// }, {
+//     name: 'Limelight',
+// }, {
+//     name: 'Monoton',
+// }, {
+//     name: 'Poiret One',
+// }, {
+//     name: 'Ultra'
+}]
 
 const encounterList = [{
     name: "Alien Repair"

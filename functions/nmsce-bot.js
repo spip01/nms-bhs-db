@@ -18,14 +18,14 @@ var lastPost = {}
 var lastComment = {}
 var oldComments = 0
 var lastMod = {}
-const version = 3.40
+const version = 3.50
 
-main()
-var full = true
-var oldCommentLimit = 100
-async function main() {
+// main()
+// var full = true
+// var oldCommentLimit = 100
+// async function main() {
 
-    // exports.nmsceBot = async function () {
+    exports.nmsceBot = async function () {
     let newInstance = sub === null
 
     if (!sub) {
@@ -792,7 +792,7 @@ const flairList = [{
     version: true,
     id: ""
 }, {
-    match: /Request|Showcase|Question|Tips|Information|Top|Mod|NEWS|Removed|Best/i,
+    match: /Request|Showcase|Question|Tips|Information|Top|Mod|NEWS|Removed|Best|Member/i,
     noedit: true
 }, ]
 
