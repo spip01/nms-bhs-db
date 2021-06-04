@@ -33,8 +33,8 @@ $(document).ready(async () => {
             let ref = bhs.fs.doc("bhs/nmsceTotals")
             bhs.subscribe("nmsce-totals", ref, nmsce.displayTotals)
 
-            ref = bhs.fs.doc("bhs/nmsceCommunityEvent")
-            bhs.subscribe("nmsce-ce", ref, nmsce.displayTotals)
+            // ref = bhs.fs.doc("bhs/nmsceCommunityEvent")
+            // bhs.subscribe("nmsce-ce", ref, nmsce.displayTotals)
 
             nmsce.getResultsLists()
             // nmsce.getFeatured()
@@ -4091,7 +4091,7 @@ NMSCE.prototype.buildTotals = function () {
                         <div class="row">
                             <div id="id-name" class="col-6 pointer" onclick="nmsce.sortTotals(this)">Player&nbsp;&nbsp;<i class="fas fa-sort-alpha-down"></i></div>
                             <div id="id-total" class="col-3 pointer" onclick="nmsce.sortTotals(this)">Overall&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div>
-                            <div id="id-event" class="col-3 pointer" onclick="nmsce.sortTotals(this)">Community Event&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div>
+                            <!--div id="id-event" class="col-3 pointer" onclick="nmsce.sortTotals(this)">Community Event&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div-->
                         </div>
                     </div>
                     <div id="totalsCard" class="card-body scroll" style="height:600px"></div>
