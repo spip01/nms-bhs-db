@@ -91,12 +91,9 @@ async function checkPostLimits(posts) {
             if (keys.length > 2) {
                 let date = parseInt(keys[2]) - 55 * 60
 
-                for (let key of keys) {
-                    if (key < date) {
+                for (let key of keys)
+                    if (key < date)
                         delete user.posts[key]
-                        continue
-                    }
-                }
 
                 keys = Object.keys(user.posts)
 

@@ -453,56 +453,78 @@ function validatePosts(posts) {
 var userPosts = []
 
 async function checkPostLimits(post) {
+    let ok = true
+
     if (post.banned_by || post.removed_by_category === "automod_filtered" ||
         post.removed_by_category === "reddit" || post.mod_reports.length > 0 ||
         post.approved_by !== null && post.approved_by !== "nmsceBot")
-        return true
+        return ok
 
-        let user = userPosts.find(a => {
-            return a.name === post.author.name
-        })
+    let user = userPosts.find(a => {
+        return a.name === post.author.name
+    })
 
-        if (typeof user === "undefined") {
-            let user = {}
-            user.name = post.author.name
-            user.posts = {}
-            user.posts[post.created] = post
-            userPosts.push(user)
-        } else {
+    if (typeof user === "undefined") {
+        let user = {}
+        user.name = post.author.name
+        user.posts = {}
+        user.posts[post.created] = post
+        userPosts.push(user)
+    } else {
+        user.posts[post.created] = post
+
+        let keys = Object.keys(user.posts)
+        if (keys.length > 2) {
             let date = parseInt(new Date().valueOf() / 1000 - 24 * 60 * 60)
-            user.posts[post.created] = post
 
-            let keys = Object.keys(user.posts)
             for (let key of keys)
                 if (key < date)
                     delete user.posts[key]
 
-            date = parseInt(keys[keys.length - 1]) - 55 * 60
+            keys = Object.keys(user.posts)
+            if (keys.length > 2) {
+                date = parseInt(keys[0]) + 55 * 60
 
-            if (keys.length > 10 || keys.length > 2 && parseInt(keys[keys.length - 3]) > date) {
-                let message = removePost + "\n\n----\n" + rules[9] + "\n\n----\n" + botSig
+                for (let i = 2; i < keys.length; ++i) {
+                    if (parseInt(keys[i]) < date) {
+                        deletePostOverLimit(user, keys[i])
+                        ok = false
+                    }
+                }
+            }
 
-                console.log("exceded ", keys.length > 10 ? "10/day" : "2/hour", user.name, "https://reddit.com" + user.posts[keys[0]].permalink)
+            keys = Object.keys(user.posts)
+            if (keys.length > 10) {
+                for (let i = 9; i < keys.length; ++i)
+                    deletePostOverLimit(user, keys[i])
 
-                user.posts[keys[keys.length-1]].reply(message)
-                    .distinguish({
-                        status: true
-                    }).lock()
-                    .catch(err => console.log("error a", typeof err === "string" ? err : JSON.stringify(err)))
-
-                user.posts[keys[keys.length-1]].report({
-                        reason: "rule 9 exceded posting limits"
-                    }).remove()
-                    .catch(err => console.log("error b", typeof err === "string" ? err : JSON.stringify(err)))
-
-                delete user.posts[keys[keys.length-1]]
-
-                return false
+                ok = false
             }
         }
+    }
 
-    return true
+    return ok
 }
+
+function deletePostOverLimit(user, key) {
+    const message = removePost + "\n\n----\nOP is limited to 2 post/hour and 10/day\n\n----\n" + botSig
+
+    console.log("exceded posting limits", user.name, "https://reddit.com" + user.posts[key].permalink)
+
+    // user.posts[key].reply(message)
+    //     .distinguish({
+    //         status: true
+    //     }).lock()
+    //     .catch(err => console.log("error a", typeof err === "string" ? err : JSON.stringify(err)))
+
+    // user.posts[key].report({
+    //         reason: "rule 9: exceded posting limits"
+    //     }).remove()
+    //     .catch(err => console.log("error b", typeof err === "string" ? err : JSON.stringify(err)))
+
+    delete user.posts[key]
+}
+
 
 function getVotes(op, newFlair) {
     sub.search({
