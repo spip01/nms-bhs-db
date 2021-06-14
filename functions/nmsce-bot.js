@@ -1,5 +1,22 @@
 'use strict'
 
+/*
+Summary of nmscebot
+
+Rewrite all flair to keep them consistently formatted
+Add galaxy from title or correct spelling of galaxy in flair
+Add version number to flair
+Approve post once flair is complete (automod removed)
+Remove post with unrecognized flair
+Handle ship request response before approving
+General subscriber commands "!help"
+Moderator commands "!help"
+
+todo: handle posting limits/hour/day
+
+It shouldn't approve post removed by any moderator
+*/
+
 const login = require('./nmsce-bot.json')
 const snoowrap = require('snoowrap')
 const r = new snoowrap(login)
@@ -16,34 +33,29 @@ var mods = []
 var rules = []
 var lastPost = {}
 var lastComment = {}
-var oldComments = 0
-var lastMod = {}
 const version = 3.50
 
 // main()
-// var full = true
-// var oldCommentLimit = 100
 // async function main() {
 
-    exports.nmsceBot = async function () {
-    let newInstance = sub === null
+exports.nmsceBot = async function () {
 
     if (!sub) {
         console.log("new instance")
         sub = await r.getSubreddit('NMSCoordinateExchange')
     }
 
-    let posts
     let date = new Date().valueOf() / 1000
     let p = []
 
-    // if (oldComments + 3 * 60 * 60 < date) {
-    //     oldComments = date
-    //     p.push(getOldComments())
-    // }
+    if (rules.length === 0) {
+        let r = await sub.getRules()
+        for (let x of r.rules)
+            rules.push(x.description)
+    }
 
     p.push(sub.getNew(!lastPost.name || lastPost.full + 60 * 60 < date ? {
-        limit: newInstance ? 25 : 100
+        limit: 50
     } : {
         before: lastPost.name
     }).then(posts => {
@@ -57,18 +69,15 @@ const version = 3.50
             validatePosts(posts)
         }
     }).catch(err => {
-        console.log("error 1",  typeof err === "string" ? err : JSON.stringify(err))
+        console.log("error 1", typeof err === "string" ? err : JSON.stringify(err))
     }))
 
-    p.push(sub.getNewComments(!lastComment.name || lastComment.full + 30 * 60 < date ? {
-        limit: newInstance ? 25 : 500
+    p.push(sub.getNewComments(!lastComment.name ? {
+        limit: 100
     } : {
         before: lastComment.name
     }).then(async posts => {
         console.log("comments", posts.length)
-
-        if (posts.length > 0 || !lastComment.full || lastComment.full + 30 * 60 < date)
-            lastComment.full = date
 
         if (posts.length > 0) {
             if (mods.length === 0) {
@@ -77,14 +86,8 @@ const version = 3.50
                     mods.push(x.id)
             }
 
-            if (rules.length === 0) {
-                let r = await sub.getRules()
-                for (let x of r.rules)
-                    rules.push(x.description)
-            }
-
             lastComment.name = posts[0].name
-            checkComments(posts, mods, rules)
+            checkComments(posts, mods)
         }
     }).catch(err => {
         console.log("error 2", typeof err === "string" ? err : JSON.stringify(err))
@@ -97,124 +100,33 @@ const version = 3.50
         console.log("error 3", typeof err === "string" ? err : JSON.stringify(err))
     }))
 
-    if (!lastMod.last || lastMod.last + 30 * 60 * 60 < date) {
-        lastMod.last = date
+    // only needed to reapprove bot removed post.
+    // p.push(sub.getModerationLog( {
+    //     mods: ["nmsceBot"],
+    //     type: "removeLink",
+    //     limit: 10,
+    // }).then(async logs => {
+    //     console.log("log", logs.length)
+    //     let list = []
+    //     posts = []
 
-        p.push(sub.getModerationLog(!lastMod.name || lastMod.full + 60 * 60 < date ? {
-            limit: 250
-        } : {
-            before: last.name,
-        }).then(async logs => {
-            let list = []
-            posts = []
-            date = parseInt(date - 24 * 60 * 60)
+    //     for (let log of logs) {
+    //         if (!list.includes(log.target_fullname)) {
+    //             list.push(log.target_fullname)
+    //             let post = await (await r.getSubmission(log.target_fullname.slice(3))).refresh()
+    //             posts.push(post)
+    //         }
+    //     }
 
-            if (logs.length > 0 || !lastMod.full || lastMod.full + 60 * 60 < date)
-                lastMod.full = date
-
-            let logCount = logs.length
-
-            do {
-                let mod = getLast(logs, date)
-                lastMod.name = mod ? mod : lastMod.name
-
-                for (let log of logs) {
-                    if (log.mod === "nmsceBot" && log.action === "removelink" && !list.includes(log.target_fullname)) {
-                        list.push(log.target_fullname)
-                        let post = await (await r.getSubmission(log.target_fullname.slice(3))).refresh()
-                        posts.push(post)
-                    }
-                }
-
-                if (logs.length === 25) {
-                    logs = await sub.getModerationLog({
-                        before: logs[0].id
-                    })
-                    logCount += logs.length
-                }
-            } while (logs.length === 25 && logs[0].created_utc > date)
-
-            console.log("log", logCount)
-            validatePosts(posts)
-        }).catch(err => {
-            console.log("error 4", typeof err === "string" ? err : JSON.stringify(err))
-        }))
-    }
+    //     validatePosts(posts)
+    // }).catch(err => {
+    //     console.log("error 4", typeof err === "string" ? err : JSON.stringify(err))
+    // }))
 
     return Promise.all(p)
 }
 
-// async function getOldComments() {
-//     let month = new Date().getMonth()
-//     let list = {}
-//     list.authors = {}
-//     let oldlist = {}
-
-//     let ref = admin.firestore().doc("bhs/nmsceSubComments")
-//     let doc = await ref.get()
-//     if (doc.exists) {
-//         oldlist = doc.data()
-
-//         for (let a of Object.keys(oldlist.authors)) {
-//             list.authors[a] = {}
-//             list.authors[a].comments = {}
-//             list.authors[a].votes = 0
-
-//             if (oldlist.lastMonth !== month)
-//                 list.authors[a][month] = 0
-//         }
-//     }
-
-//     return sub.getNewComments( /*typeof list.last === "undefined" ?*/ {
-//             limit: typeof oldCommentLimit !== "undefined" ? oldCommentLimit : 1000
-//         }
-//         /*: {
-//                before: list.last
-//            }*/
-//     ).then(async posts => {
-//         console.log("votes", posts.length)
-
-//         for (let post of posts) {
-//             let name = post.author.name
-
-//             if (typeof list.authors[name] === "undefined") {
-//                 list.authors[name] = {}
-//                 list.authors[name].comments = {}
-//                 list.authors[name].votes = 0
-//                 list.authors[name][month] = 0
-//             }
-
-//             let author = list.authors[name]
-//             let old = doc.exists ? oldlist.authors[name] : null
-//             author.votes += post.ups - (old && old.comments[post.name] ? old.comments[post.name] : 1)
-//             author[month] += post.ups - (old && old.comments[post.name] ? old.comments[post.name] : 1)
-//             author.comments[post.name] = post.ups
-//         }
-
-//         for (let a of Object.keys(list.authors)) {
-//             let author = list.authors[a]
-//             if (author.votes > 0)
-//                 console.log(a, author.votes)
-//         }
-
-//         await doc.ref.set(list)
-//     })
-// }
-
-function getLast(posts, stop) {
-    let last = ""
-    let time = 0
-
-    for (let post of posts)
-        if (post.created_utc > time && (!stop || post.created_utc < stop)) {
-            last = post.name ? post.name : post.id
-            time = post.created_utc
-        }
-
-    return last
-}
-
-async function checkComments(posts, mods, rules) {
+async function checkComments(posts, mods) {
     for (let post of posts) {
         if (!post.banned_by && post.body[0] === "!") {
             console.log("command", post.body)
@@ -223,6 +135,7 @@ async function checkComments(posts, mods, rules) {
                 let remove = false
                 let rule = ""
                 let offtopic = false
+                let description = false
                 let shiprequest = false
 
                 let match = post.body.replace(/^!m-(\S+)/, "$1")
@@ -255,6 +168,9 @@ async function checkComments(posts, mods, rules) {
                         case "f": // ship request flair
                             shiprequest = true
                             break
+                        case "d": // ask for better description
+                            description = true
+                            break
                         case "v": // get community event votes
                             getVotes(post, post.body.replace(/!m-v(.*)/, "$1"))
                             return
@@ -271,6 +187,8 @@ async function checkComments(posts, mods, rules) {
                 let message = ""
                 if (missing)
                     message += missingInfo.replace(/\[missing\]/g, missing) + "\n\n----\n"
+                if (description)
+                    message += respDescription + "\n\n----\n"
                 if (offtopic)
                     message += respOffTopic + "\n\n----\n"
                 if (shiprequest)
@@ -302,7 +220,7 @@ async function checkComments(posts, mods, rules) {
                             reason: post.author.name + " rule " + match
                         }).remove()
                         .catch(err => console.log("error 6", typeof err === "string" ? err : JSON.stringify(err)))
-                    else
+                    else if (!description)
                         op.report({
                             reason: post.author.name + " missing " + missing
                         }).catch(err => console.log("error 7", typeof err === "string" ? err : JSON.stringify(err)))
@@ -354,9 +272,9 @@ async function checkComments(posts, mods, rules) {
                         case "portal":
                             message = respPortal
                             break
-                        case "wildbase":
-                            message = respWildBase
-                            break
+                            // case "wildbase":
+                            //     message = respWildBase
+                            //     break
                         case "s2":
                             message = respS2
                             break
@@ -438,7 +356,7 @@ function validatePosts(posts) {
             continue
 
         if (ok)
-        ok = (flair = getItem(flairList, post.link_flair_text)) !== null
+            ok = (flair = getItem(flairList, post.link_flair_text)) !== null
 
         if (!ok) {
             if (!post.removed_by_category) {
@@ -454,7 +372,10 @@ function validatePosts(posts) {
             continue
         }
 
-        if (flair.noedit)
+        if (ok)
+            ok = checkPostLimits(post)
+
+        if (!ok || flair.noedit)
             continue
 
         let galaxy, platform, mode
@@ -484,7 +405,8 @@ function validatePosts(posts) {
         }
 
         if (ok) {
-            let newFlair = flair.name + (post.title.match(/repost/i) ? " Repost" : "") + "/" + galaxy.name + (flair.platform ? "/" + platform.name : "") +
+            let newFlair = flair.name + /*(post.title.match(/repost/i) ? " Repost" : "") +*/ "/" +
+                galaxy.name + (flair.platform ? "/" + platform.name : "") +
                 (flair.mode ? "/" + mode.name : "") + (flair.version ? "/" + version : "")
 
             if (newFlair !== post.link_flair_text) {
@@ -526,6 +448,60 @@ function validatePosts(posts) {
                 .catch(err => console.log("error 15", typeof err === "string" ? err : JSON.stringify(err)))
         }
     }
+}
+
+var userPosts = []
+
+async function checkPostLimits(post) {
+    if (post.banned_by || post.removed_by_category === "automod_filtered" ||
+        post.removed_by_category === "reddit" || post.mod_reports.length > 0 ||
+        post.approved_by !== null && post.approved_by !== "nmsceBot")
+        return true
+
+        let user = userPosts.find(a => {
+            return a.name === post.author.name
+        })
+
+        if (typeof user === "undefined") {
+            let user = {}
+            user.name = post.author.name
+            user.posts = {}
+            user.posts[post.created] = post
+            userPosts.push(user)
+        } else {
+            let date = parseInt(new Date().valueOf() / 1000 - 24 * 60 * 60)
+            user.posts[post.created] = post
+
+            let keys = Object.keys(user.posts)
+            for (let key of keys)
+                if (key < date)
+                    delete user.posts[key]
+
+            date = parseInt(keys[keys.length - 1]) - 55 * 60
+
+            if (keys.length > 10 || keys.length > 2 && parseInt(keys[keys.length - 3]) > date) {
+                let message = removePost + "\n\n----\n" + rules[9] + "\n\n----\n" + botSig
+
+                console.log("exceded ", keys.length > 10 ? "10/day" : "2/hour", user.name, "https://reddit.com" + user.posts[keys[0]].permalink)
+
+                user.posts[keys[keys.length-1]].reply(message)
+                    .distinguish({
+                        status: true
+                    }).lock()
+                    .catch(err => console.log("error a", typeof err === "string" ? err : JSON.stringify(err)))
+
+                user.posts[keys[keys.length-1]].report({
+                        reason: "rule 9 exceded posting limits"
+                    }).remove()
+                    .catch(err => console.log("error b", typeof err === "string" ? err : JSON.stringify(err)))
+
+                delete user.posts[keys[keys.length-1]]
+
+                return false
+            }
+        }
+
+    return true
 }
 
 function getVotes(op, newFlair) {
@@ -662,12 +638,68 @@ function getItem(list, str) {
     return null
 }
 
+// async function getOldComments() {
+//     let month = new Date().getMonth()
+//     let list = {}
+//     list.authors = {}
+//     let oldlist = {}
+
+//     let ref = admin.firestore().doc("bhs/nmsceSubComments")
+//     let doc = await ref.get()
+//     if (doc.exists) {
+//         oldlist = doc.data()
+
+//         for (let a of Object.keys(oldlist.authors)) {
+//             list.authors[a] = {}
+//             list.authors[a].comments = {}
+//             list.authors[a].votes = 0
+
+//             if (oldlist.lastMonth !== month)
+//                 list.authors[a][month] = 0
+//         }
+//     }
+
+//     return sub.getNewComments( /*typeof list.last === "undefined" ?*/ {
+//             limit: typeof oldCommentLimit !== "undefined" ? oldCommentLimit : 1000
+//         }
+//         /*: {
+//                before: list.last
+//            }*/
+//     ).then(async posts => {
+//         console.log("votes", posts.length)
+
+//         for (let post of posts) {
+//             let name = post.author.name
+
+//             if (typeof list.authors[name] === "undefined") {
+//                 list.authors[name] = {}
+//                 list.authors[name].comments = {}
+//                 list.authors[name].votes = 0
+//                 list.authors[name][month] = 0
+//             }
+
+//             let author = list.authors[name]
+//             let old = doc.exists ? oldlist.authors[name] : null
+//             author.votes += post.ups - (old && old.comments[post.name] ? old.comments[post.name] : 1)
+//             author[month] += post.ups - (old && old.comments[post.name] ? old.comments[post.name] : 1)
+//             author.comments[post.name] = post.ups
+//         }
+
+//         for (let a of Object.keys(list.authors)) {
+//             let author = list.authors[a]
+//             if (author.votes > 0)
+//                 console.log(a, author.votes)
+//         }
+
+//         await doc.ref.set(list)
+//     })
+// }
+
 const replyCommands = `List of bot commands
 
    * !shiploc - reply with comment about ships being available anywhere in the system
    * !shipclass - reply with comment about spawning ship classes
    * !portal - info about portal glyphs
-   * !wildbase - info on claiming a wildbase
    * !0000:0000:0000:0000 - replace with coordinates. bot will comment with glyphs & link showing glyphs
    * !000000000000 - replace with glyphs. bot will comment with a link showing glyphs
    * !help - this list
@@ -687,9 +719,11 @@ Moderator Commands:
         *  s = screenshot
     * !m-o - Add off topic comment and suggest reposting to nmstg. use with r8
     * !m-f - request op repost using the 'ship request' flair. use with r1
+    * !m-d - add comment requesting a better description on future post
     * !m-v[flair] - get current event vote count. Optional new flair name to change. e.g. !m-vStarship
     
     Commands can be concatenated together e.g. !m-gpr2,3o for missing galaxy & platform, remove for violcation of rule 2 & 3 and add offtopic comment`
+const respDescription = "In order to help other players find your post using the search-bar you should consider adding a more descriptive title to future post. It is recommended to include main color(s), ship type and major parts. The NMSCE [wiki page](https://www.reddit.com/r/NMSCoordinateExchange/about/wiki/shipparts) has a link to the named parts list for most types of ships."
 const respOffTopic = "Since this post is off topic in this sub you might try posting in r/nomansskythegame."
 const respShipRequest = "Please repost your request using the 'ship request' flair. The bot will return links to help your search."
 const respSearch = "Please search r/NMSCoordinateExchange or the [NMSCE app](https://nmsce.com) before posting your request."
@@ -697,21 +731,21 @@ const respS2 = `The first 2 glyphs you find will get you to the **system**. The 
 const respShiploc = `All starships in a given system can be found at the Space Station AND at any Trade Post located within the system. The same ships are available on all platforms and game modes. Things to check if you don't find the ship you're looking for. 1) Are you in the correct galaxy. 2) Are you in the correct system. It's very easy to enter the glyphs incorrectly so please double check your location.`
 const respShipclass = `Each individually spawned ship has a random class & number of slots. In a T3, wealthy, system a ship has a 2% chance of spawning as an S class. In a T2, developing, economy the percentage is 1%. In a T1 0%. The range of slots is based on the configuration of the ship. An S class ship will have the max possible number of slots in it's range. Only crashed ships have a fixed configuration of size and class.`
 const respPortal = `The first glyph of a portal address is the planet index. If you are going to pick up a ship then this character doesn't matter. It is usually given as 0 which will take you to the first planet in a system. For other items the glyph given should take you to the correct planet. The remaining 11 digits are the system address.`
-const respWildBase = `Before anything else **TURN OFF MULTIPLAYER AND DISCONNECT YOUR PC/CONSOLE FROM THE INTERNET**\n
+// const respWildBase = `Before anything else **TURN OFF MULTIPLAYER AND DISCONNECT YOUR PC/CONSOLE FROM THE INTERNET**\n
 
-* Go to a Portal and input the glyphs provided in the post.\n
-* Once you’re on the other side. Go to the planetary latitude and longitude coordinates provided in the post.\n
-* When you get there you will find the Unclaimed Wild Base Computer.\n
-* Claim the base as yours (this is why turning multiplayer off is important) and then build a Teleporter.\n
-* Go back through the Portal you came in.\nOnce you're back in your home system, summon the Anomaly (aka the Nexus) and go to the big Teleporter in the back of it. Then teleport back to the wild base you just claimed - this is the only way to get back to it.\n
-* Once you are teleported to your new base there is no Portal Interference anymore.\n
+// * Go to a Portal and input the glyphs provided in the post.\n
+// * Once you’re on the other side. Go to the planetary latitude and longitude coordinates provided in the post.\n
+// * When you get there you will find the Unclaimed Wild Base Computer.\n
+// * Claim the base as yours (this is why turning multiplayer off is important) and then build a Teleporter.\n
+// * Go back through the Portal you came in.\nOnce you're back in your home system, summon the Anomaly (aka the Nexus) and go to the big Teleporter in the back of it. Then teleport back to the wild base you just claimed - this is the only way to get back to it.\n
+// * Once you are teleported to your new base there is no Portal Interference anymore.\n
 
-Make sure you **DO NOT UPLOAD** this Wild Base Computer. It is advised to DELETE the Wild Base Computer and build another base at least 500u away BEFORE turning multiplayer back on.`
+// Make sure you **DO NOT UPLOAD** this Wild Base Computer. It is advised to DELETE the Wild Base Computer and build another base at least 500u away BEFORE turning multiplayer back on.`
 const missingInfo = 'Thank You for posting to r/NMSCoordinateExchange. Your post is missing the required [missing]. Please, edit your post to include the missing information and remember to include it in your next post.'
-const missingFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair was missing or unrecognized. If you add the correct flair within 24 hours it will be re-approved. Please be patient because this part of the bot only runs every 30 minutes. You can edit the flair after the post is made. When you select the flair you can edit the text in the box. In the app there is an edit button you need to press.'
+const missingFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair was missing or unrecognized. Please, repost using the correct flair.'
 const editFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair or title did not contain the required [missing]. If you correct the flair within 24 hours it will be re-approved. You can edit the flair after the post is made. When you select the flair you can edit the text in the box. In the app there is an edit button you need to press.'
 const removePost = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because it violates the following rules for posting:\n\n'
-const botSig = "\n\n*This action was taken by the nmsceBot. The bot works based on selected flair. It is possible the incorrect action was taken if the flair selected was incorrect. Please, double check your flair selection and repost if it was incorrect. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NMSCoordinateExchange).*"
+const botSig = "\n\n*This action was taken by the nmsceBot. The bot works based on selected flair & title. It is possible the incorrect action was taken if the flair selected was incorrect. Please, double check your flair selection and repost if it was incorrect. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NMSCoordinateExchange).*"
 
 const flairList = [{
     match: /Starship/i,
