@@ -42,8 +42,7 @@ exports.nmstgBot = async function () {
     if (!lastSearch.name || lastSearch.full + 4 * 60 * 60 < date)
         p.push(sub.search({
             query: "flair:Video",
-            time: "week",
-            sort: "new"
+            time: "week"
         }).then(posts => {
             console.log("video", posts.length)
 
