@@ -167,6 +167,6 @@ async function checkVideoLimits(posts) {
 }
 
 const removePost = 'Thank You for posting to r/NoMansSkyTheGame. Your post has been removed because it violates the following rules for posting:\n\n'
-const botSig = "\n\n*This action was taken by the nmsceBot. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NoMansSkyTheGame).*"
+const botSig = "\n\n*This action was taken by the nmstgBot. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NoMansSkyTheGame).*"
 const postLimit = "Posting limits: OP is allowed to make 2 post/hour"
 const videoLimit = "Posting limits: OP is allowed to make 1 video post/week"
