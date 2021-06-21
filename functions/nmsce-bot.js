@@ -72,12 +72,15 @@ exports.nmsceBot = async function () {
         console.log("error 1", typeof err === "string" ? err : JSON.stringify(err))
     }))
 
-    p.push(sub.getNewComments(!lastComment.name ? {
+    p.push(sub.getNewComments(!lastComment.name || lastComment.full + 60 * 60 < date ? {
         limit: 100
     } : {
         before: lastComment.name
     }).then(async posts => {
         console.log("comments", posts.length)
+
+        if (posts.length > 0 || !lastComment.full || lastComment.full + 60 * 60 < date)
+            lastComment.full = date
 
         if (posts.length > 0) {
             if (mods.length === 0) {
@@ -468,10 +471,10 @@ async function checkPostLimits(post) {
         let user = {}
         user.name = post.author.name
         user.posts = {}
-        user.posts[post.created] = post
+        user.posts[post.created_utc] = post
         userPosts.push(user)
     } else {
-        user.posts[post.created] = post
+        user.posts[post.created_utc] = post
 
         let keys = Object.keys(user.posts)
         if (keys.length > 2) {

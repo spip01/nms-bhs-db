@@ -8,6 +8,9 @@ var sub = null
 var lastPost = {}
 var lastSearch = {}
 
+var userPosts = []
+var userVideos = []
+
 // main()
 // async function main() {
 
@@ -18,7 +21,7 @@ exports.nmstgBot = async function () {
         sub = await r.getSubreddit('NoMansSkyTheGame')
     }
 
-    let date = new Date().valueOf() / 1000
+    let date = parseInt(new Date().valueOf() / 1000)
     let p = []
 
     p.push(sub.getNew(!lastPost.name || lastPost.full + 60 * 60 < date ? {
@@ -33,46 +36,41 @@ exports.nmstgBot = async function () {
 
         if (posts.length > 0) {
             lastPost.name = posts[0].name
-            checkPostLimits(posts)
+            checkPostLimits(posts, userPosts, 2, date - 55 * 60, postLimit)
         }
     }).catch(err => {
         console.log("error 1", typeof err === "string" ? err : JSON.stringify(err))
     }))
 
-    if (!lastSearch.name || lastSearch.full + 4 * 60 * 60 < date)
-        p.push(sub.search({
-            query: "flair:Video",
-            time: "week"
-        }).then(posts => {
-            console.log("video", posts.length)
+    p.push(sub.search(!lastSearch.name || lastSearch.full + 4 * 60 * 60 < date ? {
+        query: "flair_text:Video",
+        time: "week",
+        limit: 1000
+    } : {
+        before: lastSearch.name
+    }).then(posts => {
+        console.log("video", posts.length)
 
-            if (!lastSearch.full || lastSearch.full + 4 * 60 * 60 < date)
-                lastSearch.full = date
+        if (!lastSearch.full || lastSearch.full + 4 * 60 * 60 < date)
+            lastSearch.full = date
 
-            if (posts.length > 0) {
-                lastSearch.name = posts[0].name
-                checkVideoLimits(posts)
-            }
-        }).catch(err => {
-            console.log("error 2", typeof err === "string" ? err : JSON.stringify(err))
-        }))
+        if (posts.length > 0) {
+            lastSearch.name = posts[0].name
+            checkPostLimits(posts, userVideos, 1, date - 7 * 24 * 60 * 60, videoLimit)
+        }
+    }).catch(err => {
+        console.log("error 2", typeof err === "string" ? err : JSON.stringify(err))
+    }))
 
     return Promise.all(p)
 }
 
-var userPosts = []
-
-async function checkPostLimits(posts) {
+async function checkPostLimits(posts, postList, limit, date, reason) {
     for (let post of posts) {
         if (!post.name.includes("t3_") || post.locked || post.selftext === "[deleted]") // submission
             continue
 
-        if (post.banned_by || post.removed_by_category === "automod_filtered" ||
-            post.removed_by_category === "reddit" || post.mod_reports.length > 0 ||
-            post.approved_by !== null && post.approved_by !== "nmsceBot")
-            continue
-
-        let user = userPosts.find(a => {
+        let user = postList.find(a => {
             return a.name === post.author.name
         })
 
@@ -80,88 +78,38 @@ async function checkPostLimits(posts) {
             let user = {}
             user.name = post.author.name
             user.posts = {}
-            user.posts[post.created] = post
-            userPosts.push(user)
+            user.posts[post.created_utc] = post
+            postList.push(user)
         } else {
-            user.posts[post.created] = post
-
-            let keys = Object.keys(user.posts)
-
-            if (keys.length > 2) {
-                let date = parseInt(keys[2]) - 55 * 60
-
-                for (let key of keys)
-                    if (key < date)
-                        delete user.posts[key]
-
-                keys = Object.keys(user.posts)
-
-                for (let i = 2; i < keys.length; ++i) {
-                    let message = removePost + "\n\n----\n" + postLimit + "\n\n----\n" + botSig
-                    console.log("exceded 2/hour", user.name, "https://reddit.com" + user.posts[keys[i]].permalink)
-
-                    user.posts[keys[i]].reply(message)
-                        .distinguish({
-                            status: true
-                        }).lock()
-                        .catch(err => console.log("error a", typeof err === "string" ? err : JSON.stringify(err)))
-
-                    user.posts[keys[i]].report({
-                            reason: "exceded posting limits"
-                        }).remove()
-                        .catch(err => console.log("error b", typeof err === "string" ? err : JSON.stringify(err)))
-
-                    delete user.posts[keys[i]]
-                }
-            }
+            user.posts[post.created_utc] = post
         }
     }
-}
 
-async function checkVideoLimits(posts) {
-    let userPosts = []
+    for (let user of postList) {
+        for (let key of Object.keys(user.posts))
+            if (key < date)
+                delete user.posts[key]
 
-    for (let post of posts) {
-        if (!post.name.includes("t3_") || post.locked || post.selftext === "[deleted]") // submission
-            continue
-
-        if (post.banned_by || post.removed_by_category === "automod_filtered" ||
-            post.removed_by_category === "reddit" || post.mod_reports.length > 0 ||
-            post.approved_by !== null && post.approved_by !== "nmsceBot")
-            continue
-
-        let user = userPosts.find(a => {
-            return a.name === post.author.name
-        })
-
-        if (typeof user === "undefined") {
-            let user = {}
-            user.name = post.author.name
-            user.posts = {}
-            user.posts[post.created] = post
-            userPosts.push(user)
-        } else
-            user.posts[post.created] = post
-    }
-
-    let message = removePost + "\n\n----\n" + videoLimit + "\n\n----\n" + botSig
-
-    for (let user of userPosts) {
         let keys = Object.keys(user.posts)
+        if (keys.length > limit) {
 
-        for (let i = 1; i < keys.length; ++i) {
-            console.log("exceded 1 video/week", user.name, "https://reddit.com" + user.posts[keys[i]].permalink)
+            for (let i = limit; i < keys.length; ++i) {
+                let message = removePost + "\n\n----\n" + reason + "\n\n----\n" + botSig
+                console.log(reason, user.name, "https://reddit.com" + user.posts[keys[i]].permalink)
 
-            user.posts[keys[i]].reply(message)
-                .distinguish({
-                    status: true
-                }).lock()
-                .catch(err => console.log("error a", typeof err === "string" ? err : JSON.stringify(err)))
+                user.posts[keys[i]].reply(message)
+                    .distinguish({
+                        status: true
+                    }).lock()
+                    .catch(err => console.log("error a", typeof err === "string" ? err : JSON.stringify(err)))
 
-            user.posts[keys[i]].report({
-                    reason: "exceeded video limits"
-                }).remove()
-                .catch(err => console.log("error b", typeof err === "string" ? err : JSON.stringify(err)))
+                user.posts[keys[i]].report({
+                        reason: "exceded posting limits"
+                    }).remove()
+                    .catch(err => console.log("error b", typeof err === "string" ? err : JSON.stringify(err)))
+
+                delete user.posts[keys[i]]
+            }
         }
     }
 }

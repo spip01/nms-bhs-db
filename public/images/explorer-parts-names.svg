@@ -9,11 +9,16 @@
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
    sodipodi:docname="explorer-parts-names.svg"
-   viewBox="0 0 139.06751 202.02816"
+   viewBox="0 0 139.3315 213.59"
    version="1.1"
-   height="762.37042"
-   width="525.40265"
-   id="explorer">
+   height="806"
+   width="526.40002"
+   id="explorer"
+   inkscape:export-filename="C:\Users\sp\Documents\webDevelopment\nms-bhs-db\public\images\explorer-parts-names.png"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300">
+  <title
+     id="title1752">Explorer Parts Names</title>
   <metadata
      id="metadata1411">
     <rdf:RDF>
@@ -22,15 +27,45 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title>Explorer Parts Names</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Stephen Piper</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:source>https://nmsce.com/images/explorer-parts-names.svg</dc:source>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>CC BY NC SA</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by-nc-sa/4.0/" />
       </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by-nc-sa/4.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:prohibits
+           rdf:resource="http://creativecommons.org/ns#CommercialUse" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#ShareAlike" />
+      </cc:License>
     </rdf:RDF>
   </metadata>
   <sodipodi:namedview
      inkscape:document-rotation="0"
-     inkscape:current-layer="g2812"
-     inkscape:cy="201.56157"
-     inkscape:cx="240.38211"
+     inkscape:current-layer="g6027"
+     inkscape:cy="480.62073"
+     inkscape:cx="354.65595"
      inkscape:zoom="0.95107"
      showgrid="false"
      id="namedview1409"
@@ -78,7 +113,9 @@
   </defs>
   <g
      id="g6394"
-     transform="translate(-5.2992025,3.1383532)">
+     transform="translate(-5.167055,14.013061)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="map-h26"
        transform="matrix(0.9186,0,0,0.9186,30.569582,-78.900745)"
@@ -156,7 +193,9 @@
   </g>
   <g
      id="g6378"
-     transform="translate(-14.007697,3.1383589)">
+     transform="translate(-13.87555,14.013067)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="map-h27"
        transform="matrix(-0.92647,0,0,0.92647,146.79422,-79.796368)"
@@ -241,7 +280,9 @@
   </g>
   <g
      id="g2760"
-     transform="translate(20.174161,84.446435)">
+     transform="translate(20.306308,95.321143)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="map-h4"
        transform="matrix(0.8773,0,0,0.8773,35.938498,-239.67196)"
@@ -434,7 +475,9 @@
   </g>
   <g
      id="g2812"
-     transform="translate(7.5348833,88.104842)">
+     transform="translate(7.6670308,98.97955)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="map-h3"
        transform="matrix(0.8773,0,0,0.8773,-5.8712021,-246.90503)"
@@ -586,7 +629,9 @@
   </g>
   <g
      id="g2783"
-     transform="translate(11.637889,90.769583)">
+     transform="translate(11.770036,101.64429)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="map-h6"
        transform="matrix(-0.8773,0,0,0.8773,68.060981,-254.00347)"
@@ -696,7 +741,9 @@
   </g>
   <g
      id="g5937"
-     transform="translate(-7.9130761,-2.0742519)">
+     transform="translate(-7.7809286,8.8004558)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="g4635"
        transform="translate(23.857919,88.383477)">
@@ -1157,7 +1204,9 @@
   </g>
   <g
      id="g2721"
-     transform="translate(6.7509393,102.99979)">
+     transform="translate(6.8830868,113.87449)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="g2609">
       <g
@@ -1713,7 +1762,9 @@
   </g>
   <g
      id="g6173"
-     transform="translate(-6.024378)">
+     transform="translate(-5.8922305,10.874708)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="map-h15"
        transform="matrix(1.02286,0,0,1.02286,-7.890954,-103.21211)"
@@ -1993,7 +2044,9 @@
   </g>
   <g
      id="g6434"
-     transform="translate(-2.4780947)">
+     transform="translate(-2.3459472,10.874708)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="g6225"
        transform="translate(0.22333992,-0.23000813)">
@@ -2185,7 +2238,9 @@
   </g>
   <g
      id="g6470"
-     transform="translate(-5.7577764)">
+     transform="translate(-5.6256289,10.874708)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="g6243"
        transform="translate(41.795031,-15.882112)">
@@ -2357,7 +2412,9 @@
   </g>
   <g
      id="g6051"
-     transform="translate(-4.5416034)">
+     transform="translate(-4.4094559,10.874708)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="map-h23"
        transform="matrix(0.84583,0,0,0.84583,108.38972,-100.48393)"
@@ -2471,7 +2528,9 @@
   </g>
   <g
      id="g6102"
-     transform="translate(-4.5163843)">
+     transform="translate(-4.3842368,10.874708)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="g5847">
       <g
@@ -2597,7 +2656,9 @@
   </g>
   <g
      id="g6122"
-     transform="translate(-8.4310211)">
+     transform="translate(-8.2988736,10.874708)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="map-h24"
        transform="matrix(0.8773,0,0,0.8773,43.525905,42.727004)"
@@ -2693,7 +2754,9 @@
   </g>
   <g
      id="g6027"
-     transform="translate(-0.28911387)">
+     transform="translate(-0.15696633,10.874708)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="map-h21"
        transform="matrix(0.01888,0,0,0.01888,21.084037,89.985375)"
@@ -2911,15 +2974,19 @@
          id="tspan2387"
          x="37.548481"
          y="122.80224"
-         style="font-size:5.65333px;stroke-width:0.265">X-WIng</tspan></text>
+         style="font-size:5.65333px;stroke-width:0.265">X-Wing</tspan></text>
   </g>
   <path
      style="fill:none;stroke:#000000;stroke-width:0.262987px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     d="M 1.2328643,51.495689 138.12395,51.232361"
-     id="path3136" />
+     d="M 1.3650118,62.370397 138.2561,62.107069"
+     id="path3136"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300" />
   <g
      id="g3708"
-     transform="translate(4.8848833,88.104842)">
+     transform="translate(5.0170308,98.97955)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="map-h13"
        transform="matrix(0.7514,0,0,0.7514,70.302266,-173.89126)"
@@ -3026,7 +3093,9 @@
   </g>
   <g
      id="g3881"
-     transform="translate(4.8848833,88.104838)">
+     transform="translate(5.0170308,98.979546)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="g3782">
       <g
@@ -3469,59 +3538,73 @@
   </g>
   <path
      style="fill:none;stroke:#000000;stroke-width:0.262987px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     d="M 1.2328643,89.061922 138.12395,88.798594"
-     id="path3136-7" />
+     d="M 1.3650118,99.93663 138.2561,99.673302"
+     id="path3136-7"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300" />
   <path
      style="fill:none;stroke:#000000;stroke-width:0.305135px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     d="M 107.10591,53.61129 V 84.446435"
-     id="path3264" />
+     d="M 107.23806,64.485998 V 95.321143"
+     id="path3264"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300" />
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:5.65333px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.265"
-     x="16.646627"
-     y="58.026745"
-     id="text3579"><tspan
+     x="16.778774"
+     y="68.901451"
+     id="text3579"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300"><tspan
        sodipodi:role="line"
        id="tspan3577"
-       x="16.646627"
-       y="58.026745"
+       x="16.778774"
+       y="68.901451"
        style="font-size:5.65333px;stroke-width:0.265">Ships with these are <tspan
    style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold'"
    id="tspan3883">T2</tspan></tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:5.65333px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.265"
-     x="123.76783"
-     y="59.122631"
-     id="text3583"><tspan
+     x="123.50661"
+     y="68.802071"
+     id="text3583"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300"><tspan
        sodipodi:role="line"
        id="tspan3581"
-       x="123.76783"
-       y="59.122631"
+       x="123.50661"
+       y="68.802071"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:5.65333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';stroke-width:0.265">T3</tspan></text>
   <path
      style="fill:none;stroke:#000000;stroke-width:0.265px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     d="M 29.68802,0.30307342 V 46.555791"
-     id="path3887" />
+     d="M 29.820167,11.177782 V 57.430499"
+     id="path3887"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300" />
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:5.65333px;line-height:0;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.265"
-     x="46.438183"
-     y="43.151333"
-     id="text2325"><tspan
+     x="46.570332"
+     y="54.026039"
+     id="text2325"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300"><tspan
        sodipodi:role="line"
        id="tspan2323"
-       x="46.438183"
-       y="43.151333"
+       x="46.570332"
+       y="54.026039"
        style="font-size:5.65333px;line-height:1.25;text-align:center;text-anchor:middle;stroke-width:0.265">Antenna</tspan><tspan
        sodipodi:role="line"
-       x="46.438183"
-       y="48.437531"
+       x="46.570332"
+       y="59.312237"
        style="font-size:4.24px;line-height:1;text-align:center;text-anchor:middle;stroke-width:0.265"
        id="tspan4314">(Front)</tspan></text>
   <g
      id="g4231"
-     transform="translate(-16.244762,84.500805)">
+     transform="translate(-16.112615,95.375513)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="map-h33"
        display="inline"
@@ -3906,23 +3989,27 @@
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:5.65333px;line-height:0;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.265"
-     x="80.951668"
-     y="42.374756"
-     id="text4333"><tspan
+     x="81.083817"
+     y="53.249462"
+     id="text4333"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300"><tspan
        sodipodi:role="line"
        id="tspan4331"
-       x="80.951668"
-       y="42.374756"
+       x="81.083817"
+       y="53.249462"
        style="font-size:5.65333px;line-height:1.25;text-align:center;text-anchor:middle;stroke-width:0.265">Antenna</tspan><tspan
        sodipodi:role="line"
-       x="80.951668"
-       y="47.660954"
+       x="81.083817"
+       y="58.53566"
        style="font-size:4.24px;line-height:1;text-align:center;text-anchor:middle;stroke-width:0.265"
        id="tspan4335">(Rear)</tspan></text>
   <g
      style="stroke-width:0.84318"
      id="map-h8"
-     transform="matrix(1.1828349,-0.08975086,0.08978905,1.1823316,74.47886,126.56504)">
+     transform="matrix(1.1828349,-0.08975086,0.08978905,1.1823316,74.611007,137.43974)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <title
        id="title2229">Antenna</title>
     <desc
@@ -4107,7 +4194,9 @@
   <g
      style="stroke-width:0.890203"
      id="map-h7-3"
-     transform="matrix(1.1234891,0,0,1.1231884,23.923906,113.42877)">
+     transform="matrix(1.1234891,0,0,1.1231884,24.056053,124.30347)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <desc
        id="desc3515-2">
         {&quot;group&quot;:[25]}
@@ -4249,22 +4338,28 @@
   </g>
   <path
      style="fill:none;stroke:#000000;stroke-width:0.265px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     d="M 65.875556,1.4789894 V 47.731707"
-     id="path3887-7" />
+     d="M 66.007703,12.353698 V 58.606415"
+     id="path3887-7"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300" />
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:3.88667px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.265"
-     x="31.400345"
-     y="3.9614785"
-     id="text4544"><tspan
+     x="31.532492"
+     y="14.836185"
+     id="text4544"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300"><tspan
        sodipodi:role="line"
        id="tspan4542"
-       x="31.400345"
-       y="3.9614785"
+       x="31.532492"
+       y="14.836185"
        style="font-size:3.88667px;stroke-width:0.265">Both Body Styles</tspan></text>
   <g
      id="g6075"
-     transform="translate(-2.233957)">
+     transform="translate(-2.1018095,10.874708)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <g
        id="map-h5"
        transform="matrix(0.8773,0,0,0.8773,57.352879,-63.160076)"
@@ -4379,7 +4474,9 @@
   </g>
   <g
      id="g6206"
-     transform="translate(8.5529379,4.124153)">
+     transform="translate(8.6850854,14.998861)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:5.65333px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.265"
@@ -4460,7 +4557,9 @@
   </g>
   <g
      id="g5982"
-     transform="translate(-4.054252)">
+     transform="translate(-3.9221045,10.874708)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:5.65333px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.265"
@@ -4679,7 +4778,9 @@
   </g>
   <g
      id="g6189"
-     transform="translate(-23.939527,3.1800002)">
+     transform="translate(-23.80738,14.054708)"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300">
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:5.65333px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.265"
@@ -4751,4 +4852,28 @@
          style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:3;stroke-linecap:round;stroke-opacity:1" />
     </g>
   </g>
+  <rect
+     style="fill:none;stroke:#0000ff;stroke-width:0.271775;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="rect1750"
+     width="139.22423"
+     height="213.31822"
+     x="0.05363559"
+     y="0.1358875" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:7.06667px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.265"
+     x="3.798728"
+     y="6.3304715"
+     id="text1755"><tspan
+       sodipodi:role="line"
+       id="tspan1753"
+       x="3.798728"
+       y="6.3304715"
+       style="font-size:7.06667px;stroke-width:0.265">Recommended Explorer Parts Names</tspan></text>
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.262987px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="M 1.2202034,9.173495 138.1113,8.910167"
+     id="path3136-9"
+     inkscape:export-xdpi="300"
+     inkscape:export-ydpi="300" />
 </svg>

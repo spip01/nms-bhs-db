@@ -168,7 +168,7 @@ exports.scheduleNmsceBot = functions.pubsub.schedule('every 2 minutes').onRun(as
     return await bot.nmsceBot()
 })
 
-exports.scheduleNmstgBot = functions.pubsub.schedule('every 1 hours').onRun(async context => {
+exports.scheduleNmstgBot = functions.pubsub.schedule('every 15 minutes').onRun(async context => {
     const bot = require('./nmstg-bot.js')
     return await bot.nmstgBot()
 })
