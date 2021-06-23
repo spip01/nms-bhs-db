@@ -30,7 +30,7 @@ const r = new snoowrap(login)
 
 var sub = null
 var mods = []
-var rules = []
+var rules = {}
 var lastPost = {}
 var lastComment = {}
 const version = 3.50
@@ -48,10 +48,21 @@ exports.nmsceBot = async function () {
     let date = new Date().valueOf() / 1000
     let p = []
 
-    if (rules.length === 0) {
+    if (Object.keys(rules).length ===0) {
         let r = await sub.getRules()
-        for (let x of r.rules)
-            rules.push(x.description)
+        for (let x of r.rules) {
+            rules[x.priority+1] = {
+                text: x.description
+            }
+
+            let lines = x.description.split("\n")
+            let c = 1
+            for (let i = 0; i < lines.length; ++i) {
+                if (lines[i][0] === '-') {
+                    rules[x.priority+1][c++] = lines[i]
+                }
+            }
+        }
     }
 
     p.push(sub.getNew(!lastPost.name || lastPost.full + 60 * 60 < date ? {
@@ -180,11 +191,26 @@ async function checkComments(posts, mods) {
                     }
                 }
 
-                match = post.body.replace(/!m-.*?([\d,]+)/, "$1").split(",")
+                match = post.body.replace(/!m-.*?([\d,-]+)/, "$1").split(",")
                 for (let i of match) {
-                    let r = parseInt(i)
-                    if (r <= rules.length)
-                        rule += (rule ? "\n\n----\n" : "") + rules[r - 1]
+                    let r, l = -1
+                    if (i.includes("-")) {
+                        let m = i.split("-")
+                        r = parseInt(m[0])
+                        l = parseInt(m[1])
+
+                        if (typeof rules[r] !== "undefined") {
+                            if (typeof rules[r][l] !== "undefined")
+                                rule += (rule ? "\n\n----\n" : "") + rules[r][l]
+                            else if (typeof rules[r] !== "undefined")
+                                rule += (rule ? "\n\n----\n" : "") + rules[r].text
+                        }
+                    } else {
+                        r = parseInt(i)
+
+                        if (typeof rules[r] !== "undefined")
+                            rule += (rule ? "\n\n----\n" : "") + rules[r].text
+                    }
                 }
 
                 let message = ""
@@ -234,7 +260,7 @@ async function checkComments(posts, mods) {
                     console.log("remove: " + remove, "missing: " + missing, "rule: " + match, "https://reddit.com" + oppost.permalink)
                 }
             } else {
-                let match = post.body.match(/!(yes|shiploc|help|shipclass|portal|wildbase|s2|search)/)
+                let match = post.body.match(/!(yes|light|shiploc|help|shipclass|portal|s2|search)/)
                 if (match) {
                     let message = null
                     let reply = null
@@ -266,6 +292,9 @@ async function checkComments(posts, mods) {
                             if (mods.includes(post.author_fullname))
                                 reply += replyModCommands
                             break
+                        case "light":
+                            message = respLight
+                            break
                         case "shiploc":
                             message = respShiploc
                             break
@@ -275,9 +304,6 @@ async function checkComments(posts, mods) {
                         case "portal":
                             message = respPortal
                             break
-                            // case "wildbase":
-                            //     message = respWildBase
-                            //     break
                         case "s2":
                             message = respS2
                             break
@@ -421,7 +447,7 @@ function validatePosts(posts) {
             }
 
             if ((!flair.sclass || !post.title.match(/s\bclass/i) || post.title.match(/crash|sunk/i)) &&
-                (flair.name !== "Starship" || !post.title.match(/black/i)) &&
+                (flair.name !== "Starship" || !post.title.match(/black/i)) && post.domain !== "imgur.com" &&
                 (!flair.station || !post.title.match(/trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station|\bwave\b|\bx.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death/i)) &&
                 (post.banned_by && post.banned_by.name === "nmsceBot" || post.removed_by_category === "automod_filtered" ||
                     post.removed_by_category === "reddit" || post.mod_reports.length > 0)) {
@@ -514,16 +540,16 @@ function deletePostOverLimit(user, key) {
 
     console.log("exceded posting limits", user.name, "https://reddit.com" + user.posts[key].permalink)
 
-    // user.posts[key].reply(message)
-    //     .distinguish({
-    //         status: true
-    //     }).lock()
-    //     .catch(err => console.log("error a", typeof err === "string" ? err : JSON.stringify(err)))
+    user.posts[key].reply(message)
+        .distinguish({
+            status: true
+        }).lock()
+        .catch(err => console.log("error a", typeof err === "string" ? err : JSON.stringify(err)))
 
-    // user.posts[key].report({
-    //         reason: "rule 9: exceded posting limits"
-    //     }).remove()
-    //     .catch(err => console.log("error b", typeof err === "string" ? err : JSON.stringify(err)))
+    user.posts[key].report({
+            reason: "rule 9: exceded posting limits"
+        }).remove()
+        .catch(err => console.log("error b", typeof err === "string" ? err : JSON.stringify(err)))
 
     delete user.posts[key]
 }
@@ -722,7 +748,8 @@ function getItem(list, str) {
 
 const replyCommands = `List of bot commands
 
-   * !shiploc - reply with comment about ships being available anywhere in the system
+   * !light - reply with comment about improving the screenshot
+   * !shipclass - reply with comment about spawning ship classes
    * !shipclass - reply with comment about spawning ship classes
    * !portal - info about portal glyphs
    * !0000:0000:0000:0000 - replace with coordinates. bot will comment with glyphs & link showing glyphs
@@ -734,6 +761,7 @@ const replyModCommands = `
 Moderator Commands:
 
     * !m-N - Quote rule number N. Specify multiple rules by separating the rule numbers with a comma. e.g !m-1,2
+    * !m-N-B - Quote rule N bullet point B
     * !m-rN - Remove post for violating rule number N. Quotes rule.
     * !m-gpmcls - Make comment about missing items where
         *  g = missing galaxy
@@ -756,6 +784,7 @@ const respS2 = `The first 2 glyphs you find will get you to the **system**. The 
 const respShiploc = `All starships in a given system can be found at the Space Station AND at any Trade Post located within the system. The same ships are available on all platforms and game modes. Things to check if you don't find the ship you're looking for. 1) Are you in the correct galaxy. 2) Are you in the correct system. It's very easy to enter the glyphs incorrectly so please double check your location.`
 const respShipclass = `Each individually spawned ship has a random class & number of slots. In a T3, wealthy, system a ship has a 2% chance of spawning as an S class. In a T2, developing, economy the percentage is 1%. In a T1 0%. The range of slots is based on the configuration of the ship. An S class ship will have the max possible number of slots in it's range. Only crashed ships have a fixed configuration of size and class.`
 const respPortal = `The first glyph of a portal address is the planet index. If you are going to pick up a ship then this character doesn't matter. It is usually given as 0 which will take you to the first planet in a system. For other items the glyph given should take you to the correct planet. The remaining 11 digits are the system address.`
+const respLight = `To help show off your items in future post you might consider taking your screenshot in a different location and/or repositioning the sun. This will help others to see what is special about your find. For more detailed information see [this](https://www.reddit.com/r/NMSCoordinateExchange/comments/hilovm/found_a_cool_ship_you_wanna_post_make_it_look/) post.`
 // const respWildBase = `Before anything else **TURN OFF MULTIPLAYER AND DISCONNECT YOUR PC/CONSOLE FROM THE INTERNET**\n
 
 // * Go to a Portal and input the glyphs provided in the post.\n

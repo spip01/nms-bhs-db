@@ -42,16 +42,16 @@ exports.nmstgBot = async function () {
         console.log("error 1", typeof err === "string" ? err : JSON.stringify(err))
     }))
 
-    p.push(sub.search(!lastSearch.name || lastSearch.full + 4 * 60 * 60 < date ? {
+    p.push(sub.search(!lastSearch.name || lastSearch.full + 12 * 60 * 60 < date ? {
         query: "flair_text:Video",
         time: "week",
-        limit: 1000
+        limit: 200
     } : {
         before: lastSearch.name
     }).then(posts => {
         console.log("video", posts.length)
 
-        if (!lastSearch.full || lastSearch.full + 4 * 60 * 60 < date)
+        if (/*posts.length > 0 || */!lastSearch.full || lastSearch.full + 12 * 60 * 60 < date)
             lastSearch.full = date
 
         if (posts.length > 0) {
