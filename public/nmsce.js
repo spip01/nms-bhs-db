@@ -3159,7 +3159,8 @@ NMSCE.prototype.redditGetSubscribed = function (accessToken) {
                 bhs.buildMenu($("#redditPost"), "SubReddit", nmsce.subReddits, nmsce.setSubReddit, {
                     required: true,
                     labelsize: "col-4",
-                    menusize: "col"
+                    menusize: "col",
+                    sort: true
                 })
             },
             error(err) {
@@ -6599,12 +6600,12 @@ const objectList = [{
         name: "Galaxy",
         type: "menu",
         required: true,
-    }, {
-        id: "#id-Platform",
-        field: "Platform",
-        name: "Platform",
-        type: "radio",
-        required: true,
+    // }, {
+    //     id: "#id-Platform",
+    //     field: "Platform",
+    //     name: "Platform",
+    //     type: "radio",
+    //     required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
@@ -6895,12 +6896,12 @@ const objectList = [{
         name: "Galaxy",
         type: "menu",
         required: true,
-    }, {
-        id: "#id-Platform",
-        field: "Platform",
-        name: "Platform",
-        type: "radio",
-        required: true,
+    // }, {
+    //     id: "#id-Platform",
+    //     field: "Platform",
+    //     name: "Platform",
+    //     type: "radio",
+    //     required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
@@ -6983,12 +6984,12 @@ const objectList = [{
         name: "Galaxy",
         type: "menu",
         required: true,
-    }, {
-        id: "#id-Platform",
-        field: "Platform",
-        name: "Platform",
-        type: "radio",
-        required: true,
+    // }, {
+    //     id: "#id-Platform",
+    //     field: "Platform",
+    //     name: "Platform",
+    //     type: "radio",
+    //     required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",

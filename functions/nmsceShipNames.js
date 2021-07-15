@@ -8,30 +8,45 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 })
 
+/*
+    'Whispering Foe PZ4',
+    'Whispering Foe WA9',
+    'Whispering Foe DJ8',
+    'Whispering Foe',
+    'Whispering Foe MP8',
+*/
+
 async function main() {
     let ships = {}
 
-    let ref = admin.firestore().collection("nmsce")
-    let refs = await ref.listDocuments()
+    let ref = admin.firestore().collection("nmsce/Euclid/Ship")
+    // ref = ref.limit(100)
 
-    for (let ref of refs) { // galaxy
-        let sref = ref.collection("Ship")
+    let snapshot = await ref.get()
 
-        let snapshot = await sref.get()
-        for (let doc of snapshot.docs) {
-            let name = doc.data().Name
-            if (typeof name !== undefined && name !== "") {
-                if (typeof ships[name] === "undefined")
-                    ships[name] = 1
-                else
-                    ships[name]++
+    for (let doc of snapshot.docs) {
+        let name = doc.data().Name
+
+        if (typeof name === "string" && name !== "") {
+            name = name.replace(/(?:[A-Z]{2}\d\s)?(\D*)$|(\D*?)(?:\s[A-Z]{2}\d\s?)?$/, "$1$2")
+            name = name.replace(/(.*?)[XIV]+$/, "$1")
+
+            if (typeof ships[name] === "undefined") {
+                ships[name] = {}
+                ships[name].count = 0
+                ships[name].list = []
+                ships[name].seed = []
             }
+
+            ships[name].count++
+            ships[name].list.push(doc.data().Name)
+            ships[name].list.push(doc.data().Seed)
         }
     }
 
     for (let key of Object.keys(ships))
-        if (ships[key] >= 6)
-            console.log(key, ships[key])
+        if (ships[key].count >= 5)
+            console.log(ships[key].count, ships[key].list, ships[key].seed)
 }
 
 main()

@@ -11734,7 +11734,7 @@
      fill="#ff0000"
      id="bdr-h10">
     <title
-       id="title2091">V-Wing</title>
+       id="title2091">Chevron</title>
   </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
@@ -11851,7 +11851,10 @@
      stroke="#ffff00"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h18" />
+     id="bdr-h18">
+    <title
+       id="title2100">Bent Wing</title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -11994,7 +11997,7 @@
      fill="#ff0000"
      id="bdr-h103">
     <title
-       id="title2077">Pelican</title>
+       id="title2077">Goose Neck</title>
   </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
@@ -12020,7 +12023,10 @@
      stroke="#ffff06"
      fill-opacity="0"
      fill="#ff0000"
-     id="bdr-h117" />
+     id="bdr-h117">
+    <title
+       id="title2098">Short </title>
+  </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -12047,7 +12053,7 @@
      fill="#ff0000"
      id="bdr-h119">
     <title
-       id="title2067">Goose</title>
+       id="title2067">Duck</title>
   </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"
@@ -12170,7 +12176,7 @@
      fill="#ff0000"
      id="bdr-h110">
     <title
-       id="title2059">V-Wing</title>
+       id="title2059">Chevron</title>
   </path>
   <path
      style="stroke:#0000ff;stroke-opacity:1"

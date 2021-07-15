@@ -13,7 +13,7 @@
    version="1.1"
    viewBox="0 0 92.6 206.7"
    sodipodi:docname="freighter-opt.svg"
-   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
   <metadata
      id="metadata4006">
     <rdf:RDF>
@@ -175,9 +175,9 @@
      id="namedview4002"
      showgrid="false"
      inkscape:object-nodes="false"
-     inkscape:zoom="3.0495796"
-     inkscape:cx="91.763141"
-     inkscape:cy="129.67652"
+     inkscape:zoom="1.0089744"
+     inkscape:cx="175"
+     inkscape:cy="390"
      inkscape:current-layer="freighter-system" />
   <g
      transform="matrix(0.9583,0,0,0.9583,22.279298,102.46519)"
@@ -5487,7 +5487,10 @@
      inkscape:connector-curvature="0"
      d="m 55.665308,186.56645 -5.259,4.152 -0.087,5.053 7.974,-0.302 13.909,-1.962 -0.876,-4.757 z"
      id="bdr-h14"
-     style="fill-opacity:0;stroke:#0000ff;stroke-width:0.47600001;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1" />
+     style="fill-opacity:0;stroke:#0000ff;stroke-width:0.47600001;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1">
+    <title
+       id="title4058">Wedge</title>
+  </path>
   <g
      transform="matrix(1.00661,0,0,0.94356,-0.95469165,102.00145)"
      id="map-h13"
@@ -5774,7 +5777,10 @@
      inkscape:connector-curvature="0"
      d="m 75.474308,189.75745 0.5,7.191 9.544,-0.937 3.316,3.562 1.87,-0.813 -4.374,-10.204 -4.564,-2.004 z"
      id="bdr-h13"
-     style="fill-opacity:0;stroke:#0000ff;stroke-width:0.366;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1" />
+     style="fill-opacity:0;stroke:#0000ff;stroke-width:0.366;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1">
+    <title
+       id="title4060">W-Wing</title>
+  </path>
   <g
      transform="matrix(0.94488,0,0,0.94488,0.93130833,99.68745)"
      id="map-h20"
@@ -6153,7 +6159,10 @@
      d="m 35.540308,187.39245 -3.944,4.069 0.125,4.882 1.565,2.003 5.259,-0.125 2.629,-2.441 h 5.571 l 0.626,-0.25 0.438,-4.445 -2.253,-2.066 -5.321,-0.062 -1.628,-0.814 z"
      stroke-miterlimit="4"
      id="bdr-h20"
-     style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.366;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.366;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">
+    <title
+       id="title4056">Nacelle</title>
+  </path>
   <g
      transform="matrix(0.86251,0,0,0.86251,3.0674749,105.95779)"
      id="map-h16"
@@ -11620,13 +11629,19 @@
      d="m 86.876308,123.49945 3.512,-1.391 0.53,24.645 -5.234,-0.133 -0.199,-4.902 z"
      stroke-miterlimit="4"
      id="bdr-h24"
-     style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.287;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.287;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">
+    <title
+       id="title4064">Top Fin</title>
+  </path>
   <path
      inkscape:connector-curvature="0"
      d="m 85.286308,147.94545 5.168,-0.464 -1.06,24.38 -2.915,-2.252 z"
      stroke-miterlimit="4"
      id="bdr-h23"
-     style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.38795999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.38795999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">
+    <title
+       id="title4066">Bottom Fin</title>
+  </path>
   <g
      transform="matrix(0.02651829,-0.00439483,0.00439483,0.02651829,-109.25021,110.16951)"
      id="map-h25"
@@ -17245,7 +17260,10 @@
      inkscape:connector-curvature="0"
      d="m 89.196075,89.478758 -0.577,4.742 -9.345,-0.133 0.4,-14.445 z"
      id="bdr-h110"
-     style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.49599999;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.49599999;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1">
+    <title
+       id="title4072">No Fins</title>
+  </path>
   <path
      inkscape:connector-curvature="0"
      d="m 42.182236,100.04341 -5.311,-1.313996 -0.776,-1.977 -3.561,-1.932 -28.2399996,-10.139 -3.069,-5.548 1.21,-11.677 3.882,0.567 2.626,3.332 18.9649996,1.685 8.223,2.364 4.553,4.795 1.99,8.647 z"
@@ -17735,29 +17753,22 @@
      id="bdr-h120"
      stroke-miterlimit="4"
      d="m 85.28609,3.0229802 3.512,-1.391 0.53,24.6449998 -5.234,-0.133 -0.199,-4.902 z"
-     inkscape:connector-curvature="0" />
+     inkscape:connector-curvature="0">
+    <title
+       id="title4068">Top Fin</title>
+  </path>
   <text
      id="text5738"
      y="10.489371"
      x="-17.974918"
-     style="font-size:7.06666667px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial;letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
-     xml:space="preserve"><tspan
-       style="stroke-width:0.265;"
-       y="10.489371"
-       x="-17.974918"
-       id="tspan5736"
-       sodipodi:role="line" /></text>
+     style="font-size:7.06667px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial;letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
+     xml:space="preserve" />
   <text
      id="text5750"
      y="72.794846"
      x="104.57067"
-     style="font-size:7.06666667px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial;letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
-     xml:space="preserve"><tspan
-       style="stroke-width:0.265;"
-       y="72.794846"
-       x="104.57067"
-       id="tspan5748"
-       sodipodi:role="line" /></text>
+     style="font-size:7.06667px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial;letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
+     xml:space="preserve" />
   <g
      id="g4230">
     <path
@@ -17953,7 +17964,10 @@
      d="m 84.019926,28.460034 5.168,-0.464 -1.06,24.38 -2.915,-2.252 z"
      stroke-miterlimit="4"
      id="bdr-h42"
-     style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.38795999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+     style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.38795999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">
+    <title
+       id="title4070">Bottom Fin</title>
+  </path>
   <g
      id="map-h40"
      transform="matrix(0.94852213,0,0,0.94852213,0.40405227,-146.10283)"
@@ -18095,5 +18109,8 @@
      style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.367989;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
      d="m 56.754009,42.15866 4.73998,6.26901 3.05805,1.37613 14.06705,-0.91742 1.52903,-7.33933 z"
      id="bdr-h40"
-     inkscape:connector-curvature="0" />
+     inkscape:connector-curvature="0">
+    <title
+       id="title4062">Keel</title>
+  </path>
 </svg>

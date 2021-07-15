@@ -48,10 +48,10 @@ exports.nmsceBot = async function () {
     let date = new Date().valueOf() / 1000
     let p = []
 
-    if (Object.keys(rules).length ===0) {
+    if (Object.keys(rules).length === 0) {
         let r = await sub.getRules()
         for (let x of r.rules) {
-            rules[x.priority+1] = {
+            rules[x.priority + 1] = {
                 text: x.description
             }
 
@@ -59,20 +59,20 @@ exports.nmsceBot = async function () {
             let c = 1
             for (let i = 0; i < lines.length; ++i) {
                 if (lines[i][0] === '-') {
-                    rules[x.priority+1][c++] = lines[i]
+                    rules[x.priority + 1][c++] = lines[i]
                 }
             }
         }
     }
 
-    p.push(sub.getNew(!lastPost.name || lastPost.full + 60 * 60 < date ? {
+    p.push(sub.getNew(!lastPost.name || lastPost.full + 15 * 60 < date ? {
         limit: 50
     } : {
         before: lastPost.name
     }).then(posts => {
         console.log("post", posts.length)
 
-        if (posts.length > 0 || !lastPost.full || lastPost.full + 60 * 60 < date)
+        if (posts.length > 0 || !lastPost.full || lastPost.full + 15 * 60 < date)
             lastPost.full = date
 
         if (posts.length > 0) {
@@ -115,39 +115,42 @@ exports.nmsceBot = async function () {
     }))
 
     // only needed to reapprove bot removed post.
-    // p.push(sub.getModerationLog( {
-    //     mods: ["nmsceBot"],
-    //     type: "removeLink",
-    //     limit: 10,
-    // }).then(async logs => {
-    //     console.log("log", logs.length)
-    //     let list = []
-    //     posts = []
+    p.push(sub.getModerationLog({
+        mods: ["nmsceBot"],
+        type: "removeLink",
+        time: "day",
+    }).then(async logs => {
+        console.log("log", logs.length)
+        let list = []
+        posts = []
 
-    //     for (let log of logs) {
-    //         if (!list.includes(log.target_fullname)) {
-    //             list.push(log.target_fullname)
-    //             let post = await (await r.getSubmission(log.target_fullname.slice(3))).refresh()
-    //             posts.push(post)
-    //         }
-    //     }
+        for (let log of logs) {
+            if (!list.includes(log.target_fullname)) {
+                list.push(log.target_fullname)
+                let post = await (await r.getSubmission(log.target_fullname.slice(3))).refresh()
+                posts.push(post)
+            }
+        }
 
-    //     validatePosts(posts)
-    // }).catch(err => {
-    //     console.log("error 4", typeof err === "string" ? err : JSON.stringify(err))
-    // }))
+        validatePosts(posts)
+    }).catch(err => {
+        console.log("error 4", typeof err === "string" ? err : JSON.stringify(err))
+    }))
 
     return Promise.all(p)
 }
 
 async function checkComments(posts, mods) {
+
     for (let post of posts) {
         if (!post.banned_by && post.body[0] === "!") {
+            let isMod = mods.includes(post.author_fullname)
             console.log("command", post.body)
-            if (post.body.includes("!m-") && mods.includes(post.author_fullname)) {
+
+            if (post.body.includes("!m-") && isMod) {
                 let missing = ""
-                let remove = false
                 let rule = ""
+                let remove = false
                 let offtopic = false
                 let description = false
                 let shiprequest = false
@@ -260,10 +263,13 @@ async function checkComments(posts, mods) {
                     console.log("remove: " + remove, "missing: " + missing, "rule: " + match, "https://reddit.com" + oppost.permalink)
                 }
             } else {
-                let match = post.body.match(/!(yes|light|shiploc|help|shipclass|portal|s2|search)/)
+                let match = post.body.match(/!(glyphs|yes|light|shiploc|help|shipclass|portal|s2|search)/)
+
                 if (match) {
                     let message = null
                     let reply = null
+                    let remove = false
+
                     switch (match[1]) {
                         case "yes":
                             if (post.author.name !== "AutoModerator") {
@@ -307,8 +313,14 @@ async function checkComments(posts, mods) {
                         case "s2":
                             message = respS2
                             break
+                        case "glyphs":
+                            message = respGlyphs
+                            break
                         case "search":
-                            message = respSearch
+                            if (isMod) {
+                                message = respSearch
+                                remove = true
+                            }
                             break
                     }
 
@@ -328,6 +340,12 @@ async function checkComments(posts, mods) {
 
                         post.remove()
                             .catch(err => console.log("error 11", typeof err === "string" ? err : JSON.stringify(err)))
+
+                        if (remove)
+                            op.report({
+                                reason: post.author.name + " rule " + match[1]
+                            }).remove()
+                            .catch(err => console.log("error c", typeof err === "string" ? err : JSON.stringify(err)))
 
                         console.log("reply:", match[0])
                     }
@@ -407,34 +425,39 @@ function validatePosts(posts) {
         if (!ok || flair.noedit)
             continue
 
-        let galaxy, platform, mode
+        let galaxy, platform, mode, archive
 
-        if (flair && flair.galaxy) {
-            galaxy = checkList(galaxyList, post)
-            if (!galaxy) {
-                reason += (reason ? ", " : "") + "galaxy"
-                ok = false
+        if (flair) {
+            if (flair.galaxy) {
+                galaxy = checkList(galaxyList, post)
+                if (!galaxy) {
+                    reason += (reason ? ", " : "") + "galaxy"
+                    ok = false
+                }
             }
-        }
 
-        if (flair && flair.platform) {
-            platform = checkList(platformList, post)
-            if (!platform) {
-                reason += (reason ? ", " : "") + "platform"
-                ok = false
+            if (flair.platform) {
+                platform = checkList(platformList, post)
+                if (!platform) {
+                    reason += (reason ? ", " : "") + "platform"
+                    ok = false
+                }
             }
-        }
 
-        if (flair && flair.mode) {
-            mode = checkList(modeList, post)
-            if (!mode) {
-                reason += (reason ? ", " : "") + "game mode"
-                ok = false
+            if (flair.mode) {
+                mode = checkList(modeList, post)
+                if (!mode) {
+                    reason += (reason ? ", " : "") + "game mode"
+                    ok = false
+                }
             }
+
+            archive = post.link_flair_text.match("archive")
         }
 
         if (ok) {
-            let newFlair = flair.name + /*(post.title.match(/repost/i) ? " Repost" : "") +*/ "/" +
+            let newFlair = flair.name +
+                (archive ? " Archive/" : "/") +
                 galaxy.name + (flair.platform ? "/" + platform.name : "") +
                 (flair.mode ? "/" + mode.name : "") + (flair.version ? "/" + version : "")
 
@@ -448,7 +471,7 @@ function validatePosts(posts) {
 
             if ((!flair.sclass || !post.title.match(/s\bclass/i) || post.title.match(/crash|sunk/i)) &&
                 (flair.name !== "Starship" || !post.title.match(/black/i)) && post.domain !== "imgur.com" &&
-                (!flair.station || !post.title.match(/trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station|\bwave\b|\bx.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death/i)) &&
+                (!flair.station || !post.title.match(/rare|unique|ultra|trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station|\bwave\b|\bx.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death/i)) &&
                 (post.banned_by && post.banned_by.name === "nmsceBot" || post.removed_by_category === "automod_filtered" ||
                     post.removed_by_category === "reddit" || post.mod_reports.length > 0)) {
 
@@ -748,6 +771,7 @@ function getItem(list, str) {
 
 const replyCommands = `List of bot commands
 
+   * !glyphs - reply with comment about using glyph font
    * !light - reply with comment about improving the screenshot
    * !shipclass - reply with comment about spawning ship classes
    * !shipclass - reply with comment about spawning ship classes
@@ -774,6 +798,7 @@ Moderator Commands:
     * !m-f - request op repost using the 'ship request' flair. use with r1
     * !m-d - add comment requesting a better description on future post
     * !m-v[flair] - get current event vote count. Optional new flair name to change. e.g. !m-vStarship
+    * !search - add comment requesting the op search before posting a ship request
     
     Commands can be concatenated together e.g. !m-gpr2,3o for missing galaxy & platform, remove for violcation of rule 2 & 3 and add offtopic comment`
 const respDescription = "In order to help other players find your post using the search-bar you should consider adding a more descriptive title to future post. It is recommended to include main color(s), ship type and major parts. The NMSCE [wiki page](https://www.reddit.com/r/NMSCoordinateExchange/about/wiki/shipparts) has a link to the named parts list for most types of ships."
@@ -785,16 +810,7 @@ const respShiploc = `All starships in a given system can be found at the Space S
 const respShipclass = `Each individually spawned ship has a random class & number of slots. In a T3, wealthy, system a ship has a 2% chance of spawning as an S class. In a T2, developing, economy the percentage is 1%. In a T1 0%. The range of slots is based on the configuration of the ship. An S class ship will have the max possible number of slots in it's range. Only crashed ships have a fixed configuration of size and class.`
 const respPortal = `The first glyph of a portal address is the planet index. If you are going to pick up a ship then this character doesn't matter. It is usually given as 0 which will take you to the first planet in a system. For other items the glyph given should take you to the correct planet. The remaining 11 digits are the system address.`
 const respLight = `To help show off your items in future post you might consider taking your screenshot in a different location and/or repositioning the sun. This will help others to see what is special about your find. For more detailed information see [this](https://www.reddit.com/r/NMSCoordinateExchange/comments/hilovm/found_a_cool_ship_you_wanna_post_make_it_look/) post.`
-// const respWildBase = `Before anything else **TURN OFF MULTIPLAYER AND DISCONNECT YOUR PC/CONSOLE FROM THE INTERNET**\n
-
-// * Go to a Portal and input the glyphs provided in the post.\n
-// * Once you’re on the other side. Go to the planetary latitude and longitude coordinates provided in the post.\n
-// * When you get there you will find the Unclaimed Wild Base Computer.\n
-// * Claim the base as yours (this is why turning multiplayer off is important) and then build a Teleporter.\n
-// * Go back through the Portal you came in.\nOnce you're back in your home system, summon the Anomaly (aka the Nexus) and go to the big Teleporter in the back of it. Then teleport back to the wild base you just claimed - this is the only way to get back to it.\n
-// * Once you are teleported to your new base there is no Portal Interference anymore.\n
-
-// Make sure you **DO NOT UPLOAD** this Wild Base Computer. It is advised to DELETE the Wild Base Computer and build another base at least 500u away BEFORE turning multiplayer back on.`
+const respGlyphs = `To improve the visibility of the glyphs in your image install the [glyph font](https://nmsce.com/bin/NMS-Glyphs-Mono.ttf). More information can be found in [this post](https://www.reddit.com/r/NMSCoordinateExchange/comments/oh109y/easy_way_to_add_larger_more_readable_glyphs_to/)`
 const missingInfo = 'Thank You for posting to r/NMSCoordinateExchange. Your post is missing the required [missing]. Please, edit your post to include the missing information and remember to include it in your next post.'
 const missingFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair was missing or unrecognized. Please, repost using the correct flair.'
 const editFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair or title did not contain the required [missing]. If you correct the flair within 24 hours it will be re-approved. You can edit the flair after the post is made. When you select the flair you can edit the text in the box. In the app there is an edit button you need to press.'
