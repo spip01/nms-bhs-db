@@ -13,7 +13,7 @@
    version="1.1"
    viewBox="0 0 84.7 106"
    sodipodi:docname="exotic-opt.svg"
-   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
   <metadata
      id="metadata405">
     <rdf:RDF>
@@ -40,10 +40,11 @@
      inkscape:window-height="480"
      id="namedview401"
      showgrid="false"
-     inkscape:zoom="3.1725"
-     inkscape:cx="34.704492"
+     inkscape:zoom="1.96"
+     inkscape:cx="160"
      inkscape:cy="200"
-     inkscape:current-layer="exotic" />
+     inkscape:current-layer="exotic"
+     inkscape:document-rotation="0" />
   <g
      id="map-h2"
      fill-opacity="0"
@@ -3034,7 +3035,10 @@
      stroke-linecap="round"
      stroke-opacity="1"
      stroke-width=".265"
-     d="M1.06.529l.794 16.1 3.24 2.98 20.2.992 3.7.86 27.4-3.24.463-7.14-31.9-5.62-8.47-5.03z" />
+     d="M1.06.529l.794 16.1 3.24 2.98 20.2.992 3.7.86 27.4-3.24.463-7.14-31.9-5.62-8.47-5.03z">
+    <title
+       id="title1249">Squid</title>
+  </path>
   <path
      id="bdr-h4"
      fill-opacity="0"
@@ -3042,7 +3046,10 @@
      stroke-linecap="round"
      stroke-opacity="1"
      stroke-width=".265"
-     d="M12 21.2l-.397.066-6.75 3.31-2.38 20.8 13 .661 8.8-.066 6.95-8.8.463-9.33-9.72-6.61z" />
+     d="M12 21.2l-.397.066-6.75 3.31-2.38 20.8 13 .661 8.8-.066 6.95-8.8.463-9.33-9.72-6.61z">
+    <title
+       id="title1247">Guppy</title>
+  </path>
   <path
      id="bdr-h6"
      fill-opacity="0"
@@ -3050,7 +3057,10 @@
      stroke-linecap="round"
      stroke-opacity="1"
      stroke-width=".265"
-     d="M9.19 49.7l-.331 8.07 17.3 4.56 5.36-2.71 3.37-4.83-1.85-5.89-7.54-2.71z" />
+     d="M9.19 49.7l-.331 8.07 17.3 4.56 5.36-2.71 3.37-4.83-1.85-5.89-7.54-2.71z">
+    <title
+       id="title1243">Side Booster</title>
+  </path>
   <path
      id="bdr-h5"
      fill-opacity="0"
@@ -3058,7 +3068,10 @@
      stroke-linecap="round"
      stroke-opacity="1"
      stroke-width=".265"
-     d="M32.5 21.7l11.3-1.52 6.88-.331.992 4.17 14.8.529-7.54 5.69-1.06 28.3-8.14 2.58-9.52.529z" />
+     d="M32.5 21.7l11.3-1.52 6.88-.331.992 4.17 14.8.529-7.54 5.69-1.06 28.3-8.14 2.58-9.52.529z">
+    <title
+       id="title1241">V-Wing</title>
+  </path>
   <path
      id="bdr-h3"
      fill-opacity="0"
@@ -3066,7 +3079,10 @@
      stroke-linecap="round"
      stroke-opacity="1"
      stroke-width=".265"
-     d="M67.2 5.75L84.1.99l-6.22 9.19 3.44 48.6-15.9-6.68-1.19-6.68-2.84-2.51 3.51-.794 2.84-18.1z" />
+     d="M67.2 5.75L84.1.99l-6.22 9.19 3.44 48.6-15.9-6.68-1.19-6.68-2.84-2.51 3.51-.794 2.84-18.1z">
+    <title
+       id="title1227">Misquito Fin</title>
+  </path>
   <path
      id="bdr-h10"
      fill-opacity="0"
@@ -3074,7 +3090,10 @@
      stroke-linecap="round"
      stroke-opacity="1"
      stroke-width=".265"
-     d="M1.65 68.7l-.661 9.92 12.6 5.16 2.71-.529 1.39-2.18-1.06-3.18-4.63-4.37 4.43-11.1-2.98-1.59z" />
+     d="M1.65 68.7l-.661 9.92 12.6 5.16 2.71-.529 1.39-2.18-1.06-3.18-4.63-4.37 4.43-11.1-2.98-1.59z">
+    <title
+       id="title1245">Side Wing</title>
+  </path>
   <path
      id="bdr-h7"
      fill-opacity="0"
@@ -3082,7 +3101,10 @@
      stroke-linecap="round"
      stroke-opacity="1"
      stroke-width=".265"
-     d="M17.8 63.4l-.529 13 3.51 6.55 15.1-2.05.132-1.98-6.02-15.4z" />
+     d="M17.8 63.4l-.529 13 3.51 6.55 15.1-2.05.132-1.98-6.02-15.4z">
+    <title
+       id="title1229">Royal Fin</title>
+  </path>
   <path
      id="bdr-h9"
      fill-opacity="0"
@@ -3090,7 +3112,10 @@
      stroke-linecap="round"
      stroke-opacity="1"
      stroke-width=".265"
-     d="M55 60l.132 12.2 27.5.529 1.65-3.9-20.1-4.56-3.7-4.17z" />
+     d="M55 60l.132 12.2 27.5.529 1.65-3.9-20.1-4.56-3.7-4.17z">
+    <title
+       id="title1239">Misquito Nose</title>
+  </path>
   <path
      id="bdr-h8"
      fill-opacity="0"
@@ -3106,7 +3131,10 @@
      stroke-linecap="round"
      stroke-opacity="1"
      stroke-width=".265"
-     d="M1.32 86.9l.198 16.2 10.6 2.51 1.79-2.18-1.39-18.6z" />
+     d="M1.32 86.9l.198 16.2 10.6 2.51 1.79-2.18-1.39-18.6z">
+    <title
+       id="title1231">Small Double Thruster</title>
+  </path>
   <path
      id="bdr-h14"
      fill-opacity="0"
@@ -3114,7 +3142,10 @@
      stroke-linecap="round"
      stroke-opacity="1"
      stroke-width=".265"
-     d="M16.5 88.6l-.066 13.7 16.2 3.04-.926-18.9z" />
+     d="M16.5 88.6l-.066 13.7 16.2 3.04-.926-18.9z">
+    <title
+       id="title1233">Large Double Thruster</title>
+  </path>
   <path
      id="bdr-h12"
      fill-opacity="0"
@@ -3122,7 +3153,10 @@
      stroke-linecap="round"
      stroke-opacity="1"
      stroke-width=".265"
-     d="M33.9 92.6l-.066.265-.066 3.31 28.4 8.73-1.26-14.2z" />
+     d="M33.9 92.6l-.066.265-.066 3.31 28.4 8.73-1.26-14.2z">
+    <title
+       id="title1237">Clam Shell Thruster</title>
+  </path>
   <path
      id="bdr-h13"
      fill-opacity="0"
@@ -3130,5 +3164,8 @@
      stroke-linecap="round"
      stroke-opacity="1"
      stroke-width=".265"
-     d="M51 84.3l-.397 3.84 16.3 2.05 2.18 6.15 8.6 9.06h5.56l.463-21.1z" />
+     d="M51 84.3l-.397 3.84 16.3 2.05 2.18 6.15 8.6 9.06h5.56l.463-21.1z">
+    <title
+       id="title1235">Single Thruster</title>
+  </path>
 </svg>
