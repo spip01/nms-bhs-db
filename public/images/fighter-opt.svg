@@ -13,7 +13,7 @@
    version="1.1"
    viewBox="0 0 84.7 206.7"
    sodipodi:docname="fighter-opt.svg"
-   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
   <metadata
      id="metadata940">
     <rdf:RDF>
@@ -40,13 +40,14 @@
      inkscape:window-height="480"
      id="namedview936"
      showgrid="false"
-     inkscape:zoom="2.6847404"
-     inkscape:cx="-109.48528"
-     inkscape:cy="211.28199"
+     inkscape:zoom="1.0051282"
+     inkscape:cx="160"
+     inkscape:cy="390"
      inkscape:current-layer="layer1"
      inkscape:snap-others="false"
      inkscape:snap-nodes="false"
-     inkscape:snap-global="false" />
+     inkscape:snap-global="false"
+     inkscape:document-rotation="0" />
   <g
      inkscape:groupmode="layer"
      id="layer2"
@@ -54,7 +55,7 @@
      style="display:none">
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="34.183002"
        y="187.17599"
        id="text1745"><tspan
@@ -62,10 +63,10 @@
          id="tspan1743"
          x="34.183002"
          y="187.17599"
-         style="stroke-width:0.26499999">3,11,12,13,</tspan></text>
+         style="stroke-width:0.265">3,11,12,13,</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="35.336998"
        y="192.64301"
        id="text1749"><tspan
@@ -73,10 +74,10 @@
          id="tspan1747"
          x="35.336998"
          y="192.64301"
-         style="stroke-width:0.26499999">6,9,15</tspan></text>
+         style="stroke-width:0.265">6,9,15</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="33.109001"
        y="199.02"
        id="text1758"><tspan
@@ -84,10 +85,10 @@
          id="tspan1756"
          x="33.109001"
          y="199.02"
-         style="stroke-width:0.26499999">3,11</tspan></text>
+         style="stroke-width:0.265">3,11</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="34.188"
        y="202.82199"
        id="text1762"><tspan
@@ -95,10 +96,10 @@
          id="tspan1760"
          x="34.188"
          y="202.82199"
-         style="stroke-width:0.26499999">10,15</tspan></text>
+         style="stroke-width:0.265">10,15</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="76.937767"
        y="145.34535"
        id="text1770"><tspan
@@ -106,10 +107,10 @@
          id="tspan1768"
          x="76.937767"
          y="145.34535"
-         style="stroke-width:0.26499999">3,15</tspan></text>
+         style="stroke-width:0.265">3,15</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="78.329758"
        y="150.69916"
        id="text1774"><tspan
@@ -117,10 +118,10 @@
          id="tspan1772"
          x="78.329758"
          y="150.69916"
-         style="stroke-width:0.26499999">11</tspan></text>
+         style="stroke-width:0.265">11</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="58.306515"
        y="130.35469"
        id="text1778"><tspan
@@ -128,10 +129,10 @@
          id="tspan1776"
          x="58.306515"
          y="130.35469"
-         style="stroke-width:0.26499999">3</tspan></text>
+         style="stroke-width:0.265">3</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="11.835457"
        y="186.89091"
        id="text1782"><tspan
@@ -139,10 +140,10 @@
          id="tspan1780"
          x="11.835457"
          y="186.89091"
-         style="stroke-width:0.26499999">3</tspan></text>
+         style="stroke-width:0.265">3</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="14.19113"
        y="189.78198"
        id="text1786"><tspan
@@ -150,10 +151,10 @@
          id="tspan1784"
          x="14.19113"
          y="189.78198"
-         style="stroke-width:0.26499999">16</tspan></text>
+         style="stroke-width:0.265">16</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="52.310249"
        y="188.7112"
        id="text2612"><tspan
@@ -161,10 +162,10 @@
          id="tspan2610"
          x="52.310249"
          y="188.7112"
-         style="stroke-width:0.26499999">3,12,13</tspan></text>
+         style="stroke-width:0.265">3,12,13</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="60.340961"
        y="193.74379"
        id="text2616"><tspan
@@ -172,10 +173,10 @@
          id="tspan2614"
          x="60.340961"
          y="193.74379"
-         style="stroke-width:0.26499999">6</tspan></text>
+         style="stroke-width:0.265">6</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="81.756187"
        y="188.17581"
        id="text2620"><tspan
@@ -183,10 +184,10 @@
          id="tspan2618"
          x="81.756187"
          y="188.17581"
-         style="stroke-width:0.26499999">3,9</tspan></text>
+         style="stroke-width:0.265">3,9</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="81.970345"
        y="168.0455"
        id="text2624"><tspan
@@ -194,10 +195,10 @@
          id="tspan2622"
          x="81.970345"
          y="168.0455"
-         style="stroke-width:0.26499999">3,6,7</tspan></text>
+         style="stroke-width:0.265">3,6,7</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="82.623566"
        y="171.57901"
        id="text2628"><tspan
@@ -205,10 +206,10 @@
          id="tspan2626"
          x="82.623566"
          y="171.57901"
-         style="stroke-width:0.26499999">7,13</tspan></text>
+         style="stroke-width:0.265">7,13</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="11.875"
        y="161.539"
        id="text2632"><tspan
@@ -216,10 +217,10 @@
          id="tspan2630"
          x="11.875"
          y="161.539"
-         style="stroke-width:0.26499999">3,6,8</tspan></text>
+         style="stroke-width:0.265">3,6,8</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="12.799141"
        y="165.90398"
        id="text2636"><tspan
@@ -227,10 +228,10 @@
          id="tspan2634"
          x="12.799141"
          y="165.90398"
-         style="stroke-width:0.26499999">12</tspan></text>
+         style="stroke-width:0.265">12</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="3.59059"
        y="111.08099"
        id="text2664"><tspan
@@ -238,10 +239,10 @@
          id="tspan2662"
          x="3.59059"
          y="111.08099"
-         style="stroke-width:0.26499999">3,12,13</tspan></text>
+         style="stroke-width:0.265">3,12,13</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="7.0170274"
        y="115.36402"
        id="text2668"><tspan
@@ -249,10 +250,10 @@
          id="tspan2666"
          x="7.0170274"
          y="115.36402"
-         style="stroke-width:0.26499999">6</tspan></text>
+         style="stroke-width:0.265">6</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="38.925728"
        y="131.85376"
        id="text2680"><tspan
@@ -260,10 +261,10 @@
          id="tspan2678"
          x="38.925728"
          y="131.85376"
-         style="stroke-width:0.26499999">16</tspan></text>
+         style="stroke-width:0.265">16</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="82.505722"
        y="132.49622"
        id="text2684"><tspan
@@ -271,10 +272,10 @@
          id="tspan2682"
          x="82.505722"
          y="132.49622"
-         style="stroke-width:0.26499999">3,5,6</tspan></text>
+         style="stroke-width:0.265">3,5,6</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="86.788773"
        y="138.06418"
        id="text2688"><tspan
@@ -282,10 +283,10 @@
          id="tspan2686"
          x="86.788773"
          y="138.06418"
-         style="stroke-width:0.26499999">13,14</tspan></text>
+         style="stroke-width:0.265">13,14</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="62.05418"
        y="123.60889"
        id="text2696"><tspan
@@ -293,10 +294,10 @@
          id="tspan2694"
          x="62.05418"
          y="123.60889"
-         style="stroke-width:0.26499999">3</tspan></text>
+         style="stroke-width:0.265">3</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="87.645386"
        y="108.61823"
        id="text2702"><tspan
@@ -304,10 +305,10 @@
          id="tspan2700"
          x="87.645386"
          y="108.61823"
-         style="stroke-width:0.26499999">3</tspan></text>
+         style="stroke-width:0.265">3</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="55.094231"
        y="97.161079"
        id="text2708"><tspan
@@ -315,10 +316,10 @@
          id="tspan2706"
          x="55.094231"
          y="97.161079"
-         style="stroke-width:0.26499999">3</tspan></text>
+         style="stroke-width:0.265">3</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="35.499287"
        y="106.47671"
        id="text2712"><tspan
@@ -326,10 +327,10 @@
          id="tspan2710"
          x="35.499287"
          y="106.47671"
-         style="stroke-width:0.26499999">3,12</tspan></text>
+         style="stroke-width:0.265">3,12</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="42.352165"
        y="109.90314"
        id="text2716"><tspan
@@ -337,10 +338,10 @@
          id="tspan2714"
          x="42.352165"
          y="109.90314"
-         style="stroke-width:0.26499999">8</tspan></text>
+         style="stroke-width:0.265">8</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="37.319584"
        y="94.162941"
        id="text2720"><tspan
@@ -348,10 +349,10 @@
          id="tspan2718"
          x="37.319584"
          y="94.162941"
-         style="stroke-width:0.26499999">3,10</tspan></text>
+         style="stroke-width:0.265">3,10</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="14.833854"
        y="140.98631"
        id="text2632-5"><tspan
@@ -359,10 +360,10 @@
          id="tspan2630-9"
          x="14.833854"
          y="140.98631"
-         style="stroke-width:0.26499999">3,6,8</tspan></text>
+         style="stroke-width:0.265">3,6,8</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="15.757995"
        y="145.35129"
        id="text2636-9"><tspan
@@ -370,10 +371,10 @@
          id="tspan2634-5"
          x="15.757995"
          y="145.35129"
-         style="stroke-width:0.26499999">12</tspan></text>
+         style="stroke-width:0.265">12</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="39.568184"
        y="120.71783"
        id="text2672"><tspan
@@ -381,10 +382,10 @@
          id="tspan2670"
          x="39.568184"
          y="120.71783"
-         style="stroke-width:0.26499999">3,14</tspan></text>
+         style="stroke-width:0.265">3,14</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="41.174324"
        y="124.4655"
        id="text2676"><tspan
@@ -392,10 +393,10 @@
          id="tspan2674"
          x="41.174324"
          y="124.4655"
-         style="stroke-width:0.26499999">5</tspan></text>
+         style="stroke-width:0.265">5</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.18000007px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.26499999"
+       style="font-size:3.18px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Normal';letter-spacing:0px;word-spacing:0px;stroke-width:0.265"
        x="87.645386"
        y="125.00089"
        id="text2692"><tspan
@@ -403,7 +404,7 @@
          id="tspan2690"
          x="87.645386"
          y="125.00089"
-         style="stroke-width:0.26499999">3,10</tspan></text>
+         style="stroke-width:0.265">3,10</tspan></text>
   </g>
   <g
      inkscape:groupmode="layer"
@@ -522,12 +523,10 @@
         {&quot;xgroup&quot;:[3,6,7], &quot;xokGroup&quot;:[7,13], &quot;xpair&quot;:&quot;h117&quot;}
       </desc>
       <title
-         id="title9972">
-        E
-      </title>
+         id="title9972">E     </title>
     </path>
     <text
-       style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-size:4.41200018px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Heavy';letter-spacing:0;word-spacing:0;display:inline;fill:#00a000;fill-opacity:1;stroke:#00be00;stroke-width:0.237;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-size:4.412px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Heavy';letter-spacing:0;word-spacing:0;display:inline;fill:#00a000;fill-opacity:1;stroke:#00be00;stroke-width:0.237;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        xml:space="preserve"
        word-spacing="0"
        onmouseover="setCursor(&quot;pointer&quot;)"
@@ -573,7 +572,7 @@
          font-style="normal"
          font-stretch="normal"
          font-size="2.861"
-         style="font-style:normal;font-variant:normal;font-weight:700;font-stretch:normal;font-size:2.86100006px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Bold';letter-spacing:0;word-spacing:0;fill:#0800ff;fill-opacity:1;stroke:none;stroke-width:0.215;stroke-opacity:1"
+         style="font-style:normal;font-variant:normal;font-weight:700;font-stretch:normal;font-size:2.861px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Bold';letter-spacing:0;word-spacing:0;fill:#0800ff;fill-opacity:1;stroke:none;stroke-width:0.215;stroke-opacity:1"
          y="165.11"
          x="50.956001"
          id="text2318">         <tspan
@@ -1571,9 +1570,7 @@
         {&quot;group&quot;:[3,12,13], &quot;slots&quot;:&quot;T2&quot;, &quot;okGroup&quot;:[6]}
       </desc>
       <title
-         id="title9942">
-        Droid
-      </title>
+         id="title9942">Droid     </title>
       <path
          style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.44299999;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          inkscape:connector-curvature="0"
@@ -4831,9 +4828,7 @@
         {&quot;group&quot;:[3,16]}
       </desc>
       <title
-         id="title9934">
-        Halo
-      </title>
+         id="title9934">Halo     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -4846,9 +4841,7 @@
         {&quot;group&quot;:[3,15], &quot;okGroup&quot;:[11]}
       </desc>
       <title
-         id="title9930">
-        Gull
-      </title>
+         id="title9930">Gull     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -4861,9 +4854,7 @@
         {&quot;group&quot;:[3,6,8], &quot;okGroup&quot;:[12]}
       </desc>
       <title
-         id="title9902">
-        Tie
-      </title>
+         id="title9902">Tie     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -4876,9 +4867,7 @@
         {&quot;group&quot;:[3,12,13], &quot;slots&quot;:&quot;T3&quot;, &quot;okGroup&quot;:[6]}
       </desc>
       <title
-         id="title9958">
-        Heavy
-      </title>
+         id="title9958">Heavy     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -4891,9 +4880,7 @@
         {&quot;group&quot;:[3,6,8],&quot;okGroup&quot;:[12]}
       </desc>
       <title
-         id="title8176">
-        Bowie-V
-      </title>
+         id="title8176">Bowie-V     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -4906,24 +4893,21 @@
         {&quot;group&quot;:[16]}
       </desc>
       <title
-         id="title9898">
-        Dorsal Fin
-      </title>
+         id="title9898">Dorsal Fin     </title>
     </path>
     <path
-       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.265;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0"
-       d="m 29.78504,158.17497 2.924,2.725 17.811,-11.365 -1.661,-1.794 z"
+       d="m 29.78504,158.17497 2.924,2.725 9.432796,-4.62791 8.378204,-6.73709 -1.661,-1.794 -10.327944,3.89876 z"
        stroke-miterlimit="4"
-       id="bdr-h14">
+       id="bdr-h14"
+       sodipodi:nodetypes="ccccccc">
       <desc
          id="desc9912">
         {&quot;group&quot;:[3,4], &quot;okGroup&quot;:[4],&quot;requires&quot;:[&quot;h16&quot;,&quot;h12&quot;]}
       </desc>
       <title
-         id="title9910">
-        Mecha-5
-      </title>
+         id="title9910">Mecha-5     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -4936,9 +4920,7 @@
         {&quot;group&quot;:[3,4], &quot;okGroup&quot;:[4],&quot;requires&quot;:[&quot;h12&quot;,&quot;h14&quot;,&quot;h16&quot;]}
       </desc>
       <title
-         id="title9914">
-        Mecha-7
-      </title>
+         id="title9914">Mecha-7</title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -4951,9 +4933,7 @@
         {&quot;group&quot;:[3]}
       </desc>
       <title
-         id="title9892">
-        Horizon
-      </title>
+         id="title9892">Horizon     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -4966,9 +4946,7 @@
         {&quot;slots&quot;:&quot;T2&quot;, &quot;group&quot;:[3,14], &quot;okGroup&quot;:[5]}
       </desc>
       <title
-         id="title9946">
-        Starscream
-      </title>
+         id="title9946">Starscream     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.27436036;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -4982,9 +4960,7 @@
         {&quot;group&quot;:[3,5,6], &quot;okGroup&quot;:[13,14]}
       </desc>
       <title
-         id="title9954">
-        Shockwave
-      </title>
+         id="title9954">Shockwave     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.28171352;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -4997,9 +4973,7 @@
         {&quot;group&quot;:[3,10], &quot;requires&quot;:[&quot;h25&quot;]}
       </desc>
       <title
-         id="title9950">
-        Aftershock
-      </title>
+         id="title9950">Aftershock     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5012,9 +4986,7 @@
         {&quot;group&quot;:[3,9], &quot;requires&quot;:[&quot;h27&quot;]}
       </desc>
       <title
-         id="title9938">
-        Vulture
-      </title>
+         id="title9938">Vulture     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5027,9 +4999,7 @@
         {&quot;group&quot;:[3,4], &quot;okGroup&quot;:[4],&quot;requires&quot;:[&quot;h12&quot;]}
       </desc>
       <title
-         id="title9918">
-        Mecha-3
-      </title>
+         id="title9918">Mecha-3     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5042,9 +5012,7 @@
         {&quot;group&quot;:[3]}
       </desc>
       <title
-         id="title9926">
-        Quasar
-      </title>
+         id="title9926">Quasar     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5057,9 +5025,7 @@
         {&quot;group&quot;:[3,11,12,13], &quot;slots&quot;:&quot;T2&quot;, &quot;okGroup&quot;:[6,9,15]}
       </desc>
       <title
-         id="title9964">
-        Serenity
-      </title>
+         id="title9964">Serenity     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5072,9 +5038,7 @@
         {&quot;group&quot;:[3,11], &quot;slots&quot;:&quot;T2&quot;, &quot;okGroup&quot;:[10,15]}
       </desc>
       <title
-         id="title9968">
-        Firefly
-      </title>
+         id="title9968">Firefly     </title>
     </path>
     <path
        style="display:inline;fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5112,9 +5076,7 @@
         {&quot;group&quot;:[3,10], &quot;requires&quot;:[&quot;h25&quot;]}
       </desc>
       <title
-         id="title9884">
-        Bowie-H
-      </title>
+         id="title9884">Bowie-H     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5127,9 +5089,7 @@
         {&quot;group&quot;:[3]}
       </desc>
       <title
-         id="title9880">
-        Vector
-      </title>
+         id="title9880">Vector     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5142,9 +5102,7 @@
         {&quot;group&quot;:[3]}
       </desc>
       <title
-         id="title9888">
-        Star Jumper
-      </title>
+         id="title9888">Star Jumper     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5157,9 +5115,7 @@
         {&quot;group&quot;:[1]}
       </desc>
       <title
-         id="title9986">
-        Alpha
-      </title>
+         id="title9986">Alpha     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5172,9 +5128,7 @@
         {&quot;group&quot;:[1]}
       </desc>
       <title
-         id="title9976">
-        Rasa
-      </title>
+         id="title9976">Rasa     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5187,9 +5141,7 @@
         {&quot;group&quot;:[1]}
       </desc>
       <title
-         id="title10006">
-        Viper
-      </title>
+         id="title10006">Viper     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5202,9 +5154,7 @@
         {&quot;group&quot;:[1]}
       </desc>
       <title
-         id="title10002">
-        Barrel
-      </title>
+         id="title10002">Barrel     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5217,9 +5167,7 @@
         {&quot;group&quot;:[1]}
       </desc>
       <title
-         id="title9998">
-        Snowspeeder
-      </title>
+         id="title9998">Snowspeeder     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5232,9 +5180,7 @@
         {&quot;group&quot;:[1]}
       </desc>
       <title
-         id="title9990">
-        Needle
-      </title>
+         id="title9990">Needle     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5260,9 +5206,7 @@
         {&quot;group&quot;:[2]}
       </desc>
       <title
-         id="title10010">
-        Single
-      </title>
+         id="title10010">Single     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5275,9 +5219,7 @@
         {&quot;group&quot;:[2]}
       </desc>
       <title
-         id="title10014">
-        Tripple
-      </title>
+         id="title10014">Tripple     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5290,9 +5232,7 @@
         {&quot;group&quot;:[2]}
       </desc>
       <title
-         id="title10018">
-        Box
-      </title>
+         id="title10018">Box     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5305,9 +5245,7 @@
         {&quot;group&quot;:[1]}
       </desc>
       <title
-         id="title9982">
-        Stubby
-      </title>
+         id="title9982">Stubby     </title>
     </path>
     <path
        style="fill:#000000;fill-opacity:0;stroke:#0000ff;stroke-width:0.26499999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -5320,9 +5258,7 @@
         {&quot;group&quot;:[1]}
       </desc>
       <title
-         id="title9878">
-        Jet
-      </title>
+         id="title9878">Jet     </title>
     </path>
   </g>
 </svg>

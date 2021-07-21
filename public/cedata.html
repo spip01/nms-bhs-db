@@ -164,9 +164,13 @@
                                                 The address field always shows 0 as the first digit. This is the planet index.">
                                     </i>
                                 </div>
-                                <input id="id-glyph" type="text" maxength="19"
-                                    class="rounded col-lg-7 col-md-9 col-sm-8 col-10 txt-glyph-disp"
-                                    placeholder="000000000000" onchange="nmsce.changeAddr(this)">
+                                <div class="col-lg-7 col-md-9 col-sm-8 col-10">
+                                    <input id="id-glyph" type="text" maxength="19" class="rounded row txt-glyph-disp"
+                                        placeholder="000000000000" onchange="nmsce.changeAddr(this)">
+                                    <div class="row text-danger">First glyph will always be displayed
+                                        as&nbsp&nbsp<span class="txt-glyph-disp">0</span>
+                                    </div>
+                                </div>
                                 <div class="col">
                                     <label class=" txt-label-def">
                                         <input id="ck-glyphs" type="checkbox" onchange="nmsce.setGlyphInput(this)">
@@ -175,7 +179,6 @@
                                             data-html="true" data-placement="bottom" title="Hide glyph input buttons.">
                                         </i>
                                     </label>
-                                    <div class="row text-danger">&nbsp&nbspFirst glyph will always be displayed as&nbsp&nbsp<span class="txt-glyph-disp text-danger">0</span> </div>
                                 </div>
                             </div>
 
