@@ -543,6 +543,9 @@ NMSCE.prototype.clearPanel = function (all) {
     if (tab === "Freighter")
         $("#pnl-map #pnl-Freighter").show()
 
+    if (tab === "Living-Ship")
+        $("#pnl-map #pnl-Living-Ship").show()
+
     if (fcedata) {
         let canvas = document.getElementById("id-canvas")
         let ctx = canvas.getContext("2d")
@@ -1988,7 +1991,7 @@ NMSCE.prototype.loadMap = function (loc, fname) {
         map.find("*").css("stroke", mapColors.enabled)
         $("[id='asym-checkmark']").hide()
 
-        let name = fname.replace(/\/.*\/(.*?)[-.].*/, "$1")
+        let name = fname.replace(/\/.*\/(.*?)(?:-opt)?\..*/, "$1")
         if (typeof nmsce[name] === "undefined")
             nmsce[name] = {}
 
@@ -4879,13 +4882,13 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend, type) {
             // h += /title/ [Symbol.replace](l, e.votes.hof)
             let l = /idname/g [Symbol.replace](itm, "Created")
             l = /pointer/ [Symbol.replace](l, "")
-            h += /title/ [Symbol.replace](l, e.created ? "Created "+e.created.toDate().toDateLocalTimeString() : "")
+            h += /title/ [Symbol.replace](l, e.created ? "Created " + e.created.toDate().toDateLocalTimeString() : "")
             l = /idname/g [Symbol.replace](itm, "Modified")
             l = /pointer/ [Symbol.replace](l, "")
-            h += /title/ [Symbol.replace](l, e.modded ? "Modified "+e.modded.toDate().toDateLocalTimeString() : "")
+            h += /title/ [Symbol.replace](l, e.modded ? "Modified " + e.modded.toDate().toDateLocalTimeString() : "")
             l = /idname/g [Symbol.replace](itm, "Posted")
             l = /pointer/ [Symbol.replace](l, "")
-            h += /title/ [Symbol.replace](l, e.reddit ? "Posted "+e.reddit.toDate().toDateLocalTimeString() : "")
+            h += /title/ [Symbol.replace](l, e.reddit ? "Posted " + e.reddit.toDate().toDateLocalTimeString() : "")
         }
     }
 
@@ -5624,16 +5627,16 @@ const fontList = [{
     name: 'Kaushan Script',
 }, {
     name: 'Permanent Marker',
-// }, {
-//     name: 'Bangers',
-// }, {
-//     name: 'Limelight',
-// }, {
-//     name: 'Monoton',
-// }, {
-//     name: 'Poiret One',
-// }, {
-//     name: 'Ultra'
+    // }, {
+    //     name: 'Bangers',
+    // }, {
+    //     name: 'Limelight',
+    // }, {
+    //     name: 'Monoton',
+    // }, {
+    //     name: 'Poiret One',
+    // }, {
+    //     name: 'Ultra'
 }]
 
 const encounterList = [{
@@ -6600,12 +6603,12 @@ const objectList = [{
         name: "Galaxy",
         type: "menu",
         required: true,
-    // }, {
-    //     id: "#id-Platform",
-    //     field: "Platform",
-    //     name: "Platform",
-    //     type: "radio",
-    //     required: true,
+        // }, {
+        //     id: "#id-Platform",
+        //     field: "Platform",
+        //     name: "Platform",
+        //     type: "radio",
+        //     required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
@@ -6896,12 +6899,12 @@ const objectList = [{
         name: "Galaxy",
         type: "menu",
         required: true,
-    // }, {
-    //     id: "#id-Platform",
-    //     field: "Platform",
-    //     name: "Platform",
-    //     type: "radio",
-    //     required: true,
+        // }, {
+        //     id: "#id-Platform",
+        //     field: "Platform",
+        //     name: "Platform",
+        //     type: "radio",
+        //     required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
@@ -6984,12 +6987,12 @@ const objectList = [{
         name: "Galaxy",
         type: "menu",
         required: true,
-    // }, {
-    //     id: "#id-Platform",
-    //     field: "Platform",
-    //     name: "Platform",
-    //     type: "radio",
-    //     required: true,
+        // }, {
+        //     id: "#id-Platform",
+        //     field: "Platform",
+        //     name: "Platform",
+        //     type: "radio",
+        //     required: true,
     }, {
         id: "#id-addrInput #id-addr",
         field: "addr",
@@ -7071,5 +7074,10 @@ const objectList = [{
         name: "Photo",
         type: "img",
         required: true,
+    }, {
+        name: "Parts",
+        type: "map",
+        map: "/images/living-ship-opt.svg",
+        search: true,
     }]
 }]
