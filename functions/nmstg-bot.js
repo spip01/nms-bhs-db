@@ -10,6 +10,8 @@ var lastSearch = {}
 
 var userPosts = []
 var userVideos = []
+var mods = []
+var rules = {}
 
 // main()
 // async function main() {
@@ -25,7 +27,8 @@ exports.nmstgBot = async function () {
     let p = []
 
     p.push(sub.getNew(!lastPost.name || lastPost.full + 60 * 60 < date ? {
-        limit: 100
+        limit: 100,
+        time: "hour"
     } : {
         before: lastPost.name
     }).then(posts => {
@@ -33,6 +36,8 @@ exports.nmstgBot = async function () {
 
         if (posts.length > 0 || !lastPost.full || lastPost.full + 60 * 60 < date)
             lastPost.full = date
+        else
+            userPosts = []
 
         if (posts.length > 0) {
             lastPost.name = posts[0].name
@@ -42,17 +47,20 @@ exports.nmstgBot = async function () {
         console.log("error 1", typeof err === "string" ? err : JSON.stringify(err))
     }))
 
-    p.push(sub.search(!lastSearch.name || lastSearch.full + 12 * 60 * 60 < date ? {
+    p.push(sub.search(!lastSearch.name || lastSearch.full + 60 * 60 < date ? {
         query: "flair_text:Video",
         time: "week",
         limit: 200
     } : {
+        query: "flair_text:Video",
         before: lastSearch.name
     }).then(posts => {
         console.log("video", posts.length)
 
-        if (/*posts.length > 0 || */!lastSearch.full || lastSearch.full + 12 * 60 * 60 < date)
+        if (posts.length > 0 || !lastSearch.full || lastSearch.full + 60 * 60 < date)
             lastSearch.full = date
+        else
+            userVideos = []
 
         if (posts.length > 0) {
             lastSearch.name = posts[0].name
@@ -62,7 +70,101 @@ exports.nmstgBot = async function () {
         console.log("error 2", typeof err === "string" ? err : JSON.stringify(err))
     }))
 
+    if (Object.keys(rules).length === 0) {
+        let r = await sub.getRules()
+        for (let x of r.rules) {
+            rules[x.priority + 1] = {
+                text: x.description
+            }
+
+            // let lines = x.description.split("\n")
+            // let c = 1
+            // for (let i = 0; i < lines.length; ++i) {
+            //     if (lines[i][0] === '-') {
+            //         rules[x.priority + 1][c++] = lines[i]
+            //     }
+            // }
+        }
+    }
+
+    if (mods.length === 0) {
+        let m = await sub.getModerators()
+
+        for (let x of m)
+            if (x.name !== "AutoModerator" && x.name !== "FlairHelperBot" && x.name !== "nmsceBot")
+                mods.push({
+                    name: x.name,
+                    user: await r.getUser(x.name),
+                    last: {
+                        name: "",
+                        full: 0
+                    }
+                })
+    }
+
+    for (let m of mods) {
+        p.push(m.user.getComments(!m.last.name || m.last.full + 2 * 60 * 60 < date ? {
+            limit: 10
+        } : {
+            before: m.last.name
+        }).then(posts => {
+            console.log("comments " + m.name, posts.length)
+
+            if (posts.length > 0 || !m.last.full || m.last.full + 2 * 60 * 60 < date)
+                m.last.full = date
+
+            if (posts.length > 0) {
+                m.last.name = posts[0].name
+                modCommands(posts)
+            }
+        }).catch(err => {
+            console.log("error 3", typeof err === "string" ? err : JSON.stringify(err))
+        }))
+    }
+
     return Promise.all(p)
+}
+
+async function modCommands(posts) {
+    for (let post of posts) {
+        if (!post.banned_by && post.body.startsWith("!r")) {
+            console.log("command", post.body)
+
+            let match = post.body.slice(2).split(",")
+            let message = removePost + "\n\n----\n"
+
+            for (let r of match) {
+                let i = parseInt(r)
+
+                if (typeof rules[i] !== "undefined")
+                    message += (message ? "\n\n----\n" : "") + rules[i].text
+            }
+
+            message += botSig
+
+            let op = null
+            let oppost = post
+
+            while (!op || oppost.parent_id) {
+                op = await r.getComment(oppost.parent_id)
+                oppost = await op.fetch()
+            }
+
+            op.reply(message)
+                .distinguish({
+                    status: true
+                }).lock()
+                .catch(err => console.log("error 5", typeof err === "string" ? err : JSON.stringify(err)))
+
+            post.remove()
+                .catch(err => console.log("error 7", typeof err === "string" ? err : JSON.stringify(err)))
+
+            oppost.remove()
+                .catch(err => console.log("error 8", typeof err === "string" ? err : JSON.stringify(err)))
+
+            console.log("remove: " + "rule: " + match, "https://reddit.com" + oppost.permalink)
+        }
+    }
 }
 
 async function checkPostLimits(posts, postList, limit, date, reason) {

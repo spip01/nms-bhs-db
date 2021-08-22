@@ -470,7 +470,7 @@ function validatePosts(posts) {
             }
 
             if ((!flair.sclass || !post.title.match(/s\bclass/i) || post.title.match(/crash|sunk/i)) &&
-                (flair.name !== "Starship" || !post.title.match(/black/i)) && post.domain !== "imgur.com" &&
+                (flair.name !== "Starship" || !post.title.match(/black/i)) && !post.is_gallery && post.domain !== "imgur.com" &&
                 (!flair.station || !post.title.match(/rare|unique|ultra|trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station|\bwave\b|\bx.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death/i)) &&
                 (post.banned_by && post.banned_by.name === "nmsceBot" || post.removed_by_category === "automod_filtered" ||
                     post.removed_by_category === "reddit" || post.mod_reports.length > 0)) {

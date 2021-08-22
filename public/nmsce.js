@@ -678,6 +678,11 @@ NMSCE.prototype.extractEntry = function () {
                         if (t && !entry[id].includes(t))
                             entry[id].push(t)
                     }
+
+                    if (entry[id].length > 0)
+                        entry[id].sort((a, b) =>
+                            a.toLowerCase() > b.toLowerCase() ? 1 :
+                            a.toLowerCase() < b.toLowerCase() ? -1 : 0)
                     break
                 case "menu":
                     entry[id] = loc.find("[id|='btn']").text().stripMarginWS()
@@ -4372,6 +4377,68 @@ const resultsItem = `
             onload="nmsce.imageLoaded(this, $(this).parent().width(), $(this).parent().height(), true)">
         </div>
     </div>`
+/*
+const editResults = `
+    <div id="row-idname" class="col-lg-p250 col-md-p333 col-sm-7 col-14 pointer bkg-white txt-label-def border rounded h6" style="pad-bottom:3px">
+        <div class="row">
+            <div class="col-7" style="min-height:20px">
+                <img id="img-idname" data-thumb="ethumb"
+                onload="nmsce.imageLoaded(this, $(this).parent().width(), $(this).parent().height(), true)">
+            </div>
+            <div id="type-etype" class="col-7">
+                <div id="slist-etype" class="col-7">
+                </div>
+            </div>
+        </div>
+    </div>`
+
+NMSCE.prototype.displayResultList = function (entries, type) {
+    if (!entries || entries.length === 0)
+        return
+
+    let h = ""
+    let loc = $("#displayPanels #list-" + type.nameToId())
+
+    for (let e of entries) {
+        nmsce.entries[type].push(e)
+
+        let l = /idname/g [Symbol.replace](editResults, e.id)
+        l = /ethumb/ [Symbol.replace](l, thumbPath + e.Photo)
+        l = /etype/g [Symbol.replace](l, e.type === "Ship" ? e.Type : e.type)
+        h += l
+    }
+
+    loc.append(h)
+    let imgs = loc.find("img")
+
+    for (let img of imgs) {
+        let data = $(img).data()
+
+        if (!data.src && !$(img).prop("src")) {
+            let ref = bhs.fbstorage.ref().child(data.thumb)
+            ref.getDownloadURL().then(url => {
+                if ($(img).is(":visible"))
+                    $(img).attr("src", url)
+                else
+                    $(img).data("src", url)
+            }).catch(err => {
+                $(img).closest("[id|='row']").remove()
+            })
+        }
+    }
+
+    let maps = loc.find("[id|='type']")
+
+    for (let map of maps) {
+        let type = $(map).prop("id").stripID()
+        let i = getIndex(mapList, "name", type)
+        if (i !== -1) {
+            nmsce.loadMap($(map).find("#slist-" + type), mapList[i].map)
+            nmsce.setMapSize($(map))
+        }
+    }
+}
+*/
 
 NMSCE.prototype.displayResultList = function (entries, type) {
     if (!entries || entries.length === 0)
@@ -5091,6 +5158,29 @@ const occurenceList = [{
 }, {
     name: "Rare",
 }, ]
+
+const mapList = [{
+    name: "Fighter",
+    map: "/images/fighter-opt.svg",
+}, {
+    name: "Hauler",
+    map: "/images/hauler-opt.svg",
+}, {
+    name: "Shuttle",
+    map: "/images/shuttle-opt.svg",
+}, {
+    name: "Explorer",
+    map: "/images/explorer-opt.svg",
+}, {
+    name: "Exotic",
+    map: "/images/exotic-opt.svg",
+}, {
+    name: "Freighter",
+    map: "/images/freighter-opt.svg",
+}, {
+    name: "Living-Ship",
+    map: "/images/living-ship-opt.svg",
+}]
 
 const shipList = [{
     name: "Fighter",
