@@ -5799,6 +5799,8 @@ const biomeList = [{
     name: 'Toxic',
 }, {
     name: 'Irradiated',
+}, {
+    name: 'Volcanic',
 }]
 
 const glitchList = [{

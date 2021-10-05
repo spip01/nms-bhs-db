@@ -33,7 +33,7 @@ var mods = []
 var rules = {}
 var lastPost = {}
 var lastComment = {}
-const version = 3.50
+const version = 3.6
 
 // main()
 // async function main() {
@@ -122,7 +122,7 @@ exports.nmsceBot = async function () {
     }).then(async logs => {
         console.log("log", logs.length)
         let list = []
-        posts = []
+        let posts = []
 
         for (let log of logs) {
             if (!list.includes(log.target_fullname)) {
@@ -134,7 +134,7 @@ exports.nmsceBot = async function () {
 
         validatePosts(posts)
     }).catch(err => {
-        console.log("error 4", typeof err === "string" ? err : JSON.stringify(err))
+        console.log("error 4", err)
     }))
 
     return Promise.all(p)
@@ -184,6 +184,7 @@ async function checkComments(posts, mods) {
                             break
                         case "f": // ship request flair
                             shiprequest = true
+                            remove = true
                             break
                         case "d": // ask for better description
                             description = true
@@ -245,7 +246,9 @@ async function checkComments(posts, mods) {
                         .distinguish({
                             status: true
                         }).lock()
-                        .catch(err => console.log("error 5", typeof err === "string" ? err : JSON.stringify(err)))
+                        .catch(err => {
+                            console.log("error 5", err)
+                        })
 
                     if (remove)
                         op.report({
@@ -426,6 +429,7 @@ function validatePosts(posts) {
             continue
 
         let galaxy, platform, mode, archive
+        let pangalactic = false
 
         if (flair) {
             if (flair.galaxy) {
@@ -433,7 +437,8 @@ function validatePosts(posts) {
                 if (!galaxy) {
                     reason += (reason ? ", " : "") + "galaxy"
                     ok = false
-                }
+                } else if (galaxy != "Euclid") 
+                    pangalactic = true
             }
 
             if (flair.platform) {
@@ -470,7 +475,7 @@ function validatePosts(posts) {
             }
 
             if ((!flair.sclass || !post.title.match(/s\bclass/i) || post.title.match(/crash|sunk/i)) &&
-                (flair.name !== "Starship" || !post.title.match(/black/i)) && !post.is_gallery && post.domain !== "imgur.com" &&
+                (flair.name !== "Starship" || !post.title.match(/black/i)) && // !post.is_gallery && post.domain !== "imgur.com" &&
                 (!flair.station || !post.title.match(/rare|unique|ultra|trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station|\bwave\b|\bx.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death/i)) &&
                 (post.banned_by && post.banned_by.name === "nmsceBot" || post.removed_by_category === "automod_filtered" ||
                     post.removed_by_category === "reddit" || post.mod_reports.length > 0)) {
@@ -490,6 +495,11 @@ function validatePosts(posts) {
                         .catch(err => console.log("error 14", typeof err === "string" ? err : JSON.stringify(err)))
                 }
             }
+
+            if (pangalactic) 
+                post.reply(pangalacticComment).lock()
+                    .catch(err => console.log("error 20", typeof err === "string" ? err : JSON.stringify(err)))
+            
         } else if (reason && !post.removed_by_category) {
             console.log("bot remove missing", reason, "https://reddit.com" + post.permalink)
             post.save().remove()
@@ -653,23 +663,6 @@ function addressToXYZ(addr) {
     return out
 }
 
-function glyphToAddr(glyph) {
-    //const portalFormat = "psssyyzzzxxx"
-
-    if (glyph) {
-        let xyz = {}
-        xyz.p = parseInt(glyph.slice(0, 1), 16)
-        xyz.s = parseInt(glyph.slice(1, 4), 16)
-        xyz.y = (parseInt(glyph.slice(4, 6), 16) - 0x81) & 0xff
-        xyz.z = (parseInt(glyph.slice(6, 9), 16) - 0x801) & 0xfff
-        xyz.x = (parseInt(glyph.slice(9, 12), 16) - 0x801) & 0xfff
-
-        return xyzToAddress(xyz)
-    }
-
-    return ""
-}
-
 function addrToGlyph(addr, planet) {
     let s = ""
     //const portalFormat = "psssyyxxxzzz"
@@ -816,6 +809,7 @@ const missingFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your pos
 const editFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair or title did not contain the required [missing]. If you correct the flair within 24 hours it will be re-approved. You can edit the flair after the post is made. When you select the flair you can edit the text in the box. In the app there is an edit button you need to press.'
 const removePost = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because it violates the following rules for posting:\n\n'
 const botSig = "\n\n*This action was taken by the nmsceBot. The bot works based on selected flair & title. It is possible the incorrect action was taken if the flair selected was incorrect. Please, double check your flair selection and repost if it was incorrect. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NMSCoordinateExchange).*"
+const pangalacticComment = "The item shared in this post is not in the Euclid, 1st or starting, galaxy. There are 256 unique galaxies in NMS. Shared glyphs only work for the galaxy they are advertised in.\n\nIf you need help travelling to the galaxy advertised in the flair of this post contact PanGalactic Star Cabs - [Discord link](https://discord.gg/WgUdnbZJjh). They can take you anywhere in the NMS universe for free! Any galaxy, any star system, any platform."
 
 const flairList = [{
     match: /Starship/i,
@@ -869,6 +863,14 @@ const flairList = [{
     mode: true,
     version: true,
     id: "d10b49f8-7dac-11e7-9444-0ef61ee650f0"
+}, {
+    match: /Settlement/i,
+    name: "Settlement",
+    galaxy: true,
+    //platform: true,
+    //mode: true,
+    version: true,
+    id: "e8144632-0b1e-11ec-88ab-96ad868165b6"
 }, {
     match: /Farm/i,
     name: "Farm",

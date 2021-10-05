@@ -7,17 +7,18 @@ admin.initializeApp({
 })
 const bucket = admin.storage().bucket('gs://nms-bhs.appspot.com')
 require('events').EventEmitter.defaultMaxListeners = 0
-const thumbPath = "/nmsce/disp/thumb/"
+const thumbPath = "nmsce/disp/thumb/"
 
 function main() {
     let ref = admin.firestore().collectionGroup("nmsceCommon")
     ref = ref.where("type", "==", "Ship")
-    ref.get().then(snapshot => {
+    ref.get().then(async snapshot => {
         for (let doc of snapshot.docs) {
             let e = doc.data()
             const dest = ".\\thumb\\"+e.Photo
             console.log(dest)
-            bucket.file(thumbPath+e.Photo).download({
+
+            await bucket.file(thumbPath+e.Photo).download({
                 destination: dest
             }).catch(err=>console.log(JSON.stringify(err)))
         }

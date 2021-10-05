@@ -193,10 +193,10 @@ exports.genPOI = functions.https.onCall((data, context) => {
     return hops.genPOI()
 })
 
-exports.scheduleGenPOI = functions.pubsub.schedule('*/30 * * * *').onRun(context => {
-    const hops = require('./hops.js')
-    return hops.genPOI()
-})
+// exports.scheduleGenPOI = functions.pubsub.schedule('*/30 * * * *').onRun(context => {
+//     const hops = require('./hops.js')
+//     return hops.genPOI()
+// })
 
 exports.genDARC = functions.https.onCall(async (data, context) => {
     const bucket = admin.storage().bucket("nms-bhs.appspot.com")
@@ -300,9 +300,9 @@ function stringify(e) {
     return JSON.stringify([e.addr, e.reg, e.sys, e.x.addr, e.x.reg, e.x.sys]) + "\n"
 }
 
-exports.scheduleUpdateDARC = functions.pubsub.schedule("*/15 * * * *").onRun((context) => {
-    return doUpdateDARC()
-})
+// exports.scheduleUpdateDARC = functions.pubsub.schedule("*/15 * * * *").onRun((context) => {
+//     return doUpdateDARC()
+// })
 
 exports.updateDARC = functions.https.onCall(async (data, context) => {
     return doUpdateDARC()

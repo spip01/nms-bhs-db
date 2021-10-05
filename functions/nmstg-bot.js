@@ -13,10 +13,10 @@ var userVideos = []
 var mods = []
 var rules = {}
 
-// main()
-// async function main() {
+main()
+async function main() {
 
-exports.nmstgBot = async function () {
+    // exports.nmstgBot = async function () {
 
     if (!sub) {
         console.log("new instance")
@@ -27,8 +27,7 @@ exports.nmstgBot = async function () {
     let p = []
 
     p.push(sub.getNew(!lastPost.name || lastPost.full + 60 * 60 < date ? {
-        limit: 100,
-        time: "hour"
+        limit: 1000
     } : {
         before: lastPost.name
     }).then(posts => {
@@ -76,14 +75,6 @@ exports.nmstgBot = async function () {
             rules[x.priority + 1] = {
                 text: x.description
             }
-
-            // let lines = x.description.split("\n")
-            // let c = 1
-            // for (let i = 0; i < lines.length; ++i) {
-            //     if (lines[i][0] === '-') {
-            //         rules[x.priority + 1][c++] = lines[i]
-            //     }
-            // }
         }
     }
 
@@ -168,6 +159,8 @@ async function modCommands(posts) {
 }
 
 async function checkPostLimits(posts, postList, limit, date, reason) {
+    let fdate = parseInt(new Date().valueOf() / 1000)
+
     for (let post of posts) {
         if (!post.name.includes("t3_") || post.locked || post.selftext === "[deleted]") // submission
             continue
@@ -177,14 +170,20 @@ async function checkPostLimits(posts, postList, limit, date, reason) {
         })
 
         if (typeof user === "undefined") {
-            let user = {}
+            user = {}
             user.name = post.author.name
+            // user.meme = {}
             user.posts = {}
             user.posts[post.created_utc] = post
             postList.push(user)
         } else {
             user.posts[post.created_utc] = post
         }
+
+        // if (post.link_flair_text.match(/meme/gi) && post.created_utc > fdate - 24 * 60 * 60) {
+        //     user.meme[post.created_utc] = post
+        //     console.log(post.author.name)
+        // }
     }
 
     for (let user of postList) {
@@ -220,3 +219,4 @@ const removePost = 'Thank You for posting to r/NoMansSkyTheGame. Your post has b
 const botSig = "\n\n*This action was taken by the nmstgBot. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NoMansSkyTheGame).*"
 const postLimit = "Posting limits: OP is allowed to make 2 post/hour"
 const videoLimit = "Posting limits: OP is allowed to make 1 video post/week"
+const memeLimit = "Posting limits: OP is allowed to make 5 meme post/day"
