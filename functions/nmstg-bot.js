@@ -13,10 +13,10 @@ var userVideos = []
 var mods = []
 var rules = {}
 
-main()
-async function main() {
+// main()
+// async function main() {
 
-    // exports.nmstgBot = async function () {
+exports.nmstgBot = async function () {
 
     if (!sub) {
         console.log("new instance")

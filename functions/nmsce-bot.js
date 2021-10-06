@@ -12,8 +12,6 @@ Handle ship request response before approving
 General subscriber commands "!help"
 Moderator commands "!help"
 
-todo: handle posting limits/hour/day
-
 It shouldn't approve post removed by any moderator
 */
 
@@ -117,7 +115,7 @@ exports.nmsceBot = async function () {
     // only needed to reapprove bot removed post.
     p.push(sub.getModerationLog({
         mods: ["nmsceBot"],
-        type: "removeLink",
+        type: "removelink",
         time: "day",
     }).then(async logs => {
         console.log("log", logs.length)
@@ -429,7 +427,7 @@ function validatePosts(posts) {
             continue
 
         let galaxy, platform, mode, archive
-        let pangalactic = false
+        let taxi = false
 
         if (flair) {
             if (flair.galaxy) {
@@ -437,8 +435,9 @@ function validatePosts(posts) {
                 if (!galaxy) {
                     reason += (reason ? ", " : "") + "galaxy"
                     ok = false
-                } else if (galaxy != "Euclid") 
-                    pangalactic = true
+                } else if (galaxy.name !== "Euclid") {
+                    taxi = true
+                }
             }
 
             if (flair.platform) {
@@ -472,6 +471,11 @@ function validatePosts(posts) {
                     flair_template_id: post.link_flair_template_id,
                     text: newFlair
                 }).catch(err => console.log("error 13", typeof err === "string" ? err : JSON.stringify(err)))
+
+                if (taxi) {
+                    post.reply(taxiComment).lock()
+                        .catch(err => console.log("error 20", typeof err === "string" ? err : JSON.stringify(err)))
+                }
             }
 
             if ((!flair.sclass || !post.title.match(/s\bclass/i) || post.title.match(/crash|sunk/i)) &&
@@ -496,10 +500,6 @@ function validatePosts(posts) {
                 }
             }
 
-            if (pangalactic) 
-                post.reply(pangalacticComment).lock()
-                    .catch(err => console.log("error 20", typeof err === "string" ? err : JSON.stringify(err)))
-            
         } else if (reason && !post.removed_by_category) {
             console.log("bot remove missing", reason, "https://reddit.com" + post.permalink)
             post.save().remove()
@@ -809,7 +809,7 @@ const missingFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your pos
 const editFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair or title did not contain the required [missing]. If you correct the flair within 24 hours it will be re-approved. You can edit the flair after the post is made. When you select the flair you can edit the text in the box. In the app there is an edit button you need to press.'
 const removePost = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because it violates the following rules for posting:\n\n'
 const botSig = "\n\n*This action was taken by the nmsceBot. The bot works based on selected flair & title. It is possible the incorrect action was taken if the flair selected was incorrect. Please, double check your flair selection and repost if it was incorrect. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NMSCoordinateExchange).*"
-const pangalacticComment = "The item shared in this post is not in the Euclid, 1st or starting, galaxy. There are 256 unique galaxies in NMS. Shared glyphs only work for the galaxy they are advertised in.\n\nIf you need help travelling to the galaxy advertised in the flair of this post contact PanGalactic Star Cabs - [Discord link](https://discord.gg/WgUdnbZJjh). They can take you anywhere in the NMS universe for free! Any galaxy, any star system, any platform."
+const taxiComment = "The item shared in this post is not in the Euclid/1st/starting, galaxy. There are 256 unique galaxies in NMS. Shared glyphs only work for the galaxy they are advertised in.\n\nIf you need help travelling to the galaxy advertised in the flair of this post contact PanGalactic Star Cabs - [Discord link](https://discord.gg/WgUdnbZJjh). They can take you anywhere in the NMS universe for free! Any galaxy, any star system, any platform."
 
 const flairList = [{
     match: /Starship/i,
