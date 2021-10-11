@@ -196,6 +196,11 @@ body {
     background-color: black;
 }
 
+.txt-black {
+    color: black;
+    background-color: white;
+}
+
 .txt-label-def {
     color: blue;
 }

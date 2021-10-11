@@ -31,7 +31,6 @@ async function main() {
 function updateCommon(entry, ref) {
     let e = {}
     e.votes = {}
-    e.votes.hof = 0
 
     ref.set(e, {
         merge: true

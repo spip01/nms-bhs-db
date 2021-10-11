@@ -115,7 +115,8 @@ exports.nmsceItemCreated = functions.firestore.document("nmsce/{galaxy}/{type}/{
                 d[e.type] = 0
 
             d[e.type]++
-
+            console.log(e.type, d[e.type])
+            
             d[e.uid][e.type]++
             d[e.uid].name = e._name
             if (mod)
@@ -126,32 +127,32 @@ exports.nmsceItemCreated = functions.firestore.document("nmsce/{galaxy}/{type}/{
             })
         }))
 
-        // ref = admin.firestore().doc("bhs/nmsceCommunityEvent")
-        // p.push(ref.get().then(async doc => {
-        //     let d = {}
-        //     if (doc.exists)
-        //         d = doc.data()
+        ref = admin.firestore().doc("bhs/nmsceMonthly")
+        p.push(ref.get().then(async doc => {
+            let d = {}
+            if (doc.exists)
+                d = doc.data()
 
-        //     if (typeof d[e.uid] === "undefined")
-        //         d[e.uid] = {}
+            if (typeof d[e.uid] === "undefined")
+                d[e.uid] = {}
 
-        //     if (typeof d[e.uid][e.type] === "undefined")
-        //         d[e.uid][e.type] = 0
+            if (typeof d[e.uid][e.type] === "undefined")
+                d[e.uid][e.type] = 0
 
-        //     if (typeof d[e.type] === "undefined")
-        //         d[e.type] = 0
+            if (typeof d[e.type] === "undefined")
+                d[e.type] = 0
 
-        //     d[e.type]++
+            d[e.type]++
 
-        //     d[e.uid][e.type]++
-        //     d[e.uid].name = e._name
-        //     if (mod)
-        //         d[e.uid].mod = true
+            d[e.uid][e.type]++
+            d[e.uid].name = e._name
+            if (mod)
+                d[e.uid].mod = true
 
-        //     return doc.ref.set(d, {
-        //         merge: true
-        //     })
-        // }))
+            return doc.ref.set(d, {
+                merge: true
+            })
+        }))
 
         return Promise.all(p)
     })

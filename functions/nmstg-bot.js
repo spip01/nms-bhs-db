@@ -56,7 +56,7 @@ exports.nmstgBot = async function () {
     }).then(posts => {
         console.log("video", posts.length)
 
-        if (posts.length > 0 || !lastSearch.full || lastSearch.full + 60 * 60 < date)
+        if (!lastSearch.full || lastSearch.full + 60 * 60 < date)
             lastSearch.full = date
         else
             userVideos = []

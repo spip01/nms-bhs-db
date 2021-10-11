@@ -29,15 +29,11 @@ $(document).ready(async () => {
         if (fnmsce) {
             nmsce.buildResultsList()
             nmsce.buildTotals()
+            nmsce.buildPatron()
 
-            let ref = bhs.fs.doc("bhs/nmsceTotals")
-            bhs.subscribe("nmsce-totals", ref, nmsce.displayTotals)
-
-            // ref = bhs.fs.doc("bhs/nmsceCommunityEvent")
-            // bhs.subscribe("nmsce-ce", ref, nmsce.displayTotals)
-
+            nmsce.getTotals()
             nmsce.getResultsLists()
-            // nmsce.getFeatured()
+
             nmsce.expandPanels(false)
         }
 
@@ -645,7 +641,7 @@ NMSCE.prototype.extractEntry = function () {
             entry.galaxy = bhs.user.galaxy
         }
 
-        entry.private = $("#id-private").is(":visible") && $("#ck-private").prop("checked") && bhs.hasRole("nmsceEditor")
+        entry.private = $("#id-private").is(":visible") && $("#ck-private").prop("checked") && bhs.isPatreon(3)
 
         let tab = $("#typeTabs .active").prop("id").stripID()
         let pnl = $("#typePanels #pnl-" + tab)
@@ -736,6 +732,9 @@ NMSCE.prototype.extractEntry = function () {
     }
 
     if (ok) {
+        if (entry.type === "Planet")
+            entry["Planet-Name"] = entry.Name
+
         let parts = nmsce[(entry.Type ? entry.Type : entry.type).toLowerCase()]
         if (parts) {
             entry.parts = {}
@@ -1048,7 +1047,7 @@ NMSCE.prototype.saveSearch = function () {
     search.saved = true
     search.page = window.location.pathname
 
-    if (!bhs.user.uid) {
+    if (!bhs.user.uid || !bhs.isPatreon(2)) {
         if (typeof (Storage) !== "undefined") {
             window.localStorage.setItem('nmsce-galaxy', $("#btn-Galaxy").text().stripNumber())
 
@@ -1067,6 +1066,7 @@ NMSCE.prototype.saveSearch = function () {
         search.email = bhs.user.email
         search.date = firebase.firestore.Timestamp.now()
         search.notify = $("#ck-notify").prop("checked")
+        search.name = $("#searchname").val()
 
         if (search.name) {
             let ref = bhs.fs.doc("users/" + bhs.user.uid + "/nmsce-saved-searches/" + search.name.nameToId())
@@ -2540,7 +2540,8 @@ NMSCE.prototype.restoreImageText = function (txt, draw) {
     if (txt)
         nmsce.imageText = mergeObjects(nmsce.imageText, txt)
 
-    nmsce.imageText.myLogo.ck = false
+    if (typeof nmsce.imageText.myLogo.img === "undefined")
+        nmsce.imageText.myLogo.ck = false
     nmsce.imageText.logo.ck = true
 
     let keys = Object.keys(nmsce.imageText)
@@ -2605,7 +2606,7 @@ NMSCE.prototype.onLoadLogo = function (evt) {
     let text = evt.currentTarget.src.includes("app-logo") ? nmsce.imageText.logo : nmsce.imageText.myLogo
     let img = text.img = evt.currentTarget
 
-    let scale = text.right ? Math.min(text.right / img.naturalWidth, text.decent / img.naturalHeight) : .1
+    let scale = text.right ? Math.min(text.right / img.naturalWidth, text.decent / img.naturalHeight) : 0.1
     text.decent = img.naturalHeight * scale
     text.right = img.naturalWidth * scale
     text.ascent = 0
@@ -2863,7 +2864,7 @@ NMSCE.prototype.drawText = function (alt, altw) {
     nmsce.imageText.textsize.height = txtcanvas.height
     nmsce.imageText.textsize.width = txtcanvas.width
 
-    nmsce.imageText.logo.right = nmsce.imageText.logo.decent = parseInt(Math.min(txtcanvas.width, txtcanvas.height) * .15)
+    nmsce.imageText.logo.right = nmsce.imageText.logo.decent = parseInt(Math.min(txtcanvas.width, txtcanvas.height) * 0.15)
     if ($("#imageTextBlock").is(":visible")) {
         let ctx = txtcanvas.getContext("2d")
         ctx.clearRect(0, 0, txtcanvas.width, txtcanvas.height)
@@ -3179,7 +3180,7 @@ NMSCE.prototype.redditGetSubscribed = function (accessToken) {
 }
 
 NMSCE.prototype.setSubReddit = function (evt, accessToken) {
-    let name = typeof evt === "string" ? name = evt.split("_")[1] : $(evt).text().stripMarginWS()
+    let name = typeof evt === "string" ? evt.split("_")[1] : $(evt).text().stripMarginWS()
     let i = getIndex(nmsce.subReddits, "name", name)
 
     if (!accessToken)
@@ -3813,7 +3814,7 @@ NMSCE.prototype.updateScreenshot = function (entry) {
             bhs.fbstorage.ref().child(displayPath + entry.Photo).put(blob).then(() => {
                 // bhs.status("Saved " + displayPath + entry.Photo)
             })
-        }, "image/jpeg", .9)
+        }, "image/jpeg", 0.9)
 
         let thumb = document.createElement('canvas')
         nmsce.drawText(thumb, 400)
@@ -3822,7 +3823,7 @@ NMSCE.prototype.updateScreenshot = function (entry) {
             bhs.fbstorage.ref().child(thumbPath + entry.Photo).put(blob).then(() => {
                 // bhs.status("Saved " + thumbPath + entry.Photo)
             })
-        }, "image/jpeg", .8)
+        }, "image/jpeg", 0.8)
 
         let orig = document.createElement('canvas')
         let ctx = orig.getContext("2d")
@@ -3833,7 +3834,7 @@ NMSCE.prototype.updateScreenshot = function (entry) {
             bhs.fbstorage.ref().child(originalPath + entry.Photo).put(blob).then(() => {
                 // bhs.status("Saved " + originalPath + entry.Photo)
             })
-        }, "image/jpeg", .9)
+        }, "image/jpeg", 0.9)
 
         $("#dltab-" + entry.type).click()
 
@@ -3893,6 +3894,7 @@ NMSCE.prototype.initVotes = function (entry) {
         entry.votes.edchoice = 0
         entry.votes.bhspoi = 0
         entry.votes.hof = 0
+        entry.votes.patron = 0
     }
 }
 
@@ -3956,6 +3958,7 @@ function getPlanet(evt) {
     ref = ref.where("galaxy", "==", gal)
     ref = ref.where("addr", "==", addr)
     ref = ref.where("Planet-Index", "==", planet)
+    ref = ref.where("Planet-Name", "!=", "")
     ref = ref.limit(1)
 
     ref.get().then(snapshot => {
@@ -3965,6 +3968,7 @@ function getPlanet(evt) {
             if (e["Planet-Name"] && e["Planet-Name"] !== "") {
                 $("[id='id-Planet-Name']").val(e["Planet-Name"])
                 $("[id='row-Planet-Name'] .fa-check").show()
+                nmsce.restoreImageText(null, true)
             }
         } else
             $("[id='row-Planet-Name'] .fa-check").hide()
@@ -4008,7 +4012,7 @@ NMSCE.prototype.getEntries = function (skipAll) {
 
     if (!skipAll) {
         let ref = bhs.fs.collectionGroup("nmsceCommon")
-        nmsce.entries["All"] = []
+        nmsce.entries.All = []
         ref = ref.where("uid", "==", bhs.user.uid)
         ref = ref.orderBy("created", "desc")
         ref = ref.limit(50)
@@ -4038,6 +4042,10 @@ const resultTables = [{
     field: "votes.favorite",
     limit: 20,
 }, {
+    name: "Patron Favorites",
+    field: "votes.patron",
+    limit: 20,
+}, {
     name: "Top Visited",
     field: "votes.visited",
     limit: 20,
@@ -4051,7 +4059,8 @@ const resultTables = [{
     limit: 20,
 }, {
     name: "Totals",
-    limit: 20,
+}, {
+    name: "Patrons",
 }, ]
 
 NMSCE.prototype.buildResultsList = function () {
@@ -4085,25 +4094,116 @@ NMSCE.prototype.buildResultsList = function () {
     $("#displayPanels .scroll").height(height + "px")
 }
 
+NMSCE.prototype.getTotals = function () {
+    // ref = bhs.fs.doc("bhs/nmsceCommunityEvent")
+    // bhs.subscribe("nmsce-ce", ref, nmsce.displayTotals)
+
+    let ref = bhs.fs.doc("bhs/nmsceTotals")
+    ref.get().then(doc => {
+        if (doc.exists)
+            nmsce.displayTotals(doc.data(), "bhs/nmsceTotals")
+    })
+
+    ref = bhs.fs.doc("bhs/nmsceMonthly")
+    ref.get().then(doc => {
+        if (doc.exists)
+            nmsce.displayTotals(doc.data(), "bhs/nmsceMonthly")
+    })
+
+    ref = bhs.fs.doc("bhs/patreon")
+    ref.get().then(doc => {
+        if (doc.exists)
+            nmsce.displayPatron(doc.data(), "bhs/patreon")
+    })
+}
+
+NMSCE.prototype.buildPatron = function () {
+    const header = `
+        <div id="patronCard" class="card">
+            <div class="card-header pl-15 txt-def">
+                <div class="row">
+                    <div class="col-4">Thanks To All Our Supporters!</div>
+                    <div class="col-3">
+                        <a href="https://www.patreon.com/bePatron?u=28538540" style="background-color:red; color:white; border-radius:12px">&nbsp;&nbsp;Become a Patron!&nbsp;&nbsp;</a>
+                    </div>
+                    <div class="col-5">You can also get patron benefits by entering data.&nbsp;
+                        <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
+                            data-placement="top" title="T1 benefits for 25 items/month, T2-75 items, T3-150 items.">
+                        </i>
+                    </div>
+                </div>
+                <br>
+                <div class="row h6 border-top">
+                    <div class="col-4">Name</div>
+                    <div class="col-2 pl-15">Date Joined</div>
+                </div>
+            </div>
+            <div id="patronList" class="card-body scroll txt-black" style="height:600px"></div>
+        </div>`
+
+    let loc = $("#dl-Patrons")
+    loc.find("#list-Patrons").remove()
+    loc.append(header)
+}
+
+NMSCE.prototype.displayPatron = function (list) {
+    const rows = `
+        <div id="row-uid" class="border-bottom h6">
+            <div class="row">
+                <div id="id-name" class="col-3">dname</div>
+                <div id="id-date" class="col-2 txt-right">ddate</div>
+            </div>
+        </div>`
+
+    let loc = $("#patronCard")
+    let l = loc.find("#patronList")
+
+    let k = Object.keys(list)
+    for (let u of k) {
+        let e = list[u]
+
+        let h = /uid/ [Symbol.replace](rows, k)
+        h = /dname/ [Symbol.replace](h, e.name)
+        h = /ddate/ [Symbol.replace](h, e.start.toDate().toDateLocalTimeString().slice(0, 10))
+
+        l.append(h)
+    }
+
+    nmsce.sortTotals(null, "id-name", "patronList")
+}
+
 NMSCE.prototype.buildTotals = function () {
     const header = `
-        <div class="row pl-15">
-            <div class="col-md-7 col-14">
+        <div id="totalsCard" class="row">
+            <div class="col-md-9 col-14">
                 <div class="card">
                     <div class="card-header pl-15 txt-def">
                         <div class="row">
-                            <label>
-                                <input id="ck-idname" type="checkbox" onclick="nmsce.showModTotals(this)">
-                                &nbsp;Show All
-                            </label>
+                            <div class="col-3">
+                                <label>
+                                    <input id="ck-idname" type="checkbox" onclick="nmsce.showModTotals(this)">
+                                    &nbsp;Show All
+                                </label>
+                            </div>
+                            <div class="col-5">You can get patron benefits by entering data.&nbsp;
+                                <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
+                                    data-placement="top" title="T1 benefits for 25 items/month, T2-75 items, T3-150 items.">
+                                </i>
+                            </div>
                         </div>
                         <div class="row">
-                            <div id="id-name" class="col-6 pointer" onclick="nmsce.sortTotals(this)">Player&nbsp;&nbsp;<i class="fas fa-sort-alpha-down"></i></div>
-                            <div id="id-total" class="col-3 pointer" onclick="nmsce.sortTotals(this)">Overall&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div>
-                            <!--div id="id-event" class="col-3 pointer" onclick="nmsce.sortTotals(this)">Community Event&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div-->
+                            <div id="id-name" class="col-9 pointer" onclick="nmsce.sortTotals(this)">Player&nbsp;&nbsp;<i class="fas fa-sort-alpha-down"></i></div>
+                            <div id="id-total" class="col-2 pointer" onclick="nmsce.sortTotals(this)">Overall&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div>
+                            <div id="id-monthly" class="col-2 pointer" onclick="nmsce.sortTotals(this)">Monthly&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div>
                         </div>
                     </div>
-                    <div id="totalsCard" class="card-body scroll" style="height:600px"></div>
+                    <div id="userTotals" class="card-body scroll txt-black" style="height:600px"></div>
+                </div>
+            </div>
+            <div class="col-md-5 col-14">
+                <div class="card">
+                    <div class="card-header pl-15 txt-def">Totals</div>
+                    <div id="totalsTable" class="txt-black pl-15"></div>
                 </div>
             </div>
         </div>`
@@ -4117,16 +4217,23 @@ NMSCE.prototype.displayTotals = function (list, path) {
     const rows = `
         <div id="row-uid" name="ismod" class="border-bottom h6">
             <div class="row pointer" onclick="nmsce.expandTotals(this)">
-                <div id="id-name" class="col-4"><i class="far fa-caret-square-down txt-input"></i> nameS</div>
-                <div id="id-total" class="col-3 txt-right">totalT</div>
-                <div id="id-event" class="col-3 txt-right">eventT</div>
+                <div id="id-name" class="col-8"><i class="far fa-caret-square-down txt-input"></i> nameS</div>
+                <div id="id-total" class="col-2 txt-right">totalT</div>
+                <div id="id-monthly" class="col-2 txt-right">monthlyT</div>
             </div>
             <div id="id-exp" class="row hidden" onclick="nmsce.expandTotals(this)">
                 <div id="id-details">detailT</div>
             </div>
         </div>`
+    const totals = `
+        <div class="row">
+            <div class="col-5">name</div>
+            <div id="id-name" class="col-3">qty</div>
+        </div>`
 
+    let total = 0
     let loc = $("#totalsCard")
+
     for (let k of Object.keys(list)) {
         let e = list[k]
         if (typeof e.name !== "undefined") {
@@ -4152,22 +4259,45 @@ NMSCE.prototype.displayTotals = function (list, path) {
 
                 if (path === "bhs/nmsceTotals") {
                     h = /totalT/ [Symbol.replace](h, t)
-                    h = /eventT/ [Symbol.replace](h, "")
-                } else {
+                    h = /monthlyT/ [Symbol.replace](h, "")
+                } else if (path === "bhs/nmsceMonthly") {
                     h = /totalT/ [Symbol.replace](h, "")
-                    h = /eventT/ [Symbol.replace](h, t)
+                    h = /monthlyT/ [Symbol.replace](h, t)
                 }
 
-                loc.append(h)
+                l = loc.find("#userTotals")
+                l.append(h)
             } else {
                 $(l).find("#id-details").text(s)
                 if (path === "bhs/nmsceTotals")
                     $(l).find("#id-total").text(t)
-                else
-                    $(l).find("#id-event").text(t)
+                else if (path === "bhs/nmsceMonthly")
+                    $(l).find("#id-monthly").text(t)
             }
+        } else if (typeof e === "number") {
+            let l = loc.find("#id-" + k)
+            if (l.length === 0) {
+                let h = /name/g [Symbol.replace](totals, k)
+                h = /qty/ [Symbol.replace](h, e)
+
+                let l = loc.find("#totalsTable")
+                l.append(h)
+            } else
+                l.text(e)
+
+            total += e
         }
     }
+
+    let l = loc.find("#id-Total")
+    if (l.length === 0) {
+        let l = loc.find("#totalsTable")
+        let h = /name/g [Symbol.replace](totals, "Total")
+        h = /qty/ [Symbol.replace](h, total)
+        h = /row/ [Symbol.replace](h, "row border-top")
+        l.append(h)
+    } else
+        l.text(total)
 
     nmsce.sortTotals(null, "id-name")
 }
@@ -4180,9 +4310,9 @@ NMSCE.prototype.showModTotals = function (evt) {
 }
 
 
-NMSCE.prototype.sortTotals = function (evt, id) {
+NMSCE.prototype.sortTotals = function (evt, id, parent) {
     let sort = typeof id !== "undefined" ? id : $(evt).prop("id")
-    let loc = $("#totalsCard")
+    let loc = $(typeof parent === "undefined" ? "#userTotals" : "#" + parent)
     let list = loc.children()
 
     switch (sort) {
@@ -4194,7 +4324,7 @@ NMSCE.prototype.sortTotals = function (evt, id) {
             })
             break
         case "id-total":
-        case "id-event":
+        case "id-monthly":
             list.sort((a, b) => {
                 a = $(a).find("#" + sort).text().stripMarginWS()
                 a = a === "" ? 0 : parseInt(a)
@@ -4237,7 +4367,7 @@ NMSCE.prototype.fcnObserver = function (loc, fcn) {
             }, {
                 root: loc[0],
                 rootMargin: '0px 0px 0px 0px',
-                threshold: .1
+                threshold: 0.1
             }
         )
     }
@@ -4452,6 +4582,9 @@ NMSCE.prototype.displayResultList = function (entries, type) {
             continue
 
         if (type === "Hall-of-Fame" && e.votes.hof < 1)
+            continue
+
+        if (type === "Patron-Favorites" && e.votes.patron < 1)
             continue
 
         nmsce.entries[type].push(e)
@@ -4689,6 +4822,7 @@ NMSCE.prototype.showVotes = function (entry) {
         shvote($("#voted-visited"), entry.visited)
         shvote($("#voted-report"), entry.report)
         shvote($("#voted-hof"), entry.hof)
+        shvote($("#voted-patron"), entry.patron)
     } else {
         $("#favorite").css("color", "grey")
         shvote($("#voted-edchoice"), false)
@@ -4696,6 +4830,7 @@ NMSCE.prototype.showVotes = function (entry) {
         shvote($("#voted-visited"), false)
         shvote($("#voted-report"), false)
         shvote($("#voted-hof"), false)
+        shvote($("#voted-patron"), false)
     }
 }
 
@@ -4922,10 +5057,12 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend, type) {
         if (fstring) {
             let l = /idname/g [Symbol.replace](itm, "Favorite")
             h += /title/ [Symbol.replace](l, "Favorite")
-            l = /idname/g [Symbol.replace](itm, "Editors-Choice")
-            h += /title/ [Symbol.replace](l, "Editors Choice")
             l = /idname/g [Symbol.replace](itm, "Visited")
             h += /title/ [Symbol.replace](l, "Visited")
+            l = /idname/g [Symbol.replace](itm, "Patron")
+            h += /title/ [Symbol.replace](l, "Patron")
+            l = /idname/g [Symbol.replace](itm, "Editors-Choice")
+            h += /title/ [Symbol.replace](l, "Editors Choice")
             l = /idname/g [Symbol.replace](itm, "Hall-of-Fame")
             h += /title/ [Symbol.replace](l, "Hall of Fame")
             l = /idname/g [Symbol.replace](itm, "Created")
@@ -4935,18 +5072,6 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend, type) {
             l = /idname/g [Symbol.replace](itm, "Posted")
             h += /title/ [Symbol.replace](l, "Posted")
         } else {
-            // let l = /idname/g [Symbol.replace](itm, "Favorite")
-            // l = /pointer/ [Symbol.replace](l, "")
-            // h += /title/ [Symbol.replace](l, e.votes.favorite)
-            // l = /idname/g [Symbol.replace](itm, "Editors-Choice")
-            // l = /pointer/ [Symbol.replace](l, "")
-            // h += /title/ [Symbol.replace](l, e.votes.edchoice)
-            // l = /idname/g [Symbol.replace](itm, "Visited")
-            // l = /pointer/ [Symbol.replace](l, "")
-            // h += /title/ [Symbol.replace](l, e.votes.visited)
-            // l = /idname/g [Symbol.replace](itm, "Hall of Fame")
-            // l = /pointer/ [Symbol.replace](l, "")
-            // h += /title/ [Symbol.replace](l, e.votes.hof)
             let l = /idname/g [Symbol.replace](itm, "Created")
             l = /pointer/ [Symbol.replace](l, "")
             h += /title/ [Symbol.replace](l, e.created ? "Created " + e.created.toDate().toDateLocalTimeString() : "")

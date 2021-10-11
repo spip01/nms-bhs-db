@@ -226,7 +226,7 @@
                                             Name&nbsp;
                                             <input id="searchname" class="col-10" type="text" placeholder="Search Name">
                                         </label>
-                                        <label class="col txt-label-def">
+                                        <label id="id=notifySearch" class="col txt-label-def hidden">
                                             <input id="ck-notify" type="checkbox">
                                             Notify&nbsp;
                                             <i class="far fa-question-circle text-danger h6" data-toggle="tooltip"
@@ -305,6 +305,13 @@
                                             data-html="true" data-placement="bottom"
                                             title="If you retrieved an item or visited a location.">
                                         </i>
+                                    </span>
+                                </div>
+                                <div id="patron" class="col-7 txt-label-def h5 align-bottom pointer hidden"
+                                    onclick="nmsce.vote(this)">
+                                    <span class="row">
+                                        <i id="voted-patron" class="fas fa-square h3" style="color:grey"></i>
+                                        &nbsp;Patron Favorite
                                     </span>
                                 </div>
                                 <div id="report" class="col-7 pointer text-danger h5" onclick="nmsce.vote(this)">
