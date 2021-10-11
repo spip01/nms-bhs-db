@@ -95,6 +95,8 @@ exports.nmsceItemCreated = functions.firestore.document("nmsce/{galaxy}/{type}/{
         let p = []
         let e = doc.data()
 
+        p.push(nmsce.checkSearch(e))
+
         let ref = admin.firestore().doc("admin/" + e.uid)
         let ed = await ref.get()
         let mod = ed.exists && ed.data().roles.includes("nmsceEditor")
@@ -116,7 +118,7 @@ exports.nmsceItemCreated = functions.firestore.document("nmsce/{galaxy}/{type}/{
 
             d[e.type]++
             console.log(e.type, d[e.type])
-            
+
             d[e.uid][e.type]++
             d[e.uid].name = e._name
             if (mod)
@@ -157,12 +159,12 @@ exports.nmsceItemCreated = functions.firestore.document("nmsce/{galaxy}/{type}/{
         return Promise.all(p)
     })
 
-exports.nmsceCheckSearch = functions.firestore.document("nmsce/{galaxy}/{type}/{id}")
-    .onCreate(async (doc, context) => {
-        const nmsce = require('./nmsce.js')
-        let e = doc.data()
-        return nmsce.checkSearch(e)
-    })
+// exports.nmsceCheckSearch = functions.firestore.document("nmsce/{galaxy}/{type}/{id}")
+//     .onCreate(async (doc, context) => {
+//         const nmsce = require('./nmsce.js')
+//         let e = doc.data()
+//         return nmsce.checkSearch(e)
+//     })
 
 exports.scheduleNmsceBot = functions.pubsub.schedule('every 3 minutes').onRun(async context => {
     const bot = require('./nmsce-bot.js')
@@ -441,144 +443,169 @@ function applyEdits(ts, elist) {
     return false
 }
 
-exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
-    .onCreate(async (doc, context) => {
-        let p = []
-        let e = doc.data()
+// exports.systemCreated = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
+//     .onCreate(async (doc, context) => {
+//         let p = []
+//         let e = doc.data()
 
-        if (typeof e.created === "undefined") {
-            p.push(doc.ref.set({
-                created: e.modded
-            }, {
-                merge: true
-            }))
-        }
+//         if (typeof e.created === "undefined") {
+//             p.push(doc.ref.set({
+//                 created: e.modded
+//             }, {
+//                 merge: true
+//             }))
+//         }
 
-        if (e.blackhole || e.deadzone) {
-            let t = incTotals(e, 1)
-            let ref = admin.firestore().collection("counter")
-            p.push(ref.doc().set(t))
+//         if (e.blackhole || e.deadzone) {
+//             let t = incTotals(e, 1)
+//             let ref = admin.firestore().collection("counter")
+//             p.push(ref.doc().set(t))
 
-            if (e.blackhole)
-                p.push(saveChange(e, "create"))
-        }
+//             if (e.blackhole)
+//                 p.push(saveChange(e, "create"))
+//         }
 
-        return Promise.all(p)
-    })
+//         return Promise.all(p)
+//     })
 
-exports.systemUpdate = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
-    .onUpdate(async (change, context) => {
-        let p = []
-        let e = change.after.data()
+// exports.systemUpdate = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
+//     .onUpdate(async (change, context) => {
+//         let p = []
+//         let e = change.after.data()
 
-        if (e.blackhole) {
-            let b = change.before.data()
+//         if (e.blackhole) {
+//             let b = change.before.data()
 
-            // JSON.stringify([e.addr, e.reg, e.sys, e.x.addr, e.x.reg, e.x.sys])
-            if (e.addr !== b.addr || e.reg !== b.reg || e.sys !== b.sys ||
-                e.x.addr !== b.x.addr || e.x.reg !== b.x.reg || e.x.sys !== b.x.sys) {
-                p.push(saveChange(e, "update"))
+//             // JSON.stringify([e.addr, e.reg, e.sys, e.x.addr, e.x.reg, e.x.sys])
+//             if (e.addr !== b.addr || e.reg !== b.reg || e.sys !== b.sys ||
+//                 e.x.addr !== b.x.addr || e.x.reg !== b.x.reg || e.x.sys !== b.x.sys) {
+//                 p.push(saveChange(e, "update"))
 
-                console.log("before", stringify(b))
-                console.log("after", stringify(e))
-            }
-        }
+//                 console.log("before", stringify(b))
+//                 console.log("after", stringify(e))
+//             }
+//         }
 
-        return Promise.all(p)
-    })
+//         return Promise.all(p)
+//     })
 
-exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
-    .onDelete((doc, context) => {
-        let p = []
-        const e = doc.data()
+// exports.systemDelete = functions.firestore.document("stars5/{galaxy}/{platform}/{addr}")
+//     .onDelete((doc, context) => {
+//         let p = []
+//         const e = doc.data()
 
-        if (e.blackhole || e.deadzone) {
-            let t = incTotals(e, -1)
-            let ref = admin.firestore().collection("counter")
-            p.push(ref.doc().set(t))
+//         if (e.blackhole || e.deadzone) {
+//             let t = incTotals(e, -1)
+//             let ref = admin.firestore().collection("counter")
+//             p.push(ref.doc().set(t))
 
-            if (e.blackhole)
-                p.push(saveChange(e, "delete"))
-        }
+//             if (e.blackhole)
+//                 p.push(saveChange(e, "delete"))
+//         }
 
-        return Promise.all(p)
-    })
+//         return Promise.all(p)
+//     })
 
-exports.scheduleUpdateTotals = functions.pubsub.schedule("*/1 * * * *").onRun(async context => {
-    let total = {}
+// exports.scheduleUpdateTotals = functions.pubsub.schedule("*/1 * * * *").onRun(async context => {
+//     let total = {}
 
-    let ref = admin.firestore().collection("counter")
-    let snapshot = await ref.get()
+//     let ref = admin.firestore().collection("counter")
+//     let snapshot = await ref.get()
 
-    for (let doc of snapshot.docs) {
-        let t = doc.data()
-        await doc.ref.delete()
-        total = addObjects(total, t)
-    }
+//     for (let doc of snapshot.docs) {
+//         let t = doc.data()
+//         await doc.ref.delete()
+//         total = addObjects(total, t)
+//     }
 
-    return applyAllTotals(total)
-})
+//     return applyAllTotals(total)
+// })
 
-function saveChange(e, edit) {
-    e.what = edit
-    e.time = admin.firestore.Timestamp.fromDate(new Date());
-    return admin.firestore().doc("edits/" + e.time.toDate().getTime()).set(e)
-}
+// function saveChange(e, edit) {
+//     e.what = edit
+//     e.time = admin.firestore.Timestamp.fromDate(new Date());
+//     return admin.firestore().doc("edits/" + e.time.toDate().getTime()).set(e)
+// }
 
 exports.scheduleBackupBHS = functions.pubsub.schedule('0 2 1,8,15,22 * *').onRun(context => {
     return doBackup()
 })
 
-exports.backupBHS = functions.https.onCall(async (data, context) => {
-    return doBackup()
-})
+async function doBackup() {
+    const firestore = require('@google-cloud/firestore')
+    const client = new firestore.v1.FirestoreAdminClient()
 
-async function backupCols(ref, now) {
-    const bucket = admin.storage().bucket("staging.nms-bhs.appspot.com")
+    const bucket = 'gs://staging.nms-bhs.appspot.com'
 
-    await ref.get().then(snapshot => {
-        if (!snapshot.empty) {
-            const path = /\//g [Symbol.replace](snapshot.query.path, "-")
-            const fname = "backup/" + now + "/" + path + ".json"
+    const projectId = process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT
+    const databaseName =
+        client.databasePath(projectId, '(default)')
 
-            let f = bucket.file(fname)
-            let fs = f.createWriteStream({
-                gzip: true,
-            })
-
-            for (let doc of snapshot.docs)
-                fs.write(JSON.stringify(doc.data()) + "\n")
-
-            fs.end()
-        }
-    })
-
-    let p = []
-    await ref.listDocuments().then(async refs => {
-        for (let ref of refs) {
-            await ref.listCollections().then(refs => {
-                for (let ref of refs)
-                    p.push(backupCols(ref, now))
-            })
-        }
-    })
-
-    return p
-}
-
-function doBackup() {
-    const now = new Date().toDateLocalTimeString()
-
-    return admin.firestore().listCollections().then(refs => {
-        let p = []
-        for (let ref of refs)
-            p.push(backupCols(ref, now))
-
-        return Promise.all(p).then(res => {
-            return true
+    return await client.exportDocuments({
+            name: databaseName,
+            outputUriPrefix: bucket,
+            collectionIds: []
         })
-    })
+        .then(responses => {
+            const response = responses[0]
+            console.log(`Operation Name: ${response['name']}`)
+        })
+        .catch(err => {
+            console.error(err)
+            throw new Error('Export operation failed')
+        })
 }
+
+// exports.backupBHS = functions.https.onCall(async (data, context) => {
+//     return doBackup()
+// })
+
+// async function backupCols(ref, now) {
+//     const bucket = admin.storage().bucket("staging.nms-bhs.appspot.com")
+
+//     await ref.get().then(snapshot => {
+//         if (!snapshot.empty) {
+//             const path = /\//g [Symbol.replace](snapshot.query.path, "-")
+//             const fname = "backup/" + now + "/" + path + ".json"
+
+//             let f = bucket.file(fname)
+//             let fs = f.createWriteStream({
+//                 gzip: true,
+//             })
+
+//             for (let doc of snapshot.docs)
+//                 fs.write(JSON.stringify(doc.data()) + "\n")
+
+//             fs.end()
+//         }
+//     })
+
+//     let p = []
+//     await ref.listDocuments().then(async refs => {
+//         for (let ref of refs) {
+//             await ref.listCollections().then(refs => {
+//                 for (let ref of refs)
+//                     p.push(backupCols(ref, now))
+//             })
+//         }
+//     })
+
+//     return p
+// }
+
+// function doBackup() {
+//     const now = new Date().toDateLocalTimeString()
+
+//     return admin.firestore().listCollections().then(refs => {
+//         let p = []
+//         for (let ref of refs)
+//             p.push(backupCols(ref, now))
+
+//         return Promise.all(p).then(res => {
+//             return true
+//         })
+//     })
+// }
 
 exports.recalcTotals = functions.https.onCall(async (data, context) => {
     let p = []

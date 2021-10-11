@@ -4262,7 +4262,7 @@ NMSCE.prototype.displayTotals = function (list, path) {
                     h = /monthlyT/ [Symbol.replace](h, "")
                 } else if (path === "bhs/nmsceMonthly") {
                     h = /totalT/ [Symbol.replace](h, "")
-                    h = /monthlyT/ [Symbol.replace](h, t)
+                    h = /monthlyT/ [Symbol.replace](h, t + " " + (t > 150 ? "T3" : t > 75 ? "T2" : t > 30 ? "T1" : ""))
                 }
 
                 l = loc.find("#userTotals")
@@ -4272,7 +4272,7 @@ NMSCE.prototype.displayTotals = function (list, path) {
                 if (path === "bhs/nmsceTotals")
                     $(l).find("#id-total").text(t)
                 else if (path === "bhs/nmsceMonthly")
-                    $(l).find("#id-monthly").text(t)
+                    $(l).find("#id-monthly").text(t + " " + (t > 150 ? "T3" : t > 75 ? "T2" : t > 30 ? "T1" : ""))
             }
         } else if (typeof e === "number") {
             let l = loc.find("#id-" + k)
