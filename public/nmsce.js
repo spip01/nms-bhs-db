@@ -4053,10 +4053,10 @@ const resultTables = [{
     name: "Moderators Choice",
     field: "votes.edchoice",
     limit: 20,
-}, {
-    name: "Hall of Fame",
-    field: "votes.hof",
-    limit: 20,
+// }, {
+//     name: "Hall of Fame",
+//     field: "votes.hof",
+//     limit: 20,
 }, {
     name: "Totals",
 }, {
@@ -4581,8 +4581,8 @@ NMSCE.prototype.displayResultList = function (entries, type) {
         if (e.private && e.uid !== bhs.user.uid && !bhs.hasRole("nmsceEditor"))
             continue
 
-        if (type === "Hall-of-Fame" && e.votes.hof < 1)
-            continue
+        // if (type === "Hall-of-Fame" && e.votes.hof < 1)
+        //     continue
 
         if (type === "Patron-Favorites" && e.votes.patron < 1)
             continue
@@ -4821,7 +4821,7 @@ NMSCE.prototype.showVotes = function (entry) {
         shvote($("#voted-bhspoi"), entry.bhspoi)
         shvote($("#voted-visited"), entry.visited)
         shvote($("#voted-report"), entry.report)
-        shvote($("#voted-hof"), entry.hof)
+        // shvote($("#voted-hof"), entry.hof)
         shvote($("#voted-patron"), entry.patron)
     } else {
         $("#favorite").css("color", "grey")
@@ -4829,7 +4829,7 @@ NMSCE.prototype.showVotes = function (entry) {
         shvote($("#voted-bhspoi"), false)
         shvote($("#voted-visited"), false)
         shvote($("#voted-report"), false)
-        shvote($("#voted-hof"), false)
+        // shvote($("#voted-hof"), false)
         shvote($("#voted-patron"), false)
     }
 }
@@ -5063,8 +5063,8 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend, type) {
             h += /title/ [Symbol.replace](l, "Patron")
             l = /idname/g [Symbol.replace](itm, "Editors-Choice")
             h += /title/ [Symbol.replace](l, "Editors Choice")
-            l = /idname/g [Symbol.replace](itm, "Hall-of-Fame")
-            h += /title/ [Symbol.replace](l, "Hall of Fame")
+            // l = /idname/g [Symbol.replace](itm, "Hall-of-Fame")
+            // h += /title/ [Symbol.replace](l, "Hall of Fame")
             l = /idname/g [Symbol.replace](itm, "Created")
             h += /title/ [Symbol.replace](l, "Created")
             l = /idname/g [Symbol.replace](itm, "Modified")
