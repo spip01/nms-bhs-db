@@ -7,6 +7,7 @@ const r = new snoowrap(login)
 var sub = null
 var lastPost = {}
 var lastSearch = {}
+var nextCheck = Number.MAX_SAFE_INTEGER
 
 var userPosts = []
 var userVideos = []
@@ -49,7 +50,8 @@ exports.nmstgBot = async function () {
     p.push(sub.search(!lastSearch.name || lastSearch.full + 60 * 60 < date ? {
         query: "flair_text:Video",
         time: "week",
-        limit: 200
+        limit: 200,
+        sort: "new"
     } : {
         query: "flair_text:Video",
         before: lastSearch.name
@@ -68,6 +70,25 @@ exports.nmstgBot = async function () {
     }).catch(err => {
         console.log("error 2", typeof err === "string" ? err : JSON.stringify(err))
     }))
+
+    if (new Date().valueOf() < nextCheck)
+        p.push(sub.search({
+            query: "flair_text:thread",
+            //limit: 2,
+            time: "day",
+            sort: "new"
+        }).then(async posts => {
+            console.log("Thread", posts.length)
+
+            if (posts.length > 0)
+                await updateWiki(posts)
+
+            let date = new Date()
+            nextCheck = new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() + 5 + (date.getDay() >= 5 ? 7 : 0), 5, 15).valueOf()
+            console.log("next", new Date(nextCheck).toDateString())
+        }).catch(err => {
+            console.log("error 2", typeof err === "string" ? err : JSON.stringify(err))
+        }))
 
     if (Object.keys(rules).length === 0) {
         let r = await sub.getRules()
@@ -114,6 +135,44 @@ exports.nmstgBot = async function () {
     }
 
     return Promise.all(p)
+}
+
+async function updateWiki(posts) {
+    let wiki = await sub.getWikiPage("mega-threads")
+    let page = await wiki.fetch().content_md
+
+    let lines = page.split("\n")
+
+    for (let post of posts) {
+        if (post.created_utc > nextCheck / 1000 || nextCheck === Number.MAX_SAFE_INTEGER) {
+            let url = post.url
+            let l = 0
+
+            if (post.title.match(/bug/i))
+                l = 4
+            else if (post.title.match(/friend/i))
+                l = 5
+            else if (post.title.match(/twitch/i))
+                l = 6
+            else if (post.title.match(/civilization/i))
+                l = 7
+
+            if (l !== 0)
+                lines[l] = lines[4].replace(/\((.*?)\)/i, "(" + url + ")")
+        }
+    }
+
+    page = ""
+    for (let l of lines)
+        page += l + `\n`
+
+    console.log('update wiki',new Date().toDateString())
+
+    wiki.edit({
+            text: page,
+            reason: "bot-update weekly thread urls"
+        })
+        .catch(err => console.log("error w", typeof err === "string" ? err : JSON.stringify(err)))
 }
 
 async function modCommands(posts) {
