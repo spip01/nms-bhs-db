@@ -31,7 +31,7 @@ var mods = []
 var rules = {}
 var lastPost = {}
 var lastComment = {}
-const version = 3.6
+const version = 3.7
 
 // main()
 // async function main() {
