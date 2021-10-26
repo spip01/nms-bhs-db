@@ -94,6 +94,7 @@ exports.nmsceItemCreated = functions.firestore.document("nmsce/{galaxy}/{type}/{
     .onCreate(async (doc, context) => {
         let p = []
         let e = doc.data()
+         const nmsce = require('./nmsceSearch.js')
 
         p.push(nmsce.checkSearch(e))
 

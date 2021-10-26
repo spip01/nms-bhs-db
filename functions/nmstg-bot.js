@@ -8,7 +8,7 @@ var sub = null
 var lastPost = {}
 var lastSearch = {}
 var nextCheck = Number.MAX_SAFE_INTEGER
-
+var toolbox = {}
 var userPosts = []
 var userVideos = []
 var mods = []
@@ -90,6 +90,11 @@ exports.nmstgBot = async function () {
             console.log("error 2", typeof err === "string" ? err : JSON.stringify(err))
         }))
 
+    // let wiki =  await sub.getWikiPage("toolbox")
+    // let page = await wiki.fetch()
+    // toolbox = JSON.parse(page.content_md)
+    // console.log(JSON.stringify(toolbox))
+
     if (Object.keys(rules).length === 0) {
         let r = await sub.getRules()
         for (let x of r.rules) {
@@ -166,7 +171,7 @@ async function updateWiki(posts) {
     for (let l of lines)
         page += l + `\n`
 
-    console.log('update wiki',new Date().toDateString())
+    console.log('update wiki', new Date().toDateString())
 
     wiki.edit({
             text: page,
