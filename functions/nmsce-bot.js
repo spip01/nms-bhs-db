@@ -188,7 +188,7 @@ async function checkComments(posts, mods) {
                             description = true
                             break
                         case "v": // get community event votes
-                            getVotes(post, post.body.replace(/!m-v(.*)/, "$1"))
+                            await getVotes(post, post.body.replace(/!m-v(.*)/, "$1"))
                             return
                     }
                 }
@@ -276,20 +276,24 @@ async function checkComments(posts, mods) {
                             if (post.author.name !== "AutoModerator") {
                                 let op = null
                                 let oppost = post
-                                oppost.lock()
+                                // oppost.lock()
 
                                 while (!op || oppost.parent_id) {
                                     op = await r.getComment(oppost.parent_id)
                                     oppost = await op.fetch()
-                                    if (oppost.parent_id && oppost.author.name === "AutoModerator")
-                                        oppost.lock()
+                                    // if (oppost.parent_id && oppost.author.name === "AutoModerator")
+                                    //     oppost.lock()
                                 }
 
-                                if (oppost.link_flair_text === "Ship Request?") {
-                                    console.log("approve ship request")
+                                if (post.created - oppost.created < 5 * 60) {
+                                    post.reply(replyWaitRequest).lock()
+                                    post.remove()
+                                    console.log("request rejected")
+                                } else if (oppost.link_flair_text === "Request?") {
+                                    console.log("approve request")
                                     oppost.approve().selectFlair({
                                         flair_template_id: oppost.link_flair_template_id,
-                                        text: "Ship Request"
+                                        text: "Request"
                                     })
                                 }
                             }
@@ -594,14 +598,27 @@ function getVotes(op, newFlair) {
         limit: 1000,
         time: "month"
     }).then(posts => {
-        let text = "Total submissions: " + posts.length + "  \n"
-
         let p = []
+        // let rep = []
         let total = 0
 
         let flairobj = getItem(flairList, newFlair)
 
         for (let post of posts) {
+            // rep.push(post.expandReplies().then(post => {
+            //     let votes = 0
+            //     for (let c of post.comments) {
+            //         if (post.author_fullname !== c.author_fullname && c.body.match(/😱/))
+            //             ++votes
+            //     }
+
+            //     return ({
+            //         title: post.title,
+            //         votes: votes,
+            //         html: post.permalink
+            //     })
+            // }))
+
             let flair = flairobj ? post.link_flair_text.replace(/community event(.*)/i, flairobj.name + "$1") : null
 
             p.push({
@@ -612,8 +629,6 @@ function getVotes(op, newFlair) {
             })
             total += post.ups + post.downs
 
-            // text += post.link_flair_text + " " + flair + " " + flairobj.id + "  \n"
-
             if (flair)
                 post.selectFlair({
                     text: flair,
@@ -621,11 +636,34 @@ function getVotes(op, newFlair) {
                 })
         }
 
+        // await Promise.all(rep).then(list => {
+        //     list.sort((a, b) => {
+        //         return b.votes - a.votes
+        //     })
+
+        //     let total = 0
+        //     for (let p of list)
+        //         total += p.votes
+
+        //     text += "Total Entries: " + list.length + " Total votes: " + total + "  \n"
+        //     for (let i = 0; i < 10; ++i)
+        //         text += list[i].votes + ": [" + list[i].title + "](https://reddit.com" + list[i].html + ")  \n"
+
+        //     r.composeMessage({
+        //         to: op.author,
+        //         subject: "Community Event",
+        //         text: text
+        //     }).catch(err => console.log("error v16", typeof err === "string" ? err : JSON.stringify(err)))
+
+        //     op.remove()
+        //         .catch(err => console.log("error v17", typeof err === "string" ? err : JSON.stringify(err)))
+        // })
+
         p.sort((a, b) => {
             return b.vote - a.vote
         })
 
-        text += "Total votes: " + total + "  \n"
+        let text = "Total entries: " + posts.length + " Total votes: " + total + "  \n"
         for (let i = 0; i < 10; ++i)
             text += p[i].vote + ": [" + p[i].title + "](https://reddit.com" + p[i].link + ")  \n"
 
@@ -637,7 +675,6 @@ function getVotes(op, newFlair) {
 
         op.remove()
             .catch(err => console.log("error 17", typeof err === "string" ? err : JSON.stringify(err)))
-
     }).catch(err => {
         console.log("error 18", typeof err === "string" ? err : JSON.stringify(err))
     })
@@ -796,7 +833,7 @@ Moderator Commands:
     Commands can be concatenated together e.g. !m-gpr2,3o for missing galaxy & platform, remove for violcation of rule 2 & 3 and add offtopic comment`
 const respDescription = "In order to help other players find your post using the search-bar you should consider adding a more descriptive title to future post. It is recommended to include main color(s), ship type and major parts. The NMSCE [wiki page](https://www.reddit.com/r/NMSCoordinateExchange/about/wiki/shipparts) has a link to the named parts list for most types of ships."
 const respOffTopic = "Since this post is off topic in this sub you might try posting in r/nomansskythegame."
-const respShipRequest = "Please repost your request using the 'ship request' flair. The bot will return links to help your search."
+const respShipRequest = "Please repost your request using the 'request' flair. The bot will return links to help your search."
 const respSearch = "Please search r/NMSCoordinateExchange or the [NMSCE app](https://nmsce.com) before posting your request."
 const respS2 = `The first 2 glyphs you find will get you to the **system**. The first glyph of the coordinates is the planet index so either of the first 2 glyphs will get you to this system.`
 const respShiploc = `All starships in a given system can be found at the Space Station AND at any Trade Post located within the system. The same ships are available on all platforms and game modes. Things to check if you don't find the ship you're looking for. 1) Are you in the correct galaxy. 2) Are you in the correct system. It's very easy to enter the glyphs incorrectly so please double check your location.`
@@ -810,7 +847,7 @@ const editFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post h
 const removePost = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because it violates the following rules for posting:\n\n'
 const botSig = "\n\n*This action was taken by the nmsceBot. The bot works based on selected flair & title. It is possible the incorrect action was taken if the flair selected was incorrect. Please, double check your flair selection and repost if it was incorrect. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NMSCoordinateExchange).*"
 const taxiComment = "The item shared in this post is not in the Euclid/1st/starting, galaxy. There are 256 unique galaxies in NMS. Shared glyphs only work for the galaxy they are advertised in.\n\nIf you need help travelling to the galaxy advertised in the flair of this post contact PanGalactic Star Cabs - [Discord link](https://discord.gg/WgUdnbZJjh). They can take you anywhere in the NMS universe for free! Any galaxy, any star system, any platform."
-
+const replyWaitRequest = "Because of a problem with people instantly answering \"!yes\" to the bot there is a 5 min cooldown period before the response will be accepted. Please reply after the cooldown has expired."
 const flairList = [{
     match: /Starship/i,
     name: "Starship",

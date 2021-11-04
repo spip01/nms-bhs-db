@@ -25,7 +25,7 @@ async function main() {
                 totals[ref.id] = 0
 
             totals[ref.id] += snapshot.size
-
+            
             for (let doc of snapshot.docs) {
                 let e = doc.data()
 

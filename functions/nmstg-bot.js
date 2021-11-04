@@ -9,6 +9,7 @@ var lastPost = {}
 var lastSearch = {}
 var nextCheck = Number.MAX_SAFE_INTEGER
 var toolbox = {}
+var toolboxdl = false
 var userPosts = []
 var userVideos = []
 var mods = []
@@ -21,6 +22,10 @@ exports.nmstgBot = async function () {
 
     if (!sub) {
         console.log("new instance")
+        r.config({
+            continueAfterRatelimitError: true
+        })
+
         sub = await r.getSubreddit('NoMansSkyTheGame')
     }
 
@@ -28,7 +33,7 @@ exports.nmstgBot = async function () {
     let p = []
 
     p.push(sub.getNew(!lastPost.name || lastPost.full + 60 * 60 < date ? {
-        limit: 1000
+        limit: 250
     } : {
         before: lastPost.name
     }).then(posts => {
@@ -42,6 +47,7 @@ exports.nmstgBot = async function () {
         if (posts.length > 0) {
             lastPost.name = posts[0].name
             checkPostLimits(posts, userPosts, 2, date - 55 * 60, postLimit)
+            checkNewPosters(posts, 10)
         }
     }).catch(err => {
         console.log("error 1", typeof err === "string" ? err : JSON.stringify(err))
@@ -90,18 +96,15 @@ exports.nmstgBot = async function () {
             console.log("error 2", typeof err === "string" ? err : JSON.stringify(err))
         }))
 
-    // let wiki =  await sub.getWikiPage("toolbox")
-    // let page = await wiki.fetch()
-    // toolbox = JSON.parse(page.content_md)
-    // console.log(JSON.stringify(toolbox))
-
-    if (Object.keys(rules).length === 0) {
-        let r = await sub.getRules()
-        for (let x of r.rules) {
-            rules[x.priority + 1] = {
-                text: x.description
-            }
-        }
+    if (!toolboxdl) {
+        let wiki = await sub.getWikiPage("toolbox")
+        let page = await wiki.fetch()
+        toolbox = JSON.parse(page.content_md)
+        toolbox.removalReasons.header = mdParse(toolbox.removalReasons.header)
+        toolbox.removalReasons.footer = mdParse(toolbox.removalReasons.footer)
+        for (let i of toolbox.removalReasons.reasons)
+            i.text = mdParse(i.text)
+        toolboxdl = true
     }
 
     if (mods.length === 0) {
@@ -142,6 +145,53 @@ exports.nmstgBot = async function () {
     return Promise.all(p)
 }
 
+var posters = []
+
+async function checkNewPosters(posts, limit) {
+    let p = []
+
+    for (let post of posts) {
+        if (posters.includes(post.author.name))
+            continue
+
+        if (--limit === 0)
+            break
+
+        p.push(sub.search({
+            query: "author:" + post.author.name,
+            limit: 2,
+            sort: "new"
+        }).then(async posts => {
+            if (posts.length === 2 || post.approvedby !== "")
+                posters.push(posts[0].author.name)
+            else {
+                console.log("new poster", posts[0].author.name)
+                posts[0].reply("!filter-First Post")
+                r.getUser(posts[0].author.name).reply(firstPost)
+            }
+        }))
+    }
+
+    await Promise.all(p)
+}
+
+function mdParse(text) {
+    text = /%20/ig [Symbol.replace](text, " ")
+    text = /%21/ig [Symbol.replace](text, "!")
+    text = /%2c/ig [Symbol.replace](text, ",")
+    text = /%3a/ig [Symbol.replace](text, ":")
+    text = /%0a/ig [Symbol.replace](text, "\n")
+    text = /%5b/ig [Symbol.replace](text, "[")
+    text = /%5d/ig [Symbol.replace](text, "]")
+    text = /%28/ig [Symbol.replace](text, "(")
+    text = /%29/ig [Symbol.replace](text, ")")
+    text = /%27/ig [Symbol.replace](text, "'")
+    text = /%22/ig [Symbol.replace](text, "\"")
+    text = /%26/ig [Symbol.replace](text, "&")
+    text = /%3b/ig [Symbol.replace](text, ";")
+    return text
+}
+
 async function updateWiki(posts) {
     let wiki = await sub.getWikiPage("mega-threads")
     let page = await wiki.fetch().content_md
@@ -163,7 +213,7 @@ async function updateWiki(posts) {
                 l = 7
 
             if (l !== 0)
-                lines[l] = lines[4].replace(/\((.*?)\)/i, "(" + url + ")")
+                lines[l] = lines[l].replace(/\((.*?)\)/i, "(" + url + ")")
         }
     }
 
@@ -186,16 +236,16 @@ async function modCommands(posts) {
             console.log("command", post.body)
 
             let match = post.body.slice(2).split(",")
-            let message = removePost + "\n\n----\n"
+            let message = toolbox.removalReasons.header + "\n\n----\n"
 
             for (let r of match) {
                 let i = parseInt(r)
 
-                if (typeof rules[i] !== "undefined")
-                    message += (message ? "\n\n----\n" : "") + rules[i].text
+                if (typeof toolbox.removalReasons.reasons[i - 1].text !== "undefined")
+                    message += toolbox.removalReasons.reasons[i - 1].text + "\n\n----\n"
             }
 
-            message += botSig
+            message += toolbox.removalReasons.footer
 
             let op = null
             let oppost = post
@@ -284,3 +334,4 @@ const botSig = "\n\n*This action was taken by the nmstgBot. If you have any ques
 const postLimit = "Posting limits: OP is allowed to make 2 post/hour"
 const videoLimit = "Posting limits: OP is allowed to make 1 video post/week"
 const memeLimit = "Posting limits: OP is allowed to make 5 meme post/day"
+const firstPost = "Since this is your first post to r/NoMansSkyTheGame your post has been sent for moderator revied. Since moderators are not always available *please* do not contact them about when your post will be approved."

@@ -4053,10 +4053,10 @@ const resultTables = [{
     name: "Moderators Choice",
     field: "votes.edchoice",
     limit: 20,
-// }, {
-//     name: "Hall of Fame",
-//     field: "votes.hof",
-//     limit: 20,
+    // }, {
+    //     name: "Hall of Fame",
+    //     field: "votes.hof",
+    //     limit: 20,
 }, {
     name: "Totals",
 }, {
@@ -4274,7 +4274,7 @@ NMSCE.prototype.displayTotals = function (list, path) {
                 else if (path === "bhs/nmsceMonthly")
                     $(l).find("#id-monthly").text(t + " " + (t > 150 ? "T3" : t > 75 ? "T2" : t > 30 ? "T1" : ""))
             }
-        } else if (typeof e === "number") {
+        } else if (typeof e === "number" && path === "bhs/nmsceTotals") {
             let l = loc.find("#id-" + k)
             if (l.length === 0) {
                 let h = /name/g [Symbol.replace](totals, k)
@@ -4289,15 +4289,17 @@ NMSCE.prototype.displayTotals = function (list, path) {
         }
     }
 
-    let l = loc.find("#id-Total")
-    if (l.length === 0) {
-        let l = loc.find("#totalsTable")
-        let h = /name/g [Symbol.replace](totals, "Total")
-        h = /qty/ [Symbol.replace](h, total)
-        h = /row/ [Symbol.replace](h, "row border-top")
-        l.append(h)
-    } else
-        l.text(total)
+    if (path === "bhs/nmsceTotals") {
+        let l = loc.find("#id-Total")
+        if (l.length === 0) {
+            let l = loc.find("#totalsTable")
+            let h = /name/g [Symbol.replace](totals, "Total")
+            h = /qty/ [Symbol.replace](h, total)
+            h = /row/ [Symbol.replace](h, "row border-top")
+            l.append(h)
+        } else
+            l.text(total)
+    }
 
     nmsce.sortTotals(null, "id-name")
 }
