@@ -81,33 +81,16 @@ exports.nmsceBot = async function () {
         console.log("error 1", typeof err === "string" ? err : JSON.stringify(err))
     }))
 
-    p.push(sub.getNewComments(!lastComment.name || lastComment.full + 60 * 60 < date ? {
-        limit: 100
-    } : {
-        before: lastComment.name
-    }).then(async posts => {
-        console.log("comments", posts.length)
-
-        if (posts.length > 0 || !lastComment.full || lastComment.full + 60 * 60 < date)
-            lastComment.full = date
-
-        if (posts.length > 0) {
-            if (mods.length === 0) {
-                let m = await sub.getModerators()
-                for (let x of m)
-                    mods.push(x.id)
-            }
-
-            lastComment.name = posts[0].name
-            checkComments(posts, mods)
-        }
-    }).catch(err => {
-        console.log("error 2", typeof err === "string" ? err : JSON.stringify(err))
-    }))
+    if (mods.length === 0) {
+        let m = await sub.getModerators()
+        for (let x of m)
+            mods.push(x.id)
+    }
 
     p.push(sub.getModqueue().then(posts => {
         console.log("queue", posts.length)
         validatePosts(posts)
+        checkComments(posts, mods)
     }).catch(err => {
         console.log("error 3", typeof err === "string" ? err : JSON.stringify(err))
     }))
@@ -139,10 +122,10 @@ exports.nmsceBot = async function () {
 }
 
 async function checkComments(posts, mods) {
-
     for (let post of posts) {
-        if (!post.banned_by && post.body[0] === "!") {
+        if (post.body[0] === "!" && post.name.startsWith("t1_") && (!post.banned_by || post.banned_by.name === "AutoModerator")) {
             let isMod = mods.includes(post.author_fullname)
+
             console.log("command", post.body)
 
             if (post.body.includes("!m-") && isMod) {
@@ -180,10 +163,10 @@ async function checkComments(posts, mods) {
                         case "o": // off topic
                             offtopic = true
                             break
-                        case "f": // ship request flair
-                            shiprequest = true
-                            remove = true
-                            break
+                            // case "f": // ship request flair
+                            //     shiprequest = true
+                            //     remove = true
+                            //     break
                         case "d": // ask for better description
                             description = true
                             break
@@ -264,7 +247,7 @@ async function checkComments(posts, mods) {
                     console.log("remove: " + remove, "missing: " + missing, "rule: " + match, "https://reddit.com" + oppost.permalink)
                 }
             } else {
-                let match = post.body.match(/!(glyphs|yes|light|shiploc|help|shipclass|portal|s2|search)/)
+                let match = post.body.match(/!(glyphs|yes|light|shiploc|help|shipclass|portal|s2|search|reqflair)/)
 
                 if (match) {
                     let message = null
@@ -324,6 +307,12 @@ async function checkComments(posts, mods) {
                         case "search":
                             if (isMod) {
                                 message = respSearch
+                                remove = true
+                            }
+                            break
+                        case 'reqflair':
+                            if (isMod) {
+                                message = respShipRequest
                                 remove = true
                             }
                             break
@@ -404,7 +393,7 @@ function validatePosts(posts) {
         let ok = post.link_flair_text
         let reason = ""
 
-        if (!post.name.includes("t3_") || post.locked || post.selftext === "[deleted]") // submission
+        if (!post.name.startsWith("t3_") || post.locked || post.selftext === "[deleted]") // submission
             continue
 
         if (ok)
@@ -825,10 +814,10 @@ Moderator Commands:
         *  l = latitude & longitude
         *  s = screenshot
     * !m-o - Add off topic comment and suggest reposting to nmstg. use with r8
-    * !m-f - request op repost using the 'ship request' flair. use with r1
     * !m-d - add comment requesting a better description on future post
     * !m-v[flair] - get current event vote count. Optional new flair name to change. e.g. !m-vStarship
-    * !search - add comment requesting the op search before posting a ship request
+    * !reqflair - request op repost using the 'request' flair. removes post.
+    * !search - add comment requesting the op search before posting a request. removes post.
     
     Commands can be concatenated together e.g. !m-gpr2,3o for missing galaxy & platform, remove for violcation of rule 2 & 3 and add offtopic comment`
 const respDescription = "In order to help other players find your post using the search-bar you should consider adding a more descriptive title to future post. It is recommended to include main color(s), ship type and major parts. The NMSCE [wiki page](https://www.reddit.com/r/NMSCoordinateExchange/about/wiki/shipparts) has a link to the named parts list for most types of ships."

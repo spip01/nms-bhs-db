@@ -33,7 +33,7 @@ exports.nmstgBot = async function () {
     let p = []
 
     p.push(sub.getNew(!lastPost.name || lastPost.full + 60 * 60 < date ? {
-        limit: 250
+        limit: 50
     } : {
         before: lastPost.name
     }).then(posts => {
@@ -109,38 +109,16 @@ exports.nmstgBot = async function () {
 
     if (mods.length === 0) {
         let m = await sub.getModerators()
-
         for (let x of m)
-            if (x.name !== "AutoModerator" && x.name !== "FlairHelperBot" && x.name !== "nmsceBot")
-                mods.push({
-                    name: x.name,
-                    user: await r.getUser(x.name),
-                    last: {
-                        name: "",
-                        full: 0
-                    }
-                })
+            mods.push(x.id)
     }
 
-    for (let m of mods) {
-        p.push(m.user.getComments(!m.last.name || m.last.full + 2 * 60 * 60 < date ? {
-            limit: 10
-        } : {
-            before: m.last.name
-        }).then(posts => {
-            console.log("comments " + m.name, posts.length)
-
-            if (posts.length > 0 || !m.last.full || m.last.full + 2 * 60 * 60 < date)
-                m.last.full = date
-
-            if (posts.length > 0) {
-                m.last.name = posts[0].name
-                modCommands(posts)
-            }
-        }).catch(err => {
-            console.log("error 3", typeof err === "string" ? err : JSON.stringify(err))
-        }))
-    }
+    p.push(sub.getModqueue().then(posts => {
+        console.log("queue", posts.length)
+        modCommands(posts, mods)
+    }).catch(err => {
+        console.log("error 3", typeof err === "string" ? err : JSON.stringify(err))
+    }))
 
     return Promise.all(p)
 }
@@ -230,9 +208,9 @@ async function updateWiki(posts) {
         .catch(err => console.log("error w", typeof err === "string" ? err : JSON.stringify(err)))
 }
 
-async function modCommands(posts) {
+async function modCommands(posts, mods) {
     for (let post of posts) {
-        if (!post.banned_by && post.body.startsWith("!r")) {
+        if (mods.includes(post.author_fullname) && post.body.startsWith("!r") && post.name.startsWith("t1_") && (!post.banned_by || post.banned_by === "AutoModerator")) {
             console.log("command", post.body)
 
             let match = post.body.slice(2).split(",")
@@ -334,4 +312,4 @@ const botSig = "\n\n*This action was taken by the nmstgBot. If you have any ques
 const postLimit = "Posting limits: OP is allowed to make 2 post/hour"
 const videoLimit = "Posting limits: OP is allowed to make 1 video post/week"
 const memeLimit = "Posting limits: OP is allowed to make 5 meme post/day"
-const firstPost = "Since this is your first post to r/NoMansSkyTheGame your post has been sent for moderator revied. Since moderators are not always available *please* do not contact them about when your post will be approved."
+const firstPost = "Thank you for posting to r/NoMansSkyTheGame and taking an active part in the community! Since this is your first post it has been sent for moderator approval. This is one of the anti-spam measures we're forced to use. In the meantime checkout our posting rules listed in the sidebar.\n\nSince moderators are not always available *please* be patient and don't contact them about when your post will be approved."
