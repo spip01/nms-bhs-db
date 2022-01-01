@@ -19,18 +19,10 @@ const login = require('./nmsce-bot.json')
 const snoowrap = require('snoowrap')
 const r = new snoowrap(login)
 
-// const functions = require('firebase-functions')
-// const admin = require('firebase-admin')
-// var serviceAccount = require("./nms-bhs-8025d3f3c02d.json")
-// admin.initializeApp({
-//     credential: admin.credential.cert(serviceAccount)
-// })
-
 var sub = null
 var mods = []
 var rules = {}
 var lastPost = {}
-var lastComment = {}
 const version = 3.7
 
 // main()
@@ -63,8 +55,18 @@ exports.nmsceBot = async function () {
         }
     }
 
+    //await sub.getLinkFlairTemplates().then(res => { console.log(res)   })
+
+    //  await   sub.createLinkFlairTemplate({    
+    //         flair_css_class: '',
+    //         flair_template_id: '0f48ed4c-c94f-11ea-bdb0-0e37ef4aee8f',
+    //         flair_text_editable: true,
+    //         flair_position: 'right',
+    //         flair_text: 'Derelict Freighter/testing'
+    // })
+
     p.push(sub.getNew(!lastPost.name || lastPost.full + 15 * 60 < date ? {
-        limit: 50
+        limit: 150 // make sure to cover 24 hours for posting limit
     } : {
         before: lastPost.name
     }).then(posts => {
@@ -75,11 +77,12 @@ exports.nmsceBot = async function () {
 
         if (posts.length > 0) {
             lastPost.name = posts[0].name
+            checkPostLimits(posts, userPosts, 2, 60 * 60, "Posting limit exceded: OP is allowed 2 post/hour. ")
+            checkPostLimits(null, userPosts, 10, 24 * 60 * 60, "Posting limit exceded: OP is allowed 10 post/day. ")
+
             validatePosts(posts)
         }
-    }).catch(err => {
-        console.log("error 1", typeof err === "string" ? err : JSON.stringify(err))
-    }))
+    }).catch(err => error(1, err)))
 
     if (mods.length === 0) {
         let m = await sub.getModerators()
@@ -91,39 +94,20 @@ exports.nmsceBot = async function () {
         console.log("queue", posts.length)
         validatePosts(posts)
         checkComments(posts, mods)
-    }).catch(err => {
-        console.log("error 3", typeof err === "string" ? err : JSON.stringify(err))
-    }))
-
-    // only needed to reapprove bot removed post.
-    p.push(sub.getModerationLog({
-        mods: ["nmsceBot"],
-        type: "removelink",
-        time: "day",
-    }).then(async logs => {
-        console.log("log", logs.length)
-        let list = []
-        let posts = []
-
-        for (let log of logs) {
-            if (!list.includes(log.target_fullname)) {
-                list.push(log.target_fullname)
-                let post = await (await r.getSubmission(log.target_fullname.slice(3))).refresh()
-                posts.push(post)
-            }
-        }
-
-        validatePosts(posts)
-    }).catch(err => {
-        console.log("error 4", err)
-    }))
+    }).catch(err => error(3, err)))
 
     return Promise.all(p)
 }
 
+function sleep(ms) { // await sleep(n)
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms)
+    })
+}
+
 async function checkComments(posts, mods) {
     for (let post of posts) {
-        if (post.body[0] === "!" && post.name.startsWith("t1_") && (!post.banned_by || post.banned_by.name === "AutoModerator")) {
+        if (post.name.startsWith("t1_") && post.body.startsWith("!") && post.author !== "nmsceBot") {
             let isMod = mods.includes(post.author_fullname)
 
             console.log("command", post.body)
@@ -134,7 +118,6 @@ async function checkComments(posts, mods) {
                 let remove = false
                 let offtopic = false
                 let description = false
-                let shiprequest = false
 
                 let match = post.body.replace(/^!m-(\S+)/, "$1")
                 for (let c of match) {
@@ -163,10 +146,6 @@ async function checkComments(posts, mods) {
                         case "o": // off topic
                             offtopic = true
                             break
-                            // case "f": // ship request flair
-                            //     shiprequest = true
-                            //     remove = true
-                            //     break
                         case "d": // ask for better description
                             description = true
                             break
@@ -205,8 +184,6 @@ async function checkComments(posts, mods) {
                     message += respDescription + "\n\n----\n"
                 if (offtopic)
                     message += respOffTopic + "\n\n----\n"
-                if (shiprequest)
-                    message += respShipRequest + "\n\n----\n"
                 if (remove)
                     message += removePost + "\n\n----\n"
                 if (rule)
@@ -226,23 +203,19 @@ async function checkComments(posts, mods) {
                     op.reply(message)
                         .distinguish({
                             status: true
-                        }).lock()
-                        .catch(err => {
-                            console.log("error 5", err)
-                        })
+                        }).lock().catch(err => error(5, err))
 
                     if (remove)
                         op.report({
                             reason: post.author.name + " rule " + match
                         }).remove()
-                        .catch(err => console.log("error 6", typeof err === "string" ? err : JSON.stringify(err)))
+                        .catch(err => error(6, err))
                     else if (!description)
                         op.report({
                             reason: post.author.name + " missing " + missing
-                        }).catch(err => console.log("error 7", typeof err === "string" ? err : JSON.stringify(err)))
+                        }).catch(err => error(7, err))
 
-                    post.remove()
-                        .catch(err => console.log("error 8", typeof err === "string" ? err : JSON.stringify(err)))
+                    post.remove().catch(err => error(8, err))
 
                     console.log("remove: " + remove, "missing: " + missing, "rule: " + match, "https://reddit.com" + oppost.permalink)
                 }
@@ -264,20 +237,21 @@ async function checkComments(posts, mods) {
                                 while (!op || oppost.parent_id) {
                                     op = await r.getComment(oppost.parent_id)
                                     oppost = await op.fetch()
-                                    // if (oppost.parent_id && oppost.author.name === "AutoModerator")
-                                    //     oppost.lock()
                                 }
 
                                 if (post.created - oppost.created < 5 * 60) {
-                                    post.reply(replyWaitRequest).lock()
-                                    post.remove()
-                                    console.log("request rejected")
+                                    console.log("reject request")
+                                    post.remove().reply(replyWaitRequest)
+                                        .distinguish({
+                                            status: true
+                                        }).lock().catch(err => error("8a", err))
                                 } else if (oppost.link_flair_text === "Request?") {
                                     console.log("approve request")
+                                    post.approve().catch(err => error("8d", err))
                                     oppost.approve().selectFlair({
                                         flair_template_id: oppost.link_flair_template_id,
                                         text: "Request"
-                                    })
+                                    }).catch(err => error("8c", err))
                                 }
                             }
                             break
@@ -310,7 +284,7 @@ async function checkComments(posts, mods) {
                                 remove = true
                             }
                             break
-                        case 'reqflair':
+                        case "reqflair":
                             if (isMod) {
                                 message = respShipRequest
                                 remove = true
@@ -322,24 +296,18 @@ async function checkComments(posts, mods) {
                         let op = await r.getComment(post.parent_id)
 
                         if (message)
-                            op.reply(message).lock()
-                            .catch(err => console.log("error 9", typeof err === "string" ? err : JSON.stringify(err)))
+                            op.reply(message).lock().catch(err => error(9, err))
                         else
                             r.composeMessage({
                                 to: post.author,
                                 subject: "nmsceBot Commands",
                                 text: reply
-                            })
-                            .catch(err => console.log("error 10", typeof err === "string" ? err : JSON.stringify(err)))
+                            }).catch(err => error(10, err))
 
-                        post.remove()
-                            .catch(err => console.log("error 11", typeof err === "string" ? err : JSON.stringify(err)))
+                        post.remove().catch(err => error(11, err))
 
                         if (remove)
-                            op.report({
-                                reason: post.author.name + " rule " + match[1]
-                            }).remove()
-                            .catch(err => console.log("error c", typeof err === "string" ? err : JSON.stringify(err)))
+                            op.remove().catch(err => error("c", err))
 
                         console.log("reply:", match[0])
                     }
@@ -372,13 +340,13 @@ async function checkComments(posts, mods) {
                         } else if (glyph)
                             str = "Glyphs in hex: " + glyph + "\n\nGlyphs in [icons](https://nmsce.com/glyph.html?a=" + glyph + ")"
 
-                        post.remove()
+                        post.remove().catch(err => error("11a", err))
 
                         op.reply(str + "\n\n----\nThis is a comment generated by the NMSCE bot. For instructions post !help as a comment.")
                             .distinguish({
                                 sticky: true
                             })
-                            .lock()
+                            .lock().catch(err => error("11b", err))
                     }
                 }
             }
@@ -400,21 +368,18 @@ function validatePosts(posts) {
             ok = (flair = getItem(flairList, post.link_flair_text)) !== null
 
         if (!ok) {
-            if (!post.removed_by_category) {
-                console.log("bot remove bad flair", "https://reddit.com" + post.permalink)
-                post.save().remove()
-                    .reply(missingFlair)
+            if (!post.removed_by) {
+                console.log("bad flair", "https://reddit.com" + post.permalink)
+                post.reply(missingFlair)
                     .distinguish({
                         status: true
-                    }).lock()
-                    .catch(err => console.log("error 12", typeof err === "string" ? err : JSON.stringify(err)))
+                    }).lock().catch(err => error(12, err))
+
+                post.reply("!filter-bad flair").catch(err => error("12a", err))
             }
 
             continue
         }
-
-        if (ok)
-            ok = checkPostLimits(post)
 
         if (!ok || flair.noedit)
             continue
@@ -425,6 +390,7 @@ function validatePosts(posts) {
         if (flair) {
             if (flair.galaxy) {
                 galaxy = checkList(galaxyList, post)
+
                 if (!galaxy) {
                     reason += (reason ? ", " : "") + "galaxy"
                     ok = false
@@ -463,11 +429,10 @@ function validatePosts(posts) {
                 post.selectFlair({
                     flair_template_id: post.link_flair_template_id,
                     text: newFlair
-                }).catch(err => console.log("error 13", typeof err === "string" ? err : JSON.stringify(err)))
+                }).catch(err => error(13, err))
 
                 if (taxi) {
-                    post.reply(taxiComment).lock()
-                        .catch(err => console.log("error 20", typeof err === "string" ? err : JSON.stringify(err)))
+                    post.reply(taxiComment).lock().catch(err => error(20, err))
                 }
             }
 
@@ -488,131 +453,159 @@ function validatePosts(posts) {
 
                 if (approve && !post.title.match(/repost/i)) {
                     console.log("approve", newFlair, "https://reddit.com" + post.permalink)
-                    post.approve()
-                        .catch(err => console.log("error 14", typeof err === "string" ? err : JSON.stringify(err)))
+                    post.approve().catch(err => error(14, err))
                 }
             }
 
         } else if (reason && !post.removed_by_category) {
             console.log("bot remove missing", reason, "https://reddit.com" + post.permalink)
-            post.save().remove()
+            post.remove()
                 .reply(editFlair.replace(/\[missing\]/g, reason))
                 .distinguish({
-                    status: true
-                }).lock()
-                .catch(err => console.log("error 15", typeof err === "string" ? err : JSON.stringify(err)))
+                    status: true,
+                    sticky: true
+                }).lock().catch(err => error(15, err))
         }
     }
 }
 
 var userPosts = []
 
-async function checkPostLimits(post) {
-    let ok = true
+async function checkPostLimits(posts, postList, limit, time, reason) {
+    if (posts)
+        for (let post of posts) {
+            if (!post.name.includes("t3_") || post.selftext === "[deleted]") // submission
+                continue
 
-    if (post.banned_by || post.removed_by_category === "automod_filtered" ||
-        post.removed_by_category === "reddit" || post.mod_reports.length > 0 ||
-        post.approved_by !== null && post.approved_by !== "nmsceBot")
-        return ok
+            let user = postList.find(a => {
+                return a.name === post.author.name
+            })
 
-    let user = userPosts.find(a => {
-        return a.name === post.author.name
-    })
+            if (typeof user === "undefined") {
+                user = {}
+                user.name = post.author.name
+                user.posts = []
+                user.posts.push(post)
+                postList.push(user)
+            } else if (!user.posts.find(a => {
+                    return a.id === post.id
+                }))
+                user.posts.push(post)
+        }
 
-    if (typeof user === "undefined") {
-        let user = {}
-        user.name = post.author.name
-        user.posts = {}
-        user.posts[post.created_utc] = post
-        userPosts.push(user)
-    } else {
-        user.posts[post.created_utc] = post
+    time -= 5
 
-        let keys = Object.keys(user.posts)
-        if (keys.length > 2) {
-            let date = parseInt(new Date().valueOf() / 1000 - 24 * 60 * 60)
+    for (let user of postList) {
+        if (user.posts.length > limit) {
+            let posts = user.posts.sort((a, b) => a.created_utc >= b.created_utc ? -1 : 1)
+            let refetch = false
 
-            for (let key of keys)
-                if (key < date)
-                    delete user.posts[key]
+            for (let i = 0; i < posts.length - limit; ++i) {
+                let n = posts[i].created_utc
+                let o = posts[i + limit].created_utc
 
-            keys = Object.keys(user.posts)
-            if (keys.length > 2) {
-                date = parseInt(keys[0]) + 55 * 60
+                if (n < o + time) {
+                    if (!refetch) {
+                        console.log("check deleted", user.name)
+                        refetch = true
 
-                for (let i = 2; i < keys.length; ++i) {
-                    if (parseInt(keys[i]) < date) {
-                        deletePostOverLimit(user, keys[i])
-                        ok = false
+                        for (let j = 0; j < posts.length; ++j) {
+                            let p = await posts[j].fetch()
+                            console.log(p.selftext, p.author.name)
+                            if (p.selftext === "[deleted]") {
+                                console.log("deleted post", user.name, "https://reddit.com" + posts[i].permalink)
+                                posts.splice(j, 1)
+                                i = -1
+                                continue
+                            }
+                        }
                     }
+
+                    console.log(reason, user.name, parseInt((n - o + time) / 60), "https://reddit.com" + posts[i].permalink)
+                    let message = removePost + "\n\n----\n" + reason + "Your next post can be posted after " + (new Date((o + limit) * 1000).toTimeString()) + ".\n\n----\n" + botSig
+
+                    posts[i].reply(message)
+                        .distinguish({
+                            status: true
+                        }).lock()
+                        .catch(err => error("a", err))
+
+                    posts[i].report({
+                            reason: "posting limits"
+                        }).remove()
+                        .catch(err => error("b", err))
+
+                    posts.splice(i, 1)
                 }
             }
 
-            keys = Object.keys(user.posts)
-            if (keys.length > 10) {
-                for (let i = 9; i < keys.length; ++i)
-                    deletePostOverLimit(user, keys[i])
-
-                ok = false
-            }
+            posts.splice(13, 999) // maximum post limit
         }
     }
-
-    return ok
 }
 
-function deletePostOverLimit(user, key) {
-    const message = removePost + "\n\n----\nOP is limited to 2 post/hour and 10/day\n\n----\n" + botSig
+function getVotes(op, cmd) {
+    let flairobj = getItem(flairList, cmd)
 
-    console.log("exceded posting limits", user.name, "https://reddit.com" + user.posts[key].permalink)
-
-    user.posts[key].reply(message)
-        .distinguish({
-            status: true
-        }).lock()
-        .catch(err => console.log("error a", typeof err === "string" ? err : JSON.stringify(err)))
-
-    user.posts[key].report({
-            reason: "rule 9: exceded posting limits"
-        }).remove()
-        .catch(err => console.log("error b", typeof err === "string" ? err : JSON.stringify(err)))
-
-    delete user.posts[key]
-}
-
-
-function getVotes(op, newFlair) {
     sub.search({
         query: "subreddit:nmscoordinateexchange flair:community",
         limit: 1000,
         time: "month"
-    }).then(posts => {
+    }).then(async posts => {
         let p = []
-        // let rep = []
+        let rep = []
         let total = 0
 
-        let flairobj = getItem(flairList, newFlair)
+        /******************** vote by emoji ***********************/
+        // for (let post of posts) {
+        // rep.push(post.expandReplies().then(post => {
+        //     let votes = 0
+        //     let voted = []
+        //     console.log(post.author_fullname)
+        //     for (let c of post.comments) {
+        //         if (post.author_fullname !== c.author_fullname && c.body.includes(/🎅/) && !voted.includes(c.author_fullname)) {
+        //             console.log(c.body, c.author_fullname)
+        //             voted.push(c.author_fullname)
+        //                 ++votes
+        //         }
+        //     }
 
+        //     return ({
+        //         title: post.title,
+        //         votes: votes,
+        //         link: post.permalink
+        //     })
+        // }))
+        // }
+        // await Promise.all(rep).then(list => {
+        //     list.sort((a, b) => a.votes >= b.votes ? -1 : 1)
+
+        //     let total = 0
+        //     for (let p of list)
+        //         total += p.votes
+
+        //     let text = "Total Entries: " + list.length + " Total votes: " + total + "  \n"
+        //     for (let i = 0; i < 10; ++i)
+        //         text += list[i].votes + ": [" + list[i].title + "](https://reddit.com" + list[i].link + ")  \n"
+
+        //     r.composeMessage({
+        //         to: op.author,
+        //         subject: "Community Event",
+        //         text: text
+        //     }).catch(err => error("v16", err))
+
+        //     op.remove()
+        //         .catch(err => error("v17", err))
+        // })
+        /*********************************************************** */
+
+        /****************** vote by up/down  *************************/
         for (let post of posts) {
-            // rep.push(post.expandReplies().then(post => {
-            //     let votes = 0
-            //     for (let c of post.comments) {
-            //         if (post.author_fullname !== c.author_fullname && c.body.match(/😱/))
-            //             ++votes
-            //     }
-
-            //     return ({
-            //         title: post.title,
-            //         votes: votes,
-            //         html: post.permalink
-            //     })
-            // }))
-
             let flair = flairobj ? post.link_flair_text.replace(/community event(.*)/i, flairobj.name + "$1") : null
 
             p.push({
                 link: post.permalink,
-                vote: post.ups + post.downs,
+                votes: post.ups + post.downs,
                 title: post.title,
                 // flair: flair
             })
@@ -625,32 +618,7 @@ function getVotes(op, newFlair) {
                 })
         }
 
-        // await Promise.all(rep).then(list => {
-        //     list.sort((a, b) => {
-        //         return b.votes - a.votes
-        //     })
-
-        //     let total = 0
-        //     for (let p of list)
-        //         total += p.votes
-
-        //     text += "Total Entries: " + list.length + " Total votes: " + total + "  \n"
-        //     for (let i = 0; i < 10; ++i)
-        //         text += list[i].votes + ": [" + list[i].title + "](https://reddit.com" + list[i].html + ")  \n"
-
-        //     r.composeMessage({
-        //         to: op.author,
-        //         subject: "Community Event",
-        //         text: text
-        //     }).catch(err => console.log("error v16", typeof err === "string" ? err : JSON.stringify(err)))
-
-        //     op.remove()
-        //         .catch(err => console.log("error v17", typeof err === "string" ? err : JSON.stringify(err)))
-        // })
-
-        p.sort((a, b) => {
-            return b.vote - a.vote
-        })
+        p.sort((a, b) => a.votes >= b.votes ? -1 : 1)
 
         let text = "Total entries: " + posts.length + " Total votes: " + total + "  \n"
         for (let i = 0; i < 10; ++i)
@@ -660,14 +628,20 @@ function getVotes(op, newFlair) {
             to: op.author,
             subject: "Community Event",
             text: text
-        }).catch(err => console.log("error 16", typeof err === "string" ? err : JSON.stringify(err)))
+        }).catch(err => error(16, err))
 
         op.remove()
-            .catch(err => console.log("error 17", typeof err === "string" ? err : JSON.stringify(err)))
+            .catch(err => error(17, err))
+        /*********************************************************** */
     }).catch(err => {
-        console.log("error 18", typeof err === "string" ? err : JSON.stringify(err))
+        error(18, err)
     })
 }
+
+function error(n, err) {
+    console.log("error " + n, err)
+}
+
 
 function addressToXYZ(addr) {
     let out = {
@@ -714,8 +688,9 @@ function addrToGlyph(addr, planet) {
 
 function checkList(list, post) {
     let item = getItem(list, post.link_flair_text)
-    if (!item)
+    if (!item) {
         item = getItem(list, post.title)
+    }
     return item
 }
 
@@ -723,9 +698,9 @@ function getItem(list, str) {
     if (!str)
         return null
 
-    for (let i = 0; i < list.length; ++i) {
-        if (str.match(list[i].match))
-            return list[i]
+    for (let s of list) {
+        if (str.match(s.match))
+            return s
     }
 
     return null
@@ -837,6 +812,86 @@ const removePost = 'Thank You for posting to r/NMSCoordinateExchange. Your post 
 const botSig = "\n\n*This action was taken by the nmsceBot. The bot works based on selected flair & title. It is possible the incorrect action was taken if the flair selected was incorrect. Please, double check your flair selection and repost if it was incorrect. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NMSCoordinateExchange).*"
 const taxiComment = "The item shared in this post is not in the Euclid/1st/starting, galaxy. There are 256 unique galaxies in NMS. Shared glyphs only work for the galaxy they are advertised in.\n\nIf you need help travelling to the galaxy advertised in the flair of this post contact PanGalactic Star Cabs - [Discord link](https://discord.gg/WgUdnbZJjh). They can take you anywhere in the NMS universe for free! Any galaxy, any star system, any platform."
 const replyWaitRequest = "Because of a problem with people instantly answering \"!yes\" to the bot there is a 5 min cooldown period before the response will be accepted. Please reply after the cooldown has expired."
+
+const editableFlair = [{
+        flair_css_class: '',
+        flair_template_id: '6e63cde8-1d38-11e9-866c-0e00040f297e',
+        flair_text_editable: true,
+        flair_position: 'right',
+        flair_text: 'Community Event/EDIT GALAXY'
+    },
+    {
+        flair_css_class: '',
+        flair_template_id: '2c4a6250-709d-11ea-805c-0ee48b1610a3',
+        flair_text_editable: true,
+        flair_position: 'right',
+        flair_text: 'Living Ship/EDIT GALAXY'
+    },
+    {
+        flair_css_class: '',
+        flair_template_id: 'e977aa8c-02c5-11e9-8f2b-0e562e5fbf7c',
+        flair_text_editable: true,
+        flair_position: 'right',
+        flair_text: 'Starship/EDIT GALAXY'
+    },
+    {
+        flair_css_class: '',
+        flair_template_id: 'fc094a20-02c5-11e9-95aa-0ed84614f136',
+        flair_text_editable: true,
+        flair_position: 'right',
+        flair_text: 'Multi Tool/EDIT GALAXY'
+    },
+    {
+        flair_css_class: '',
+        flair_template_id: 'ce1c86e6-736e-11e7-a780-0eb60d2b4f60',
+        flair_text_editable: true,
+        flair_position: 'right',
+        flair_text: 'Fauna/EDIT GALAXY'
+    },
+    {
+        flair_css_class: '',
+        flair_template_id: 'e7f60d74-0359-11ec-ae40-4e2d82cc6dd4',
+        flair_text_editable: true,
+        flair_position: 'right',
+        flair_text: 'Freighter/EDIT GALAXY'
+    },
+    {
+        flair_css_class: '',
+        flair_template_id: 'f36f7ac8-0359-11ec-b487-ba8c74aa3d6e',
+        flair_text_editable: true,
+        flair_position: 'right',
+        flair_text: 'Frigate/EDIT GALAXY'
+    },
+    {
+        flair_css_class: '',
+        flair_template_id: '0f48ed4c-c94f-11ea-bdb0-0e37ef4aee8f',
+        flair_text_editable: true,
+        flair_position: 'right',
+        flair_text: 'Derelict Freighter/EDIT GALAXY'
+    },
+    {
+        flair_css_class: '',
+        flair_template_id: 'd10b49f8-7dac-11e7-9444-0ef61ee650f0',
+        flair_text_editable: true,
+        flair_position: 'right',
+        flair_text: 'Base/EDIT GALAXY/MODE'
+    },
+    {
+        flair_css_class: '',
+        flair_template_id: '68d6a4f4-4422-11ec-887b-7e1b4e688c8e',
+        flair_text_editable: true,
+        flair_position: 'right',
+        flair_text: 'Farm/EDIT GALAXY/MODE'
+    },
+    {
+        flair_css_class: '',
+        flair_template_id: '8a3e63ca-0359-11ec-89a9-9283e9a30240',
+        flair_text_editable: true,
+        flair_position: 'right',
+        flair_text: 'Planet/EDIT GALAXY'
+    }
+]
+
 const flairList = [{
     match: /Starship/i,
     name: "Starship",
@@ -921,10 +976,11 @@ const flairList = [{
     match: /Event/i,
     name: "Community Event",
     galaxy: true,
+    mode: true,
     version: true,
     id: ""
 }, {
-    match: /Request|Showcase|Question|Tips|Information|Top|Mod|NEWS|Removed|Best|Member/i,
+    match: /test|Request|Showcase|Question|Tips|Information|Top|Mod|NEWS|Removed|Best|Member/i,
     noedit: true
 }, ]
 
@@ -1168,7 +1224,7 @@ const galaxyList = [{
     match: /\bHusa\w+i\b/i,
     name: "Husalvangewi"
 }, {
-    match: /\bOvna[\w']+d\b/i,
+    match: /\bOvna[\w'’]+d\b/i,
     name: "Ovna'uesed"
 }, {
     match: /\bBahi\w+y\b/i,

@@ -7,13 +7,12 @@ const r = new snoowrap(login)
 var sub = null
 var lastPost = {}
 var lastSearch = {}
-var nextCheck = Number.MAX_SAFE_INTEGER
+var nextCheck = 0
 var toolbox = {}
 var toolboxdl = false
 var userPosts = []
 var userVideos = []
 var mods = []
-var rules = {}
 
 // main()
 // async function main() {
@@ -33,7 +32,7 @@ exports.nmstgBot = async function () {
     let p = []
 
     p.push(sub.getNew(!lastPost.name || lastPost.full + 60 * 60 < date ? {
-        limit: 50
+        limit: 100 // make sure to cover 24 hours for posting limit
     } : {
         before: lastPost.name
     }).then(posts => {
@@ -46,11 +45,11 @@ exports.nmstgBot = async function () {
 
         if (posts.length > 0) {
             lastPost.name = posts[0].name
-            checkPostLimits(posts, userPosts, 2, date - 55 * 60, postLimit)
+            checkPostLimits(posts, userPosts, 2, 60 * 60, postLimit)
             checkNewPosters(posts, 10)
         }
     }).catch(err => {
-        console.log("error 1", typeof err === "string" ? err : JSON.stringify(err))
+        error("1", err)
     }))
 
     p.push(sub.search(!lastSearch.name || lastSearch.full + 60 * 60 < date ? {
@@ -71,13 +70,13 @@ exports.nmstgBot = async function () {
 
         if (posts.length > 0) {
             lastSearch.name = posts[0].name
-            checkPostLimits(posts, userVideos, 1, date - 7 * 24 * 60 * 60, videoLimit)
+            checkPostLimits(posts, userVideos, 1, 7 * 24 * 60 * 60, videoLimit)
         }
     }).catch(err => {
-        console.log("error 2", typeof err === "string" ? err : JSON.stringify(err))
+        error("2", err)
     }))
 
-    if (new Date().valueOf() < nextCheck)
+    if (new Date().valueOf() > nextCheck)
         p.push(sub.search({
             query: "flair_text:thread",
             //limit: 2,
@@ -93,7 +92,7 @@ exports.nmstgBot = async function () {
             nextCheck = new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() + 5 + (date.getDay() >= 5 ? 7 : 0), 5, 15).valueOf()
             console.log("next", new Date(nextCheck).toDateString())
         }).catch(err => {
-            console.log("error 2", typeof err === "string" ? err : JSON.stringify(err))
+            error("2", err)
         }))
 
     if (!toolboxdl) {
@@ -117,7 +116,7 @@ exports.nmstgBot = async function () {
         console.log("queue", posts.length)
         modCommands(posts, mods)
     }).catch(err => {
-        console.log("error 3", typeof err === "string" ? err : JSON.stringify(err))
+        error("3", err)
     }))
 
     return Promise.all(p)
@@ -140,12 +139,14 @@ async function checkNewPosters(posts, limit) {
             limit: 2,
             sort: "new"
         }).then(async posts => {
-            if (posts.length === 2 || post.approvedby !== "")
-                posters.push(posts[0].author.name)
-            else {
-                console.log("new poster", posts[0].author.name)
-                posts[0].reply("!filter-First Post")
-                r.getUser(posts[0].author.name).reply(firstPost)
+            if (posts.length > 0) {
+                if (posts.length === 2 || posts[0].approved_by)
+                    posters.push(posts[0].author.name)
+                else {
+                    console.log("new poster", posts[0].author.name)
+                    posts[0].reply("!filter-First Post")
+                    r.getUser(posts[0].author.name).reply(firstPost)
+                }
             }
         }))
     }
@@ -178,6 +179,10 @@ async function updateWiki(posts) {
 
     for (let post of posts) {
         if (post.created_utc > nextCheck / 1000 || nextCheck === Number.MAX_SAFE_INTEGER) {
+            post.setSuggestedSort({
+                sort: "new"
+            })
+
             let url = post.url
             let l = 0
 
@@ -205,12 +210,12 @@ async function updateWiki(posts) {
             text: page,
             reason: "bot-update weekly thread urls"
         })
-        .catch(err => console.log("error w", typeof err === "string" ? err : JSON.stringify(err)))
+        .catch(err => error("w", err))
 }
 
 async function modCommands(posts, mods) {
     for (let post of posts) {
-        if (mods.includes(post.author_fullname) && post.body.startsWith("!r") && post.name.startsWith("t1_") && (!post.banned_by || post.banned_by === "AutoModerator")) {
+        if (post.name.startsWith("t1_") && mods.includes(post.author_fullname) && post.body.startsWith("!r")) {
             console.log("command", post.body)
 
             let match = post.body.slice(2).split(",")
@@ -237,26 +242,21 @@ async function modCommands(posts, mods) {
                 .distinguish({
                     status: true
                 }).lock()
-                .catch(err => console.log("error 5", typeof err === "string" ? err : JSON.stringify(err)))
+                .catch(err => error("5", err))
 
             post.remove()
-                .catch(err => console.log("error 7", typeof err === "string" ? err : JSON.stringify(err)))
+                .catch(err => error("7", err))
 
             oppost.remove()
-                .catch(err => console.log("error 8", typeof err === "string" ? err : JSON.stringify(err)))
+                .catch(err => error("8", err))
 
             console.log("remove: " + "rule: " + match, "https://reddit.com" + oppost.permalink)
         }
     }
 }
 
-async function checkPostLimits(posts, postList, limit, date, reason) {
-    let fdate = parseInt(new Date().valueOf() / 1000)
-
-    for (let post of posts) {
-        if (!post.name.includes("t3_") || post.locked || post.selftext === "[deleted]") // submission
-            continue
-
+async function checkPostLimits(posts, postList, limit, time, reason) {
+    let addList = function (postList, post) {
         let user = postList.find(a => {
             return a.name === post.author.name
         })
@@ -264,52 +264,93 @@ async function checkPostLimits(posts, postList, limit, date, reason) {
         if (typeof user === "undefined") {
             user = {}
             user.name = post.author.name
-            // user.meme = {}
-            user.posts = {}
-            user.posts[post.created_utc] = post
+            user.posts = []
+            user.posts.push(post)
             postList.push(user)
-        } else {
-            user.posts[post.created_utc] = post
-        }
-
-        // if (post.link_flair_text.match(/meme/gi) && post.created_utc > fdate - 24 * 60 * 60) {
-        //     user.meme[post.created_utc] = post
-        //     console.log(post.author.name)
-        // }
+        } else if (!user.posts.find(a => {
+                return a.id === post.id
+            }))
+            user.posts.push(post)
     }
 
-    for (let user of postList) {
-        for (let key of Object.keys(user.posts))
-            if (key < date)
-                delete user.posts[key]
+    if (posts) // add video to flair if it isn't included
+        for (let post of posts) {
+            if (!post.name.includes("t3_") || post.selftext === "[deleted]") // submission
+                continue
 
-        let keys = Object.keys(user.posts)
-        if (keys.length > limit) {
+            if (!post.link_flair_text.includes("Bug") && !post.link_flair_text.includes("Video") && !post.link_flair_text.includes("Question") && !post.link_flair_text.includes("Answered") && typeof post.secure_media !== "undefined" && post.secure_media &&
+                (typeof post.secure_media.reddit_video !== "undefined" || typeof post.secure_media.oembed !== "undefined" && !post.secure_media.oembed.provider_url.includes("imgur"))) {
 
-            for (let i = limit; i < keys.length; ++i) {
-                let message = removePost + "\n\n----\n" + reason + "\n\n----\n" + botSig
-                console.log(reason, user.name, "https://reddit.com" + user.posts[keys[i]].permalink)
+                addList(userVideos, post)
+                console.log("video flair: https://reddit.com" + post.permalink)
+                post.selectFlair({
+                    flair_template_id: post.link_flair_template_id,
+                    text: post.link_flair_text + " Video"
+                }).catch(err => error(13, err))
 
-                user.posts[keys[i]].reply(message)
-                    .distinguish({
-                        status: true
-                    }).lock()
-                    .catch(err => console.log("error a", typeof err === "string" ? err : JSON.stringify(err)))
-
-                user.posts[keys[i]].report({
-                        reason: "exceded posting limits"
-                    }).remove()
-                    .catch(err => console.log("error b", typeof err === "string" ? err : JSON.stringify(err)))
-
-                delete user.posts[keys[i]]
+                continue
             }
+
+            addList(postList, post)
+        }
+
+    time -= 5
+    let message = removePost + "\n\n----\n" + reason + "\n\n----\n" + botSig
+
+    for (let user of postList) {
+        if (user.posts.length > limit) {
+            let posts = user.posts.sort((a, b) => a.created_utc >= b.created_utc ? -1 : 1)
+            let refetch = false
+
+            for (let i = 0; i < posts.length - limit; ++i) {
+                let n = posts[i].created_utc
+                let o = posts[i + limit].created_utc
+
+                if (n < o + time) {
+                    if (!refetch) {
+                        console.log("check deleted", user.name)
+                        refetch = true
+
+                        for (let j = 0; j < posts.length; ++j) {
+                            let p = await posts[j].fetch()
+                            console.log(p.selftext, p.author.name)
+                            if (p.selftext === "[deleted]") {
+                                console.log("deleted post", user.name, "https://reddit.com" + posts[i].permalink)
+                                posts.splice(j, 1)
+                                i = -1
+                                continue
+                            }
+                        }
+                    }
+
+                    console.log("limit > " + limit + " / " + time, user.name, parseInt((n - o) / 60), "https://reddit.com" + posts[i].permalink)
+
+                    posts[i].reply(message)
+                        .distinguish({
+                            status: true
+                        }).lock()
+                        .catch(err => error("a", err))
+
+                    posts[i].report({
+                            reason: reason
+                        }).remove()
+                        .catch(err => error("b", err))
+
+                    posts.splice(i, 1)
+                }
+            }
+
+            posts.splice(3, 999) // maximum post limit
         }
     }
 }
 
+function error(n, err) {
+    console.log("error " + n, err)
+}
+
 const removePost = 'Thank You for posting to r/NoMansSkyTheGame. Your post has been removed because it violates the following rules for posting:\n\n'
 const botSig = "\n\n*This action was taken by the nmstgBot. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NoMansSkyTheGame).*"
-const postLimit = "Posting limits: OP is allowed to make 2 post/hour"
-const videoLimit = "Posting limits: OP is allowed to make 1 video post/week"
-const memeLimit = "Posting limits: OP is allowed to make 5 meme post/day"
+const postLimit = "Posting limit exceded: OP is allowed to make 2 post/hour"
+const videoLimit = "Posting limits exceded: OP is allowed to make 1 video post/week"
 const firstPost = "Thank you for posting to r/NoMansSkyTheGame and taking an active part in the community! Since this is your first post it has been sent for moderator approval. This is one of the anti-spam measures we're forced to use. In the meantime checkout our posting rules listed in the sidebar.\n\nSince moderators are not always available *please* be patient and don't contact them about when your post will be approved."
