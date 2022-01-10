@@ -229,6 +229,7 @@ async function checkComments(posts, mods) {
 
                     switch (match[1]) {
                         case "yes":
+                        case "Yes":
                             if (post.author.name !== "AutoModerator") {
                                 let op = null
                                 let oppost = post
@@ -356,20 +357,25 @@ async function checkComments(posts, mods) {
 
 function validatePosts(posts) {
     let flair
+    const incorrectFlair = "BAD FLAIR"
 
     for (let post of posts) {
         let ok = post.link_flair_text
         let reason = ""
 
-        if (!post.name.startsWith("t3_") || post.locked || post.selftext === "[deleted]") // submission
+        if (!post.name.startsWith("t3_") || post.locked || post.selftext === "[deleted]" || post.link_flair_text.includes(incorrectFlair)) // submission
             continue
 
         if (ok)
             ok = (flair = getItem(flairList, post.link_flair_text)) !== null
 
         if (!ok) {
-            if (!post.removed_by) {
+            if (!post.removed_by || !post.link_flair_text.includes("EDIT")) {
                 console.log("bad flair", "https://reddit.com" + post.permalink)
+                post.selectFlair({
+                    flair_template_id: post.link_flair_template_id,
+                    text: post.link_flair_text + "/" + incorrectFlair
+                }).catch(err => error("bf", err))
                 post.reply(missingFlair)
                     .distinguish({
                         status: true

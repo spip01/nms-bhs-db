@@ -127,12 +127,11 @@ var posters = []
 async function checkNewPosters(posts, limit) {
     let p = []
 
-    for (let post of posts) {
+    for (let i = 0; i < limit && i < posts.length; ++i) { // limit number is for a new instance
+        let post = posts[i]
+
         if (posters.includes(post.author.name))
             continue
-
-        if (--limit === 0)
-            break
 
         p.push(sub.search({
             query: "author:" + post.author.name,
@@ -145,7 +144,11 @@ async function checkNewPosters(posts, limit) {
                 else {
                     console.log("new poster", posts[0].author.name)
                     posts[0].reply("!filter-First Post")
-                    r.getUser(posts[0].author.name).reply(firstPost)
+                    r.composeMessage({
+                        to: posts[0].author.name,
+                        subject: "First post to r/NoMansSkyTheGame",
+                        text: firstPost
+                    }).catch(err => error('f', err))
                 }
             }
         }))
@@ -178,7 +181,7 @@ async function updateWiki(posts) {
     let lines = page.split("\n")
 
     for (let post of posts) {
-        if (post.created_utc > nextCheck / 1000 || nextCheck === Number.MAX_SAFE_INTEGER) {
+        if (post.created_utc > nextCheck / 1000) {
             post.setSuggestedSort({
                 sort: "new"
             })
@@ -215,42 +218,60 @@ async function updateWiki(posts) {
 
 async function modCommands(posts, mods) {
     for (let post of posts) {
-        if (post.name.startsWith("t1_") && mods.includes(post.author_fullname) && post.body.startsWith("!r")) {
+        if (post.name.startsWith("t1_") && mods.includes(post.author_fullname) && (post.body.startsWith("!r") || post.body.startsWith("!c"))) {
             console.log("command", post.body)
 
-            let match = post.body.slice(2).split(",")
-            let message = toolbox.removalReasons.header + "\n\n----\n"
+            if (post.body.startsWith("!c")) {
+                let message = post.body.replace(/!c\s?(.*)/, "$1")
+                message = +"\n\n----\nThis comment was made by a moderator of r/NoMansSkyTheGame. If you have questions please contact them via mod mail."
+              
+                let op = await r.getComment(post.parent_id)
 
-            for (let r of match) {
-                let i = parseInt(r)
+                op.reply(message)
+                    .distinguish({
+                        status: true
+                    }).lock()
+                    .catch(err => error("c0", err))
 
-                if (typeof toolbox.removalReasons.reasons[i - 1].text !== "undefined")
-                    message += toolbox.removalReasons.reasons[i - 1].text + "\n\n----\n"
+                post.remove()
+                    .catch(err => error("c1", err))
+
+                console.log("mod comment")
+            } else {
+                let match = post.body.slice(2).split(",")
+                let message = toolbox.removalReasons.header + "\n\n----\n"
+
+                for (let r of match) {
+                    let i = parseInt(r)
+
+                    if (typeof toolbox.removalReasons.reasons[i - 1].text !== "undefined")
+                        message += toolbox.removalReasons.reasons[i - 1].text + "\n\n----\n"
+                }
+
+                message += toolbox.removalReasons.footer
+
+                let op = null
+                let oppost = post
+
+                while (!op || oppost.parent_id) {
+                    op = await r.getComment(oppost.parent_id)
+                    oppost = await op.fetch()
+                }
+
+                op.reply(message)
+                    .distinguish({
+                        status: true
+                    }).lock()
+                    .catch(err => error("5", err))
+
+                post.remove()
+                    .catch(err => error("7", err))
+
+                oppost.remove()
+                    .catch(err => error("8", err))
+
+                console.log("remove: " + "rule: " + match, "https://reddit.com" + oppost.permalink)
             }
-
-            message += toolbox.removalReasons.footer
-
-            let op = null
-            let oppost = post
-
-            while (!op || oppost.parent_id) {
-                op = await r.getComment(oppost.parent_id)
-                oppost = await op.fetch()
-            }
-
-            op.reply(message)
-                .distinguish({
-                    status: true
-                }).lock()
-                .catch(err => error("5", err))
-
-            post.remove()
-                .catch(err => error("7", err))
-
-            oppost.remove()
-                .catch(err => error("8", err))
-
-            console.log("remove: " + "rule: " + match, "https://reddit.com" + oppost.permalink)
         }
     }
 }
@@ -279,7 +300,7 @@ async function checkPostLimits(posts, postList, limit, time, reason) {
                 continue
 
             if (!post.link_flair_text.includes("Bug") && !post.link_flair_text.includes("Video") && !post.link_flair_text.includes("Question") && !post.link_flair_text.includes("Answered") && typeof post.secure_media !== "undefined" && post.secure_media &&
-                (typeof post.secure_media.reddit_video !== "undefined" || typeof post.secure_media.oembed !== "undefined" && !post.secure_media.oembed.provider_url.includes("imgur"))) {
+                (typeof post.secure_media.reddit_video !== "undefined" || typeof post.secure_media.oembed !== "undefined" && post.secure_media.oembed.type === "video")) {
 
                 addList(userVideos, post)
                 console.log("video flair: https://reddit.com" + post.permalink)
@@ -353,4 +374,4 @@ const removePost = 'Thank You for posting to r/NoMansSkyTheGame. Your post has b
 const botSig = "\n\n*This action was taken by the nmstgBot. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NoMansSkyTheGame).*"
 const postLimit = "Posting limit exceded: OP is allowed to make 2 post/hour"
 const videoLimit = "Posting limits exceded: OP is allowed to make 1 video post/week"
-const firstPost = "Thank you for posting to r/NoMansSkyTheGame and taking an active part in the community! Since this is your first post it has been sent for moderator approval. This is one of the anti-spam measures we're forced to use. In the meantime checkout our posting rules listed in the sidebar.\n\nSince moderators are not always available *please* be patient and don't contact them about when your post will be approved."
+const firstPost = "Thank you for posting to r/NoMansSkyTheGame and taking an active part in the community! Since this is your first post to r/NoMansSkyTheGame it has been sent for moderator approval. This is one of the anti-spam measures we're forced to use. In the meantime checkout our posting rules listed in the sidebar.\n\nSince moderators are not always available *please* be patient and don't contact them about when your post will be approved."
