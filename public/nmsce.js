@@ -808,7 +808,8 @@ NMSCE.prototype.displaySingle = function (entry, noscroll) {
     nmsce.changeAddr(null, entry.addr)
 
     let link = "https://nmsce.com/preview.html?i=" + entry.id + "&g=" + entry.galaxy.nameToId() + "&t=" + entry.type.nameToId()
-    $("#permalink").attr("href", link)
+    $("[id|='permalink']").attr("href", link)
+    $("[id|='permalink']").on('dragstart', false)
 
     let disp = function (flds, pnltype, slist) {
         let pnl = $("#typePanels " + pnltype)
@@ -4719,7 +4720,8 @@ NMSCE.prototype.displaySelected = function (e) {
     }
 
     let link = "https://nmsce.com/preview.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
-    $("#permalink").attr("href", link)
+    $("[id|='permalink']").attr("href", link)
+    $("[id|='permalink']").on('dragstart', false)
 
     let idx = getIndex(objectList, "name", e.type)
     let obj = objectList[idx]

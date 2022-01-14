@@ -182,21 +182,23 @@ async function updateWiki(posts) {
 
     for (let post of posts) {
         if (post.created_utc > nextCheck / 1000) {
-            post.setSuggestedSort({
-                sort: "new"
-            })
+            // post.setSuggestedSort({
+            //     sort: "new"
+            // })
 
             let url = post.url
             let l = 0
 
             if (post.title.match(/bug/i))
                 l = 4
-            else if (post.title.match(/friend/i))
+            else if (post.title.match(/faq/i))
                 l = 5
-            else if (post.title.match(/twitch/i))
+            else if (post.title.match(/friend/i))
                 l = 6
             else if (post.title.match(/civilization/i))
                 l = 7
+            else if (post.title.match(/twitch/i))
+                l = 8
 
             if (l !== 0)
                 lines[l] = lines[l].replace(/\((.*?)\)/i, "(" + url + ")")
@@ -223,8 +225,8 @@ async function modCommands(posts, mods) {
 
             if (post.body.startsWith("!c")) {
                 let message = post.body.replace(/!c\s?(.*)/, "$1")
-                message = +"\n\n----\nThis comment was made by a moderator of r/NoMansSkyTheGame. If you have questions please contact them via mod mail."
-              
+                message += "\n\n----\nThis comment was made by a moderator of r/NoMansSkyTheGame. If you have questions please contact them via mod mail."
+
                 let op = await r.getComment(post.parent_id)
 
                 op.reply(message)

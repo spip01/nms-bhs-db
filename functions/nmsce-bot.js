@@ -242,7 +242,8 @@ async function checkComments(posts, mods) {
 
                                 if (post.created - oppost.created < 5 * 60) {
                                     console.log("reject request")
-                                    post.remove().reply(replyWaitRequest)
+                                    post.approve().catch(err => error("8e", err))
+                                    post.reply(replyWaitRequest)
                                         .distinguish({
                                             status: true
                                         }).lock().catch(err => error("8a", err))

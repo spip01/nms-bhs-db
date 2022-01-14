@@ -266,8 +266,10 @@
                     aria-labelledby="dltab-Selected">
                     <div id="imgtable" class="row bkg-white txt-center" style="display:none">
                         <div id="imgcol" class="col-lg-10 col-md-9 col-14">
-                            <img id="dispimage"
-                                onload="nmsce.imageLoaded(this, $(this).parent().width(), $(window).height(), true)" />
+                            <a id="permalink-img" href="">
+                                <img id="dispimage"
+                                    onload="nmsce.imageLoaded(this, $(this).parent().width(), $(window).height(), true)" />
+                            </a>
                             <div class="row">
                                 <a id="permalink" class="col-10 h2 pl-30" href="">
                                     Shareable Link&nbsp;
