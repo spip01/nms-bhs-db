@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 // Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper

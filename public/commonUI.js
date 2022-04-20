@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 // Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper
@@ -1894,17 +1894,6 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
                 tickangle: 45,
             },
         },
-        // images: [{
-        //     x: 100,
-        //     y: 100,
-        //     sizex: 1000,
-        //     sizey: 1000,
-        //     source: "lBTK5EL.png",
-        //     xanchor: "right",
-        //     xref: "paper",
-        //     yanchor: "bottom",
-        //     yref: "paper"
-        // }]
     }
 
     if (opt.map3d) {
