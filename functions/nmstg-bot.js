@@ -16,8 +16,10 @@ var mods = []
 
 // main()
 // async function main() {
+// let firstRead = 200
 
 exports.nmstgBot = async function () {
+    let firstRead = 100
 
     if (!sub) {
         console.log("new instance")
@@ -32,7 +34,7 @@ exports.nmstgBot = async function () {
     let p = []
 
     p.push(sub.getNew(!lastPost.name || lastPost.full + 60 * 60 < date ? {
-        limit: 100 // make sure to cover 24 hours for posting limit
+        limit: firstRead // make sure to cover 24 hours for posting limit
     } : {
         before: lastPost.name
     }).then(posts => {
@@ -47,6 +49,7 @@ exports.nmstgBot = async function () {
             lastPost.name = posts[0].name
             checkPostLimits(posts, userPosts, 2, 60 * 60, postLimit)
             checkNewPosters(posts, 10)
+            updateWiki(posts)
         }
     }).catch(err => {
         error("1", err)
@@ -75,25 +78,6 @@ exports.nmstgBot = async function () {
     }).catch(err => {
         error("2", err)
     }))
-
-    if (new Date().valueOf() > nextCheck)
-        p.push(sub.search({
-            query: "flair_text:thread",
-            //limit: 2,
-            time: "day",
-            sort: "new"
-        }).then(async posts => {
-            console.log("Thread", posts.length)
-
-            if (posts.length > 0)
-                await updateWiki(posts)
-
-            let date = new Date()
-            nextCheck = new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() + 5 + (date.getDay() >= 5 ? 7 : 0), 5, 15).valueOf()
-            console.log("next", new Date(nextCheck).toDateString())
-        }).catch(err => {
-            error("2", err)
-        }))
 
     if (!toolboxdl) {
         let wiki = await sub.getWikiPage("toolbox")
@@ -174,56 +158,47 @@ function mdParse(text) {
     return text
 }
 
-async function updateWiki(posts) {
-    let wiki = await sub.getWikiPage("mega-threads")
-    let page = await wiki.fetch().content_md
+var wiki = null
+var page = null
 
-    let lines = page.split("\n")
+async function updateWiki(posts) {
+    if (!page) {
+        wiki = await sub.getWikiPage("mega-threads")
+        page = await wiki.fetch().content_md
+    }
+
+    let changed = false
 
     for (let post of posts) {
-        if (post.created_utc > nextCheck / 1000) {
-            // post.setSuggestedSort({
-            //     sort: "new"
-            // })
-
-            let url = post.url
-            let l = 0
-
-            if (post.title.match(/bug/i))
-                l = 4
-            else if (post.title.match(/faq/i))
-                l = 5
-            else if (post.title.match(/friend/i))
-                l = 6
-            else if (post.title.match(/civilization/i))
-                l = 7
-            else if (post.title.match(/twitch/i))
-                l = 8
-
-            if (l !== 0)
-                lines[l] = lines[l].replace(/\((.*?)\)/i, "(" + url + ")")
+        if ((post.link_flair_text === "Weekly-Thread" || post.link_flair_text === "Bug-Thread") && !page.includes(post.id)) {
+            changed = true
+            let title = post.permalink.split("/")
+            let loc = page.indexOf(title[5])
+            let insert = page.lastIndexOf("/", loc - 2) + 1
+            page = page.slice(0, insert) + post.id + page.slice(loc - 1)
         }
     }
 
-    page = ""
-    for (let l of lines)
-        page += l + `\n`
+    if (changed) {
+        console.log('update wiki')
 
-    console.log('update wiki', new Date().toDateString())
-
-    wiki.edit({
-            text: page,
-            reason: "bot-update weekly thread urls"
-        })
-        .catch(err => error("w", err))
+        wiki.edit({
+                text: page,
+                reason: "bot-update weekly thread urls"
+            })
+            .catch(err => error("w", err))
+    }
 }
 
 async function modCommands(posts, mods) {
     for (let post of posts) {
-        if (post.name.startsWith("t1_") && mods.includes(post.author_fullname) && (post.body.startsWith("!r") || post.body.startsWith("!c"))) {
+        if (post.name.startsWith("t1_") && mods.includes(post.author_fullname) && post.body.match(/!(r.*|c.*|votes)/i)) {
             console.log("command", post.body)
 
-            if (post.body.startsWith("!c")) {
+            if (post.body.startsWith("!votes")) {
+                await getVotes(post)
+                return
+            } else if (post.body.startsWith("!c")) {
                 let message = post.body.replace(/!c\s?(.*)/, "$1")
                 message += "\n\n----\nThis comment was made by a moderator of r/NoMansSkyTheGame. If you have questions please contact them via mod mail."
 
@@ -276,6 +251,45 @@ async function modCommands(posts, mods) {
             }
         }
     }
+}
+
+function getVotes(op) {
+    return sub.search({
+        query: "subreddit:nomansskythegame flair:contest",
+        limit: 1000,
+        time: "month"
+    }).then(async posts => {
+        let p = []
+        let total = 0
+
+        for (let post of posts) {
+            p.push({
+                link: post.permalink,
+                votes: post.ups + post.downs + post.total_awards_received,
+                title: post.title,
+            })
+            total += post.ups + post.downs + post.total_awards_received
+        }
+
+        p.sort((a, b) => a.votes >= b.votes ? -1 : 1)
+
+        let text = "Total entries: " + posts.length + " Total votes: " + total + "  \n"
+        for (let i = 0; i < 10 && i < p.length; ++i)
+            text += p[i].votes + ": [" + p[i].title + "](https://reddit.com" + p[i].link + ")  \n"
+
+        console.log(text)
+
+        r.composeMessage({
+            to: op.author,
+            subject: "NMSTG Contest",
+            text: text
+        }).catch(err => error(16, err))
+
+        op.remove()
+            .catch(err => error(17, err))
+    }).catch(err => {
+        error(18, err)
+    })
 }
 
 async function checkPostLimits(posts, postList, limit, time, reason) {

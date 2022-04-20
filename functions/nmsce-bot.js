@@ -23,7 +23,7 @@ var sub = null
 var mods = []
 var rules = {}
 var lastPost = {}
-const version = 3.7
+const version = 3.87
 
 // main()
 // async function main() {
@@ -32,8 +32,13 @@ exports.nmsceBot = async function () {
 
     if (!sub) {
         console.log("new instance")
+    r.config({
+        continueAfterRatelimitError: true
+    })  
+
         sub = await r.getSubreddit('NMSCoordinateExchange')
-    }
+  }
+
 
     let date = new Date().valueOf() / 1000
     let p = []
@@ -66,7 +71,7 @@ exports.nmsceBot = async function () {
     // })
 
     p.push(sub.getNew(!lastPost.name || lastPost.full + 15 * 60 < date ? {
-        limit: 150 // make sure to cover 24 hours for posting limit
+        limit: 100 // make sure to cover 24 hours for posting limit
     } : {
         before: lastPost.name
     }).then(posts => {
@@ -92,7 +97,7 @@ exports.nmsceBot = async function () {
 
     p.push(sub.getModqueue().then(posts => {
         console.log("queue", posts.length)
-        validatePosts(posts)
+        validatePosts(posts, true)
         checkComments(posts, mods)
     }).catch(err => error(3, err)))
 
@@ -150,8 +155,8 @@ async function checkComments(posts, mods) {
                             description = true
                             break
                         case "v": // get community event votes
-                            await getVotes(post, post.body.replace(/!m-v(.*)/, "$1"))
-                            return
+                            await getVotes(post)
+                            continue
                     }
                 }
 
@@ -220,7 +225,7 @@ async function checkComments(posts, mods) {
                     console.log("remove: " + remove, "missing: " + missing, "rule: " + match, "https://reddit.com" + oppost.permalink)
                 }
             } else {
-                let match = post.body.match(/!(glyphs|yes|light|shiploc|help|shipclass|portal|s2|search|reqflair)/)
+                let match = post.body.match(/!\s?(glyphs|yes|light|shiploc|help|shipclass|portal|s2|search|reqflair)/i)
 
                 if (match) {
                     let message = null
@@ -229,7 +234,6 @@ async function checkComments(posts, mods) {
 
                     switch (match[1]) {
                         case "yes":
-                        case "Yes":
                             if (post.author.name !== "AutoModerator") {
                                 let op = null
                                 let oppost = post
@@ -240,20 +244,25 @@ async function checkComments(posts, mods) {
                                     oppost = await op.fetch()
                                 }
 
-                                if (post.created - oppost.created < 5 * 60) {
-                                    console.log("reject request")
+                                if (oppost.link_flair_text === "Request?") {
+                                    if (post.created - oppost.created < 5 * 60) {
+                                        console.log("reject request", (post.created - oppost.created) / 60)
+                                        post.approve().catch(err => error("8e", err))
+                                        post.reply(replyWaitRequest)
+                                            .distinguish({
+                                                status: true
+                                            }).lock().catch(err => error("8a", err))
+                                    } else {
+                                        console.log("approve request")
+                                        post.approve().catch(err => error("8d", err))
+                                        oppost.approve().selectFlair({
+                                            flair_template_id: oppost.link_flair_template_id,
+                                            text: "Request"
+                                        }).catch(err => error("8c", err))
+                                    }
+                                } else {
                                     post.approve().catch(err => error("8e", err))
-                                    post.reply(replyWaitRequest)
-                                        .distinguish({
-                                            status: true
-                                        }).lock().catch(err => error("8a", err))
-                                } else if (oppost.link_flair_text === "Request?") {
-                                    console.log("approve request")
-                                    post.approve().catch(err => error("8d", err))
-                                    oppost.approve().selectFlair({
-                                        flair_template_id: oppost.link_flair_template_id,
-                                        text: "Request"
-                                    }).catch(err => error("8c", err))
+                                    console.log("!yes ignored flair=", oppost.link_flair_text)
                                 }
                             }
                             break
@@ -356,15 +365,14 @@ async function checkComments(posts, mods) {
     }
 }
 
-function validatePosts(posts) {
+function validatePosts(posts, modqueue) {
     let flair
-    const incorrectFlair = "BAD FLAIR"
 
     for (let post of posts) {
         let ok = post.link_flair_text
         let reason = ""
 
-        if (!post.name.startsWith("t3_") || post.locked || post.selftext === "[deleted]" || post.link_flair_text.includes(incorrectFlair)) // submission
+        if (!post.name.startsWith("t3_") || post.locked || post.selftext === "[deleted]") // submission
             continue
 
         if (ok)
@@ -372,17 +380,29 @@ function validatePosts(posts) {
 
         if (!ok) {
             if (!post.removed_by || !post.link_flair_text.includes("EDIT")) {
-                console.log("bad flair", "https://reddit.com" + post.permalink)
-                post.selectFlair({
-                    flair_template_id: post.link_flair_template_id,
-                    text: post.link_flair_text + "/" + incorrectFlair
-                }).catch(err => error("bf", err))
-                post.reply(missingFlair)
-                    .distinguish({
-                        status: true
-                    }).lock().catch(err => error(12, err))
+                let approve = true
+                if (Array.isArray(post.mod_reports))
+                    for (let r of post.mod_reports) {
+                        if (r[0].includes("rule") || r[0].includes("missing") || r[0].includes("filter")) {
+                            approve = false
+                            break
+                        }
+                    }
 
-                post.reply("!filter-bad flair").catch(err => error("12a", err))
+                if (approve) {
+                    console.log("bad flair", "https://reddit.com" + post.permalink)
+                    post.selectFlair({
+                        flair_template_id: post.link_flair_template_id,
+                        text: post.link_flair_text + "/PLEASE EDIT FLAIR"
+                    }).catch(err => error(13, err))
+
+                    post.reply(missingFlair)
+                        .distinguish({
+                            status: true
+                        }).lock().catch(err => error(12, err))
+
+                    post.reply("!filter-bad flair").catch(err => error("12a", err))
+                }
             }
 
             continue
@@ -452,7 +472,7 @@ function validatePosts(posts) {
                 let approve = true
                 if (Array.isArray(post.mod_reports))
                     for (let r of post.mod_reports) {
-                        if (r[0].includes("rule") || r[0].includes("missing")) {
+                        if (r[0].includes("rule") || r[0].includes("missing") || r[0].includes("filter")) {
                             approve = false
                             break
                         }
@@ -466,12 +486,12 @@ function validatePosts(posts) {
 
         } else if (reason && !post.removed_by_category) {
             console.log("bot remove missing", reason, "https://reddit.com" + post.permalink)
-            post.remove()
-                .reply(editFlair.replace(/\[missing\]/g, reason))
+            post.reply(editFlair.replace(/\[missing\]/g, reason))
                 .distinguish({
                     status: true,
                     sticky: true
                 }).lock().catch(err => error(15, err))
+            post.reply("!filter-missing " + reason).catch(err => error("15a", err))
         }
     }
 }
@@ -529,11 +549,12 @@ async function checkPostLimits(posts, postList, limit, time, reason) {
                     }
 
                     console.log(reason, user.name, parseInt((n - o + time) / 60), "https://reddit.com" + posts[i].permalink)
-                    let message = removePost + "\n\n----\n" + reason + "Your next post can be posted after " + (new Date((o + limit) * 1000).toTimeString()) + ".\n\n----\n" + botSig
+                    let message = removePost + "\n\n----\n" + reason + "This post can be reposted after " + (new Date((o + limit) * 1000).toTimeString()) + ".\n\n----\n" + botSig
 
                     posts[i].reply(message)
                         .distinguish({
-                            status: true
+                            status: true,
+                            sticky: true
                         }).lock()
                         .catch(err => error("a", err))
 
@@ -551,8 +572,41 @@ async function checkPostLimits(posts, postList, limit, time, reason) {
     }
 }
 
-function getVotes(op, cmd) {
-    let flairobj = getItem(flairList, cmd)
+function getVotes(op) {
+    let scanReplies = function (post, replies, voted) {
+        let votes = 0
+
+        for (let r of replies) {
+            if (r.author.name !== post.author.name) {
+                if (emoji) {
+                    if (c.body.includes(emoji) && !voted.includes(c.author.name)) {
+                        voted.push(c.author.name)
+                        votes++
+                    }
+                } else
+                    votes++
+            } else
+                votes += r.ups - r.downs - 1
+
+            if (r.replies.length > 0)
+                votes += scanReplies(post, r.replies, voted)
+        }
+
+        return votes
+    }
+
+    let emoji = null
+    let flair = null
+
+    let matches = op.body.match(/!m-v\s?(\/.*?\/)?\s?(.*)\s?/)
+    if (matches.length > 1) {
+        if (matches[1] && matches[1].includes("/"))
+            emoji = matches[1].slice(1, matches[1].length - 1)
+
+        flair = matches[2]
+    }
+
+    let flairobj = getItem(flairList, flair)
 
     sub.search({
         query: "subreddit:nmscoordinateexchange flair:community",
@@ -560,63 +614,22 @@ function getVotes(op, cmd) {
         time: "month"
     }).then(async posts => {
         let p = []
-        let rep = []
         let total = 0
 
-        /******************** vote by emoji ***********************/
-        // for (let post of posts) {
-        // rep.push(post.expandReplies().then(post => {
-        //     let votes = 0
-        //     let voted = []
-        //     console.log(post.author_fullname)
-        //     for (let c of post.comments) {
-        //         if (post.author_fullname !== c.author_fullname && c.body.includes(/🎅/) && !voted.includes(c.author_fullname)) {
-        //             console.log(c.body, c.author_fullname)
-        //             voted.push(c.author_fullname)
-        //                 ++votes
-        //         }
-        //     }
-
-        //     return ({
-        //         title: post.title,
-        //         votes: votes,
-        //         link: post.permalink
-        //     })
-        // }))
-        // }
-        // await Promise.all(rep).then(list => {
-        //     list.sort((a, b) => a.votes >= b.votes ? -1 : 1)
-
-        //     let total = 0
-        //     for (let p of list)
-        //         total += p.votes
-
-        //     let text = "Total Entries: " + list.length + " Total votes: " + total + "  \n"
-        //     for (let i = 0; i < 10; ++i)
-        //         text += list[i].votes + ": [" + list[i].title + "](https://reddit.com" + list[i].link + ")  \n"
-
-        //     r.composeMessage({
-        //         to: op.author,
-        //         subject: "Community Event",
-        //         text: text
-        //     }).catch(err => error("v16", err))
-
-        //     op.remove()
-        //         .catch(err => error("v17", err))
-        // })
-        /*********************************************************** */
-
-        /****************** vote by up/down  *************************/
         for (let post of posts) {
             let flair = flairobj ? post.link_flair_text.replace(/community event(.*)/i, flairobj.name + "$1") : null
+            let replies = await post.expandReplies()
+
+            let voted = []
+            let votes = scanReplies(post, replies.comments, voted)
 
             p.push({
                 link: post.permalink,
-                votes: post.ups + post.downs,
+                votes: !emoji ? post.ups + post.downs + post.total_awards_received + votes : post.total_awards_received + votes,
                 title: post.title,
                 // flair: flair
             })
-            total += post.ups + post.downs
+            total += post.ups + post.downs + post.total_awards_received + votes
 
             if (flair)
                 post.selectFlair({
@@ -629,7 +642,7 @@ function getVotes(op, cmd) {
 
         let text = "Total entries: " + posts.length + " Total votes: " + total + "  \n"
         for (let i = 0; i < 10; ++i)
-            text += p[i].vote + ": [" + p[i].title + "](https://reddit.com" + p[i].link + ")  \n"
+            text += p[i].votes + ": [" + p[i].title + "](https://reddit.com" + p[i].link + ")  \n"
 
         r.composeMessage({
             to: op.author,
@@ -639,7 +652,6 @@ function getVotes(op, cmd) {
 
         op.remove()
             .catch(err => error(17, err))
-        /*********************************************************** */
     }).catch(err => {
         error(18, err)
     })
@@ -772,14 +784,13 @@ function getItem(list, str) {
 
 const replyCommands = `List of bot commands
 
+   * !help - this list
    * !glyphs - reply with comment about using glyph font
    * !light - reply with comment about improving the screenshot
-   * !shipclass - reply with comment about spawning ship classes
    * !shipclass - reply with comment about spawning ship classes
    * !portal - info about portal glyphs
    * !0000:0000:0000:0000 - replace with coordinates. bot will comment with glyphs & link showing glyphs
    * !000000000000 - replace with glyphs. bot will comment with a link showing glyphs
-   * !help - this list
 `
 const replyModCommands = `
 ---
@@ -797,7 +808,7 @@ Moderator Commands:
         *  s = screenshot
     * !m-o - Add off topic comment and suggest reposting to nmstg. use with r8
     * !m-d - add comment requesting a better description on future post
-    * !m-v[flair] - get current event vote count. Optional new flair name to change. e.g. !m-vStarship
+    * !m-v[/emoji/] [flair] - get current event vote count. Optional emoji vote count, '/' brackets required. Optional new flair name to change. e.g. !m-vStarship
     * !reqflair - request op repost using the 'request' flair. removes post.
     * !search - add comment requesting the op search before posting a request. removes post.
     
@@ -814,7 +825,7 @@ const respLight = `To help show off your items in future post you might consider
 const respGlyphs = `To improve the visibility of the glyphs in your image install the [glyph font](https://nmsce.com/bin/NMS-Glyphs-Mono.ttf). More information can be found in [this post](https://www.reddit.com/r/NMSCoordinateExchange/comments/oh109y/easy_way_to_add_larger_more_readable_glyphs_to/)`
 const missingInfo = 'Thank You for posting to r/NMSCoordinateExchange. Your post is missing the required [missing]. Please, edit your post to include the missing information and remember to include it in your next post.'
 const missingFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair was missing or unrecognized. Please, repost using the correct flair.'
-const editFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair or title did not contain the required [missing]. If you correct the flair within 24 hours it will be re-approved. You can edit the flair after the post is made. When you select the flair you can edit the text in the box. In the app there is an edit button you need to press.'
+const editFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair or title did not contain the required [missing]. If you correct the flair within a reasonable time it be re-approved. You can edit the flair after the post is made. When you select the flair you can edit the text in the box. In the app there is an edit button you need to press.'
 const removePost = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because it violates the following rules for posting:\n\n'
 const botSig = "\n\n*This action was taken by the nmsceBot. The bot works based on selected flair & title. It is possible the incorrect action was taken if the flair selected was incorrect. Please, double check your flair selection and repost if it was incorrect. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NMSCoordinateExchange).*"
 const taxiComment = "The item shared in this post is not in the Euclid/1st/starting, galaxy. There are 256 unique galaxies in NMS. Shared glyphs only work for the galaxy they are advertised in.\n\nIf you need help travelling to the galaxy advertised in the flair of this post contact PanGalactic Star Cabs - [Discord link](https://discord.gg/WgUdnbZJjh). They can take you anywhere in the NMS universe for free! Any galaxy, any star system, any platform."
@@ -983,7 +994,7 @@ const flairList = [{
     match: /Event/i,
     name: "Community Event",
     galaxy: true,
-    mode: true,
+    //mode: true,
     version: true,
     id: ""
 }, {
@@ -1021,31 +1032,31 @@ const modeList = [{
 }]
 
 const galaxyList = [{
-    match: /\bEucl\w+d\b/i,
+    match: /\bEuc\w+d\b/i,
     name: "Euclid"
 }, {
     match: /\bHilb\w+t\b(Dim\w+n\b)?/i,
     name: "Hilbert"
 }, {
-    match: /\bCaly\w+o\b/i,
+    match: /\bCal\w+o\b/i,
     name: "Calypso"
 }, {
-    match: /\bHesp\w+s\b(Dim\w+n\b)?/i,
+    match: /\bHes\w+s\b(Dim\w+n\b)?/i,
     name: "Hesperius"
 }, {
-    match: /\bHyad\w+s\b/i,
+    match: /\bHya\w+s\b/i,
     name: "Hyades"
 }, {
-    match: /\bIckj\w+w\b/i,
+    match: /\bIck\w+w\b/i,
     name: "Ickjamatew"
 }, {
-    match: /\bBudu\w+r\b/i,
+    match: /\bBud\w+r\b/i,
     name: "Budullangr"
 }, {
-    match: /\bKiko\w+r\b/i,
+    match: /\bKik\w+r\b/i,
     name: "Kikolgallr"
 }, {
-    match: /\bElti\w+n\b/i,
+    match: /\bElt\w+n\b/i,
     name: "Eltiensleen"
 }, {
     match: /\bEis{1,2}\w+[mn]\b/i,
@@ -1054,40 +1065,40 @@ const galaxyList = [{
     match: /\bElk[ua]\w+s\b/i,
     name: "Elkupalos"
 }, {
-    match: /\bApta\w+a\b/i,
+    match: /\bApt\w+a\b/i,
     name: "Aptarkaba"
 }, {
-    match: /\bOnti\w+p\b/i,
+    match: /\bOnt\w+p\b/i,
     name: "Ontiniangp"
 }, {
-    match: /\bOdiw\w+i\b/i,
+    match: /\bOdi\w+i\b/i,
     name: "Odiwagiri"
 }, {
-    match: /\bOgti\w+i\b/i,
+    match: /\bOgt\w+i\b/i,
     name: "Ogtialabi"
 }, {
-    match: /\bMuha\w+o\b/i,
+    match: /\bMuh\w+o\b/i,
     name: "Muhacksonto"
 }, {
-    match: /\bHito\w+r\b/i,
+    match: /\bHit\w+r\b/i,
     name: "Hitonskyer"
 }, {
-    match: /\bRera\w+l\b/i,
+    match: /\bRer\w+l\b/i,
     name: "Rerasmutul"
 }, {
-    match: /\bIsdo\w+g\b/i,
+    match: /\bIsd\w+g\b/i,
     name: "Isdoraijung"
 }, {
-    match: /\bDoct\w+a\b/i,
+    match: /\bDoc\w+a\b/i,
     name: "Doctinawyra"
 }, {
     match: /\bLoyc\w+q\b/i,
     name: "Loychazinq"
 }, {
-    match: /\bZuka\w+a\b/i,
+    match: /\bZuk\w+a\b/i,
     name: "Zukasizawa"
 }, {
-    match: /\bEkwa\w+e\b/i,
+    match: /\bEkw\w+e\b/i,
     name: "Ekwathore"
 }, {
     match: /\bYebe\w+e\b/i,
@@ -1096,22 +1107,22 @@ const galaxyList = [{
     match: /\bTwer\w+k\b/i,
     name: "Twerbetek"
 }, {
-    match: /\bSiva\w+s\b/i,
+    match: /\bSiv\w+s\b/i,
     name: "Sivarates"
 }, {
-    match: /\bEaje\w+l\b/i,
+    match: /\bEaj\w+l\b/i,
     name: "Eajerandal"
 }, {
-    match: /\bAldu\w+i\b/i,
+    match: /\bAld\w+i\b/i,
     name: "Aldukesci"
 }, {
-    match: /\bWoty\w+i\b/i,
+    match: /\bWot\w+i\b/i,
     name: "Wotyarogii"
 }, {
-    match: /\bSudz\w+l\b/i,
+    match: /\bSud\w+l\b/i,
     name: "Sudzerbal"
 }, {
-    match: /\bMaup\w+y\b/i,
+    match: /\bMau\w+y\b/i,
     name: "Maupenzhay"
 }, {
     match: /\bSugu\w+e\b/i,
@@ -1120,94 +1131,94 @@ const galaxyList = [{
     match: /\bBrog\w+n\b/i,
     name: "Brogoweldian"
 }, {
-    match: /\bEhbo\w+u\b/i,
+    match: /\bEhb\w+u\b/i,
     name: "Ehbogdenbu"
 }, {
-    match: /\bIjse\w+s\b/i,
+    match: /\bIjs\w+s\b/i,
     name: "Ijsenufryos"
 }, {
-    match: /\bNipi\w+a\b/i,
+    match: /\bNip\w+a\b/i,
     name: "Nipikulha"
 }, {
-    match: /\bAuts\w+n\b/i,
+    match: /\bAut\w+n\b/i,
     name: "Autsurabin"
 }, {
-    match: /\bLuso\w+h\b/i,
+    match: /\bLus\w+h\b/i,
     name: "Lusontrygiamh"
 }, {
-    match: /\bRewm\w+a\b/i,
+    match: /\bRew\w+a\b/i,
     name: "Rewmanawa"
 }, {
-    match: /\bEthi\w+e\b/i,
+    match: /\bEth\w+e\b/i,
     name: "Ethiophodhe"
 }, {
-    match: /\bUras\w+e\b/i,
+    match: /\bUra\w+e\b/i,
     name: "Urastrykle"
 }, {
-    match: /\bXobe\w+j\b/i,
+    match: /\bXob\w+j\b/i,
     name: "Xobeurindj"
 }, {
-    match: /\bOnii\w+u\b/i,
+    match: /\bOni\w+u\b/i,
     name: "Oniijialdu"
 }, {
-    match: /\bWuce\w+c\b/i,
+    match: /\bWuc\w+c\b/i,
     name: "Wucetosucc"
 }, {
-    match: /\bEbye\w+f\b/i,
+    match: /\bEby\w+f\b/i,
     name: "Ebyeloof"
 }, {
     match: /\bOdya\w+a\b/i,
     name: "Odyavanta"
 }, {
-    match: /\bMile\w+i\b/i,
+    match: /\bMil\w+i\b/i,
     name: "Milekistri"
 }, {
-    match: /\bWafe\w+h\b/i,
+    match: /\bWaf\w+h\b/i,
     name: "Waferganh"
 }, {
-    match: /\bAgnu\w+t\b/i,
+    match: /\bAgn\w+t\b/i,
     name: "Agnusopwit"
 }, {
-    match: /\bT[ae]ya\w+y\b/i,
+    match: /\bT[ae]y\w+y\b/i,
     name: "Teyaypilny"
 }, {
-    match: /\bZali\w+m\b/i,
+    match: /\bZal\w+m\b/i,
     name: "Zalienkosm"
 }, {
     match: /\bLadg\w+f\b/i,
     name: "Ladgudiraf"
 }, {
-    match: /\bMush\w+e\b/i,
+    match: /\bMus\w+e\b/i,
     name: "Mushonponte"
 }, {
-    match: /\bAmse\w+z\b/i,
+    match: /\bAms\w+z\b/i,
     name: "Amsentisz"
 }, {
-    match: /\bFlad\w+m\b/i,
+    match: /\bFla\w+m\b/i,
     name: "Fladiselm"
 }, {
-    match: /\bLaan\w+b\b/i,
+    match: /\bLaa\w+b\b/i,
     name: "Laanawemb"
 }, {
-    match: /\bIlke\w+r\b/i,
+    match: /\bIlk\w+r\b/i,
     name: "Ilkerloor"
 }, {
-    match: /\bDava\w+i\b/i,
+    match: /\bDav\w+i\b/i,
     name: "Davanossi"
 }, {
-    match: /\bPloe\w+u\b/i,
+    match: /\bPlo\w+u\b/i,
     name: "Ploehrliou"
 }, {
-    match: /\bCorp\w+a\b/i,
+    match: /\bCor\w+a\b/i,
     name: "Corpinyaya"
 }, {
-    match: /\bLeck\w+m\b/i,
+    match: /\bLec\w+m\b/i,
     name: "Leckandmeram"
 }, {
-    match: /\bQuul\w+s\b/i,
+    match: /\bQuu\w+s\b/i,
     name: "Quulngais"
 }, {
-    match: /\bNoko\w+l\b/i,
+    match: /\bNok\w+l\b/i,
     name: "Nokokipsechl"
 }, {
     match: /\bRinb\w+a\b/i,
@@ -1216,142 +1227,142 @@ const galaxyList = [{
     match: /\bLoyd\w+n\b/i,
     name: "Loydporpen"
 }, {
-    match: /\bIbtr\w+p\b/i,
+    match: /\bIbt\w+p\b/i,
     name: "Ibtrevskip"
 }, {
     match: /\bElko\w+b\b/i,
     name: "Elkowaldb"
 }, {
-    match: /\bHeho\w+o\b/i,
+    match: /\bHeh\w+o\b/i,
     name: "Heholhofsko"
 }, {
     match: /\bYebr\w+d\b/i,
     name: "Yebrilowisod"
 }, {
-    match: /\bHusa\w+i\b/i,
+    match: /\bHus\w+i\b/i,
     name: "Husalvangewi"
 }, {
-    match: /\bOvna[\w'’]+d\b/i,
+    match: /\bOvn[\w'’]+d\b/i,
     name: "Ovna'uesed"
 }, {
-    match: /\bBahi\w+y\b/i,
+    match: /\bBah\w+y\b/i,
     name: "Bahibusey"
 }, {
-    match: /\bNuyb\w+e\b/i,
+    match: /\bNuy\w+e\b/i,
     name: "Nuybeliaure"
 }, {
-    match: /\bDosh\w+c\b/i,
+    match: /\bDos\w+c\b/i,
     name: "Doshawchuc"
 }, {
-    match: /\bRuck\w+h\b/i,
+    match: /\bRuc\w+h\b/i,
     name: "Ruckinarkh"
 }, {
-    match: /\bThor\w+c\b/i,
+    match: /\bTho\w+c\b/i,
     name: "Thorettac"
 }, {
     match: /\bNupo\w+u\b/i,
     name: "Nuponoparau"
 }, {
-    match: /\bMogl\w+l\b/i,
+    match: /\bMog\w+l\b/i,
     name: "Moglaschil"
 }, {
-    match: /\bUiwe\w+e\b/i,
+    match: /\bUiw\w+e\b/i,
     name: "Uiweupose"
 }, {
-    match: /\bNasm\w+e\b/i,
+    match: /\bNas\w+e\b/i,
     name: "Nasmilete"
 }, {
-    match: /\bEkda\w+n\b/i,
+    match: /\bEkd\w+n\b/i,
     name: "Ekdaluskin"
 }, {
-    match: /\bHaka\w+y\b/i,
+    match: /\bHak\w+y\b/i,
     name: "Hakapanasy"
 }, {
-    match: /\bDimo\w+a\b/i,
+    match: /\bDim\w+a\b/i,
     name: "Dimonimba"
 }, {
-    match: /\bCaja\w+i\b/i,
+    match: /\bCaj\w+i\b/i,
     name: "Cajaccari"
 }, {
-    match: /\bOlon\w+o\b/i,
+    match: /\bOlo\w+o\b/i,
     name: "Olonerovo"
 }, {
-    match: /\bUmla\w+k\b/i,
+    match: /\bUml\w+k\b/i,
     name: "Umlanswick"
 }, {
-    match: /\bHena\w+m\b/i,
+    match: /\bHen\w+m\b/i,
     name: "Henayliszm"
 }, {
-    match: /\bUtze\w+e\b/i,
+    match: /\bUtz\w+e\b/i,
     name: "Utzenmate"
 }, {
-    match: /\bUmir\w+a\b/i,
+    match: /\bUmi\w+a\b/i,
     name: "Umirpaiya"
 }, {
-    match: /\bPaho\w+g\b/i,
+    match: /\bPah\w+g\b/i,
     name: "Paholiang"
 }, {
-    match: /\bIaer\w+a\b/i,
+    match: /\bIae\w+a\b/i,
     name: "Iaereznika"
 }, {
-    match: /\bYudu\w+h\b/i,
+    match: /\bYud\w+h\b/i,
     name: "Yudukagath"
 }, {
-    match: /\bBoea\w+j\b/i,
+    match: /\bBoe\w+j\b/i,
     name: "Boealalosnj"
 }, {
-    match: /\bYaev\w+o\b/i,
+    match: /\bYae\w+o\b/i,
     name: "Yaevarcko"
 }, {
-    match: /\bCoel\w+p\b/i,
+    match: /\bCoe\w+p\b/i,
     name: "Coellosipp"
 }, {
-    match: /\bWayn\w+u\b/i,
+    match: /\bWay\w+u\b/i,
     name: "Wayndohalou"
 }, {
-    match: /\bSmod\w+l\b/i,
+    match: /\bSmo\w+l\b/i,
     name: "Smoduraykl"
 }, {
-    match: /\bApma\w+u\b/i,
+    match: /\bApm\w+u\b/i,
     name: "Apmaneessu"
 }, {
-    match: /\bHica\w+v\b/i,
+    match: /\bHic\w+v\b/i,
     name: "Hicanpaav"
 }, {
-    match: /\bAkva\w+a\b/i,
+    match: /\bAkv\w+a\b/i,
     name: "Akvasanta"
 }, {
-    match: /\bTuyc\w+r\b/i,
+    match: /\bTuy\w+r\b/i,
     name: "Tuychelisaor"
 }, {
-    match: /\bRivs\w+e\b/i,
+    match: /\bRiv\w+e\b/i,
     name: "Rivskimbe"
 }, {
-    match: /\bDaks\w+x\b/i,
+    match: /\bDak\w+x\b/i,
     name: "Daksanquix"
 }, {
     match: /\bKiss\w+n\b/i,
     name: "Kissonlin"
 }, {
-    match: /\bAedi\w+l\b/i,
+    match: /\bAed\w+l\b/i,
     name: "Aediabiel"
 }, {
-    match: /\bUlos\w+k\b/i,
+    match: /\bUlo\w+k\b/i,
     name: "Ulosaginyik"
 }, {
-    match: /\bRocl\w+r\b/i,
+    match: /\bRoc\w+r\b/i,
     name: "Roclaytonycar"
 }, {
-    match: /\bKich\w+a\b/i,
+    match: /\bKic\w+a\b/i,
     name: "Kichiaroa"
 }, {
-    match: /\bIrce\w+y\b/i,
+    match: /\bIrc\w+y\b/i,
     name: "Irceauffey"
 }, {
-    match: /\bNudq\w+e\b/i,
+    match: /\bNud\w+e\b/i,
     name: "Nudquathsenfe"
 }, {
-    match: /\bGeta\w+l\b/i,
+    match: /\bGet\w+l\b/i,
     name: "Getaizakaal"
 }, {
     match: /\bHans\w+n\b/i,

@@ -66,7 +66,7 @@ $(document).ready(async () => {
         nmsce.last = {}
         nmsce.last.addr = reformatAddress(passed.s)
         nmsce.last.galaxy = passed.g
-        nmsce.searchSystem()
+        nmsce.searchSystem(passed.k)
 
     } else if (passed.r && passed.g) {
         nmsce.last = {}
@@ -1384,7 +1384,7 @@ NMSCE.prototype.openSearch = function () {
     window.open("nmsce.html?s=" + nmsce.last.addr.nameToId() + "&g=" + nmsce.last.galaxy.nameToId(), '_self')
 }
 
-NMSCE.prototype.searchSystem = function () {
+NMSCE.prototype.searchSystem = function (k) {
     if (!nmsce.last)
         return
 
@@ -1401,7 +1401,7 @@ NMSCE.prototype.searchSystem = function () {
 
         $("#dltab-Search-Results").click()
         $("#displayPanels #list-Search-Results").empty()
-        nmsce.displayResultList(list, "Search-Results")
+        nmsce.displayResultList(list, "Search-Results", k)
     })
 }
 
@@ -4573,7 +4573,7 @@ NMSCE.prototype.displayResultList = function (entries, type) {
 }
 */
 
-NMSCE.prototype.displayResultList = function (entries, type) {
+NMSCE.prototype.displayResultList = function (entries, type, k) {
     if (!entries || entries.length === 0)
         return
 
@@ -4581,7 +4581,7 @@ NMSCE.prototype.displayResultList = function (entries, type) {
     let loc = $("#displayPanels #list-" + type.nameToId())
 
     for (let e of entries) {
-        if (e.private && e.uid !== bhs.user.uid && !bhs.hasRole("nmsceEditor"))
+        if (!k && e.private && e.uid !== bhs.user.uid && !bhs.hasRole("nmsceEditor"))
             continue
 
         // if (type === "Hall-of-Fame" && e.votes.hof < 1)
@@ -5012,6 +5012,8 @@ NMSCE.prototype.addDisplayListEntry = function (e, loc, prepend, type) {
         itm = sortItem
     } else {
         h = /etype/ [Symbol.replace](row, e.type.nameToId())
+        if (e.private)
+            h = /black/ [Symbol.replace](h, "black bkg-yellow")
         h = /idname/ [Symbol.replace](h, e.id)
         h = /eid/ [Symbol.replace](h, e.id)
         h = /ethumb/ [Symbol.replace](h, thumbPath + e.Photo)
