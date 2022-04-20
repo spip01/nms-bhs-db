@@ -1,8 +1,8 @@
 "use strict";
 
 import { blackHoleSuns, bhs } from "./commonFb.js";
-import { fcedata, fdarc, findex, fnmsce, fpoi, fpreview, mergeObjects } from "./commonNms.js";
-import { galaxyList } from "./constants.js";
+import { fcedata, fdarc, findex, fnmsce, fpoi, fpreview, fsearch, ftotals, getIndex, mergeObjects, reformatAddress } from "./commonNms.js";
+import { galaxyList, platformList } from "./constants.js";
 
 // Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper

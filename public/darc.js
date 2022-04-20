@@ -1,8 +1,9 @@
 'use strict'
 
-import { bhs } from "./commonFb.js"
-import { addGlyphButtons } from "./commonNms.js"
-import { galaxyList } from "./constants.js"
+import { bhs, blackHoleSuns, startUp } from "./commonFb.js"
+import { addGlyphButtons, getIndex, reformatAddress } from "./commonNms.js"
+import { galaxyList, platformList } from "./constants.js"
+import { buildGlyphModal } from "./glyphReader.js"
 
 // Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper
@@ -49,6 +50,8 @@ $(document).ready(() => {
     buildGlyphModal(dispGlyph)
 })
 
+// Hack to make the function global. Should be avoided and code should be reformatted to not use it
+window.dispGlyph = dispGlyph;
 function dispGlyph(evt, loc) {
     let glyph = typeof evt === "string" ? evt : $(evt).val().toUpperCase()
     if (glyph !== "") {

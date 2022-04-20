@@ -243,7 +243,7 @@ export function formatListSel(val, list) {
     return name;
 }
 
-function getIndex(list, field, id) {
+export function getIndex(list, field, id) {
     if (!id)
         return -1
 
@@ -255,7 +255,7 @@ function getIndex(list, field, id) {
     }).indexOf(typeof id === "string" ? id.toLowerCase() : id)
 }
 
-function calcDist(addr, addr2) {
+export function calcDist(addr, addr2) {
     let xyz1 = addressToXYZ(addr)
     let xyz2 = typeof addr2 !== "undefined" ? addressToXYZ(addr2) : {
         x: 0x7ff,
@@ -265,7 +265,7 @@ function calcDist(addr, addr2) {
     return parseInt(calcDistXYZ(xyz1, xyz2) * 400)
 }
 
-function calcDistXYZ(xyz1, xyz2, xp, yp) {
+export function calcDistXYZ(xyz1, xyz2, xp, yp) {
     if (typeof xp !== "undefined" && typeof yp !== "undefined") {
         let x = xyz1[xp] - xyz2[xp]
         let y = xyz1[yp] - xyz2[yp]
@@ -289,7 +289,7 @@ export function calcAngle(saddr, eaddr, xp, yp) {
     return Number.isNaN(angle) ? 0 : angle;
 }
 
-function calcPlane(C) {
+export function calcPlane(C) {
     const A = zero
     const B = aboveZero
 
@@ -330,7 +330,7 @@ function calcPlane(C) {
     }
 }
 
-function projOnPlane(p, xyz, rt) {
+export function projOnPlane(p, xyz, rt) {
     let n = rt ? p.r : p.n
 
     let t = -(n.a * xyz.x + n.b * xyz.y + n.c * xyz.z + n.d) / (n.a * n.a + n.b * n.b + n.c * n.c)
@@ -342,7 +342,7 @@ function projOnPlane(p, xyz, rt) {
     return pr
 }
 
-function distToPlane(p, xyz, rt) {
+export function distToPlane(p, xyz, rt) {
     let n = !rt ? p.r : p.n
     return (n.a * xyz.x + n.b * xyz.y + n.c * xyz.z + n.d) / Math.sqrt(n.a * n.a + n.b * n.b + n.c * n.c)
 }
@@ -364,7 +364,7 @@ export function calcAngles(b, c) {
     };
 }
 
-function calcAngleA(a, b, c) {
+export function calcAngleA(a, b, c) {
     let t = ((b.x - a.x) * (c.x - a.x) + (b.y - a.y) * (c.y - a.y) + (b.z - a.z) * (c.z - a.z)) /
         (Math.sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y) + (b.z - a.z) * (b.z - a.z)) *
             Math.sqrt((c.x - a.x) * (c.x - a.x) + (c.y - a.y) * (c.y - a.y) + (c.z - a.z) * (c.z - a.z)))

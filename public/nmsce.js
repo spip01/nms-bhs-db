@@ -1,14 +1,17 @@
 'use strict'
 
 import { bhs, blackHoleSuns, startUp } from "./commonFb.js";
-import { addGlyphButtons, fcedata, fnmsce, fpreview, mergeObjects } from "./commonNms.js";
-import { biomeList, classList, colorList, economyList, economyListTier, faunaList, faunaProductTamed, frigateList, galaxyList, lifeformList, modeList, platformListAll, resourceList, sentinelList, shipList, versionList } from "./constants.js";
+import { addGlyphButtons, fcedata, fnmsce, fpreview, getIndex, mergeObjects, reformatAddress } from "./commonNms.js";
+import { biomeList, classList, colorList, economyList, economyListTier, faunaList, faunaProductTamed, fontList, frigateList, galaxyList, lifeformList, modeList, platformListAll, resourceList, sentinelList, shipList, versionList } from "./constants.js";
 import { calcImageSize } from "./imageSizeUtil.js";
 
 // Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper
 
 var nmsce;
+// Does nothing. Purely for consistency
+window.nmsce = nmsce;
+
 const displayPath = "/nmsce/disp/"
 const originalPath = "/nmsce/orig/"
 const thumbPath = "/nmsce/disp/thumb/"
@@ -23,7 +26,8 @@ $(document).ready(async () => {
             loc.css("border-width", "3px")
         }
     })
-    nmsce = new NMSCE()
+    // Bad hack. Should not be used
+    window.nmsce = nmsce = new NMSCE()
     nmsce.last = null
 
     if (!fpreview) {
@@ -4989,6 +4993,8 @@ function updateImageText() {
     nmsce.restoreImageText(null, true)
 }
 
+// Hack to make the function global. Should be avoided and code should be reformatted to not use it
+window.setCursor = setCursor;
 function setCursor(cursor) {
     $("body")[0].style.cursor = cursor
 }
@@ -5003,6 +5009,8 @@ function setAsym(evt) {
         row.find("#asym-checkmark").hide()
 }
 
+// Hack to make the function global. Should be avoided and code should be reformatted to not use it
+window.toggleAsym = toggleAsym;
 function toggleAsym(evt) {
     let ck = $(evt).closest("[id|='row']").find("#asym-checkmark")
     let id = $(evt).closest("[id|='slist']").prop("id")

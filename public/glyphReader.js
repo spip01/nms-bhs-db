@@ -7,7 +7,7 @@ var glyph
 
 function Glyph() {}
 
-function buildGlyphModal(dispFcn) {
+export function buildGlyphModal(dispFcn) {
     glyph = new Glyph()
     glyph.display = dispFcn
 

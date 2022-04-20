@@ -1,7 +1,7 @@
 'use strict'
 
-import { bhs } from "./commonFb.js";
-import { galaxyList } from "./constants.js";
+import { bhs, blackHoleSuns, startUp } from "./commonFb.js";
+import { galaxyList, platformList } from "./constants.js";
 
 // Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper

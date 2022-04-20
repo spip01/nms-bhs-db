@@ -1,7 +1,8 @@
 'use-strict';
 
-window.imageLoaded = imageLoaded;
 
+// Hack to make the function global. Should be avoided and code should be reformatted to not use it
+window.imageLoaded = imageLoaded;
 export function imageLoaded(evt, width, height, expand) {
     let h = evt.naturalHeight
     let w = evt.naturalWidth

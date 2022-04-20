@@ -1,6 +1,7 @@
 'use strict';
 
-import { buildGalaxyInfo, fcedata, findex, fnmsce, mergeObjects } from "./commonNms.js";
+import { buildGalaxyInfo, fcedata, findex, fnmsce, fsearch, ftotals, mergeObjects } from "./commonNms.js";
+import { platformList } from "./constants.js";
 
 // Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper
