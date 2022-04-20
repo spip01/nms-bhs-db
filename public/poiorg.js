@@ -282,13 +282,13 @@ blackHoleSuns.prototype.save = async function (evt) {
 
     let ref = collection(bhs.fs, pnlid == "pnl-org" ? "org" : "poi")
     if (idx != -1)
-        ref = ref.doc(list[idx].id)
+        ref = doc(ref, list[idx].id)
     else {
-        ref = ref.doc()
+        ref = doc(ref)
         e.id = ref.id
     }
 
-    await ref.set(e, {
+    await setDoc(ref, e, {
         merge: true
     }).then(() => {
         bhs.statusOut(pnl, e._name + " updated.")
@@ -321,8 +321,8 @@ blackHoleSuns.prototype.delete = async function (evt) {
         if (e.img)
             bhs.fbstorage.ref().child(e.img).delete()
 
-        let ref = bhs.fs.collection(pnlid == "pnl-org" ? "org" : "poi").doc(e.id)
-        await ref.delete().then(() => {
+        let ref = doc(collection(bhs.fs, pnlid == "pnl-org" ? "org" : "poi"), e.id)
+        await deleteDoc(ref).then(() => {
             bhs.statusOut(pnl, e._name + " deleted.")
 
             list.splice(idx, 1)

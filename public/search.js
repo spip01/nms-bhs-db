@@ -93,7 +93,7 @@ blackHoleSuns.prototype.searchReg = async function () {
                     s: xyz.s
                 })
 
-                p.push(ref.doc(a).get().then(doc => {
+                p.push(doc(ref, a).get().then(doc => {
                     if (doc.exists()) {
                         let e = doc.data()
                         bhs.entries[e.addr] = e

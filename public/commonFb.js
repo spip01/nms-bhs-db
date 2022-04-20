@@ -1024,13 +1024,13 @@ export class blackHoleSuns {
     getUsersColRef(uid, galaxy, platform, addr) {
         let ref = collection(bhs.fs, usersCol)
         if (uid) {
-            ref = ref.doc(uid)
+            ref = doc(ref, uid)
             if (galaxy) {
-                ref = ref.collection(starsCol).doc(galaxy)
+                ref = doc(collection(ref, starsCol), galaxy)
                 if (platform) {
-                    ref = ref.collection(platform)
+                    ref = collection(ref, platform)
                     if (addr) {
-                        ref = ref.doc(addr)
+                        ref = doc(ref, addr)
                     }
                 }
             }
@@ -1042,11 +1042,11 @@ export class blackHoleSuns {
     getStarsColRef(galaxy, platform, addr) {
         let ref = collection(bhs.fs, starsCol)
         if (galaxy) {
-            ref = ref.doc(galaxy)
+            ref = doc(ref, galaxy)
             if (platform) {
-                ref = ref.collection(platform)
+                ref = collection(ref, platform)
                 if (addr) {
-                    ref = ref.doc(addr)
+                    ref = doc(ref, addr)
                 }
             }
         }

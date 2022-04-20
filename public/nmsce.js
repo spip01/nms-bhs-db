@@ -1,6 +1,6 @@
 'use strict'
 
-import { Timestamp, collection, query, where, limit, doc, getDoc, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
+import { Timestamp, collection, collectionGroup, query, where, orderBy, limit, doc, getDoc, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { bhs, blackHoleSuns, startUp } from "./commonFb.js";
 import { addGlyphButtons, fcedata, fnmsce, fpreview, getIndex, mergeObjects, reformatAddress } from "./commonNms.js";
 import { biomeList, classList, colorList, economyList, economyListTier, faunaList, faunaProductTamed, fontList, frigateList, galaxyList, lifeformList, modeList, platformListAll, resourceList, sentinelList, shipList, versionList } from "./constants.js";
@@ -3679,34 +3679,34 @@ class NMSCE {
             nmsce.last = null
             let ref = doc(bhs.fs, "nmsce/" + entry.galaxy + "/" + entry.type + "/" + entry.id)
 
-            let vref = ref.collection("votes")
+            let vref = collection(ref, "votes")
             vref.get().then(snapshot => {
                 for (let doc of snapshot.docs)
-                    doc.ref.delete()
+                    deleteDoc(doc.ref);
             })
 
-            vref = ref.collection("nmsceCommon")
+            vref = collection(ref, "nmsceCommon")
             vref.get().then(snapshot => {
                 for (let doc of snapshot.docs)
-                    doc.ref.delete()
+                    deleteDoc(doc.ref);
             })
 
-            ref.delete().then(() => {
+            deleteDoc(ref).then(() => {
                 bhs.status(entry.id + " deleted.")
                 $("#save").text("Save All")
                 $("#delete-item").addClass("disabled")
                 $("#delete-item").prop("disabled", true)
 
-                let vref = ref.collection("votes")
+                let vref = collection(ref, "votes")
                 vref.get().then(snapshot => {
                     for (let doc of snapshot.docs)
-                        doc.ref.delete()
+                        deleteDoc(doc.ref);
                 })
 
-                vref = ref.collection("nmsceCommon")
+                vref = collection(ref, "nmsceCommon")
                 vref.get().then(snapshot => {
                     for (let doc of snapshot.docs)
-                        doc.ref.delete()
+                        delete(doc.ref);
                 })
 
                 ref = bhs.fbstorage.ref().child(originalPath + entry.Photo)
@@ -3803,9 +3803,9 @@ class NMSCE {
             entry.Photo = entry.type + "-" + entry.id + ".jpg"
 
         let ref = collection(bhs.fs, "nmsce/" + entry.galaxy + "/" + entry.type)
-        ref = ref.doc(entry.id)
+        ref = doc(ref, entry.id)
 
-        ref.set(entry).then(() => {
+        setDoc(ref, entry).then(() => {
             bhs.status(entry.type + " " + entry.Name + " saved.")
 
             if (created)
@@ -3866,8 +3866,8 @@ class NMSCE {
         if (entry["Planet-Name"])
             e["Planet-Name"] = entry["Planet-Name"]
 
-        ref = ref.collection("nmsceCommon").doc(entry.id)
-        ref.set(e, {
+        ref = doc(collection(ref, "nmsceCommon"), entry.id)
+        setDoc(ref, e, {
             merge: true
         }).then().catch(err => {
             bhs.status("ERROR: " + err.message)
@@ -4220,7 +4220,7 @@ class NMSCE {
             let ref = obs.ref
 
             if (obs.last && obs.cont) {
-                ref = ref.startAfter(obs.last)
+                ref = query(ref, startAfter(obs.last))
                 obs.last = null
                 obs.run = true
             }
@@ -4228,8 +4228,8 @@ class NMSCE {
             if (obs.run) {
                 obs.run = false
                 // if (Atomics.compareExchange(obs.arr, 0, 0, 1) === 0)
-
-                ref.get(obs.options).then(snapshot => {
+                // what the hell are obs.options supposed to do?
+                getDocs(ref).then(snapshot => {
                     if (snapshot.empty) {
                         obs.cont = false
                         obs.dispFcn([], obs.type)
@@ -4392,8 +4392,8 @@ class NMSCE {
 
             e = {}
 
-            let vref = ref.collection("votes")
-            vref = vref.doc(bhs.user.uid)
+            let vref = collection(ref, "votes")
+            vref = doc(vref, bhs.user.uid)
             let doc = await vref.get()
             if (doc.exists()) {
                 e = doc.data()
@@ -4412,7 +4412,7 @@ class NMSCE {
             if (nmsce.last.Type)
                 e.Type = nmsce.last.Type
 
-            doc.ref.set(e, {
+            setDoc(ref, e, {
                 merge: true
             })
 
@@ -4421,14 +4421,14 @@ class NMSCE {
             e = {}
             e[id] = firebase.firestore.FieldValue.increment(v ? 1 : -1)
 
-            ref.set({
+            setDoc(ref, {
                 votes: e
             }, {
                 merge: true
             })
 
-            ref = ref.collection("nmsceCommon").doc(nmsce.last.id)
-            ref.set({
+            ref = doc(collection(ref, "nmsceCommon"), nmsce.last.id)
+            setDoc(ref, {
                 votes: e
             }, {
                 merge: true
