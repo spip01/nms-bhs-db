@@ -66,3 +66,7 @@ functions/reddit.json
 functions/redditPost.json
 functions/reddit.html
 functions/test.json
+
+#for local testing
+local.*.js
+
