@@ -1,5 +1,7 @@
 'use strict'
 
+import { addGlyphButtons } from "./commonNms"
+
 // Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper
 

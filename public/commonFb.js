@@ -1,25 +1,37 @@
 'use strict';
 
+import { buildGalaxyInfo, fcedata, findex, fnmsce, mergeObjects } from "./commonNms.js";
+
 // Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper
 
-var bhs;
+export var bhs;
 
 if(!fbconfig){
-    var fbconfig = {
-        apiKey: FIREBASE_API,
-        authDomain: "nms-bhs.firebaseapp.com",
-        databaseURL: "https://nms-bhs.firebaseio.com",
-        projectId: "nms-bhs",
-        storageBucket: "nms-bhs.appspot.com",
-        messagingSenderId: FIREBASE_MSGID
+    var fbconfig
+
+    // Try to load a local version of it first (primarily for testing)
+    try {
+        fbconfig = (await import("./local.init.js").catch((err) => {
+            console.error("Failed to fetch local initialization.");
+        })).fbconfig;
+    } catch (err) {
+        var FIREBASE_API, FIREBASE_MSGID;
+        fbconfig = {
+            apiKey: FIREBASE_API,
+            authDomain: "nms-bhs.firebaseapp.com",
+            databaseURL: "https://nms-bhs.firebaseio.com",
+            projectId: "nms-bhs",
+            storageBucket: "nms-bhs.appspot.com",
+            messagingSenderId: FIREBASE_MSGID,
+        };
     }
 }
 
 var starsCol = "stars5"
 const usersCol = "users"
 
-function startUp() {
+export function startUp() {
     $("#javascript").remove()
     $("#jssite").show()
 
@@ -52,7 +64,7 @@ function startUp() {
     })
 }
 
-class blackHoleSuns {
+export class blackHoleSuns {
     user = {};
     unsub = {};
     fbauth = null;

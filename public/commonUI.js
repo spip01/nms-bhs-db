@@ -1,274 +1,300 @@
-'use strict';
+"use strict";
+
+import { blackHoleSuns, bhs } from "./commonFb.js";
+import { fcedata, fdarc, findex, fnmsce, fpoi, fpreview, mergeObjects } from "./commonNms.js";
+import { galaxyList } from "./constants.js";
 
 // Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper
 
 blackHoleSuns.prototype.doLoggedout = function () {
-    if (bhs.clearPanels)
-        bhs.clearPanels()
+    if (bhs.clearPanels) bhs.clearPanels();
 
-    bhs.user = bhs.userInit()
-    bhs.displayUser(bhs.user, true)
+    bhs.user = bhs.userInit();
+    bhs.displayUser(bhs.user, true);
 
-    $("#status").empty()
-    $("#filestatus").empty()
-    $("#entryTable").empty()
+    $("#status").empty();
+    $("#filestatus").empty();
+    $("#entryTable").empty();
 
-    $("#save").addClass("disabled")
-    $("#save").prop("disabled", true)
+    $("#save").addClass("disabled");
+    $("#save").prop("disabled", true);
 
-    $("#favorite").hide()
-    $("#edchoice").hide()
-    $("#patron").hide()
-    $("#id-private").hide()
-    $("#id-notifySearch").hide()
-    $("#bhspoi").hide()
-    $("#poiorg").hide()
-    $("#setError").hide()
-    $("#genDARC").hide()
-    $("#id-export").hide()
-    $("#btn-create").hide()
-    $("#btn-export").hide()
-    $("#admin").hide()
-    $("#recalc").hide()
-    $("#updateDARC").hide()
-    $("#genDARC").hide()
-    $("#genPOI").hide()
-    $("#backupBHS").hide()
-    $("#testing").hide()
-    $("#btn-ceedit").hide()
+    $("#favorite").hide();
+    $("#edchoice").hide();
+    $("#patron").hide();
+    $("#id-private").hide();
+    $("#id-notifySearch").hide();
+    $("#bhspoi").hide();
+    $("#poiorg").hide();
+    $("#setError").hide();
+    $("#genDARC").hide();
+    $("#id-export").hide();
+    $("#btn-create").hide();
+    $("#btn-export").hide();
+    $("#admin").hide();
+    $("#recalc").hide();
+    $("#updateDARC").hide();
+    $("#genDARC").hide();
+    $("#genPOI").hide();
+    $("#backupBHS").hide();
+    $("#testing").hide();
+    $("#btn-ceedit").hide();
 
     if (fnmsce) {
-        $("#searchlocal").show()
-        $("#searchlocaltt").show()
-        $("#row-savesearch").hide()
+        $("#searchlocal").show();
+        $("#searchlocaltt").show();
+        $("#row-savesearch").hide();
     }
-}
+};
 
 blackHoleSuns.prototype.doLoggedin = function (user) {
-    bhs.getUser(bhs.displayUser)
+    bhs.getUser(bhs.displayUser);
 
     if (findex || fdarc) {
-        let ref = bhs.fs.doc("admin/state")
-        bhs.subscribe("admin-state", ref, bhs.showError)
+        let ref = bhs.fs.doc("admin/state");
+        bhs.subscribe("admin-state", ref, bhs.showError);
     }
 
-    $("#favorite").show()
+    $("#favorite").show();
 
     if (fnmsce) {
-        $("#searchlocal").hide()
-        $("#searchlocaltt").hide()
-        $("#row-savesearch").show()
+        $("#searchlocal").hide();
+        $("#searchlocaltt").hide();
+        $("#row-savesearch").show();
     }
 
-    let ref = bhs.fs.doc("admin/" + bhs.user.uid)
-    ref.get().then(doc => {
-        if (doc.exists) {
-            bhs.roles = doc.data().roles
+    let ref = bhs.fs.doc("admin/" + bhs.user.uid);
+    ref.get()
+        .then((doc) => {
+            if (doc.exists) {
+                bhs.roles = doc.data().roles;
 
-            if (bhs.roles.includes("nmsceEditor")) {
-                $("#edchoice").show()
-                $("#id-private").show()
-            }
+                if (bhs.roles.includes("nmsceEditor")) {
+                    $("#edchoice").show();
+                    $("#id-private").show();
+                }
 
-            if (bhs.roles.includes("nmsceAdmin")) {
-                $("#hof").show()
-                $("#patron").show()
-                $("#id-private").show()
-                $("#id-notifySearch").show()
-            }
+                if (bhs.roles.includes("nmsceAdmin")) {
+                    $("#hof").show();
+                    $("#patron").show();
+                    $("#id-private").show();
+                    $("#id-notifySearch").show();
+                }
 
-            if (bhs.roles.includes("editor") || bhs.roles.includes("admin"))
-                $("#poiorg").show()
+                if (bhs.roles.includes("editor") || bhs.roles.includes("admin"))
+                    $("#poiorg").show();
 
-            if (bhs.roles.includes("owner")) {
-                $("#setError").show()
-                $("#genDARC").show()
-            }
+                if (bhs.roles.includes("owner")) {
+                    $("#setError").show();
+                    $("#genDARC").show();
+                }
 
-            if (bhs.roles.includes("admin")) {
-                $("#bhspoi").show()
-                $("#id-export").show()
-                $("#btn-create").show()
-                $("#btn-export").show()
+                if (bhs.roles.includes("admin")) {
+                    $("#bhspoi").show();
+                    $("#id-export").show();
+                    $("#btn-create").show();
+                    $("#btn-export").show();
 
-                $("#admin").show()
-                $("#recalc").show()
+                    $("#admin").show();
+                    $("#recalc").show();
 
-                if (document.domain == "localhost") {
-                    $("#updateDARC").show()
-                    $("#genPOI").show()
-                    $("#backupBHS").show()
-                    $("#testing").show()
+                    if (document.domain == "localhost") {
+                        $("#updateDARC").show();
+                        $("#genPOI").show();
+                        $("#backupBHS").show();
+                        $("#testing").show();
+                    }
                 }
             }
-        }
-    }).catch(err => {
-        bhs.status("ERROR: " + err.code)
-        console.log(err)
-    })
+        })
+        .catch((err) => {
+            bhs.status("ERROR: " + err.code);
+            console.log(err);
+        });
 
-    ref = bhs.fs.doc("bhs/patreon/contributors/" + bhs.user.uid)
-    ref.get().then(doc => {
-        if (doc.exists) {
-            bhs.patreon = doc.data().tier
-            if (bhs.patreon >= 1)
-                $("#patron").show()
+    ref = bhs.fs.doc("bhs/patreon/contributors/" + bhs.user.uid);
+    ref.get()
+        .then((doc) => {
+            if (doc.exists) {
+                bhs.patreon = doc.data().tier;
+                if (bhs.patreon >= 1) $("#patron").show();
 
-                if (bhs.patreon >= 2)
-                $("#id-notifySearch").show()
+                if (bhs.patreon >= 2) $("#id-notifySearch").show();
 
-            if (bhs.patreon >= 3)
-                $("#id-private").show()
-        }
-    }).catch(err => {
-        bhs.status("ERROR: " + err.code)
-        console.log(err)
-    })
+                if (bhs.patreon >= 3) $("#id-private").show();
+            }
+        })
+        .catch((err) => {
+            bhs.status("ERROR: " + err.code);
+            console.log(err);
+        });
 
-    $("#save").removeClass("disabled")
-    $("#save").removeAttr("disabled")
-}
+    $("#save").removeClass("disabled");
+    $("#save").removeAttr("disabled");
+};
 
 blackHoleSuns.prototype.isPatreon = function (tier) {
-    return bhs.hasRole("nmsceAdmin") ? true : typeof bhs.patreon === "number" ? bhs.patreon >= tier : false
-}
+    return bhs.hasRole("nmsceAdmin")
+        ? true
+        : typeof bhs.patreon === "number"
+        ? bhs.patreon >= tier
+        : false;
+};
 
 blackHoleSuns.prototype.hasRole = function (role) {
-    return bhs.roles && bhs.roles.includes(role)
-}
+    return bhs.roles && bhs.roles.includes(role);
+};
 
 blackHoleSuns.prototype.isRole = function (role) {
-    let ok = bhs.roles
-    ok = ok && bhs.roles.includes(role)
-    ok = ok && bhs.user.role === role
-    return bhs.roles && bhs.roles.includes(role) && bhs.user.role === role
-}
+    let ok = bhs.roles;
+    ok = ok && bhs.roles.includes(role);
+    ok = ok && bhs.user.role === role;
+    return bhs.roles && bhs.roles.includes(role) && bhs.user.role === role;
+};
 
 blackHoleSuns.prototype.setError = function () {
-    let ref = bhs.fs.doc("admin/state")
-    ref.get().then(doc => {
-        let e = doc.data()
-        if (doc.exists)
-            e.errorMode = !e.errorMode
+    let ref = bhs.fs.doc("admin/state");
+    ref.get().then((doc) => {
+        let e = doc.data();
+        if (doc.exists) e.errorMode = !e.errorMode;
         else {
-            e = {}
-            e.errorMode = true
+            e = {};
+            e.errorMode = true;
         }
 
         doc.ref.set(e, {
-            merge: true
-        })
-    })
-}
+            merge: true,
+        });
+    });
+};
 
 blackHoleSuns.prototype.showError = function (e) {
     if (findex || fdarc) {
         if (e.errorMode) {
-            $("#banner").hide()
-            $("#error").show()
-            $("#jssite").hide()
+            $("#banner").hide();
+            $("#error").show();
+            $("#jssite").hide();
         } else {
-            $("#banner").show()
-            $("#error").hide()
-            $("#jssite").show()
+            $("#banner").show();
+            $("#error").hide();
+            $("#jssite").show();
         }
     }
-}
+};
 
 blackHoleSuns.prototype.setAdmin = function (clear) {
     bhs.updateUser({
-        role: typeof clear !== "undefined" || bhs.user.role === "admin" ? "user" : "admin"
-    })
-}
+        role:
+            typeof clear !== "undefined" || bhs.user.role === "admin"
+                ? "user"
+                : "admin",
+    });
+};
 
 blackHoleSuns.prototype.toggleTips = function () {
-    let tips = typeof bhs.user.inputSettings !== "undefined" && !bhs.user.inputSettings.tips
+    let tips =
+        typeof bhs.user.inputSettings !== "undefined" &&
+        !bhs.user.inputSettings.tips;
 
     bhs.updateUser({
         inputSettings: {
-            tips: tips
-        }
-    })
-}
+            tips: tips,
+        },
+    });
+};
 
 blackHoleSuns.prototype.displayUser = function (user, force) {
-    if (fpreview)
-        return
+    if (fpreview) return;
 
-    let changed = user.uid && (!bhs.entries || user.galaxy != bhs.user.galaxy || user.platform != bhs.user.platform)
+    let changed =
+        user.uid &&
+        (!bhs.entries ||
+            user.galaxy != bhs.user.galaxy ||
+            user.platform != bhs.user.platform);
 
-    bhs.user = mergeObjects(bhs.user, user)
+    bhs.user = mergeObjects(bhs.user, user);
 
-    if (findex)
-        $("#fileupload").show()
+    if (findex) $("#fileupload").show();
 
-    if (fpoi)
-        return
+    if (fpoi) return;
 
     if (!fdarc && !fnmsce && !fcedata) {
-        bhs.getActiveContest(bhs.displayContest)
-        bhs.buildTotals()
-        bhs.getTotals(bhs.displayTotals, bhs.displayTotalsHtml)
+        bhs.getActiveContest(bhs.displayContest);
+        bhs.buildTotals();
+        bhs.getTotals(bhs.displayTotals, bhs.displayTotalsHtml);
 
         if ((changed || force) && bhs.user.galaxy && bhs.user.platform) {
-            bhs.buildMap()
-            bhs.setMapOptions(bhs.user)
+            bhs.buildMap();
+            bhs.setMapOptions(bhs.user);
 
             if (!ftotals) {
-                bhs.buildEntryList(bhs.user)
-                bhs.displaySettings(bhs.user)
-                bhs.getEntriesSub(bhs.displayEntry)
-                bhs.getBasesSub(bhs.displayEntry)
+                bhs.buildEntryList(bhs.user);
+                bhs.displaySettings(bhs.user);
+                bhs.getEntriesSub(bhs.displayEntry);
+                bhs.getBasesSub(bhs.displayEntry);
             }
         }
     }
 
-    if (typeof (Storage) !== "undefined" && (!bhs.user.galaxy || !bhs.user.platform)) {
-        bhs.user.galaxy = window.localStorage.getItem('galaxy')
-        bhs.user.platform = window.localStorage.getItem('platform')
+    if (
+        typeof Storage !== "undefined" &&
+        (!bhs.user.galaxy || !bhs.user.platform)
+    ) {
+        bhs.user.galaxy = window.localStorage.getItem("galaxy");
+        bhs.user.platform = window.localStorage.getItem("platform");
     }
 
-    $("body").css("background-color", bhs.user.role === "admin" ? "green" : "black")
+    $("body").css(
+        "background-color",
+        bhs.user.role === "admin" ? "green" : "black"
+    );
 
-    let pnl = $("#pnl-user")
-    if (!fnmsce)
-        pnl.find("#id-Player").val(bhs.user._name)
+    let pnl = $("#pnl-user");
+    if (!fnmsce) pnl.find("#id-Player").val(bhs.user._name);
 
-    pnl.find("#btn-Platform").text(bhs.user.platform)
-    pnl.find("#btn-Civ-Org").text(bhs.user.org)
+    pnl.find("#btn-Platform").text(bhs.user.platform);
+    pnl.find("#btn-Civ-Org").text(bhs.user.org);
 
     if (bhs.user.galaxy && bhs.user.galaxy !== "") {
-        let i = galaxyList[getIndex(galaxyList, "name", bhs.user.galaxy)]
-        pnl.find("#btn-Galaxy").text(i.number + " " + bhs.user.galaxy)
-        pnl.find("#btn-Galaxy").attr("style", "background-color: " + i.color + ";")
-    } else
-        pnl.find("#btn-Galaxy").text("")
+        let i = galaxyList[getIndex(galaxyList, "name", bhs.user.galaxy)];
+        pnl.find("#btn-Galaxy").text(i.number + " " + bhs.user.galaxy);
+        pnl.find("#btn-Galaxy").attr(
+            "style",
+            "background-color: " + i.color + ";"
+        );
+    } else pnl.find("#btn-Galaxy").text("");
 
-    if (fdarc)
-        bhs.updateDarcSettings()
+    if (fdarc) bhs.updateDarcSettings();
 
-    if (typeof bhs.user.inputSettings !== "undefined" && typeof bhs.user.inputSettings.glyph !== "undefined" && bhs.user.inputSettings.glyph) {
-        $("[id='id-glyphInput']").show()
-        $("[id='id-addrInput']").hide()
-        $("[id='ck-glyphs']").prop("checked", true)
+    if (
+        typeof bhs.user.inputSettings !== "undefined" &&
+        typeof bhs.user.inputSettings.glyph !== "undefined" &&
+        bhs.user.inputSettings.glyph
+    ) {
+        $("[id='id-glyphInput']").show();
+        $("[id='id-addrInput']").hide();
+        $("[id='ck-glyphs']").prop("checked", true);
     } else {
-        $("[id='id-glyphInput']").hide()
-        $("[id='id-addrInput']").show()
-        $("[id='ck-glyphs']").prop("checked", false)
+        $("[id='id-glyphInput']").hide();
+        $("[id='id-addrInput']").show();
+        $("[id='ck-glyphs']").prop("checked", false);
     }
 
-    if (typeof bhs.user.inputSettings === "undefined" || typeof bhs.user.inputSettings.tips === "undefined" || bhs.user.inputSettings.tips) {
-        $("[data-toggle='tooltip']").show()
-        $("#ttipmsg").css("text-decoration", "none")
+    if (
+        typeof bhs.user.inputSettings === "undefined" ||
+        typeof bhs.user.inputSettings.tips === "undefined" ||
+        bhs.user.inputSettings.tips
+    ) {
+        $("[data-toggle='tooltip']").show();
+        $("#ttipmsg").css("text-decoration", "none");
     } else {
-        $("[data-toggle='tooltip']").hide()
-        $("#ttipmsg").css("text-decoration", "line-through")
+        $("[data-toggle='tooltip']").hide();
+        $("#ttipmsg").css("text-decoration", "line-through");
     }
 
-    if (fcedata || fnmsce)
-        nmsce.displayUser()
-}
+    if (fcedata || fnmsce) window.nmsce?.displayUser();
+};
 
 // index.js has a local copy now
 blackHoleSuns.prototype.buildUserPanel = function () {
@@ -298,156 +324,197 @@ blackHoleSuns.prototype.buildUserPanel = function () {
                 </div>
             </div>
         </div>
-        <br>`
+        <br>`;
 
-    $("#panels").prepend(panel)
-    let loc = $("#pnl-user")
+    $("#panels").prepend(panel);
+    let loc = $("#pnl-user");
 
     if (!fnmsce && !fcedata && !fpreview)
         bhs.getOrgList().then(() => {
             bhs.orgList.unshift({
-                name: "--blank--"
-            })
+                name: "--blank--",
+            });
 
-            bhs.buildMenu($("#pnl-user"), "Civ/Org", bhs.orgList, bhs.saveUser, {
-                labelsize: "col-md-14 col-sm-14 col-5",
-                menusize: "col",
-            })
-        })
+            bhs.buildMenu(
+                $("#pnl-user"),
+                "Civ/Org",
+                bhs.orgList,
+                bhs.saveUser,
+                {
+                    labelsize: "col-md-14 col-sm-14 col-5",
+                    menusize: "col",
+                }
+            );
+        });
 
     bhs.buildMenu(loc, "Platform", platformList, bhs.saveUser, {
         required: !fnmsce,
         labelsize: "col-lg-7 col-md-14 col-sm-14 col-5",
         menusize: "col",
-    })
+    });
 
     bhs.buildMenu(loc, "Galaxy", galaxyList, bhs.saveUser, {
         tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
         required: true,
         labelsize: "col-lg-7 col-md-14 col-sm-14 col-5",
         menusize: "col",
-    })
+    });
 
-    if (fnmsce)
-        $("#namereq").hide()
+    if (fnmsce) $("#namereq").hide();
 
     if (findex)
         $("#id-Player").change(function () {
             if (bhs.user.uid) {
-                let user = bhs.extractUser()
-                bhs.changeName(this, user)
+                let user = bhs.extractUser();
+                bhs.changeName(this, user);
             }
-        })
+        });
 
-    if (!fnmsce)
-        $("#id-Civ-Org").show()
+    if (!fnmsce) $("#id-Civ-Org").show();
 
     if (findex) {
-        loc.find("#fileupload").show()
+        loc.find("#fileupload").show();
         $("#ck-fileupload").change(function (event) {
             if ($(this).prop("checked")) {
-                panels.forEach(p => {
-                    $("#" + p.id).hide()
-                })
-                $("#entrybuttons").hide()
-                $("#upload").show()
+                panels.forEach((p) => {
+                    $("#" + p.id).hide();
+                });
+                $("#entrybuttons").hide();
+                $("#upload").show();
             } else {
-                panels.forEach(p => {
-                    $("#" + p.id).show()
-                })
-                $("#entrybuttons").show()
-                $("#upload").hide()
+                panels.forEach((p) => {
+                    $("#" + p.id).show();
+                });
+                $("#entrybuttons").show();
+                $("#upload").hide();
             }
-        })
+        });
     }
-}
+};
 
 blackHoleSuns.prototype.displayContest = function (contest) {
-    bhs.contest = contest
-    var end = contest.end.toDate().getTime()
-    var start = contest.start.toDate().getTime()
+    bhs.contest = contest;
+    var end = contest.end.toDate().getTime();
+    var start = contest.start.toDate().getTime();
 
-    let c = $("#contest")
+    let c = $("#contest");
 
-    if (!contest.hidden)
-        c.show()
+    if (!contest.hidden) c.show();
 
     var x = setInterval(() => {
-        var now = new Date().getTime()
-        var ends = end - now
-        var starts = start - now
+        var now = new Date().getTime();
+        var ends = end - now;
+        var starts = start - now;
 
         if (starts > 0) {
-            var d = Math.floor(starts / (1000 * 60 * 60 * 24))
-            var h = Math.floor((starts % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-            var m = Math.floor((starts % (1000 * 60 * 60)) / (1000 * 60))
-            var s = Math.floor((starts % (1000 * 60)) / 1000)
-            let str = contest.name + " contest starts in: " + d + "d " + h + "h " + m + "m " + s + "s "
+            var d = Math.floor(starts / (1000 * 60 * 60 * 24));
+            var h = Math.floor(
+                (starts % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+            );
+            var m = Math.floor((starts % (1000 * 60 * 60)) / (1000 * 60));
+            var s = Math.floor((starts % (1000 * 60)) / 1000);
+            let str =
+                contest.name +
+                " contest starts in: " +
+                d +
+                "d " +
+                h +
+                "h " +
+                m +
+                "m " +
+                s +
+                "s ";
 
-            c.html("<div class='col-14 text-center txt-def h4'>" + str + "</div>")
+            c.html(
+                "<div class='col-14 text-center txt-def h4'>" + str + "</div>"
+            );
         } else if (ends > 0) {
-            var d = Math.floor(ends / (1000 * 60 * 60 * 24))
-            var h = Math.floor((ends % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-            var m = Math.floor((ends % (1000 * 60 * 60)) / (1000 * 60))
-            var s = Math.floor((ends % (1000 * 60)) / 1000)
-            let str = contest.name + " contest time remaining: " + d + "d " + h + "h " + m + "m " + s + "s "
+            var d = Math.floor(ends / (1000 * 60 * 60 * 24));
+            var h = Math.floor(
+                (ends % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+            );
+            var m = Math.floor((ends % (1000 * 60 * 60)) / (1000 * 60));
+            var s = Math.floor((ends % (1000 * 60)) / 1000);
+            let str =
+                contest.name +
+                " contest time remaining: " +
+                d +
+                "d " +
+                h +
+                "h " +
+                m +
+                "m " +
+                s +
+                "s ";
 
-            c.html("<div class='col-14 text-center txt-def h4'>" + str + "</div>")
+            c.html(
+                "<div class='col-14 text-center txt-def h4'>" + str + "</div>"
+            );
         } else {
-            clearInterval(x)
-            c.html("<div class='col-14 text-center txt-def h6'>" + contest.name + " contest has ended</div>")
+            clearInterval(x);
+            c.html(
+                "<div class='col-14 text-center txt-def h6'>" +
+                    contest.name +
+                    " contest has ended</div>"
+            );
         }
-    }, 1000)
-}
+    }, 1000);
+};
 
-const utAddrIdx = 0
+const utAddrIdx = 0;
 
-var userTable = [{
-    title: "Coordinates",
-    id: "id-addr",
-    field: "addr",
-    format: "col-lg-5 col-md-10 col-sm-4 col-11 monospace"
-}, {
-    title: "LY",
-    id: "id-toctr",
-    field: "towardsCtr",
-    format: "col-lg-2 col-md-4 col-sm-2 col-3 text-right",
-}, {
-    title: "System",
-    id: "id-sys",
-    field: "sys",
-    format: "col-lg-3 col-md-7 col-sm-4 col-7"
-}, {
-    title: "Region",
-    id: "id-reg",
-    field: "reg",
-    format: "col-lg-3 col-md-7 col-sm-4 col-7"
-}, {
-    title: "Lifeform",
-    id: "id-life",
-    field: "life",
-    format: "col-lg-3 col-md-7 col-sm-3 col-7"
-}, {
-    title: "Economy",
-    id: "id-econ",
-    field: "econ",
-    format: "col-lg-3 col-md-7 col-sm-3 col-7"
-}, {
-    title: "Base",
-    id: "id-base",
-    field: "basename",
-    format: "col-lg-3 col-md-7 col-sm-3 col-7",
-}]
+var userTable = [
+    {
+        title: "Coordinates",
+        id: "id-addr",
+        field: "addr",
+        format: "col-lg-5 col-md-10 col-sm-4 col-11 monospace",
+    },
+    {
+        title: "LY",
+        id: "id-toctr",
+        field: "towardsCtr",
+        format: "col-lg-2 col-md-4 col-sm-2 col-3 text-right",
+    },
+    {
+        title: "System",
+        id: "id-sys",
+        field: "sys",
+        format: "col-lg-3 col-md-7 col-sm-4 col-7",
+    },
+    {
+        title: "Region",
+        id: "id-reg",
+        field: "reg",
+        format: "col-lg-3 col-md-7 col-sm-4 col-7",
+    },
+    {
+        title: "Lifeform",
+        id: "id-life",
+        field: "life",
+        format: "col-lg-3 col-md-7 col-sm-3 col-7",
+    },
+    {
+        title: "Economy",
+        id: "id-econ",
+        field: "econ",
+        format: "col-lg-3 col-md-7 col-sm-3 col-7",
+    },
+    {
+        title: "Base",
+        id: "id-base",
+        field: "basename",
+        format: "col-lg-3 col-md-7 col-sm-3 col-7",
+    },
+];
 
 blackHoleSuns.prototype.loadEntries = function () {
-    bhs.purgeMap()
-    $("#userItems").empty()
+    bhs.purgeMap();
+    $("#userItems").empty();
 
-    if (fsearch)
-        bhs.select()
-    else
-        bhs.getEntries(bhs.displayEntryList, bhs.displayEntry)
-}
+    if (fsearch) bhs.select();
+    else bhs.getEntries(bhs.displayEntryList, bhs.displayEntry);
+};
 
 blackHoleSuns.prototype.buildEntryList = function (entry) {
     const table = `
@@ -504,854 +571,1020 @@ blackHoleSuns.prototype.buildEntryList = function (entry) {
         <div id="id-table" class="container-fluid border-top border-def">
             <div id="userHeader" class="row border-bottom txt-def"></div>
             <div id="userItems" class="scrollbar container-fluid" style="overflow-y: scroll; height: 388px"></div>
-        </div>`
+        </div>`;
 
     const ckbox = `            
         <label class="col-sm-4 col-7 txt-label-def">
             <input id="ck-idname" type="checkbox" checked>
             title
-        </label>`
+        </label>`;
 
-    let loc = $("#entryTable")
-    loc.empty()
-    loc.append(table)
+    let loc = $("#entryTable");
+    loc.empty();
+    loc.append(table);
 
-    let mh = $("#map").height() - loc.find(".card-header").height()
+    let mh = $("#map").height() - loc.find(".card-header").height();
 
-    const line = `<div id="idname" class="width h6">title&nbsp;<i id="up" class="fa fa-sort-asc pointer hidden"></i></div>`
+    const line = `<div id="idname" class="width h6">title&nbsp;<i id="up" class="fa fa-sort-asc pointer hidden"></i></div>`;
 
-    let h = ""
-    userTable.forEach(t => {
-        let l = /idname/ [Symbol.replace](line, t.id)
-        l = /width/ [Symbol.replace](l, t.format + " pointer")
-        h += /title/ [Symbol.replace](l, t.title)
-    })
+    let h = "";
+    userTable.forEach((t) => {
+        let l = /idname/[Symbol.replace](line, t.id);
+        l = /width/[Symbol.replace](l, t.format + " pointer");
+        h += /title/[Symbol.replace](l, t.title);
+    });
 
-    loc = $("#userHeader")
-    loc.append(h)
-    loc.find("#lc-plat").text(entry.platform)
-    loc.find("#lc-gal").text(entry.galaxy)
+    loc = $("#userHeader");
+    loc.append(h);
+    loc.find("#lc-plat").text(entry.platform);
+    loc.find("#lc-gal").text(entry.galaxy);
 
     if (findex) {
-        mh -= loc.height() / 3
-        loc.next("#userItems").height(mh)
+        mh -= loc.height() / 3;
+        loc.next("#userItems").height(mh);
     }
 
-    h = ""
-    userTable.forEach(t => {
-        let l = /idname/ [Symbol.replace](ckbox, t.id)
-        h += /title/ [Symbol.replace](l, t.title)
-    })
+    h = "";
+    userTable.forEach((t) => {
+        let l = /idname/[Symbol.replace](ckbox, t.id);
+        h += /title/[Symbol.replace](l, t.title);
+    });
 
-    loc = $("#id-utlistsel")
-    loc.append(h)
+    loc = $("#id-utlistsel");
+    loc.append(h);
 
-    let userhdrloc = $("#userHeader")
+    let userhdrloc = $("#userHeader");
 
-    userTable.forEach(t => {
+    userTable.forEach((t) => {
         loc.find("#ck-" + t.id).change(function () {
             if ($(this).prop("checked")) {
-                $("#userHeader").find("#" + t.id).show()
-                $("#userItems").find("#" + t.id).show()
+                $("#userHeader")
+                    .find("#" + t.id)
+                    .show();
+                $("#userItems")
+                    .find("#" + t.id)
+                    .show();
             } else {
-                $("#userHeader").find("#" + t.id).hide()
-                $("#userItems").find("#" + t.id).hide()
+                $("#userHeader")
+                    .find("#" + t.id)
+                    .hide();
+                $("#userItems")
+                    .find("#" + t.id)
+                    .hide();
             }
-        })
+        });
 
         userhdrloc.find("#" + t.id).click(function () {
-            let id = $(this).prop("id")
-            let loc = $("#userItems")
-            let hloc = $("#userHeader")
-            let list = loc.children()
+            let id = $(this).prop("id");
+            let loc = $("#userItems");
+            let hloc = $("#userHeader");
+            let list = loc.children();
 
-            hloc.find("[id='up']").hide()
-            hloc.find("#" + id + " #up").show()
+            hloc.find("[id='up']").hide();
+            hloc.find("#" + id + " #up").show();
 
             if (list.length > 0) {
                 list.sort((a, b) => {
-                    let av = $(a).find("#" + id).text().stripMarginWS().toLowerCase()
-                    let bv = $(b).find("#" + id).text().stripMarginWS().toLowerCase()
+                    let av = $(a)
+                        .find("#" + id)
+                        .text()
+                        .stripMarginWS()
+                        .toLowerCase();
+                    let bv = $(b)
+                        .find("#" + id)
+                        .text()
+                        .stripMarginWS()
+                        .toLowerCase();
 
                     if (!av)
-                        av = $(a).find(".row:nth-child(2)").find("#" + id).text().stripMarginWS().toLowerCase()
+                        av = $(a)
+                            .find(".row:nth-child(2)")
+                            .find("#" + id)
+                            .text()
+                            .stripMarginWS()
+                            .toLowerCase();
 
                     if (!bv)
-                        bv = $(b).find(".row:nth-child(2)").find("#" + id).text().stripMarginWS().toLowerCase()
+                        bv = $(b)
+                            .find(".row:nth-child(2)")
+                            .find("#" + id)
+                            .text()
+                            .stripMarginWS()
+                            .toLowerCase();
 
-                    return av > bv ? 1 : av < bv ? -1 : 0
-                })
+                    return av > bv ? 1 : av < bv ? -1 : 0;
+                });
 
-                loc.empty()
-                for (var i = 0; i < list.length; i++)
-                    loc.append(list[i])
+                loc.empty();
+                for (var i = 0; i < list.length; i++) loc.append(list[i]);
             }
-        })
-    })
+        });
+    });
 
     $("#btn-utSettings").click(() => {
-        if ($("#utSettings").is(":hidden"))
-            $("#utSettings").show()
-        else
-            $("#utSettings").hide()
-    })
+        if ($("#utSettings").is(":hidden")) $("#utSettings").show();
+        else $("#utSettings").hide();
+    });
 
     $("#btn-saveListSettings").click(() => {
         bhs.updateUser({
-            settings: bhs.extractSettings()
-        })
-    })
+            settings: bhs.extractSettings(),
+        });
+    });
 
     $("#btn-create").click(() => {
-        var text = bhs.entriesToCsv()
+        var text = bhs.entriesToCsv();
 
         var data = new Blob([text], {
-            type: 'text/plain'
-        })
-        var url = window.URL.createObjectURL(data)
-        document.getElementById('btn-export').href = url
+            type: "text/plain",
+        });
+        var url = window.URL.createObjectURL(data);
+        document.getElementById("btn-export").href = url;
 
-        $("#btn-export").prop("download", $("#inp-exportfile").val())
-        $("#btn-export").removeClass("disabled")
-        $("#btn-export").removeAttr("disabled")
-    })
-}
+        $("#btn-export").prop("download", $("#inp-exportfile").val());
+        $("#btn-export").removeClass("disabled");
+        $("#btn-export").removeAttr("disabled");
+    });
+};
 
 blackHoleSuns.prototype.entriesToCsv = function () {
-    let out = "bh coord,sys,reg,life,econ,exit coord,sys,reg,life,econ\n"
+    let out = "bh coord,sys,reg,life,econ,exit coord,sys,reg,life,econ\n";
 
-    let list = $("#userItems").children()
+    let list = $("#userItems").children();
     for (let loc of list) {
-        let addr = /-/g [Symbol.replace]($(loc).prop("id"), ":")
-        let e = bhs.entries[addr]
+        let addr = /-/g[Symbol.replace]($(loc).prop("id"), ":");
+        let e = bhs.entries[addr];
         if (e.blackhole) {
-            out += e.addr + "," + e.sys + "," + e.reg + "," + e.life + "," + e.econ + ","
-            out += e.x.addr + "," + e.x.sys + "," + e.x.reg + "," + e.x.life + "," + e.x.econ + "\n"
+            out +=
+                e.addr +
+                "," +
+                e.sys +
+                "," +
+                e.reg +
+                "," +
+                e.life +
+                "," +
+                e.econ +
+                ",";
+            out +=
+                e.x.addr +
+                "," +
+                e.x.sys +
+                "," +
+                e.x.reg +
+                "," +
+                e.x.life +
+                "," +
+                e.x.econ +
+                "\n";
         }
     }
 
-    return out
-}
+    return out;
+};
 
 blackHoleSuns.prototype.displayEntryList = function (entrylist, connection) {
-    bhs.drawList(entrylist, connection)
-    bhs.mapEntries(bhs.entries)
-    $("#userItems").empty()
+    bhs.drawList(entrylist, connection);
+    bhs.mapEntries(bhs.entries);
+    $("#userItems").empty();
 
-    if (ftotals)
-        return
+    if (ftotals) return;
 
-    const lineHdr = `<div id="gpa" class="border-bottom border-3" onclick="entryDblclk(this)">`
-    const line = `      <div class="row">`
-    const item = `          <div id="idname" class="width">data</div>`
-    const end = `</div>`
+    const lineHdr = `<div id="gpa" class="border-bottom border-3" onclick="entryDblclk(this)">`;
+    const line = `      <div class="row">`;
+    const item = `          <div id="idname" class="width">data</div>`;
+    const end = `</div>`;
 
-    let h = ""
+    let h = "";
 
-    let keys = Object.keys(entrylist)
-    $("#entryTable").find("#total").text(keys.length)
+    let keys = Object.keys(entrylist);
+    $("#entryTable").find("#total").text(keys.length);
 
     for (let i of keys) {
-        let entry = entrylist[i]
+        let entry = entrylist[i];
 
-        h += /gpa/ [Symbol.replace](lineHdr, i.nameToId()) + line
+        h += /gpa/[Symbol.replace](lineHdr, i.nameToId()) + line;
 
-        let l = ""
+        let l = "";
         for (let t of userTable) {
-            l = /idname/ [Symbol.replace](item, t.id)
-            l = /width/ [Symbol.replace](l, t.format)
+            l = /idname/[Symbol.replace](item, t.id);
+            l = /width/[Symbol.replace](l, t.format);
 
-            let d = entry[t.field]
-            h += /data/ [Symbol.replace](l, typeof d !== "undefined" ? d : "")
+            let d = entry[t.field];
+            h += /data/[Symbol.replace](l, typeof d !== "undefined" ? d : "");
         }
 
-        h += end
+        h += end;
 
         if (typeof entry.x !== "undefined") {
-            h += line
+            h += line;
 
             for (let t of userTable) {
-                l = /idname/ [Symbol.replace](item, t.id)
-                l = /width/ [Symbol.replace](l, t.format + (t.field === "addr" ? " border-top" : ""))
+                l = /idname/[Symbol.replace](item, t.id);
+                l = /width/[Symbol.replace](
+                    l,
+                    t.format + (t.field === "addr" ? " border-top" : "")
+                );
 
-                let d = entry.x[t.field]
-                h += /data/ [Symbol.replace](l, typeof d !== "undefined" ? d : "")
+                let d = entry.x[t.field];
+                h += /data/[Symbol.replace](
+                    l,
+                    typeof d !== "undefined" ? d : ""
+                );
             }
 
-            h += end
+            h += end;
         }
 
-        h += end
+        h += end;
     }
 
-    $("#userItems").append(h)
-    bhs.displaySettings(bhs.user)
-}
+    $("#userItems").append(h);
+    bhs.displaySettings(bhs.user);
+};
 
 blackHoleSuns.prototype.displayEntry = function (entry, zoom) {
-    bhs.drawSingle(entry, zoom)
+    bhs.drawSingle(entry, zoom);
 
-    if (ftotals)
-        return
+    if (ftotals) return;
 
-    let id = (entry.blackhole ? entry.connection : entry.addr).nameToId()
-    let loc = $("#userItems #" + id)
+    let id = (entry.blackhole ? entry.connection : entry.addr).nameToId();
+    let loc = $("#userItems #" + id);
 
     for (let j = 0; j < userTable.length; ++j) {
-        let t = userTable[j]
+        let t = userTable[j];
 
         if (t.calc)
-            loc.find("#bh-" + t.id).text(entry.blackhole ? entry.towardsCtr : "")
+            loc.find("#bh-" + t.id).text(
+                entry.blackhole ? entry.towardsCtr : ""
+            );
         else if (t.id == "id-type")
-            loc.find("#bh-" + t.id).text(entry.blackhole ? "BH" : entry.deadzone ? "DZ" : "")
+            loc.find("#bh-" + t.id).text(
+                entry.blackhole ? "BH" : entry.deadzone ? "DZ" : ""
+            );
         else {
             if (entry.blackhole)
-                loc.find("#bh-" + t.id).text(entry[t.field] ? entry[t.field] : "")
+                loc.find("#bh-" + t.id).text(
+                    entry[t.field] ? entry[t.field] : ""
+                );
             else if (entry.deadzone)
-                loc.find("#bh-" + t.id).text(entry[t.field] ? entry[t.field] : "")
+                loc.find("#bh-" + t.id).text(
+                    entry[t.field] ? entry[t.field] : ""
+                );
             else
-                loc.find("#x-" + t.id).text(entry[t.field] ? entry[t.field] : "")
+                loc.find("#x-" + t.id).text(
+                    entry[t.field] ? entry[t.field] : ""
+                );
         }
     }
-}
+};
 
 function entryDblclk(evt) {
-    let id = $(evt).prop("id")
+    let id = $(evt).prop("id");
 
     if (!ftotals && !fsearch) {
-        $("#delete").removeClass("disabled")
-        $("#delete").removeAttr("disabled")
+        $("#delete").removeClass("disabled");
+        $("#delete").removeAttr("disabled");
 
-        bhs.getEntry(reformatAddress(id), bhs.displayListEntry)
+        bhs.getEntry(reformatAddress(id), bhs.displayListEntry);
     } else {
-        let l = {}
-        l[e.addr] = e
-        bhs.drawList(l)
+        let l = {};
+        l[e.addr] = e;
+        bhs.drawList(l);
     }
 }
 
-const totalsItemsHdr = `<div id="idname" class="row">`
-const totalsItems = `       <div id="idname" class="format">title</div>`
-const totalsItemsEnd = `</div>`
+const totalsItemsHdr = `<div id="idname" class="row">`;
+const totalsItems = `       <div id="idname" class="format">title</div>`;
+const totalsItemsEnd = `</div>`;
 
-const totalsCol = [{
-    title: "",
-    id: "id-what",
-    format: "col-lg-7 col-md-7 col-sm-3 col-6",
-}, {
-    title: "Player",
-    id: "id-Player",
-    format: "col-lg-3 col-md-3 col-sm-2 col-4 text-right",
-    where: "index",
-}, {
-    title: "All",
-    id: "id-Total",
-    format: "col-lg-3 col-md-3 col-sm-2 col-4 text-right",
-}, ]
+const totalsCol = [
+    {
+        title: "",
+        id: "id-what",
+        format: "col-lg-7 col-md-7 col-sm-3 col-6",
+    },
+    {
+        title: "Player",
+        id: "id-Player",
+        format: "col-lg-3 col-md-3 col-sm-2 col-4 text-right",
+        where: "index",
+    },
+    {
+        title: "All",
+        id: "id-Total",
+        format: "col-lg-3 col-md-3 col-sm-2 col-4 text-right",
+    },
+];
 
-const rowTotal = 0
-const rowPlatform = 1
-const rowAltPlatform = 2
-const rowGalaxyPlatform = 3
+const rowTotal = 0;
+const rowPlatform = 1;
+const rowAltPlatform = 2;
+const rowGalaxyPlatform = 3;
 
-const totalsRows = [{
-    title: "Total BH",
-    id: "id-totalBH",
-}, {
-    title: "Total/platform",
-    id: "id-totalBHP",
-}, {
-    title: "Total/altplatform",
-    id: "id-totalAHP",
-}, {
-    title: "Total/galaxy/platform",
-    id: "id-totalBHGP",
-}]
+const totalsRows = [
+    {
+        title: "Total BH",
+        id: "id-totalBH",
+    },
+    {
+        title: "Total/platform",
+        id: "id-totalBHP",
+    },
+    {
+        title: "Total/altplatform",
+        id: "id-totalAHP",
+    },
+    {
+        title: "Total/galaxy/platform",
+        id: "id-totalBHGP",
+    },
+];
 
 blackHoleSuns.prototype.buildTotals = function () {
-    let h = ""
+    let h = "";
 
-    totalsCol.forEach(t => {
-        let l = /idname/ [Symbol.replace](totalsItems, t.id)
-        l = /title/ [Symbol.replace](l, t.title)
-        h += /format/ [Symbol.replace](l, t.format + " txt-def")
-    })
+    totalsCol.forEach((t) => {
+        let l = /idname/[Symbol.replace](totalsItems, t.id);
+        l = /title/[Symbol.replace](l, t.title);
+        h += /format/[Symbol.replace](l, t.format + " txt-def");
+    });
 
-    $("#hdr-Player").html(h)
-    $("#itm-Player").empty()
+    $("#hdr-Player").html(h);
+    $("#itm-Player").empty();
 
-    let galaxy = bhs.user.galaxy ? bhs.user.galaxy : "Euclid"
-    let platform = bhs.user.platform ? bhs.user.platform : "PC-XBox"
+    let galaxy = bhs.user.galaxy ? bhs.user.galaxy : "Euclid";
+    let platform = bhs.user.platform ? bhs.user.platform : "PC-XBox";
 
-    totalsRows.forEach(x => {
-        let t = /altplatform/ [Symbol.replace](x.title, platform != "PS4" ? "PS4" : "PC-XBox")
-        t = /platform/ [Symbol.replace](t, platform)
-        t = /galaxy/ [Symbol.replace](t, galaxy)
+    totalsRows.forEach((x) => {
+        let t = /altplatform/[Symbol.replace](
+            x.title,
+            platform != "PS4" ? "PS4" : "PC-XBox"
+        );
+        t = /platform/[Symbol.replace](t, platform);
+        t = /galaxy/[Symbol.replace](t, galaxy);
 
-        let h = /idname/ [Symbol.replace](totalsItemsHdr, x.id)
+        let h = /idname/[Symbol.replace](totalsItemsHdr, x.id);
 
-        totalsCol.forEach(y => {
-            let l = /idname/ [Symbol.replace](totalsItems, y.id)
-            l = /title/ [Symbol.replace](l, t)
-            h += /format/ [Symbol.replace](l, y.format)
-            t = ""
-        })
+        totalsCol.forEach((y) => {
+            let l = /idname/[Symbol.replace](totalsItems, y.id);
+            l = /title/[Symbol.replace](l, t);
+            h += /format/[Symbol.replace](l, y.format);
+            t = "";
+        });
 
-        h += totalsItemsEnd
+        h += totalsItemsEnd;
 
-        $("#itm-Player").append(h)
-    })
+        $("#itm-Player").append(h);
+    });
 
     if (ftotals || !bhs.user.uid) {
-        $("#hdr-Player #id-Player").hide()
-        $("#itm-Player #id-Player").hide()
-        $("#itm-Player #id-totalBHGP").hide()
+        $("#hdr-Player #id-Player").hide();
+        $("#itm-Player #id-Player").hide();
+        $("#itm-Player #id-totalBHGP").hide();
     }
 
     if (!bhs.user.galaxy) {
-        $("#itm-Player #id-totalBHGP").hide()
+        $("#itm-Player #id-totalBHGP").hide();
     }
 
     $("#ck-showall").change(function () {
         if ($(this).prop("checked")) {
-            $("[id|='gal']").show()
-            $("#totals").find("#id-totalBHGP").css("border-bottom", "1px solid black")
+            $("[id|='gal']").show();
+            $("#totals")
+                .find("#id-totalBHGP")
+                .css("border-bottom", "1px solid black");
         } else {
-            $("[id|='gal']").hide()
-            $("#totals").find("#id-totalBHGP").css("border-bottom", "0px")
+            $("[id|='gal']").hide();
+            $("#totals").find("#id-totalBHGP").css("border-bottom", "0px");
         }
-    })
-}
+    });
+};
 
 blackHoleSuns.prototype.displayTotals = function (e, refpath) {
-    bhs.updateTotalsListView(e, refpath)
+    bhs.updateTotalsListView(e, refpath);
 
-    if (refpath === "bhs/Organizations")
-        return
+    if (refpath === "bhs/Organizations") return;
 
-    const addPlatforms = e => {
-        let t = 0
-        if (typeof e["PC-XBox"] !== "undefined")
-            t += e["PC-XBox"]
-        if (typeof e["PS4"] !== "undefined")
-            t += e["PS4"]
-        return t
-    }
+    const addPlatforms = (e) => {
+        let t = 0;
+        if (typeof e["PC-XBox"] !== "undefined") t += e["PC-XBox"];
+        if (typeof e["PS4"] !== "undefined") t += e["PS4"];
+        return t;
+    };
 
-    let tot = $("#totals")
-    let colid
+    let tot = $("#totals");
+    let colid;
 
     if (refpath === "bhs/Players") {
-        if (ftotals && !bhs.user.uid)
-            return
+        if (ftotals && !bhs.user.uid) return;
 
-        e = e[bhs.user._name]
-        if (typeof e === "undefined")
-            return;
-        colid = "id-Player"
-    } else
-        colid = "id-Total"
+        e = e[bhs.user._name];
+        if (typeof e === "undefined") return;
+        colid = "id-Player";
+    } else colid = "id-Total";
 
-    let platform = bhs.user.platform ? bhs.user.platform : "PC-XBox"
-    let galaxy = bhs.user.galaxy ? bhs.user.galaxy : "Euclid"
+    let platform = bhs.user.platform ? bhs.user.platform : "PC-XBox";
+    let galaxy = bhs.user.galaxy ? bhs.user.galaxy : "Euclid";
 
     for (let rid of totalsRows) {
-        let loc = tot.find("#" + rid.id).find("#" + colid)
+        let loc = tot.find("#" + rid.id).find("#" + colid);
 
         switch (rid.id) {
             case "id-totalBH":
-                loc.text(addPlatforms(e))
-                break
+                loc.text(addPlatforms(e));
+                break;
             case "id-totalBHP":
-                loc.text(e[platform])
-                break
+                loc.text(e[platform]);
+                break;
             case "id-totalAHP":
-                loc.text(e[platform === "PC-XBox" ? "PS4" : "PC-XBox"])
-                break
+                loc.text(e[platform === "PC-XBox" ? "PS4" : "PC-XBox"]);
+                break;
             case "id-totalBHG":
-                loc.text(addPlatforms(e.galaxies[galaxy]))
-                break
+                loc.text(addPlatforms(e.galaxies[galaxy]));
+                break;
             case "id-totalBHGP":
-                loc.text(e.galaxies[galaxy][platform])
-                break
+                loc.text(e.galaxies[galaxy][platform]);
+                break;
         }
     }
-}
+};
 
 blackHoleSuns.prototype.updateTotalsListView = function (e, refpath) {
-    let p = refpath.replace(/.*\/(.*)/, "$1")
-    let loc = $("#scroll-" + p)
+    let p = refpath.replace(/.*\/(.*)/, "$1");
+    let loc = $("#scroll-" + p);
 
     if (loc.length > 0) {
         for (let k of Object.keys(e)) {
-            if (k === "PS4" || k === "PC-XBox")
-                continue
+            if (k === "PS4" || k === "PC-XBox") continue;
 
-            let uloc = loc.find("#u-" + k.nameToId())
+            let uloc = loc.find("#u-" + k.nameToId());
             if (uloc.length > 0) {
-                let u = e[k]
-                let t = typeof u["PC-XBox"] != "undefined" ? u["PC-XBox"] : 0
-                t += typeof u["PS4"] != "undefined" ? u["PS4"] : 0
+                let u = e[k];
+                let t = typeof u["PC-XBox"] != "undefined" ? u["PC-XBox"] : 0;
+                t += typeof u["PS4"] != "undefined" ? u["PS4"] : 0;
 
                 if (parseInt(uloc.find("#id-Total").text()) != t) {
-                    uloc.addClass("font-weight-bold")
-                    uloc.find("#id-Total").text(t)
+                    uloc.addClass("font-weight-bold");
+                    uloc.find("#id-Total").text(t);
 
                     if (typeof u["PC-XBox"] != "undefined")
-                        uloc.find("#id-PC-XBox").text(u["PC-XBox"])
+                        uloc.find("#id-PC-XBox").text(u["PC-XBox"]);
 
                     if (typeof u["PS4"] != "undefined")
-                        uloc.find("#id-PS4").text(u["PS4"])
+                        uloc.find("#id-PS4").text(u["PS4"]);
                 }
             }
         }
     }
-}
+};
 
 blackHoleSuns.prototype.displayTotalsHtml = function (html, p) {
-    $("#subpanel #scroll-" + p).html(html)
+    $("#subpanel #scroll-" + p).html(html);
 
     if (p === "Players")
-        $("#contrib").text("Total contributors: " + $("#itm-Players").children().length)
+        $("#contrib").text(
+            "Total contributors: " + $("#itm-Players").children().length
+        );
 
-    if (ftotals)
-        $("[id='totals-tip']").show()
-}
+    if (ftotals) $("[id='totals-tip']").show();
+};
 
 blackHoleSuns.prototype.sortTotals = function (evt) {
-    let id = $(evt).prop("id")
-    let hloc = $(evt).parent()
-    let pnl = hloc.next()
-    let g = pnl.prop("id") === "itm-Galaxies"
+    let id = $(evt).prop("id");
+    let hloc = $(evt).parent();
+    let pnl = hloc.next();
+    let g = pnl.prop("id") === "itm-Galaxies";
 
-    hloc.find("[id='up']").hide()
-    hloc.find("#" + id + " #up").show()
+    hloc.find("[id='up']").hide();
+    hloc.find("#" + id + " #up").show();
 
-    let list = pnl.children()
+    let list = pnl.children();
     if (list.length > 0) {
         if (id.match(/name/i))
             list.sort((a, b) => {
-                let x = $(a).find("#" + id).text()
-                let y = $(b).find("#" + id).text()
+                let x = $(a)
+                    .find("#" + id)
+                    .text();
+                let y = $(b)
+                    .find("#" + id)
+                    .text();
 
                 if (g) {
-                    x = parseInt(x.replace(/(\d+).*/, "$1"))
-                    y = y.replace(/^(\d+).*/, "$1")
-                    return x - y
+                    x = parseInt(x.replace(/(\d+).*/, "$1"));
+                    y = y.replace(/^(\d+).*/, "$1");
+                    return x - y;
                 } else {
-                    x = x.stripMarginWS().toLowerCase()
-                    y = y.stripMarginWS().toLowerCase()
-                    return x > y ? 1 : x < y ? -1 : 0
+                    x = x.stripMarginWS().toLowerCase();
+                    y = y.stripMarginWS().toLowerCase();
+                    return x > y ? 1 : x < y ? -1 : 0;
                 }
-            })
+            });
         else
             list.sort((a, b) => {
-                let x = $(a).find("#" + id).text().stripMarginWS()
-                let y = $(b).find("#" + id).text().stripMarginWS()
-                x = x == "" ? -2 : x == "--" ? -1 : parseInt(x)
-                y = y == "" ? -2 : y == "--" ? -1 : parseInt(y)
+                let x = $(a)
+                    .find("#" + id)
+                    .text()
+                    .stripMarginWS();
+                let y = $(b)
+                    .find("#" + id)
+                    .text()
+                    .stripMarginWS();
+                x = x == "" ? -2 : x == "--" ? -1 : parseInt(x);
+                y = y == "" ? -2 : y == "--" ? -1 : parseInt(y);
 
-                return y - x
-            })
+                return y - x;
+            });
 
-        pnl.empty()
-        for (let i = 0; i < list.length; i++)
-            pnl.append(list[i])
+        pnl.empty();
+        for (let i = 0; i < list.length; i++) pnl.append(list[i]);
     }
-}
+};
 
 blackHoleSuns.prototype.clickUser = function (evt) {
     if (ftotals) {
-        let id = $(evt).prop("id").stripID()
-        if (id !== "PC-XBox" && id !== "PS4")
-            return
+        let id = $(evt).prop("id").stripID();
+        if (id !== "PC-XBox" && id !== "PS4") return;
 
-        let loc = $(evt).parent()
-        let pnlid = loc.closest("[id|='itm']").prop("id")
+        let loc = $(evt).parent();
+        let pnlid = loc.closest("[id|='itm']").prop("id");
 
-        let galaxy = $("#btn-Galaxy").text().stripNumber()
-        let name = loc.find("#id-Name").text().stripMarginWS()
-        let platform = $(evt).prop("id").stripID()
+        let galaxy = $("#btn-Galaxy").text().stripNumber();
+        let name = loc.find("#id-Name").text().stripMarginWS();
+        let platform = $(evt).prop("id").stripID();
 
-        $("#btn-Platform").text(platform)
-        $("#btn-Player").text(name)
+        $("#btn-Platform").text(platform);
+        $("#btn-Player").text(name);
 
         if (pnlid == "itm-Galaxies") {
-            $("#btn-Galaxy").text(name)
-            $("#btn-Player").text("")
-            bhs.getEntries(bhs.displayEntryList, null, null, name.stripNumber(), platform)
+            $("#btn-Galaxy").text(name);
+            $("#btn-Player").text("");
+            bhs.getEntries(
+                bhs.displayEntryList,
+                null,
+                null,
+                name.stripNumber(),
+                platform
+            );
         } else if (pnlid == "itm-Organizations")
-            bhs.getOrgEntries(bhs.displayEntryList, name, galaxy, platform)
-        else
-            bhs.getEntriesByName(bhs.displayEntryList, name, galaxy, platform)
+            bhs.getOrgEntries(bhs.displayEntryList, name, galaxy, platform);
+        else bhs.getEntriesByName(bhs.displayEntryList, name, galaxy, platform);
     }
-}
+};
 
 blackHoleSuns.prototype.clickGalaxy = function (evt) {
-    let galaxy = $(evt).parent().find("#id-names").text().stripNumber()
+    let galaxy = $(evt).parent().find("#id-names").text().stripNumber();
 
-    bhs.entries = {}
-    $("#btn-Galaxy").text(galaxy)
-    let platform = $("#btn-Platform").text().stripMarginWS()
-    $("#btn-Player").text("")
-    bhs.getEntries(bhs.displayEntryList, bhs.displayEntry, null, galaxy, platform)
-}
+    bhs.entries = {};
+    $("#btn-Galaxy").text(galaxy);
+    let platform = $("#btn-Platform").text().stripMarginWS();
+    $("#btn-Player").text("");
+    bhs.getEntries(
+        bhs.displayEntryList,
+        bhs.displayEntry,
+        null,
+        galaxy,
+        platform
+    );
+};
 
-blackHoleSuns.prototype.buildMenu = function (loc, label, list, changefcn, options) {
-    if (!list || list.length == 0)
-        return
+blackHoleSuns.prototype.buildMenu = function (
+    loc,
+    label,
+    list,
+    changefcn,
+    options
+) {
+    if (!list || list.length == 0) return;
 
     let header = `        
-        <div class="row">`
+        <div class="row">`;
     let title = `
-            <div class="size txt-label-def">title&nbsp;</div>`
+            <div class="size txt-label-def">title&nbsp;</div>`;
     let block = `
             <div id="menu-idname" class="size dropdown">
                 <button id="btn-idname" class="btn border btn-sm dropdown-toggle" style="rgbcolor" type="button" data-toggle="dropdown"></button>
          ttip   </div>
-        </div>`
+        </div>`;
     const tText = `&nbsp;
         <span class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="true"
-            data-placement="bottom" title="ttip"></span>&nbsp;`
-    const rText = `&nbsp;<span class="h5 text-danger">*</span>`
+            data-placement="bottom" title="ttip"></span>&nbsp;`;
+    const rText = `&nbsp;<span class="h5 text-danger">*</span>`;
 
-    let item = ``
-    let hdr = ``
+    let item = ``;
+    let hdr = ``;
     if (list.length > 8) {
-        hdr = `<ul id="list" class="dropdown-menu scrollable-menu" role="menu"></ul>`
-        item = `<li id="item-idname" class="dropdown-item" type="button" style="font bkgcolor txtcolor cursor: pointer">iname</li>`
+        hdr = `<ul id="list" class="dropdown-menu scrollable-menu" role="menu"></ul>`;
+        item = `<li id="item-idname" class="dropdown-item" type="button" style="font bkgcolor txtcolor cursor: pointer">iname</li>`;
     } else {
-        hdr = `<div id="list" class="dropdown-menu"></div>`
-        item = `<button id="item-idname" class="dropdown-item border-bottom" type="button" style="font bkgcolor txtcolor cursor: pointer">iname</button>`
+        hdr = `<div id="list" class="dropdown-menu"></div>`;
+        item = `<button id="item-idname" class="dropdown-item border-bottom" type="button" style="font bkgcolor txtcolor cursor: pointer">iname</button>`;
     }
 
-    let id = label.nameToId()
-    let h = header
+    let id = label.nameToId();
+    let h = header;
 
-    if (typeof options === "undefined")
-        options = {}
+    if (typeof options === "undefined") options = {};
 
     if (typeof options.labelsize === "undefined") {
-        if (options.vertical)
-            options.labelsize = "col-14"
-        else if (options.nolabel)
-            options.labelsize = "col-1"
-        else
-            options.labelsize = "col-7"
+        if (options.vertical) options.labelsize = "col-14";
+        else if (options.nolabel) options.labelsize = "col-1";
+        else options.labelsize = "col-7";
     }
 
     if (typeof options.menusize === "undefined") {
-        if (options.vertical)
-            options.menusize = "col-7"
-        else
-            options.menusize = "col-7"
+        if (options.vertical) options.menusize = "col-7";
+        else options.menusize = "col-7";
     }
 
     if (!options.nolabel || options.required || options.tip) {
-        let t = (options.nolabel ? "" : label) + (options.required ? rText : "")
-        let l = /title/ [Symbol.replace](title, t)
-        l = /size/ [Symbol.replace](l, options.labelsize)
-        h += l
+        let t =
+            (options.nolabel ? "" : label) + (options.required ? rText : "");
+        let l = /title/[Symbol.replace](title, t);
+        l = /size/[Symbol.replace](l, options.labelsize);
+        h += l;
     }
 
-    let l = /idname/g [Symbol.replace](block, id)
-    l = /size/ [Symbol.replace](l, options.menusize)
+    let l = /idname/g[Symbol.replace](block, id);
+    l = /size/[Symbol.replace](l, options.menusize);
 
     if (options.tip) {
-        l = /ttip/ [Symbol.replace](l, tText)
-        l = /ttip/ [Symbol.replace](l, options.tip)
-    } else
-        l = /ttip/ [Symbol.replace](l, "")
+        l = /ttip/[Symbol.replace](l, tText);
+        l = /ttip/[Symbol.replace](l, options.tip);
+    } else l = /ttip/[Symbol.replace](l, "");
 
-    l = /bkgcolor/ [Symbol.replace](l, "")
-    h += /txtcolor/ [Symbol.replace](l, "")
+    l = /bkgcolor/[Symbol.replace](l, "");
+    h += /txtcolor/[Symbol.replace](l, "");
 
-    loc.find("#id-" + id).empty()
-    loc.find("#id-" + id).append(h)
+    loc.find("#id-" + id).empty();
+    loc.find("#id-" + id).append(h);
 
-    let menu = loc.find("#menu-" + id)
-    menu.append(hdr)
+    let menu = loc.find("#menu-" + id);
+    menu.append(hdr);
 
-    let mlist = menu.find("#list")
+    let mlist = menu.find("#list");
 
     if (options.sort)
         list = list.sort((a, b) =>
-            a.name.toLowerCase() > b.name.toLowerCase() ? 1 :
-            a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0)
+            a.name.toLowerCase() > b.name.toLowerCase()
+                ? 1
+                : a.name.toLowerCase() < b.name.toLowerCase()
+                ? -1
+                : 0
+        );
 
     for (let l of list) {
-        let lid = l.name.nameToId()
-        h = /idname/ [Symbol.replace](item, lid)
-        h = /iname/ [Symbol.replace](h, (typeof l.number !== "undefined" ? l.number + " " : "") + l.name)
-        h = /font/ [Symbol.replace](h, typeof options.font === "boolean" ? "font: 16pt " + l.name + ";" : typeof options.font === "string" ? "font: 16pt " + options.font + ";" : "")
-        h = /bkgcolor/ [Symbol.replace](h, "background-color: " + (typeof l.color === "undefined" ? "#c0c0c0" : l.color) + ";")
-        h = /txtcolor/ [Symbol.replace](h, typeof l.text_color === "undefined" ? "" : "color: " + l.text_color + ";")
+        let lid = l.name.nameToId();
+        h = /idname/[Symbol.replace](item, lid);
+        h = /iname/[Symbol.replace](
+            h,
+            (typeof l.number !== "undefined" ? l.number + " " : "") + l.name
+        );
+        h = /font/[Symbol.replace](
+            h,
+            typeof options.font === "boolean"
+                ? "font: 16pt " + l.name + ";"
+                : typeof options.font === "string"
+                ? "font: 16pt " + options.font + ";"
+                : ""
+        );
+        h = /bkgcolor/[Symbol.replace](
+            h,
+            "background-color: " +
+                (typeof l.color === "undefined" ? "#c0c0c0" : l.color) +
+                ";"
+        );
+        h = /txtcolor/[Symbol.replace](
+            h,
+            typeof l.text_color === "undefined"
+                ? ""
+                : "color: " + l.text_color + ";"
+        );
 
-        mlist.append(h)
-        bhs.bindMenuChange(mlist.find("#item-" + lid), changefcn)
+        mlist.append(h);
+        bhs.bindMenuChange(mlist.find("#item-" + lid), changefcn);
     }
-}
+};
 
 blackHoleSuns.prototype.bindMenuChange = function (loc, fcn) {
-    loc.unbind("click")
+    loc.unbind("click");
     loc.click(function () {
-        let name = $(this).text().stripMarginWS()
-        let btn = $(this).closest("[id|='id']").find("[id|='btn']").first()
-        btn.text(name)
+        let name = $(this).text().stripMarginWS();
+        let btn = $(this).closest("[id|='id']").find("[id|='btn']").first();
+        btn.text(name);
 
-        if (typeof fcn === "function")
-            fcn(btn)
+        if (typeof fcn === "function") fcn(btn);
 
-        if ($(this).attr("style"))
-            btn.attr("style", $(this).attr("style"))
-    })
-}
+        if ($(this).attr("style")) btn.attr("style", $(this).attr("style"));
+    });
+};
 
 blackHoleSuns.prototype.saveUser = function () {
     if (!fnmsce) {
-        let user = bhs.extractUser()
+        let user = bhs.extractUser();
 
         if (bhs.user.uid)
-            return bhs.validateUser(user) ? bhs.updateUser(user) : false
-        else
-            return false
-    } else
-        return true
-}
+            return bhs.validateUser(user) ? bhs.updateUser(user) : false;
+        else return false;
+    } else return true;
+};
 
 blackHoleSuns.prototype.extractUser = function () {
-    let loc = $("#pnl-user")
-    let u = {}
+    let loc = $("#pnl-user");
+    let u = {};
 
-    u._name = loc.find("#id-Player").val()
-    u.platform = loc.find("#btn-Platform").text().stripNumber()
-    u.galaxy = loc.find("#btn-Galaxy").text().stripNumber()
-    u.org = loc.find("#btn-Civ-Org").text().stripNumber()
-    u.version = latestversion // loc.find("#btn-Version").text().stripNumber()
+    u._name = loc.find("#id-Player").val();
+    u.platform = loc.find("#btn-Platform").text().stripNumber();
+    u.galaxy = loc.find("#btn-Galaxy").text().stripNumber();
+    u.org = loc.find("#btn-Civ-Org").text().stripNumber();
+    u.version = latestversion; // loc.find("#btn-Version").text().stripNumber()
 
-    if (u.org === "--blank--")
-        u.org = ""
+    if (u.org === "--blank--") u.org = "";
 
-    return u
-}
+    return u;
+};
 
 blackHoleSuns.prototype.extractSettings = function () {
-    let s = {}
-    s.options = {}
+    let s = {};
+    s.options = {};
 
-    let loc = $("#utSettings")
+    let loc = $("#utSettings");
 
-    s.start = loc.find("#id-start").val()
-    s.end = loc.find("#id-end").val()
+    s.start = loc.find("#id-start").val();
+    s.end = loc.find("#id-end").val();
 
     loc.find("[id|='ck']").each(function () {
-        let id = $(this).prop("id")
-        let checked = $(this).prop("checked")
-        s.options[id] = checked
-    })
+        let id = $(this).prop("id");
+        let checked = $(this).prop("checked");
+        s.options[id] = checked;
+    });
 
-    return s
-}
+    return s;
+};
 
 blackHoleSuns.prototype.initSettings = function () {
-    let s = {}
-    s.options = {}
+    let s = {};
+    s.options = {};
 
-    let loc = $("#utSettings")
+    let loc = $("#utSettings");
     loc.find("[id|='ck']").each(function () {
-        let id = $(this).prop("id")
-        s.options[id] = true
-    })
+        let id = $(this).prop("id");
+        s.options[id] = true;
+    });
 
-    return s
-}
+    return s;
+};
 
 blackHoleSuns.prototype.displaySettings = function (entry) {
     if (typeof entry.settings == "undefined")
-        entry.settings = bhs.initSettings()
+        entry.settings = bhs.initSettings();
 
-    let loc = $("#utSettings")
+    let loc = $("#utSettings");
 
-    loc.find("#id-start").val(entry.settings.start)
-    loc.find("#id-end").val(entry.settings.end)
+    loc.find("#id-start").val(entry.settings.start);
+    loc.find("#id-end").val(entry.settings.end);
 
-    let tbl = $("#id-table")
-    let usrHdr = tbl.find("#userHeader")
-    let usrItm = tbl.find("#userItems")
+    let tbl = $("#id-table");
+    let usrHdr = tbl.find("#userHeader");
+    let usrItm = tbl.find("#userItems");
 
-    usrHdr.find("#id-type").show()
-    usrItm.find("#id-type").show()
+    usrHdr.find("#id-type").show();
+    usrItm.find("#id-type").show();
 
-    Object.keys(entry.settings.options).forEach(x => {
-        loc.find("#" + x).prop("checked", entry.settings.options[x])
-        let y = x.replace(/ck-(.*)/, "$1")
+    Object.keys(entry.settings.options).forEach((x) => {
+        loc.find("#" + x).prop("checked", entry.settings.options[x]);
+        let y = x.replace(/ck-(.*)/, "$1");
         if (entry.settings.options[x]) {
-            usrHdr.find("#" + y).show()
-            usrItm.find("#" + y).show()
+            usrHdr.find("#" + y).show();
+            usrItm.find("#" + y).show();
         } else {
-            usrHdr.find("#" + y).hide()
-            usrItm.find("#" + y).hide()
+            usrHdr.find("#" + y).hide();
+            usrItm.find("#" + y).hide();
         }
-    })
-}
+    });
+};
 
-var colortable = [{
-    name: "Black Hole",
-    id: "clr-bh",
-    color: "#ffffff",
-    size: 3,
-}, {
-    name: "Exit",
-    id: "clr-exit",
-    color: "#004080",
-    size: 2,
-}, {
-    name: "Dead Zone",
-    id: "clr-dz",
-    color: "#ff0000",
-    size: 2,
-}, {
-    name: "Base",
-    id: "clr-base",
-    color: "#00ff00",
-    size: 2,
-}, {
-    name: "Connection",
-    id: "clr-con",
-    color: "#0000a0",
-}, {
-    name: "Map Bkg",
-    id: "clr-bkg",
-    color: "#000000",
-}, {
-    name: "Page Bkg",
-    id: "clr-page",
-    color: "#000000",
-}, {
-    name: "Grid",
-    id: "clr-grid",
-    color: "#c0c0c0",
-}]
+var colortable = [
+    {
+        name: "Black Hole",
+        id: "clr-bh",
+        color: "#ffffff",
+        size: 3,
+    },
+    {
+        name: "Exit",
+        id: "clr-exit",
+        color: "#004080",
+        size: 2,
+    },
+    {
+        name: "Dead Zone",
+        id: "clr-dz",
+        color: "#ff0000",
+        size: 2,
+    },
+    {
+        name: "Base",
+        id: "clr-base",
+        color: "#00ff00",
+        size: 2,
+    },
+    {
+        name: "Connection",
+        id: "clr-con",
+        color: "#0000a0",
+    },
+    {
+        name: "Map Bkg",
+        id: "clr-bkg",
+        color: "#000000",
+    },
+    {
+        name: "Page Bkg",
+        id: "clr-page",
+        color: "#000000",
+    },
+    {
+        name: "Grid",
+        id: "clr-grid",
+        color: "#c0c0c0",
+    },
+];
 
-const minmaxtable = [{
-    id: "xmin",
-    val: 0
-}, {
-    id: "xmax",
-    val: 4095
-}, {
-    id: "ymin",
-    val: 0
-}, {
-    id: "ymax",
-    val: 255
-}, {
-    id: "zmin",
-    val: 0
-}, {
-    id: "zmax",
-    val: 4095
-}, ]
+const minmaxtable = [
+    {
+        id: "xmin",
+        val: 0,
+    },
+    {
+        id: "xmax",
+        val: 4095,
+    },
+    {
+        id: "ymin",
+        val: 0,
+    },
+    {
+        id: "ymax",
+        val: 255,
+    },
+    {
+        id: "zmin",
+        val: 0,
+    },
+    {
+        id: "zmax",
+        val: 4095,
+    },
+];
 
 blackHoleSuns.prototype.extractMapOptions = function () {
-    let c = {}
-    let opt = $("#mapkey")
+    let c = {};
+    let opt = $("#mapkey");
 
     for (let i = 0; i < colortable.length; ++i) {
-        c[colortable[i].id] = opt.find("#sel-" + colortable[i].id).val()
-        c["inp-" + colortable[i].id] = opt.find("#inp-" + colortable[i].id).val()
+        c[colortable[i].id] = opt.find("#sel-" + colortable[i].id).val();
+        c["inp-" + colortable[i].id] = opt
+            .find("#inp-" + colortable[i].id)
+            .val();
     }
 
-    opt = $("#mapoptions")
-    c.zoomsz = 5
+    opt = $("#mapoptions");
+    c.zoomsz = 5;
     for (let i = 0; i < minmaxtable.length; ++i)
-        c[minmaxtable[i].id] = parseInt(opt.find("#inp-" + minmaxtable[i].id).val())
+        c[minmaxtable[i].id] = parseInt(
+            opt.find("#inp-" + minmaxtable[i].id).val()
+        );
 
-    c.ctrcord = reformatAddress(opt.find("#inp-ctrcord").val())
-    c.ctrzoom = parseInt(opt.find("#inp-ctrzoom").val())
-    c.chaindepth = parseInt(opt.find("#inp-chaindepth").val())
-    c.chainradius = parseInt(opt.find("#inp-chainradius").val())
+    c.ctrcord = reformatAddress(opt.find("#inp-ctrcord").val());
+    c.ctrzoom = parseInt(opt.find("#inp-ctrzoom").val());
+    c.chaindepth = parseInt(opt.find("#inp-chaindepth").val());
+    c.chainradius = parseInt(opt.find("#inp-chainradius").val());
 
-    c.connection = opt.find("#ck-drawcon").prop("checked")
-    c.map3d = opt.find("#ck-3dmap").prop("checked")
-    c.zoomreg = opt.find("#ck-zoomreg").prop("checked")
-    c.addzero = opt.find("#ck-addzero").prop("checked")
-    c.chain = opt.find("#ck-chain").prop("checked")
+    c.connection = opt.find("#ck-drawcon").prop("checked");
+    c.map3d = opt.find("#ck-3dmap").prop("checked");
+    c.zoomreg = opt.find("#ck-zoomreg").prop("checked");
+    c.addzero = opt.find("#ck-addzero").prop("checked");
+    c.chain = opt.find("#ck-chain").prop("checked");
 
-    return c
-}
+    return c;
+};
 
 blackHoleSuns.prototype.setMapOptions = function (entry) {
-    let opt = $("#mapoptions")
+    let opt = $("#mapoptions");
 
     if (!findex) {
-        opt.find("#id-drawbase").hide()
-        opt.find("#id-zoomreg").hide()
+        opt.find("#id-drawbase").hide();
+        opt.find("#id-zoomreg").hide();
 
-        if (!fsearch)
-            opt.find("#id-drawcon").hide()
+        if (!fsearch) opt.find("#id-drawcon").hide();
     }
 
-    if (fsearch)
-        opt.find("#zoomsection").hide()
+    if (fsearch) opt.find("#zoomsection").hide();
 
     if (typeof entry.mapoptions != "undefined") {
-        opt = $("#mapkey")
+        opt = $("#mapkey");
         for (let i = 0; i < colortable.length; ++i) {
-            opt.find("#sel-" + colortable[i].id).val(entry.mapoptions[colortable[i].id] ? entry.mapoptions[colortable[i].id] : colortable[i].color)
+            opt.find("#sel-" + colortable[i].id).val(
+                entry.mapoptions[colortable[i].id]
+                    ? entry.mapoptions[colortable[i].id]
+                    : colortable[i].color
+            );
             if (typeof colortable[i].size != "undefined") {
-                opt.find("#inp-" + colortable[i].id).val(entry.mapoptions["inp-" + colortable[i].id] ? entry.mapoptions["inp-" + colortable[i].id] : colortable[i].size)
-                opt.find("#inp-" + colortable[i].id).show()
+                opt.find("#inp-" + colortable[i].id).val(
+                    entry.mapoptions["inp-" + colortable[i].id]
+                        ? entry.mapoptions["inp-" + colortable[i].id]
+                        : colortable[i].size
+                );
+                opt.find("#inp-" + colortable[i].id).show();
             }
         }
 
-        opt = $("#mapoptions")
+        opt = $("#mapoptions");
         for (let i = 0; i < minmaxtable.length; ++i)
-            opt.find("#inp-" + minmaxtable[i].id).val(entry.mapoptions[minmaxtable[i].id] ? entry.mapoptions[minmaxtable[i].id] : minmaxtable[i].val)
+            opt.find("#inp-" + minmaxtable[i].id).val(
+                entry.mapoptions[minmaxtable[i].id]
+                    ? entry.mapoptions[minmaxtable[i].id]
+                    : minmaxtable[i].val
+            );
 
-        opt.find("#inp-ctrcord").val(entry.mapoptions.ctrcord ? entry.mapoptions.ctrcord : "07FF:007F:07FF:0000")
-        opt.find("#inp-ctrzoom").val(entry.mapoptions.ctrzoom ? entry.mapoptions.ctrzoom : 5)
-        opt.find("#inp-chaindepth").val(entry.mapoptions.chaindepth ? entry.mapoptions.chaindepth : 5)
-        opt.find("#inp-chainradius").val(entry.mapoptions.chainradius ? entry.mapoptions.chainradius : 1)
+        opt.find("#inp-ctrcord").val(
+            entry.mapoptions.ctrcord
+                ? entry.mapoptions.ctrcord
+                : "07FF:007F:07FF:0000"
+        );
+        opt.find("#inp-ctrzoom").val(
+            entry.mapoptions.ctrzoom ? entry.mapoptions.ctrzoom : 5
+        );
+        opt.find("#inp-chaindepth").val(
+            entry.mapoptions.chaindepth ? entry.mapoptions.chaindepth : 5
+        );
+        opt.find("#inp-chainradius").val(
+            entry.mapoptions.chainradius ? entry.mapoptions.chainradius : 1
+        );
 
-        opt.find("#ck-drawcon").prop("checked", typeof entry.mapoptions.connection != "undefined" ? entry.mapoptions.connection : false)
-        opt.find("#ck-3dmap").prop("checked", typeof entry.mapoptions.map3d != "undefined" ? entry.mapoptions.map3d : true)
-        opt.find("#ck-zoomreg").prop("checked", typeof entry.mapoptions.zoomreg != "undefined" ? entry.mapoptions.zoomreg : false)
-        opt.find("#ck-addzero").prop("checked", typeof entry.mapoptions.addzero != "undefined" ? entry.mapoptions.addzero : true)
-        opt.find("#ck-chain").prop("checked", typeof entry.mapoptions.chain != "undefined" ? entry.mapoptions.chain : true)
-    } else
-        bhs.resetMapOptions()
-}
+        opt.find("#ck-drawcon").prop(
+            "checked",
+            typeof entry.mapoptions.connection != "undefined"
+                ? entry.mapoptions.connection
+                : false
+        );
+        opt.find("#ck-3dmap").prop(
+            "checked",
+            typeof entry.mapoptions.map3d != "undefined"
+                ? entry.mapoptions.map3d
+                : true
+        );
+        opt.find("#ck-zoomreg").prop(
+            "checked",
+            typeof entry.mapoptions.zoomreg != "undefined"
+                ? entry.mapoptions.zoomreg
+                : false
+        );
+        opt.find("#ck-addzero").prop(
+            "checked",
+            typeof entry.mapoptions.addzero != "undefined"
+                ? entry.mapoptions.addzero
+                : true
+        );
+        opt.find("#ck-chain").prop(
+            "checked",
+            typeof entry.mapoptions.chain != "undefined"
+                ? entry.mapoptions.chain
+                : true
+        );
+    } else bhs.resetMapOptions();
+};
 
 blackHoleSuns.prototype.resetMapOptions = function (entry) {
-    let opt = $("#mapoptions")
+    let opt = $("#mapoptions");
 
-    opt = $("#mapkey")
+    opt = $("#mapkey");
     for (let i = 0; i < colortable.length; ++i) {
-        opt.find("#sel-" + colortable[i].id).val(colortable[i].color)
+        opt.find("#sel-" + colortable[i].id).val(colortable[i].color);
         if (typeof colortable[i].size != "undefined") {
-            opt.find("#inp-" + colortable[i].id).val(colortable[i].size)
-            opt.find("#inp-" + colortable[i].id).show()
+            opt.find("#inp-" + colortable[i].id).val(colortable[i].size);
+            opt.find("#inp-" + colortable[i].id).show();
         }
     }
 
-    opt = $("#mapoptions")
+    opt = $("#mapoptions");
     for (let i = 0; i < minmaxtable.length; ++i)
-        opt.find("#inp-" + minmaxtable[i].id).val(minmaxtable[i].val)
+        opt.find("#inp-" + minmaxtable[i].id).val(minmaxtable[i].val);
 
-    opt.find("#inp-ctrcord").val("07FF:007F:07FF:0000")
-    opt.find("#inp-ctrzoom").val(5)
-    opt.find("#inp-chaindepth").val(1)
-    opt.find("#inp-chainradius").val(1)
+    opt.find("#inp-ctrcord").val("07FF:007F:07FF:0000");
+    opt.find("#inp-ctrzoom").val(5);
+    opt.find("#inp-chaindepth").val(1);
+    opt.find("#inp-chainradius").val(1);
 
-    opt.find("#ck-drawcon").prop("checked", false)
-    opt.find("#ck-3dmap").prop("checked", true)
-    opt.find("#ck-drawexits").prop("checked", false)
-    opt.find("#ck-drawbase").prop("checked", false)
-    opt.find("#ck-zoomreg").prop("checked", false)
-    opt.find("#ck-addzero").prop("checked", true)
-    opt.find("#ck-chain").prop("checked", false)
-}
+    opt.find("#ck-drawcon").prop("checked", false);
+    opt.find("#ck-3dmap").prop("checked", true);
+    opt.find("#ck-drawexits").prop("checked", false);
+    opt.find("#ck-drawbase").prop("checked", false);
+    opt.find("#ck-zoomreg").prop("checked", false);
+    opt.find("#ck-addzero").prop("checked", true);
+    opt.find("#ck-chain").prop("checked", false);
+};
 
 blackHoleSuns.prototype.purgeMap = function () {
     //Plotly.purge('plymap')
@@ -1359,48 +1592,47 @@ blackHoleSuns.prototype.purgeMap = function () {
         x: 2048,
         y: 128,
         z: 2048,
-    }
+    };
 
     let truezero = {
         x: 0,
         y: 0,
         z: 0,
-    }
+    };
 
-    let opt = bhs.extractMapOptions()
-    let layout = bhs.changeMapLayout()
-    let data = []
-    let out = initout()
-    pushentry(out, truezero)
-    pushentry(out, zero, "Galactic Center")
-    data.push(makedata(opt, out, 4, "#ffffff"))
+    let opt = bhs.extractMapOptions();
+    let layout = bhs.changeMapLayout();
+    let data = [];
+    let out = initout();
+    pushentry(out, truezero);
+    pushentry(out, zero, "Galactic Center");
+    data.push(makedata(opt, out, 4, "#ffffff"));
 
-    Plotly.newPlot('plymap', data, layout).then(plot => {
-        plot.on('plotly_click', function (e) {
+    Plotly.newPlot("plymap", data, layout).then((plot) => {
+        plot.on("plotly_click", function (e) {
             setTimeout(() => {
                 if (e.points.length > 0 && e.points[0].text) {
-                    let addr = e.points[0].text.slice(0, 19)
+                    let addr = e.points[0].text.slice(0, 19);
 
-                    if (findex)
-                        bhs.getEntry(addr, bhs.displayListEntry)
+                    if (findex) bhs.getEntry(addr, bhs.displayListEntry);
 
-                    let opt = bhs.extractMapOptions()
-                    let xyz = addressToXYZ(addr)
+                    let opt = bhs.extractMapOptions();
+                    let xyz = addressToXYZ(addr);
 
-                    mapped = {}
-                    searched = {}
-                    searchedup = {}
-                    bhs.drawChain(opt, xyz, opt.chain ? opt.chaindepth : 1)
+                    mapped = {};
+                    searched = {};
+                    searchedup = {};
+                    bhs.drawChain(opt, xyz, opt.chain ? opt.chaindepth : 1);
                 }
-            }, 1500)
-        })
-    })
-}
+            }, 1500);
+        });
+    });
+};
 
 blackHoleSuns.prototype.buildMap = function () {
-    let w = $("#maplogo").width()
-    $("#logo").width(w + "px")
-    $("#logo").height(w + "px")
+    let w = $("#maplogo").width();
+    $("#logo").width(w + "px");
+    $("#logo").height(w + "px");
 
     const settings = `
         <br>
@@ -1501,317 +1733,347 @@ blackHoleSuns.prototype.buildMap = function () {
                     Click on map to select system & draw connections. 
                 </div>
             </div>
-        </div>`
+        </div>`;
 
-    let opt = $("#mapoptions")
-    opt.empty()
-    opt.html(settings)
-    const col = '<div class="col-lg-7 col-md-14 col-sm-7 col-14">'
+    let opt = $("#mapoptions");
+    opt.empty();
+    opt.html(settings);
+    const col = '<div class="col-lg-7 col-md-14 col-sm-7 col-14">';
     const key = `
         <div class="row">
             <div id="idname" class="col-lg-6 col-md-5 col-6 text-center">title</div>
             <input id="sel-idname" class="col-lg-4 col-md-3 col-4 bkg-def" style="border-color:black" type="color" value="colorsel">
             <input id="inp-idname" type="number" class="rounded col-lg-4 col-md-4 col-sm-4 col-4 text-right txt-def hidden" min="0" max="20">
-        </div>`
-    const colend = `</div>`
+        </div>`;
+    const colend = `</div>`;
 
-    let keyloc = $("#mapkey")
-    keyloc.empty()
+    let keyloc = $("#mapkey");
+    keyloc.empty();
 
-    colortable.forEach(c => {
-        let h = /idname/g [Symbol.replace](key, c.id)
-        h = /colorsel/g [Symbol.replace](h, c.color)
-        h = /title/g [Symbol.replace](h, c.name)
+    colortable.forEach((c) => {
+        let h = /idname/g[Symbol.replace](key, c.id);
+        h = /colorsel/g[Symbol.replace](h, c.color);
+        h = /title/g[Symbol.replace](h, c.name);
 
-        if (!fsearch)
-            h = col + h + colend
+        if (!fsearch) h = col + h + colend;
 
-        keyloc.append(h)
-    })
+        keyloc.append(h);
+    });
 
-    let map = $("#map")
-    map.find("#btn-redraw").unbind("click")
+    let map = $("#map");
+    map.find("#btn-redraw").unbind("click");
     map.find("#btn-redraw").click(() => {
-        bhs.purgeMap()
-        if (!fsearch)
-            bhs.drawList(bhs.entries)
-    })
+        bhs.purgeMap();
+        if (!fsearch) bhs.drawList(bhs.entries);
+    });
 
-    opt.find("#btn-mapsave").unbind("click")
+    opt.find("#btn-mapsave").unbind("click");
     opt.find("#btn-mapsave").click(() => {
         bhs.updateUser({
-            mapoptions: bhs.extractMapOptions()
-        })
-        bhs.purgeMap()
-        bhs.drawList(bhs.entries)
-    })
+            mapoptions: bhs.extractMapOptions(),
+        });
+        bhs.purgeMap();
+        bhs.drawList(bhs.entries);
+    });
 
-    $("#btn-mapreset").unbind("click")
+    $("#btn-mapreset").unbind("click");
     opt.find("#btn-mapreset").click(() => {
-        bhs.resetMapOptions()
-        bhs.purgeMap()
-        bhs.drawList(bhs.entries)
-    })
+        bhs.resetMapOptions();
+        bhs.purgeMap();
+        bhs.drawList(bhs.entries);
+    });
 
     for (let i = 0; i < minmaxtable.length; ++i) {
-        $("#inp-" + minmaxtable[i].id).unbind("change")
+        $("#inp-" + minmaxtable[i].id).unbind("change");
         opt.find("#inp-" + minmaxtable[i].id).change(() => {
-            bhs.changeMapLayout(true)
-        })
+            bhs.changeMapLayout(true);
+        });
     }
 
-    $("#inp-ctrcord").unbind("change")
+    $("#inp-ctrcord").unbind("change");
     opt.find("#inp-ctrcord").change(() => {
-        bhs.changeMapLayout(true, true)
-    })
+        bhs.changeMapLayout(true, true);
+    });
 
-    $("#inp-ctrzoom").unbind("change")
+    $("#inp-ctrzoom").unbind("change");
     opt.find("#inp-ctrzoom").change(() => {
-        bhs.changeMapLayout(true, true)
-    })
+        bhs.changeMapLayout(true, true);
+    });
 
-    bhs.purgeMap()
+    bhs.purgeMap();
 
-    $("#btn-mapsettings").unbind("click")
+    $("#btn-mapsettings").unbind("click");
     $("#btn-mapsettings").click(() => {
         if ($("#showmapkey").is(":hidden")) {
-            $("#showmapkey").show()
-            $("#showmapoptions").show()
+            $("#showmapkey").show();
+            $("#showmapoptions").show();
         } else {
-            $("#showmapkey").hide()
-            $("#showmapoptions").hide()
+            $("#showmapkey").hide();
+            $("#showmapoptions").hide();
         }
-    })
-}
+    });
+};
 
-var mapped = []
-var searched = []
-var searchedup = []
+var mapped = [];
+var searched = [];
+var searchedup = [];
 
 blackHoleSuns.prototype.zoomEntry = function (e, zoomBH) {
-    let a = zoomBH ? e.addr : e.connection
-    $("#inp-ctrcord").val(a)
-    bhs.changeMapLayout(true, true)
-    bhs.traceZero(a)
-}
+    let a = zoomBH ? e.addr : e.connection;
+    $("#inp-ctrcord").val(a);
+    bhs.changeMapLayout(true, true);
+    bhs.traceZero(a);
+};
 
 blackHoleSuns.prototype.drawSingle = function (e) {
-    let opt = bhs.extractMapOptions()
+    let opt = bhs.extractMapOptions();
 
-    let out = initout()
-    pushentry(out, e.xyzs, typeof e.addr !== "undefined" ? e.addr + "<br>" + e.sys + "<br>" + e.reg : "")
+    let out = initout();
+    pushentry(
+        out,
+        e.xyzs,
+        typeof e.addr !== "undefined"
+            ? e.addr + "<br>" + e.sys + "<br>" + e.reg
+            : ""
+    );
     if (e.blackhole)
-        pushentry(out, e.x.xyzs, typeof e.addr !== "undefined" ? e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg : "")
+        pushentry(
+            out,
+            e.x.xyzs,
+            typeof e.addr !== "undefined"
+                ? e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg
+                : ""
+        );
 
-    Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"] * 2, opt["clr-bh"], e.blackhole ? opt["clr-exit"] : null))
-}
+    Plotly.addTraces(
+        "plymap",
+        makedata(
+            opt,
+            out,
+            opt["inp-clr-bh"] * 2,
+            opt["clr-bh"],
+            e.blackhole ? opt["clr-exit"] : null
+        )
+    );
+};
 
 blackHoleSuns.prototype.mapEntries = function (listentry) {
-    bhs.map = []
-    bhs.exitmap = []
+    bhs.map = [];
+    bhs.exitmap = [];
 
-    Object.keys(listentry).forEach(a => {
-        let e = listentry[a]
+    Object.keys(listentry).forEach((a) => {
+        let e = listentry[a];
 
         if (e.blackhole) {
             if (typeof bhs.map[e.xyzs.x] === "undefined")
-                bhs.map[e.xyzs.x] = []
+                bhs.map[e.xyzs.x] = [];
             if (typeof bhs.map[e.xyzs.x][e.xyzs.y] === "undefined")
-                bhs.map[e.xyzs.x][e.xyzs.y] = []
+                bhs.map[e.xyzs.x][e.xyzs.y] = [];
 
-            bhs.map[e.xyzs.x][e.xyzs.y][e.xyzs.z] = e
+            bhs.map[e.xyzs.x][e.xyzs.y][e.xyzs.z] = e;
 
             if (typeof bhs.exitmap[e.x.xyzs.x] === "undefined")
-                bhs.exitmap[e.x.xyzs.x] = []
+                bhs.exitmap[e.x.xyzs.x] = [];
             if (typeof bhs.exitmap[e.x.xyzs.x][e.x.xyzs.y] === "undefined")
-                bhs.exitmap[e.x.xyzs.x][e.x.xyzs.y] = []
+                bhs.exitmap[e.x.xyzs.x][e.x.xyzs.y] = [];
 
-            bhs.exitmap[e.x.xyzs.x][e.x.xyzs.y][e.x.xyzs.z] = e
+            bhs.exitmap[e.x.xyzs.x][e.x.xyzs.y][e.x.xyzs.z] = e;
         }
-    })
-}
+    });
+};
 
 blackHoleSuns.prototype.drawList = function (listEntry, connection) {
-    let opt = bhs.extractMapOptions()
-    if (!listEntry)
-        return
+    let opt = bhs.extractMapOptions();
+    if (!listEntry) return;
 
-    let k = Object.keys(listEntry)
+    let k = Object.keys(listEntry);
 
-    opt.connection = findex || connection ? opt.connection : false
+    opt.connection = findex || connection ? opt.connection : false;
 
-    let out = {}
-    out.bh = initout()
-    out.dz = initout()
-    out.x = initout()
-    out.base = initout()
+    let out = {};
+    out.bh = initout();
+    out.dz = initout();
+    out.x = initout();
+    out.base = initout();
 
-    let data = []
+    let data = [];
 
     for (let i of k) {
-        let e = listEntry[i]
+        let e = listEntry[i];
 
         if (opt.connection && e.x) {
-            let out = initout()
-            pushentry(out, e.xyzs, e.addr + "<br>" + e.sys + "<br>" + e.reg)
-            pushentry(out, e.x.xyzs, e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg)
-            data.push(makedata(opt, out, 4, opt["clr-bh"], opt["clr-con"]))
+            let out = initout();
+            pushentry(out, e.xyzs, e.addr + "<br>" + e.sys + "<br>" + e.reg);
+            pushentry(
+                out,
+                e.x.xyzs,
+                e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg
+            );
+            data.push(makedata(opt, out, 4, opt["clr-bh"], opt["clr-con"]));
         } else {
-            let text = e.addr + "<br>" + e.sys + "<br>" + e.reg
+            let text = e.addr + "<br>" + e.sys + "<br>" + e.reg;
 
-            if (e.basename)
-                text += "<br>" + e.basename
+            if (e.basename) text += "<br>" + e.basename;
 
             if (e.blackhole) {
-                pushentry(out.bh, e.xyzs, text)
+                pushentry(out.bh, e.xyzs, text);
 
-                if (typeof e.x === "undefined")
-                    console.log(e)
+                if (typeof e.x === "undefined") console.log(e);
                 else {
-                    text = e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg
-                    if (e.x.basename)
-                        text += "<br>" + e.x.basename
+                    text = e.x.addr + "<br>" + e.x.sys + "<br>" + e.x.reg;
+                    if (e.x.basename) text += "<br>" + e.x.basename;
 
-                    pushentry(out.x, e.x.xyzs, text)
+                    pushentry(out.x, e.x.xyzs, text);
                 }
-            } else if (e.deadzone)
-                pushentry(out.dz, e.xyzs, text)
-            else if (e.basename)
-                pushentry(out.base, e.xyzs, text)
+            } else if (e.deadzone) pushentry(out.dz, e.xyzs, text);
+            else if (e.basename) pushentry(out.base, e.xyzs, text);
             else if (e.x && e.x.basename)
-                pushentry(out.base, e.x.xyzs, text + "<br>" + e.x.basename)
-            else
-                pushentry(out.x, e.xyzs, text)
+                pushentry(out.base, e.x.xyzs, text + "<br>" + e.x.basename);
+            else pushentry(out.x, e.xyzs, text);
         }
     }
 
     if (out.bh.x.length > 0 && opt["inp-clr-bh"] > 0)
-        data.push(makedata(opt, out.bh, opt["inp-clr-bh"], opt["clr-bh"]))
+        data.push(makedata(opt, out.bh, opt["inp-clr-bh"], opt["clr-bh"]));
 
     if (out.dz.x.length > 0 && opt["inp-clr-dz"] > 0)
-        data.push(makedata(opt, out.dz, opt["inp-clr-dz"], opt["clr-dz"]))
+        data.push(makedata(opt, out.dz, opt["inp-clr-dz"], opt["clr-dz"]));
 
     if (out.x.x.length > 0 && opt["inp-clr-exit"] > 0)
-        data.push(makedata(opt, out.x, opt["inp-clr-exit"], opt["clr-exit"]))
+        data.push(makedata(opt, out.x, opt["inp-clr-exit"], opt["clr-exit"]));
 
     if (out.base.x.length > 0 && opt["inp-clr-base"] > 0)
-        data.push(makedata(opt, out.base, opt["inp-clr-base"], opt["clr-base"]))
+        data.push(
+            makedata(opt, out.base, opt["inp-clr-base"], opt["clr-base"])
+        );
 
-    Plotly.react('plymap', data, bhs.changeMapLayout())
-}
+    Plotly.react("plymap", data, bhs.changeMapLayout());
+};
 
 function getMapCk(map, xyz) {
-    let x = xyz.x
-    let y = xyz.y
-    let z = xyz.z
+    let x = xyz.x;
+    let y = xyz.y;
+    let z = xyz.z;
 
-    if (typeof map[x] === "undefined")
-        map[x] = []
-    if (typeof map[x][y] === "undefined")
-        map[x][y] = []
-    if (typeof map[x][y][z] === "undefined")
-        map[x][y][z] = false
+    if (typeof map[x] === "undefined") map[x] = [];
+    if (typeof map[x][y] === "undefined") map[x][y] = [];
+    if (typeof map[x][y][z] === "undefined") map[x][y][z] = false;
 
-    return map[x][y][z]
+    return map[x][y][z];
 }
 
 function setMapCk(map, xyz) {
-    map[xyz.x][xyz.y][xyz.z] = true
+    map[xyz.x][xyz.y][xyz.z] = true;
 }
 
 blackHoleSuns.prototype.drawChain = function (opt, xyz, depth, up) {
     if (depth-- > 0 && !getMapCk(up ? searchedup : searched, xyz)) {
-        setMapCk(up ? searchedup : searched, xyz)
-        let list = bhs.findClose(opt, xyz, up)
+        setMapCk(up ? searchedup : searched, xyz);
+        let list = bhs.findClose(opt, xyz, up);
 
         for (let d of list) {
             if (!getMapCk(mapped, d.xyzs)) {
-                setMapCk(mapped, d.xyzs)
+                setMapCk(mapped, d.xyzs);
 
-                let out = initout()
-                pushentry(out, d.xyzs, d.addr + "<br>" + d.sys + "<br>" + d.reg)
-                pushentry(out, d.x.xyzs, d.x.addr + "<br>" + d.x.sys + "<br>" + d.x.reg)
+                let out = initout();
+                pushentry(
+                    out,
+                    d.xyzs,
+                    d.addr + "<br>" + d.sys + "<br>" + d.reg
+                );
+                pushentry(
+                    out,
+                    d.x.xyzs,
+                    d.x.addr + "<br>" + d.x.sys + "<br>" + d.x.reg
+                );
 
-                Plotly.addTraces('plymap', makedata(opt, out, opt["inp-clr-bh"], opt["clr-bh"], up ? opt["clr-exit"] : opt["clr-con"]))
+                Plotly.addTraces(
+                    "plymap",
+                    makedata(
+                        opt,
+                        out,
+                        opt["inp-clr-bh"],
+                        opt["clr-bh"],
+                        up ? opt["clr-exit"] : opt["clr-con"]
+                    )
+                );
 
-                bhs.drawChain(opt, up ? d.xyzs : d.x.xyzs, depth)
+                bhs.drawChain(opt, up ? d.xyzs : d.x.xyzs, depth);
             }
         }
 
-        bhs.drawChain(opt, xyz, depth, true)
+        bhs.drawChain(opt, xyz, depth, true);
     }
-}
+};
 
-var findList = null
+var findList = null;
 
 blackHoleSuns.prototype.findClose = function (opt, xyz, up) {
-    let out = []
+    let out = [];
 
-    let map = up ? bhs.exitmap : bhs.map
+    let map = up ? bhs.exitmap : bhs.map;
 
-    let x = xyz.x
-    let y = xyz.y
-    let z = xyz.z
-    let r = opt.chainradius
+    let x = xyz.x;
+    let y = xyz.y;
+    let z = xyz.z;
+    let r = opt.chainradius;
 
     for (let i = x - r; i < x + r; ++i)
         for (let j = y - r; j < y + r; ++j)
             for (let k = z - r; k < z + r; ++k)
-                if (typeof map[i] !== "undefined" && typeof map[i][j] !== "undefined" && typeof map[i][j][k] !== "undefined")
-                    out.push(map[i][j][k])
+                if (
+                    typeof map[i] !== "undefined" &&
+                    typeof map[i][j] !== "undefined" &&
+                    typeof map[i][j][k] !== "undefined"
+                )
+                    out.push(map[i][j][k]);
 
-    return out
-}
+    return out;
+};
 
 blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
-    let opt = bhs.extractMapOptions()
-    let ctr = addressToXYZ(opt.ctrcord)
-    ctr.z = 4096 - ctr.z
+    let opt = bhs.extractMapOptions();
+    let ctr = addressToXYZ(opt.ctrcord);
+    ctr.z = 4096 - ctr.z;
 
-    let xstart, xctr, xend
-    let ystart, yctr, yend
-    let zstart, zctr, zend
+    let xstart, xctr, xend;
+    let ystart, yctr, yend;
+    let zstart, zctr, zend;
 
     if (zoom && opt.ctrzoom && !fsearch) {
-        xstart = ctr.x - opt.ctrzoom
-        xctr = ctr.x
-        xend = ctr.x + opt.ctrzoom
+        xstart = ctr.x - opt.ctrzoom;
+        xctr = ctr.x;
+        xend = ctr.x + opt.ctrzoom;
 
-        ystart = ctr.z - opt.ctrzoom
-        yctr = ctr.z
-        yend = ctr.z + opt.ctrzoom
+        ystart = ctr.z - opt.ctrzoom;
+        yctr = ctr.z;
+        yend = ctr.z + opt.ctrzoom;
 
-        zstart = ctr.y - opt.ctrzoom
-        zctr = ctr.y
-        zend = ctr.y + opt.ctrzoom
+        zstart = ctr.y - opt.ctrzoom;
+        zctr = ctr.y;
+        zend = ctr.y + opt.ctrzoom;
     } else {
-        xstart = opt.xmin
-        xctr = opt.xmin + parseInt((opt.xmax - opt.xmin) / 2) - 1
-        xend = opt.xmax - 1
+        xstart = opt.xmin;
+        xctr = opt.xmin + parseInt((opt.xmax - opt.xmin) / 2) - 1;
+        xend = opt.xmax - 1;
 
-        zstart = opt.ymin
-        zctr = opt.ymin + parseInt((opt.ymax - opt.ymin) / 2) - 1
-        zend = opt.ymax - 1
+        zstart = opt.ymin;
+        zctr = opt.ymin + parseInt((opt.ymax - opt.ymin) / 2) - 1;
+        zend = opt.ymax - 1;
 
-        ystart = opt.zmin
-        yctr = opt.zmin + parseInt((opt.zmax - opt.zmin) / 2) - 1
-        yend = opt.zmax - 1
+        ystart = opt.zmin;
+        yctr = opt.zmin + parseInt((opt.zmax - opt.zmin) / 2) - 1;
+        yend = opt.zmax - 1;
     }
 
-    if (xstart < 0)
-        xstart = 0
-    if (xend > 4095)
-        xend = 4095
+    if (xstart < 0) xstart = 0;
+    if (xend > 4095) xend = 4095;
 
-    if (ystart < 0)
-        ystart = 0
-    if (yend > 4095)
-        yend = 4095
+    if (ystart < 0) ystart = 0;
+    if (yend > 4095) yend = 4095;
 
-    if (zstart < 0)
-        zstart = 0
-    if (zend > 255)
-        zend = 255
+    if (zstart < 0) zstart = 0;
+    if (zend > 255) zend = 255;
 
     let layout = {
         hovermode: "closest",
@@ -1823,18 +2085,18 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
                 up: {
                     x: 0,
                     y: 0,
-                    z: 1
+                    z: 1,
                 },
                 center: {
                     x: 0,
                     y: 0,
-                    z: 0
+                    z: 0,
                 },
                 eye: {
                     x: 0,
-                    y: -.01,
+                    y: -0.01,
                     z: 2,
-                }
+                },
             },
             zaxis: {
                 backgroundcolor: opt["clr-bkg"],
@@ -1845,13 +2107,17 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
                     text: "Y",
                     font: {
                         color: opt["clr-grid"],
-                    }
+                    },
                 },
                 range: [zstart, zend],
                 tickvals: [zstart, zctr, zend],
-                ticktext: [zstart.toString(16), zctr.toString(16), zend.toString(16)],
+                ticktext: [
+                    zstart.toString(16),
+                    zctr.toString(16),
+                    zend.toString(16),
+                ],
                 tickfont: {
-                    color: opt["clr-grid"]
+                    color: opt["clr-grid"],
                 },
                 tickangle: 45,
             },
@@ -1864,13 +2130,17 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
                     text: "X",
                     font: {
                         color: opt["clr-grid"],
-                    }
+                    },
                 },
                 range: [xstart, xend],
                 tickvals: [xstart, xctr, xend],
-                ticktext: [xstart.toString(16), xctr.toString(16), xend.toString(16)],
+                ticktext: [
+                    xstart.toString(16),
+                    xctr.toString(16),
+                    xend.toString(16),
+                ],
                 tickfont: {
-                    color: opt["clr-grid"]
+                    color: opt["clr-grid"],
                 },
                 tickangle: 45,
             },
@@ -1882,73 +2152,80 @@ blackHoleSuns.prototype.changeMapLayout = function (exec, zoom) {
                     text: "Z",
                     font: {
                         color: opt["clr-grid"],
-                    }
+                    },
                 },
                 showbackground: true,
                 range: [ystart, yend],
                 tickvals: [ystart, yctr, yend],
-                ticktext: [yend.toString(16), yctr.toString(16), ystart.toString(16)],
+                ticktext: [
+                    yend.toString(16),
+                    yctr.toString(16),
+                    ystart.toString(16),
+                ],
                 tickfont: {
-                    color: opt["clr-grid"]
+                    color: opt["clr-grid"],
                 },
                 tickangle: 45,
             },
         },
-    }
+    };
 
     if (opt.map3d) {
         layout.margin = {
             l: 0,
             r: 0,
             b: 0,
-            t: 0
-        }
+            t: 0,
+        };
     }
 
-    let w = Math.min($("#mapcol").width(), $(window).height())
-    layout.width = w
-    layout.height = w
+    let w = Math.min($("#mapcol").width(), $(window).height());
+    layout.width = w;
+    layout.height = w;
 
-    if (exec) Plotly.relayout('plymap', layout)
+    if (exec) Plotly.relayout("plymap", layout);
 
-    return layout
-}
+    return layout;
+};
 
 blackHoleSuns.prototype.traceZero = function (addr) {
-    let opt = bhs.extractMapOptions()
+    let opt = bhs.extractMapOptions();
 
     if (opt.addzero) {
         let zero = {
             x: 2048,
             y: 128,
             z: 2048,
-        }
+        };
 
-        let out = initout()
-        pushentry(out, zero, "Galactic Center")
-        pushentry(out, addressToXYZ(addr))
-        Plotly.addTraces('plymap', makedata(opt, out, 5, opt["clr-bh"], "#d0d0d0"))
+        let out = initout();
+        pushentry(out, zero, "Galactic Center");
+        pushentry(out, addressToXYZ(addr));
+        Plotly.addTraces(
+            "plymap",
+            makedata(opt, out, 5, opt["clr-bh"], "#d0d0d0")
+        );
     }
-}
+};
 
 function pushentry(out, xyz, label) {
-    out.x.push(xyz.x)
-    out.y.push(4095 - xyz.z)
-    out.z.push(xyz.y)
-    out.t.push(label)
+    out.x.push(xyz.x);
+    out.y.push(4095 - xyz.z);
+    out.z.push(xyz.y);
+    out.t.push(label);
 }
 
 function initout(out) {
     if (!out) {
-        out = {}
-        out.x = []
-        out.y = []
-        out.z = []
-        out.t = []
-        out.alt = []
+        out = {};
+        out.x = [];
+        out.y = [];
+        out.z = [];
+        out.t = [];
+        out.alt = [];
     }
 
-    return out
+    return out;
 }
 
 function makedata(opt, out, size, color, linecolor) {
@@ -1957,24 +2234,24 @@ function makedata(opt, out, size, color, linecolor) {
         y: out.y,
         z: out.z,
         text: out.t,
-        mode: 'markers',
+        mode: "markers",
         marker: {
             size: size,
             color: color,
             opacity: 0.6,
         },
         type: opt.map3d ? "scatter3d" : "scatter",
-        hoverinfo: 'text',
-    }
+        hoverinfo: "text",
+    };
 
     if (linecolor) {
-        line.mode = 'lines+markers'
+        line.mode = "lines+markers";
         line.line = {
             color: linecolor,
             width: 2,
             opacity: 0.4,
-        }
+        };
     }
 
-    return line
+    return line;
 }

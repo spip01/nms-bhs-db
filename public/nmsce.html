@@ -268,7 +268,7 @@
                         <div id="imgcol" class="col-lg-10 col-md-9 col-14">
                             <a id="permalink-img" href="">
                                 <img id="dispimage"
-                                    onload="nmsce.imageLoaded(this, $(this).parent().width(), $(window).height(), true)" />
+                                    onload="imageLoaded(this, $(this).parent().width(), $(window).height(), true)" />
                             </a>
                             <div class="row">
                                 <a id="permalink" class="col-10 h2 pl-30" href="">
@@ -389,10 +389,10 @@
     <script src="/__/firebase/8.3.2/firebase-functions.js"></script>
     <script src="/__/firebase/init.js"></script>
 
-    <script src="commonFb.js"></script>
-    <script src="commonUI.js"></script>
-    <script src="commonNms.js"></script>
-    <script src="nmsce.js"></script>
+    <script src="commonFb.js" type="module"></script>
+    <script src="commonUI.js" type="module"></script>
+    <script src="commonNms.js" type="module"></script>
+    <script src="nmsce.js" type="module"></script>
 </body>
 
 </html>
