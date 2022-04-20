@@ -1499,7 +1499,7 @@ class NMSCE {
         window.open("nmsce.html?s=" + nmsce.last.addr.nameToId() + "&g=" + nmsce.last.galaxy.nameToId(), '_self')
     }
 
-    searchSystem() {
+    searchSystem(k) {
         if (!nmsce.last)
             return
 
@@ -4340,7 +4340,7 @@ class NMSCE {
             }
     }
 
-    displayResultList(entries, type) {
+    displayResultList(entries, type, k) {
         if (!entries || entries.length === 0)
             return
 
@@ -4348,7 +4348,7 @@ class NMSCE {
         let loc = $("#displayPanels #list-" + type.nameToId())
 
         for (let e of entries) {
-            if (e.private && e.uid !== bhs.user.uid && !bhs.hasRole("nmsceEditor"))
+            if (!k &&e.private && e.uid !== bhs.user.uid && !bhs.hasRole("nmsceEditor"))
                 continue
 
             // if (type === "Hall-of-Fame" && e.votes.hof < 1)
@@ -4877,7 +4877,6 @@ class NMSCE {
                     loc.data("src", url)
             }).catch(err => console.log(err))
         }
->>>>>>> e2f923a (Moved NMSCE into class)
     }
 
     updateDisplayListEntry(e, loc) {

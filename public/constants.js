@@ -188,7 +188,15 @@ export const versionList = [
         name: "emergence",
         version: 3.7,
         date: "10/20/2021",
-    },
+    }, {
+        name: "sentinels",
+        version: 3.8,
+        date: "2/16/2022",
+    }, {
+        name: "outlaws",
+        version: 3.85,
+        date: "4/13/2022",
+    }
 ];
 
 export const latestversion = versionList[versionList.length - 1].name;
