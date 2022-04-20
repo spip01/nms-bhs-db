@@ -1,5 +1,5 @@
 'use strict'
-
+import { Timestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { bhs, blackHoleSuns } from "./commonFb.js"
 import { mergeObjects, reformatAddress } from "./commonNms.js"
 import { conflictList, economyList, galaxyList, lifeformList, ownershipList, platformList } from "./constants.js"
@@ -175,7 +175,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
         log._name = bhs.user._name
         log.galaxy = bhs.user.galaxy
         log.platform = bhs.user.platform
-        log.time = firebase.firestore.Timestamp.now()
+        log.time = Timestamp.now()
         log.file = file.name
         log.path = "fileupload/" + uuidv4() + file.name.replace(/.*(\..*)$/, "$1")
         log.log = ""
@@ -350,7 +350,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
 
 blackHoleSuns.prototype.fWriteLog = async function (check) {
     if (log.log != "" && !check)
-        bhs.fs.collection("log").add(log)
+        addDoc(collection(bhs.fs, "log"), log)
 }
 
 blackHoleSuns.prototype.fBatchUpdate = async function (entry, exit, check, i, base) {
@@ -358,8 +358,8 @@ blackHoleSuns.prototype.fBatchUpdate = async function (entry, exit, check, i, ba
     let ok = false
 
     if (check) {
-        let doc = await ref.get()
-        if (doc.exists) {
+        let doc = await getDoc(ref)
+        if (doc.exists()) {
             let e = doc.data()
             if (e.uid !== entry.uid)
                 bhs.filestatus("row: " + (i + 1) + " can't write over system, " + e.addr + ", created by " + e._name, 0)
@@ -387,7 +387,7 @@ blackHoleSuns.prototype.fBatchUpdate = async function (entry, exit, check, i, ba
         if (entry.blackhole && exit) {
             entry.connection = exit.addr
 
-            exit.modded = firebase.firestore.Timestamp.now()
+            exit.modded = Timestamp.now()
             exit.xyzs = addressToXYZ(exit.addr)
             exit.dist = calcDist(exit.addr)
             entry.towardsCtr = entry.dist - exit.dist
@@ -402,7 +402,7 @@ blackHoleSuns.prototype.fBatchUpdate = async function (entry, exit, check, i, ba
             entry.x.econ = typeof exit.econ !== "undefined" ? exit.econ : ""
         }
 
-        entry.modded = firebase.firestore.Timestamp.now()
+        entry.modded = Timestamp.now()
 
         let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
         batch.set(ref, entry, {
@@ -428,7 +428,7 @@ blackHoleSuns.prototype.fBatchDelete = async function (entry, check) {
 
     if (check) {
         doc = await ref.get()
-        if (!doc.exists)
+        if (!doc.exists())
             bhs.filestatus(entry.addr + " doesn't exist for delete.", 0)
     } else {
         batch.delete(ref)
@@ -443,7 +443,7 @@ blackHoleSuns.prototype.fBatchDeleteBase = async function (entry, check) {
 
     if (check) {
         await ref.get().then(function (doc) {
-            if (!doc.exists)
+            if (!doc.exists())
                 bhs.filestatus(entry.addr + " base doesn't exist for delete.", 0)
         }).catch(err => {
             bhs.filestatus("ERROR: " + err.code, 0)
@@ -459,7 +459,7 @@ blackHoleSuns.prototype.fBatchDeleteBase = async function (entry, check) {
 
 blackHoleSuns.prototype.fBatchWriteBase = async function (entry, check) {
     if (!check) {
-        entry.modded = firebase.firestore.Timestamp.now()
+        entry.modded = Timestamp.now()
         entry.xyzs = addressToXYZ(entry.addr)
         let err = await bhs.updateBase(entry)
         if (err)

@@ -1,5 +1,6 @@
 'use strict'
 
+import { Timestamp, collection, query, where, limit, doc, getDoc, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { bhs, blackHoleSuns, startUp } from "./commonFb.js";
 import { addGlyphButtons, fcedata, fnmsce, fpreview, getIndex, mergeObjects, reformatAddress } from "./commonNms.js";
 import { biomeList, classList, colorList, economyList, economyListTier, faunaList, faunaProductTamed, fontList, frigateList, galaxyList, lifeformList, modeList, platformListAll, resourceList, sentinelList, shipList, versionList } from "./constants.js";
@@ -16,7 +17,7 @@ const displayPath = "/nmsce/disp/"
 const originalPath = "/nmsce/orig/"
 const thumbPath = "/nmsce/disp/thumb/"
 
-$(document).ready(async () => {
+$(document).ready(() => {
     startUp();
 
     $("#cemenus").load("cemenus.html", () => {
@@ -83,15 +84,14 @@ $(document).ready(async () => {
         nmsce.searchRegion()
 
     } else if (passed.i && passed.g && passed.t) {
-        let ref = bhs.fs.doc("nmsce/" + passed.g + "/" + passed.t + "/" + passed.i)
-        ref.get().then(doc => {
-            if (doc.exists) {
-                if (fnmsce || fpreview)
-                    nmsce.displaySelected(doc.data())
-                else if (fcedata)
-                    nmsce.displaySingle(doc.data())
-            }
-        })
+        // getDocs(collection(bhs.fs, "nmsce/" + passed.g + "/" + passed.t + "/" + passed.i)).then(doc => {
+        //     if (doc.exists) {
+        //         if (fnmsce || fpreview)
+        //             nmsce.displaySelected(doc.data())
+        //         else if (fcedata)
+        //             nmsce.displaySingle(doc.data())
+        //     }
+        // })
     }
 })
 
@@ -262,21 +262,20 @@ class NMSCE {
                 menusize: "col",
             })
 
-            let ref = bhs.fs.collection("nmsce")
-            ref.get().then(snapshot => {
-                let galaxyList = []
-                for (let doc of snapshot.docs) {
-                    galaxyList.push({
-                        name: doc.ref.id
-                    })
-                }
+            // getDocs(collection(bhs.fs, "nmsce")).then(snapshot => {
+            //     let galaxyList = []
+            //     for (let doc of snapshot.docs) {
+            //         galaxyList.push({
+            //             name: doc.ref.id
+            //         })
+            //     }
 
-                bhs.buildMenu($("#panels"), "Galaxy", galaxyList, null, {
-                    required: true,
-                    labelsize: "col-md-6 col-4",
-                    menusize: "col",
-                })
-            })
+            //     bhs.buildMenu($("#panels"), "Galaxy", galaxyList, null, {
+            //         required: true,
+            //         labelsize: "col-md-6 col-4",
+            //         menusize: "col",
+            //     })
+            // })
         }
 
         addGlyphButtons($("#glyphbuttons"), nmsce.addGlyph)
@@ -1074,10 +1073,11 @@ class NMSCE {
 
         $("#status").empty()
 
-        let ref = bhs.fs.collection("nmsce/" + search.galaxy + "/" + search.type)
+        let ref = collection(bhs.fs, "nmsce/" + search.galaxy + "/" + search.type)
 
-        let firstarray = 0
-        let arraylist = []
+        let firstarray = 0;
+        let arraylist = [];
+        let statements = [];
 
         for (let q of search.search) {
             switch (q.type) {
@@ -1085,17 +1085,19 @@ class NMSCE {
                     arraylist.push(q)
 
                     if (firstarray++ === 0)
-                        ref = ref.where(q.name, "array-contains-any", q.list)
+                        statements.add(where(q.name, "array-contains-any", q.list))
                     break
                 case "map":
                     for (let i of q.list)
-                        ref = ref.where(q.name + "." + i, "==", true)
+                        statements.add(where(q.name + "." + i, "==", true))
                     break
                 default:
-                    ref = ref.where(q.name, q.query ? q.query : "==", q.val)
+                    statements.add(where(q.name, q.query ? q.query : "==", q.val))
                     break
             }
         }
+
+        let qury = query(ref, ...statements, limit(50))
 
         const filterResults = (entries, panel) => {
             let list = []
@@ -1125,8 +1127,7 @@ class NMSCE {
                 dispFcn(list, panel)
         }
 
-        ref = ref.limit(50)
-        nmsce.getWithObserver(null, ref, panel, true, filterResults)
+        getWithObserver(null, qury, panel, true, filterResults)
     }
 
     search(search) {
@@ -1180,13 +1181,12 @@ class NMSCE {
             search.uid = bhs.user.uid
             search._name = bhs.user._name
             search.email = bhs.user.email
-            search.date = firebase.firestore.Timestamp.now()
+            search.date = Timestamp.now()
             search.notify = $("#ck-notify").prop("checked")
             search.name = $("#searchname").val()
 
             if (search.name) {
-                let ref = bhs.fs.doc("users/" + bhs.user.uid + "/nmsce-saved-searches/" + search.name.nameToId())
-                ref.set(search, {
+                setDoc(doc(bhs.fs, "users/" + bhs.user.uid + "/nmsce-saved-searches/" + search.name.nameToId()), search, {
                     merge: true
                 }).then(() => bhs.status(search.name + " saved."))
             } else {
@@ -1242,8 +1242,8 @@ class NMSCE {
             let i = getIndex(nmsce.searchlist, "name", name)
 
             if (i !== -1) {
-                let ref = bhs.fs.doc("users/" + bhs.user.uid + "/nmsce-saved-searches/" + name.nameToId())
-                ref.delete().then(() => {
+
+                deleteDoc(doc(bhs.fs, "users/" + bhs.user.uid + "/nmsce-saved-searches/" + name.nameToId())).then(() => {
                     bhs.status(name + " search deleted.")
 
                     nmsce.searchlist.splice(i, 1)
@@ -1260,7 +1260,7 @@ class NMSCE {
         if (!bhs.user.uid)
             return
 
-        let ref = bhs.fs.collection("users/" + bhs.user.uid + "/nmsce-saved-searches")
+        let ref = collection(bhs.fs, "users/" + bhs.user.uid + "/nmsce-saved-searches")
         ref = ref.where("uid", "==", bhs.user.uid)
 
         ref.get().then(snapshot => {
@@ -1344,7 +1344,7 @@ class NMSCE {
                 id: "id-Created",
                 query: ">=",
                 date: date,
-                val: firebase.firestore.Timestamp.fromDate(new Date(date))
+                val: Timestamp.fromDate(new Date(date))
             })
 
         let obj = null
@@ -1505,7 +1505,7 @@ class NMSCE {
 
         nmsce.entries["Search-Results"] = []
 
-        let ref = bhs.fs.collectionGroup("nmsceCommon")
+        let ref = collectionGroup(bhs.fs, "nmsceCommon")
         ref = ref.where("galaxy", "==", nmsce.last.galaxy)
         ref = ref.where("addr", "==", nmsce.last.addr)
 
@@ -1526,7 +1526,7 @@ class NMSCE {
 
         nmsce.entries["Search-Results"] = []
 
-        let ref = bhs.fs.collectionGroup("nmsceCommon")
+        let ref = collectionGroup(bhs.fs, "nmsceCommon")
         ref = ref.where("galaxy", "==", nmsce.last.galaxy)
         ref = ref.where("addr", ">=", nmsce.last.addr.slice(0, 15) + "0000")
         ref = ref.where("addr", "<=", nmsce.last.addr.slice(0, 15) + "02FF")
@@ -1794,11 +1794,10 @@ class NMSCE {
 
                         itm.find("#btn-" + id).text(f.name)
                     } else {
-                        let ref = bhs.fs.doc("tags/" + itmid)
-                        ref.get().then(doc => {
+                        getDoc(doc(bhs.fs, "tags/" + itmid)).then(doc => {
                             let tags = []
 
-                            if (doc.exists) {
+                            if (doc.exists()) {
 
                                 let list = doc.data()
                                 for (let t of list.tags)
@@ -1924,9 +1923,8 @@ class NMSCE {
 
         if (text !== "" && row.find("#item-" + text.nameToId()).length === 0) {
             let pnl = $(evt).closest("[id|='pnl']").prop("id").stripID()
-            let ref = bhs.fs.doc("tags/" + pnl)
 
-            ref.set({
+            setDoc(doc(bhs.fs, "tags/" + pnl), {
                 tags: firebase.firestore.FieldValue.arrayUnion(text)
             }, {
                 merge: true
@@ -3043,9 +3041,8 @@ class NMSCE {
                 let path = state.split("_")
 
                 if (!nmsce.last || nmsce.last.galaxy !== path[1].idToName() || nmsce.last.type !== path[2] || nmsce.last.id !== path[3]) {
-                    let ref = bhs.fs.doc("nmsce/" + path[1].idToName() + "/" + path[2] + "/" + path[3])
-                    ref.get().then(doc => {
-                        if (doc.exists)
+                    getDoc(doc(bhs.fs, "nmsce/" + path[1].idToName() + "/" + path[2] + "/" + path[3])).then(doc => {
+                        if (doc.exists())
                             nmsce.displaySingle(doc.data(), true)
                         $("#redditPost").show()
                     })
@@ -3269,13 +3266,12 @@ class NMSCE {
                                         var id = p[1]
                                 }
 
-                                let ref = bhs.fs.doc("nmsce/" + galaxy + "/" + type + "/" + id)
-                                ref.get().then(doc => {
+                                getDoc(doc(bhs.fs, "nmsce/" + galaxy + "/" + type + "/" + id)).then(doc => {
                                     let e = doc.data()
                                     let out = {}
                                     out.redditlink = link
                                     if (!e.reddit)
-                                        out.reddit = firebase.firestore.Timestamp.now()
+                                        out.reddit = Timestamp.now()
 
                                     ref.set(out, {
                                         merge: true
@@ -3681,7 +3677,7 @@ class NMSCE {
         if (nmsce.last) {
             let entry = nmsce.last
             nmsce.last = null
-            let ref = bhs.fs.doc("nmsce/" + entry.galaxy + "/" + entry.type + "/" + entry.id)
+            let ref = doc(bhs.fs, "nmsce/" + entry.galaxy + "/" + entry.type + "/" + entry.id)
 
             let vref = ref.collection("votes")
             vref.get().then(snapshot => {
@@ -3791,12 +3787,12 @@ class NMSCE {
     }
 
     updateEntry(entry) {
-        entry.modded = firebase.firestore.Timestamp.now()
+        entry.modded = Timestamp.now()
         nmsce.initVotes(entry)
         let created = false
 
         if (typeof entry.created === "undefined") {
-            entry.created = firebase.firestore.Timestamp.now()
+            entry.created = Timestamp.now()
             created = true
         }
 
@@ -3806,7 +3802,7 @@ class NMSCE {
         if (typeof entry.Photo === "undefined")
             entry.Photo = entry.type + "-" + entry.id + ".jpg"
 
-        let ref = bhs.fs.collection("nmsce/" + entry.galaxy + "/" + entry.type)
+        let ref = collection(bhs.fs, "nmsce/" + entry.galaxy + "/" + entry.type)
         ref = ref.doc(entry.id)
 
         ref.set(entry).then(() => {
@@ -3885,22 +3881,24 @@ class NMSCE {
         for (let obj of objectList) {
             nmsce.entries[obj.name] = []
             nmsce.clearDisplayList(obj.name)
-            let ref = bhs.fs.collection("nmsce/" + bhs.user.galaxy + "/" + obj.name)
-            // let ref = bhs.fs.collectionGroup("nmsceCommon")
-            // ref = ref.where("type", "==", obj.name)
-            ref = ref.where("uid", "==", bhs.user.uid)
-            ref = ref.orderBy("created", "desc")
-            ref = ref.limit(50)
-            nmsce.getWithObserver(null, ref, obj.name, true, nmsce.displayList)
+
+            let qury = query(collection(bhs.fs, "nmsce/" + bhs.user.galaxy + "/" + obj.name),
+                where("uid", "==", bhs.user.uid),
+                orderBy("created", "desc"),
+                limit(50));
+            nmsce.getWithObserver(null, qury, obj.name, true, nmsce.displayList)
         }
 
         if (!skipAll) {
-            let ref = bhs.fs.collectionGroup("nmsceCommon")
+
             nmsce.entries.All = []
-            ref = ref.where("uid", "==", bhs.user.uid)
-            ref = ref.orderBy("created", "desc")
-            ref = ref.limit(50)
-            nmsce.getWithObserver(null, ref, "All", true, nmsce.displayList, {
+
+            let qury = query(collectionGroup(bhs.fs, "nmsceCommon"),
+                where("uid", "==", bhs.user.uid),
+                orderBy("created", "desc"),
+                limit(50));
+
+            nmsce.getWithObserver(null, qury, "All", true, nmsce.displayList, {
                 source: "server"
             })
         }
@@ -3937,24 +3935,19 @@ class NMSCE {
     }
 
     getTotals() {
-        // ref = bhs.fs.doc("bhs/nmsceCommunityEvent")
-        // bhs.subscribe("nmsce-ce", ref, nmsce.displayTotals)
 
-        let ref = bhs.fs.doc("bhs/nmsceTotals")
-        ref.get().then(doc => {
-            if (doc.exists)
+        getDoc(doc(bhs.fs, "bhs/nmsceTotals")).then(doc => {
+            if (doc.exists())
                 nmsce.displayTotals(doc.data(), "bhs/nmsceTotals")
         })
 
-        ref = bhs.fs.doc("bhs/nmsceMonthly")
-        ref.get().then(doc => {
-            if (doc.exists)
+        getDoc(doc(bhs.fs, "bhs/nmsceMonthly")).then(doc => {
+            if (doc.exists())
                 nmsce.displayTotals(doc.data(), "bhs/nmsceMonthly")
         })
 
-        ref = bhs.fs.doc("bhs/patreon")
-        ref.get().then(doc => {
-            if (doc.exists)
+        getDoc(doc(bhs.fs, "bhs/patreon")).then(doc => {
+            if (doc.exists())
                 nmsce.displayPatron(doc.data(), "bhs/patreon")
         })
     }
@@ -4312,13 +4305,13 @@ class NMSCE {
                 nmsce.entries[r.name.nameToId()] = []
                 $("#dltab-My-Favorites").show()
 
-                let ref = bhs.fs.collectionGroup("votes")
-                ref = ref.where("uid", "==", bhs.user.uid)
-                ref = ref.where("favorite", "==", 1)
-                ref = ref.orderBy("created", "desc")
-                ref = ref.limit(r.limit)
+                let qury = query(collectionGroup(bhs.fs, "votes"),
+                    where("uid", "==", bhs.user.uid),
+                    where("favorite", "==", 1),
+                    orderBy("created", "desc"),
+                    limit(r.limit));
 
-                nmsce.getWithObserver(null, ref, r.name, r.cont, nmsce.displayResultList, {
+                nmsce.getWithObserver(null, qury, r.name, r.cont, nmsce.displayResultList, {
                     source: "server"
                 })
             }
@@ -4327,13 +4320,11 @@ class NMSCE {
                 if (r.field) {
                     nmsce.entries[r.name.nameToId()] = []
 
-                    let ref = bhs.fs.collectionGroup("nmsceCommon")
-                    ref = ref.orderBy(r.field, "desc")
-                    // if (r.created)
-                    //     ref = ref.orderBy("created", "desc")
-                    ref = ref.limit(r.limit)
 
-                    nmsce.getWithObserver(null, ref, r.name, r.cont, nmsce.displayResultList, {
+
+                    let qury = query(collectionGroup(bhs.fs, "nmsceCommon"), orderBy(r.field, "desc"), limit(r.limit))
+
+                    nmsce.getWithObserver(null, qury, r.name, r.cont, nmsce.displayResultList, {
                         source: "server"
                     })
                 }
@@ -4348,7 +4339,7 @@ class NMSCE {
         let loc = $("#displayPanels #list-" + type.nameToId())
 
         for (let e of entries) {
-            if (!k &&e.private && e.uid !== bhs.user.uid && !bhs.hasRole("nmsceEditor"))
+            if (!k && e.private && e.uid !== bhs.user.uid && !bhs.hasRole("nmsceEditor"))
                 continue
 
             // if (type === "Hall-of-Fame" && e.votes.hof < 1)
@@ -4397,14 +4388,14 @@ class NMSCE {
             let e = nmsce.last
             let id = $(evt).prop("id")
 
-            let ref = bhs.fs.doc("nmsce/" + e.galaxy + "/" + e.type + "/" + e.id)
+            let ref = doc(bhs.fs, "nmsce/" + e.galaxy + "/" + e.type + "/" + e.id)
 
             e = {}
 
             let vref = ref.collection("votes")
             vref = vref.doc(bhs.user.uid)
             let doc = await vref.get()
-            if (doc.exists) {
+            if (doc.exists()) {
                 e = doc.data()
                 v = typeof e[id] === "undefined" ? 1 : e[id] ? 0 : 1
             }
@@ -4452,8 +4443,7 @@ class NMSCE {
         let i = getIndex(nmsce.entries[type], "id", id)
         let e = nmsce.entries[type][i]
 
-        let ref = bhs.fs.doc("nmsce/" + e.galaxy + "/" + e.type + "/" + e.id)
-        ref.get().then(doc => {
+        getDoc(doc(bhs.fs, "nmsce/" + e.galaxy + "/" + e.type + "/" + e.id)).then(doc => {
             let e = doc.data()
             nmsce.last = e
             nmsce.displaySelected(e)
@@ -4480,8 +4470,7 @@ class NMSCE {
         nmsce.last = e
 
         if (bhs.user.uid) {
-            let ref = bhs.fs.doc("nmsce/" + e.galaxy + "/" + e.type + "/" + e.id + "/votes/" + bhs.user.uid)
-            ref.get().then(doc => {
+            getDoc(doc(bhs.fs, "nmsce/" + e.galaxy + "/" + e.type + "/" + e.id + "/votes/" + bhs.user.uid)).then(doc => {
                 nmsce.showVotes(doc.data())
             })
         }
@@ -4778,12 +4767,12 @@ class NMSCE {
             h = key
             itm = sortItem
         } else {
-            h = /etype/ [Symbol.replace](row, e.type.nameToId())
+            h = /etype/[Symbol.replace](row, e.type.nameToId())
             if (e.private)
-                h = /black/ [Symbol.replace](h, "black bkg-yellow")
-            h = /idname/ [Symbol.replace](h, e.id)
-            h = /eid/ [Symbol.replace](h, e.id)
-            h = /ethumb/ [Symbol.replace](h, thumbPath + e.Photo)
+                h = /black/[Symbol.replace](h, "black bkg-yellow")
+            h = /idname/[Symbol.replace](h, e.id)
+            h = /eid/[Symbol.replace](h, e.id)
+            h = /ethumb/[Symbol.replace](h, thumbPath + e.Photo)
         }
 
         if (type === "All" || type === "Search Results") {
@@ -4924,9 +4913,8 @@ class NMSCE {
         let e = nmsce.entries[type][i]
         nmsce.displaySingle(e)
 
-        let ref = bhs.fs.doc("nmsce/" + e.galaxy + "/" + e.type + "/" + e.id)
-        ref.get().then(doc => {
-            if (doc.exists)
+        getDoc(doc(bhs.fs, "nmsce/" + e.galaxy + "/" + e.type + "/" + e.id)).then(doc => {
+            if (doc.exists())
                 nmsce.displaySingle(doc.data())
         })
     }
@@ -5051,14 +5039,14 @@ function getPlanet(evt) {
         return
     }
 
-    let ref = bhs.fs.collectionGroup("nmsceCommon")
-    ref = ref.where("galaxy", "==", gal)
-    ref = ref.where("addr", "==", addr)
-    ref = ref.where("Planet-Index", "==", planet)
-    ref = ref.where("Planet-Name", "!=", "")
-    ref = ref.limit(1)
 
-    ref.get().then(snapshot => {
+    let q = query(collectionGroup(bhs.fs, "nmsceCommon"),
+        where("galaxy", "==", gal),
+        where("addr", "==", addr),
+        where("Planet-Index", "==", planet),
+        where("Planet-Name", "!=", ""), limit(1));
+
+    getDocs(q).then(snapshot => {
         if (!snapshot.empty) {
             let e = snapshot.docs[0].data()
 
@@ -5079,10 +5067,8 @@ function getEntry() {
     let gal = $("#btn-Galaxy").text().stripNumber()
 
     if (gal && type && addr && name) {
-        let ref = bhs.fs.collection("nmsce/" + gal + "/" + type)
-        ref = ref.where("Name", "==", name)
-        ref = ref.where("addr", "==", addr)
-        ref.get().then(snapshot => {
+        let q = query(collection(bhs.fs, "nmsce/" + gal + "/" + type), where("Name", "==", name), where("addr", "==", addr))
+        getDocs(q).then(snapshot => {
             if (!snapshot.empty) {
                 nmsce.displaySingle(snapshot.docs[0].data())
                 $("#typePanels .active #row-Name .fa-check").show()

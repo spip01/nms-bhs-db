@@ -1,5 +1,9 @@
 'use strict';
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"
+import { getAuth, getRedirectResult, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"
+import { getFirestore, Timestamp, enableIndexedDbPersistence, collection } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
+import { getStorage } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-functions.js"
 import { buildGalaxyInfo, fcedata, findex, fnmsce, fsearch, ftotals, mergeObjects } from "./commonNms.js";
 import { platformList } from "./constants.js";
 
@@ -71,26 +75,49 @@ export class blackHoleSuns {
     fbauth = null;
     fs = null;
     fbstorage = null;
+    app = null;
     
+    init() {
+        buildGalaxyInfo()
+        bhs.user = bhs.userInit()
+    }
+
+    userInit() {
+        let user = {}
+        user.uid = null
+        user.role = "user"
+        user._name = ""
+        user.platform = ""
+        user.galaxy = ""
+        user.assigned = false
+        user.org = ""
+
+        return user
+    }
+
     initFirebase() {
         try {
-            firebase.initializeApp(fbconfig)
+            this.app = initializeApp(fbconfig)
         } catch (err) {
             if (!/already exists/.test(err.message))
                 console.error("Firebase initialization error raised", err.stack)
         }
     
-        bhs.fbauth = firebase.auth()
-        bhs.fs = firebase.firestore()
-        bhs.fbstorage = firebase.storage()
+        bhs.fbauth = getAuth(this.app)
+        bhs.fs = getFirestore(this.app)
+        bhs.fbstorage = getStorage(this.app)
         // bhs.fs.settings({
         //     cacheSizeBytes: 1024 * 1024
         // })
-        bhs.fs.enablePersistence({
+
+        enableIndexedDbPersistence(bhs.fs);
+        /*
+        {
             synchronizeTabs: true
-        })
+        }
+        */
     
-        firebase.auth().getRedirectResult().then(result => {
+        getRedirectResult().then(result => {
             if (result.credential) {
                 var token = result.credential.accessToken
             }
@@ -119,15 +146,15 @@ export class blackHoleSuns {
         })
     
         $("#lgoogle").click(() => {
-            var provider = new firebase.auth.GoogleAuthProvider()
+            var provider = new GoogleAuthProvider()
             provider.addScope('profile')
             provider.addScope('email')
-            firebase.auth().signInWithRedirect(provider)
+            getAuth().signInWithRedirect(provider)
         })
     
         $("#lgithub").click(() => {
-            var provider = new firebase.auth.GithubAuthProvider()
-            firebase.auth().signInWithRedirect(provider)
+            var provider = new GithubAuthProvider()
+            getAuth().signInWithRedirect(provider)
         })
     
         $("#ltwitch").click(() => {})
@@ -155,14 +182,14 @@ export class blackHoleSuns {
             let ref = bhs.getUsersColRef(usr.uid)
             try {
                 let doc = await ref.get()
-                if (doc.exists)
+                if (doc.exists())
                     user = doc.data()
                 else {
-                    user.firsttime = firebase.firestore.Timestamp.now()
+                    user.firsttime = Timestamp.now()
                     user.page = window.location.pathname
                 }
             } catch {
-                user.firsttime = firebase.firestore.Timestamp.now()
+                user.firsttime = Timestamp.now()
                 user.page = window.location.pathname
             }
     
@@ -171,10 +198,10 @@ export class blackHoleSuns {
                 user.displayName = usr.displayName
     
             user.role = "user"
-            user.lasttime = firebase.firestore.Timestamp.now()
+            user.lasttime = Timestamp.now()
             bhs.updateUser(user)
     
-            // let ref = bhs.fs.collection("users").where("_name", "==", "KurganSPK")
+            // let ref = collection("users").where("_name", "==", "KurganSPK")
             // let snapshot = await ref.get()
             // if (!snapshot.empty) {
             //     user = snapshot.docs[0].data()
@@ -188,24 +215,6 @@ export class blackHoleSuns {
             bhs.user = bhs.userInit()
             bhs.doLoggedout()
         }
-    }
-    
-    init() {
-        buildGalaxyInfo()
-        bhs.user = bhs.userInit()
-    }
-    
-    userInit() {
-        let user = {}
-        user.uid = null
-        user.role = "user"
-        user._name = ""
-        user.platform = ""
-        user.galaxy = ""
-        user.assigned = false
-        user.org = ""
-    
-        return user
     }
     
     navLoggedin() {
@@ -264,7 +273,7 @@ export class blackHoleSuns {
             return
         }
     
-        var userExists = firebase.functions().httpsCallable('userExists')
+        var userExists = httpsCallable('userExists');
         return userExists({
             name: user._name
         }).then(async result => {
@@ -289,7 +298,7 @@ export class blackHoleSuns {
         const pnlBottom = 1
     
         return ref.get().then(async doc => {
-            if (doc.exists) {
+            if (doc.exists()) {
                 let d = doc.data()
                 let e = null
     
@@ -427,10 +436,10 @@ export class blackHoleSuns {
     }
     
     async updateEntry(entry) {
-        entry.modded = firebase.firestore.Timestamp.now()
+        entry.modded = Timestamp.now()
     
         if (typeof entry.created === "undefined")
-            entry.created = firebase.firestore.Timestamp.now()
+            entry.created = Timestamp.now()
     
         let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
         await ref.set(entry, {
@@ -457,7 +466,7 @@ export class blackHoleSuns {
     }
     
     async updateBase(entry) {
-        entry.time = firebase.firestore.Timestamp.now()
+        entry.time = Timestamp.now()
     
         let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr)
         await ref.set(entry, {
@@ -570,11 +579,11 @@ export class blackHoleSuns {
     
     getActiveContest(displayFcn) {
         bhs.contest = null
-        return
+        return;
     
         let now = (new Date()).getTime()
     
-        let ref = bhs.fs.collection("contest")
+        let ref = collection(bhs.fs, "contest")
         ref = ref.orderBy("start")
         ref.get().then(snapshot => {
             for (let i = 0; i < snapshot.size; ++i) {
@@ -595,7 +604,7 @@ export class blackHoleSuns {
     hideContest() {
         let now = (new Date()).getTime()
     
-        let ref = bhs.fs.collection("contest")
+        let ref = collection(bhs.fs, "contest")
         ref = ref.orderBy("start")
         ref.get().then(snapshot => {
             for (let i = 0; i < snapshot.size; ++i) {
@@ -615,7 +624,7 @@ export class blackHoleSuns {
     }
     
     async updateDARC() {
-        var updateDARC = firebase.functions().httpsCallable('updateDARC')
+        var updateDARC = httpsCallable('updateDARC')
         updateDARC()
             .then(result => {
                 console.log(result.data)
@@ -627,7 +636,7 @@ export class blackHoleSuns {
     }
     
     async genDARC() {
-        var genDARC = firebase.functions().httpsCallable('genDARC')
+        var genDARC = httpsCallable('genDARC')
         genDARC()
             .then(result => {
                 console.log(result.data)
@@ -639,7 +648,7 @@ export class blackHoleSuns {
     }
     
     async backupBHS() {
-        var backupBHS = firebase.functions().httpsCallable('backupBHS')
+        var backupBHS = httpsCallable('backupBHS')
         backupBHS()
             .then(result => {
                 console.log(result.data)
@@ -651,7 +660,7 @@ export class blackHoleSuns {
     }
     
     genPOI() {
-        var fcn = firebase.functions().httpsCallable('genPOI')
+        var fcn = httpsCallable('genPOI')
         return fcn().then(res => {
                 console.log(JSON.stringify(res))
             })
@@ -661,7 +670,7 @@ export class blackHoleSuns {
     }
     
     recalcTotals() {
-        var recalcTotals = firebase.functions().httpsCallable('recalcTotals')
+        var recalcTotals = httpsCallable('recalcTotals')
         recalcTotals()
             .then(result => {
                 console.log(result.data)
@@ -708,13 +717,13 @@ export class blackHoleSuns {
             if (findex && bhs.user.settings) {
                 if (bhs.user.settings.start) {
                     complete = false
-                    let start = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.start))
+                    let start = Timestamp.fromDate(new Date(bhs.user.settings.start))
                     bhref = bhref.where("created", ">=", start)
                 }
     
                 if (bhs.user.settings.end) {
                     complete = false
-                    let end = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.end))
+                    let end = Timestamp.fromDate(new Date(bhs.user.settings.end))
                     bhref = bhref.where("created", "<=", end)
                 }
             }
@@ -745,7 +754,7 @@ export class blackHoleSuns {
             displayFcn(bhs.entries)
     
         if (singleDispFcn) {
-            ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()))
+            ref = ref.where("modded", ">", Timestamp.fromDate(new Date()))
             bhs.subscribe("entries", ref, singleDispFcn)
         }
     }
@@ -754,7 +763,7 @@ export class blackHoleSuns {
         if (singleDispFcn) {
             let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform)
             ref = ref.where("uid", "==", bhs.user.uid)
-            ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()))
+            ref = ref.where("modded", ">", Timestamp.fromDate(new Date()))
             bhs.subscribe("entries", ref, singleDispFcn)
         }
     }
@@ -810,12 +819,12 @@ export class blackHoleSuns {
         ref = ref.where("uid", "==", bhs.user.uid)
     
         if (findex && bhs.user.settings.start) {
-            let start = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.start))
+            let start = Timestamp.fromDate(new Date(bhs.user.settings.start))
             ref = ref.where("created", ">=", start)
         }
     
         if (findex && bhs.user.settings.end) {
-            let end = firebase.firestore.Timestamp.fromDate(new Date(bhs.user.settings.end))
+            let end = Timestamp.fromDate(new Date(bhs.user.settings.end))
             ref = ref.where("created", "<=", end)
         }
     
@@ -832,7 +841,7 @@ export class blackHoleSuns {
     getBasesSub(singleDispFcn) {
         if (singleDispFcn) {
             let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform)
-            ref = ref.where("modded", ">", firebase.firestore.Timestamp.fromDate(new Date()))
+            ref = ref.where("modded", ">", Timestamp.fromDate(new Date()))
             ref = ref.where("uid", "==", bhs.user.uid)
             bhs.subscribe("bases", ref, singleDispFcn)
         }
@@ -873,7 +882,7 @@ export class blackHoleSuns {
     getOrgList(nohide) {
         bhs.orgList = []
     
-        let ref = bhs.fs.collection("org")
+        let ref = collection(bhs.fs, "org")
         return ref.get().then(snapshot => {
             for (let doc of snapshot.docs) {
                 let d = doc.data()
@@ -895,7 +904,7 @@ export class blackHoleSuns {
     getPoiList(nohide) {
         bhs.poiList = []
     
-        let ref = bhs.fs.collection("poi")
+        let ref = collection(bhs.fs, "poi")
         return ref.get().then(snapshot => {
             for (let doc of snapshot.docs) {
                 let d = doc.data()
@@ -915,10 +924,9 @@ export class blackHoleSuns {
     }
     
     async getUserList(addBlank) {
-        let ref = bhs.fs.doc("bhs/Players")
-        return await ref.get().then(doc => {
+        return await getDoc(doc(bhs.fs, "bhs/Players")).then(doc => {
             bhs.usersList = []
-            if (doc.exists) {
+            if (doc.exists()) {
                 let d = doc.data()
     
                 for (let u of Object.keys(d)) {
@@ -949,7 +957,7 @@ export class blackHoleSuns {
         if (fsearch)
             return
     
-        var t = firebase.functions().httpsCallable('getTotals')
+        var t = httpsCallable('getTotals')
     
         if (ftotals)
             t({
@@ -973,14 +981,14 @@ export class blackHoleSuns {
                 dispHtml(result.data.html, "Organizations")
             })
     
-        let ref = bhs.fs.doc("bhs/Totals")
+        let ref = doc(bhs.fs, "bhs/Totals")
         bhs.subscribe("tot-totals", ref, displayFcn)
     
-        ref = bhs.fs.doc("bhs/Organizations")
+        ref = doc(bhs.fs, "bhs/Organizations")
         bhs.subscribe("tot-orgs", ref, displayFcn)
     
         if (findex) {
-            ref = bhs.fs.doc("bhs/Players")
+            ref = doc(bhs.fs, "bhs/Players")
             bhs.subscribe("tot-players", ref, displayFcn)
         }
     }
@@ -988,9 +996,9 @@ export class blackHoleSuns {
     subscribe(what, ref, displayFcn) {
         if (displayFcn) {
             bhs.unsubscribe(what)
-            bhs.unsub[what] = ref.onSnapshot(snapshot => {
+            bhs.unsub[what] = onSnapshot(ref, snapshot => {
                 if (typeof snapshot.exists !== "undefined") {
-                    if (snapshot.exists)
+                    if (snapshot.exists())
                         displayFcn(snapshot.data(), snapshot.ref.path)
                 } else
                     snapshot.docChanges().forEach(change => {
@@ -1014,7 +1022,7 @@ export class blackHoleSuns {
     }
     
     getUsersColRef(uid, galaxy, platform, addr) {
-        let ref = bhs.fs.collection(usersCol)
+        let ref = collection(bhs.fs, usersCol)
         if (uid) {
             ref = ref.doc(uid)
             if (galaxy) {
@@ -1032,7 +1040,7 @@ export class blackHoleSuns {
     }
     
     getStarsColRef(galaxy, platform, addr) {
-        let ref = bhs.fs.collection(starsCol)
+        let ref = collection(bhs.fs, starsCol)
         if (galaxy) {
             ref = ref.doc(galaxy)
             if (platform) {

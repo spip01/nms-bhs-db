@@ -52,7 +52,7 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
     bhs.getUser(bhs.displayUser);
 
     if (findex || fdarc) {
-        let ref = bhs.fs.doc("admin/state");
+        let ref = doc(bhs.fs, "admin/state");
         bhs.subscribe("admin-state", ref, bhs.showError);
     }
 
@@ -64,10 +64,9 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
         $("#row-savesearch").show();
     }
 
-    let ref = bhs.fs.doc("admin/" + bhs.user.uid);
-    ref.get()
+    getDoc(doc(bhs.fs, "admin/" + bhs.user.uid))
         .then((doc) => {
-            if (doc.exists) {
+            if (doc.exists()) {
                 bhs.roles = doc.data().roles;
 
                 if (bhs.roles.includes("nmsceEditor")) {
@@ -113,10 +112,9 @@ blackHoleSuns.prototype.doLoggedin = function (user) {
             console.log(err);
         });
 
-    ref = bhs.fs.doc("bhs/patreon/contributors/" + bhs.user.uid);
-    ref.get()
+    getDoc(doc(bhs.fs, "bhs/patreon/contributors/" + bhs.user.uid))
         .then((doc) => {
-            if (doc.exists) {
+            if (doc.exists()) {
                 bhs.patreon = doc.data().tier;
                 if (bhs.patreon >= 1) $("#patron").show();
 
@@ -154,10 +152,9 @@ blackHoleSuns.prototype.isRole = function (role) {
 };
 
 blackHoleSuns.prototype.setError = function () {
-    let ref = bhs.fs.doc("admin/state");
-    ref.get().then((doc) => {
+    getDoc(doc(bhs.fs, "admin/state")).then((doc) => {
         let e = doc.data();
-        if (doc.exists) e.errorMode = !e.errorMode;
+        if (doc.exists()) e.errorMode = !e.errorMode;
         else {
             e = {};
             e.errorMode = true;

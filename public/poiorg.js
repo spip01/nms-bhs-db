@@ -280,7 +280,7 @@ blackHoleSuns.prototype.save = async function (evt) {
             })
     }
 
-    let ref = bhs.fs.collection(pnlid == "pnl-org" ? "org" : "poi")
+    let ref = collection(bhs.fs, pnlid == "pnl-org" ? "org" : "poi")
     if (idx != -1)
         ref = ref.doc(list[idx].id)
     else {

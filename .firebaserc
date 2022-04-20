@@ -28,7 +28,6 @@
     }
   },
   "projects": {
-    "localtest": "test-9f58f",
     "bhs": "nms-bhs",
     "test": "test-nms-bhs",
     "nmsce": "nmsce.app"
