@@ -1,6 +1,6 @@
 'use strict'
 
-import { Timestamp, collection, collectionGroup, query, where, orderBy, startAfter, limit, doc, getDoc, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
+import { Timestamp, collection, collectionGroup, query, where, orderBy, increment, arrayUnion, startAfter, limit, doc, getDoc, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"
 import { bhs, blackHoleSuns, startUp } from "./commonFb.js";
 import { addGlyphButtons, addrToGlyph, fcedata, fnmsce, fpreview, getIndex, mergeObjects, reformatAddress } from "./commonNms.js";
@@ -1926,7 +1926,7 @@ class NMSCE {
             let pnl = $(evt).closest("[id|='pnl']").prop("id").stripID()
 
             setDoc(doc(bhs.fs, "tags/" + pnl), {
-                tags: firebase.firestore.FieldValue.arrayUnion(text)
+                tags: arrayUnion(text)
             }, {
                 merge: true
             })
@@ -3832,7 +3832,7 @@ class NMSCE {
 
     incrementTotals(e, val) {
         let t = {}
-        t[e.type] = firebase.firestore.FieldValue.increment(val)
+        t[e.type] = increment(val)
 
         let ref = bhs.getUsersColRef(bhs.user.uid)
         ref.set({
@@ -4418,7 +4418,7 @@ class NMSCE {
             nmsce.showVotes(e)
 
             e = {}
-            e[id] = firebase.firestore.FieldValue.increment(v ? 1 : -1)
+            e[id] = increment(v ? 1 : -1)
 
             setDoc(ref, {
                 votes: e
