@@ -24,7 +24,7 @@ $(document).ready(() => {
 
     $("#delete").click(async () => {
         $("#status").empty()
-        let b = bhs.fs.batch()
+        let b = writeBatch(bhs.fs)
 
         bhs.deleteEntry(bhs.last[pnlTop], b)
         if (bhs.last[pnlTop].basename)

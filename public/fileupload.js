@@ -1,5 +1,5 @@
 'use strict'
-import { Timestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
+import { Timestamp, writeBatch } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { bhs, blackHoleSuns } from "./commonFb.js"
 import { mergeObjects, reformatAddress } from "./commonNms.js"
 import { conflictList, economyList, galaxyList, lifeformList, ownershipList, platformList } from "./constants.js"
@@ -183,7 +183,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
         if (!check)
             uploadBytes(ref(bhs.fbstorage, log.path), file)
 
-        batch = bhs.fs.batch()
+        batch = writeBatch(bhs.fs)
         count = 0
 
         let allrows = reader.result.split(/\r?\n|\r/)
@@ -475,7 +475,7 @@ blackHoleSuns.prototype.fCheckBatchSize = async function (flush) {
     if (flush && count > 0 || ++count > 500) {
         return await batch.commit().then(() => {
             bhs.filestatus("Commited " + count, 1)
-            batch = bhs.fs.batch()
+            batch = writeBatch(bhs.fs)
             count = 0
             return true
         }).catch(err => {
