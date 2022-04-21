@@ -49,7 +49,7 @@ $(document).ready(() => {
 
         if (fcedata) {
             nmsce.buildImageText()
-            tmImage.load("/bin/model.json", "/bin/metadata.json").then(model => nmsce.model = model)
+            tmImage.load("/bin/model.json", "/bin/metadata.json").then(model => this.model = model)
             nmsce.buildDisplayList()
         }
     }
@@ -88,9 +88,9 @@ $(document).ready(() => {
         // getDocs(collection(bhs.fs, "nmsce/" + passed.g + "/" + passed.t + "/" + passed.i)).then(doc => {
         //     if (doc.exists) {
         //         if (fnmsce || fpreview)
-        //             nmsce.displaySelected(doc.data())
+        //             this.displaySelected(doc.data())
         //         else if (fcedata)
-        //             nmsce.displaySingle(doc.data())
+        //             this.displaySingle(doc.data())
         //     }
         // })
     }
@@ -147,8 +147,8 @@ const tTags = `
         <div id="id-idname" class="col-lg-2 col-4"></div>
         <div id="add-idname" class="col row hidden">
             <input id="txt-idname" type="text" class="col-7"></input>
-            <button id="add-idname" type="text" class="col-2 btn btn-def btn-sm" onclick="nmsce.newTag(this)">Add</button>
-            <button id="cancel-idname" type="text" class="col-3 btn btn-def btn-sm" onclick="nmsce.cancelTag(this)">Cancel</button>
+            <button id="add-idname" type="text" class="col-2 btn btn-def btn-sm" onclick="this.newTag(this)">Add</button>
+            <button id="cancel-idname" type="text" class="col-3 btn btn-def btn-sm" onclick="this.cancelTag(this)">Cancel</button>
         </div>
         <div class="col border">
             <div id="list-idname" class="row"></div>
@@ -168,7 +168,7 @@ const tRadio = `
     </div>`;
 const tRadioItem = `
     <label class="col txt-label-def">
-        <input type="radio" class="radio h6" id="rdo-tname" data-last=false onclick="nmsce.toggleRadio(this)">
+        <input type="radio" class="radio h6" id="rdo-tname" data-last=false onclick="this.toggleRadio(this)">
         &nbsp;titlettip
     </label>`;
 const tCkItem = `
@@ -182,12 +182,12 @@ const tImg = `
     <div id="row-idname" data-req="ifreq" data-type="img" class="row">
         <div class="col-lg-2 col-4 txt-label-def">titlettip&nbsp;</div>
         <input id="id-idname" type="file" class="col form-control form-control-sm" 
-            accept="image/*" name="files[]"  data-type="img" onchange="nmsce.loadScreenshot(this)">&nbsp
+            accept="image/*" name="files[]"  data-type="img" onchange="this.loadScreenshot(this)">&nbsp
     </div>`;
 
 const resultsItem = `
     <div id="row-idname" class="col-lg-p250 col-md-p333 col-sm-7 col-14 pointer bkg-white txt-label-def border rounded h6"
-        onclick="nmsce.selectResult(this)" style="pad-bottom:3px">
+        onclick="this.selectResult(this)" style="pad-bottom:3px">
         galaxy<br>
         byname<br>
         date<br>
@@ -250,7 +250,7 @@ class NMSCE {
         addRadioList($("#id-Lifeform"), "Lifeform", lifeformList)
         addRadioList($("#id-Platform"), "Platform", platformListAll)
 
-        bhs.buildMenu($("#panels"), "Galaxy", galaxyList, nmsce.setGalaxy, {
+        bhs.buildMenu($("#panels"), "Galaxy", galaxyList, this.setGalaxy, {
             tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
             required: true,
             labelsize: "col-md-6 col-4",
@@ -279,7 +279,7 @@ class NMSCE {
             // })
         }
 
-        addGlyphButtons($("#glyphbuttons"), nmsce.addGlyph)
+        addGlyphButtons($("#glyphbuttons"), this.addGlyph)
 
         if (fcedata) {
             let rloc = $("#panels")
@@ -294,29 +294,29 @@ class NMSCE {
                 event.offsetX = event.targetTouches[0].pageX - img.offset().left
                 event.offsetY = event.targetTouches[0].pageY - img.offset().top
 
-                nmsce.imageMouseDown(e)
+                this.imageMouseDown(e)
             })
             img.on("touchmove", e => {
                 event.offsetX = event.targetTouches[0].pageX - img.offset().left
                 event.offsetY = event.targetTouches[0].pageY - img.offset().top
 
-                nmsce.imageMouseMove(e)
+                this.imageMouseMove(e)
             })
             img.on("touchend", e => {
-                nmsce.imageMouseUp(e)
+                this.imageMouseUp(e)
             })
             img.mouseout(e => {
-                nmsce.imageMouseOut(e)
+                this.imageMouseOut(e)
             })
             img.mousedown(e => {
                 lastDownTarget = canvas
-                nmsce.imageMouseDown(e)
+                this.imageMouseDown(e)
             })
             img.mousemove(e => {
-                nmsce.imageMouseMove(e)
+                this.imageMouseMove(e)
             })
             img.mouseup(e => {
-                nmsce.imageMouseUp(e)
+                this.imageMouseUp(e)
             })
 
             document.addEventListener('mousedown', function (e) {
@@ -325,7 +325,7 @@ class NMSCE {
 
             document.addEventListener('keydown', function (e) {
                 if (lastDownTarget == canvas)
-                    nmsce.imageKeypress(e)
+                    this.imageKeypress(e)
             }, true)
         }
     }
@@ -335,7 +335,7 @@ class NMSCE {
             galaxy: $(evt).text().stripNumber()
         })
 
-        nmsce.getEntries(true)
+        this.getEntries(true)
     }
 
     setGlyphInput(evt) {
@@ -366,7 +366,7 @@ class NMSCE {
         loc.val(a)
 
         if (a.length === 12)
-            nmsce.changeAddr(loc)
+            this.changeAddr(loc)
     }
 
     changeAddr(evt, a) {
@@ -383,8 +383,8 @@ class NMSCE {
             addr = reformatAddress(addr)
             let pnl = $("#panels")
 
-            nmsce.dispAddr(pnl, addr)
-            nmsce.restoreImageText(null, true)
+            this.dispAddr(pnl, addr)
+            this.restoreImageText(null, true)
 
             if (!fnmsce) {
                 $("#foundreg").hide()
@@ -392,9 +392,9 @@ class NMSCE {
                 $("[data-type='string'] .fa-check").hide()
                 getPlanet(idx.first())
 
-                bhs.getEntry(addr, nmsce.displaySystem, null, null, true).then(entry => {
+                bhs.getEntry(addr, this.displaySystem, null, null, true).then(entry => {
                     if (!entry) {
-                        if (nmsce.lastsys && nmsce.lastsys.sys === $("#id-sys").val()) {
+                        if (this.lastsys && this.lastsys.sys === $("#id-sys").val()) {
                             $("#id-sys").val("")
                             $("#id-reg").val("")
                             $("#id-Economy [type='radio']").prop("checked", false)
@@ -403,9 +403,9 @@ class NMSCE {
                     }
 
                     if (!entry || !entry.reg)
-                        bhs.getEntryByRegionAddr(addr, nmsce.displayRegion)
+                        bhs.getEntryByRegionAddr(addr, this.displayRegion)
 
-                    nmsce.lastsys = entry
+                    this.lastsys = entry
                 })
             }
         }
@@ -447,7 +447,7 @@ class NMSCE {
 
         $("#btn-Galaxy").text(entry.galaxy)
 
-        nmsce.dispAddr(loc, entry.addr)
+        this.dispAddr(loc, entry.addr)
 
         loc.find("#id-sys").val(entry.sys)
         loc.find("#id-reg").val(entry.reg)
@@ -508,10 +508,10 @@ class NMSCE {
 
     displayUser() {
         if (bhs.user.uid && fcedata) {
-            nmsce.restoreImageText(bhs.user.imageText)
+            this.restoreImageText(bhs.user.imageText)
 
-            if (typeof nmsce.entries === "undefined")
-                nmsce.getEntries()
+            if (typeof this.entries === "undefined")
+                this.getEntries()
 
             let loc = $("#id-table")
             let t = 0
@@ -533,11 +533,11 @@ class NMSCE {
             if (!bhs.user.galaxy)
                 bhs.user.galaxy = "Euclid"
 
-            if (bhs.user.uid && typeof nmsce.entries["My Favorites"] === "undefined")
-                nmsce.getResultsLists("My Favorites")
+            if (bhs.user.uid && typeof this.entries["My Favorites"] === "undefined")
+                this.getResultsLists("My Favorites")
         }
 
-        nmsce.expandPanels(fcedata || (bhs.user.nmscesettings && bhs.user.nmscesettings.expandPanels))
+        this.expandPanels(fcedata || (bhs.user.nmscesettings && bhs.user.nmscesettings.expandPanels))
 
         let loc = $("#row-playerInput")
         if (fcedata)
@@ -557,7 +557,7 @@ class NMSCE {
 
         $("#searchlocaltt").hide()
 
-        nmsce.getSearches()
+        this.getSearches()
     }
 
     clearPanel(all) {
@@ -648,7 +648,7 @@ class NMSCE {
             $(loc).find("#list-" + id).empty()
         }
 
-        nmsce.last = null
+        this.last = null
 
         let tab = $("#typeTabs .active").prop("id").stripID()
         if (tab === "Freighter")
@@ -681,7 +681,7 @@ class NMSCE {
 
         let loc = $("#panels")
 
-        let last = nmsce.lastsys ? nmsce.lastsys : nmsce.last
+        let last = this.lastsys ? this.lastsys : this.last
 
         if (last) {
             entry._name = last._name
@@ -736,18 +736,18 @@ class NMSCE {
     }
 
     extractEntry() {
-        let entry = nmsce.extractSystem()
+        let entry = this.extractSystem()
         let ok = entry !== null
 
         if (ok) {
             delete entry.created
 
-            if (nmsce.last) {
-                entry.created = nmsce.last.created
-                entry.id = nmsce.last.id
-                entry.Photo = nmsce.last.Photo
-                entry._name = nmsce.last._name
-                entry.uid = nmsce.last.uid
+            if (this.last) {
+                entry.created = this.last.created
+                entry.id = this.last.id
+                entry.Photo = this.last.Photo
+                entry._name = this.last._name
+                entry.uid = this.last.uid
             } else {
                 entry._name = bhs.user._name
                 entry.uid = bhs.user.uid
@@ -862,22 +862,22 @@ class NMSCE {
             entry.redditlink = $("#redditlink").val()
             entry.imageText = bhs.user.imageText
 
-            if (!nmsce.last || nmsce.last.uid === bhs.user.uid || bhs.isRole("admin")) {
-                if (typeof nmsce.entries === "undefined")
-                    nmsce.entries = []
+            if (!this.last || this.last.uid === bhs.user.uid || bhs.isRole("admin")) {
+                if (typeof this.entries === "undefined")
+                    this.entries = []
 
-                nmsce.initVotes(entry)
+                this.initVotes(entry)
 
                 if (typeof entry.id === "undefined")
                     entry.id = uuidv4()
 
-                nmsce.entries[entry.type].push(entry)
-                nmsce.displayListEntry(entry, true)
+                this.entries[entry.type].push(entry)
+                this.displayListEntry(entry, true)
 
-                if (!(ok = nmsce.updateScreenshot(entry)))
+                if (!(ok = this.updateScreenshot(entry)))
                     bhs.status("Error: Photo required.")
                 else {
-                    nmsce.updateEntry(entry)
+                    this.updateEntry(entry)
 
                     bhs.status(entry.type + " " + entry.Name + " validated, saving...")
                     $("#imgtable").hide()
@@ -895,8 +895,8 @@ class NMSCE {
         if (!entry || !entry.type)
             return
 
-        nmsce.clearPanel(true)
-        nmsce.last = entry
+        this.clearPanel(true)
+        this.last = entry
 
         if (!noscroll)
             $('html, body').animate({
@@ -919,10 +919,10 @@ class NMSCE {
         } else if (typeof entry.Economy === "number")
             entry.Economy = "T" + entry.Economy
 
-        nmsce.displaySystem(entry)
-        nmsce.changeAddr(null, entry.addr)
+        this.displaySystem(entry)
+        this.changeAddr(null, entry.addr)
 
-        let link = "https://nmsce.com/preview.html?i=" + entry.id + "&g=" + entry.galaxy.nameToId() + "&t=" + entry.type.nameToId()
+        let link = "https://this.com/preview.html?i=" + entry.id + "&g=" + entry.galaxy.nameToId() + "&t=" + entry.type.nameToId()
         $("[id|='permalink']").attr("href", link)
         $("[id|='permalink']").on('dragstart', false)
 
@@ -990,14 +990,14 @@ class NMSCE {
             for (let i of list) {
                 let loc = map.find("#map-" + i)
                 if (loc.length > 0)
-                    nmsce.selectMap(loc, true)
+                    this.selectMap(loc, true)
             }
         }
 
         if (entry.imageText)
-            nmsce.imageText = mergeObjects(nmsce.imageText, entry.imageText)
+            this.imageText = mergeObjects(this.imageText, entry.imageText)
 
-        nmsce.loadScreenshot(null, entry.Photo)
+        this.loadScreenshot(null, entry.Photo)
 
         $("#redditlink").val(entry.redditlink ? entry.redditlink : "")
 
@@ -1019,7 +1019,7 @@ class NMSCE {
     }
 
     displaySearch(search) {
-        nmsce.clearPanel(true)
+        this.clearPanel(true)
 
         $("#btn-Galaxy").text(search.galaxy)
         $("#ck-notify").prop("checked", search.notify)
@@ -1062,7 +1062,7 @@ class NMSCE {
                     map = map.find("#row-" + itm.name)
 
                     for (let i of list)
-                        nmsce.selectMap(map.find("#map-" + i), true)
+                        this.selectMap(map.find("#map-" + i), true)
                     break
             }
         }
@@ -1133,7 +1133,7 @@ class NMSCE {
 
     search(search) {
         if (!search) {
-            search = nmsce.extractSearch()
+            search = this.extractSearch()
 
             if (!search) {
                 bhs.status("Nothing selected for search.", true)
@@ -1145,20 +1145,20 @@ class NMSCE {
             $("#dltab-Search-Results").click()
 
             if (fnmsce)
-                nmsce.displayResultList(list, type)
+                this.displayResultList(list, type)
             else
-                nmsce.displayList(list, type)
+                this.displayList(list, type)
         }
 
         $("#list-Search-Results").empty()
         $("#dltab-Search-Results").show()
-        nmsce.entries["Search-Results"] = []
+        this.entries["Search-Results"] = []
 
-        nmsce.executeSearch(search, "Search Results", display)
+        this.executeSearch(search, "Search Results", display)
     }
 
     saveSearch() {
-        let search = nmsce.extractSearch()
+        let search = this.extractSearch()
         if (!search)
             return
 
@@ -1196,15 +1196,15 @@ class NMSCE {
             }
 
             let i = -1
-            if (nmsce.searchlist)
-                i = getIndex(nmsce.searchlist, "name", search.name)
+            if (this.searchlist)
+                i = getIndex(this.searchlist, "name", search.name)
             else
-                nmsce.searchlist = []
+                this.searchlist = []
 
             if (i !== -1)
-                nmsce.searchlist[i] = search
+                this.searchlist[i] = search
             else {
-                nmsce.searchlist.push(search)
+                this.searchlist.push(search)
 
                 let loc = $("#menu-Saved")
                 if (loc.find("#list").length > 0) {
@@ -1220,9 +1220,9 @@ class NMSCE {
                     let lloc = loc.find("#list")
                     lloc.append(h)
                     loc = loc.find("#item-" + search.name.nameToId())
-                    bhs.bindMenuChange(loc, nmsce.executeSaved)
+                    bhs.bindMenuChange(loc, this.executeSaved)
                 } else
-                    bhs.buildMenu($("#entrybuttons"), "Saved", nmsce.searchlist, nmsce.executeSaved, {
+                    bhs.buildMenu($("#entrybuttons"), "Saved", this.searchlist, this.executeSaved, {
                         sort: true,
                         labelsize: "col-2",
                         menusize: "col"
@@ -1240,14 +1240,14 @@ class NMSCE {
                 return
             }
 
-            let i = getIndex(nmsce.searchlist, "name", name)
+            let i = getIndex(this.searchlist, "name", name)
 
             if (i !== -1) {
 
                 deleteDoc(doc(bhs.fs, "users/" + bhs.user.uid + "/nmsce-saved-searches/" + name.nameToId())).then(() => {
                     bhs.status(name + " search deleted.")
 
-                    nmsce.searchlist.splice(i, 1)
+                    this.searchlist.splice(i, 1)
                     let loc = $("#menu-Saved #item-" + name.nameToId())
                     loc.remove()
                 })
@@ -1265,14 +1265,14 @@ class NMSCE {
         ref = query(ref, where("uid", "==", bhs.user.uid))
 
         getDocs(ref).then(snapshot => {
-            nmsce.searchlist = []
+            this.searchlist = []
             for (let doc of snapshot.docs) {
                 let s = doc.data()
-                nmsce.searchlist.push(s)
+                this.searchlist.push(s)
             }
 
-            if (nmsce.searchlist.length > 0)
-                bhs.buildMenu($("#entrybuttons"), "Saved", nmsce.searchlist, nmsce.executeSaved, {
+            if (this.searchlist.length > 0)
+                bhs.buildMenu($("#entrybuttons"), "Saved", this.searchlist, this.executeSaved, {
                     sort: true
                 })
         }).catch(err => console.log(err.message))
@@ -1280,11 +1280,11 @@ class NMSCE {
 
     executeSaved(evt) {
         let name = $(evt).text().stripMarginWS()
-        let i = getIndex(nmsce.searchlist, "name", name)
+        let i = getIndex(this.searchlist, "name", name)
 
         if (i !== -1) {
-            nmsce.displaySearch(nmsce.searchlist[i])
-            nmsce.search(nmsce.searchlist[i])
+            this.displaySearch(this.searchlist[i])
+            this.search(this.searchlist[i])
         }
     }
 
@@ -1295,8 +1295,8 @@ class NMSCE {
             if (s) {
                 s = JSON.parse(s)
 
-                nmsce.displaySearch(s)
-                nmsce.search(s)
+                this.displaySearch(s)
+                this.search(s)
             }
         }
     }
@@ -1497,18 +1497,18 @@ class NMSCE {
     }
 
     openSearch() {
-        window.open("nmsce.html?s=" + nmsce.last.addr.nameToId() + "&g=" + nmsce.last.galaxy.nameToId(), '_self')
+        window.open("this.html?s=" + this.last.addr.nameToId() + "&g=" + this.last.galaxy.nameToId(), '_self')
     }
 
     searchSystem(k) {
-        if (!nmsce.last)
+        if (!this.last)
             return
 
-        nmsce.entries["Search-Results"] = []
+        this.entries["Search-Results"] = []
 
         let ref = query(collectionGroup(bhs.fs, "nmsceCommon"),
-                        where("galaxy", "==", nmsce.last.galaxy),
-                        where("addr", "==", nmsce.last.addr))
+                        where("galaxy", "==", this.last.galaxy),
+                        where("addr", "==", this.last.addr))
 
         getDocs(ref).then(snapshot => {
             let list = []
@@ -1517,20 +1517,20 @@ class NMSCE {
 
             $("#dltab-Search-Results").click()
             $("#displayPanels #list-Search-Results").empty()
-            nmsce.displayResultList(list, "Search-Results", k)
+            this.displayResultList(list, "Search-Results", k)
         })
     }
 
     searchRegion() {
-        if (!nmsce.last)
+        if (!this.last)
             return
 
-        nmsce.entries["Search-Results"] = []
+        this.entries["Search-Results"] = []
 
         let ref = collectionGroup(bhs.fs, "nmsceCommon")
-        ref = ref.where("galaxy", "==", nmsce.last.galaxy)
-        ref = ref.where("addr", ">=", nmsce.last.addr.slice(0, 15) + "0000")
-        ref = ref.where("addr", "<=", nmsce.last.addr.slice(0, 15) + "02FF")
+        ref = ref.where("galaxy", "==", this.last.galaxy)
+        ref = ref.where("addr", ">=", this.last.addr.slice(0, 15) + "0000")
+        ref = ref.where("addr", "<=", this.last.addr.slice(0, 15) + "02FF")
 
         ref.get().then(snapshot => {
             let list = []
@@ -1539,23 +1539,23 @@ class NMSCE {
 
             $("#dltab-Search-Results").click()
             $("#displayPanels #list-Search-Results").empty()
-            nmsce.displayResultList(list, "Search-Results")
+            this.displayResultList(list, "Search-Results")
         })
     }
 
     saveEntry() {
         let ok = bhs.user.uid
 
-        if (!nmsce.last || nmsce.last.uid === bhs.user.uid) {
-            let user = nmsce.extractUser()
+        if (!this.last || this.last.uid === bhs.user.uid) {
+            let user = this.extractUser()
             ok = bhs.validateUser(user)
 
             // if (ok && bhs.user._name !== user._name)
-            //     ok = nmsce.changeName(bhs.user.uid, user._name)
+            //     ok = this.changeName(bhs.user.uid, user._name)
 
             if (ok) {
                 bhs.user = mergeObjects(bhs.user, user)
-                bhs.user.imageText = nmsce.extractImageText()
+                bhs.user.imageText = this.extractImageText()
 
                 let ref = bhs.getUsersColRef(bhs.user.uid)
                 ref.set(bhs.user, {
@@ -1566,15 +1566,15 @@ class NMSCE {
             }
         }
 
-        if (ok && nmsce.extractEntry())
-            nmsce.clearPanel()
+        if (ok && this.extractEntry())
+            this.clearPanel()
     }
 
     saveSystem() {
         let ok = bhs.user.uid
 
-        if (!nmsce.last || nmsce.last.uid === bhs.user.uid) {
-            let user = nmsce.extractUser()
+        if (!this.last || this.last.uid === bhs.user.uid) {
+            let user = this.extractUser()
             ok = bhs.validateUser(user)
 
             if (ok) {
@@ -1589,7 +1589,7 @@ class NMSCE {
         }
 
         if (ok)
-            nmsce.lastsys = nmsce.extractSystem()
+            this.lastsys = this.extractSystem()
     }
 
     changeName(uid, newname) { }
@@ -1642,7 +1642,7 @@ class NMSCE {
 
             first = false
 
-            nmsce.addPanel(obj.fields, "pnl", id)
+            this.addPanel(obj.fields, "pnl", id)
         }
 
         if (fnmsce)
@@ -1664,7 +1664,7 @@ class NMSCE {
                 mloc.show()
             }
 
-            nmsce.setMapSize(mloc)
+            this.setMapSize(mloc)
         })
     }
 
@@ -1764,7 +1764,7 @@ class NMSCE {
                     f.labelsize = "col-5"
                     f.menusize = "col"
 
-                    bhs.buildMenu(lst, f.name, f.sub ? slist[f.sub] : f.list, f.sublist ? nmsce.selectSublist : null, f)
+                    bhs.buildMenu(lst, f.name, f.sub ? slist[f.sub] : f.list, f.sublist ? this.selectSublist.bind(this) : null, f)
 
                     if (f.sublist) {
                         for (let s of f.list) {
@@ -1775,7 +1775,7 @@ class NMSCE {
                             let l = /idname/[Symbol.replace](tSubList, s.name.nameToId())
                             loc.append(l)
 
-                            nmsce.addPanel(f.sublist, "slist", iid, s, itmid)
+                            this.addPanel(f.sublist, "slist", iid, s, itmid)
                         }
                     }
                     break
@@ -1786,7 +1786,7 @@ class NMSCE {
                         loc.data("max", f.max)
 
                     if (f.list) {
-                        bhs.buildMenu(loc, f.name, f.list, nmsce.addTag, {
+                        bhs.buildMenu(loc, f.name, f.list, this.addTag, {
                             nolabel: true,
                             ttip: f.ttip,
                             sort: true,
@@ -1817,7 +1817,7 @@ class NMSCE {
                                 })
 
                             // let pnl = doc.ref.id
-                            bhs.buildMenu(loc, f.name, tags, nmsce.addTag, {
+                            bhs.buildMenu(loc, f.name, tags, this.addTag, {
                                 nolabel: true,
                                 ttip: f.ttip
                             })
@@ -1862,7 +1862,7 @@ class NMSCE {
                         l = /idname/[Symbol.replace](tMap, iid)
                         loc.append(l)
 
-                        nmsce.loadMap(loc.find("#row-" + iid), f.map ? f.map : slist[f.sub])
+                        this.loadMap(loc.find("#row-" + iid), f.map ? f.map : slist[f.sub])
                     }
                     break
             }
@@ -1937,7 +1937,7 @@ class NMSCE {
             h = /Add-new-tag/[Symbol.replace](h, id)
             h = /Add new tag/[Symbol.replace](h, text)
             row.find("#list").append(h)
-            bhs.bindMenuChange(row.find("#item-" + id), nmsce.addTag)
+            bhs.bindMenuChange(row.find("#item-" + id), this.addTag)
 
             h = /idname/[Symbol.replace](tTag, id)
             h = /title/[Symbol.replace](h, text)
@@ -1991,6 +1991,7 @@ class NMSCE {
     }
 
     loadMap(loc, fname) {
+        let self = this;
         loc.load(fname, () => {
             // loc.find("#layer1").hide()
 
@@ -2035,15 +2036,15 @@ class NMSCE {
             }
 
             bdr.click(function () {
-                nmsce.selectMap(this)
+                self.selectMap(this)
             })
 
             bdr.mouseenter(function () {
-                nmsce.mapEnter(this)
+                self.mapEnter(this)
             })
 
             bdr.mouseleave(function () {
-                nmsce.mapLeave(this)
+                self.mapLeave(this)
             })
         })
     }
@@ -2166,7 +2167,7 @@ class NMSCE {
                 sloc = sloc.find("[id|='rdo-" + (max ? max : "T1") + "']")
 
             sloc.prop("checked", true)
-            nmsce.restoreImageText(null, true)
+            this.restoreImageText(null, true)
         }
 
         part.state = selected === "selected" ? "selected" : part.state
@@ -2206,37 +2207,37 @@ class NMSCE {
         mloc = mloc.find("#slist-" + id)
         mloc.show()
 
-        nmsce.setMapSize(mloc)
+        this.setMapSize(mloc)
     }
 
     buildImageText() {
         const ckbox = `
         <label class="col-lg-2 col-md-3 col-sm-4 col-7">
-            <input id="ck-idname" type="checkbox" ftype loc row sub onchange="nmsce.getImageText(this, true)">
+            <input id="ck-idname" type="checkbox" ftype loc row sub onchange="this.getImageText(this, true)">
             &nbsp;title
         </label>`
         const fieldinputs = `
         <label class="col-md-2 col-7 txt-label-def ">
             <input id="ck-Text" type="checkbox" data-loc="#id-Text"
-                onchange="nmsce.getImageText(this, true)">
+                onchange="this.getImageText(this, true)">
             Text&nbsp;
             <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
                 data-placement="bottom" title="Use Line break, <br>, to separate multiple lines.">
             </i>&nbsp;
         </label>
         <input id="id-Text" class="rounded col-md-5 col-7" type="text"
-            onchange="nmsce.getImageText(this, true)">
+            onchange="this.getImageText(this, true)">
 
         <label class="col-md-2 col-7 txt-label-def ">
             <input id="ck-myLogo" type="checkbox" data-loc="#id-myLogo" data-type="img"
-                onchange="nmsce.getImageText(this, true)">
+                onchange="this.getImageText(this, true)">
             Load Overlay&nbsp;
             <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
                 data-placement="bottom"
                 title="Load a 2nd image as an overlay. You can resize and move the 2nd image."></i>&nbsp;
         </label>
         <input id="id-myLogo" type="file" class="col-md-5 col-7 border rounded" accept="image/*"
-            name="files[]" onchange="nmsce.loadMyLogo(this)">
+            name="files[]" onchange="this.loadMyLogo(this)">
         `
 
         let appenditem = (title, type, loc, row, sub) => {
@@ -2252,34 +2253,34 @@ class NMSCE {
         $("#img-text").empty()
         $("#img-text").append(fieldinputs)
 
-        nmsce.imageText = {}
-        nmsce.initImageText("logo")
+        this.imageText = {}
+        this.initImageText("logo")
 
         let img = new Image()
         img.crossOrigin = "anonymous"
-        img.onload = nmsce.onLoadLogo
+        img.onload = this.onLoadLogo
         img.src = "/images/app-logo.png"
 
-        nmsce.initImageText("Text")
-        nmsce.initImageText("myLogo")
+        this.initImageText("Text")
+        this.initImageText("myLogo")
 
         for (let obj of objectList) {
             for (let txt of obj.imgText)
-                if (typeof nmsce.imageText[txt.name.nameToId()] === "undefined") {
-                    nmsce.initImageText(txt.name.nameToId())
+                if (typeof this.imageText[txt.name.nameToId()] === "undefined") {
+                    this.initImageText(txt.name.nameToId())
                     appenditem(txt.name, txt.type, txt.id)
                 }
 
             for (let fld of obj.fields) {
-                if (fld.imgText && typeof nmsce.imageText[fld.name.nameToId()] === "undefined") {
-                    nmsce.initImageText(fld.name.nameToId())
+                if (fld.imgText && typeof this.imageText[fld.name.nameToId()] === "undefined") {
+                    this.initImageText(fld.name.nameToId())
                     appenditem(fld.name, fld.type, "#typePanels .active", "#row-" + fld.name.nameToId())
                 }
 
                 if (typeof fld.sublist !== "undefined")
                     for (let sub of fld.sublist)
-                        if (sub.imgText && typeof nmsce.imageText[sub.name.nameToId()] === "undefined") {
-                            nmsce.initImageText(sub.name.nameToId())
+                        if (sub.imgText && typeof this.imageText[sub.name.nameToId()] === "undefined") {
+                            this.initImageText(sub.name.nameToId())
                             appenditem(sub.name, sub.type, "#typePanels .active", "#row-" + fld.name.nameToId(), "#row-" + sub.name.nameToId())
                         }
             }
@@ -2300,7 +2301,7 @@ class NMSCE {
         for (let l of list)
             loc.append(l.html)
 
-        bhs.buildMenu($("#imgtable"), "Font", fontList, nmsce.setFont, {
+        bhs.buildMenu($("#imgtable"), "Font", fontList, this.setFont, {
             labelsize: "col-5",
             menusize: "col",
             sort: true,
@@ -2347,32 +2348,32 @@ class NMSCE {
             }]
         }).on('change', evt => {
             $(evt.target).css("background-color", evt.color.toRgbString())
-            nmsce.setColor($(evt.target).prop("id").stripID(), evt.color.toRgbString())
+            this.setColor($(evt.target).prop("id").stripID(), evt.color.toRgbString())
         })
     }
 
     initImageText(id) {
-        if (typeof nmsce.imageText === "undefined")
-            nmsce.imageText = {}
+        if (typeof this.imageText === "undefined")
+            this.imageText = {}
 
-        if (typeof nmsce.imageText[id] === "undefined")
-            nmsce.imageText[id] = {}
+        if (typeof this.imageText[id] === "undefined")
+            this.imageText[id] = {}
 
         switch (id) {
             case "logo":
-                nmsce.imageText[id] = {
+                this.imageText[id] = {
                     ck: true,
                     type: "img",
                 }
                 break
             case "myLogo":
-                nmsce.imageText[id] = {
+                this.imageText[id] = {
                     ck: false,
                     type: "img",
                 }
                 break
             default:
-                nmsce.imageText[id] = {
+                this.imageText[id] = {
                     font: id === "Glyphs" ? "NMS Glyphs" : "Arial",
                     fSize: 24,
                     color: "#ffffff",
@@ -2383,12 +2384,12 @@ class NMSCE {
                 }
         }
 
-        nmsce.imageText[id].sel = false
-        nmsce.imageText[id].id = id
-        nmsce.imageText[id].x = 20
-        nmsce.imageText[id].y = 20
+        this.imageText[id].sel = false
+        this.imageText[id].id = id
+        this.imageText[id].x = 20
+        this.imageText[id].y = 20
 
-        return nmsce.imageText[id]
+        return this.imageText[id]
     }
 
     getImageText(evt, draw) {
@@ -2461,26 +2462,26 @@ class NMSCE {
                     break
             }
 
-            for (let k of Object.keys(nmsce.imageText)) {
+            for (let k of Object.keys(this.imageText)) {
                 if (k === "textsize")
                     continue
 
-                nmsce.imageText[k].sel = false
+                this.imageText[k].sel = false
             }
 
-            nmsce.imageText[id].ck = true
+            this.imageText[id].ck = true
 
             if (text) {
-                nmsce.imageText[id].text = text
-                nmsce.imageText[id] = nmsce.measureText(nmsce.imageText[id])
+                this.imageText[id].text = text
+                this.imageText[id] = this.measureText(this.imageText[id])
             }
         } else {
-            nmsce.imageText[id].ck = false
-            nmsce.imageText[id].sel = false
+            this.imageText[id].ck = false
+            this.imageText[id].sel = false
         }
 
         if (draw)
-            nmsce.drawText()
+            this.drawText()
     }
 
     restoreImageText(txt, draw) {
@@ -2490,18 +2491,18 @@ class NMSCE {
             return
 
         if (txt)
-            nmsce.imageText = mergeObjects(nmsce.imageText, txt)
+            this.imageText = mergeObjects(this.imageText, txt)
 
-        if (typeof nmsce.imageText.myLogo.img === "undefined")
-            nmsce.imageText.myLogo.ck = false
-        nmsce.imageText.logo.ck = true
+        if (typeof this.imageText.myLogo.img === "undefined")
+            this.imageText.myLogo.ck = false
+        this.imageText.logo.ck = true
 
-        let keys = Object.keys(nmsce.imageText)
+        let keys = Object.keys(this.imageText)
         for (let id of keys) {
             if (id === "textsize")
                 continue
 
-            let f = nmsce.imageText[id]
+            let f = this.imageText[id]
 
             if (id === "Text" && f.text)
                 loc.find("#id-Text").val(f.text)
@@ -2512,18 +2513,18 @@ class NMSCE {
 
             if (floc.length > 0) {
                 floc.prop("checked", f.ck)
-                nmsce.getImageText(floc)
+                this.getImageText(floc)
             }
 
             f.sel = false
         }
 
         if (draw)
-            nmsce.drawText()
+            this.drawText()
     }
 
     extractImageText() {
-        let s = mergeObjects({}, nmsce.imageText)
+        let s = mergeObjects({}, this.imageText)
 
         let keys = Object.keys(s)
         for (let k of keys) {
@@ -2555,7 +2556,7 @@ class NMSCE {
     }
 
     onLoadLogo(evt) {
-        let text = evt.currentTarget.src.includes("app-logo") ? nmsce.imageText.logo : nmsce.imageText.myLogo
+        let text = evt.currentTarget.src.includes("app-logo") ? this.imageText.logo : this.imageText.myLogo
         let img = text.img = evt.currentTarget
 
         let scale = text.right ? Math.min(text.right / img.naturalWidth, text.decent / img.naturalHeight) : 0.1
@@ -2567,7 +2568,7 @@ class NMSCE {
 
         $("#ck-" + text.id).prop("checked", true)
         if (text.id !== "logo")
-            nmsce.drawText()
+            this.drawText()
     }
 
     loadMyLogo(evt) {
@@ -2577,7 +2578,7 @@ class NMSCE {
         reader.onload = function () {
             let img = new Image()
             img.crossOrigin = "anonymous"
-            img.onload = nmsce.onLoadLogo
+            img.onload = this.onLoadLogo
             img.src = reader.result
         }
 
@@ -2595,7 +2596,7 @@ class NMSCE {
         $("#redditPost").hide()
 
         if (evt || edit) {
-            nmsce.glyphLocation = {
+            this.glyphLocation = {
                 x: 4,
                 y: 412,
                 height: 14,
@@ -2613,7 +2614,7 @@ class NMSCE {
             $("#imageTextBlock").show()
             $("#editingScreenshot").show()
 
-            if (nmsce.last) {
+            if (this.last) {
                 $("#updateScreenshot").show()
                 $("#ck-updateScreenshot").prop("checked", true)
             }
@@ -2631,12 +2632,12 @@ class NMSCE {
             if (file) {
                 let reader = new FileReader()
                 reader.onload = function () {
-                    nmsce.screenshot = new Image()
-                    nmsce.screenshot.crossOrigin = "anonymous"
+                    this.screenshot = new Image()
+                    this.screenshot.crossOrigin = "anonymous"
 
-                    nmsce.screenshot.onload = function () {
-                        nmsce.restoreImageText(null, true)
-                        nmsce.scaleGlyphLocation()
+                    this.screenshot.onload = function () {
+                        this.restoreImageText(null, true)
+                        this.scaleGlyphLocation()
 
                         $('html, body').animate({
                             scrollTop: $('#imgtable').offset().top
@@ -2645,7 +2646,7 @@ class NMSCE {
                         $("body")[0].style.cursor = "default"
                     }
 
-                    nmsce.screenshot.src = reader.result
+                    this.screenshot.src = reader.result
                 }
 
                 reader.readAsDataURL(file)
@@ -2659,13 +2660,13 @@ class NMSCE {
                     var xhr = new XMLHttpRequest()
                     xhr.responseType = 'blob'
                     xhr.onload = function (event) {
-                        nmsce.screenshot = new Image()
-                        nmsce.screenshot.crossOrigin = "anonymous"
-                        nmsce.screenshot.src = url
+                        this.screenshot = new Image()
+                        this.screenshot.crossOrigin = "anonymous"
+                        this.screenshot.src = url
 
-                        nmsce.screenshot.onload = function () {
-                            nmsce.restoreImageText(null, true)
-                            nmsce.scaleGlyphLocation()
+                        this.screenshot.onload = function () {
+                            this.restoreImageText(null, true)
+                            this.scaleGlyphLocation()
 
                             $("body")[0].style.cursor = "default"
                         }
@@ -2684,8 +2685,8 @@ class NMSCE {
     }
 
     editScreenshot() {
-        if (nmsce.last)
-            nmsce.loadScreenshot(null, nmsce.last.Photo, true)
+        if (this.last)
+            this.loadScreenshot(null, this.last.Photo, true)
     }
 
     measureText(t) {
@@ -2730,56 +2731,56 @@ class NMSCE {
     }
 
     setColor(inid, value) {
-        let keys = Object.keys(nmsce.imageText)
+        let keys = Object.keys(this.imageText)
         for (let id of keys) {
             if (id === "textsize")
                 continue
 
-            let text = nmsce.imageText[id]
+            let text = this.imageText[id]
 
             if (text.sel && text.type !== "img")
                 text[inid === "font" ? "color" : inid] = value
         }
 
-        nmsce.drawText()
+        this.drawText()
     }
 
     setSize(evt) {
         let size = parseInt($(evt).val())
 
-        let keys = Object.keys(nmsce.imageText)
+        let keys = Object.keys(this.imageText)
         for (let id of keys) {
             if (id === "textsize")
                 continue
 
-            let text = nmsce.imageText[id]
+            let text = this.imageText[id]
 
             if (text.sel && text.type !== "img") {
                 text.fSize = size
-                text = nmsce.measureText(text)
+                text = this.measureText(text)
             }
         }
 
-        nmsce.drawText()
+        this.drawText()
     }
 
     setFont(evt) {
         let font = $(evt).text()
 
-        let keys = Object.keys(nmsce.imageText)
+        let keys = Object.keys(this.imageText)
         for (let id of keys) {
             if (id === "textsize")
                 continue
 
-            let text = nmsce.imageText[id]
+            let text = this.imageText[id]
 
             if (text.sel && text.type !== "img") {
                 text.font = id === "Glyphs" ? "NMS Glyphs" : font
-                text = nmsce.measureText(text)
+                text = this.measureText(text)
             }
         }
 
-        nmsce.drawText()
+        this.drawText()
     }
 
     drawText(alt, altw) {
@@ -2790,8 +2791,8 @@ class NMSCE {
 
         let canvas = alt ? alt : document.getElementById("id-canvas")
         let width = img.width()
-        let sw = nmsce.screenshot.naturalWidth
-        let sh = nmsce.screenshot.naturalHeight
+        let sw = this.screenshot.naturalWidth
+        let sh = this.screenshot.naturalHeight
 
         if (sh > sw) { // vertical
             txtcanvas.height = Math.min(width, sh)
@@ -2807,27 +2808,27 @@ class NMSCE {
             canvas.height = parseInt(sh * canvas.width / sw)
         }
 
-        if (typeof nmsce.imageText.textsize === "undefined")
-            nmsce.imageText.textsize = {}
+        if (typeof this.imageText.textsize === "undefined")
+            this.imageText.textsize = {}
 
-        if (nmsce.imageText.textsize.height && nmsce.imageText.textsize.height != txtcanvas.height || nmsce.imageText.textsize.width && nmsce.imageText.textsize.width != txtcanvas.width)
-            nmsce.scaleImageText(txtcanvas.height, txtcanvas.width)
+        if (this.imageText.textsize.height && this.imageText.textsize.height != txtcanvas.height || this.imageText.textsize.width && this.imageText.textsize.width != txtcanvas.width)
+            this.scaleImageText(txtcanvas.height, txtcanvas.width)
 
-        nmsce.imageText.textsize.height = txtcanvas.height
-        nmsce.imageText.textsize.width = txtcanvas.width
+        this.imageText.textsize.height = txtcanvas.height
+        this.imageText.textsize.width = txtcanvas.width
 
-        nmsce.imageText.logo.right = nmsce.imageText.logo.decent = parseInt(Math.min(txtcanvas.width, txtcanvas.height) * 0.15)
+        this.imageText.logo.right = this.imageText.logo.decent = parseInt(Math.min(txtcanvas.width, txtcanvas.height) * 0.15)
         if ($("#imageTextBlock").is(":visible")) {
             let ctx = txtcanvas.getContext("2d")
             ctx.clearRect(0, 0, txtcanvas.width, txtcanvas.height)
 
             let loc = $("#img-text")
-            let keys = Object.keys(nmsce.imageText)
+            let keys = Object.keys(this.imageText)
             for (let id of keys) {
                 if (id === "textsize")
                     continue
 
-                let text = nmsce.imageText[id]
+                let text = this.imageText[id]
                 let tloc = loc.find("#ck-" + id)
 
                 if (text.ck && tloc.is(":visible") || text.id === "logo") {
@@ -2883,24 +2884,24 @@ class NMSCE {
                 }
             }
 
-            ctx.drawImage(nmsce.imageText.logo.img, nmsce.imageText.logo.x, nmsce.imageText.logo.y, nmsce.imageText.logo.right, nmsce.imageText.logo.decent)
+            ctx.drawImage(this.imageText.logo.img, this.imageText.logo.x, this.imageText.logo.y, this.imageText.logo.right, this.imageText.logo.decent)
 
             ctx = canvas.getContext("2d")
-            ctx.drawImage(nmsce.screenshot, 0, 0, canvas.width, canvas.height)
+            ctx.drawImage(this.screenshot, 0, 0, canvas.width, canvas.height)
             ctx.drawImage(txtcanvas, 0, 0, canvas.width, canvas.height)
         }
     }
 
     scaleImageText(height, width) {
-        let hscale = height / nmsce.imageText.textsize.height
-        let wscale = width / nmsce.imageText.textsize.width
+        let hscale = height / this.imageText.textsize.height
+        let wscale = width / this.imageText.textsize.width
 
-        let keys = Object.keys(nmsce.imageText)
+        let keys = Object.keys(this.imageText)
         for (let id of keys) {
             if (id === "textsize")
                 continue
 
-            let text = nmsce.imageText[id]
+            let text = this.imageText[id]
 
             text.x *= wscale
             text.left *= wscale
@@ -2914,7 +2915,7 @@ class NMSCE {
     }
 
     editSelected(evt) {
-        let e = nmsce.last
+        let e = this.last
 
         if (e && bhs.user.uid && (bhs.user.uid === e.uid || bhs.hasRole("admin"))) {
             let link = "https://" + window.location.hostname + "/cedata.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
@@ -2935,7 +2936,7 @@ class NMSCE {
     redditLoggedIn(state, code) {
         let accessToken = window.localStorage.getItem('nmsce-reddit-access-token')
         if (accessToken)
-            nmsce.redditCreate(state)
+            this.redditCreate(state)
 
         else
             $.ajax({
@@ -2962,11 +2963,11 @@ class NMSCE {
                         window.localStorage.setItem('nmsce-reddit-refresh-token', res.refresh_token)
 
                         if (state.includes("post_"))
-                            nmsce.redditCreate(state, res.access_token)
+                            this.redditCreate(state, res.access_token)
                     }
                 },
                 error(err) {
-                    nmsce.postStatus(err.message)
+                    this.postStatus(err.message)
                 },
             })
     }
@@ -2983,7 +2984,7 @@ class NMSCE {
         }
 
         if (!accessToken || !expires || !refreshToken)
-            nmsce.redditLogin(state) // no return
+            this.redditLogin(state) // no return
 
         else if (new Date().getTime() > expires) {
             $.ajax({
@@ -3009,15 +3010,15 @@ class NMSCE {
                         window.localStorage.setItem('nmsce-reddit-expires', new Date().getTime() + (res.expires_in - 300) * 1000)
 
                         if (state.includes("post_"))
-                            nmsce.redditCreate(state, res.access_token)
+                            this.redditCreate(state, res.access_token)
                         else if (state.includes("getFlair_"))
-                            nmsce.redditGetSubscribed(state, res.access_token)
+                            this.redditGetSubscribed(state, res.access_token)
                         else if (state.includes("getSubscribed"))
-                            nmsce.setSubReddit(res.access_token)
+                            this.setSubReddit(res.access_token)
                     }
                 },
                 error(err) {
-                    nmsce.postStatus(err.message)
+                    this.postStatus(err.message)
                 },
             })
         } else
@@ -3026,25 +3027,25 @@ class NMSCE {
 
     redditCreate(state, accessToken) {
         if (!accessToken) {
-            if (nmsce.last) {
-                let e = nmsce.last
+            if (this.last) {
+                let e = this.last
                 state = "post_" + e.galaxy.nameToId() + "_" + e.type + "_" + e.id
             }
 
-            accessToken = nmsce.getRedditToken(state)
+            accessToken = this.getRedditToken(state)
         }
 
         if (accessToken) {
-            nmsce.getRedditUser(accessToken)
-            nmsce.redditGetSubscribed(accessToken)
+            this.getRedditUser(accessToken)
+            this.redditGetSubscribed(accessToken)
 
             if (state) {
                 let path = state.split("_")
 
-                if (!nmsce.last || nmsce.last.galaxy !== path[1].idToName() || nmsce.last.type !== path[2] || nmsce.last.id !== path[3]) {
+                if (!this.last || this.last.galaxy !== path[1].idToName() || this.last.type !== path[2] || this.last.id !== path[3]) {
                     getDoc(doc(bhs.fs, "nmsce/" + path[1].idToName() + "/" + path[2] + "/" + path[3])).then(doc => {
                         if (doc.exists())
-                            nmsce.displaySingle(doc.data(), true)
+                            this.displaySingle(doc.data(), true)
                         $("#redditPost").show()
                     })
                 }
@@ -3056,7 +3057,7 @@ class NMSCE {
 
     getRedditUser(accessToken) {
         if (!accessToken)
-            accessToken = nmsce.getRedditToken("getUser")
+            accessToken = this.getRedditToken("getUser")
 
         if (accessToken) {
             let url = reddit.api_oauth_url + reddit.user_endpt
@@ -3072,7 +3073,7 @@ class NMSCE {
                     window.localStorage.setItem('nmsce-reddit-name', res.name)
                 },
                 error(err) {
-                    nmsce.postStatus(err.message)
+                    this.postStatus(err.message)
                 },
             })
         }
@@ -3080,7 +3081,7 @@ class NMSCE {
 
     redditGetSubscribed(accessToken) {
         if (!accessToken)
-            accessToken = nmsce.getRedditToken("getSubscribed")
+            accessToken = this.getRedditToken("getSubscribed")
 
         if (accessToken) {
             let url = reddit.api_oauth_url + reddit.subscriber_endpt
@@ -3095,14 +3096,14 @@ class NMSCE {
                 },
                 crossDomain: true,
                 success(res) {
-                    nmsce.subReddits = []
+                    this.subReddits = []
                     for (let s of res.data.children)
-                        nmsce.subReddits.push({
+                        this.subReddits.push({
                             name: s.data.title,
                             url: s.data.url,
                             link: s.data.name
                         })
-                    bhs.buildMenu($("#redditPost"), "SubReddit", nmsce.subReddits, nmsce.setSubReddit, {
+                    bhs.buildMenu($("#redditPost"), "SubReddit", this.subReddits, this.setSubReddit, {
                         required: true,
                         labelsize: "col-4",
                         menusize: "col",
@@ -3110,7 +3111,7 @@ class NMSCE {
                     })
                 },
                 error(err) {
-                    nmsce.postStatus(err.message)
+                    this.postStatus(err.message)
                 },
             })
         }
@@ -3118,13 +3119,13 @@ class NMSCE {
 
     setSubReddit(evt, accessToken) {
         let name = typeof evt === "string" ? evt.split("_")[1] : $(evt).text().stripMarginWS()
-        let i = getIndex(nmsce.subReddits, "name", name)
+        let i = getIndex(this.subReddits, "name", name)
 
         if (!accessToken)
-            accessToken = nmsce.getRedditToken("getFlair_" + nmsce.subReddits[i].name)
+            accessToken = this.getRedditToken("getFlair_" + this.subReddits[i].name)
 
         if (accessToken) {
-            let url = reddit.api_oauth_url + nmsce.subReddits[i].url + reddit.getflair_endpt
+            let url = reddit.api_oauth_url + this.subReddits[i].url + reddit.getflair_endpt
 
             $.ajax({
                 type: "get",
@@ -3135,23 +3136,23 @@ class NMSCE {
                 },
                 crossDomain: true,
                 success(res) {
-                    nmsce.subRedditFlair = []
+                    this.subRedditFlair = []
                     for (let s of res)
-                        nmsce.subRedditFlair.push({
+                        this.subRedditFlair.push({
                             name: s.text,
                             text_color: s.text_color === "light" ? "white" : "black",
                             color: s.background_color,
                             id: s.id,
                         })
 
-                    bhs.buildMenu($("#redditPost"), "Flair", nmsce.subRedditFlair, null, {
+                    bhs.buildMenu($("#redditPost"), "Flair", this.subRedditFlair, null, {
                         required: true,
                         labelsize: "col-4",
                         menusize: "col"
                     })
                 },
                 error(err) {
-                    nmsce.postStatus(err.message)
+                    this.postStatus(err.message)
                 },
             })
         }
@@ -3164,17 +3165,17 @@ class NMSCE {
         let title = loc.find("#id-Title").val()
 
         if (!sr) {
-            nmsce.postStatus("Please select SubReddit")
+            this.postStatus("Please select SubReddit")
             return
         }
 
         if (!flair) {
-            nmsce.postStatus("Please select Flair")
+            this.postStatus("Please select Flair")
             return
         }
 
         if (!title) {
-            nmsce.postStatus("Please select Title")
+            this.postStatus("Please select Title")
             return
         }
 
@@ -3182,31 +3183,31 @@ class NMSCE {
         window.localStorage.setItem('nmsce-reddit-flair', flair)
         window.localStorage.setItem('nmsce-reddit-title', title)
 
-        let e = nmsce.last
-        let link = "https://nmsce.com/preview.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
+        let e = this.last
+        let link = "https://this.com/preview.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
         window.localStorage.setItem('nmsce-reddit-plink', link)
 
-        link = "https://nmsce.com?g=" + e.galaxy.nameToId() + "&s=" + addrToGlyph(e.addr)
+        link = "https://this.com?g=" + e.galaxy.nameToId() + "&s=" + addrToGlyph(e.addr)
         window.localStorage.setItem('nmsce-reddit-slink', link)
 
-        getDownloadURL(ref(bhs.fbstorage, displayPath + nmsce.last.Photo)).then(url => {
+        getDownloadURL(ref(bhs.fbstorage, displayPath + this.last.Photo)).then(url => {
             window.localStorage.setItem('nmsce-reddit-link', url)
-            nmsce.redditSubmit()
+            this.redditSubmit()
         })
     }
 
     redditSubmit(accessToken) {
         if (!accessToken)
-            accessToken = nmsce.getRedditToken("submit")
+            accessToken = this.getRedditToken("submit")
 
         if (accessToken) {
             let sr = window.localStorage.getItem('nmsce-reddit-sr')
-            let i = getIndex(nmsce.subReddits, "name", sr)
-            sr = nmsce.subReddits[i].url
+            let i = getIndex(this.subReddits, "name", sr)
+            sr = this.subReddits[i].url
 
             let flair = window.localStorage.getItem('nmsce-reddit-flair')
-            i = getIndex(nmsce.subRedditFlair, "name", flair)
-            let flairId = nmsce.subRedditFlair[i].id
+            i = getIndex(this.subRedditFlair, "name", flair)
+            let flairId = this.subRedditFlair[i].id
 
             let plink = window.localStorage.getItem('nmsce-reddit-plink')
             let slink = window.localStorage.getItem('nmsce-reddit-slink')
@@ -3251,7 +3252,7 @@ class NMSCE {
                                     },
                                     data: {
                                         thing_id: t,
-                                        text: "This was posted from the [NMSCE web app](https://nmsce.com). Here is the direct [link](" + plink + ") to this item. This is a [link](" + slink + ") to everything in this system."
+                                        text: "This was posted from the [NMSCE web app](https://this.com). Here is the direct [link](" + plink + ") to this item. This is a [link](" + slink + ") to everything in this system."
                                     },
                                     crossDomain: true,
                                 })
@@ -3277,17 +3278,17 @@ class NMSCE {
                                     ref.set(out, {
                                         merge: true
                                     }).then(() => {
-                                        nmsce.postStatus("Posted")
+                                        this.postStatus("Posted")
                                         $("#redditlink").val(link)
                                     })
                                 })
                             }
                         }
                     else
-                        nmsce.postStatus("failed")
+                        this.postStatus("failed")
                 },
                 error(err) {
-                    nmsce.postStatus(err.message)
+                    this.postStatus(err.message)
                 },
             })
         }
@@ -3298,12 +3299,12 @@ class NMSCE {
     }
 
     scaleGlyphLocation() {
-        if (!nmsce.glyphLocation.scale) {
-            nmsce.glyphLocation.scale = nmsce.screenshot.naturalWidth / nmsce.glyphLocation.modalWidth
-            nmsce.glyphLocation.x *= nmsce.glyphLocation.scale
-            nmsce.glyphLocation.y *= nmsce.screenshot.naturalHeight / nmsce.glyphLocation.modalHeight
-            nmsce.glyphLocation.width *= nmsce.glyphLocation.scale
-            nmsce.glyphLocation.height *= nmsce.glyphLocation.scale
+        if (!this.glyphLocation.scale) {
+            this.glyphLocation.scale = this.screenshot.naturalWidth / this.glyphLocation.modalWidth
+            this.glyphLocation.x *= this.glyphLocation.scale
+            this.glyphLocation.y *= this.screenshot.naturalHeight / this.glyphLocation.modalHeight
+            this.glyphLocation.width *= this.glyphLocation.scale
+            this.glyphLocation.height *= this.glyphLocation.scale
         }
     }
 
@@ -3313,14 +3314,14 @@ class NMSCE {
         let row = $("#row-glyphCanvas")
         row.show()
 
-        let sel = nmsce.glyphLocation
+        let sel = this.glyphLocation
         let div = sel.width / 12
 
         let ss = document.createElement('canvas')
         let ssctx = ss.getContext("2d")
-        ss.width = nmsce.screenshot.naturalWidth
-        ss.height = nmsce.screenshot.naturalHeight
-        ssctx.drawImage(nmsce.screenshot, 0, 0)
+        ss.width = this.screenshot.naturalWidth
+        ss.height = this.screenshot.naturalHeight
+        ssctx.drawImage(this.screenshot, 0, 0)
 
         let gcanvas = document.getElementById("id-glyphCanvas")
         let gctx = gcanvas.getContext("2d")
@@ -3341,7 +3342,7 @@ class NMSCE {
             gctx.putImageData(imgData, (div + 1) * i, 0)
             x += div
 
-            p.push(nmsce.model.predict(scanglyph).then(predict => {
+            p.push(this.model.predict(scanglyph).then(predict => {
                 let max = 0.0
                 let sel = -1
                 let idx = 0
@@ -3367,7 +3368,7 @@ class NMSCE {
             for (let i = 0; i < res.length; ++i)
                 g += res[i].class
 
-            nmsce.changeAddr(null, g)
+            this.changeAddr(null, g)
 
             $("body")[0].style.cursor = "default"
         })
@@ -3400,17 +3401,17 @@ class NMSCE {
         let hit = null
         let nochange = false
 
-        let keys = Object.keys(nmsce.imageText)
+        let keys = Object.keys(this.imageText)
         for (let k of keys) {
             if (k === "textsize")
                 continue
 
-            let text = nmsce.imageText[k]
+            let text = this.imageText[k]
             if (text.id !== "logo" && (!$("#ck-" + text.id).is(":visible") || !text.ck))
                 continue
 
-            if (text.id === "logo" || !(hit = nmsce.hitTestCorner(startX, startY, text)))
-                hit = nmsce.hitTest(startX, startY, text)
+            if (text.id === "logo" || !(hit = this.hitTestCorner(startX, startY, text)))
+                hit = this.hitTest(startX, startY, text)
 
             if (hit && text.type === "text") {
                 let loc = $("#imgtable")
@@ -3438,24 +3439,24 @@ class NMSCE {
         }
 
         if (hit) {
-            nmsce.startX = startX
-            nmsce.startY = startY
+            this.startX = startX
+            this.startY = startY
         }
 
         if (!e.shiftKey && !nochange) {
-            let keys = Object.keys(nmsce.imageText)
+            let keys = Object.keys(this.imageText)
             for (let i of keys) {
                 if (i === "textsize")
                     continue
 
                 if (!hit || i !== hit.id) {
-                    let text = nmsce.imageText[i]
+                    let text = this.imageText[i]
                     text.sel = false
                 }
             }
         }
 
-        nmsce.drawText()
+        this.drawText()
     }
 
     imageKeypress(e) {
@@ -3465,13 +3466,13 @@ class NMSCE {
         e.preventDefault()
 
         let changed = false
-        let keys = Object.keys(nmsce.imageText)
+        let keys = Object.keys(this.imageText)
 
         for (let k of keys) {
             if (k === "textsize")
                 continue
 
-            let text = nmsce.imageText[k]
+            let text = this.imageText[k]
 
             if (text.sel) {
                 changed = true
@@ -3482,7 +3483,7 @@ class NMSCE {
                         case "ArrowDown":
                             if (text.type === "text") {
                                 text.fSize -= text.font === "NMS Glyphs" ? 1 / 10 : 1 / 3
-                                nmsce.measureText(text)
+                                this.measureText(text)
                             } else {
                                 text.decent *= (text.right - 1) / text.right
                                 text.right -= 1
@@ -3492,7 +3493,7 @@ class NMSCE {
                         case "ArrowUp":
                             if (text.type === "text") {
                                 text.fSize += text.font === "NMS Glyphs" ? 1 / 10 : 1 / 3
-                                nmsce.measureText(text)
+                                this.measureText(text)
                             } else {
                                 text.decent *= (text.right + 1) / text.right
                                 text.right += 1
@@ -3519,7 +3520,7 @@ class NMSCE {
         }
 
         if (changed)
-            nmsce.drawText()
+            this.drawText()
     }
 
     imageMouseMove(e) {
@@ -3530,23 +3531,23 @@ class NMSCE {
         let dx = 0
         let dy = 0
 
-        if (typeof nmsce.startX !== "undefined") {
-            dx = mouseX - nmsce.startX
-            dy = mouseY - nmsce.startY
-            nmsce.startX = mouseX
-            nmsce.startY = mouseY
+        if (typeof this.startX !== "undefined") {
+            dx = mouseX - this.startX
+            dy = mouseY - this.startY
+            this.startX = mouseX
+            this.startY = mouseY
         }
 
         let ncursor = "crosshair"
 
         let resize = ""
 
-        let keys = Object.keys(nmsce.imageText)
+        let keys = Object.keys(this.imageText)
         for (let k of keys) {
             if (k === "textsize")
                 continue
 
-            let text = nmsce.imageText[k]
+            let text = this.imageText[k]
             if (text.sel && text.resize) {
                 resize = text.resize
                 break
@@ -3554,9 +3555,9 @@ class NMSCE {
         }
 
         for (let k of keys) {
-            let text = nmsce.imageText[k]
+            let text = this.imageText[k]
 
-            if (text.sel && typeof nmsce.startX !== "undefined") {
+            if (text.sel && typeof this.startX !== "undefined") {
                 if (text.id === "logo" || !resize) {
                     text.x += dx
                     text.y += dy
@@ -3572,7 +3573,7 @@ class NMSCE {
                         case "l":
                             if (text.type === "text") {
                                 text.fSize -= text.font === "NMS Glyphs" ? dx / 10 : dx / 3
-                                nmsce.measureText(text)
+                                this.measureText(text)
                                 text.x += old.right - text.right
                             } else {
                                 text.decent *= (text.right - dx) / text.right
@@ -3584,7 +3585,7 @@ class NMSCE {
                         case "r":
                             if (text.type === "text") {
                                 text.fSize += text.font === "NMS Glyphs" ? dx / 10 : dx / 3
-                                nmsce.measureText(text)
+                                this.measureText(text)
                             } else {
                                 text.decent *= (text.right + dx) / text.right
                                 text.right += dx
@@ -3596,41 +3597,41 @@ class NMSCE {
             }
 
             if (text.sel && ncursor === "crosshair") {
-                if (text.id !== "logo" && nmsce.hitTestCorner(mouseX, mouseY, text))
+                if (text.id !== "logo" && this.hitTestCorner(mouseX, mouseY, text))
                     ncursor = "ew-resize"
-                else if (nmsce.hitTest(mouseX, mouseY, text))
+                else if (this.hitTest(mouseX, mouseY, text))
                     ncursor = "move"
             }
         }
 
         $("#id-canvas")[0].style.cursor = ncursor
 
-        if (typeof nmsce.startX !== "undefined")
-            nmsce.drawText()
+        if (typeof this.startX !== "undefined")
+            this.drawText()
     }
 
     imageMouseUp(e) {
         e.preventDefault()
 
-        delete nmsce.startX
-        delete nmsce.startY
+        delete this.startX
+        delete this.startY
 
-        let keys = Object.keys(nmsce.imageText)
+        let keys = Object.keys(this.imageText)
         for (let k of keys)
-            delete nmsce.imageText[k].resize
+            delete this.imageText[k].resize
 
         $("#id-canvas")[0].style.cursor = "crosshair"
     }
 
     imageMouseOut(e) {
         e.preventDefault()
-        nmsce.imageMouseUp(e)
+        this.imageMouseUp(e)
 
         $("body")[0].style.cursor = "default"
     }
 
     alignText(how) {
-        let keys = Object.keys(nmsce.imageText)
+        let keys = Object.keys(this.imageText)
         let top = 0,
             left = 0,
             right = Number.MAX_SAFE_INTEGER,
@@ -3640,7 +3641,7 @@ class NMSCE {
             if (k === "textsize")
                 continue
 
-            let text = nmsce.imageText[k]
+            let text = this.imageText[k]
 
             if (text.sel) {
                 top = Math.max(top, text.y - text.ascent)
@@ -3651,7 +3652,7 @@ class NMSCE {
         }
 
         for (let k of keys) {
-            let text = nmsce.imageText[k]
+            let text = this.imageText[k]
 
             if (text.sel) {
                 switch (how) {
@@ -3671,13 +3672,13 @@ class NMSCE {
             }
         }
 
-        nmsce.drawText()
+        this.drawText()
     }
 
     deleteEntry() {
-        if (nmsce.last) {
-            let entry = nmsce.last
-            nmsce.last = null
+        if (this.last) {
+            let entry = this.last
+            this.last = null
             let docRef = doc(bhs.fs, "nmsce/" + entry.galaxy + "/" + entry.type + "/" + entry.id)
 
             let vref = collection(docRef, "votes")
@@ -3724,8 +3725,8 @@ class NMSCE {
     }
 
     deleteSystem() {
-        if (nmsce.lastsys && bhs.deleteEntry(nmsce.lastsys)) {
-            nmsce.lastsys = null
+        if (this.lastsys && bhs.deleteEntry(this.lastsys)) {
+            this.lastsys = null
             $("#save-system").text("Save System")
             $("#delete-system").addClass("disabled")
             $("#delete-system").prop("disabled", true)
@@ -3741,7 +3742,7 @@ class NMSCE {
                 entry.Photo = entry.type + "-" + entry.id + ".jpg"
 
             let disp = document.createElement('canvas')
-            nmsce.drawText(disp, 1024)
+            this.drawText(disp, 1024)
             disp.toBlob(blob => {
                 uploadBytes(ref(bhs.fbstorage, displayPath + entry.Photo), blob).then(() => {
                     // bhs.status("Saved " + displayPath + entry.Photo)
@@ -3749,9 +3750,9 @@ class NMSCE {
             }, "image/jpeg", 0.9)
 
             let thumb = document.createElement('canvas')
-            nmsce.drawText(thumb, 400)
+            this.drawText(thumb, 400)
             thumb.toBlob(blob => {
-                nmsce.saved = blob
+                this.saved = blob
                 uploadBytes(ref(bhs.fbstorage, thumbPath + entry.Photo), blob).then(() => {
                     // bhs.status("Saved " + thumbPath + entry.Photo)
                 })
@@ -3759,9 +3760,9 @@ class NMSCE {
 
             let orig = document.createElement('canvas')
             let ctx = orig.getContext("2d")
-            orig.width = Math.min(2048, nmsce.screenshot.width)
-            orig.height = parseInt(nmsce.screenshot.height * orig.width / nmsce.screenshot.width)
-            ctx.drawImage(nmsce.screenshot, 0, 0, orig.width, orig.height)
+            orig.width = Math.min(2048, this.screenshot.width)
+            orig.height = parseInt(this.screenshot.height * orig.width / this.screenshot.width)
+            ctx.drawImage(this.screenshot, 0, 0, orig.width, orig.height)
             orig.toBlob(blob => {
                 uploadBytes(ref(bhs.fbstorage, originalPath + entry.Photo), blob).then(() => {
                     // bhs.status("Saved " + originalPath + entry.Photo)
@@ -3787,7 +3788,7 @@ class NMSCE {
 
     updateEntry(entry) {
         entry.modded = Timestamp.now()
-        nmsce.initVotes(entry)
+        this.initVotes(entry)
         let created = false
 
         if (typeof entry.created === "undefined") {
@@ -3808,9 +3809,9 @@ class NMSCE {
             bhs.status(entry.type + " " + entry.Name + " saved.")
 
             if (created)
-                nmsce.incrementTotals(entry, 1)
+                this.incrementTotals(entry, 1)
 
-            nmsce.updateCommon(entry, ref)
+            this.updateCommon(entry, ref)
         }).catch(err => {
             bhs.status("ERROR: " + err.code)
         })
@@ -3874,30 +3875,30 @@ class NMSCE {
     }
 
     getEntries(skipAll) {
-        if (typeof nmsce.entries === "undefined")
-            nmsce.entries = {}
+        if (typeof this.entries === "undefined")
+            this.entries = {}
 
         for (let obj of objectList) {
-            nmsce.entries[obj.name] = []
-            nmsce.clearDisplayList(obj.name)
+            this.entries[obj.name] = []
+            this.clearDisplayList(obj.name)
 
             let qury = query(collection(bhs.fs, "nmsce/" + bhs.user.galaxy + "/" + obj.name),
                 where("uid", "==", bhs.user.uid),
                 orderBy("created", "desc"),
                 limit(50));
-            this.getWithObserver(null, qury, obj.name, true, nmsce.displayList)
+            this.getWithObserver(null, qury, obj.name, true, this.displayList)
         }
 
         if (!skipAll) {
 
-            nmsce.entries.All = []
+            this.entries.All = []
 
             let qury = query(collectionGroup(bhs.fs, "nmsceCommon"),
                 where("uid", "==", bhs.user.uid),
                 orderBy("created", "desc"),
                 limit(50));
 
-            this.getWithObserver(null, qury, "All", true, nmsce.displayList, {
+            this.getWithObserver(null, qury, "All", true, this.displayList, {
                 source: "server"
             })
         }
@@ -3913,7 +3914,7 @@ class NMSCE {
             <div id="list-idname" class="scroll row" style="height:500px"></div>
         </div>`
 
-        nmsce.entries = {}
+        this.entries = {}
 
         for (let obj of resultTables) {
             let l = /idname/g[Symbol.replace](nav, obj.name.nameToId())
@@ -3937,17 +3938,17 @@ class NMSCE {
 
         getDoc(doc(bhs.fs, "bhs/nmsceTotals")).then(doc => {
             if (doc.exists())
-                nmsce.displayTotals(doc.data(), "bhs/nmsceTotals")
+                this.displayTotals(doc.data(), "bhs/nmsceTotals")
         })
 
         getDoc(doc(bhs.fs, "bhs/nmsceMonthly")).then(doc => {
             if (doc.exists())
-                nmsce.displayTotals(doc.data(), "bhs/nmsceMonthly")
+                this.displayTotals(doc.data(), "bhs/nmsceMonthly")
         })
 
         getDoc(doc(bhs.fs, "bhs/patreon")).then(doc => {
             if (doc.exists())
-                nmsce.displayPatron(doc.data(), "bhs/patreon")
+                this.displayPatron(doc.data(), "bhs/patreon")
         })
     }
 
@@ -4003,7 +4004,7 @@ class NMSCE {
             l.append(h)
         }
 
-        nmsce.sortTotals(null, "id-name", "patronList")
+        this.sortTotals(null, "id-name", "patronList")
     }
 
     buildTotals() {
@@ -4015,7 +4016,7 @@ class NMSCE {
                         <div class="row">
                             <div class="col-3">
                                 <label>
-                                    <input id="ck-idname" type="checkbox" onclick="nmsce.showModTotals(this)">
+                                    <input id="ck-idname" type="checkbox" onclick="this.showModTotals(this)">
                                     &nbsp;Show All
                                 </label>
                             </div>
@@ -4026,9 +4027,9 @@ class NMSCE {
                             </div>
                         </div>
                         <div class="row">
-                            <div id="id-name" class="col-9 pointer" onclick="nmsce.sortTotals(this)">Player&nbsp;&nbsp;<i class="fas fa-sort-alpha-down"></i></div>
-                            <div id="id-total" class="col-2 pointer" onclick="nmsce.sortTotals(this)">Overall&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div>
-                            <div id="id-monthly" class="col-2 pointer" onclick="nmsce.sortTotals(this)">Monthly&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div>
+                            <div id="id-name" class="col-9 pointer" onclick="this.sortTotals(this)">Player&nbsp;&nbsp;<i class="fas fa-sort-alpha-down"></i></div>
+                            <div id="id-total" class="col-2 pointer" onclick="this.sortTotals(this)">Overall&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div>
+                            <div id="id-monthly" class="col-2 pointer" onclick="this.sortTotals(this)">Monthly&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div>
                         </div>
                     </div>
                     <div id="userTotals" class="card-body scroll txt-black" style="height:600px"></div>
@@ -4050,12 +4051,12 @@ class NMSCE {
     displayTotals(list, path) {
         const rows = `
         <div id="row-uid" name="ismod" class="border-bottom h6">
-            <div class="row pointer" onclick="nmsce.expandTotals(this)">
+            <div class="row pointer" onclick="this.expandTotals(this)">
                 <div id="id-name" class="col-8"><i class="far fa-caret-square-down txt-input"></i> nameS</div>
                 <div id="id-total" class="col-2 txt-right">totalT</div>
                 <div id="id-monthly" class="col-2 txt-right">monthlyT</div>
             </div>
-            <div id="id-exp" class="row hidden" onclick="nmsce.expandTotals(this)">
+            <div id="id-exp" class="row hidden" onclick="this.expandTotals(this)">
                 <div id="id-details">detailT</div>
             </div>
         </div>`
@@ -4135,7 +4136,7 @@ class NMSCE {
                 l.text(total)
         }
 
-        nmsce.sortTotals(null, "id-name")
+        this.sortTotals(null, "id-name")
     }
 
     showModTotals(evt) {
@@ -4214,7 +4215,7 @@ class NMSCE {
     getWithObserver(evt, ref, type, cont, dispFcn, options) {
         const getSnapshot = (obs) => {
             if (typeof obs.entryObserver === "undefined")
-                obs.entryObserver = nmsce.fcnObserver($("#displayPanels"), this.getWithObserver)
+                obs.entryObserver = this.fcnObserver($("#displayPanels"), this.getWithObserver)
 
             let ref = obs.ref
 
@@ -4268,18 +4269,18 @@ class NMSCE {
                     $(loc).prop("src", data.src)
             }
 
-            getSnapshot(nmsce.observerList[type])
+            getSnapshot(this.observerList[type])
 
         } else if (ref) {
-            if (typeof nmsce.observerList === "undefined")
-                nmsce.observerList = {}
+            if (typeof this.observerList === "undefined")
+                this.observerList = {}
 
             type = type.nameToId()
 
-            if (typeof nmsce.observerList[type] === "undefined")
-                nmsce.observerList[type] = {}
+            if (typeof this.observerList[type] === "undefined")
+                this.observerList[type] = {}
 
-            let obs = nmsce.observerList[type]
+            let obs = this.observerList[type]
             obs.type = type
             obs.ref = ref
             obs.dispFcn = dispFcn
@@ -4301,7 +4302,7 @@ class NMSCE {
                 let i = getIndex(resultTables, "name", type)
                 let r = resultTables[i]
 
-                nmsce.entries[r.name.nameToId()] = []
+                this.entries[r.name.nameToId()] = []
                 $("#dltab-My-Favorites").show()
 
                 let qury = query(collectionGroup(bhs.fs, "votes"),
@@ -4310,20 +4311,20 @@ class NMSCE {
                     orderBy("created", "desc"),
                     limit(r.limit));
 
-                this.getWithObserver(null, qury, r.name, r.cont, nmsce.displayResultList, {
+                this.getWithObserver(null, qury, r.name, r.cont, this.displayResultList, {
                     source: "server"
                 })
             }
         } else
             for (let r of resultTables) {
                 if (r.field) {
-                    nmsce.entries[r.name.nameToId()] = []
+                    this.entries[r.name.nameToId()] = []
 
 
 
                     let qury = query(collectionGroup(bhs.fs, "nmsceCommon"), orderBy(r.field, "desc"), limit(r.limit))
 
-                    this.getWithObserver(null, qury, r.name, r.cont, nmsce.displayResultList, {
+                    this.getWithObserver(null, qury, r.name, r.cont, this.displayResultList, {
                         source: "server"
                     })
                 }
@@ -4382,9 +4383,9 @@ class NMSCE {
     }
 
     async vote(evt) {
-        if (nmsce.last && bhs.user.uid) {
+        if (this.last && bhs.user.uid) {
             let v = 1
-            let e = nmsce.last
+            let e = this.last
             let id = $(evt).prop("id")
 
             let ref = doc(bhs.fs, "nmsce/" + e.galaxy + "/" + e.type + "/" + e.id)
@@ -4402,20 +4403,20 @@ class NMSCE {
             e[id] = v
 
             e.uid = bhs.user.uid
-            e.id = nmsce.last.id
-            e.galaxy = nmsce.last.galaxy
-            e.Photo = nmsce.last.Photo
-            e._name = nmsce.last._name
-            e.created = nmsce.last.created
-            e.type = nmsce.last.type
-            if (nmsce.last.Type)
-                e.Type = nmsce.last.Type
+            e.id = this.last.id
+            e.galaxy = this.last.galaxy
+            e.Photo = this.last.Photo
+            e._name = this.last._name
+            e.created = this.last.created
+            e.type = this.last.type
+            if (this.last.Type)
+                e.Type = this.last.Type
 
             setDoc(ref, e, {
                 merge: true
             })
 
-            nmsce.showVotes(e)
+            this.showVotes(e)
 
             e = {}
             e[id] = increment(v ? 1 : -1)
@@ -4426,7 +4427,7 @@ class NMSCE {
                 merge: true
             })
 
-            ref = doc(collection(ref, "nmsceCommon"), nmsce.last.id)
+            ref = doc(collection(ref, "nmsceCommon"), this.last.id)
             setDoc(ref, {
                 votes: e
             }, {
@@ -4439,13 +4440,13 @@ class NMSCE {
         let type = $(evt).closest("[id|='list']").prop("id").stripID()
         let id = $(evt).prop("id").stripID()
 
-        let i = getIndex(nmsce.entries[type], "id", id)
-        let e = nmsce.entries[type][i]
+        let i = getIndex(this.entries[type], "id", id)
+        let e = this.entries[type][i]
 
         getDoc(doc(bhs.fs, "nmsce/" + e.galaxy + "/" + e.type + "/" + e.id)).then(doc => {
             let e = doc.data()
-            nmsce.last = e
-            nmsce.displaySelected(e)
+            this.last = e
+            this.displaySelected(e)
 
             if (bhs.user.uid && (e.uid === bhs.user.uid || bhs.hasRole("admin")))
                 $("#btn-ceedit").show()
@@ -4466,15 +4467,15 @@ class NMSCE {
 
         $("#imgtable").show()
 
-        nmsce.last = e
+        this.last = e
 
         if (bhs.user.uid) {
             getDoc(doc(bhs.fs, "nmsce/" + e.galaxy + "/" + e.type + "/" + e.id + "/votes/" + bhs.user.uid)).then(doc => {
-                nmsce.showVotes(doc.data())
+                this.showVotes(doc.data())
             })
         }
 
-        let link = "https://nmsce.com/preview.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
+        let link = "https://this.com/preview.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
         $("[id|='permalink']").attr("href", link)
         $("[id|='permalink']").on('dragstart', false)
 
@@ -4636,7 +4637,7 @@ class NMSCE {
             $("#displayPanels").append(l)
 
             let loc = $("#displayPanels #list-" + type)
-            nmsce.addDisplayListEntry(type, loc)
+            this.addDisplayListEntry(type, loc)
         }
 
         let height = $("html")[0].clientHeight - 100
@@ -4652,8 +4653,8 @@ class NMSCE {
         let loc = $("#displayPanels #list-" + type)
 
         for (let e of entries) {
-            nmsce.entries[type].push(e)
-            nmsce.addDisplayListEntry(e, loc, false, type)
+            this.entries[type].push(e)
+            this.addDisplayListEntry(e, loc, false, type)
         }
     }
 
@@ -4664,11 +4665,11 @@ class NMSCE {
         let aloc = all.find("#row-" + entry.id)
 
         if (eloc.length === 0) {
-            nmsce.addDisplayListEntry(entry, loc, true)
-            nmsce.addDisplayListEntry(entry, all, true)
+            this.addDisplayListEntry(entry, loc, true)
+            this.addDisplayListEntry(entry, all, true)
         } else {
-            nmsce.updateDisplayListEntry(entry, eloc)
-            nmsce.updateDisplayListEntry(entry, aloc)
+            this.updateDisplayListEntry(entry, eloc)
+            this.updateDisplayListEntry(entry, aloc)
         }
     }
 
@@ -4749,13 +4750,13 @@ class NMSCE {
 
         const row = `     
         <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black h6" >
-            <div id="id-Photo" class="row pointer pl-10 pr-10" data-type="etype" data-id="eid" onclick="nmsce.selectList(this)" style="min-height:20px">
+            <div id="id-Photo" class="row pointer pl-10 pr-10" data-type="etype" data-id="eid" onclick="this.selectList(this)" style="min-height:20px">
                 <img id="img-idname" data-thumb="ethumb"
                 onload="imageLoaded(this, $(this).parent().width(), $('#id-row').height(), false)">
             </div>
             <div class="row pl-10">`
         const item = `<div id="id-idname" class="col-md-7 col-14 border pointer">title</div>`
-        const sortItem = `<div id="id-idname" class="col-md-7 col-14 border pointer" onclick="nmsce.sortLoc(this)">title</div>`
+        const sortItem = `<div id="id-idname" class="col-md-7 col-14 border pointer" onclick="this.sortLoc(this)">title</div>`
         const end = `</div></div>`
 
         let h = ""
@@ -4907,13 +4908,13 @@ class NMSCE {
     selectList(evt) {
         let id = $(evt).closest("[id|='row']").prop("id").stripID()
         let type = $(evt).closest("[id|='list']").prop("id").stripID()
-        let i = getIndex(nmsce.entries[type], "id", id)
-        let e = nmsce.entries[type][i]
-        nmsce.displaySingle(e)
+        let i = getIndex(this.entries[type], "id", id)
+        let e = this.entries[type][i]
+        this.displaySingle(e)
 
         getDoc(doc(bhs.fs, "nmsce/" + e.galaxy + "/" + e.type + "/" + e.id)).then(doc => {
             if (doc.exists())
-                nmsce.displaySingle(doc.data())
+                this.displaySingle(doc.data())
         })
     }
 
@@ -4962,7 +4963,7 @@ const mapColors = {
 
 const reddit = {
     client_id: "8oDpVp9JDDN7ng",
-    redirect_url: "http://nmsce.com/cedata.html",
+    redirect_url: "http://this.com/cedata.html",
     scope: "identity,submit,mysubreddits,flair",
     auth_url: "https://www.reddit.com/api/v1/authorize",
     token_url: "https://ssl.reddit.com/api/v1/access_token",
@@ -4975,7 +4976,7 @@ const reddit = {
 };
 
 function updateImageText() {
-    nmsce.restoreImageText(null, true)
+    this.restoreImageText(null, true)
 }
 
 // Hack to make the function global. Should be avoided and code should be reformatted to not use it
@@ -5051,7 +5052,7 @@ function getPlanet(evt) {
             if (e["Planet-Name"] && e["Planet-Name"] !== "") {
                 $("[id='id-Planet-Name']").val(e["Planet-Name"])
                 $("[id='row-Planet-Name'] .fa-check").show()
-                nmsce.restoreImageText(null, true)
+                this.restoreImageText(null, true)
             }
         } else
             $("[id='row-Planet-Name'] .fa-check").hide()
@@ -5068,7 +5069,7 @@ function getEntry() {
         let q = query(collection(bhs.fs, "nmsce/" + gal + "/" + type), where("Name", "==", name), where("addr", "==", addr))
         getDocs(q).then(snapshot => {
             if (!snapshot.empty) {
-                nmsce.displaySingle(snapshot.docs[0].data())
+                this.displaySingle(snapshot.docs[0].data())
                 $("#typePanels .active #row-Name .fa-check").show()
             }
         })
