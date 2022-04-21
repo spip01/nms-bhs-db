@@ -1,8 +1,9 @@
 'use strict'
 
-import { Timestamp, collection, collectionGroup, query, where, orderBy, limit, doc, getDoc, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
+import { Timestamp, collection, collectionGroup, query, where, orderBy, startAfter, limit, doc, getDoc, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
+import { ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"
 import { bhs, blackHoleSuns, startUp } from "./commonFb.js";
-import { addGlyphButtons, fcedata, fnmsce, fpreview, getIndex, mergeObjects, reformatAddress } from "./commonNms.js";
+import { addGlyphButtons, addrToGlyph, fcedata, fnmsce, fpreview, getIndex, mergeObjects, reformatAddress } from "./commonNms.js";
 import { biomeList, classList, colorList, economyList, economyListTier, faunaList, faunaProductTamed, fontList, frigateList, galaxyList, lifeformList, modeList, platformListAll, resourceList, sentinelList, shipList, versionList } from "./constants.js";
 import { calcImageSize } from "./imageSizeUtil.js";
 
@@ -1085,14 +1086,14 @@ class NMSCE {
                     arraylist.push(q)
 
                     if (firstarray++ === 0)
-                        statements.add(where(q.name, "array-contains-any", q.list))
+                        statements.push(where(q.name, "array-contains-any", q.list))
                     break
                 case "map":
                     for (let i of q.list)
-                        statements.add(where(q.name + "." + i, "==", true))
+                        statements.push(where(q.name + "." + i, "==", true))
                     break
                 default:
-                    statements.add(where(q.name, q.query ? q.query : "==", q.val))
+                    statements.push(where(q.name, q.query ? q.query : "==", q.val))
                     break
             }
         }
@@ -1127,7 +1128,7 @@ class NMSCE {
                 dispFcn(list, panel)
         }
 
-        getWithObserver(null, qury, panel, true, filterResults)
+        this.getWithObserver(null, qury, panel, true, filterResults)
     }
 
     search(search) {
@@ -1261,9 +1262,9 @@ class NMSCE {
             return
 
         let ref = collection(bhs.fs, "users/" + bhs.user.uid + "/nmsce-saved-searches")
-        ref = ref.where("uid", "==", bhs.user.uid)
+        ref = query(ref, where("uid", "==", bhs.user.uid))
 
-        ref.get().then(snapshot => {
+        getDocs(ref).then(snapshot => {
             nmsce.searchlist = []
             for (let doc of snapshot.docs) {
                 let s = doc.data()
@@ -1505,11 +1506,11 @@ class NMSCE {
 
         nmsce.entries["Search-Results"] = []
 
-        let ref = collectionGroup(bhs.fs, "nmsceCommon")
-        ref = ref.where("galaxy", "==", nmsce.last.galaxy)
-        ref = ref.where("addr", "==", nmsce.last.addr)
+        let ref = query(collectionGroup(bhs.fs, "nmsceCommon"),
+                        where("galaxy", "==", nmsce.last.galaxy),
+                        where("addr", "==", nmsce.last.addr))
 
-        ref.get().then(snapshot => {
+        getDocs(ref).then(snapshot => {
             let list = []
             for (let doc of snapshot.docs)
                 list.push(doc.data())
@@ -3886,7 +3887,7 @@ class NMSCE {
                 where("uid", "==", bhs.user.uid),
                 orderBy("created", "desc"),
                 limit(50));
-            nmsce.getWithObserver(null, qury, obj.name, true, nmsce.displayList)
+            this.getWithObserver(null, qury, obj.name, true, nmsce.displayList)
         }
 
         if (!skipAll) {
@@ -3898,7 +3899,7 @@ class NMSCE {
                 orderBy("created", "desc"),
                 limit(50));
 
-            nmsce.getWithObserver(null, qury, "All", true, nmsce.displayList, {
+            this.getWithObserver(null, qury, "All", true, nmsce.displayList, {
                 source: "server"
             })
         }
@@ -4215,7 +4216,7 @@ class NMSCE {
     getWithObserver(evt, ref, type, cont, dispFcn, options) {
         const getSnapshot = (obs) => {
             if (typeof obs.entryObserver === "undefined")
-                obs.entryObserver = nmsce.fcnObserver($("#displayPanels"), nmsce.getWithObserver)
+                obs.entryObserver = nmsce.fcnObserver($("#displayPanels"), this.getWithObserver)
 
             let ref = obs.ref
 
@@ -4311,7 +4312,7 @@ class NMSCE {
                     orderBy("created", "desc"),
                     limit(r.limit));
 
-                nmsce.getWithObserver(null, qury, r.name, r.cont, nmsce.displayResultList, {
+                this.getWithObserver(null, qury, r.name, r.cont, nmsce.displayResultList, {
                     source: "server"
                 })
             }
@@ -4324,7 +4325,7 @@ class NMSCE {
 
                     let qury = query(collectionGroup(bhs.fs, "nmsceCommon"), orderBy(r.field, "desc"), limit(r.limit))
 
-                    nmsce.getWithObserver(null, qury, r.name, r.cont, nmsce.displayResultList, {
+                    this.getWithObserver(null, qury, r.name, r.cont, nmsce.displayResultList, {
                         source: "server"
                     })
                 }
@@ -4369,8 +4370,8 @@ class NMSCE {
             let data = $(img).data()
 
             if (!data.src && !$(img).prop("src")) {
-                let ref = bhs.fbstorage.ref().child(data.thumb)
-                ref.getDownloadURL().then(url => {
+                let storageRef = ref(bhs.fbstorage, data.thumb)
+                getDownloadURL(storageRef).then(url => {
                     if ($(img).is(":visible"))
                         $(img).attr("src", url)
                     else
@@ -4482,8 +4483,8 @@ class NMSCE {
         let idx = getIndex(objectList, "name", e.type)
         let obj = objectList[idx]
 
-        let ref = bhs.fbstorage.ref().child(displayPath + e.Photo)
-        ref.getDownloadURL().then(url => {
+        let storageRef = ref(bhs.fbstorage, displayPath + e.Photo)
+        getDownloadURL(storageRef).then(url => {
             $("#dispimage").prop("src", url)
         })
 

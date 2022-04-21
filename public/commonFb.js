@@ -1,7 +1,7 @@
 'use strict';
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"
-import { getAuth, getRedirectResult, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"
-import { getFirestore, Timestamp, enableIndexedDbPersistence, collection } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
+import { getAuth, getRedirectResult, signInWithRedirect, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"
+import { getFirestore, Timestamp, enableIndexedDbPersistence, collection, doc, setDoc, getDoc, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { getStorage } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-functions.js"
 import { buildGalaxyInfo, fcedata, findex, fnmsce, fsearch, ftotals, mergeObjects } from "./commonNms.js";
@@ -24,10 +24,10 @@ if(!fbconfig){
         var FIREBASE_API, FIREBASE_MSGID;
         fbconfig = {
             apiKey: FIREBASE_API,
-            authDomain: "nms-bhs.firebaseapp.com",
-            databaseURL: "https://nms-bhs.firebaseio.com",
+            authDomain: "nms-this.firebaseapp.com",
+            databaseURL: "https://nms-this.firebaseio.com",
             projectId: "nms-bhs",
-            storageBucket: "nms-bhs.appspot.com",
+            storageBucket: "nms-this.appspot.com",
             messagingSenderId: FIREBASE_MSGID,
         };
     }
@@ -40,7 +40,9 @@ export function startUp() {
     $("#javascript").remove()
     $("#jssite").show()
 
-    bhs = new blackHoleSuns()
+    
+    // Bad hack to make bhs global. Should not be used
+    window.bhs = bhs = new blackHoleSuns()
     bhs.init()
     bhs.initFirebase()
 
@@ -79,7 +81,7 @@ export class blackHoleSuns {
     
     init() {
         buildGalaxyInfo()
-        bhs.user = bhs.userInit()
+        this.user = this.userInit()
     }
 
     userInit() {
@@ -103,14 +105,14 @@ export class blackHoleSuns {
                 console.error("Firebase initialization error raised", err.stack)
         }
     
-        bhs.fbauth = getAuth(this.app)
-        bhs.fs = getFirestore(this.app)
-        bhs.fbstorage = getStorage(this.app)
-        // bhs.fs.settings({
+        this.fbauth = getAuth(this.app);
+        this.fs = getFirestore(this.app);
+        this.fbstorage = getStorage(this.app);
+        // this.fs.settings({
         //     cacheSizeBytes: 1024 * 1024
         // })
 
-        enableIndexedDbPersistence(bhs.fs);
+        enableIndexedDbPersistence(this.fs);
         /*
         {
             synchronizeTabs: true
@@ -123,7 +125,7 @@ export class blackHoleSuns {
             }
     
             var user = result.user
-            bhs.onAuthStateChanged(user)
+            this.onAuthStateChanged(user)
         }).catch(error => {
             var errorCode = error.code
             var errorMessage = error.message
@@ -133,7 +135,7 @@ export class blackHoleSuns {
             $("#loggedout").html("<h4>" + errorMessage + "</h4>")
         })
     
-        bhs.fbauth.onAuthStateChanged(bhs.onAuthStateChanged.bind(bhs))
+        this.fbauth.onAuthStateChanged(this.onAuthStateChanged.bind(bhs))
     }
     
     logIn() {
@@ -149,12 +151,12 @@ export class blackHoleSuns {
             var provider = new GoogleAuthProvider()
             provider.addScope('profile')
             provider.addScope('email')
-            getAuth().signInWithRedirect(provider)
+            signInWithRedirect(getAuth(), provider)
         })
     
         $("#lgithub").click(() => {
             var provider = new GithubAuthProvider()
-            getAuth().signInWithRedirect(provider)
+            signInWithRedirect(getAuth(), provider)
         })
     
         $("#ltwitch").click(() => {})
@@ -165,21 +167,21 @@ export class blackHoleSuns {
     }
     
     logOut() {
-        bhs.unsubscribe()
-        bhs.fbauth.signOut()
+        this.unsubscribe()
+        this.fbauth.signOut()
     }
     
     async onAuthStateChanged(usr) {
         if (usr) {
             let profilePicUrl = usr.photoURL
             let userName = usr.displayName
-            let user = bhs.userInit()
+            let user = this.userInit()
             user.uid = usr.uid
     
             $("#userpic").attr('src', profilePicUrl || '/images/body_image.png')
             $("#username").text(userName)
     
-            let ref = bhs.getUsersColRef(usr.uid)
+            let ref = this.getUsersColRef(usr.uid)
             try {
                 let doc = await ref.get()
                 if (doc.exists())
@@ -199,21 +201,21 @@ export class blackHoleSuns {
     
             user.role = "user"
             user.lasttime = Timestamp.now()
-            bhs.updateUser(user)
+            this.updateUser(user)
     
             // let ref = collection("users").where("_name", "==", "KurganSPK")
             // let snapshot = await ref.get()
             // if (!snapshot.empty) {
             //     user = snapshot.docs[0].data()
-            //     bhs.displayUser(user, true)
+            //     this.displayUser(user, true)
             // }
     
-            bhs.doLoggedin(user)
-            bhs.navLoggedin()
+            this.doLoggedin(user)
+            this.navLoggedin()
         } else {
-            bhs.navLoggedout()
-            bhs.user = bhs.userInit()
-            bhs.doLoggedout()
+            this.navLoggedout()
+            this.user = this.userInit()
+            this.doLoggedout()
         }
     }
     
@@ -232,17 +234,17 @@ export class blackHoleSuns {
     }
     
     async updateUser(user) {
-        bhs.user = mergeObjects(bhs.user, user)
+        this.user = mergeObjects(this.user, user)
     
-        if (bhs.user.uid) {
-            let ref = bhs.getUsersColRef(bhs.user.uid)
-            return await ref.set(bhs.user, {
+        if (this.user.uid) {
+            let ref = this.getUsersColRef(this.user.uid)
+            return await setDoc(ref, this.user, {
                 merge: true
             }).then(() => {
                 return true
             }).catch(err => {
-                if (bhs.status)
-                    bhs.status("ERROR: " + err)
+                if (this.status)
+                    this.status("ERROR: " + err)
     
                 console.log(err)
                 return false
@@ -252,24 +254,24 @@ export class blackHoleSuns {
     }
     
     changeName(loc, user) {
-        if (user._name == bhs.user._name)
+        if (user._name == this.user._name)
             return
     
         if (user._name.match(/--blank--/i)) {
-            $(loc).val(bhs.user._name)
-            bhs.status("Player Name:" + user._name + " is restricted.")
+            $(loc).val(this.user._name)
+            this.status("Player Name:" + user._name + " is restricted.")
             return
         }
     
         if (user._name.match(/Unknown Traveler/i)) {
-            $(loc).val(bhs.user._name)
-            bhs.status("Player Name:" + user._name + " is restricted.")
+            $(loc).val(this.user._name)
+            this.status("Player Name:" + user._name + " is restricted.")
             return
         }
     
         if (typeof user._name == "undefined" || user._name == "") {
-            loc.val(bhs.user._name)
-            bhs.status("Player Name Required.")
+            loc.val(this.user._name)
+            this.status("Player Name Required.")
             return
         }
     
@@ -278,11 +280,11 @@ export class blackHoleSuns {
             name: user._name
         }).then(async result => {
             if (result.data.exists) {
-                loc.val(bhs.user._name)
-                bhs.status("Player Name:" + user._name + " is already taken.", 0)
+                loc.val(this.user._name)
+                this.status("Player Name:" + user._name + " is already taken.", 0)
             } else {
-                await bhs.assignUid(bhs.user, user)
-                bhs.updateUser(user)
+                await this.assignUid(this.user, user)
+                this.updateUser(user)
             }
         }).catch(err => {
             console.log(err)
@@ -290,9 +292,9 @@ export class blackHoleSuns {
     }
     
     getEntry(addr, displayfcn, galaxy, platform, connection) {
-        galaxy = galaxy ? galaxy : bhs.user.galaxy
-        platform = platform ? platform : bhs.user.platform
-        let ref = bhs.getStarsColRef(galaxy, platform, addr)
+        galaxy = galaxy ? galaxy : this.user.galaxy
+        platform = platform ? platform : this.user.platform
+        let ref = this.getStarsColRef(galaxy, platform, addr)
     
         const pnlTop = 0
         const pnlBottom = 1
@@ -302,30 +304,30 @@ export class blackHoleSuns {
                 let d = doc.data()
                 let e = null
     
-                bhs.last = []
-                bhs.last[pnlTop] = d
-                bhs.last[pnlBottom] = null
+                this.last = []
+                this.last[pnlTop] = d
+                this.last[pnlBottom] = null
     
                 if (!connection) {
                     if (!d.blackhole) {
-                        e = await bhs.getEntryByConnection(d.addr, galaxy, platform)
+                        e = await this.getEntryByConnection(d.addr, galaxy, platform)
     
                         if (e) {
-                            bhs.last[pnlTop] = e
-                            bhs.last[pnlBottom] = d
+                            this.last[pnlTop] = e
+                            this.last[pnlBottom] = d
                         }
                     } else {
-                        e = await bhs.getEntry(d.connection, null, galaxy, platform, true)
+                        e = await this.getEntry(d.connection, null, galaxy, platform, true)
     
                         if (e) {
-                            bhs.last[pnlTop] = d
-                            bhs.last[pnlBottom] = e
+                            this.last[pnlTop] = d
+                            this.last[pnlBottom] = e
                         }
                     }
                 }
     
                 if (displayfcn)
-                    displayfcn(bhs.last[pnlTop])
+                    displayfcn(this.last[pnlTop])
     
                 return d
             } else
@@ -336,9 +338,9 @@ export class blackHoleSuns {
     }
     
     async getEntryByRegion(reg, displayfcn, galaxy, platform) {
-        galaxy = galaxy ? galaxy : bhs.user.galaxy
-        platform = platform ? platform : bhs.user.platform
-        let ref = bhs.getStarsColRef(galaxy, platform)
+        galaxy = galaxy ? galaxy : this.user.galaxy
+        platform = platform ? platform : this.user.platform
+        let ref = this.getStarsColRef(galaxy, platform)
     
         ref = ref.where("reg", "==", reg)
         return await ref.get().then(async snapshot => {
@@ -353,7 +355,7 @@ export class blackHoleSuns {
                 }
     
                 if (!d.blackhole)
-                    e = await bhs.getEntryByConnection(d.addr, galaxy, platform)
+                    e = await this.getEntryByConnection(d.addr, galaxy, platform)
     
                 if (typeof displayfcn === "function")
                     displayfcn(e ? e : d, $("#ck-zoomreg").prop("checked"))
@@ -366,9 +368,9 @@ export class blackHoleSuns {
     }
     
     async getEntryBySystem(sys, displayfcn, galaxy, platform) {
-        galaxy = galaxy ? galaxy : bhs.user.galaxy
-        platform = platform ? platform : bhs.user.platform
-        let ref = bhs.getStarsColRef(galaxy, platform)
+        galaxy = galaxy ? galaxy : this.user.galaxy
+        platform = platform ? platform : this.user.platform
+        let ref = this.getStarsColRef(galaxy, platform)
     
         ref = ref.where("sys", "==", sys)
         return await ref.get().then(async snapshot => {
@@ -383,7 +385,7 @@ export class blackHoleSuns {
                 }
     
                 if (!d.blackhole)
-                    e = await bhs.getEntryByConnection(d.addr, galaxy, platform)
+                    e = await this.getEntryByConnection(d.addr, galaxy, platform)
     
                 if (typeof displayfcn === "function")
                     displayfcn(e ? e : d)
@@ -396,7 +398,7 @@ export class blackHoleSuns {
     }
     
     getEntryByRegionAddr(addr, displayfcn) {
-        let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform)
+        let ref = this.getStarsColRef(this.user.galaxy, this.user.platform)
     
         ref = ref.where("addr", ">=", addr.slice(0, 15)+"0000")
         ref = ref.where("addr", "<=", addr.slice(0, 15)+"02FF")
@@ -419,9 +421,9 @@ export class blackHoleSuns {
     }
     
     async getEntryByConnection(addr, galaxy, platform) {
-        galaxy = galaxy ? galaxy : bhs.user.galaxy
-        platform = platform ? platform : bhs.user.platform
-        let ref = bhs.getStarsColRef(galaxy, platform)
+        galaxy = galaxy ? galaxy : this.user.galaxy
+        platform = platform ? platform : this.user.platform
+        let ref = this.getStarsColRef(galaxy, platform)
     
         ref = ref.where("connection", "==", addr)
         return await ref.get().then(snapshot => {
@@ -441,25 +443,25 @@ export class blackHoleSuns {
         if (typeof entry.created === "undefined")
             entry.created = Timestamp.now()
     
-        let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
+        let ref = this.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
         await ref.set(entry, {
             merge: true
         }).then(() => {
-            bhs.status(entry.addr + " saved.")
+            this.status(entry.addr + " saved.")
             return true
         }).catch(err => {
             if (err.code === "permission-denied") {
                 ref.set(entry, {
                     mergeFields: ["life", "econ", "reg", "sys"]
                 }).then(() => {
-                    bhs.status(entry.addr + " (lifeform, economy, system & region) saved.")
+                    this.status(entry.addr + " (lifeform, economy, system & region) saved.")
                     return true
                 }).catch(err => {
-                    bhs.status(entry.addr + " ERROR-: " + err.code)
+                    this.status(entry.addr + " ERROR-: " + err.code)
                     return false
                 })
             } else {
-                bhs.status(entry.addr + " ERROR: " + err.code)
+                this.status(entry.addr + " ERROR: " + err.code)
                 return false
             }
         })
@@ -468,26 +470,26 @@ export class blackHoleSuns {
     async updateBase(entry) {
         entry.time = Timestamp.now()
     
-        let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr)
+        let ref = this.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr)
         await ref.set(entry, {
             merge: true
         }).then(() => {
-            bhs.status(entry.addr + " base saved.")
+            this.status(entry.addr + " base saved.")
             return null
         }).catch(err => {
-            bhs.status(entry.addr + " ERROR: " + err.code)
+            this.status(entry.addr + " ERROR: " + err.code)
             return err.code
         })
     }
     
     async deleteBase(addr) {
         if (addr) {
-            let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform, addr)
+            let ref = this.getUsersColRef(this.user.uid, this.user.galaxy, this.user.platform, addr)
             await ref.delete().then(() => {
-                bhs.status(addr + " base deleted.")
+                this.status(addr + " base deleted.")
                 return true
             }).catch(err => {
-                bhs.status(addr + " ERROR: " + err.code)
+                this.status(addr + " ERROR: " + err.code)
                 return false
             })
         }
@@ -495,12 +497,12 @@ export class blackHoleSuns {
     
     async deleteEntry(entry) {
         if (entry) {
-            let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
+            let ref = this.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
             await ref.delete().then(() => {
-                bhs.status(entry.addr + " deleted.")
+                this.status(entry.addr + " deleted.")
                 return true
             }).catch(err => {
-                bhs.status(entry.addr + " ERROR: " + err.code)
+                this.status(entry.addr + " ERROR: " + err.code)
                 return false
             })
         }
@@ -511,14 +513,14 @@ export class blackHoleSuns {
         updt._name = newuser._name
         updt.uid = user.uid
     
-        let ref = bhs.getStarsColRef()
+        let ref = this.getStarsColRef()
         return await ref.get().then(snapshot => {
             let pr = []
             for (let doc of snapshot.docs) {
                 let g = doc.data()
     
                 for (let p of platformList) {
-                    let ref = bhs.getStarsColRef(g.name, p.name)
+                    let ref = this.getStarsColRef(g.name, p.name)
                     ref = ref.where("_name", "==", user._name)
     
                     pr.push(ref.get().then(snapshot => {
@@ -527,18 +529,18 @@ export class blackHoleSuns {
                         if (!snapshot.empty) {
                             console.log(g.name + " " + p.name + " " + user._name + " " + snapshot.size)
                             let c = 0
-                            let b = bhs.fs.batch()
+                            let b = this.fs.batch()
     
                             for (let doc of snapshot.docs) {
                                 if (++c > 250) {
                                     pr.push(b.commit().then(() => {
                                         console.log("commit " + c)
                                     }).catch(err => {
-                                        bhs.status("ERROR: " + err.code)
+                                        this.status("ERROR: " + err.code)
                                     }))
     
                                     c = 0
-                                    b = bhs.fs.batch()
+                                    b = this.fs.batch()
                                 }
     
                                 b.update(doc.ref, updt)
@@ -548,7 +550,7 @@ export class blackHoleSuns {
                                 pr.push(b.commit().then(() => {
                                     console.log("commit " + c)
                                 }).catch(err => {
-                                    bhs.status("ERROR: " + err.code)
+                                    this.status("ERROR: " + err.code)
                                     console.log(err)
                                 }))
                         }
@@ -556,7 +558,7 @@ export class blackHoleSuns {
                         return Promise.all(pr).then(() => {
                             console.log("finish g/p")
                         }).catch(err => {
-                            bhs.status("ERROR: " + err.code)
+                            this.status("ERROR: " + err.code)
                             console.log(err)
                         })
                     }).catch(err => {
@@ -566,24 +568,24 @@ export class blackHoleSuns {
             }
     
             return Promise.all(pr).then(() => {
-                return bhs.recalcTotals()
+                return this.recalcTotals()
             }).catch(err => {
-                bhs.status("ERROR: " + err.code)
+                this.status("ERROR: " + err.code)
                 console.log(err)
             })
         }).catch(err => {
-            bhs.status("ERROR: " + JSON.stringify(err))
+            this.status("ERROR: " + JSON.stringify(err))
             console.log(err)
         })
     }
     
     getActiveContest(displayFcn) {
-        bhs.contest = null
+        this.contest = null
         return;
     
         let now = (new Date()).getTime()
     
-        let ref = collection(bhs.fs, "contest")
+        let ref = collection(this.fs, "contest")
         ref = ref.orderBy("start")
         ref.get().then(snapshot => {
             for (let i = 0; i < snapshot.size; ++i) {
@@ -592,7 +594,7 @@ export class blackHoleSuns {
                 let end = d.end.toDate().getTime()
     
                 if (start < now && end > now || start > now || i == snapshot.size - 1) {
-                    bhs.subscribe("act-ctst", snapshot.docs[i].ref, displayFcn)
+                    this.subscribe("act-ctst", snapshot.docs[i].ref, displayFcn)
                     break
                 }
             }
@@ -604,7 +606,7 @@ export class blackHoleSuns {
     hideContest() {
         let now = (new Date()).getTime()
     
-        let ref = collection(bhs.fs, "contest")
+        let ref = collection(this.fs, "contest")
         ref = ref.orderBy("start")
         ref.get().then(snapshot => {
             for (let i = 0; i < snapshot.size; ++i) {
@@ -681,66 +683,66 @@ export class blackHoleSuns {
     }
     
     async getEntries(displayFcn, singleDispFcn, uid, galaxy, platform) {
-        galaxy = galaxy ? galaxy : bhs.user.galaxy
-        platform = platform ? platform : bhs.user.platform
+        galaxy = galaxy ? galaxy : this.user.galaxy
+        platform = platform ? platform : this.user.platform
         let complete = false
     
-        let ref = bhs.getStarsColRef(galaxy, platform)
+        let ref = this.getStarsColRef(galaxy, platform)
     
         if (uid || findex) {
-            ref = ref.where("uid", "==", uid ? uid : bhs.user.uid)
+            ref = ref.where("uid", "==", uid ? uid : this.user.uid)
         } else
             complete = true
     
-        if (bhs.loaded && bhs.loaded[galaxy] && bhs.loaded[galaxy][platform]) {
+        if (this.loaded && this.loaded[galaxy] && this.loaded[galaxy][platform]) {
             if (uid || findex) {
-                uid = uid ? uid : bhs.user.uid
-                let list = Object.keys(bhs.list[galaxy][platform])
+                uid = uid ? uid : this.user.uid
+                let list = Object.keys(this.list[galaxy][platform])
                 for (let i = 0; i < list.length; ++i) {
-                    let e = bhs.list[galaxy][platform][list[i]]
+                    let e = this.list[galaxy][platform][list[i]]
                     let k = Object.keys(e)
                     if (e[k[0]].uid == uid)
-                        bhs.entries[list[i]] = e
+                        this.entries[list[i]] = e
                 }
             } else
-                bhs.entries = bhs.list[galaxy][platform]
+                this.entries = this.list[galaxy][platform]
         } else {
-            if (!bhs.list)
-                bhs.list = {}
-            if (!bhs.list[galaxy])
-                bhs.list[galaxy] = {}
-            if (!bhs.list[galaxy][platform])
-                bhs.list[galaxy][platform] = {}
+            if (!this.list)
+                this.list = {}
+            if (!this.list[galaxy])
+                this.list[galaxy] = {}
+            if (!this.list[galaxy][platform])
+                this.list[galaxy][platform] = {}
     
             let bhref = ref.where("blackhole", "==", true)
     
-            if (findex && bhs.user.settings) {
-                if (bhs.user.settings.start) {
+            if (findex && this.user.settings) {
+                if (this.user.settings.start) {
                     complete = false
-                    let start = Timestamp.fromDate(new Date(bhs.user.settings.start))
+                    let start = Timestamp.fromDate(new Date(this.user.settings.start))
                     bhref = bhref.where("created", ">=", start)
                 }
     
-                if (bhs.user.settings.end) {
+                if (this.user.settings.end) {
                     complete = false
-                    let end = Timestamp.fromDate(new Date(bhs.user.settings.end))
+                    let end = Timestamp.fromDate(new Date(this.user.settings.end))
                     bhref = bhref.where("created", "<=", end)
                 }
             }
     
             await bhref.get().then(async snapshot => {
                 for (let i = 0; i < snapshot.size; ++i)
-                    bhs.list[galaxy][platform][snapshot.docs[i].data().addr] = snapshot.docs[i].data()
+                    this.list[galaxy][platform][snapshot.docs[i].data().addr] = snapshot.docs[i].data()
     
-                bhs.entries = bhs.list[galaxy][platform]
+                this.entries = this.list[galaxy][platform]
     
                 if (complete) {
-                    if (typeof bhs.loaded == "undefined")
-                        bhs.loaded = {}
-                    if (typeof bhs.loaded[galaxy] == "undefined")
-                        bhs.loaded[galaxy] = {}
+                    if (typeof this.loaded == "undefined")
+                        this.loaded = {}
+                    if (typeof this.loaded[galaxy] == "undefined")
+                        this.loaded[galaxy] = {}
     
-                    bhs.loaded[galaxy][platform] = true
+                    this.loaded[galaxy][platform] = true
                 }
     
                 if (findex)
@@ -751,88 +753,88 @@ export class blackHoleSuns {
         }
     
         if (displayFcn)
-            displayFcn(bhs.entries)
+            displayFcn(this.entries)
     
         if (singleDispFcn) {
             ref = ref.where("modded", ">", Timestamp.fromDate(new Date()))
-            bhs.subscribe("entries", ref, singleDispFcn)
+            this.subscribe("entries", ref, singleDispFcn)
         }
     }
     
     getEntriesSub(singleDispFcn) {
         if (singleDispFcn) {
-            let ref = bhs.getStarsColRef(bhs.user.galaxy, bhs.user.platform)
-            ref = ref.where("uid", "==", bhs.user.uid)
+            let ref = this.getStarsColRef(this.user.galaxy, this.user.platform)
+            ref = ref.where("uid", "==", this.user.uid)
             ref = ref.where("modded", ">", Timestamp.fromDate(new Date()))
-            bhs.subscribe("entries", ref, singleDispFcn)
+            this.subscribe("entries", ref, singleDispFcn)
         }
     }
     
     async getEntriesByName(displayFcn, name, galaxy, platform) {
-        name = name ? name : bhs.user._name
-        galaxy = galaxy ? galaxy : bhs.user.galaxy
-        platform = platform ? platform : bhs.user.platform
+        name = name ? name : this.user._name
+        galaxy = galaxy ? galaxy : this.user.galaxy
+        platform = platform ? platform : this.user.platform
     
-        if (!bhs.loaded || !bhs.loaded[galaxy] || !bhs.loaded[galaxy][platform])
-            await bhs.getEntries(null, null, null, galaxy, platform)
+        if (!this.loaded || !this.loaded[galaxy] || !this.loaded[galaxy][platform])
+            await this.getEntries(null, null, null, galaxy, platform)
     
         if (!name.match(/-+blank-+/i)) {
-            bhs.entries = {}
-            let list = Object.keys(bhs.list[galaxy][platform])
+            this.entries = {}
+            let list = Object.keys(this.list[galaxy][platform])
             for (let i = 0; i < list.length; ++i) {
-                let e = bhs.list[galaxy][platform][list[i]]
+                let e = this.list[galaxy][platform][list[i]]
                 if (e._name === name)
-                    bhs.entries[list[i]] = e
+                    this.entries[list[i]] = e
             }
         } else
-            bhs.entries = bhs.list[galaxy][platform]
+            this.entries = this.list[galaxy][platform]
     
         if (displayFcn)
-            displayFcn(bhs.entries)
+            displayFcn(this.entries)
     }
     
     async getOrgEntries(displayFcn, name, galaxy, platform) {
-        name = name ? name : bhs.user.org
-        galaxy = galaxy ? galaxy : bhs.user.galaxy
-        platform = platform ? platform : bhs.user.platform
+        name = name ? name : this.user.org
+        galaxy = galaxy ? galaxy : this.user.galaxy
+        platform = platform ? platform : this.user.platform
     
-        if (!bhs.loaded || !bhs.loaded[galaxy] || !bhs.loaded[galaxy][platform])
-            await bhs.getEntries(null, null, null, galaxy, platform)
+        if (!this.loaded || !this.loaded[galaxy] || !this.loaded[galaxy][platform])
+            await this.getEntries(null, null, null, galaxy, platform)
     
         if (name !== "--blank--") {
-            bhs.entries = {}
-            let list = Object.keys(bhs.list[galaxy][platform])
+            this.entries = {}
+            let list = Object.keys(this.list[galaxy][platform])
             for (let i = 0; i < list.length; ++i) {
-                let e = bhs.list[galaxy][platform][list[i]]
+                let e = this.list[galaxy][platform][list[i]]
                 if (e.org === name)
-                    bhs.entries[list[i]] = e
+                    this.entries[list[i]] = e
             }
         } else
-            bhs.entries = bhs.list[galaxy][platform]
+            this.entries = this.list[galaxy][platform]
     
         if (displayFcn)
-            displayFcn(bhs.entries)
+            displayFcn(this.entries)
     }
     
     async getBases(displayFcn, singleDispFcn) {
-        let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform)
-        ref = ref.where("uid", "==", bhs.user.uid)
+        let ref = this.getUsersColRef(this.user.uid, this.user.galaxy, this.user.platform)
+        ref = ref.where("uid", "==", this.user.uid)
     
-        if (findex && bhs.user.settings.start) {
-            let start = Timestamp.fromDate(new Date(bhs.user.settings.start))
+        if (findex && this.user.settings.start) {
+            let start = Timestamp.fromDate(new Date(this.user.settings.start))
             ref = ref.where("created", ">=", start)
         }
     
-        if (findex && bhs.user.settings.end) {
-            let end = Timestamp.fromDate(new Date(bhs.user.settings.end))
+        if (findex && this.user.settings.end) {
+            let end = Timestamp.fromDate(new Date(this.user.settings.end))
             ref = ref.where("created", "<=", end)
         }
     
         await ref.get().then(async snapshot => {
             for (let i = 0; i < snapshot.size; ++i)
-                bhs.entries = bhs.addBaseList(snapshot.docs[i].data(), bhs.entries)
+                this.entries = this.addBaseList(snapshot.docs[i].data(), this.entries)
     
-            bhs.getBasesSub(singleDispFcn)
+            this.getBasesSub(singleDispFcn)
         }).catch(err => {
             console.log(err)
         })
@@ -840,10 +842,10 @@ export class blackHoleSuns {
     
     getBasesSub(singleDispFcn) {
         if (singleDispFcn) {
-            let ref = bhs.getUsersColRef(bhs.user.uid, bhs.user.galaxy, bhs.user.platform)
+            let ref = this.getUsersColRef(this.user.uid, this.user.galaxy, this.user.platform)
             ref = ref.where("modded", ">", Timestamp.fromDate(new Date()))
-            ref = ref.where("uid", "==", bhs.user.uid)
-            bhs.subscribe("bases", ref, singleDispFcn)
+            ref = ref.where("uid", "==", this.user.uid)
+            this.subscribe("bases", ref, singleDispFcn)
         }
     }
     
@@ -873,81 +875,79 @@ export class blackHoleSuns {
     }
     
     async getUser(displayFcn) {
-        if (bhs.user.uid && typeof displayFcn !== "undefined" && displayFcn) {
-            let ref = bhs.getUsersColRef(bhs.user.uid)
-            bhs.subscribe("user", ref, displayFcn)
+        if (this.user.uid && typeof displayFcn !== "undefined" && displayFcn) {
+            let ref = this.getUsersColRef(this.user.uid)
+            this.subscribe("user", ref, displayFcn)
         }
     }
     
     getOrgList(nohide) {
-        bhs.orgList = []
+        this.orgList = []
     
-        let ref = collection(bhs.fs, "org")
-        return ref.get().then(snapshot => {
+        return getDocs(collection(this.fs, "org")).then(snapshot => {
             for (let doc of snapshot.docs) {
                 let d = doc.data()
                 if (!nohide || !d.hide && typeof d.addr !== "undefined") {
                     d.id = doc.id
-                    bhs.orgList.push(d)
+                    this.orgList.push(d)
                 }
             }
     
-            bhs.orgList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
+            this.orgList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
                 a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0)
     
-            return bhs.orgList
+            return this.orgList
         }).catch(err => {
             console.log(err)
         })
     }
     
     getPoiList(nohide) {
-        bhs.poiList = []
+        this.poiList = []
     
-        let ref = collection(bhs.fs, "poi")
-        return ref.get().then(snapshot => {
+        return getDocs(collection(this.fs, "poi")).then(snapshot => {
             for (let doc of snapshot.docs) {
                 let d = doc.data()
                 if (!nohide || !d.hide) {
                     d.id = doc.id
-                    bhs.poiList.push(d)
+                    this.poiList.push(d)
                 }
             }
     
-            bhs.poiList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
+            this.poiList.sort((a, b) => a._name.toLowerCase() > b._name.toLowerCase() ? 1 :
                 a._name.toLowerCase() < b._name.toLowerCase() ? -1 : 0)
     
-            return bhs.poiList
+            return this.poiList
         }).catch(err => {
             console.log(err)
         })
     }
     
     async getUserList(addBlank) {
-        return await getDoc(doc(bhs.fs, "bhs/Players")).then(doc => {
-            bhs.usersList = []
+        return await getDoc(doc(this.fs, "bhs/Players")).then(doc => {
+            this.usersList = []
             if (doc.exists()) {
                 let d = doc.data()
     
                 for (let u of Object.keys(d)) {
-                    bhs.usersList.push({
+                    this.usersList.push({
                         name: u,
     
                     })
                 }
     
-                bhs.usersList.sort((a, b) =>
+                this.usersList.sort((a, b) =>
                     a.name.toLowerCase() > b.name.toLowerCase() ? 1 :
                     a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0)
     
                 if (addBlank)
-                    bhs.usersList.unshift({
+                    this.usersList.unshift({
                         name: "--blank--",
                         uid: null
                     })
             }
     
-            return bhs.usersList
+            return this.usersList
         }).catch(err => {
             console.log(err)
         })
@@ -981,22 +981,22 @@ export class blackHoleSuns {
                 dispHtml(result.data.html, "Organizations")
             })
     
-        let ref = doc(bhs.fs, "bhs/Totals")
-        bhs.subscribe("tot-totals", ref, displayFcn)
+        let ref = doc(this.fs, "bhs/Totals")
+        this.subscribe("tot-totals", ref, displayFcn)
     
-        ref = doc(bhs.fs, "bhs/Organizations")
-        bhs.subscribe("tot-orgs", ref, displayFcn)
+        ref = doc(this.fs, "bhs/Organizations")
+        this.subscribe("tot-orgs", ref, displayFcn)
     
         if (findex) {
-            ref = doc(bhs.fs, "bhs/Players")
-            bhs.subscribe("tot-players", ref, displayFcn)
+            ref = doc(this.fs, "bhs/Players")
+            this.subscribe("tot-players", ref, displayFcn)
         }
     }
     
     subscribe(what, ref, displayFcn) {
         if (displayFcn) {
-            bhs.unsubscribe(what)
-            bhs.unsub[what] = onSnapshot(ref, snapshot => {
+            this.unsubscribe(what)
+            this.unsub[what] = onSnapshot(ref, snapshot => {
                 if (typeof snapshot.exists !== "undefined") {
                     if (snapshot.exists())
                         displayFcn(snapshot.data(), snapshot.ref.path)
@@ -1011,18 +1011,18 @@ export class blackHoleSuns {
     }
     
     unsubscribe(m) {
-        let ulist = Object.keys(bhs.unsub)
+        let ulist = Object.keys(this.unsub)
         for (let i = 0; i < ulist.length; ++i) {
             let x = ulist[i]
             if (!m || x == m) {
-                bhs.unsub[x]()
-                delete bhs.unsub[x]
+                this.unsub[x]()
+                delete this.unsub[x]
             }
         }
     }
     
     getUsersColRef(uid, galaxy, platform, addr) {
-        let ref = collection(bhs.fs, usersCol)
+        let ref = collection(this.fs, usersCol)
         if (uid) {
             ref = doc(ref, uid)
             if (galaxy) {
@@ -1040,7 +1040,7 @@ export class blackHoleSuns {
     }
     
     getStarsColRef(galaxy, platform, addr) {
-        let ref = collection(bhs.fs, starsCol)
+        let ref = collection(this.fs, starsCol)
         if (galaxy) {
             ref = doc(ref, galaxy)
             if (platform) {
@@ -1058,17 +1058,17 @@ export class blackHoleSuns {
         let ok = true
     
         if (!user._name || user._name == "" || user._name.match(/unknown traveler/i)) {
-            bhs.status("Error: Missing or invalid player name. Changes not saved.", 0)
+            this.status("Error: Missing or invalid player name. Changes not saved.", 0)
             ok = false
         }
     
         if (ok && !user.galaxy) {
-            bhs.status("Error: Missing galaxy. Changes not saved.", 0)
+            this.status("Error: Missing galaxy. Changes not saved.", 0)
             ok = false
         }
     
         if (ok && !user.platform) {
-            bhs.status("Error: Missing platform. Changes not saved.", 0)
+            this.status("Error: Missing platform. Changes not saved.", 0)
             ok = false
         }
     
@@ -1116,7 +1116,7 @@ export class blackHoleSuns {
     
         let str
         if (nobh) {
-            if (ok && (str = bhs.validateAddress(entry.addr)) != "") {
+            if (ok && (str = this.validateAddress(entry.addr)) != "") {
                 error += "Invalid address. (" + str + ") "
                 ok = false
             }
@@ -1133,7 +1133,7 @@ export class blackHoleSuns {
         }
     
         if (!ok)
-            bhs.status("Error: " + error + "Changes not saved.", 0)
+            this.status("Error: " + error + "Changes not saved.", 0)
     
         return error
     }

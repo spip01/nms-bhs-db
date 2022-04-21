@@ -52,7 +52,7 @@ $(document).ready(() => {
     }
 })
 
-function dispAddr(evt) {
+export function dispAddr(evt) {
     let loc = $(evt).closest(".card")
     let addr = loc.find("#id-addr").val()
     let planet = loc.find("#id-planet").val()

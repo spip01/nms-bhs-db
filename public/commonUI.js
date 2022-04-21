@@ -1,5 +1,6 @@
 "use strict";
 
+import {collection, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { blackHoleSuns, bhs } from "./commonFb.js";
 import { fcedata, fdarc, findex, fnmsce, fpoi, fpreview, fsearch, ftotals, getIndex, mergeObjects, reformatAddress } from "./commonNms.js";
 import { galaxyList, platformList } from "./constants.js";

@@ -1,9 +1,17 @@
 'use strict'
 
+import { collection, query, where, increment, doc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
+import { httpsCallable, getFunctions } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-functions.js"
 import { bhs, blackHoleSuns, startUp } from "./commonFb.js"
-import { addGlyphButtons, getIndex, reformatAddress } from "./commonNms.js"
+import { addGlyphButtons, addrToGlyph, calcDistXYZ, getIndex, reformatAddress, validateAddress } from "./commonNms.js"
 import { galaxyList, platformList } from "./constants.js"
+import { dispAddr } from "./glyph.js"
 import { buildGlyphModal } from "./glyphReader.js"
+
+// Hack to make the function global. Should be avoided and code should be reformatted to not use it
+window.dispAddr = dispAddr;
+window.dispGlyph = dispGlyph;
+window.validateAddress = validateAddress
 
 // Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper
@@ -50,8 +58,6 @@ $(document).ready(() => {
     buildGlyphModal(dispGlyph)
 })
 
-// Hack to make the function global. Should be avoided and code should be reformatted to not use it
-window.dispGlyph = dispGlyph;
 function dispGlyph(evt, loc) {
     let glyph = typeof evt === "string" ? evt : $(evt).val().toUpperCase()
     if (glyph !== "") {
@@ -134,7 +140,7 @@ blackHoleSuns.prototype.setGP = function () {
         window.localStorage.setItem('platform', p)
     }
 
-    var calcRoute = firebase.functions().httpsCallable('calcRoute')
+    var calcRoute = httpsCallable(getFunctions(), 'calcRoute')
     calcRoute({
         galaxy: g,
         platform: p,
@@ -335,17 +341,17 @@ blackHoleSuns.prototype.calcroute = async function (proximity) {
 
     bhs.saveDarcSettings()
 
-    const increment = firebase.firestore.FieldValue.increment(1)
+    const incrementRef = increment(1)
 
     let darc = {}
-    darc.routeGen = increment
+    darc.routeGen = incrementRef
 
     let d = new Date()
     let n = d.getFullYear() + "-" + (d.getMonth() + 1)
-    darc[n] = increment
+    darc[n] = incrementRef
 
     if (bhs.user.uid === "")
-        darc.noLogin = increment
+        darc.noLogin = incrementRef
 
     setDoc(doc(bhs.fs, "bhs/pageTotals"),{
         darc: darc
@@ -353,7 +359,7 @@ blackHoleSuns.prototype.calcroute = async function (proximity) {
         merge: true
     })
 
-    var calcRoute = firebase.functions().httpsCallable('calcRoute')
+    var calcRoute = httpsCallable(getFunctions(), 'calcRoute');
     calcRoute({
         start: start,
         end: end,
