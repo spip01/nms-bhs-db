@@ -1,7 +1,7 @@
 'use strict'
 
 import { Timestamp, collection, collectionGroup, query, where, orderBy, startAfter, limit, doc, getDoc, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
-import { ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"
 import { bhs, blackHoleSuns, startUp } from "./commonFb.js";
 import { addGlyphButtons, addrToGlyph, fcedata, fnmsce, fpreview, getIndex, mergeObjects, reformatAddress } from "./commonNms.js";
 import { biomeList, classList, colorList, economyList, economyListTier, faunaList, faunaProductTamed, fontList, frigateList, galaxyList, lifeformList, modeList, platformListAll, resourceList, sentinelList, shipList, versionList } from "./constants.js";
@@ -2654,7 +2654,7 @@ class NMSCE {
             let img = new Image()
             img.crossOrigin = "anonymous"
 
-            bhs.fbstorage.ref().child((edit ? originalPath : displayPath) + fname).getDownloadURL().then(url => {
+            getDownloadURL(ref(bhs.fbstorage, (edit ? originalPath : displayPath) + fname)).then(url => {
                 if (edit) {
                     var xhr = new XMLHttpRequest()
                     xhr.responseType = 'blob'
@@ -3189,7 +3189,7 @@ class NMSCE {
         link = "https://nmsce.com?g=" + e.galaxy.nameToId() + "&s=" + addrToGlyph(e.addr)
         window.localStorage.setItem('nmsce-reddit-slink', link)
 
-        bhs.fbstorage.ref().child(displayPath + nmsce.last.Photo).getDownloadURL().then(url => {
+        getDownloadURL(ref(bhs.fbstorage, displayPath + nmsce.last.Photo)).then(url => {
             window.localStorage.setItem('nmsce-reddit-link', url)
             nmsce.redditSubmit()
         })
@@ -3678,46 +3678,44 @@ class NMSCE {
         if (nmsce.last) {
             let entry = nmsce.last
             nmsce.last = null
-            let ref = doc(bhs.fs, "nmsce/" + entry.galaxy + "/" + entry.type + "/" + entry.id)
+            let docRef = doc(bhs.fs, "nmsce/" + entry.galaxy + "/" + entry.type + "/" + entry.id)
 
-            let vref = collection(ref, "votes")
+            let vref = collection(docRef, "votes")
             vref.get().then(snapshot => {
                 for (let doc of snapshot.docs)
                     deleteDoc(doc.ref);
             })
 
-            vref = collection(ref, "nmsceCommon")
+            vref = collection(docRef, "nmsceCommon")
             vref.get().then(snapshot => {
                 for (let doc of snapshot.docs)
                     deleteDoc(doc.ref);
             })
 
-            deleteDoc(ref).then(() => {
+            deleteDoc(docRef).then(() => {
                 bhs.status(entry.id + " deleted.")
                 $("#save").text("Save All")
                 $("#delete-item").addClass("disabled")
                 $("#delete-item").prop("disabled", true)
 
-                let vref = collection(ref, "votes")
+                let vref = collection(docRef, "votes")
                 vref.get().then(snapshot => {
                     for (let doc of snapshot.docs)
                         deleteDoc(doc.ref);
                 })
 
-                vref = collection(ref, "nmsceCommon")
+                vref = collection(docRef, "nmsceCommon")
                 vref.get().then(snapshot => {
                     for (let doc of snapshot.docs)
                         delete(doc.ref);
                 })
 
-                ref = bhs.fbstorage.ref().child(originalPath + entry.Photo)
-                ref.delete()
+                deleteObject(ref(bhs.fbstorage, originalPath + entry.Photo));
 
-                ref = bhs.fbstorage.ref().child(displayPath + entry.Photo)
-                ref.delete()
+                deleteObject(ref(bhs.fbstorage, displayPath + entry.Photo));
 
-                ref = bhs.fbstorage.ref().child(thumbPath + entry.Photo)
-                ref.delete()
+                deleteObject(ref(bhs.fbstorage, thumbPath + entry.Photo));
+ 
             }).catch(err => {
                 bhs.status("ERROR: " + err.code)
                 console.log(err)
@@ -3745,7 +3743,7 @@ class NMSCE {
             let disp = document.createElement('canvas')
             nmsce.drawText(disp, 1024)
             disp.toBlob(blob => {
-                bhs.fbstorage.ref().child(displayPath + entry.Photo).put(blob).then(() => {
+                uploadBytes(ref(bhs.fbstorage, displayPath + entry.Photo), blob).then(() => {
                     // bhs.status("Saved " + displayPath + entry.Photo)
                 })
             }, "image/jpeg", 0.9)
@@ -3754,7 +3752,7 @@ class NMSCE {
             nmsce.drawText(thumb, 400)
             thumb.toBlob(blob => {
                 nmsce.saved = blob
-                bhs.fbstorage.ref().child(thumbPath + entry.Photo).put(blob).then(() => {
+                uploadBytes(ref(bhs.fbstorage, thumbPath + entry.Photo), blob).then(() => {
                     // bhs.status("Saved " + thumbPath + entry.Photo)
                 })
             }, "image/jpeg", 0.8)
@@ -3765,7 +3763,7 @@ class NMSCE {
             orig.height = parseInt(nmsce.screenshot.height * orig.width / nmsce.screenshot.width)
             ctx.drawImage(nmsce.screenshot, 0, 0, orig.width, orig.height)
             orig.toBlob(blob => {
-                bhs.fbstorage.ref().child(originalPath + entry.Photo).put(blob).then(() => {
+                uploadBytes(ref(bhs.fbstorage, originalPath + entry.Photo), blob).then(() => {
                     // bhs.status("Saved " + originalPath + entry.Photo)
                 })
             }, "image/jpeg", 0.9)
@@ -4859,8 +4857,7 @@ class NMSCE {
             loc.append(h)
             loc = loc.find("#row-" + e.id + " img")
 
-            let ref = bhs.fbstorage.ref().child(thumbPath + e.Photo)
-            ref.getDownloadURL().then(url => {
+            getDownloadURL(ref(bhs.fbstorage, thumbPath + e.Photo)).then(url => {
                 if (loc.is(":visible"))
                     loc.attr("src", url)
                 else

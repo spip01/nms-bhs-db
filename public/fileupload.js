@@ -181,7 +181,7 @@ blackHoleSuns.prototype.readTextFile = function (f, id) {
         log.log = ""
 
         if (!check)
-            bhs.fbstorage.ref().child(log.path).put(file)
+            uploadBytes(ref(bhs.fbstorage, log.path), file)
 
         batch = bhs.fs.batch()
         count = 0

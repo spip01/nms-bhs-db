@@ -1,5 +1,5 @@
 'use strict'
-
+import { uploadBytes, deleteObject } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"
 import { bhs, blackHoleSuns, startUp } from "./commonFb.js"
 import { getIndex, mergeObjects, reformatAddress } from "./commonNms.js"
 import { galaxyList, modeList, platformList } from "./constants.js"
@@ -208,8 +208,7 @@ blackHoleSuns.prototype.listClick = function (evt) {
     pnl.find("#btn-delete").removeAttr("disabled")
 
     if (e.img) {
-        let ref = bhs.fbstorage.ref().child(e.img)
-        ref.getDownloadURL().then(url => {
+        getDownloadURL(ref(bhs.fbstorage, e.img)).then(url => {
             pnl.find("#img-pic").attr("src", url)
         }).catch(error => {
             console.log(error)
@@ -268,7 +267,7 @@ blackHoleSuns.prototype.save = async function (evt) {
         let pb = pnl.find("#progressbar")
         pb.show()
 
-        bhs.fbstorage.ref().child(e.img).put(file[0].files[0]).on('state_changed', function (snapshot) {
+        uploadBytes(ref(bhs.fbstorage, e.img) , file[0].files[0]).on('state_changed', function (snapshot) {
                 var pct = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
                 pb.css("width", pct + "%")
             },
@@ -319,10 +318,10 @@ blackHoleSuns.prototype.delete = async function (evt) {
         let e = list[idx]
 
         if (e.img)
-            bhs.fbstorage.ref().child(e.img).delete()
+            deleteObject(ref(bhs.fbstorage, e.img));
 
-        let ref = doc(collection(bhs.fs, pnlid == "pnl-org" ? "org" : "poi"), e.id)
-        await deleteDoc(ref).then(() => {
+        let docRef = doc(collection(bhs.fs, pnlid == "pnl-org" ? "org" : "poi"), e.id)
+        await deleteDoc(docRef).then(() => {
             bhs.statusOut(pnl, e._name + " deleted.")
 
             list.splice(idx, 1)

@@ -285,8 +285,7 @@ blackHoleSuns.prototype.showPOI = function (name) {
         if (!snapshot.empty) {
             let e = snapshot.docs[0].data()
 
-            let ref = bhs.fbstorage.ref().child(e.img)
-            ref.getDownloadURL().then(url => {
+            getDownloadURL(ref(bhs.fbstorage, e.img)).then(url => {
                 loc.find("#img-pic").attr("src", url)
             })
         }
@@ -311,8 +310,7 @@ blackHoleSuns.prototype.showOrg = function (name) {
         if (!snapshot.empty) {
             let e = snapshot.docs[0].data()
 
-            let ref = bhs.fbstorage.ref().child(e.img)
-            ref.getDownloadURL().then(url => {
+            getDownloadURL(ref(bhs.fbstorage, e.img)).then(url => {
                 loc.find("#img-pic").attr("src", url)
             })
         }

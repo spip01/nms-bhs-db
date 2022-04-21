@@ -957,7 +957,7 @@ export class blackHoleSuns {
         if (fsearch)
             return
     
-        var t = httpsCallable('getTotals')
+        var t = httpsCallable(getFunctions(this.app), 'getTotals')
     
         if (ftotals)
             t({
