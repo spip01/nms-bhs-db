@@ -12,26 +12,16 @@ import { platformList } from "./constants.js";
 
 export var bhs;
 
-if(!fbconfig){
-    var fbconfig
 
-    // Try to load a local version of it first (primarily for testing)
-    try {
-        fbconfig = (await import("./local.init.js").catch((err) => {
-            console.error("Failed to fetch local initialization.");
-        })).fbconfig;
-    } catch (err) {
-        var FIREBASE_API, FIREBASE_MSGID;
-        fbconfig = {
-            apiKey: FIREBASE_API,
-            authDomain: "nms-this.firebaseapp.com",
-            databaseURL: "https://nms-this.firebaseio.com",
-            projectId: "nms-bhs",
-            storageBucket: "nms-this.appspot.com",
-            messagingSenderId: FIREBASE_MSGID,
-        };
-    }
-}
+var fbconfig = {
+    apiKey: FIREBASE_API,
+    authDomain: "nms-this.firebaseapp.com",
+    databaseURL: "https://nms-this.firebaseio.com",
+    projectId: "nms-bhs",
+    storageBucket: "nms-this.appspot.com",
+    messagingSenderId: FIREBASE_MSGID,
+};
+
 
 var starsCol = "stars5"
 const usersCol = "users"
