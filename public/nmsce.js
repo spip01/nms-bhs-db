@@ -4215,7 +4215,7 @@ class NMSCE {
     getWithObserver(evt, ref, type, cont, dispFcn, options) {
         const getSnapshot = (obs) => {
             if (typeof obs.entryObserver === "undefined")
-                obs.entryObserver = this.fcnObserver($("#displayPanels"), this.getWithObserver)
+                obs.entryObserver = this.fcnObserver($("#displayPanels"), this.getWithObserver.bind(this))
 
             let ref = obs.ref
 

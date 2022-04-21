@@ -15,10 +15,10 @@ export var bhs;
 
 var fbconfig = {
     apiKey: FIREBASE_API,
-    authDomain: "nms-this.firebaseapp.com",
-    databaseURL: "https://nms-this.firebaseio.com",
+    authDomain: "nms-bhs.firebaseapp.com",
+    databaseURL: "https://nms-bhs.firebaseio.com",
     projectId: "nms-bhs",
-    storageBucket: "nms-this.appspot.com",
+    storageBucket: "nms-bhs.appspot.com",
     messagingSenderId: FIREBASE_MSGID,
 };
 
