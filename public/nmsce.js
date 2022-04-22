@@ -250,7 +250,7 @@ class NMSCE {
         addRadioList($("#id-Lifeform"), "Lifeform", lifeformList)
         addRadioList($("#id-Platform"), "Platform", platformListAll)
 
-        bhs.buildMenu($("#panels"), "Galaxy", galaxyList, this.setGalaxy, {
+        bhs.buildMenu($("#panels"), "Galaxy", galaxyList, this.setGalaxy.bind(this), {
             tip: "Empty - blue<br>Harsh - red<br>Lush - green<br>Normal - teal",
             required: true,
             labelsize: "col-md-6 col-4",
@@ -1618,7 +1618,8 @@ class NMSCE {
     buildTypePanels() {
         let tabs = $("#typeTabs")
         let pnl = $("#typePanels")
-        let first = true
+        let first = true;
+        let self = this;
 
         for (let obj of objectList) {
             let id = obj.name.nameToId()
@@ -1664,7 +1665,7 @@ class NMSCE {
                 mloc.show()
             }
 
-            this.setMapSize(mloc)
+            self.setMapSize(mloc)
         })
     }
 
