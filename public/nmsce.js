@@ -262,21 +262,6 @@ class NMSCE {
                 labelsize: "col-md-6 col-4",
                 menusize: "col",
             })
-
-            // getDocs(collection(bhs.fs, "nmsce")).then(snapshot => {
-            //     let galaxyList = []
-            //     for (let doc of snapshot.docs) {
-            //         galaxyList.push({
-            //             name: doc.ref.id
-            //         })
-            //     }
-
-            //     bhs.buildMenu($("#panels"), "Galaxy", galaxyList, null, {
-            //         required: true,
-            //         labelsize: "col-md-6 col-4",
-            //         menusize: "col",
-            //     })
-            // })
         }
 
         addGlyphButtons($("#glyphbuttons"), this.addGlyph)
@@ -1527,10 +1512,10 @@ class NMSCE {
 
         this.entries["Search-Results"] = []
 
-        let ref = collectionGroup(bhs.fs, "nmsceCommon")
-        ref = ref.where("galaxy", "==", this.last.galaxy)
-        ref = ref.where("addr", ">=", this.last.addr.slice(0, 15) + "0000")
-        ref = ref.where("addr", "<=", this.last.addr.slice(0, 15) + "02FF")
+        let ref = query(collectionGroup(bhs.fs, "nmsceCommon"),
+                        where("galaxy", "==", this.last.galaxy),
+                        where("addr", ">=", this.last.addr.slice(0, 15) + "0000"),
+                        where("addr", "<=", this.last.addr.slice(0, 15) + "02FF"));
 
         getDocs(ref).then(snapshot => {
             let list = []
@@ -1819,7 +1804,6 @@ class NMSCE {
                                         name: "Add new tag"
                                     })
 
-                                // let pnl = doc.ref.id
                                 bhs.buildMenu(loc, f.name, tags, nmsce.addTag, {
                                     nolabel: true,
                                     ttip: f.ttip

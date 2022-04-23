@@ -1,7 +1,7 @@
 'use strict';
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"
 import { getAuth, getRedirectResult, signInWithRedirect, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"
-import { getFirestore, Timestamp, enableIndexedDbPersistence, collection, query, where, doc, setDoc, getDoc, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
+import { getFirestore, Timestamp, enableIndexedDbPersistence, collection, query, where, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc,  onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { getStorage } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-functions.js"
 import { buildGalaxyInfo, validateAddress, fcedata, findex, fnmsce, fsearch, ftotals, mergeObjects } from "./commonNms.js";
@@ -327,7 +327,7 @@ export class blackHoleSuns {
         platform = platform ? platform : this.user.platform
         let ref = this.getStarsColRef(galaxy, platform)
     
-        ref = ref.where("reg", "==", reg)
+        ref = query(ref, where("reg", "==", reg))
         return await getDocs(ref).then(async snapshot => {
             if (!snapshot.empty) {
                 let d
@@ -357,7 +357,7 @@ export class blackHoleSuns {
         platform = platform ? platform : this.user.platform
         let ref = this.getStarsColRef(galaxy, platform)
     
-        ref = ref.where("sys", "==", sys)
+        ref = query(ref, where("sys", "==", sys))
         return await getDocs(ref).then(async snapshot => {
             if (!snapshot.empty) {
                 let d
@@ -409,7 +409,7 @@ export class blackHoleSuns {
         platform = platform ? platform : this.user.platform
         let ref = this.getStarsColRef(galaxy, platform)
     
-        ref = ref.where("connection", "==", addr)
+        ref = query(ref, where("connection", "==", addr))
         return await getDocs(ref).then(snapshot => {
             if (!snapshot.empty) {
                 return snapshot.docs[0].data()
@@ -469,7 +469,7 @@ export class blackHoleSuns {
     async deleteBase(addr) {
         if (addr) {
             let ref = this.getUsersColRef(this.user.uid, this.user.galaxy, this.user.platform, addr)
-            await ref.delete().then(() => {
+            await deleteDoc(ref).then(() => {
                 this.status(addr + " base deleted.")
                 return true
             }).catch(err => {
@@ -482,7 +482,7 @@ export class blackHoleSuns {
     async deleteEntry(entry) {
         if (entry) {
             let ref = this.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
-            await ref.delete().then(() => {
+            await deleteDoc(ref).then(() => {
                 this.status(entry.addr + " deleted.")
                 return true
             }).catch(err => {
@@ -600,7 +600,7 @@ export class blackHoleSuns {
     
                 if (start < now && end > now || start > now) {
                     d.hidden = true
-                    snapshot.docs[i].ref.update(d)
+                    updateDoc(snapshot.docs[i].ref, d)
                     break
                 }
             }
@@ -674,7 +674,7 @@ export class blackHoleSuns {
         let ref = this.getStarsColRef(galaxy, platform)
     
         if (uid || findex) {
-            ref = ref.where("uid", "==", uid ? uid : this.user.uid)
+            ref = query(ref, where("uid", "==", uid ? uid : this.user.uid))
         } else
             complete = true
     
@@ -698,7 +698,7 @@ export class blackHoleSuns {
             if (!this.list[galaxy][platform])
                 this.list[galaxy][platform] = {}
     
-            let bhref = ref.where("blackhole", "==", true)
+            let bhref = query(ref, where("blackhole", "==", true))
     
             if (findex && this.user.settings) {
                 if (this.user.settings.start) {
@@ -740,7 +740,7 @@ export class blackHoleSuns {
             displayFcn(this.entries)
     
         if (singleDispFcn) {
-            ref = ref.where("modded", ">", Timestamp.fromDate(new Date()))
+            ref = query(ref, where("modded", ">", Timestamp.fromDate(new Date())))
             this.subscribe("entries", ref, singleDispFcn)
         }
     }
@@ -748,8 +748,7 @@ export class blackHoleSuns {
     getEntriesSub(singleDispFcn) {
         if (singleDispFcn) {
             let ref = this.getStarsColRef(this.user.galaxy, this.user.platform)
-            ref = ref.where("uid", "==", this.user.uid)
-            ref = ref.where("modded", ">", Timestamp.fromDate(new Date()))
+            ref = query(ref, where("uid", "==", this.user.uid), where("modded", ">", Timestamp.fromDate(new Date())));
             this.subscribe("entries", ref, singleDispFcn)
         }
     }
@@ -827,8 +826,7 @@ export class blackHoleSuns {
     getBasesSub(singleDispFcn) {
         if (singleDispFcn) {
             let ref = this.getUsersColRef(this.user.uid, this.user.galaxy, this.user.platform)
-            ref = ref.where("modded", ">", Timestamp.fromDate(new Date()))
-            ref = ref.where("uid", "==", this.user.uid)
+            ref = query(ref, where("modded", ">", Timestamp.fromDate(new Date())), where("uid", "==", this.user.uid));
             this.subscribe("bases", ref, singleDispFcn)
         }
     }
