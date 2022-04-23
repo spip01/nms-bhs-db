@@ -49,7 +49,7 @@ $(document).ready(() => {
 
         if (fcedata) {
             nmsce.buildImageText()
-            tmImage.load("/bin/model.json", "/bin/metadata.json").then(model => this.model = model)
+            tmImage.load("/bin/model.json", "/bin/metadata.json").then(model => nmsce.model = model)
             nmsce.buildDisplayList()
         }
     }
@@ -147,8 +147,8 @@ const tTags = `
         <div id="id-idname" class="col-lg-2 col-4"></div>
         <div id="add-idname" class="col row hidden">
             <input id="txt-idname" type="text" class="col-7"></input>
-            <button id="add-idname" type="text" class="col-2 btn btn-def btn-sm" onclick="this.newTag(this)">Add</button>
-            <button id="cancel-idname" type="text" class="col-3 btn btn-def btn-sm" onclick="this.cancelTag(this)">Cancel</button>
+            <button id="add-idname" type="text" class="col-2 btn btn-def btn-sm" onclick="nmsce.newTag(this)">Add</button>
+            <button id="cancel-idname" type="text" class="col-3 btn btn-def btn-sm" onclick="nmsce.cancelTag(this)">Cancel</button>
         </div>
         <div class="col border">
             <div id="list-idname" class="row"></div>
@@ -168,7 +168,7 @@ const tRadio = `
     </div>`;
 const tRadioItem = `
     <label class="col txt-label-def">
-        <input type="radio" class="radio h6" id="rdo-tname" data-last=false onclick="this.toggleRadio(this)">
+        <input type="radio" class="radio h6" id="rdo-tname" data-last=false onclick="nmsce.toggleRadio(this)">
         &nbsp;titlettip
     </label>`;
 const tCkItem = `
@@ -182,12 +182,12 @@ const tImg = `
     <div id="row-idname" data-req="ifreq" data-type="img" class="row">
         <div class="col-lg-2 col-4 txt-label-def">titlettip&nbsp;</div>
         <input id="id-idname" type="file" class="col form-control form-control-sm" 
-            accept="image/*" name="files[]"  data-type="img" onchange="this.loadScreenshot(this)">&nbsp
+            accept="image/*" name="files[]"  data-type="img" onchange="nmsce.loadScreenshot(this)">&nbsp
     </div>`;
 
 const resultsItem = `
     <div id="row-idname" class="col-lg-p250 col-md-p333 col-sm-7 col-14 pointer bkg-white txt-label-def border rounded h6"
-        onclick="this.selectResult(this)" style="pad-bottom:3px">
+        onclick="nmsce.selectResult(this)" style="pad-bottom:3px">
         galaxy<br>
         byname<br>
         date<br>
@@ -283,8 +283,8 @@ class NMSCE {
 
         if (fcedata) {
             let rloc = $("#panels")
-            rloc.find("input").change(updateImageText)
-            rloc.find("button").click(updateImageText)
+            rloc.find("input").change(updateImageText.bind(this))
+            rloc.find("button").click(updateImageText.bind(this))
 
             let img = $("#id-canvas")
             let lastDownTarget
@@ -319,11 +319,11 @@ class NMSCE {
                 this.imageMouseUp(e)
             })
 
-            document.addEventListener('mousedown', function (e) {
+            document.addEventListener('mousedown', (e) => {
                 lastDownTarget = e.target
             }, true)
 
-            document.addEventListener('keydown', function (e) {
+            document.addEventListener('keydown', (e) => {
                 if (lastDownTarget == canvas)
                     this.imageKeypress(e)
             }, true)
@@ -1532,7 +1532,7 @@ class NMSCE {
         ref = ref.where("addr", ">=", this.last.addr.slice(0, 15) + "0000")
         ref = ref.where("addr", "<=", this.last.addr.slice(0, 15) + "02FF")
 
-        ref.get().then(snapshot => {
+        getDocs(ref).then(snapshot => {
             let list = []
             for (let doc of snapshot.docs)
                 list.push(doc.data())
@@ -1876,8 +1876,8 @@ class NMSCE {
             }
 
             if (f.imgText) {
-                rloc.find("input").change(updateImageText)
-                rloc.find("button").click(updateImageText)
+                rloc.find("input").change(updateImageText.bind(this))
+                rloc.find("button").click(updateImageText.bind(this))
             }
 
             if (f.startState === "hidden")
@@ -2214,31 +2214,31 @@ class NMSCE {
     buildImageText() {
         const ckbox = `
         <label class="col-lg-2 col-md-3 col-sm-4 col-7">
-            <input id="ck-idname" type="checkbox" ftype loc row sub onchange="this.getImageText(this, true)">
+            <input id="ck-idname" type="checkbox" ftype loc row sub onchange="nmsce.getImageText(this, true)">
             &nbsp;title
         </label>`
         const fieldinputs = `
         <label class="col-md-2 col-7 txt-label-def ">
             <input id="ck-Text" type="checkbox" data-loc="#id-Text"
-                onchange="this.getImageText(this, true)">
+                onchange="nmsce.getImageText(this, true)">
             Text&nbsp;
             <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
                 data-placement="bottom" title="Use Line break, <br>, to separate multiple lines.">
             </i>&nbsp;
         </label>
         <input id="id-Text" class="rounded col-md-5 col-7" type="text"
-            onchange="this.getImageText(this, true)">
+            onchange="nmsce.getImageText(this, true)">
 
         <label class="col-md-2 col-7 txt-label-def ">
             <input id="ck-myLogo" type="checkbox" data-loc="#id-myLogo" data-type="img"
-                onchange="this.getImageText(this, true)">
+                onchange="nmsce.getImageText(this, true)">
             Load Overlay&nbsp;
             <i class="far fa-question-circle text-danger h6" data-toggle="tooltip" data-html="false"
                 data-placement="bottom"
                 title="Load a 2nd image as an overlay. You can resize and move the 2nd image."></i>&nbsp;
         </label>
         <input id="id-myLogo" type="file" class="col-md-5 col-7 border rounded" accept="image/*"
-            name="files[]" onchange="this.loadMyLogo(this)">
+            name="files[]" onchange="nmsce.loadMyLogo(this)">
         `
 
         let appenditem = (title, type, loc, row, sub) => {
@@ -2259,7 +2259,7 @@ class NMSCE {
 
         let img = new Image()
         img.crossOrigin = "anonymous"
-        img.onload = this.onLoadLogo
+        img.onload = this.onLoadLogo.bind(this);
         img.src = "/images/app-logo.png"
 
         this.initImageText("Text")
@@ -2579,7 +2579,7 @@ class NMSCE {
         reader.onload = function () {
             let img = new Image()
             img.crossOrigin = "anonymous"
-            img.onload = this.onLoadLogo
+            img.onload = this.onLoadLogo.bind(this);
             img.src = reader.result
         }
 
@@ -2632,11 +2632,11 @@ class NMSCE {
             let file = evt.files[0]
             if (file) {
                 let reader = new FileReader()
-                reader.onload = function () {
+                reader.onload = () => {
                     this.screenshot = new Image()
                     this.screenshot.crossOrigin = "anonymous"
 
-                    this.screenshot.onload = function () {
+                    this.screenshot.onload = () => {
                         this.restoreImageText(null, true)
                         this.scaleGlyphLocation()
 
@@ -3887,7 +3887,7 @@ class NMSCE {
                 where("uid", "==", bhs.user.uid),
                 orderBy("created", "desc"),
                 limit(50));
-            this.getWithObserver(null, qury, obj.name, true, this.displayList)
+            this.getWithObserver(null, qury, obj.name, true, this.displayList.bind(this))
         }
 
         if (!skipAll) {
@@ -3899,7 +3899,7 @@ class NMSCE {
                 orderBy("created", "desc"),
                 limit(50));
 
-            this.getWithObserver(null, qury, "All", true, this.displayList, {
+            this.getWithObserver(null, qury, "All", true, this.displayList.bind(this), {
                 source: "server"
             })
         }
@@ -4017,7 +4017,7 @@ class NMSCE {
                         <div class="row">
                             <div class="col-3">
                                 <label>
-                                    <input id="ck-idname" type="checkbox" onclick="this.showModTotals(this)">
+                                    <input id="ck-idname" type="checkbox" onclick="nmsce.showModTotals(this)">
                                     &nbsp;Show All
                                 </label>
                             </div>
@@ -4028,9 +4028,9 @@ class NMSCE {
                             </div>
                         </div>
                         <div class="row">
-                            <div id="id-name" class="col-9 pointer" onclick="this.sortTotals(this)">Player&nbsp;&nbsp;<i class="fas fa-sort-alpha-down"></i></div>
-                            <div id="id-total" class="col-2 pointer" onclick="this.sortTotals(this)">Overall&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div>
-                            <div id="id-monthly" class="col-2 pointer" onclick="this.sortTotals(this)">Monthly&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div>
+                            <div id="id-name" class="col-9 pointer" onclick="nmsce.sortTotals(this)">Player&nbsp;&nbsp;<i class="fas fa-sort-alpha-down"></i></div>
+                            <div id="id-total" class="col-2 pointer" onclick="nmsce.sortTotals(this)">Overall&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div>
+                            <div id="id-monthly" class="col-2 pointer" onclick="nmsce.sortTotals(this)">Monthly&nbsp;&nbsp;<i class="fas fa-sort-numeric-up"></i></div>
                         </div>
                     </div>
                     <div id="userTotals" class="card-body scroll txt-black" style="height:600px"></div>
@@ -4052,12 +4052,12 @@ class NMSCE {
     displayTotals(list, path) {
         const rows = `
         <div id="row-uid" name="ismod" class="border-bottom h6">
-            <div class="row pointer" onclick="this.expandTotals(this)">
+            <div class="row pointer" onclick="nmsce.expandTotals(this)">
                 <div id="id-name" class="col-8"><i class="far fa-caret-square-down txt-input"></i> nameS</div>
                 <div id="id-total" class="col-2 txt-right">totalT</div>
                 <div id="id-monthly" class="col-2 txt-right">monthlyT</div>
             </div>
-            <div id="id-exp" class="row hidden" onclick="this.expandTotals(this)">
+            <div id="id-exp" class="row hidden" onclick="nmsce.expandTotals(this)">
                 <div id="id-details">detailT</div>
             </div>
         </div>`
@@ -4751,13 +4751,13 @@ class NMSCE {
 
         const row = `     
         <div id="row-idname" class="col-md-p250 col-sm-p333 col-7 border border-black h6" >
-            <div id="id-Photo" class="row pointer pl-10 pr-10" data-type="etype" data-id="eid" onclick="this.selectList(this)" style="min-height:20px">
+            <div id="id-Photo" class="row pointer pl-10 pr-10" data-type="etype" data-id="eid" onclick="nmsce.selectList(this)" style="min-height:20px">
                 <img id="img-idname" data-thumb="ethumb"
                 onload="imageLoaded(this, $(this).parent().width(), $('#id-row').height(), false)">
             </div>
             <div class="row pl-10">`
         const item = `<div id="id-idname" class="col-md-7 col-14 border pointer">title</div>`
-        const sortItem = `<div id="id-idname" class="col-md-7 col-14 border pointer" onclick="this.sortLoc(this)">title</div>`
+        const sortItem = `<div id="id-idname" class="col-md-7 col-14 border pointer" onclick="nmsce.sortLoc(this)">title</div>`
         const end = `</div></div>`
 
         let h = ""

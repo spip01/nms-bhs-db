@@ -1,7 +1,7 @@
 'use strict';
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"
 import { getAuth, getRedirectResult, signInWithRedirect, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"
-import { getFirestore, Timestamp, enableIndexedDbPersistence, collection, doc, setDoc, getDoc, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
+import { getFirestore, Timestamp, enableIndexedDbPersistence, collection, query, where, doc, setDoc, getDoc, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { getStorage } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-functions.js"
 import { buildGalaxyInfo, fcedata, findex, fnmsce, fsearch, ftotals, mergeObjects } from "./commonNms.js";
@@ -173,7 +173,7 @@ export class blackHoleSuns {
     
             let ref = this.getUsersColRef(usr.uid)
             try {
-                let doc = await ref.get()
+                let doc = await getDoc(ref);
                 if (doc.exists())
                     user = doc.data()
                 else {
@@ -192,13 +192,6 @@ export class blackHoleSuns {
             user.role = "user"
             user.lasttime = Timestamp.now()
             this.updateUser(user)
-    
-            // let ref = collection("users").where("_name", "==", "KurganSPK")
-            // let snapshot = await ref.get()
-            // if (!snapshot.empty) {
-            //     user = snapshot.docs[0].data()
-            //     this.displayUser(user, true)
-            // }
     
             this.doLoggedin(user)
             this.navLoggedin()
@@ -289,7 +282,7 @@ export class blackHoleSuns {
         const pnlTop = 0
         const pnlBottom = 1
     
-        return ref.get().then(async doc => {
+        return getDoc(ref).then(async doc => {
             if (doc.exists()) {
                 let d = doc.data()
                 let e = null
@@ -333,7 +326,7 @@ export class blackHoleSuns {
         let ref = this.getStarsColRef(galaxy, platform)
     
         ref = ref.where("reg", "==", reg)
-        return await ref.get().then(async snapshot => {
+        return await getDocs(ref).then(async snapshot => {
             if (!snapshot.empty) {
                 let d
                 let e = null
@@ -363,7 +356,7 @@ export class blackHoleSuns {
         let ref = this.getStarsColRef(galaxy, platform)
     
         ref = ref.where("sys", "==", sys)
-        return await ref.get().then(async snapshot => {
+        return await getDocs(ref).then(async snapshot => {
             if (!snapshot.empty) {
                 let d
                 let e = null
@@ -390,10 +383,9 @@ export class blackHoleSuns {
     getEntryByRegionAddr(addr, displayfcn) {
         let ref = this.getStarsColRef(this.user.galaxy, this.user.platform)
     
-        ref = ref.where("addr", ">=", addr.slice(0, 15)+"0000")
-        ref = ref.where("addr", "<=", addr.slice(0, 15)+"02FF")
+        ref = query(ref, where("addr", ">=", addr.slice(0, 15) + "0000"), where("addr", "<=", addr.slice(0, 15) + "02FF"));
     
-        return ref.get().then(async snapshot => {
+        return getDocs(ref).then(async snapshot => {
             if (!snapshot.empty) {
                 for (let doc of snapshot.docs) {
                     let d = doc.data()
@@ -416,7 +408,7 @@ export class blackHoleSuns {
         let ref = this.getStarsColRef(galaxy, platform)
     
         ref = ref.where("connection", "==", addr)
-        return await ref.get().then(snapshot => {
+        return await getDocs(ref).then(snapshot => {
             if (!snapshot.empty) {
                 return snapshot.docs[0].data()
             } else
@@ -504,16 +496,16 @@ export class blackHoleSuns {
         updt.uid = user.uid
     
         let ref = this.getStarsColRef()
-        return await ref.get().then(snapshot => {
+        return await getDocs(ref).then(snapshot => {
             let pr = []
             for (let doc of snapshot.docs) {
                 let g = doc.data()
     
                 for (let p of platformList) {
                     let ref = this.getStarsColRef(g.name, p.name)
-                    ref = ref.where("_name", "==", user._name)
+                    ref = query(ref, where("_name", "==", user._name));
     
-                    pr.push(ref.get().then(snapshot => {
+                    pr.push(getDocs(ref).then(snapshot => {
                         let pr = []
     
                         if (!snapshot.empty) {
@@ -576,8 +568,8 @@ export class blackHoleSuns {
         let now = (new Date()).getTime()
     
         let ref = collection(this.fs, "contest")
-        ref = ref.orderBy("start")
-        ref.get().then(snapshot => {
+        ref = query(ref, orderBy("start"))
+        getDocs(ref).then(snapshot => {
             for (let i = 0; i < snapshot.size; ++i) {
                 let d = snapshot.docs[i].data()
                 let start = d.start.toDate().getTime()
@@ -597,8 +589,8 @@ export class blackHoleSuns {
         let now = (new Date()).getTime()
     
         let ref = collection(this.fs, "contest")
-        ref = ref.orderBy("start")
-        ref.get().then(snapshot => {
+        ref = query(ref, orderBy("start"))
+        getDocs(ref).then(snapshot => {
             for (let i = 0; i < snapshot.size; ++i) {
                 let d = snapshot.docs[i].data()
                 let start = d.start.toDate().getTime()
@@ -808,19 +800,19 @@ export class blackHoleSuns {
     
     async getBases(displayFcn, singleDispFcn) {
         let ref = this.getUsersColRef(this.user.uid, this.user.galaxy, this.user.platform)
-        ref = ref.where("uid", "==", this.user.uid)
+        ref = query(ref, where("uid", "==", this.user.uid));
     
         if (findex && this.user.settings.start) {
             let start = Timestamp.fromDate(new Date(this.user.settings.start))
-            ref = ref.where("created", ">=", start)
+            ref = query(ref, where("created", ">=", start))
         }
     
         if (findex && this.user.settings.end) {
             let end = Timestamp.fromDate(new Date(this.user.settings.end))
-            ref = ref.where("created", "<=", end)
+            ref = query(ref, where("created", "<=", end))
         }
     
-        await ref.get().then(async snapshot => {
+        await getDocs(ref).then(async snapshot => {
             for (let i = 0; i < snapshot.size; ++i)
                 this.entries = this.addBaseList(snapshot.docs[i].data(), this.entries)
     

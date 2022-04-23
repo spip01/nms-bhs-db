@@ -427,7 +427,7 @@ blackHoleSuns.prototype.fBatchDelete = async function (entry, check) {
     let ref = bhs.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
 
     if (check) {
-        doc = await ref.get()
+        doc = await getDoc(ref);
         if (!doc.exists())
             bhs.filestatus(entry.addr + " doesn't exist for delete.", 0)
     } else {
@@ -442,7 +442,7 @@ blackHoleSuns.prototype.fBatchDeleteBase = async function (entry, check) {
     let ref = bhs.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr)
 
     if (check) {
-        await ref.get().then(function (doc) {
+        await getDoc(ref).then(function (doc) {
             if (!doc.exists())
                 bhs.filestatus(entry.addr + " base doesn't exist for delete.", 0)
         }).catch(err => {
