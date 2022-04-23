@@ -1,7 +1,7 @@
 'use strict'
 import { uploadBytes, deleteObject } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"
 import { bhs, blackHoleSuns, startUp } from "./commonFb.js"
-import { getIndex, mergeObjects, reformatAddress } from "./commonNms.js"
+import { getIndex, mergeObjects, reformatAddress, uuidv4 } from "./commonNms.js"
 import { galaxyList, modeList, platformList } from "./constants.js"
 
 // Copyright 2019-2021 Black Hole Suns

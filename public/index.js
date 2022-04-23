@@ -1,8 +1,8 @@
 'use strict'
 
 import { bhs, blackHoleSuns, startUp } from "./commonFb.js"
-import { addGlyphButtons, addrToGlyph, fnmsce, getIndex, mergeObjects, reformatAddress } from "./commonNms.js"
-import { economyList, lifeformList, ownershipList, platformList } from "./constants.js"
+import { addGlyphButtons, addressToXYZ, addrToGlyph, fnmsce, getIndex, mergeObjects, reformatAddress } from "./commonNms.js"
+import { economyList, latestversion, lifeformList, ownershipList, platformList } from "./constants.js"
 
 // Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper

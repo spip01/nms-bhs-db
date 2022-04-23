@@ -3,7 +3,7 @@
 import { collection, query, where, increment, doc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { httpsCallable, getFunctions } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-functions.js"
 import { bhs, blackHoleSuns, startUp } from "./commonFb.js"
-import { addGlyphButtons, addrToGlyph, calcDistXYZ, getIndex, reformatAddress, validateAddress } from "./commonNms.js"
+import { addGlyphButtons, addressToXYZ, addrToGlyph, calcDistXYZ, getIndex, reformatAddress, validateAddress } from "./commonNms.js"
 import { galaxyList, platformList } from "./constants.js"
 import { dispAddr } from "./glyph.js"
 import { buildGlyphModal } from "./glyphReader.js"

@@ -1,7 +1,7 @@
 'use strict'
 import { Timestamp, writeBatch } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { bhs, blackHoleSuns } from "./commonFb.js"
-import { mergeObjects, reformatAddress } from "./commonNms.js"
+import { addressToXYZ, mergeObjects, reformatAddress, uuidv4 } from "./commonNms.js"
 import { conflictList, economyList, galaxyList, lifeformList, ownershipList, platformList } from "./constants.js"
 
 // Copyright 2019-2021 Black Hole Suns

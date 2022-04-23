@@ -3,8 +3,8 @@
 import { Timestamp, collection, collectionGroup, query, where, orderBy, increment, arrayUnion, startAfter, limit, doc, getDoc, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"
 import { bhs, blackHoleSuns, startUp } from "./commonFb.js";
-import { addGlyphButtons, addrToGlyph, fcedata, fnmsce, fpreview, getIndex, mergeObjects, reformatAddress } from "./commonNms.js";
-import { biomeList, classList, colorList, economyList, economyListTier, faunaList, faunaProductTamed, fontList, frigateList, galaxyList, lifeformList, modeList, platformListAll, resourceList, sentinelList, shipList, versionList } from "./constants.js";
+import { addGlyphButtons, addressToXYZ, addrToGlyph, fcedata, fnmsce, fpreview, getIndex, mergeObjects, reformatAddress, uuidv4 } from "./commonNms.js";
+import { biomeList, classList, colorList, economyList, economyListTier, faunaList, faunaProductTamed, fontList, frigateList, galaxyList, latestversion, lifeformList, modeList, platformListAll, resourceList, sentinelList, shipList, versionList } from "./constants.js";
 import { calcImageSize } from "./imageSizeUtil.js";
 
 // Copyright 2019-2021 Black Hole Suns
@@ -392,7 +392,7 @@ class NMSCE {
                 $("[data-type='string'] .fa-check").hide()
                 getPlanet(idx.first())
 
-                bhs.getEntry(addr, this.displaySystem, null, null, true).then(entry => {
+                bhs.getEntry(addr, this.displaySystem.bind(this), null, null, true).then(entry => {
                     if (!entry) {
                         if (this.lastsys && this.lastsys.sys === $("#id-sys").val()) {
                             $("#id-sys").val("")
@@ -1558,7 +1558,7 @@ class NMSCE {
                 bhs.user.imageText = this.extractImageText()
 
                 let ref = bhs.getUsersColRef(bhs.user.uid)
-                ref.set(bhs.user, {
+                setDoc(ref, bhs.user, {
                     merge: true
                 }).then().catch(err => {
                     bhs.status("ERROR: " + err)
@@ -1580,7 +1580,7 @@ class NMSCE {
             if (ok) {
                 bhs.user = mergeObjects(bhs.user, user)
                 let ref = bhs.getUsersColRef(bhs.user.uid)
-                ref.set(bhs.user, {
+                setDoc(ref, bhs.user, {
                     merge: true
                 }).then().catch(err => {
                     bhs.status("ERROR: " + err)
@@ -3276,7 +3276,7 @@ class NMSCE {
                                     if (!e.reddit)
                                         out.reddit = Timestamp.now()
 
-                                    ref.set(out, {
+                                    setDoc(ref, out, {
                                         merge: true
                                     }).then(() => {
                                         this.postStatus("Posted")
@@ -3837,7 +3837,7 @@ class NMSCE {
         t[e.type] = increment(val)
 
         let ref = bhs.getUsersColRef(bhs.user.uid)
-        ref.set({
+        setDoc(ref, {
             nmsceTotals: t
         }, {
             merge: true

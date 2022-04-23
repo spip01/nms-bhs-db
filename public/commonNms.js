@@ -81,7 +81,7 @@ export function addrToGlyph(addr, planet) {
     return s
 }
 
-function addressToXYZ(addr) {
+export function addressToXYZ(addr) {
     let out = {
         x: 0,
         y: 0,

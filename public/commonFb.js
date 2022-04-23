@@ -4,7 +4,7 @@ import { getAuth, getRedirectResult, signInWithRedirect, GoogleAuthProvider, Git
 import { getFirestore, Timestamp, enableIndexedDbPersistence, collection, query, where, doc, setDoc, getDoc, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { getStorage } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-functions.js"
-import { buildGalaxyInfo, fcedata, findex, fnmsce, fsearch, ftotals, mergeObjects } from "./commonNms.js";
+import { buildGalaxyInfo, validateAddress, fcedata, findex, fnmsce, fsearch, ftotals, mergeObjects } from "./commonNms.js";
 import { platformList } from "./constants.js";
 
 // Copyright 2019-2021 Black Hole Suns
@@ -281,9 +281,11 @@ export class blackHoleSuns {
     
         const pnlTop = 0
         const pnlBottom = 1
+
+        const func = ref.type == 'collection' ? getDocs : getDoc;
     
-        return getDoc(ref).then(async doc => {
-            if (doc.exists()) {
+        return func(ref).then(async doc => {
+            if (doc.exists && doc.exists()) {
                 let d = doc.data()
                 let e = null
     
@@ -426,14 +428,14 @@ export class blackHoleSuns {
             entry.created = Timestamp.now()
     
         let ref = this.getStarsColRef(entry.galaxy, entry.platform, entry.addr)
-        await ref.set(entry, {
+        await setDoc(ref, entry, {
             merge: true
         }).then(() => {
             this.status(entry.addr + " saved.")
             return true
         }).catch(err => {
             if (err.code === "permission-denied") {
-                ref.set(entry, {
+                setDoc(ref, entry, {
                     mergeFields: ["life", "econ", "reg", "sys"]
                 }).then(() => {
                     this.status(entry.addr + " (lifeform, economy, system & region) saved.")
@@ -453,7 +455,7 @@ export class blackHoleSuns {
         entry.time = Timestamp.now()
     
         let ref = this.getUsersColRef(entry.uid, entry.galaxy, entry.platform, entry.addr)
-        await ref.set(entry, {
+        await setDoc(ref, entry, {
             merge: true
         }).then(() => {
             this.status(entry.addr + " base saved.")

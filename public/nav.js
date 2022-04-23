@@ -1,6 +1,6 @@
 'use strict'
 
-import { addGlyphButtons, reformatAddress } from "./commonNms"
+import { addGlyphButtons, addressToXYZ, reformatAddress } from "./commonNms"
 import { buildGlyphModal } from "./glyphReader"
 
 // Copyright 2019-2021 Black Hole Suns

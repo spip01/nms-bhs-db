@@ -2,7 +2,7 @@
 
 import { Timestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { bhs, blackHoleSuns, startUp } from "./commonFb.js";
-import { reformatAddress } from "./commonNms.js";
+import { addressToXYZ, reformatAddress } from "./commonNms.js";
 import { galaxyList, platformList } from "./constants.js";
 
 // Copyright 2019-2021 Black Hole Suns

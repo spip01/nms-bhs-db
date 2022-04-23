@@ -2,8 +2,8 @@
 
 import {collection, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { blackHoleSuns, bhs } from "./commonFb.js";
-import { fcedata, fdarc, findex, fnmsce, fpoi, fpreview, fsearch, ftotals, getIndex, mergeObjects, reformatAddress } from "./commonNms.js";
-import { galaxyList, platformList } from "./constants.js";
+import { addressToXYZ, fcedata, fdarc, findex, fnmsce, fpoi, fpreview, fsearch, ftotals, getIndex, mergeObjects, reformatAddress } from "./commonNms.js";
+import { galaxyList, latestversion, platformList } from "./constants.js";
 
 // Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper
@@ -161,7 +161,7 @@ blackHoleSuns.prototype.setError = function () {
             e.errorMode = true;
         }
 
-        doc.ref.set(e, {
+        setDoc(doc.ref, e, {
             merge: true,
         });
     });
@@ -1295,7 +1295,7 @@ blackHoleSuns.prototype.extractUser = function () {
     u.platform = loc.find("#btn-Platform").text().stripNumber();
     u.galaxy = loc.find("#btn-Galaxy").text().stripNumber();
     u.org = loc.find("#btn-Civ-Org").text().stripNumber();
-    u.version = latestversion; // loc.find("#btn-Version").text().stripNumber()
+    u.version = latestversion;
 
     if (u.org === "--blank--") u.org = "";
 
