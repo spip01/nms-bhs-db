@@ -1797,8 +1797,8 @@ class NMSCE {
 
                             itm.find("#btn-" + id).text(f.name)
                         } else {
-                            let ref = bhs.fs.doc("tags/" + itmid)
-                            ref.get().then(doc => {
+                            let ref = doc(bhs.fs, "tags/" + itmid)
+                            getDoc(ref).then(doc => {
                                 let tags = []
 
                                 if (doc.exists) {

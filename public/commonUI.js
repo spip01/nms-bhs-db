@@ -50,7 +50,7 @@ blackHoleSuns.prototype.doLoggedout = function () {
 };
 
 blackHoleSuns.prototype.doLoggedin = function (user) {
-    bhs.getUser(bhs.displayUser);
+    bhs.getUser(bhs.displayUser.bind(this));
 
     if (findex || fdarc) {
         let ref = doc(bhs.fs, "admin/state");
