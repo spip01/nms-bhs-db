@@ -231,7 +231,9 @@ export const economyListTier = [
     {
         name: "T3",
         ttip: "***<br>Advanced<br>Affluent<br>Booming<br>Flourishing<br>High Supply<br>Opulent<br>Prosperous<br>Wealthy",
-    },
+    }, {
+        name: "BlackMarket"
+    }
 ];
 
 export const economyList = [
@@ -334,6 +336,9 @@ export const economyList = [
     {
         name: "Wealthy",
         number: 3,
+    }, {
+        name: "Black Market",
+        number: 4
     },
 ];
 
@@ -1737,7 +1742,8 @@ export const shipList = [{
     bodies: "/images/exotic-opt.svg",
 }, {
     name: "Solar",
-    bodies: "/images/solar.svg"
+    bodies: "/images/solar.svg",
+    includeColor: true
 }
 ]
 

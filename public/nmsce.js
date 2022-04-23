@@ -1781,50 +1781,53 @@ class NMSCE {
                     }
                     break
                 case "tags":
-                    appenditem(itm, tTags, "", id, f.ttip, f.required, inpLongHdr, f.inputHide)
-                    loc = itm.find("#row-" + id)
-                    if (f.max)
-                        loc.data("max", f.max)
+                    if (typeof f.ckIncludeColor === "undefined" || !f.ckIncludeColor || slist.includeColor) {
+                        appenditem(itm, tTags, "", id, f.ttip, f.required, inpLongHdr, f.inputHide)
+                        loc = itm.find("#row-" + id)
+                        if (f.max)
+                            loc.data("max", f.max)
 
-                    if (f.list) {
-                        bhs.buildMenu(loc, f.name, f.list, this.addTag, {
-                            nolabel: true,
-                            ttip: f.ttip,
-                            sort: true,
-                            required: f.required
-                        })
-
-                        itm.find("#btn-" + id).text(f.name)
-                    } else {
-                        getDoc(doc(bhs.fs, "tags/" + itmid)).then(doc => {
-                            let tags = []
-
-                            if (doc.exists()) {
-
-                                let list = doc.data()
-                                for (let t of list.tags)
-                                    tags.push({
-                                        name: t
-                                    })
-
-                                tags = tags.sort((a, b) =>
-                                    a.name.toLowerCase() > b.name.toLowerCase() ? 1 :
-                                        a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0)
-                            }
-
-                            if (fcedata)
-                                tags.unshift({
-                                    name: "Add new tag"
-                                })
-
-                            // let pnl = doc.ref.id
-                            bhs.buildMenu(loc, f.name, tags, this.addTag, {
+                        if (f.list) {
+                            bhs.buildMenu(loc, f.name, f.list, nmsce.addTag, {
                                 nolabel: true,
-                                ttip: f.ttip
+                                ttip: f.ttip,
+                                sort: true,
+                                required: f.required
                             })
 
-                            loc.find("#btn-" + id).text(f.name)
-                        })
+                            itm.find("#btn-" + id).text(f.name)
+                        } else {
+                            let ref = bhs.fs.doc("tags/" + itmid)
+                            ref.get().then(doc => {
+                                let tags = []
+
+                                if (doc.exists) {
+
+                                    let list = doc.data()
+                                    for (let t of list.tags)
+                                        tags.push({
+                                            name: t
+                                        })
+
+                                    tags = tags.sort((a, b) =>
+                                        a.name.toLowerCase() > b.name.toLowerCase() ? 1 :
+                                            a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0)
+                                }
+
+                                if (fcedata)
+                                    tags.unshift({
+                                        name: "Add new tag"
+                                    })
+
+                                // let pnl = doc.ref.id
+                                bhs.buildMenu(loc, f.name, tags, nmsce.addTag, {
+                                    nolabel: true,
+                                    ttip: f.ttip
+                                })
+
+                                loc.find("#btn-" + id).text(f.name)
+                            })
+                        }
                     }
                     break
                 case "radio":
@@ -5166,6 +5169,14 @@ const objectList = [{
         required: true,
         search: true,
         sublist: [{
+            name: "Sail",
+            ttip: "Translucent sail color.",
+            type: "tags",
+            search: true,
+            list: colorList,
+            max: 1,
+            ckIncludeColor: true
+        }, {
             name: "Slots",
             type: "radio",
             ttip: "slotTtip",
