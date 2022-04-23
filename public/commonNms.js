@@ -723,6 +723,8 @@ const economyListTier = [{
 }, {
     name: "T3",
     ttip: "***<br>Advanced<br>Affluent<br>Booming<br>Flourishing<br>High Supply<br>Opulent<br>Prosperous<br>Wealthy",
+}, {
+    name: "BlackMarket"
 }]
 
 const economyList = [{
@@ -801,6 +803,9 @@ const economyList = [{
 }, {
     name: "Wealthy",
     number: 3
+}, {
+    name: "Black Market",
+    number: 4
 }]
 
 const conflictList = [{
