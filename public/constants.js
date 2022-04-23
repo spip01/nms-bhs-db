@@ -1686,7 +1686,11 @@ export const mapList = [{
 }, {
     name: "Living-Ship",
     map: "/images/living-ship-opt.svg",
-}]
+}, {
+    name: "Solar-Ship",
+    map: "/images/solar.svg",
+}
+]
 
 export const shipList = [{
     name: "Fighter",
@@ -1731,7 +1735,11 @@ export const shipList = [{
 }, {
     name: "Exotic",
     bodies: "/images/exotic-opt.svg",
-}]
+}, {
+    name: "Solar",
+    bodies: "/images/solar.svg"
+}
+]
 
 export const mtList = [{
     name: "Nothing Selected"
