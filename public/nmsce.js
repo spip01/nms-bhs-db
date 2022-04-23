@@ -5311,6 +5311,9 @@ const mapList = [{
 }, {
     name: "Living-Ship",
     map: "/images/living-ship-opt.svg",
+}, {
+    name: "Solar-Ship",
+    map: "/images/solar.svg",
 }]
 
 const shipList = [{
@@ -5356,7 +5359,11 @@ const shipList = [{
 }, {
     name: "Exotic",
     bodies: "/images/exotic-opt.svg",
-}]
+},{
+    name: "Solar",
+    bodies: "/images/solar.svg"
+}
+]
 
 const mtList = [{
     name: "Nothing Selected"
