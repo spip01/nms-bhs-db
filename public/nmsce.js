@@ -5315,7 +5315,7 @@ const mapList = [{
     map: "/images/living-ship-opt.svg",
 }, {
     name: "Solar-Ship",
-    map: "/images/solar.svg",
+    map: "/images/solar-opt.svg",
 }]
 
 const shipList = [{
@@ -5363,7 +5363,7 @@ const shipList = [{
     bodies: "/images/exotic-opt.svg",
 }, {
     name: "Solar",
-    bodies: "/images/solar.svg",
+    bodies: "/images/solar-opt.svg",
     includeColor: true
 }]
 
