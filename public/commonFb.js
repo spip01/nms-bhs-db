@@ -109,21 +109,22 @@ export class blackHoleSuns {
         }
         */
     
-        getRedirectResult().then(result => {
-            if (result.credential) {
-                var token = result.credential.accessToken
-            }
+        //TODO: Does this need to exist? there are some problems with it
+        // getRedirectResult().then(result => {
+        //     if (result.credential) {
+        //         var token = result.credential.accessToken
+        //     }
     
-            var user = result.user
-            this.onAuthStateChanged(user)
-        }).catch(error => {
-            var errorCode = error.code
-            var errorMessage = error.message
-            var email = error.email
-            var credential = error.credential
+        //     var user = result.user
+        //     this.onAuthStateChanged(user)
+        // }).catch(error => {
+        //     var errorCode = error.code
+        //     var errorMessage = error.message
+        //     var email = error.email
+        //     var credential = error.credential
     
-            $("#loggedout").html("<h4>" + errorMessage + "</h4>")
-        })
+        //     $("#loggedout").html("<h4>" + errorMessage + "</h4>")
+        // })
     
         this.fbauth.onAuthStateChanged(this.onAuthStateChanged.bind(bhs))
     }
