@@ -235,13 +235,14 @@ blackHoleSuns.prototype.displayUser = function (user, force) {
         }
     }
 
-    if (
-        typeof Storage !== "undefined" &&
-        (!bhs.user.galaxy || !bhs.user.platform)
-    ) {
-        bhs.user.galaxy = window.localStorage.getItem("galaxy");
-        bhs.user.platform = window.localStorage.getItem("platform");
-    }
+    // TODO: Figure out what this does and if its needed?
+    // if (
+    //     typeof Storage !== "undefined" &&
+    //     (!bhs.user.galaxy || !bhs.user.platform)
+    // ) {
+    //     bhs.user.galaxy = window.localStorage.getItem("galaxy");
+    //     bhs.user.platform = window.localStorage.getItem("platform");
+    // }
 
     $("body").css(
         "background-color",

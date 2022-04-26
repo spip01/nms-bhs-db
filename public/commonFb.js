@@ -189,7 +189,7 @@ export class blackHoleSuns {
             if (usr.displayName)
                 user.displayName = usr.displayName
     
-            user.role = "user"
+            user.role = usr.role;
             user.lasttime = Timestamp.now()
             this.updateUser(user)
     
