@@ -102,7 +102,7 @@ export class blackHoleSuns {
         //     cacheSizeBytes: 1024 * 1024
         // })
 
-        enableIndexedDbPersistence(this.fs);
+        // enableIndexedDbPersistence(this.fs);
         /*
         {
             synchronizeTabs: true

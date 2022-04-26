@@ -8,7 +8,7 @@ import { addGlyphButtons, addressToXYZ, addrToGlyph, fcedata, fnmsce, fpreview, 
 import { biomeList, classList, colorList, economyList, economyListTier, faunaList, faunaProductTamed, fontList, frigateList, galaxyList, latestversion, lifeformList, modeList, platformListAll, resourceList, sentinelList, shipList, versionList } from "./constants.js";
 import { calcImageSize } from "./imageSizeUtil.js";
 
-if(window.location.hostname === "localhost")
+if (window.location.hostname === "localhost")
     setLogLevel("verbose");
 // Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper
@@ -1495,8 +1495,8 @@ class NMSCE {
         this.entries["Search-Results"] = []
 
         let ref = query(collectionGroup(bhs.fs, "nmsceCommon"),
-                        where("galaxy", "==", this.last.galaxy),
-                        where("addr", "==", this.last.addr))
+            where("galaxy", "==", this.last.galaxy),
+            where("addr", "==", this.last.addr))
 
         getDocs(ref).then(snapshot => {
             let list = []
@@ -1516,9 +1516,9 @@ class NMSCE {
         this.entries["Search-Results"] = []
 
         let ref = query(collectionGroup(bhs.fs, "nmsceCommon"),
-                        where("galaxy", "==", this.last.galaxy),
-                        where("addr", ">=", this.last.addr.slice(0, 15) + "0000"),
-                        where("addr", "<=", this.last.addr.slice(0, 15) + "02FF"));
+            where("galaxy", "==", this.last.galaxy),
+            where("addr", ">=", this.last.addr.slice(0, 15) + "0000"),
+            where("addr", "<=", this.last.addr.slice(0, 15) + "02FF"));
 
         getDocs(ref).then(snapshot => {
             let list = []
@@ -3699,7 +3699,7 @@ class NMSCE {
                 vref = collection(docRef, "nmsceCommon")
                 vref.get().then(snapshot => {
                     for (let doc of snapshot.docs)
-                        delete(doc.ref);
+                        delete (doc.ref);
                 })
 
                 deleteObject(ref(bhs.fbstorage, originalPath + entry.Photo));
@@ -3707,7 +3707,7 @@ class NMSCE {
                 deleteObject(ref(bhs.fbstorage, displayPath + entry.Photo));
 
                 deleteObject(ref(bhs.fbstorage, thumbPath + entry.Photo));
- 
+
             }).catch(err => {
                 bhs.status("ERROR: " + err.code)
                 console.log(err)
@@ -3869,15 +3869,18 @@ class NMSCE {
         if (typeof this.entries === "undefined")
             this.entries = {}
 
-        for (let obj of objectList) {
-            this.entries[obj.name] = []
-            this.clearDisplayList(obj.name)
+        if (!!bhs.user.galaxy) {
 
-            let qury = query(collection(bhs.fs, "nmsce/" + bhs.user.galaxy + "/" + obj.name),
-                where("uid", "==", bhs.user.uid),
-                orderBy("created", "desc"),
-                limit(50));
-            this.getWithObserver(null, qury, obj.name, true, this.displayList.bind(this))
+            for (let obj of objectList) {
+                this.entries[obj.name] = []
+                this.clearDisplayList(obj.name)
+
+                let qury = query(collection(bhs.fs, "nmsce/" + bhs.user.galaxy + "/" + obj.name),
+                    where("uid", "==", bhs.user.uid),
+                    orderBy("created", "desc"),
+                    limit(50));
+                this.getWithObserver(null, qury, obj.name, true, this.displayList.bind(this))
+            }
         }
 
         if (!skipAll) {
