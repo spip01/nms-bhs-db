@@ -1,4 +1,5 @@
 'use strict'
+import { setLogLevel } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"
 
 import { Timestamp, collection, collectionGroup, query, where, orderBy, increment, arrayUnion, startAfter, limit, doc, getDoc, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"
@@ -7,8 +8,11 @@ import { addGlyphButtons, addressToXYZ, addrToGlyph, fcedata, fnmsce, fpreview, 
 import { biomeList, classList, colorList, economyList, economyListTier, faunaList, faunaProductTamed, fontList, frigateList, galaxyList, latestversion, lifeformList, modeList, platformListAll, resourceList, sentinelList, shipList, versionList } from "./constants.js";
 import { calcImageSize } from "./imageSizeUtil.js";
 
+if(window.location.hostname === "localhost")
+    setLogLevel("verbose");
 // Copyright 2019-2021 Black Hole Suns
 // Written by Stephen Piper
+
 
 var nmsce;
 // Does nothing. Purely for consistency
@@ -85,14 +89,14 @@ $(document).ready(() => {
         nmsce.searchRegion()
 
     } else if (passed.i && passed.g && passed.t) {
-        // getDocs(collection(bhs.fs, "nmsce/" + passed.g + "/" + passed.t + "/" + passed.i)).then(doc => {
-        //     if (doc.exists) {
-        //         if (fnmsce || fpreview)
-        //             this.displaySelected(doc.data())
-        //         else if (fcedata)
-        //             this.displaySingle(doc.data())
-        //     }
-        // })
+        getDoc(doc(bhs.fs, "nmsce/" + passed.g + "/" + passed.t + "/" + passed.i)).then(doc => {
+            if (doc.exists) {
+                if (fnmsce || fpreview)
+                    nmsce.displaySelected(doc.data())
+                else if (fcedata)
+                    nmsce.displaySingle(doc.data())
+            }
+        })
     }
 })
 
@@ -907,9 +911,8 @@ class NMSCE {
         this.displaySystem(entry)
         this.changeAddr(null, entry.addr)
 
-        let link = "https://this.com/preview.html?i=" + entry.id + "&g=" + entry.galaxy.nameToId() + "&t=" + entry.type.nameToId()
+        let link = `/preview.html?i=${entry.id}&g=${entry.galaxy.nameToId()}&t=${entry.type.nameToId()}`;
         $("[id|='permalink']").attr("href", link)
-        $("[id|='permalink']").on('dragstart', false)
 
         let disp = function (flds, pnltype, slist) {
             let pnl = $("#typePanels " + pnltype)
@@ -2906,7 +2909,7 @@ class NMSCE {
         let e = this.last
 
         if (e && bhs.user.uid && (bhs.user.uid === e.uid || bhs.hasRole("admin"))) {
-            let link = "https://" + window.location.hostname + "/cedata.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
+            let link = "/cedata.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
             window.open(link, "_self")
         }
     }
@@ -3172,10 +3175,10 @@ class NMSCE {
         window.localStorage.setItem('nmsce-reddit-title', title)
 
         let e = this.last
-        let link = "https://this.com/preview.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
+        let link = `/preview.html?i=${e.id}&g=${e.galaxy.nameToId()}&t=${e.type.nameToId()}`
         window.localStorage.setItem('nmsce-reddit-plink', link)
 
-        link = "https://this.com?g=" + e.galaxy.nameToId() + "&s=" + addrToGlyph(e.addr)
+        link = `/?g=${e.galaxy.nameToId()}&s=${addrToGlyph(e.addr)}`
         window.localStorage.setItem('nmsce-reddit-slink', link)
 
         getDownloadURL(ref(bhs.fbstorage, displayPath + this.last.Photo)).then(url => {
@@ -3240,7 +3243,7 @@ class NMSCE {
                                     },
                                     data: {
                                         thing_id: t,
-                                        text: "This was posted from the [NMSCE web app](https://this.com). Here is the direct [link](" + plink + ") to this item. This is a [link](" + slink + ") to everything in this system."
+                                        text: "This was posted from the [NMSCE web app](https://nmsce.com). Here is the direct [link](" + plink + ") to this item. This is a [link](" + slink + ") to everything in this system."
                                     },
                                     crossDomain: true,
                                 })
@@ -4463,9 +4466,8 @@ class NMSCE {
             })
         }
 
-        let link = "https://this.com/preview.html?i=" + e.id + "&g=" + e.galaxy.nameToId() + "&t=" + e.type.nameToId()
+        let link = `/preview.html?i=${e.id}&g=${e.galaxy.nameToId()}&t=${e.type.nameToId()}`
         $("[id|='permalink']").attr("href", link)
-        $("[id|='permalink']").on('dragstart', false)
 
         let idx = getIndex(objectList, "name", e.type)
         let obj = objectList[idx]
@@ -4951,7 +4953,7 @@ const mapColors = {
 
 const reddit = {
     client_id: "8oDpVp9JDDN7ng",
-    redirect_url: "http://this.com/cedata.html",
+    redirect_url: "http://nmsce.com/cedata.html",
     scope: "identity,submit,mysubreddits,flair",
     auth_url: "https://www.reddit.com/api/v1/authorize",
     token_url: "https://ssl.reddit.com/api/v1/access_token",

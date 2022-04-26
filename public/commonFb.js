@@ -189,7 +189,7 @@ export class blackHoleSuns {
             if (usr.displayName)
                 user.displayName = usr.displayName
     
-            user.role = usr.role;
+            user.role = usr.role || 'user';
             user.lasttime = Timestamp.now()
             this.updateUser(user)
     
@@ -385,7 +385,9 @@ export class blackHoleSuns {
     getEntryByRegionAddr(addr, displayfcn) {
         let ref = this.getStarsColRef(this.user.galaxy, this.user.platform)
     
-        ref = query(ref, where("addr", ">=", addr.slice(0, 15) + "0000"), where("addr", "<=", addr.slice(0, 15) + "02FF"));
+        let aw = where("addr", ">=", addr.slice(0, 15) + "0000");
+        let bw = where("addr", "<=", addr.slice(0, 15) + "02FF");
+        ref = query(ref, aw, bw);
     
         return getDocs(ref).then(async snapshot => {
             if (!snapshot.empty) {
