@@ -23,7 +23,7 @@ var sub = null
 var mods = []
 var rules = {}
 var lastPost = {}
-const version = 3.87
+const version = 3.88
 
 // main()
 // async function main() {
