@@ -1,4 +1,71 @@
 ### Rules that match conditions are executed in 2 groups removal/approval actions run first then the rest ###
+---
+# reapprove bot/automod comments when they get reported as spam - 4/27/22 - sp
+type: comment
+reports: 1
+author:
+    name (includes):["automoderator", "nmscebot", "NMSCoordExBot"]
+action: approve
+
+---
+# moderator mention filter - 12/28/21 - sp
+body (regex, includes): ["x_muzzler_x", "nms ?survival ?guru", "apex ?fatality", "kurgan", "dodge ?greythorne", "tyrannosaur", "floury ?squirrel", "spiper", "moderator"]
+~body (regex, includes): ["u/x_muzzler_x", "u/nmssurvivalguru", "u/apexfatality", "u/kurganspk", "u/dodgegreythorne", "u/tyrannosaur85", "u/flourysquirrel", "u/spiper01"]
+action: filter
+action_reason: "{{match}} mentioned"
+
+---
+# hide bot commands
+    type: comment
+    moderators_exempt: false
+    priority: 1
+    #author:
+    #    is_moderator: true
+    body (regex): '^!(.*)'
+    ~body (includes): ['!enroll', '!tip', '!wallet', '!points', '![img]', '![gif]']
+    action: filter
+    action_reason: 'command {{match-2}}'
+
+---
+# help bot/mods send a post to modqueue
+    type: comment
+    moderators_exempt: false
+    priority: 2
+    author:
+        is_moderator: true
+    body (regex): '!filter-(.*)'
+    parent_submission:
+        action: filter
+        action_reason: "filter: {{match-2}}"
+        # action: report # Commented out by Apex, 20220214
+    action: remove
+
+---
+### comment if title doesn't contain some type of description
+type: submission
+flair_text (includes): "starship"
+~title (includes, regex): '(?:\b\W+\b(?:fighter|explorer|shuttle|hauler|exotic|solar))|(?:(?:fighter|explorer|shuttle|hauler|exotic|solar)\b\W+\b)'
+comment_locked: true
+comment: |
+    Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}.
+
+    In order to help other players find your {{match-flair_text}} using the search-bar please consider adding a more descriptive title to future posts. 
+
+    It is recommended to include: 
+    * Main color(s) 
+    * Ship type (Exotic, Explorer, Fighter, Hauler, Living Ship, Solar, Shuttle)
+    * Major ship parts. Our [wiki page](https://www.reddit.com/r/NMSCoordinateExchange/wiki/shipparts) has a link to the named parts list for most types of ships.
+
+---
+### title of starship contains slaver
+type: submission
+flair_text (includes): "starship"
+title (includes, regex): "slaver?"
+comment_locked: true
+comment: |
+    Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}.
+
+    /r/{{subreddit}} has changed the recommended name for {{match-title}} style explorers. The new recommended name is "Firespray". This is only a recommendation not a required change. Thank You.
 
 ---
 ### automatically approve posts from the nmsce app images domain
@@ -7,75 +74,113 @@ url (regex): "https://firebasestorage.googleapis.com/v0/b/nms-bhs.appspot.com/.*
 action: approve
 
 ---
-### Filters any post with "black" in title 
-type: submission
-flair_text (includes): "starship"
-title (includes): "black"
-action: filter
+### Makes comment on gallery posts
+type: gallery submission
+moderators_exempt: false
+#~flair_text (includes): "community"
 comment_locked: true
-comment_stickied: true
 comment: |
-    Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}. Your post has been set for moderator review. Please be patient until a (human) moderator has a chance to review this post. This post was automatically flagged because it appears you used the word "black" to describe this starship.
+    Thank You for posting to /r/{{subreddit}}. Please see our gallery/album rule below.
 
-    * If you only used the word "black" to describe smaller trim pieces, there is a good chance your post **WILL** be approved.
+    **Gallery/Album Guidelines** 
+    * Only one specific item can be showcased per album. (This is to help future searching by flair and/or search bar)
+    * (Example: only one specific starship per album. No multiple starships. No starships plus planets or fauna etc)
+    * Use albums to show off your find with different camera angles and lighting.
+    * Any required info must be on the first image
 
-    * However, if you  used the word "black" to describe the overall color of this starship, there is a good chance this post **WILL NOT** be approved. Especially if your photo has poor lighting...
+    **Posts that DON'T meet the conditions above will be removed.**
 
-    See [this post](https://www.reddit.com/r/NMSCoordinateExchange/comments/d0ljoz/psa_black_ships_aside_from_freighters_do_not/) for more information.
+---
+### Makes a comment on (IMGUR) gallery posts.
+type: link submission
+domain: imgur.com
+moderators_exempt: false
+comment_locked: true
+comment: |
+    Thank You for posting to /r/{{subreddit}}. If this is a post with multiple images, please see our gallery/album rule below.
 
-    * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
+    **Gallery/Album Guidelines** 
+    * Only one specific item can be showcased per album. (This is to help future searching by flair and/or search bar)
+    * (Example: only one specific starship per album. No multiple starships. No starships plus planets or fauna etc)
+    * Use albums to show off your find with different camera angles and lighting.
+    * Any required info must be on the first image
+
+    **Posts that DON'T meet the conditions above will be removed.**
+
+#---
+### Filters any post with "black" in title 
+#type: submission
+#flair_text (includes): "starship"
+#title (includes): "black"
+#action: filter
+#comment_locked: true
+##comment_stickied: true
+#comment: |
+#    Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}. Your post has been set for moderator review. Please be patient #until a (human) moderator has a chance to review this post. This post was automatically flagged because it appears you used the word #"black" to describe this starship.
+#
+#    * If you only used the word "black" to describe smaller trim pieces, there is a good chance your post **WILL** be approved.
+#
+#    * However, if you  used the word "black" to describe the overall color of this starship, there is a good chance this post **WILL #NOT** be approved. Especially if your photo has poor lighting...
+#
+#    See [this post](https://www.reddit.com/r/NMSCoordinateExchange/comments/d0ljoz/psa_black_ships_aside_from_freighters_do_not/) for #more information.
+#
+#    * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post #so please be patient.
 
 ---
 ### catch any submission with “rare” in the title
-type: submission
-~flair_text (includes, regex): "question|tip|guide|fauna"
-title (includes, regex): "rare|uncommon|unique"
-action: remove
-comment_locked: true
-comment_stickied: true
-comment: |
-    Your submission has been automatically removed.
+###type: submission
+###~flair_text (includes, regex): "question|tip|guide|fauna|request"
+###title (includes, regex): "rare|limited|scarce|unique|\bultra\b"
+###action: filter
+###comment_locked: true
+###comment_stickied: true
+###comment: |
+###    **Your submission has been automatically hidden and flagged for moderator review.**
 
-    We ask that you do NOT mention the rarity of objects when submitting to /r/{{subreddit}}. 
+###    Posts that mention or self-label the **rarity** of objects MAY be removed. Only the items mentioned below may be labeled as "rare" ###by members of the community. 
+    
+###    **Starships**
+###    * No starships can be labeled as rare
 
-    Please repost **WITHOUT** mention of object rarity.
+###    **Planets**
+###    * [Bubble weather](https://nomanssky.fandom.com/wiki/File:5D4BA95D-AC6A-424A-A68B-C8A690C86765.jpeg)
+###    * [Vegas trees](https://nomanssky.fandom.com/wiki/File:No_Man%27s_Sky_20201026232336.jpg)
+###    * Grass that changes color as you walk.
 
-    **If this post was removed in error please provide a link to the moderators for review.**
-modmail: |
-        The above post by /u/{{author}}, with title "{{title}}" was removed because it contained object rarity in the post title.
+###    **Multi-tools**
+###    * [Horns](https://imgur.com/a/hLn9sf6) on Alien or Experimental multi-tools. 
+###    * [Crystals](https://imgur.com/a/lIdG0HF) on Alien or Experimental multi-tools. 
+###    * [Glow tubes](https://nomanssky.fandom.com/wiki/File:Touch_of_the_Dance_DM.jpg) on Experimental multi-tools.
 
-        Please investigate and make sure that this action was correct.
+###    **Fauna**
+###    * Creatures that are listed as "rare" in-game on the discovery menu.
+###    * Uncommonly found creatures: [GMBs](https://nomanssky.fandom.com/wiki/Greater_Mushroom_Beetle), [LMBs](https://nomanssky.fandom.com/wiki/Lesser_Mushroom_Beetle), Mega [Diplos](https://nomanssky.fandom.com/wiki/Rangifae) (+6.0m in height), ###[Stained glass butterflies](https://nomanssky.fandom.com/wiki/Stained_Glass_Butterfly).
 
----
+###---
 ### Profanity filter
 title+body (regex): ["a(ss|rse|es)([ -]?holes?)?","b(i|\\*)o?(tch|\\*{3})(y|es)?","cocks?([ -]?suck(ers?|ing)?)?","cum(ming|[ -]shots?)?","cunts?","((mother|motha|mutha)[ -]?)?f(u?c?k?k|\\*ck|\\*{0,2}k|\\*{3})(er|ed|ing|s)?", "s(h(i|ar?|\\*)t|\\*{3}|h\\*{2})(s|ter|e|ting)?"]
 action: remove
+action_reason: "profan filter"
 message: |
     Your [{{kind}}]({{permalink}}) in /r/{{subreddit}}) was automatically removed.
 
-    /r/{{subreddit}} Community rule 10: Be Polite, Be Respectful
+    /r/{{subreddit}} Community rule 12: Be Polite, Be Respectful
 
-    "...Blatant hostility, rudeness or swearing will **NOT** be tolerated"
+    Swearing, cussing, vulgarity, profanity in any form is prohibited.
 
 ---
 ### catch any request w/o request flair
 type: submission
 ~flair_text (includes): "request"
 title (includes, regex): 'request|looking for|help find'
-action: remove
+~title (includes, regex): 'looking for (friends|neighbors)'
+action: filter
 action_reason: "invalid request"
+moderators_exempt: false
 comment_locked: true
 comment_stickied: true
 comment: |
-    Thank You for posting to /r/{{subreddit}}
-
-    We currently only allow requests for Ships and Multi-Tools to be posted to /r/{{subreddit}}. For other requests please see this post for more information on [searching](https://www.reddit.com/r/NMSCoordinateExchange/comments/cygpkq/psa_the_coordinate_exchange_has_a_search_bar/) /r/{{subreddit}} or use the [NMSCE app](https://nmsce.com).
-
-    **If this post was removed in error please provide a link to the moderators for review.**
-modmail: |
-        The above post by /u/{{author}}, with title "{{title}}" was removed because it contained a request for an object other than a ship or multi-tool.
-
-        Please investigate and make sure that this action was correct.
+    Thank you for posting to /r/{{subreddit}}. "{{match-title}}" was detected in the title and triggered this removal. Please repost using the "Request?" flair. If this was removed in error please provide a link to the moderators for review or repost w/o the words that triggered the removal.
 
 ---
 ### catch any starship flair that contains class and not crash in the title
@@ -109,7 +214,7 @@ comment_stickied: true
 comment: |
     Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}. Your post has been removed because we're trying to keep confusing and misleading information given to new users to a minimum. Thank you for your help with this.
 
-    * Ships are common across **ALL** PLATFORMS (PS4/PC/XB1) **AND** GAME MODES (Normal/Survival/Permadeath/Creative) so this information should **NOT** be mentioned.
+    * Ships are common across **ALL** PLATFORMS (PS4/PC/XB1) **AND** GAME MODES (Normal/Survival/Permadeath/Creative/Expedition) so this information should **NOT** be mentioned.
     
     **Please**, repost your {{match-flair_text}}  WITHOUT mention of your PLATFORM **AND** GAME MODE. 
 
@@ -122,80 +227,89 @@ comment: |
 type: submission
 flair_text (includes, regex): "base|farm"
 title (includes, regex): '\bx.?box\b|\bps4\b|\bps5\b|\bpc\b'
-action: filter
+action: remove
 action_reason: "base contains platform"
 comment_locked: true
 comment_stickied: true
 comment: |
-    Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}. Your post has been sent to the moderators for approval because we're trying to keep confusing and misleading information given to new users to a minimum. Thank you for your help with this.
+    Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}. Your post has been removed because we're trying to keep confusing and misleading information given to new users to a minimum. Thank you for your help with this.
 
     * Bases are common across **ALL** PLATFORMS (PS/PC/XBox) after version 3.3 so this information should **NOT** be mentioned.
     
-    **Please**, delete and repost your {{match-flair_text}}  WITHOUT mention of the PLATFORM. 
+    **Please**, repost your {{match-flair_text}}  WITHOUT mention of the PLATFORM. 
 
 ---
 ### catch any starship flair that contains trading post or ss
 type: submission
 flair_text (includes): "starship"
-title (includes, regex): 'trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station|\bwave\b'
+title (includes, regex): 'trad(e|ing|ers)+.?(post|station)+|\bss\b|\btp\b|space.?station|\bwave\b'
 ~title (includes): '(first|1st)\bwave'
-action: filter
-action_reason: "contains tp/ss/wave"
 comment_locked: true
 comment_stickied: true
 comment: |
-    Thank You for posting your {{match-flair_text}} to /r/{{subreddit}}. Your post has been set for moderator review. Please be patient until a (human) moderator has a chance to review this post. We are trying to keep confusing and misleading information given to new users to a minimum. Thank you for your help with this.
+    A reference to a ship spawn location (such as 'Space Station' or 'Trading Post') was detected in your post title. 
 
-    * Ships are found across the entire system so please **DO NOT** include "trade post" or "space station" in your description unless it's a first wave at a space station. First wave is only valid at a space station and is the first group of ships, usually 4, to land **AFTER** a reload or reset. Later waves should not be mentioned.
-    
-    For a more detailed explanation please read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/g6kb2j/psa_basic_recommendations_to_avoid_confusion_when/)
+    Please be aware that starships can appear at any of the spawn locations in their star system. A ship found at a Trading Post can be found at the Space Station and vice versa.  
 
-    * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
+---
+### comment on any starship flair that mentions 2nd or later waves
+type: submission
+flair_text (includes): "starship"
+title (includes, regex): '(second|2nd|third|3rd|fourth|4th|fifth|5th|six|6th)\bwave'
+~title (includes): '(first|1st)\bwave'
+comment_locked: true
+comment_stickied: true
+comment: |
+    A reference to a 2nd (or later) wave was detected in this post title.
+
+    Please be aware that only 1st wave ships (at the space station) are reliable spawns. Later waves may not be consistent.
+     
 ---
 type: submission
 is_edited: false 
-flair_text (includes): "ship request?"
+flair_text: "Request?"
 moderators_exempt: false
 action: filter
-#comment_locked: true
-comment_stickied: true
+action_reason: "request"
+#comment_stickied: true
 comment: |
     Thank you for posting to r/{{subreddit}}! Your post will **NOT** be visible to others until you *reply* to this comment. If you have searched r/{{subreddit}} and the [web app](https://nmsce.com) *reply* to **this** comment with 
 
     ```!yes``` 
 
-    It will take a couple of minutes for the bot to approve the post after your reply so please be patient. Answering yes when it is obvious that you have not searched will result in the removal of your post.
+    There is a 5 min cooldown before the bot will accept your response. Please add the response at least 5 min after the original post was made. It will take a couple of minutes for the bot to approve the post after your reply so please be patient. Answering "!yes" when it is obvious that you have not searched will result in the removal of your post.
 
     Here is a detailed [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/cygpkq/psa_the_coordinate_exchange_has_a_search_bar/) on how to use the Reddit search bar.
 ---
 type: submission
 is_edited: false 
 flair_text (includes): 'edit'
-moderators_exempt: false
+moderators_exempt: true
 action: filter
-#comment_locked: true
-comment_stickied: true
+action_reason: "bad flair"
+comment_locked: true
+#comment_stickied: true
 comment: |
     Thank you for posting to r/{{subreddit}}! Your post needs the flair edited for Galaxy and/or Game mode. If you included this information in the title then the bot will take care of it for you.
 
     It will take a couple of minutes for the bot to approve the post after you or the bot edits the flair.
 
----
-type: submission
-is_edited: false 
-flair_text (includes): "multitool request"
-comment_locked: true
-comment_stickied: true
-comment: |
-    If You haven't already done so please try your search using the search bar. Here is a detailed [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/cygpkq/psa_the_coordinate_exchange_has_a_search_bar/). Also try searching the [NMSCE app](https://nmsce.com).
-
+#---
+#type: submission
+#is_edited: false 
+#flair_text (includes): "multitool request"
+#comment_locked: true
+##comment_stickied: true
+#comment: |
+#    If You haven't already done so please try your search using the search bar. Here is a detailed [post]#(https://www.reddit.com/r/NMSCoordinateExchange/comments/cygpkq/psa_the_coordinate_exchange_has_a_search_bar/). Also try searching the [NMSCE app](https://nmsce.com).
+#
 ---
 type: submission
 is_edited: false 
 flair_text (includes): "freighter"
 ~flair_text (includes): "derelict"
 comment_locked: true
-comment_stickied: true
+#comment_stickied: true
 comment: |
     **How to find Freighters using member submitted coordinates:** 
 
@@ -206,20 +320,17 @@ comment: |
 ---
 type: submission
 is_edited: false 
-flair_text (includes): "Living Ship"
+flair_text (includes, regex): 'Living Ship' #|community event'
 comment_locked: true
-comment_stickied: true
+#comment_stickied: true
 comment: |
-    Thank You for posting to /r/{{subreddit}} and adding this **{{match}}** to our catalogue!
-
-    Read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/foicwe/requirements_to_post_living_ships_and_how_to_find/) on how to find **Living Ships** using member submitted coordinates.
+    Read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/n4kd7i/guide_to_finding_your_next_living_ship_using/) on how to find **Living Ships** using member submitted coordinates.
 
 ---
 type: submission
 is_edited: false 
 flair_text (includes): "Multi Tool"
 comment_locked: true
-comment_stickied: true
 comment: |
     **Tips for finding Multi-tools from shared coordinates**
 
@@ -232,18 +343,18 @@ comment: |
     * Not every MT is located at the space station 
     * Some MT’s required you to save and reload on a specific planet/moon (or the space station) and then travel to a specific location to acquire the MT
 
----
-type: submission
-is_edited: false 
-flair_text (includes): "Planet"
-comment_locked: true
-comment_stickied: true
-comment: |
-    **No glyphs? No problem!**
-
-    Contact PanGalactic Star Cabs - [Discord link](https://discord.gg/esyPWtm)
-
-    They can take you anywhere in the NMS universe for free! Any galaxy, any system, any platform.
+#---
+#type: submission
+#is_edited: false 
+#flair_text (includes): "Planet"
+#comment_locked: true
+#comment_stickied: true
+#comment: |
+#    **No glyphs? No problem!**
+#
+#    Contact PanGalactic Star Cabs - [Discord link](https://discord.gg/WgUdnbZJjh)
+#
+#    They can take you anywhere in the NMS universe for free! Any galaxy, any system, any platform.
 #---
 #type: submission
 #flair_text (includes, regex): "base|farm"
@@ -262,7 +373,7 @@ type: submission
 is_edited: false 
 flair_text (includes): "Wild Base"
 comment_locked: true
-comment_stickied: true
+#comment_stickied: true
 comment: |
     **How to use/claim wild base computers**
 
@@ -274,8 +385,9 @@ type: submission
 ### add tip & question 3/8/21 -sp
 flair_text (includes,regex): 'Info.*|Tip.*|Question.*'
 action: filter
+action_reason: "info/tip/question"
 comment_locked: true
-comment_stickied: true
+#comment_stickied: true
 comment: |
     Your post has been marked for moderator review due to the recent rise in the misuse of the "{{match}}" post flair. Please make sure there is not a more appropriate flair available for your post. Flair use is outlined on our [wiki page](https://www.reddit.com/r/NMSCoordinateExchange/wiki/flair). Post for "{{match}}" flair must still follow all the sub rules for approval by the moderators. 
 
@@ -294,7 +406,7 @@ message_subject: Thank You for your post to /r/{{subreddit}}
 message: |
     Since this post was made from a new account it was marked for moderator review. This is mainly a spam prevention measure. Once you've posted a few times the automatic review will go away. Thank you for your patience.
 comment_locked: true
-comment_stickied: true
+#comment_stickied: true
 comment: |
     If You haven't already done so please try your search using the search bar. Here is a detailed [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/cygpkq/psa_the_coordinate_exchange_has_a_search_bar/). You can also try searching the [NMSCE app](https://nmsce.com).
 
@@ -313,7 +425,7 @@ message: |
 
     * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
 comment_locked: true
-comment_stickied: true
+#comment_stickied: true
 comment: |
     **How to find Freighters using member submitted coordinates:**
 
@@ -335,31 +447,11 @@ message: |
 
     * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
 comment_locked: true
-comment_stickied: true
+#comment_stickied: true
 comment: |
     Thank You for posting to /r/{{subreddit}} and adding this **{{match}}** to our catalogue!
 
-    Read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/foicwe/requirements_to_post_living_ships_and_how_to_find/) on how to find **Living Ships** using member submitted coordinates.
-
----
-type: submission
-is_edited: false 
-flair_text (includes): "Wild Base"
-author:
-    comment_karma: "< 5"
-action: filter
-action_reason: "karma <5 request"
-message_subject: Thank You for your post to /r/{{subreddit}}
-message: |
-    Since this post was made from a new account it was marked for moderator review. This is mainly a spam prevention measure. Once you've posted a few times the automatic review will go away. Thank you for your patience.
-
-    * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
-comment_locked: true
-comment_stickied: true
-comment: |
-    **How to use/claim wild base computers**
-
-    Read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/hlb2l2/how_to_use_wild_base_computers_to_bypass_portal/) for information on how to claim a wild base to bypass portal interference.
+    Read this [post](https://www.reddit.com/r/NMSCoordinateExchange/comments/n4kd7i/guide_to_finding_your_next_living_ship_using/) on how to find **Living Ships** using member submitted coordinates.
 
 ---
 type: submission
@@ -375,7 +467,7 @@ message: |
 
     * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
 comment_locked: true
-comment_stickied: true
+#comment_stickied: true
 comment: |
     **Tips for finding Multi-tools from shared coordinates**
 
@@ -402,10 +494,39 @@ message: |
 
     * Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
 comment_locked: true
+#comment_stickied: true
+#comment: |
+#    **No glyphs? No problem!**
+#
+#    Contact PanGalactic Star Cabs - [Discord link](https://discord.gg/WgUdnbZJjh)
+#
+#    They can take you anywhere in the NMS universe for free! Any galaxy, any system, any platform.
+#
+---
+type: any
+reports: 4
+action: remove
+moderators_exempt: true
+action_reason: "too many reports"
+comment_locked: true
 comment_stickied: true
 comment: |
-    **No glyphs? No problem!**
+    This post has been removed because it was reported too many times.
 
-    Contact PanGalactic Star Cabs - [Discord link](https://discord.gg/esyPWtm)
+---
+type: submission
+action: filter
+action_reason: "repost"
+title (includes): "repost"
+comment_locked: true
+comment: |
+    Thank you for your post. Rules & objectives for reposting have changed and all repost now need approval from the moderators. Here are the current rules for reposting:
 
-    They can take you anywhere in the NMS universe for free! Any galaxy, any system, any platform.
+    - Repost **must** improve the original post. i.e. a new screenshot or better description
+    - A post can not be reposted unless it is more than 1 month old
+    - A repost **must** be labeled “Repost” in the title
+    - If posting someone else’s find, you **must** put their username in the title of your post
+    - Provide a link their original post in the comments
+    - If you are reporting that a post isn't giving proper credit *provide* a link to the original post via mod mail
+
+    All repost are marked for moderator review.  Please do not contact the moderators to ask when your post will be approved. Moderators are not always available to approve a post so please be patient.
