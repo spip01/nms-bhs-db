@@ -700,6 +700,14 @@ const versionList = [{
     changed: [{
         type: "ship/Shuttle"
     }]
+}, {
+    name: "leviathan",
+    version: 3.9,
+    date: "4/13/2022",
+}, {
+    name: "endurance",
+    version: 3.94,
+    date: "7/20/2022"
 }]
 
 const latestversion = versionList[(versionList.length - 1)].name

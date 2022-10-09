@@ -23,7 +23,7 @@ var sub = null
 var mods = []
 var rules = {}
 var lastPost = {}
-const version = 3.88
+const version = 4.00
 
 // main()
 // async function main() {
@@ -84,7 +84,7 @@ exports.nmsceBot = async function () {
             lastPost.name = posts[0].name
             checkPostLimits(posts, userPosts, 2, 60 * 60, "Posting limit exceded: OP is allowed 2 post/hour. ")
             checkPostLimits(null, userPosts, 10, 24 * 60 * 60, "Posting limit exceded: OP is allowed 10 post/day. ")
-
+            checkNewPosters(posts, 10)
             validatePosts(posts)
         }
     }).catch(err => error(1, err)))
@@ -365,6 +365,42 @@ async function checkComments(posts, mods) {
     }
 }
 
+
+var posters = []
+
+async function checkNewPosters(posts, limit) {
+    let p = []
+
+    for (let i = 0; i < limit && i < posts.length; ++i) { // limit number is for a new instance
+        let post = posts[i]
+
+        if (posters.includes(post.author.name))
+            continue
+
+        p.push(sub.search({
+            query: "author:" + post.author.name,
+            limit: 2,
+            sort: "new"
+        }).then(async posts => {
+            if (posts.length > 0) {
+                if (posts.length === 2 || posts[0].approved_by)
+                    posters.push(posts[0].author.name)
+                else {
+                    console.log("new poster", posts[0].author.name)
+                    posts[0].reply("!filter-First Post")
+                    // r.composeMessage({
+                    //     to: posts[0].author.name,
+                    //     subject: "First post to r/NoMansSkyTheGame",
+                    //     text: firstPost
+                    // }).catch(err => error('f', err))
+                }
+            }
+        }))
+    }
+
+    await Promise.all(p)
+}
+
 function validatePosts(posts, modqueue) {
     let flair
 
@@ -463,9 +499,9 @@ function validatePosts(posts, modqueue) {
                 }
             }
 
-            if ((!flair.sclass || !post.title.match(/s\bclass/i) || post.title.match(/crash|sunk/i)) &&
-                (flair.name !== "Starship" || !post.title.match(/black/i)) && // !post.is_gallery && post.domain !== "imgur.com" &&
-                (!flair.station || !post.title.match(/rare|unique|ultra|trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station|\bwave\b|\bx.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death/i)) &&
+            if (//(!flair.sclass || !post.title.match(/s\bclass/i) || post.title.match(/crash|sunk/i)) &&
+                //(flair.name !== "Starship" || !post.title.match(/black/i)) && 
+               // (!flair.station || !post.title.match(/rare|unique|ultra|trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station|\bwave\b|\bx.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death/i)) &&
                 (post.banned_by && post.banned_by.name === "nmsceBot" || post.removed_by_category === "automod_filtered" ||
                     post.removed_by_category === "reddit" || post.mod_reports.length > 0)) {
 
@@ -825,7 +861,7 @@ const respLight = `To help show off your items in future post you might consider
 const respGlyphs = `To improve the visibility of the glyphs in your image install the [glyph font](https://nmsce.com/bin/NMS-Glyphs-Mono.ttf). More information can be found in [this post](https://www.reddit.com/r/NMSCoordinateExchange/comments/oh109y/easy_way_to_add_larger_more_readable_glyphs_to/)`
 const missingInfo = 'Thank You for posting to r/NMSCoordinateExchange. Your post is missing the required [missing]. Please, edit your post to include the missing information and remember to include it in your next post.'
 const missingFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair was missing or unrecognized. Please, repost using the correct flair.'
-const editFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair or title did not contain the required [missing]. If you correct the flair within a reasonable time it be re-approved. You can edit the flair after the post is made. When you select the flair you can edit the text in the box. In the app there is an edit button you need to press.'
+const editFlair = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because the flair or title did not contain the required [missing]. If you correct the flair within a reasonable time it be re-approved. You can edit the flair after the post is made. When you select the flair you can edit the text in the box. If everything is included and you still get this message please double check the galaxy spelling.'
 const removePost = 'Thank You for posting to r/NMSCoordinateExchange. Your post has been removed because it violates the following rules for posting:\n\n'
 const botSig = "\n\n*This action was taken by the nmsceBot. The bot works based on selected flair & title. It is possible the incorrect action was taken if the flair selected was incorrect. Please, double check your flair selection and repost if it was incorrect. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NMSCoordinateExchange).*"
 const taxiComment = "The item shared in this post is not in the Euclid/1st/starting, galaxy. There are 256 unique galaxies in NMS. Shared glyphs only work for the galaxy they are advertised in.\n\nIf you need help travelling to the galaxy advertised in the flair of this post contact PanGalactic Star Cabs - [Discord link](https://discord.gg/WgUdnbZJjh). They can take you anywhere in the NMS universe for free! Any galaxy, any star system, any platform."

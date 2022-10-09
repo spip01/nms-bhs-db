@@ -16,7 +16,7 @@ var mods = []
 
 // main()
 // async function main() {
-// let firstRead = 200
+//     let firstRead = 200
 
 exports.nmstgBot = async function () {
     let firstRead = 100
@@ -73,7 +73,7 @@ exports.nmstgBot = async function () {
 
         if (posts.length > 0) {
             lastSearch.name = posts[0].name
-            checkPostLimits(posts, userVideos, 1, 7 * 24 * 60 * 60, videoLimit)
+            checkPostLimits(posts, userVideos, 2, 7 * 24 * 60 * 60, videoLimit)
         }
     }).catch(err => {
         error("2", err)
@@ -99,11 +99,19 @@ exports.nmstgBot = async function () {
     p.push(sub.getModqueue().then(posts => {
         console.log("queue", posts.length)
         modCommands(posts, mods)
+        reapproveBotComments(posts)
     }).catch(err => {
         error("3", err)
     }))
 
     return Promise.all(p)
+}
+
+async function reapproveBotComments(posts) {
+    for (let post of posts) {
+        if (post.author.name === "AutoModerator" || post.author.name === "nmsceBot")
+            post.approve()
+    }
 }
 
 var posters = []
@@ -158,28 +166,28 @@ function mdParse(text) {
     return text
 }
 
-var wiki = null
-var page = null
-
 async function updateWiki(posts) {
-    if (!page) {
-        wiki = await sub.getWikiPage("mega-threads")
-        page = await wiki.fetch().content_md
-    }
+    let changed = []
 
-    let changed = false
+    for (let post of posts)
+        if ((post.link_flair_text === "Weekly-Thread" || post.link_flair_text === "Bug-Thread"))
+            changed.push(post)
 
-    for (let post of posts) {
-        if ((post.link_flair_text === "Weekly-Thread" || post.link_flair_text === "Bug-Thread") && !page.includes(post.id)) {
-            changed = true
-            let title = post.permalink.split("/")
-            let loc = page.indexOf(title[5])
-            let insert = page.lastIndexOf("/", loc - 2) + 1
-            page = page.slice(0, insert) + post.id + page.slice(loc - 1)
+    if (changed.length > 0) {
+        let wiki = await sub.getWikiPage("mega-threads")
+        let page = await wiki.fetch().content_md
+
+        for (let post of changed) {
+            if (!page.includes(post.id)) {
+                let title = post.permalink.split("/")
+                let loc = page.indexOf(title[5].slice(0, 20))
+                if (loc) {
+                    let insert = page.lastIndexOf("/", loc - 2) + 1
+                    page = page.slice(0, insert) + post.id + page.slice(loc - 1)
+                }
+            }
         }
-    }
 
-    if (changed) {
         console.log('update wiki')
 
         wiki.edit({
@@ -316,7 +324,7 @@ async function checkPostLimits(posts, postList, limit, time, reason) {
                 continue
 
             if (!post.link_flair_text.includes("Bug") && !post.link_flair_text.includes("Video") && !post.link_flair_text.includes("Question") && !post.link_flair_text.includes("Answered") && typeof post.secure_media !== "undefined" && post.secure_media &&
-                (typeof post.secure_media.reddit_video !== "undefined" || typeof post.secure_media.oembed !== "undefined" && post.secure_media.oembed.type === "video")) {
+                (typeof post.secure_media.reddit_video !== "undefined" || typeof post.secure_media.oembed !== "undefined" && (post.secure_media.oembed.type === "video" || post.secure_media.type === "twitch.tv"))) {
 
                 addList(userVideos, post)
                 console.log("video flair: https://reddit.com" + post.permalink)
@@ -389,5 +397,5 @@ function error(n, err) {
 const removePost = 'Thank You for posting to r/NoMansSkyTheGame. Your post has been removed because it violates the following rules for posting:\n\n'
 const botSig = "\n\n*This action was taken by the nmstgBot. If you have any questions please contact the [moderators](https://www.reddit.com/message/compose/?to=/r/NoMansSkyTheGame).*"
 const postLimit = "Posting limit exceded: OP is allowed to make 2 post/hour"
-const videoLimit = "Posting limits exceded: OP is allowed to make 1 video post/week"
+const videoLimit = "Posting limits exceded: OP is allowed to make 2 video post/week"
 const firstPost = "Thank you for posting to r/NoMansSkyTheGame and taking an active part in the community! Since this is your first post to r/NoMansSkyTheGame it has been sent for moderator approval. This is one of the anti-spam measures we're forced to use. In the meantime checkout our posting rules listed in the sidebar.\n\nSince moderators are not always available *please* be patient and don't contact them about when your post will be approved."
