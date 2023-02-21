@@ -29,6 +29,7 @@ const version = 4.00
 // async function main() {
 
 exports.nmsceBot = async function () {
+return // jic it gets deployed
 
     if (!sub) {
         console.log("new instance")
@@ -365,8 +366,8 @@ async function checkComments(posts, mods) {
     }
 }
 
-
 var posters = []
+var firsttime = []
 
 async function checkNewPosters(posts, limit) {
     let p = []
@@ -385,7 +386,8 @@ async function checkNewPosters(posts, limit) {
             if (posts.length > 0) {
                 if (posts.length === 2 || posts[0].approved_by)
                     posters.push(posts[0].author.name)
-                else {
+                else if (!firsttime.includes(posts[0].name)) {
+                    firsttime.push(posts[0].name)
                     console.log("new poster", posts[0].author.name)
                     posts[0].reply("!filter-First Post")
                     // r.composeMessage({
@@ -499,7 +501,7 @@ function validatePosts(posts, modqueue) {
                 }
             }
 
-            if (//(!flair.sclass || !post.title.match(/s\bclass/i) || post.title.match(/crash|sunk/i)) &&
+            if ((!flair.sclass || !post.title.match(/[sabc][ -]?class/i) || post.title.match(/crash|sunk/i)) &&
                 //(flair.name !== "Starship" || !post.title.match(/black/i)) && 
                // (!flair.station || !post.title.match(/rare|unique|ultra|trade(ing|rs)?.?(post|station)|\bss\b|\btp\b|space.?station|\bwave\b|\bx.?box|ps4|\bpc\b|normal|creative|\bpd\b|survival|perma.?death/i)) &&
                 (post.banned_by && post.banned_by.name === "nmsceBot" || post.removed_by_category === "automod_filtered" ||
@@ -615,8 +617,8 @@ function getVotes(op) {
         for (let r of replies) {
             if (r.author.name !== post.author.name) {
                 if (emoji) {
-                    if (c.body.includes(emoji) && !voted.includes(c.author.name)) {
-                        voted.push(c.author.name)
+                    if (r.body.includes(emoji) && !voted.includes(r.author.name)) {
+                        voted.push(r.author.name)
                         votes++
                     }
                 } else
@@ -696,7 +698,6 @@ function getVotes(op) {
 function error(n, err) {
     console.log("error " + n, err)
 }
-
 
 function addressToXYZ(addr) {
     let out = {
@@ -1051,19 +1052,13 @@ const platformList = [{
 }]
 
 const modeList = [{
-    match: /Norm.*\b/i,
+    match: /(Custom)|(creative)|(relaxed)|(normal)|(survival)/i,
     name: "Normal"
-}, {
-    match: /Creative/i,
-    name: "Creative"
 }, {
     match: /Permadeath|\bPD\b/i,
     name: "Permadeath"
 }, {
-    match: /Survival/i,
-    name: "Survival"
-}, {
-    match: /Exped\w+[ns]\b|Explor\w+[rn]\b/i,
+    match: /Exped\w+[ns]\b/i,
     name: "Expedition"
 }]
 
