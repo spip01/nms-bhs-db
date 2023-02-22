@@ -100,7 +100,7 @@ async function main() {
 
         await Promise.all(p)
         console.log("done")
-    }, 15000)
+    }, 30000)
 }
 
 function reapproveBotComments(posts) {
