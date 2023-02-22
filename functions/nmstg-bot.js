@@ -8,118 +8,114 @@ const reddit = new snoowrap(login)
 var sub = null
 var lastPost = {}
 var lastSearch = {}
-var nextCheck = 0
 var toolbox = {}
-var toolboxdl = false
 var userPosts = []
+var siteAds = []
+var civPost = []
 var userVideos = []
 var mods = []
 
-// main()
-// async function main() {
-//     let firstRead = 200
+main()
+async function main() {
+    let firstRead = 200
 
-    exports.nmstgBot = async function () {
-        let firstRead = 100
+    reddit.config({
+        continueAfterRatelimitError: true,
+        requestTimeout: 90000
+    })
 
-    if (!sub) {
-        console.log("new instance")
-        reddit.config({
-            continueAfterRatelimitError: true,
-            requestTimeout: 90000
-        })
+    sub = await reddit.getSubreddit('NoMansSkyTheGame')
 
-        sub = await reddit.getSubreddit('NoMansSkyTheGame')
-    }
+    let wiki = await sub.getWikiPage("toolbox")
+    let page = await wiki.fetch()
+    toolbox = JSON.parse(page.content_md)
+    toolbox.removalReasons.header = mdParse(toolbox.removalReasons.header)
+    toolbox.removalReasons.footer = mdParse(toolbox.removalReasons.footer)
+    for (let i of toolbox.removalReasons.reasons)
+        i.text = mdParse(i.text)
 
-    let date = parseInt(new Date().valueOf() / 1000)
-    let p = []
+    let m = await sub.getModerators()
+    for (let x of m)
+        mods.push(x.id)
 
-    p.push(sub.getNew(!lastPost.name || lastPost.full + 60 * 60 < date ? {
-        limit: firstRead // make sure to cover 24 hours for posting limit
-    } : {
-        before: lastPost.name
-    }).then(posts => {
-        console.log("post", posts.length)
+    setInterval(async () => {
+        console.log("start run")
 
-        if (posts.length > 0 || !lastPost.full || lastPost.full + 60 * 60 < date)
-            lastPost.full = date
-        else
-            userPosts = []
+        let date = parseInt(new Date().valueOf() / 1000)
+        let p = []
 
-        if (posts.length > 0) {
-            lastPost.name = posts[0].name
-            checkPostLimits(posts, userPosts, 2, 60 * 60, postLimit)
-            checkNewPosters(posts, 10)
-            updateWiki(posts)
-        }
-    }).catch(err => {
-        error("1", err)
-    }))
+        p.push(sub.getNew(!lastPost.name || lastPost.full + 60 * 60 < date ? {
+            limit: firstRead // make sure to cover 24 hours for posting limit
+        } : {
+            before: lastPost.name
+        }).then(posts => {
+            console.log("post", posts.length)
 
-    p.push(sub.search(!lastSearch.name || lastSearch.full + 60 * 60 < date ? {
-        query: "flair_text:Video",
-        time: "week",
-        limit: 200,
-        sort: "new"
-    } : {
-        query: "flair_text:Video",
-        before: lastSearch.name
-    }).then(posts => {
-        console.log("video", posts.length)
+            if (posts.length > 0 || !lastPost.full || lastPost.full + 60 * 60 < date)
+                lastPost.full = date
+            else
+                userPosts = []
 
-        if (!lastSearch.full || lastSearch.full + 60 * 60 < date)
-            lastSearch.full = date
-        else
-            userVideos = []
+            if (posts.length > 0) {
+                lastPost.name = posts[0].name
+                let p = []
+                p.push(checkPostLimits(posts, userPosts, 2, 60 * 60, postLimit))
+                p.push(checkNewPosters(posts, 10))
+                p.push(updateWiki(posts))
+                return Promise.all(p)
+            }
+        }).catch(err => {
+            error("1", err)
+        }))
 
-        if (posts.length > 0) {
-            lastSearch.name = posts[0].name
-            checkPostLimits(posts, userVideos, 2, 7 * 24 * 60 * 60, videoLimit)
-        }
-    }).catch(err => {
-        error("2", err)
-    }))
+        p.push(sub.search(!lastSearch.name || lastSearch.full + 60 * 60 < date ? {
+            query: "flair_text:Video",
+            time: "week",
+            limit: 200,
+            sort: "new"
+        } : {
+            query: "flair_text:Video",
+            before: lastSearch.name
+        }).then(posts => {
+            console.log("video", posts.length)
 
-    if (!toolboxdl) {
-        let wiki = await sub.getWikiPage("toolbox")
-        let page = await wiki.fetch()
-        toolbox = JSON.parse(page.content_md)
-        toolbox.removalReasons.header = mdParse(toolbox.removalReasons.header)
-        toolbox.removalReasons.footer = mdParse(toolbox.removalReasons.footer)
-        for (let i of toolbox.removalReasons.reasons)
-            i.text = mdParse(i.text)
-        toolboxdl = true
-    }
+            if (!lastSearch.full || lastSearch.full + 60 * 60 < date)
+                lastSearch.full = date
+            else
+                userVideos = []
 
-    if (mods.length === 0) {
-        let m = await sub.getModerators()
-        for (let x of m)
-            mods.push(x.id)
-    }
+            if (posts.length > 0) {
+                lastSearch.name = posts[0].name
+                return checkPostLimits(posts, userVideos, 2, 7 * 24 * 60 * 60, videoLimit)
+            }
+        }).catch(err => { error("2", err) }))
 
-    p.push(sub.getModqueue().then(posts => {
-        console.log("queue", posts.length)
-        modCommands(posts, mods)
-        reapproveBotComments(posts)
-    }).catch(err => {
-        error("3", err)
-    }))
+        p.push(sub.getModqueue().then(posts => {
+            console.log("queue", posts.length)
+            let p = []
+            p.push(modCommands(posts, mods))
+            p.push(reapproveBotComments(posts))
+            return Promise.all(p)
+        }).catch(err => { error("3", err) }))
 
-    return Promise.all(p)
+        await Promise.all(p)
+        console.log("done")
+    }, 15000)
 }
 
-async function reapproveBotComments(posts) {
-    for (let post of posts) {
+function reapproveBotComments(posts) {
+    let p = []
+    for (let post of posts)
         if (post.author.name === "AutoModerator" || post.author.name === "nmsceBot")
-            post.approve()
-    }
+            p.push(post.approve())
+
+    return Promise.all(p)
 }
 
 var posters = []
 var firsttime = []
 
-async function checkNewPosters(posts, limit) {
+function checkNewPosters(posts, limit) {
     let p = []
 
     for (let i = 0; i < limit && i < posts.length; ++i) { // limit number is for a new instance
@@ -132,43 +128,30 @@ async function checkNewPosters(posts, limit) {
             query: "author:" + post.author.name,
             limit: 2,
             sort: "new"
-        }).then(async posts => {
+        }).then(posts => {
             if (posts.length > 0) {
                 if (posts.length === 2 || posts[0].approved_by)
                     posters.push(posts[0].author.name)
                 else if (!firsttime.includes(posts[0].name)) {
                     firsttime.push(posts[0].name)
                     console.log("new poster", posts[0].author.name)
-                    posts[0].reply("!filter-First Post")
 
-                    reddit.composeMessage({
+                    let p = []
+                    p.push(posts[0].reply("!filter-First Post").catch(err => error('f0', err)))
+
+                    p.push(reddit.composeMessage({
                         to: posts[0].author.name,
                         subject: "First post to r/NoMansSkyTheGame",
                         text: firstPost
-                    }).catch(err => error('f', err))
+                    }).catch(err => error('f1', err)))
+
+                    return Promise.all(p)
                 }
             }
         }))
     }
 
-    await Promise.all(p)
-}
-
-function mdParse(text) {
-    text = /%20/ig[Symbol.replace](text, " ")
-    text = /%21/ig[Symbol.replace](text, "!")
-    text = /%2c/ig[Symbol.replace](text, ",")
-    text = /%3a/ig[Symbol.replace](text, ":")
-    text = /%0a/ig[Symbol.replace](text, "\n")
-    text = /%5b/ig[Symbol.replace](text, "[")
-    text = /%5d/ig[Symbol.replace](text, "]")
-    text = /%28/ig[Symbol.replace](text, "(")
-    text = /%29/ig[Symbol.replace](text, ")")
-    text = /%27/ig[Symbol.replace](text, "'")
-    text = /%22/ig[Symbol.replace](text, "\"")
-    text = /%26/ig[Symbol.replace](text, "&")
-    text = /%3b/ig[Symbol.replace](text, ";")
-    return text
+    return Promise.all(p)
 }
 
 async function updateWiki(posts) {
@@ -196,56 +179,49 @@ async function updateWiki(posts) {
 
         console.log('update wiki')
 
-        wiki.edit({
+        return wiki.edit({
             text: page,
-            reason: "bot-update weekly thread urls"
-        })
-            .catch(err => error("w", err))
+            reason: "bot-update scheduled thread urls"
+        }).catch(err => error("w", err))
     }
 }
 
-async function modCommands(posts, mods) {
+function modCommands(posts, mods) {
+    let p = []
+
     for (let post of posts) {
         if (post.name.startsWith("t1_") && mods.includes(post.author_fullname) && post.body.match(/!(r.*|c.*|votes?|check|comments?|help)/i)) {
             console.log("command", post.body)
 
-            if (post.body.startsWith("!vote")) {
-                await getVotes(post)
-                return
+            if (post.body.startsWith("!vote"))
+                p.push(getVotes(post))
 
-            } else if (post.body.startsWith("!comment")) {
-                await getTopComments(post)
-                return
+            else if (post.body.startsWith("!comment"))
+                p.push(getTopComments(post))
 
-            } else if (post.body.startsWith("!check")) {
-                await checkContestLimit(post)
-                return
+            else if (post.body.startsWith("!check"))
+                p.push(checkContestLimit(post))
 
-            } else if (post.body.startsWith("!help")) {
-                reddit.composeMessage({
+            else if (post.body.startsWith("!help")) {
+                p.push(reddit.composeMessage({
                     to: post.author,
                     subject: "NMSTG bot commands",
                     text: help
-                }).catch(err => error(16, err))
+                }).catch(err => error(16, err)))
 
-                post.remove()
-                    .catch(err => error(17, err))
-                return
+                p.push(post.remove().catch(err => error(17, err)))
 
             } else if (post.body.startsWith("!c")) {
                 let message = post.body.replace(/!c\s?(.*)/, "$1")
                 message += "\n\n----\nThis comment was made by a moderator of r/NoMansSkyTheGame. If you have questions please contact them via mod mail."
 
-                let op = await reddit.getComment(post.parent_id)
-
-                op.reply(message)
+                p.push(reddit.getComment(post.parent_id).reply(message)
                     .distinguish({
                         status: true
                     }).lock()
-                    .catch(err => error("c0", err))
+                    .catch(err => error("c0", err)))
 
-                post.remove()
-                    .catch(err => error("c1", err))
+                p.push(post.remove().catch(err => error("c1", err)))
             } else {
                 let match = post.body.slice(2).split(",")
                 let message = toolbox.removalReasons.header + "\n\n----\n"
@@ -259,33 +235,33 @@ async function modCommands(posts, mods) {
 
                 message += toolbox.removalReasons.footer
 
-                let op = null
-                let oppost = post
+                p.push(reddit.getComment(post.parent_id).fetch().then(op => {
+                    let p = []
 
-                while (!op || oppost.parent_id) {
-                    op = await reddit.getComment(oppost.parent_id)
-                    oppost = await op.fetch()
-                }
+                    p.push(op.reply(message)
+                        .distinguish({
+                            status: true
+                        }).lock()
+                        .catch(err => error("5", err)))
 
-                op.reply(message)
-                    .distinguish({
-                        status: true
-                    }).lock()
-                    .catch(err => error("5", err))
+                    p.push(op.remove()
+                        .catch(err => error("7", err)))
 
-                post.remove()
-                    .catch(err => error("7", err))
+                    console.log("remove: " + "rule: " + match, "https://reddit.com" + oppost.permalink)
 
-                oppost.remove()
-                    .catch(err => error("8", err))
+                    return Promise.all(p)
+                }))
 
-                console.log("remove: " + "rule: " + match, "https://reddit.com" + oppost.permalink)
+                p.push(post.remove()
+                    .catch(err => error("8", err)))
             }
         }
     }
+
+    return Promise.all(p)
 }
 
-async function getVotes(op) {
+function getVotes(op) {
     let scanReplies = function (post, replies, voted) {
         let votes = 0
 
@@ -305,186 +281,178 @@ async function getVotes(op) {
         return votes
     }
 
-    op.remove()
-        .catch(err => error(17, err))
+    return op.remove().then(() => {
+        let month = op.body.match(/!votes\s+(.*)/)
 
-    let month = op.body.match(/!votes\s+(.*)/)
-
-    if (month && month.length > 1) {
-        month = month[1]
-    } else {
-        reddit.composeMessage({
-            to: op.author,
-            subject: "Vote count needs month",
-            text: "!votes [month]\n[month]: First significant characters of contest month"
-        }).catch(err => error(16, err))
-        return
-    }
-
-    return sub.search({
-        query: "subreddit:nomansskythegame flair:contest",
-        limit: 1000,
-        time: "month"
-    }).then(async posts => {
-        let p = []
-        let total = 0
-
-        for (let post of posts) {
-            if (!post.link_flair_text.includes(month))
-                continue
-
-            let replies = await post.expandReplies()
-
-            let voted = []
-            let votes = scanReplies(post, replies.comments, voted)
-
-            p.push({
-                link: post.permalink,
-                votes: post.ups + post.downs + post.total_awards_received + votes,
-                title: post.title,
-            })
-
-            total += post.ups + post.downs + post.total_awards_received + votes
+        if (month && month.length > 1) {
+            month = month[1]
+        } else {
+            return reddit.composeMessage({
+                to: op.author,
+                subject: "Vote count needs month",
+                text: "!votes [month]\n[month]: First significant characters of contest month"
+            }).catch(err => error(16, err))
         }
 
-        p.sort((a, b) => a.votes >= b.votes ? -1 : 1)
+        return sub.search({
+            query: "subreddit:nomansskythegame flair:contest",
+            limit: 1000,
+            time: "month"
+        }).then(async posts => {
+            let p = []
+            let total = 0
 
-        let text = "Total entries: " + posts.length + " Total votes: " + total + "  \n"
-        for (let i = 0; i < 10; ++i)
-            text += p[i].votes + ": [" + p[i].title + "](https://reddit.com" + p[i].link + ")  \n"
+            for (let post of posts) {
+                if (!post.link_flair_text.includes(month))
+                    continue
 
-        reddit.composeMessage({
-            to: op.author,
-            subject: "NMSTG contest results for " + month,
-            text: text
-        }).catch(err => error(16, err))
-    }).catch(err => {
-        error(18, err)
-    })
-}
+                let replies = await post.expandReplies()
 
-async function getTopComments(op) {
-    op.remove()
-        .catch(err => error(17, err))
-
-    let month = op.body.match(/!comments?\s+(.*)/)
-    if (month && month.length > 1) {
-        month = month[1]
-    } else {
-        reddit.composeMessage({
-            to: op.author,
-            subject: "Top Comment count needs month",
-            text: "!comments [month]\n[month]: First significant characters of contest month. e.g. '!comments Feb'"
-        }).catch(err => error(16, err))
-        return
-    }
-
-    return sub.search({
-        query: "subreddit:nomansskythegame flair:contest",
-        limit: 1000,
-        time: "month"
-    }).then(async posts => {
-        let p = []
-        let c = []
-        let total = 0
-
-        for (let post of posts) {
-            if (!post.link_flair_text.includes(month))
-                continue
-
-            let replies = await post.expandReplies()
-            console.log("got", replies.comments.length)
-            if (replies.comments.length > 0) {
-                for (let r of replies.comments)
-                    c.push({
-                        link: r.permalink,
-                        votes: r.ups + r.downs,
-                        title: r.body,
-                        oplink: post.permalink,
-                        optitle: post.title,
-                    })
+                let voted = []
+                let votes = scanReplies(post, replies.comments, voted)
 
                 p.push({
                     link: post.permalink,
-                    votes: replies.comments.length,
+                    votes: post.ups + post.downs + post.total_awards_received + votes,
                     title: post.title,
                 })
 
-                total += replies.comments.length
+                total += post.ups + post.downs + post.total_awards_received + votes
             }
+
+            p.sort((a, b) => a.votes >= b.votes ? -1 : 1)
+
+            let text = "Total entries: " + posts.length + " Total votes: " + total + "  \n"
+            for (let i = 0; i < 10; ++i)
+                text += p[i].votes + ": [" + p[i].title + "](https://reddit.com" + p[i].link + ")  \n"
+
+            return reddit.composeMessage({
+                to: op.author,
+                subject: "NMSTG contest results for " + month,
+                text: text
+            }).catch(err => error(16, err))
+        }).catch(err => {
+            error(18, err)
+        })
+    }).catch(err => error(17, err))
+}
+
+function getTopComments(op) {
+    return op.remove().then(() => {
+
+        let month = op.body.match(/!comments?\s+(.*)/)
+        if (month && month.length > 1) {
+            month = month[1]
+        } else {
+            return reddit.composeMessage({
+                to: op.author,
+                subject: "Top Comment count needs month",
+                text: "!comments [month]\n[month]: First significant characters of contest month. e.g. '!comments Feb'"
+            }).catch(err => error(16, err))
         }
 
-        c.sort((a, b) => a.votes >= b.votes ? -1 : 1)
-        p.sort((a, b) => a.votes >= b.votes ? -1 : 1)
+        return sub.search({
+            query: "subreddit:nomansskythegame flair:contest",
+            limit: 1000,
+            time: "month"
+        }).then(async posts => {
+            let p = []
+            let c = []
+            let total = 0
 
-        let text = "Total entries: " + posts.length + " Total comments: " + total + "  \n"
-        for (let i = 0; i < 10; ++i)
-            text += p[i].votes + ": [" + p[i].title + "](https://reddit.com" + p[i].link + ")  \n"
+            for (let post of posts) {
+                if (!post.link_flair_text.includes(month))
+                    continue
 
-        text += "  \n------------------------------  \n\n"
+                let replies = await post.expandReplies()
+                console.log("got", replies.comments.length)
+                if (replies.comments.length > 0) {
+                    for (let r of replies.comments)
+                        c.push({
+                            link: r.permalink,
+                            votes: r.ups + r.downs,
+                            title: r.body,
+                            oplink: post.permalink,
+                            optitle: post.title,
+                        })
 
-        for (let i = 0; i < 10; ++i)
-            text += c[i].votes + ": [" + c[i].title + "](https://reddit.com" + c[i].link + "): [" + c[i].optitle + "](https://reddit.com" + c[i].oplink + ")  \n"
+                    p.push({
+                        link: post.permalink,
+                        votes: replies.comments.length,
+                        title: post.title,
+                    })
 
-        reddit.composeMessage({
-            to: op.author,
-            subject: "NMSTG contest results for " + month,
-            text: text
-        }).catch(err => error(16, err))
-    }).catch(err => {
-        error(18, err)
-    })
+                    total += replies.comments.length
+                }
+            }
+
+            c.sort((a, b) => a.votes >= b.votes ? -1 : 1)
+            p.sort((a, b) => a.votes >= b.votes ? -1 : 1)
+
+            let text = "Total entries: " + posts.length + " Total comments: " + total + "  \n"
+            for (let i = 0; i < 10; ++i)
+                text += p[i].votes + ": [" + p[i].title + "](https://reddit.com" + p[i].link + ")  \n"
+
+            text += "  \n------------------------------  \n\n"
+
+            for (let i = 0; i < 10; ++i)
+                text += c[i].votes + ": [" + c[i].title + "](https://reddit.com" + c[i].link + "): [" + c[i].optitle + "](https://reddit.com" + c[i].oplink + ")  \n"
+
+            return reddit.composeMessage({
+                to: op.author,
+                subject: "NMSTG contest results for " + month,
+                text: text
+            }).catch(err => error(16, err))
+        }).catch(err => error(18, err))
+    }).catch(err => error(17, err))
 }
 
 async function checkContestLimit(op) {
-    op.remove()
-        .catch(err => error(17, err))
+    return op.remove().then(() => {
 
-    let month = op.body.match(/!check\s+(.*)/)
+        let month = op.body.match(/!check\s+(.*)/)
 
-    if (month && month.length > 1) {
-        month = month[1]
-    } else {
-        reddit.composeMessage({
-            to: op.author,
-            subject: "Contest commands need month",
-            text: "!check [month] \n[month]: First significant characters of contest month"
-        }).catch(err => error(16, err))
-        return
-    }
-
-    return sub.search({
-        query: "subreddit:nomansskythegame flair:contest",
-        limit: 1000,
-        time: "month"
-    }).then(async posts => {
-
-        posts.sort((a, b) => a.author.name >= b.author.name ? -1 : 1)
-        let last = null
-        let count = 0
-        let text = "Check for > 3 contest post. Disqualified post: \n"
-        let found = false
-        for (let post of posts) {
-            if (!post.link_flair_text.includes(month))
-                continue
-
-            count = last && post.author.name === last.author.name ? count + 1 : 0
-            last = post
-
-            if (count > 3) {
-                found = true
-                text += "[" + post.title + "](https://reddit.com" + post.link + ")  \n"
-            }
+        if (month && month.length > 1) {
+            month = month[1]
+        } else {
+            return reddit.composeMessage({
+                to: op.author,
+                subject: "Contest commands need month",
+                text: "!check [month] \n[month]: First significant characters of contest month"
+            }).catch(err => error(16, err))
         }
 
-        reddit.composeMessage({
-            to: op.author,
-            subject: "NMSTG contest check " + month,
-            text: found ? text : "No op has posted > 3 entries for the contest."
-        }).catch(err => error(16, err))
-    }).catch(err => {
-        error(18, err)
-    })
+        return sub.search({
+            query: "subreddit:nomansskythegame flair:contest",
+            limit: 1000,
+            time: "month"
+        }).then(async posts => {
+
+            posts.sort((a, b) => a.author.name >= b.author.name ? -1 : 1)
+            let last = null
+            let count = 0
+            let text = "Check for > 3 contest post. Disqualified post: \n"
+            let found = false
+            for (let post of posts) {
+                if (!post.link_flair_text.includes(month))
+                    continue
+
+                count = last && post.author.name === last.author.name ? count + 1 : 0
+                last = post
+
+                if (count > 3) {
+                    found = true
+                    text += "[" + post.title + "](https://reddit.com" + post.link + ")  \n"
+                }
+            }
+
+            return reddit.composeMessage({
+                to: op.author,
+                subject: "NMSTG contest check " + month,
+                text: found ? text : "No op has posted > 3 entries for the contest."
+            }).catch(err => error(16, err))
+        }).catch(err => error(18, err))
+    }).catch(err => error(17, err))
 }
 
 async function checkPostLimits(posts, postList, limit, time, reason) {
@@ -515,7 +483,7 @@ async function checkPostLimits(posts, postList, limit, time, reason) {
 
                 addList(userVideos, post)
                 console.log("video flair: https://reddit.com" + post.permalink)
-                post.selectFlair({
+                await post.selectFlair({
                     flair_template_id: post.link_flair_template_id,
                     text: post.link_flair_text + " Video"
                 }).catch(err => error(13, err))
@@ -526,7 +494,8 @@ async function checkPostLimits(posts, postList, limit, time, reason) {
             addList(postList, post)
         }
 
-    time -= 5
+    time -= 5 * 60
+    let p = []
     let message = removePost + "\n\n----\n" + reason + "\n\n----\n" + botSig
 
     for (let user of postList) {
@@ -557,16 +526,11 @@ async function checkPostLimits(posts, postList, limit, time, reason) {
 
                     console.log("limit > " + limit + " / " + time, user.name, parseInt((n - o) / 60), "https://reddit.com" + posts[i].permalink)
 
-                    posts[i].reply(message)
+                    p.push(posts[i].reply(message)
                         .distinguish({
                             status: true
                         }).lock()
-                        .catch(err => error("a", err))
-
-                    posts[i].report({
-                        reason: reason
-                    }).remove()
-                        .catch(err => error("b", err))
+                        .catch(err => error("a", err)))
 
                     posts.splice(i, 1)
                 }
@@ -575,6 +539,25 @@ async function checkPostLimits(posts, postList, limit, time, reason) {
             posts.splice(3, 999) // maximum post limit
         }
     }
+
+    return Promise.all(p)
+}
+
+function mdParse(text) {
+    text = /%20/ig[Symbol.replace](text, " ")
+    text = /%21/ig[Symbol.replace](text, "!")
+    text = /%2c/ig[Symbol.replace](text, ",")
+    text = /%3a/ig[Symbol.replace](text, ":")
+    text = /%0a/ig[Symbol.replace](text, "\n")
+    text = /%5b/ig[Symbol.replace](text, "[")
+    text = /%5d/ig[Symbol.replace](text, "]")
+    text = /%28/ig[Symbol.replace](text, "(")
+    text = /%29/ig[Symbol.replace](text, ")")
+    text = /%27/ig[Symbol.replace](text, "'")
+    text = /%22/ig[Symbol.replace](text, "\"")
+    text = /%26/ig[Symbol.replace](text, "&")
+    text = /%3b/ig[Symbol.replace](text, ";")
+    return text
 }
 
 function error(n, err) {
